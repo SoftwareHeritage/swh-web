@@ -118,21 +118,21 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
         hasher.update(diff_id.encode("utf-8"))
         diff_id = hasher.hexdigest()
         change["id"] = diff_id
-        panel_diff_link = "#panel_" + diff_id
+        diff_link = "#diff_" + diff_id
 
         if change["type"] == "modify":
             change["content_url"] = _gen_content_url(
                 revision, to_query_string, change["to_path"], snapshot_context
             )
             changes_msg.append(
-                "modified:  %s" % _gen_diff_link(i, panel_diff_link, change["to_path"])
+                "modified:  %s" % _gen_diff_link(i, diff_link, change["to_path"])
             )
         elif change["type"] == "insert":
             change["content_url"] = _gen_content_url(
                 revision, to_query_string, change["to_path"], snapshot_context
             )
             changes_msg.append(
-                "new file:  %s" % _gen_diff_link(i, panel_diff_link, change["to_path"])
+                "new file:  %s" % _gen_diff_link(i, diff_link, change["to_path"])
             )
         elif change["type"] == "delete":
             parent = service.lookup_revision(revision["parents"][0])
@@ -140,8 +140,7 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
                 parent, from_query_string, change["from_path"], snapshot_context
             )
             changes_msg.append(
-                "deleted:   %s"
-                % _gen_diff_link(i, panel_diff_link, change["from_path"])
+                "deleted:   %s" % _gen_diff_link(i, diff_link, change["from_path"])
             )
         elif change["type"] == "rename":
             change["content_url"] = _gen_content_url(
@@ -149,7 +148,7 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
             )
             link_text = change["from_path"] + " &rarr; " + change["to_path"]
             changes_msg.append(
-                "renamed:   %s" % _gen_diff_link(i, panel_diff_link, link_text)
+                "renamed:   %s" % _gen_diff_link(i, diff_link, link_text)
             )
     if not changes:
         changes_msg.append("No changes")

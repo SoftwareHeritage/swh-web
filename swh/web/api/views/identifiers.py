@@ -21,11 +21,14 @@ def api_resolve_swhid(request, swhid):
     """
     .. http:get:: /api/1/resolve/(swhid)/
 
-        Resolve :ref:`persistent-identifiers`.
+        Resolve a SoftWare Heritage persistent IDentifier (SWHID)
 
-        Try to resolve a provided SWHID into an url for browsing the
-        pointed archive object. If the provided identifier is valid,
-        the existence of the object in the archive will also be checked.
+        Try to resolve a provided `SoftWare Heritage persistent IDentifier
+        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_
+        into an url for browsing the pointed archive object.
+
+        If the provided identifier is valid, the existence of the object in
+        the archive will also be checked.
 
         :param string swhid: a SoftWare Heritage persistent IDentifier
 
@@ -74,7 +77,8 @@ def api_swhid_known(request):
         archive.
 
         The objects to check existence must be provided using
-        :ref:`persistent-identifiers`.
+        `SoftWare Heritage persistent IDentifiers
+        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_.
 
         :<jsonarr string -: input array of SWHIDs, its length can not exceed 1000.
 

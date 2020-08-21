@@ -9,6 +9,8 @@ import 'waypoints/lib/jquery.waypoints';
 
 import {swhSpinnerSrc} from 'utils/constants';
 
+import diffPanelTemplate from './diff-panel.ejs';
+
 // number of changed files in the revision
 let changes = null;
 let nbChangedFiles = 0;
@@ -30,6 +32,17 @@ let nbDeletions = 0;
 let computedDiffs = {};
 // map a diff id to its computation url
 let diffsUrls = {};
+// to keep track of diff lines to highlight
+let startLines = null;
+let endLines = null;
+// map max line numbers characters to diff
+const diffMaxNumberChars = {};
+// focused diff for highlighting
+let focusedDiff = null;
+// highlighting color
+const lineHighlightColor = '#fdf3da';
+// might contain diff lines to highlight parsed from URL fragment
+let selectedDiffLinesInfo;
 
 // to check if a DOM element is in the viewport
 function isInViewport(elt) {
@@ -43,23 +56,20 @@ function isInViewport(elt) {
 }
 
 // to format the diffs line numbers
-function formatDiffLineNumbers(fromLine, toLine, maxNumberChars) {
+export function formatDiffLineNumbers(diffId, fromLine, toLine) {
+  const maxNumberChars = diffMaxNumberChars[diffId];
+  const fromLineStr = toLnStr(fromLine);
+  const toLineStr = toLnStr(toLine);
   let ret = '';
-  if (fromLine != null) {
-    for (let i = 0; i < (maxNumberChars - fromLine.length); ++i) {
-      ret += ' ';
-    }
-    ret += fromLine;
+  for (let i = 0; i < (maxNumberChars - fromLineStr.length); ++i) {
+    ret += ' ';
   }
-  if (fromLine != null && toLine != null) {
-    ret += '  ';
+  ret += fromLineStr;
+  ret += '  ';
+  for (let i = 0; i < (maxNumberChars - toLineStr.length); ++i) {
+    ret += ' ';
   }
-  if (toLine != null) {
-    for (let i = 0; i < (maxNumberChars - toLine.length); ++i) {
-      ret += ' ';
-    }
-    ret += toLine;
-  }
+  ret += toLineStr;
   return ret;
 }
 
@@ -95,6 +105,206 @@ function parseDiffHunkRangeIfAny(lineText) {
   }
 }
 
+function toLnInt(lnStr) {
+  return lnStr ? parseInt(lnStr) : 0;
+};
+
+function toLnStr(lnInt) {
+  return lnInt ? lnInt.toString() : '';
+};
+
+// parse diff line numbers to an int array [from, to]
+export function parseDiffLineNumbers(lineNumbersStr, from, to) {
+  let lines;
+  if (!from && !to) {
+    lines = lineNumbersStr.replace(/[ ]+/g, ' ').split(' ');
+    if (lines.length > 2) {
+      lines.shift();
+    }
+    lines = lines.map(x => toLnInt(x));
+  } else {
+    let lineNumber = toLnInt(lineNumbersStr.trim());
+    if (from) {
+      lines = [lineNumber, 0];
+    } else if (to) {
+      lines = [0, lineNumber];
+    }
+  }
+  return lines;
+}
+
+// serialize selected line numbers range to string for URL fragment
+export function selectedDiffLinesToFragment(startLines, endLines, unified) {
+  let selectedLinesFragment = '';
+  selectedLinesFragment += `F${startLines[0] || 0}`;
+  selectedLinesFragment += `T${startLines[1] || 0}`;
+  selectedLinesFragment += `-F${endLines[0] || 0}`;
+  selectedLinesFragment += `T${endLines[1] || 0}`;
+  if (unified) {
+    selectedLinesFragment += '-unified';
+  } else {
+    selectedLinesFragment += '-split';
+  }
+  return selectedLinesFragment;
+}
+
+// parse selected lines from URL fragment
+export function fragmentToSelectedDiffLines(fragment) {
+  const RE_LINES = /F([0-9]+)T([0-9]+)-F([0-9]+)T([0-9]+)-([a-z]+)/;
+  const matchObj = RE_LINES.exec(fragment);
+  if (matchObj.length === 6) {
+    return {
+      startLines: [parseInt(matchObj[1]), parseInt(matchObj[2])],
+      endLines: [parseInt(matchObj[3]), parseInt(matchObj[4])],
+      unified: matchObj[5] === 'unified'
+    };
+  } else {
+    return null;
+  }
+}
+
+// function to highlight a single diff line
+function highlightDiffLine(diffId, i) {
+  let line = $(`#${diffId} .hljs-ln-line[data-line-number="${i}"]`);
+  let lineNumbers = $(`#${diffId} .hljs-ln-numbers[data-line-number="${i}"]`);
+  lineNumbers.css('color', 'black');
+  lineNumbers.css('font-weight', 'bold');
+  line.css('background-color', lineHighlightColor);
+  line.css('mix-blend-mode', 'multiply');
+  return line;
+}
+
+// function to reset highlighting
+function resetHighlightedDiffLines(resetVars = true) {
+  if (resetVars) {
+    focusedDiff = null;
+    startLines = null;
+    endLines = null;
+  }
+  $('.hljs-ln-line[data-line-number]').css('background-color', 'initial');
+  $('.hljs-ln-line[data-line-number]').css('mix-blend-mode', 'initial');
+  $('.hljs-ln-numbers[data-line-number]').css('color', '#aaa');
+  $('.hljs-ln-numbers[data-line-number]').css('font-weight', 'initial');
+}
+
+// highlight lines in a diff, return first highlighted line numbers element
+function highlightDiffLines(diffId, startLines, endLines, unified) {
+  let firstHighlightedLine;
+  // unified diff case
+  if (unified) {
+    let start = formatDiffLineNumbers(diffId, startLines[0], startLines[1]);
+    let end = formatDiffLineNumbers(diffId, endLines[0], endLines[1]);
+
+    const startLine = $(`#${diffId} .hljs-ln-line[data-line-number="${start}"]`);
+    const endLine = $(`#${diffId} .hljs-ln-line[data-line-number="${end}"]`);
+    if ($(endLine).position().top < $(startLine).position().top) {
+      [start, end] = [end, start];
+      firstHighlightedLine = endLine;
+    } else {
+      firstHighlightedLine = startLine;
+    }
+    const lineTd = highlightDiffLine(diffId, start);
+    let tr = $(lineTd).closest('tr');
+    let lineNumbers = $(tr).children('.hljs-ln-line').data('line-number').toString();
+    while (lineNumbers !== end) {
+      if (lineNumbers.trim()) {
+        highlightDiffLine(diffId, lineNumbers);
+      }
+      tr = $(tr).next();
+      lineNumbers = $(tr).children('.hljs-ln-line').data('line-number').toString();
+    }
+    highlightDiffLine(diffId, end);
+
+  // split diff case
+  } else {
+    // highlight only from part of the diff
+    if (startLines[0] && endLines[0]) {
+      const start = Math.min(startLines[0], endLines[0]);
+      const end = Math.max(startLines[0], endLines[0]);
+      for (let i = start; i <= end; ++i) {
+        highlightDiffLine(`${diffId}-from`, i);
+      }
+      firstHighlightedLine = $(`#${diffId}-from .hljs-ln-line[data-line-number="${start}"]`);
+    // highlight only to part of the diff
+    } else if (startLines[1] && endLines[1]) {
+      const start = Math.min(startLines[1], endLines[1]);
+      const end = Math.max(startLines[1], endLines[1]);
+      for (let i = start; i <= end; ++i) {
+        highlightDiffLine(`${diffId}-to`, i);
+      }
+      firstHighlightedLine = $(`#${diffId}-to .hljs-ln-line[data-line-number="${start}"]`);
+    // highlight both part of the diff
+    } else {
+      let left, right;
+      if (startLines[0] && endLines[1]) {
+        left = startLines[0];
+        right = endLines[1];
+      } else {
+        left = endLines[0];
+        right = startLines[1];
+      }
+
+      const leftLine = $(`#${diffId}-from .hljs-ln-line[data-line-number="${left}"]`);
+      const rightLine = $(`#${diffId}-to .hljs-ln-line[data-line-number="${right}"]`);
+      const leftLineAbove = $(leftLine).position().top < $(rightLine).position().top;
+
+      if (leftLineAbove) {
+        firstHighlightedLine = leftLine;
+      } else {
+        firstHighlightedLine = rightLine;
+      }
+
+      let fromTr = $(`#${diffId}-from tr`).first();
+      let fromLn = $(fromTr).children('.hljs-ln-line').data('line-number');
+      let toTr = $(`#${diffId}-to tr`).first();
+      let toLn = $(toTr).children('.hljs-ln-line').data('line-number');
+      let canHighlight = false;
+
+      while (true) {
+        if (leftLineAbove && fromLn === left) {
+          canHighlight = true;
+        } else if (!leftLineAbove && toLn === right) {
+          canHighlight = true;
+        }
+
+        if (canHighlight && fromLn) {
+          highlightDiffLine(`${diffId}-from`, fromLn);
+        }
+
+        if (canHighlight && toLn) {
+          highlightDiffLine(`${diffId}-to`, toLn);
+        }
+
+        if ((leftLineAbove && toLn === right) || (!leftLineAbove && fromLn === left)) {
+          break;
+        }
+
+        fromTr = $(fromTr).next();
+        fromLn = $(fromTr).children('.hljs-ln-line').data('line-number');
+        toTr = $(toTr).next();
+        toLn = $(toTr).children('.hljs-ln-line').data('line-number');
+      }
+
+    }
+  }
+
+  let selectedLinesFragment = selectedDiffLinesToFragment(startLines, endLines, unified);
+  window.location.hash = `diff_${diffId}+${selectedLinesFragment}`;
+  return firstHighlightedLine;
+}
+
+// callback to switch from side-by-side diff to unified one
+export function showUnifiedDiff(diffId) {
+  $(`#${diffId}-split-diff`).css('display', 'none');
+  $(`#${diffId}-unified-diff`).css('display', 'block');
+}
+
+// callback to switch from unified diff to side-by-side one
+export function showSplitDiff(diffId) {
+  $(`#${diffId}-unified-diff`).css('display', 'none');
+  $(`#${diffId}-split-diff`).css('display', 'block');
+}
+
 // to compute diff and process it for display
 export function computeDiff(diffUrl, diffId) {
 
@@ -104,6 +314,12 @@ export function computeDiff(diffUrl, diffId) {
   // it no forced computation and diff already computed, do nothing
   if (!force && computedDiffs.hasOwnProperty(diffId)) {
     return;
+  }
+
+  function setLineNumbers(lnElt, lineNumbers) {
+    $(lnElt).attr('data-line-number', lineNumbers || '');
+    $(lnElt).children().attr('data-line-number', lineNumbers || '');
+    $(lnElt).siblings().attr('data-line-number', lineNumbers || '');
   }
 
   // mark diff computation as already requested
@@ -149,175 +365,179 @@ export function computeDiff(diffUrl, diffId) {
         // code highlighting for unified diff
         $(`#${diffId}`).each((i, block) => {
           hljs.highlightBlock(block);
-          hljs.lineNumbersBlock(block);
+          hljs.lineNumbersBlockSync(block);
         });
 
-        // hljs.lineNumbersBlock is asynchronous so we have to postpone our
-        // next treatments by adding it at the end of the current js events queue
-        setTimeout(() => {
+        // process unified diff lines in order to generate side-by-side diffs text
+        // but also compute line numbers for unified and side-by-side diffs
+        let baseFromLine = '';
+        let baseToLine = '';
+        let fromToLines = [];
+        let fromLines = [];
+        let toLines = [];
+        let maxNumberChars = 0;
+        let diffFromStr = '';
+        let diffToStr = '';
+        let linesOffset = 0;
 
-          // process unified diff lines in order to generate side-by-side diffs text
-          // but also compute line numbers for unified and side-by-side diffs
-          let baseFromLine = '';
-          let baseToLine = '';
-          let fromToLines = [];
-          let fromLines = [];
-          let toLines = [];
-          let maxNumberChars = 0;
-          let diffFromStr = '';
-          let diffToStr = '';
-          let linesOffset = 0;
-
-          $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-            let lnText = lnElt.nextSibling.innerText;
-            let linesInfo = parseDiffHunkRangeIfAny(lnText);
-            let fromLine = '';
-            let toLine = '';
-            // parsed lines info from the diff output
-            if (linesInfo) {
-              baseFromLine = linesInfo[0];
-              baseToLine = linesInfo[1];
-              linesOffset = 0;
-              diffFromStr += (lnText + '\n');
-              diffToStr += (lnText + '\n');
-              fromLines.push('');
-              toLines.push('');
-            // line removed in the from file
-            } else if (lnText.length > 0 && lnText[0] === '-') {
-              baseFromLine = baseFromLine + 1;
-              fromLine = baseFromLine.toString();
-              fromLines.push(fromLine);
-              ++nbDeletions;
-              diffFromStr += (lnText + '\n');
-              ++linesOffset;
-            // line added in the to file
-            } else if (lnText.length > 0 && lnText[0] === '+') {
-              baseToLine = baseToLine + 1;
-              toLine = baseToLine.toString();
-              toLines.push(toLine);
-              ++nbAdditions;
-              diffToStr += (lnText + '\n');
-              --linesOffset;
-            // line present in both files
-            } else {
-              baseFromLine = baseFromLine + 1;
-              baseToLine = baseToLine + 1;
-              fromLine = baseFromLine.toString();
-              toLine = baseToLine.toString();
-              for (let j = 0; j < Math.abs(linesOffset); ++j) {
-                if (linesOffset > 0) {
-                  diffToStr += '\n';
-                  toLines.push('');
-                } else {
-                  diffFromStr += '\n';
-                  fromLines.push('');
-                }
+        $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
+          let lnText = lnElt.nextSibling.innerText;
+          let linesInfo = parseDiffHunkRangeIfAny(lnText);
+          let fromLine = '';
+          let toLine = '';
+          // parsed lines info from the diff output
+          if (linesInfo) {
+            baseFromLine = linesInfo[0];
+            baseToLine = linesInfo[1];
+            linesOffset = 0;
+            diffFromStr += (lnText + '\n');
+            diffToStr += (lnText + '\n');
+            fromLines.push('');
+            toLines.push('');
+          // line removed in the from file
+          } else if (lnText.length > 0 && lnText[0] === '-') {
+            baseFromLine = baseFromLine + 1;
+            fromLine = baseFromLine.toString();
+            fromLines.push(fromLine);
+            ++nbDeletions;
+            diffFromStr += (lnText + '\n');
+            ++linesOffset;
+          // line added in the to file
+          } else if (lnText.length > 0 && lnText[0] === '+') {
+            baseToLine = baseToLine + 1;
+            toLine = baseToLine.toString();
+            toLines.push(toLine);
+            ++nbAdditions;
+            diffToStr += (lnText + '\n');
+            --linesOffset;
+          // line present in both files
+          } else {
+            baseFromLine = baseFromLine + 1;
+            baseToLine = baseToLine + 1;
+            fromLine = baseFromLine.toString();
+            toLine = baseToLine.toString();
+            for (let j = 0; j < Math.abs(linesOffset); ++j) {
+              if (linesOffset > 0) {
+                diffToStr += '\n';
+                toLines.push('');
+              } else {
+                diffFromStr += '\n';
+                fromLines.push('');
               }
-              linesOffset = 0;
-              diffFromStr += (lnText + '\n');
-              diffToStr += (lnText + '\n');
-              toLines.push(toLine);
-              fromLines.push(fromLine);
             }
-            if (!baseFromLine) {
-              fromLine = '';
-            }
-            if (!baseToLine) {
-              toLine = '';
-            }
-            fromToLines[i] = [fromLine, toLine];
-            maxNumberChars = Math.max(maxNumberChars, fromLine.length);
-            maxNumberChars = Math.max(maxNumberChars, toLine.length);
-          });
-
-          // set side-by-side diffs text
-          $(`#${diffId}-from`).text(diffFromStr);
-          $(`#${diffId}-to`).text(diffToStr);
-
-          // code highlighting for side-by-side diffs
-          $(`#${diffId}-from, #${diffId}-to`).each((i, block) => {
-            hljs.highlightBlock(block);
-            hljs.lineNumbersBlock(block);
-          });
-
-          // hljs.lineNumbersBlock is asynchronous so we have to postpone our
-          // next treatments by adding it at the end of the current js events queue
-          setTimeout(() => {
-            // diff highlighting for added/removed lines on top of code highlighting
-            $(`.${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-              let lnText = lnElt.nextSibling.innerText;
-              if (lnText.startsWith('@@')) {
-                $(lnElt).parent().addClass('swh-diff-lines-info');
-                let linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').children().remove();
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text('');
-                $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').append(`<span class="hljs-meta">${linesInfoText}</span>`);
-              } else if (lnText.length > 0 && lnText[0] === '-') {
-                $(lnElt).parent().addClass('swh-diff-removed-line');
-              } else if (lnText.length > 0 && lnText[0] === '+') {
-                $(lnElt).parent().addClass('swh-diff-added-line');
-              }
-            });
-
-            // set line numbers for unified diff
-            $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
-                'data-line-number',
-                formatDiffLineNumbers(fromToLines[i][0], fromToLines[i][1],
-                                      maxNumberChars));
-            });
-
-            // set line numbers for the from side-by-side diff
-            $(`#${diffId}-from .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
-                'data-line-number',
-                formatDiffLineNumbers(fromLines[i], null,
-                                      maxNumberChars));
-            });
-
-            // set line numbers for the to side-by-side diff
-            $(`#${diffId}-to .hljs-ln-numbers`).each((i, lnElt) => {
-              $(lnElt).children().attr(
-                'data-line-number',
-                formatDiffLineNumbers(null, toLines[i],
-                                      maxNumberChars));
-            });
-
-            // last processing:
-            //  - remove the '+' and '-' at the beginning of the diff lines
-            //    from code highlighting
-            //  - add the "no new line at end of file marker" if needed
-            $(`.${diffId} .hljs-ln-code`).each((i, lnElt) => {
-              if (lnElt.firstChild) {
-                if (lnElt.firstChild.nodeName !== '#text') {
-                  let lineText = lnElt.firstChild.innerHTML;
-                  if (lineText[0] === '-' || lineText[0] === '+') {
-                    lnElt.firstChild.innerHTML = lineText.substr(1);
-                    let newTextNode = document.createTextNode(lineText[0]);
-                    $(lnElt).prepend(newTextNode);
-                  }
-                }
-                $(lnElt).contents().filter((i, elt) => {
-                  return elt.nodeType === 3; // Node.TEXT_NODE
-                }).each((i, textNode) => {
-                  let swhNoNewLineMarker = '[swh-no-nl-marker]';
-                  if (textNode.textContent.indexOf(swhNoNewLineMarker) !== -1) {
-                    textNode.textContent = textNode.textContent.replace(swhNoNewLineMarker, '');
-                    $(lnElt).append($(noNewLineMarker));
-                  }
-                });
-              }
-            });
-
-            // hide the diff mode switch button in case of not generated diffs
-            if (data.diff_str.indexOf('Diffs are not generated for non textual content') !== 0) {
-              $(`#panel_${diffId} .diff-styles`).css('visibility', 'visible');
-            }
-
-            setDiffVisible(diffId);
-
-          });
+            linesOffset = 0;
+            diffFromStr += (lnText + '\n');
+            diffToStr += (lnText + '\n');
+            toLines.push(toLine);
+            fromLines.push(fromLine);
+          }
+          if (!baseFromLine) {
+            fromLine = '';
+          }
+          if (!baseToLine) {
+            toLine = '';
+          }
+          fromToLines[i] = [fromLine, toLine];
+          maxNumberChars = Math.max(maxNumberChars, fromLine.length);
+          maxNumberChars = Math.max(maxNumberChars, toLine.length);
         });
+
+        diffMaxNumberChars[diffId] = maxNumberChars;
+
+        // set side-by-side diffs text
+        $(`#${diffId}-from`).text(diffFromStr);
+        $(`#${diffId}-to`).text(diffToStr);
+
+        // code highlighting for side-by-side diffs
+        $(`#${diffId}-from, #${diffId}-to`).each((i, block) => {
+          hljs.highlightBlock(block);
+          hljs.lineNumbersBlockSync(block);
+        });
+
+        // diff highlighting for added/removed lines on top of code highlighting
+        $(`.${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
+          let lnText = lnElt.nextSibling.innerText;
+          if (lnText.startsWith('@@')) {
+            $(lnElt).parent().addClass('swh-diff-lines-info');
+            let linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
+            $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').children().remove();
+            $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text('');
+            $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').append(`<span class="hljs-meta">${linesInfoText}</span>`);
+          } else if (lnText.length > 0 && lnText[0] === '-') {
+            $(lnElt).parent().addClass('swh-diff-removed-line');
+          } else if (lnText.length > 0 && lnText[0] === '+') {
+            $(lnElt).parent().addClass('swh-diff-added-line');
+          }
+        });
+
+        // set line numbers for unified diff
+        $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
+          const lineNumbers = formatDiffLineNumbers(diffId, fromToLines[i][0], fromToLines[i][1]);
+          setLineNumbers(lnElt, lineNumbers);
+        });
+
+        // set line numbers for the from side-by-side diff
+        $(`#${diffId}-from .hljs-ln-numbers`).each((i, lnElt) => {
+          setLineNumbers(lnElt, fromLines[i]);
+        });
+
+        // set line numbers for the to side-by-side diff
+        $(`#${diffId}-to .hljs-ln-numbers`).each((i, lnElt) => {
+          setLineNumbers(lnElt, toLines[i]);
+        });
+
+        // last processing:
+        //  - remove the '+' and '-' at the beginning of the diff lines
+        //    from code highlighting
+        //  - add the "no new line at end of file marker" if needed
+        $(`.${diffId} .hljs-ln-code`).each((i, lnElt) => {
+          if (lnElt.firstChild) {
+            if (lnElt.firstChild.nodeName !== '#text') {
+              let lineText = lnElt.firstChild.innerHTML;
+              if (lineText[0] === '-' || lineText[0] === '+') {
+                lnElt.firstChild.innerHTML = lineText.substr(1);
+                let newTextNode = document.createTextNode(lineText[0]);
+                $(lnElt).prepend(newTextNode);
+              }
+            }
+            $(lnElt).contents().filter((i, elt) => {
+              return elt.nodeType === 3; // Node.TEXT_NODE
+            }).each((i, textNode) => {
+              let swhNoNewLineMarker = '[swh-no-nl-marker]';
+              if (textNode.textContent.indexOf(swhNoNewLineMarker) !== -1) {
+                textNode.textContent = textNode.textContent.replace(swhNoNewLineMarker, '');
+                $(lnElt).append($(noNewLineMarker));
+              }
+            });
+          }
+        });
+
+        // hide the diff mode switch button in case of not generated diffs
+        if (data.diff_str.indexOf('Diffs are not generated for non textual content') !== 0) {
+          $(`#diff_${diffId} .diff-styles`).css('visibility', 'visible');
+        }
+
+        setDiffVisible(diffId);
+
+        // highlight diff lines if provided in URL fragment
+        if (selectedDiffLinesInfo &&
+              selectedDiffLinesInfo.diffPanelId.indexOf(diffId) !== -1) {
+          if (!selectedDiffLinesInfo.unified) {
+            showSplitDiff(diffId);
+          }
+          const firstHighlightedLine = highlightDiffLines(
+            diffId, selectedDiffLinesInfo.startLines,
+            selectedDiffLinesInfo.endLines, selectedDiffLinesInfo.unified);
+
+          $('html, body').animate(
+            {
+              scrollTop: firstHighlightedLine.offset().top - 50
+            },
+            {
+              duration: 500
+            }
+          );
+        }
       }
     });
 }
@@ -341,7 +561,7 @@ function setDiffVisible(diffId) {
 function computeVisibleDiffs() {
   $('.swh-file-diff-panel').each((i, elt) => {
     if (isInViewport(elt)) {
-      let diffId = elt.id.replace('panel_', '');
+      let diffId = elt.id.replace('diff_', '');
       computeDiff(diffsUrls[diffId], diffId);
     }
   });
@@ -352,44 +572,11 @@ function genDiffPanel(diffData) {
   if (diffData.type === 'rename') {
     diffPanelTitle = `${diffData.from_path} &rarr; ${diffData.to_path}`;
   }
-  let diffPanelHtml =
-  `<div id="panel_${diffData.id}" class="card swh-file-diff-panel">
-    <div class="card-header bg-gray-light border-bottom-0">
-      <a data-toggle="collapse" href="#panel_${diffData.id}_content">
-        <div class="float-left swh-title-color">
-          <strong>${diffPanelTitle}</strong>
-        </div>
-      </a>
-      <div class="ml-auto float-right">
-        <div class="btn-group btn-group-toggle diff-styles" data-toggle="buttons" style="visibility: hidden;">
-          <label class="btn btn-default btn-sm form-check-label active unified-diff-button" onclick="swh.revision.showUnifiedDiff(event, '${diffData.id}')">
-            <input type="radio" name="diffs-switch" id="unified" autocomplete="off" checked> Unified
-          </label>
-          <label class="btn btn-default btn-sm form-check-label splitted-diff-button" onclick="swh.revision.showSplittedDiff(event, '${diffData.id}')">
-            <input type="radio" name="diffs-switch" id="side-by-side" autocomplete="off"> Side-by-side
-          </label>
-        </div>
-        <a href="${diffData.content_url}" class="btn btn-default btn-sm" role="button">View file</a>
-      </div>
-      <div class="clearfix"></div>
-    </div>
-    <div id="panel_${diffData.id}_content" class="collapse show">
-      <div class="swh-diff-loading text-center" id="${diffData.id}-loading" style="visibility: hidden;">
-        <img src=${swhSpinnerSrc}></img>
-        <p>Loading diff ...</p>
-      </div>
-      <div class="highlightjs swh-content" style="display: none;" id="${diffData.id}-highlightjs">
-        <div id="${diffData.id}-unified-diff">
-          <pre><code class="${diffData.id}" id="${diffData.id}"></code></pre>
-        </div>
-        <div style="width: 100%; display: none;" id="${diffData.id}-splitted-diff">
-          <pre class="float-left" style="width: 50%;"><code class="${diffData.id}" id="${diffData.id}-from"></code></pre>
-          <pre style="width: 50%"><code class="${diffData.id}" id="${diffData.id}-to"></code></pre>
-        </div>
-      </div>
-    </div>
-  </div>`;
-  return diffPanelHtml;
+  return diffPanelTemplate({
+    diffData: diffData,
+    diffPanelTitle: diffPanelTitle,
+    swhSpinnerSrc: swhSpinnerSrc
+  });
 }
 
 // setup waypoints to request diffs computation on the fly while scrolling
@@ -399,10 +586,10 @@ function setupWaypoints() {
 
     // create a waypoint that will trigger diff computation when
     // the top of the diff panel hits the bottom of the viewport
-    $(`#panel_${diffData.id}`).waypoint({
+    $(`#diff_${diffData.id}`).waypoint({
       handler: function() {
         if (isInViewport(this.element)) {
-          let diffId = this.element.id.replace('panel_', '');
+          let diffId = this.element.id.replace('diff_', '');
           computeDiff(diffsUrls[diffId], diffId);
           this.destroy();
         }
@@ -412,10 +599,10 @@ function setupWaypoints() {
 
     // create a waypoint that will trigger diff computation when
     // the bottom of the diff panel hits the top of the viewport
-    $(`#panel_${diffData.id}`).waypoint({
+    $(`#diff_${diffData.id}`).waypoint({
       handler: function() {
         if (isInViewport(this.element)) {
-          let diffId = this.element.id.replace('panel_', '');
+          let diffId = this.element.id.replace('diff_', '');
           computeDiff(diffsUrls[diffId], diffId);
           this.destroy();
         }
@@ -428,16 +615,28 @@ function setupWaypoints() {
   Waypoint.refreshAll();
 }
 
-// callback to switch from side-by-side diff to unified one
-export function showUnifiedDiff(event, diffId) {
-  $(`#${diffId}-splitted-diff`).css('display', 'none');
-  $(`#${diffId}-unified-diff`).css('display', 'block');
-}
+function scrollToDiffPanel(diffPanelId, setHash = true) {
+  // disable waypoints while scrolling as we do not want to
+  // launch computation of diffs the user is not interested in
+  // (file changes list can be large)
+  Waypoint.disableAll();
 
-// callback to switch from unified diff to side-by-side one
-export function showSplittedDiff(event, diffId) {
-  $(`#${diffId}-unified-diff`).css('display', 'none');
-  $(`#${diffId}-splitted-diff`).css('display', 'block');
+  $('html, body').animate(
+    {
+      scrollTop: $(diffPanelId).offset().top
+    },
+    {
+      duration: 500,
+      complete: () => {
+        if (setHash) {
+          window.location.hash = diffPanelId;
+        }
+        // enable waypoints back after scrolling
+        Waypoint.enableAll();
+        // compute diffs visible in the viewport
+        computeVisibleDiffs();
+      }
+    });
 }
 
 // callback when the user clicks on the 'Compute all diffs' button
@@ -499,6 +698,11 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
 
           setupWaypoints();
           computeVisibleDiffs();
+
+          if (selectedDiffLinesInfo) {
+            scrollToDiffPanel(selectedDiffLinesInfo.diffPanelId, false);
+          }
+
         });
     } else if (e.currentTarget.text.trim() === 'Files') {
       $('#readme-panel').css('display', 'block');
@@ -513,33 +717,58 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
       $('#swh-collapse-revision-message').attr('data-toggle', '');
     }
 
-    let $root = $('html, body');
-
     // callback when the user requests to scroll on a specific diff or back to top
     $('#swh-revision-changes-list a[href^="#"], #back-to-top a[href^="#"]').click(e => {
       let href = $.attr(e.currentTarget, 'href');
-      // disable waypoints while scrolling as we do not want to
-      // launch computation of diffs the user is not interested in
-      // (file changes list can be large)
-      Waypoint.disableAll();
-
-      $root.animate(
-        {
-          scrollTop: $(href).offset().top
-        },
-        {
-          duration: 500,
-          complete: () => {
-            window.location.hash = href;
-            // enable waypoints back after scrolling
-            Waypoint.enableAll();
-            // compute diffs visible in the viewport
-            computeVisibleDiffs();
-          }
-        });
-
+      scrollToDiffPanel(href);
       return false;
     });
+
+    // click callback for highlighting diff lines
+    $('body').click(evt => {
+      if (evt.target.classList.contains('hljs-ln-n')) {
+
+        const diffId = $(evt.target).closest('code').prop('id');
+
+        const from = diffId.indexOf('-from') !== -1;
+        const to = diffId.indexOf('-to') !== -1;
+
+        const lineNumbers = $(evt.target).data('line-number').toString();
+
+        const currentDiff = diffId.replace('-from', '').replace('-to', '');
+        if (!evt.shiftKey || currentDiff !== focusedDiff || !lineNumbers.trim()) {
+          resetHighlightedDiffLines();
+          focusedDiff = currentDiff;
+        }
+        if (currentDiff === focusedDiff && lineNumbers.trim()) {
+          if (!evt.shiftKey) {
+            startLines = parseDiffLineNumbers(lineNumbers, from, to);
+            highlightDiffLines(currentDiff, startLines, startLines, !from && !to);
+          } else if (startLines) {
+            resetHighlightedDiffLines(false);
+            endLines = parseDiffLineNumbers(lineNumbers, from, to);
+            highlightDiffLines(currentDiff, startLines, endLines, !from && !to);
+          }
+        }
+
+      } else {
+        resetHighlightedDiffLines();
+      }
+    });
+
+    // if an URL fragment for highlighting a diff is present
+    // parse highlighting info and initiate diff loading
+    const fragment = window.location.hash;
+    if (fragment) {
+      const split = fragment.split('+');
+      if (split.length === 2) {
+        selectedDiffLinesInfo = fragmentToSelectedDiffLines(split[1]);
+        if (selectedDiffLinesInfo) {
+          selectedDiffLinesInfo.diffPanelId = split[0];
+          $('.nav-tabs a[href="#swh-revision-changes"]').tab('show');
+        }
+      }
+    }
 
   });
 

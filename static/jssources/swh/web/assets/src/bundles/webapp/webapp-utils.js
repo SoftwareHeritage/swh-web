@@ -201,22 +201,30 @@ export function initHomePage() {
     fetch(Urls.stat_counters())
       .then(response => response.json())
       .then(data => {
-        if (data.stat_counters.content) {
-          $('#swh-contents-count').html(data.stat_counters.content.toLocaleString());
-          $('#swh-revisions-count').html(data.stat_counters.revision.toLocaleString());
-          $('#swh-origins-count').html(data.stat_counters.origin.toLocaleString());
-          $('#swh-directories-count').html(data.stat_counters.directory.toLocaleString());
-          $('#swh-persons-count').html(data.stat_counters.person.toLocaleString());
-          $('#swh-releases-count').html(data.stat_counters.release.toLocaleString());
-        }
-        if (data.stat_counters_history.content) {
-          swh.webapp.drawHistoryCounterGraph('#swh-contents-count-history', data.stat_counters_history.content);
-          swh.webapp.drawHistoryCounterGraph('#swh-revisions-count-history', data.stat_counters_history.revision);
-          swh.webapp.drawHistoryCounterGraph('#swh-origins-count-history', data.stat_counters_history.origin);
+        if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
+          for (let objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
+            const count = data.stat_counters[objectType];
+            if (count !== undefined) {
+              $(`#swh-${objectType}-count`).html(count.toLocaleString());
+            } else {
+              $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
+            }
+          }
         } else {
-          $('#swh-contents-count-history').hide();
-          $('#swh-revisions-count-history').hide();
-          $('#swh-origins-count-history').hide();
+          $('.swh-counter').html('0');
+        }
+        if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
+          for (let objectType of ['content', 'revision', 'origin']) {
+            const history = data.stat_counters_history[objectType];
+            if (history) {
+              swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
+            } else {
+              $(`#swh-${objectType}-count-history`).hide();
+            }
+
+          }
+        } else {
+          $('.swh-counter-history').hide();
         }
       });
   });

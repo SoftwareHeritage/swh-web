@@ -197,6 +197,18 @@ module.exports = {
             }
           }]
       },
+      {
+        test: /\.ejs$/,
+        use: [{
+          loader: 'ejs-compiled-loader',
+          options: {
+            htmlmin: true,
+            htmlminOptions: {
+              removeComments: true
+            }
+          }
+        }]
+      },
       // expose jquery to the global context as $ and jQuery when importing it
       {
         test: require.resolve('jquery'),
