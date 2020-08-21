@@ -9,6 +9,7 @@ import traceback
 from django.utils.html import escape
 
 from rest_framework.response import Response
+from rest_framework.utils.encoders import JSONEncoder
 
 from swh.storage.exc import StorageDBError, StorageAPIError
 
@@ -129,7 +130,9 @@ def make_api_response(request, data, doc_data={}, options={}):
     if request.accepted_media_type == "text/html":
 
         if data:
-            data = json.dumps(data, sort_keys=True, indent=4, separators=(",", ": "))
+            data = json.dumps(
+                data, cls=JSONEncoder, sort_keys=True, indent=4, separators=(",", ": ")
+            )
         doc_env["response_data"] = data
         doc_env["heading"] = shorten_path(str(request.path))
 
