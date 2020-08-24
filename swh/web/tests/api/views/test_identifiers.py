@@ -7,6 +7,7 @@ from hypothesis import given
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 
+from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
@@ -26,18 +27,18 @@ from swh.web.tests.strategies import (
 
 @given(origin(), content(), directory(), release(), revision(), snapshot())
 def test_swhid_resolve_success(
-    api_client, origin, content, directory, release, revision, snapshot
+    api_client, client, origin, content, directory, release, revision, snapshot
 ):
 
-    for obj_type_short, obj_type, obj_id in (
-        ("cnt", CONTENT, content["sha1_git"]),
-        ("dir", DIRECTORY, directory),
-        ("rel", RELEASE, release),
-        ("rev", REVISION, revision),
-        ("snp", SNAPSHOT, snapshot),
+    for obj_type, obj_id in (
+        (CONTENT, content["sha1_git"]),
+        (DIRECTORY, directory),
+        (RELEASE, release),
+        (REVISION, revision),
+        (SNAPSHOT, snapshot),
     ):
 
-        swhid = "swh:1:%s:%s;origin=%s" % (obj_type_short, obj_id, origin["url"])
+        swhid = gen_swhid(obj_type, obj_id, metadata={"origin": origin["url"]})
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
         resp = api_client.get(url)
@@ -68,6 +69,11 @@ def test_swhid_resolve_success(
         assert resp.status_code == 200, resp.data
         assert resp.data == expected_result
 
+        # also checks endpoint documented view
+        # TODO: remove that check once T2529 is implemented
+        resp = client.get(url, HTTP_ACCEPT="text/html")
+        assert resp.status_code == 200, resp.content
+
 
 def test_swhid_resolve_invalid(api_client):
     rev_id_invalid = "96db9023b8_foo_50d6c108e9a3"
@@ -95,15 +101,15 @@ def test_swhid_resolve_not_found(
     unknown_snapshot,
 ):
 
-    for obj_type_short, obj_id in (
-        ("cnt", unknown_content["sha1_git"]),
-        ("dir", unknown_directory),
-        ("rel", unknown_release),
-        ("rev", unknown_revision),
-        ("snp", unknown_snapshot),
+    for obj_type, obj_id in (
+        (CONTENT, unknown_content["sha1_git"]),
+        (DIRECTORY, unknown_directory),
+        (RELEASE, unknown_release),
+        (REVISION, unknown_revision),
+        (SNAPSHOT, unknown_snapshot),
     ):
 
-        swhid = "swh:1:%s:%s" % (obj_type_short, obj_id)
+        swhid = gen_swhid(obj_type, obj_id)
 
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
@@ -121,11 +127,11 @@ def test_swh_origin_id_not_resolvable(api_client):
 
 @given(content(), directory())
 def test_api_known_swhid_some_present(api_client, content, directory):
-    content_ = "swh:1:cnt:%s" % content["sha1_git"]
-    directory_ = "swh:1:dir:%s" % directory
-    unknown_revision_ = "swh:1:rev:%s" % random_sha1()
-    unknown_release_ = "swh:1:rel:%s" % random_sha1()
-    unknown_snapshot_ = "swh:1:snp:%s" % random_sha1()
+    content_ = gen_swhid(CONTENT, content["sha1_git"])
+    directory_ = gen_swhid(DIRECTORY, directory)
+    unknown_revision_ = gen_swhid(REVISION, random_sha1())
+    unknown_release_ = gen_swhid(RELEASE, random_sha1())
+    unknown_snapshot_ = gen_swhid(SNAPSHOT, random_sha1())
 
     input_swhids = [
         content_,
