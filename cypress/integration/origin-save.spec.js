@@ -174,7 +174,7 @@ describe('Origin Save Tests', function() {
         let html = '';
         if (saveStatus === 'succeed') {
           let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${this.originSaveJSON.data[i].origin_url}`;
-          browseOriginUrl += `&amp;timestamp=${this.originSaveJSON.data[i].visit_date}`;
+          browseOriginUrl += `&amp;timestamp=${encodeURIComponent(this.originSaveJSON.data[i].visit_date)}`;
           html += `<a href="${browseOriginUrl}">${this.originSaveJSON.data[i].origin_url}</a>`;
         } else {
           html += this.originSaveJSON.data[i].origin_url;

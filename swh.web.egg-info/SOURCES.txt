@@ -219,9 +219,9 @@ static/js/pdfjs.792e493d3ff2c83984ca.js.map
 static/js/revision.5e00d2e35ece0292b5d0.js
 static/js/revision.5e00d2e35ece0292b5d0.js.LICENSE.txt
 static/js/revision.5e00d2e35ece0292b5d0.js.map
-static/js/save.70a8d093c37fa4b5b9a4.js
-static/js/save.70a8d093c37fa4b5b9a4.js.LICENSE.txt
-static/js/save.70a8d093c37fa4b5b9a4.js.map
+static/js/save.e8e2eae3ed58e144c993.js
+static/js/save.e8e2eae3ed58e144c993.js.LICENSE.txt
+static/js/save.e8e2eae3ed58e144c993.js.map
 static/js/showdown.0c06f93b3772c7e73003.js
 static/js/showdown.0c06f93b3772c7e73003.js.LICENSE.txt
 static/js/showdown.0c06f93b3772c7e73003.js.map
