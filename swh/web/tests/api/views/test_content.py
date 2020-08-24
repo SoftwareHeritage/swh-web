@@ -8,6 +8,7 @@ import pytest
 from hypothesis import given
 
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.data import random_content
 from swh.web.tests.strategies import content, contents_with_ctags
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
@@ -19,10 +20,8 @@ def test_api_content_filetype(api_client, indexer_data, content):
     url = reverse(
         "api-1-content-filetype", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     content_url = reverse(
         "api-1-content",
         url_args={"q": "sha1:%s" % content["sha1"]},
@@ -39,10 +38,8 @@ def test_api_content_filetype_sha_not_found(api_client):
     url = reverse(
         "api-1-content-filetype", url_args={"q": "sha1:%s" % unknown_content_["sha1"]}
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=404)
 
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "No filetype information found for content "
@@ -57,10 +54,8 @@ def test_api_content_language(api_client, indexer_data, content):
     url = reverse(
         "api-1-content-language", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     content_url = reverse(
         "api-1-content",
         url_args={"q": "sha1:%s" % content["sha1"]},
@@ -77,10 +72,7 @@ def test_api_content_language_sha_not_found(api_client):
     url = reverse(
         "api-1-content-language", url_args={"q": "sha1:%s" % unknown_content_["sha1"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "No language information found for content "
@@ -106,10 +98,8 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
         url_args={"q": contents_with_ctags["symbol_name"]},
         query_params={"per_page": 100},
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     for entry in rv.data:
         content_sha1 = entry["sha1"]
         expected_entry = expected_data[content_sha1]
@@ -135,7 +125,8 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
         url_args={"q": contents_with_ctags["symbol_name"]},
         query_params={"per_page": 2},
     )
-    rv = api_client.get(url)
+
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     next_url = (
         reverse(
@@ -150,10 +141,7 @@ def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
 
 def test_api_content_symbol_not_found(api_client):
     url = reverse("api-1-content-symbol", url_args={"q": "bar"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "No indexed raw content match expression 'bar'.",
@@ -170,10 +158,7 @@ def test_api_content_ctags(api_client, indexer_data, content):
     url = reverse(
         "api-1-content-ctags", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     content_url = reverse(
         "api-1-content",
         url_args={"q": "sha1:%s" % content["sha1"]},
@@ -192,10 +177,7 @@ def test_api_content_license(api_client, indexer_data, content):
     url = reverse(
         "api-1-content-license", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     content_url = reverse(
         "api-1-content",
         url_args={"q": "sha1:%s" % content["sha1"]},
@@ -212,10 +194,7 @@ def test_api_content_license_sha_not_found(api_client):
     url = reverse(
         "api-1-content-license", url_args={"q": "sha1:%s" % unknown_content_["sha1"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "No license information found for content "
@@ -226,10 +205,7 @@ def test_api_content_license_sha_not_found(api_client):
 @given(content())
 def test_api_content_metadata(api_client, archive_data, content):
     url = reverse("api-1-content", {"q": "sha1:%s" % content["sha1"]})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     expected_data = archive_data.content_get(content["sha1"])
     for key, view_name in (
         ("data_url", "api-1-content-raw"),
@@ -245,35 +221,15 @@ def test_api_content_metadata(api_client, archive_data, content):
     assert rv.data == expected_data
 
 
-def test_api_content_not_found_as_json(api_client):
+def test_api_content_not_found(api_client):
     unknown_content_ = random_content()
 
     url = reverse("api-1-content", url_args={"q": "sha1:%s" % unknown_content_["sha1"]})
-    rv = api_client.get(url)
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Content with sha1 checksum equals to %s not found!"
         % unknown_content_["sha1"],
-    }
-
-
-def test_api_content_not_found_as_yaml(api_client):
-    unknown_content_ = random_content()
-
-    url = reverse(
-        "api-1-content", url_args={"q": "sha256:%s" % unknown_content_["sha256"]}
-    )
-    rv = api_client.get(url, HTTP_ACCEPT="application/yaml")
-
-    assert rv.status_code == 404, rv.data
-    assert "application/yaml" in rv["Content-Type"]
-
-    assert rv.data == {
-        "exception": "NotFoundExc",
-        "reason": "Content with sha256 checksum equals to %s not found!"
-        % unknown_content_["sha256"],
     }
 
 
@@ -283,10 +239,7 @@ def test_api_content_raw_ko_not_found(api_client):
     url = reverse(
         "api-1-content-raw", url_args={"q": "sha1:%s" % unknown_content_["sha1"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Content with sha1 checksum equals to %s not found!"
@@ -331,11 +284,7 @@ def test_api_content_raw_text_with_filename(api_client, archive_data, content):
 @given(content())
 def test_api_check_content_known(api_client, content):
     url = reverse("api-1-content-known", url_args={"q": content["sha1"]})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
-
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == {
         "search_res": [{"found": True, "sha1": content["sha1"]}],
         "search_stats": {"nbfiles": 1, "pct": 100.0},
@@ -343,28 +292,12 @@ def test_api_check_content_known(api_client, content):
 
 
 @given(content())
-def test_api_check_content_known_as_yaml(api_client, content):
-    url = reverse("api-1-content-known", url_args={"q": content["sha1"]})
-    rv = api_client.get(url, HTTP_ACCEPT="application/yaml")
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/yaml"
-
-    assert rv.data == {
-        "search_res": [{"found": True, "sha1": content["sha1"]}],
-        "search_stats": {"nbfiles": 1, "pct": 100.0},
-    }
-
-
-@given(content())
-def test_api_check_content_known_post_as_yaml(api_client, content):
+def test_api_check_content_known_post(api_client, content):
     url = reverse("api-1-content-known")
-    rv = api_client.post(
-        url, data={"q": content["sha1"]}, HTTP_ACCEPT="application/yaml"
+    rv = check_api_post_responses(
+        api_client, url, data={"q": content["sha1"]}, status_code=200
     )
 
-    assert rv.status_code == 200, rv.data
-    assert "application/yaml" in rv["Content-Type"]
     assert rv.data == {
         "search_res": [{"found": True, "sha1": content["sha1"]}],
         "search_stats": {"nbfiles": 1, "pct": 100.0},
@@ -375,10 +308,7 @@ def test_api_check_content_known_not_found(api_client):
     unknown_content_ = random_content()
 
     url = reverse("api-1-content-known", url_args={"q": unknown_content_["sha1"]})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == {
         "search_res": [{"found": False, "sha1": unknown_content_["sha1"]}],
         "search_stats": {"nbfiles": 1, "pct": 0.0},

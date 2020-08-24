@@ -11,6 +11,7 @@ from swh.model.hashutil import hash_to_hex
 from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import snapshot, new_snapshot
 
@@ -19,10 +20,7 @@ from swh.web.tests.strategies import snapshot, new_snapshot
 def test_api_snapshot(api_client, archive_data, snapshot):
 
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     expected_data = {**archive_data.snapshot_get(snapshot), "next_branch": None}
     expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
     assert rv.data == expected_data
@@ -53,9 +51,7 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
                 "branches_count": branches_count,
             },
         )
-        rv = api_client.get(url)
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
         expected_data = archive_data.snapshot_get_branches(
             snapshot, branches_from, branches_count
         )
@@ -88,10 +84,7 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
             assert not rv.has_header("Link")
 
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == whole_snapshot
 
 
@@ -112,15 +105,13 @@ def test_api_snapshot_filtered(api_client, archive_data, snapshot):
         url_args={"snapshot_id": snapshot},
         query_params={"target_types": target_type},
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_data = archive_data.snapshot_get_branches(
         snapshot, target_types=target_type
     )
     expected_data = enrich_snapshot(expected_data, rv.wsgi_request)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == expected_data
 
 
@@ -128,12 +119,10 @@ def test_api_snapshot_errors(api_client):
     unknown_snapshot_ = random_sha1()
 
     url = reverse("api-1-snapshot", url_args={"snapshot_id": "63ce369"})
-    rv = api_client.get(url)
-    assert rv.status_code == 400, rv.data
+    check_api_get_responses(api_client, url, status_code=400)
 
     url = reverse("api-1-snapshot", url_args={"snapshot_id": unknown_snapshot_})
-    rv = api_client.get(url)
-    assert rv.status_code == 404, rv.data
+    check_api_get_responses(api_client, url, status_code=404)
 
 
 @given(snapshot())
@@ -161,5 +150,4 @@ def test_api_snapshot_null_branch(api_client, archive_data, new_snapshot):
         break
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snp_id})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
+    check_api_get_responses(api_client, url, status_code=200)

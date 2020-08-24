@@ -15,14 +15,13 @@ from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_REJECTED,
     SAVE_REQUEST_PENDING,
-)
-from swh.web.common.models import (
     SAVE_TASK_NOT_CREATED,
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_FAILED,
     SAVE_TASK_SUCCEED,
 )
+from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 
 pytestmark = pytest.mark.django_db
 
@@ -41,18 +40,14 @@ def test_invalid_visit_type(api_client):
             "origin_url": "https://github.com/torvalds/linux",
         },
     )
-
-    response = api_client.post(url)
-    assert response.status_code == 400
+    check_api_get_responses(api_client, url, status_code=400)
 
 
 def test_invalid_origin_url(api_client):
     url = reverse(
         "api-1-save-origin", url_args={"visit_type": "git", "origin_url": "bar"}
     )
-
-    response = api_client.post(url)
-    assert response.status_code == 400
+    check_api_get_responses(api_client, url, status_code=400)
 
 
 def check_created_save_request_status(
@@ -99,14 +94,13 @@ def check_created_save_request_status(
         ("swh.web.common.origin_save." "_get_visit_info_for_save_request")
     )
     mock_visit_date.return_value = (visit_date, None)
-    response = api_client.post(url)
 
     if expected_request_status != SAVE_REQUEST_REJECTED:
-        assert response.status_code == 200, response.data
+        response = check_api_post_responses(api_client, url, data=None, status_code=200)
         assert response.data["save_request_status"] == expected_request_status
         assert response.data["save_task_status"] == expected_task_status
     else:
-        assert response.status_code == 403, response.data
+        check_api_post_responses(api_client, url, data=None, status_code=403)
 
 
 def check_save_request_status(
@@ -138,8 +132,7 @@ def check_save_request_status(
         ("swh.web.common.origin_save." "_get_visit_info_for_save_request")
     )
     mock_visit_date.return_value = (visit_date, None)
-    response = api_client.get(url)
-    assert response.status_code == 200, response.data
+    response = check_api_get_responses(api_client, url, status_code=200)
     save_request_data = response.data[0]
 
     assert save_request_data["save_request_status"] == expected_request_status
@@ -148,8 +141,7 @@ def check_save_request_status(
     # Check that save task status is still available when
     # the scheduler task has been archived
     mock_scheduler.get_tasks.return_value = []
-    response = api_client.get(url)
-    assert response.status_code == 200
+    response = check_api_get_responses(api_client, url, status_code=200)
     save_request_data = response.data[0]
     assert save_request_data["save_task_status"] == expected_task_status
 
@@ -295,7 +287,8 @@ def test_create_save_request_only_when_needed(api_client, mocker):
     sors = list(
         SaveOriginRequest.objects.filter(visit_type="git", origin_url=origin_url)
     )
-    assert len(sors) == 2
+    # check_api_post_responses sends two POST requests to check YAML and JSON response
+    assert len(sors) == 3
 
     check_created_save_request_status(
         api_client,
@@ -308,7 +301,7 @@ def test_create_save_request_only_when_needed(api_client, mocker):
     sors = list(
         SaveOriginRequest.objects.filter(visit_type="git", origin_url=origin_url)
     )
-    assert len(sors) == 3
+    assert len(sors) == 5
 
 
 def test_get_save_requests_unknown_origin(api_client):
@@ -317,8 +310,7 @@ def test_get_save_requests_unknown_origin(api_client):
         "api-1-save-origin",
         url_args={"visit_type": "git", "origin_url": unknown_origin_url},
     )
-    response = api_client.get(url)
-    assert response.status_code == 404
+    response = check_api_get_responses(api_client, url, status_code=404)
     assert response.data == {
         "exception": "NotFoundExc",
         "reason": (
