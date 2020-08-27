@@ -18,6 +18,7 @@ from swh.web.api.utils import enrich_origin_visit, enrich_origin
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
+from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.strategies import origin, new_origin, visit_dates, new_snapshots
 
 
@@ -55,10 +56,7 @@ def test_api_lookup_origin_visits_raise_error(api_client, mocker):
     mock_get_origin_visits.side_effect = BadInputExc(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 400, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=400)
     assert rv.data == {"exception": "BadInputExc", "reason": err_msg}
 
 
@@ -69,10 +67,7 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_db(api_client, mocker)
     mock_get_origin_visits.side_effect = StorageDBError(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 503, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageDBError",
         "reason": "An unexpected error occurred in the backend: %s" % err_msg,
@@ -86,10 +81,7 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(api_client, mocker
     mock_get_origin_visits.side_effect = StorageAPIError(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 503, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageAPIError",
         "reason": "An unexpected error occurred in the api backend: %s" % err_msg,
@@ -129,10 +121,7 @@ def test_api_lookup_origin_visits(
             query_params={"per_page": 2, "last_visit": last_visit},
         )
 
-        rv = api_client.get(url)
-
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         for i in range(len(expected_visits)):
             expected_visits[i] = enrich_origin_visit(
@@ -177,10 +166,7 @@ def test_api_lookup_origin_visits_by_id(
             query_params={"per_page": 2, "last_visit": last_visit},
         )
 
-        rv = api_client.get(url)
-
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         for i in range(len(expected_visits)):
             expected_visits[i] = enrich_origin_visit(
@@ -217,9 +203,7 @@ def test_api_lookup_origin_visit(
             url_args={"origin_url": new_origin.url, "visit_id": visit_id},
         )
 
-        rv = api_client.get(url)
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         expected_visit = archive_data.origin_visit_get_by(new_origin.url, visit_id)
 
@@ -239,8 +223,7 @@ def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_o
 
     url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
-    rv = api_client.get(url)
-    assert rv.status_code == 404, rv.data
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "No visit for origin %s found" % new_origin.url,
@@ -273,10 +256,7 @@ def test_api_lookup_origin_visit_latest(
 
     url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_visit = archive_data.origin_visit_get_by(new_origin.url, visit_ids[1])
 
@@ -322,10 +302,7 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         query_params={"require_snapshot": True},
     )
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_visit = archive_data.origin_visit_status_get_latest(
         new_origin.url, type="git", require_snapshot=True
@@ -353,10 +330,7 @@ def test_api_lookup_origin_visit_not_found(api_client, origin):
         url_args={"origin_url": origin["url"], "visit_id": max_visit_id + 1},
     )
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Origin %s or its visit with id %s not found!"
@@ -370,10 +344,7 @@ def test_api_origins_wrong_input(api_client, archive_data):
     """
     # fail if wrong input
     url = reverse("api-1-origins", query_params={"origin_from": 1})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 400, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=400)
 
     assert rv.data == {
         "exception": "BadInputExc",
@@ -388,26 +359,19 @@ def test_api_origins(api_client, archive_data):
 
     # Get only one
     url = reverse("api-1-origins", query_params={"origin_count": 1})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} <= origin_urls
 
     # Get all
     url = reverse("api-1-origins", query_params={"origin_count": len(origins)})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == len(origins)
     assert {origin["url"] for origin in rv.data} == origin_urls
 
     # Get "all + 10"
     url = reverse("api-1-origins", query_params={"origin_count": len(origins) + 10})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == len(origins)
     assert {origin["url"] for origin in rv.data} == origin_urls
 
@@ -430,13 +394,10 @@ def test_api_origins_scroll(api_client, archive_data, origin_count):
 def test_api_origin_by_url(api_client, archive_data, origin):
     origin_url = origin["url"]
     url = reverse("api-1-origin", url_args={"origin_url": origin_url})
-    rv = api_client.get(url)
-
+    rv = check_api_get_responses(api_client, url, status_code=200)
     expected_origin = archive_data.origin_get([origin_url])[0]
     expected_origin = enrich_origin(expected_origin, rv.wsgi_request)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == expected_origin
 
 
@@ -444,10 +405,7 @@ def test_api_origin_by_url(api_client, archive_data, origin):
 def test_api_origin_not_found(api_client, new_origin):
 
     url = reverse("api-1-origin", url_args={"origin_url": new_origin.url})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Origin with url %s not found!" % new_origin.url,
@@ -471,9 +429,7 @@ def test_api_origin_search(api_client, mocker, backend):
         url_args={"url_pattern": "github.com"},
         query_params={"limit": 1},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} <= expected_origins
 
@@ -483,9 +439,7 @@ def test_api_origin_search(api_client, mocker, backend):
         url_args={"url_pattern": "github.com"},
         query_params={"limit": 2},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
 
     # Search for 'github.com', get more than available
@@ -494,9 +448,7 @@ def test_api_origin_search(api_client, mocker, backend):
         url_args={"url_pattern": "github.com"},
         query_params={"limit": 10},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
 
 
@@ -516,9 +468,7 @@ def test_api_origin_search_words(api_client, mocker, backend):
         url_args={"url_pattern": "github com"},
         query_params={"limit": 2},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
 
     url = reverse(
@@ -526,9 +476,7 @@ def test_api_origin_search_words(api_client, mocker, backend):
         url_args={"url_pattern": "com github"},
         query_params={"limit": 2},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
 
     url = reverse(
@@ -536,9 +484,7 @@ def test_api_origin_search_words(api_client, mocker, backend):
         url_args={"url_pattern": "memononen libtess2"},
         query_params={"limit": 2},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} == {
         "https://github.com/memononen/libtess2"
@@ -549,9 +495,7 @@ def test_api_origin_search_words(api_client, mocker, backend):
         url_args={"url_pattern": "libtess2 memononen"},
         query_params={"limit": 2},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} == {
         "https://github.com/memononen/libtess2"
@@ -601,9 +545,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
         url_args={"url_pattern": "foobar"},
         query_params={"limit": 1050},
     )
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1000
 
 
@@ -631,10 +573,7 @@ def test_api_origin_metadata_search(api_client, mocker, origin):
     ]
 
     url = reverse("api-1-origin-metadata-search", query_params={"fulltext": "Jane Doe"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.content
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     expected_data = [
         {
             "url": origin["url"],
@@ -683,10 +622,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker, origin):
     ]
 
     url = reverse("api-1-origin-metadata-search", query_params={"fulltext": "Jane Doe"})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.content
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     oimsft.assert_called_with(conjunction=["Jane Doe"], limit=70)
 
@@ -694,10 +630,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker, origin):
         "api-1-origin-metadata-search",
         query_params={"fulltext": "Jane Doe", "limit": 10},
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.content
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     oimsft.assert_called_with(conjunction=["Jane Doe"], limit=10)
 
@@ -705,10 +638,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker, origin):
         "api-1-origin-metadata-search",
         query_params={"fulltext": "Jane Doe", "limit": 987},
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.content
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     oimsft.assert_called_with(conjunction=["Jane Doe"], limit=100)
 
@@ -739,11 +669,10 @@ def test_api_origin_intrinsic_metadata(api_client, mocker, origin):
     url = reverse(
         "api-origin-intrinsic-metadata", url_args={"origin_url": origin["url"]}
     )
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-    oimg.assert_called_once_with([origin["url"]])
-    assert rv.status_code == 200, rv.content
-    assert rv["Content-Type"] == "application/json"
+    oimg.assert_called_with([origin["url"]])
+
     expected_data = {"author": "Jane Doe"}
     assert rv.data == expected_data
 
@@ -751,7 +680,5 @@ def test_api_origin_intrinsic_metadata(api_client, mocker, origin):
 def test_api_origin_metadata_search_invalid(api_client, mocker):
     mock_idx_storage = mocker.patch("swh.web.common.service.idx_storage")
     url = reverse("api-1-origin-metadata-search")
-    rv = api_client.get(url)
-
-    assert rv.status_code == 400, rv.content
+    check_api_get_responses(api_client, url, status_code=400)
     mock_idx_storage.assert_not_called()

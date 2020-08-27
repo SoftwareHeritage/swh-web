@@ -8,6 +8,7 @@ from hypothesis import given
 from swh.web.api.utils import enrich_revision
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import revision
 
@@ -15,14 +16,12 @@ from swh.web.tests.strategies import revision
 @given(revision())
 def test_api_revision(api_client, archive_data, revision):
     url = reverse("api-1-revision", url_args={"sha1_git": revision})
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_revision = archive_data.revision_get(revision)
 
     enrich_revision(expected_revision, rv.wsgi_request)
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == expected_revision
 
 
@@ -30,10 +29,7 @@ def test_api_revision_not_found(api_client):
     unknown_revision_ = random_sha1()
 
     url = reverse("api-1-revision", url_args={"sha1_git": unknown_revision_})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Revision with sha1_git %s not found." % unknown_revision_,
@@ -49,6 +45,7 @@ def test_api_revision_raw_ok(api_client, archive_data, revision):
 
     assert rv.status_code == 200
     assert rv["Content-Type"] == "application/octet-stream"
+
     assert rv.content == expected_message.encode()
 
 
@@ -58,10 +55,7 @@ def test_api_revision_raw_ko_no_rev(api_client):
     url = reverse(
         "api-1-revision-raw-message", url_args={"sha1_git": unknown_revision_}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Revision with sha1_git %s not found." % unknown_revision_,
@@ -78,15 +72,13 @@ def test_api_revision_log(api_client, archive_data, revision):
         query_params={"limit": limit},
     )
 
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_log = archive_data.revision_log(revision, limit=limit)
     expected_log = list(
         map(enrich_revision, expected_log, [rv.wsgi_request] * len(expected_log))
     )
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == expected_log
 
 
@@ -95,10 +87,7 @@ def test_api_revision_log_not_found(api_client):
 
     url = reverse("api-1-revision-log", url_args={"sha1_git": unknown_revision_})
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Revision with sha1_git %s not found." % unknown_revision_,
@@ -110,17 +99,13 @@ def test_api_revision_directory_ko_not_found(api_client, mocker):
     mock_rev_dir = mocker.patch("swh.web.api.views.revision._revision_directory_by")
     mock_rev_dir.side_effect = NotFoundExc("Not found")
 
-    rv = api_client.get("/api/1/revision/999/directory/some/path/to/dir/")
+    url = "/api/1/revision/999/directory/some/path/to/dir/"
+    rv = check_api_get_responses(api_client, url, status_code=404)
 
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == {"exception": "NotFoundExc", "reason": "Not found"}
 
-    mock_rev_dir.assert_called_once_with(
-        {"sha1_git": "999"},
-        "some/path/to/dir",
-        "/api/1/revision/999/directory/some/path/to/dir/",
-        with_data=False,
+    mock_rev_dir.assert_called_with(
+        {"sha1_git": "999"}, "some/path/to/dir", url, with_data=False,
     )
 
 
@@ -150,8 +135,8 @@ def test_api_revision_directory_ok_returns_dir_entries(api_client, mocker):
     }
 
     mock_rev_dir.return_value = stub_dir
-
-    rv = api_client.get("/api/1/revision/999/directory/some/path/")
+    url = "/api/1/revision/999/directory/some/path/"
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     stub_dir["content"][0]["target_url"] = rv.wsgi_request.build_absolute_uri(
         stub_dir["content"][0]["target_url"]
@@ -166,15 +151,10 @@ def test_api_revision_directory_ok_returns_dir_entries(api_client, mocker):
         stub_dir["content"][1]["dir_url"]
     )
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == stub_dir
 
-    mock_rev_dir.assert_called_once_with(
-        {"sha1_git": "999"},
-        "some/path",
-        "/api/1/revision/999/directory/some/path/",
-        with_data=False,
+    mock_rev_dir.assert_called_with(
+        {"sha1_git": "999"}, "some/path", url, with_data=False,
     )
 
 
@@ -193,17 +173,15 @@ def test_api_revision_directory_ok_returns_content(api_client, mocker):
     mock_rev_dir.return_value = stub_content
 
     url = "/api/1/revision/666/directory/some/other/path/"
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     stub_content["content"]["data_url"] = rv.wsgi_request.build_absolute_uri(
         stub_content["content"]["data_url"]
     )
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == stub_content
 
-    mock_rev_dir.assert_called_once_with(
+    mock_rev_dir.assert_called_with(
         {"sha1_git": "666"}, "some/other/path", url, with_data=False
     )
 

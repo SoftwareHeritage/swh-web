@@ -15,6 +15,7 @@ from swh.model.model import (
     TimestampWithTimezone,
 )
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import release, content, directory
 
@@ -23,7 +24,7 @@ from swh.web.tests.strategies import release, content, directory
 def test_api_release(api_client, archive_data, release):
     url = reverse("api-1-release", url_args={"sha1_git": release})
 
-    rv = api_client.get(url)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     expected_release = archive_data.release_get(release)
     target_revision = expected_release["target"]
@@ -34,8 +35,6 @@ def test_api_release(api_client, archive_data, release):
     )
     expected_release["target_url"] = target_url
 
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
     assert rv.data == expected_release
 
 
@@ -78,7 +77,7 @@ def test_api_release_target_type_not_a_revision(
 
         url = reverse("api-1-release", url_args={"sha1_git": new_release_id})
 
-        rv = api_client.get(url)
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         expected_release = archive_data.release_get(new_release_id)
 
@@ -92,8 +91,6 @@ def test_api_release_target_type_not_a_revision(
         )
         expected_release["target_url"] = target_url
 
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
         assert rv.data == expected_release
 
 
@@ -102,10 +99,7 @@ def test_api_release_not_found(api_client):
 
     url = reverse("api-1-release", url_args={"sha1_git": unknown_release_})
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Release with sha1_git %s not found." % unknown_release_,

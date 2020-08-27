@@ -9,6 +9,7 @@ from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHO
 
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
     content,
@@ -41,7 +42,7 @@ def test_swhid_resolve_success(
         swhid = gen_swhid(obj_type, obj_id, metadata={"origin": origin["url"]})
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
-        resp = api_client.get(url)
+        resp = check_api_get_responses(api_client, url, status_code=200)
 
         if obj_type == CONTENT:
             url_args = {"query_string": "sha1_git:%s" % obj_id}
@@ -66,23 +67,14 @@ def test_swhid_resolve_success(
             "scheme_version": 1,
         }
 
-        assert resp.status_code == 200, resp.data
         assert resp.data == expected_result
-
-        # also checks endpoint documented view
-        # TODO: remove that check once T2529 is implemented
-        resp = client.get(url, HTTP_ACCEPT="text/html")
-        assert resp.status_code == 200, resp.content
 
 
 def test_swhid_resolve_invalid(api_client):
     rev_id_invalid = "96db9023b8_foo_50d6c108e9a3"
     swhid = "swh:1:rev:%s" % rev_id_invalid
     url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
-
-    resp = api_client.get(url)
-
-    assert resp.status_code == 400, resp.data
+    check_api_get_responses(api_client, url, status_code=400)
 
 
 @given(
@@ -113,16 +105,13 @@ def test_swhid_resolve_not_found(
 
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
-        resp = api_client.get(url)
-
-        assert resp.status_code == 404, resp.data
+        check_api_get_responses(api_client, url, status_code=404)
 
 
 def test_swh_origin_id_not_resolvable(api_client):
     ori_swhid = "swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb"
     url = reverse("api-1-resolve-swhid", url_args={"swhid": ori_swhid})
-    resp = api_client.get(url)
-    assert resp.status_code == 400, resp.data
+    check_api_get_responses(api_client, url, status_code=400)
 
 
 @given(content(), directory())
@@ -143,12 +132,8 @@ def test_api_known_swhid_some_present(api_client, content, directory):
 
     url = reverse("api-1-known")
 
-    resp = api_client.post(
-        url, data=input_swhids, format="json", HTTP_ACCEPT="application/json"
-    )
+    resp = check_api_post_responses(api_client, url, data=input_swhids, status_code=200)
 
-    assert resp.status_code == 200, resp.data
-    assert resp["Content-Type"] == "application/json"
     assert resp.data == {
         content_: {"known": True},
         directory_: {"known": True},
@@ -164,17 +149,9 @@ def test_api_known_invalid_swhid(api_client):
 
     url = reverse("api-1-known")
 
-    resp = api_client.post(
-        url, data=invalid_swhid_sha1, format="json", HTTP_ACCEPT="application/json"
-    )
+    check_api_post_responses(api_client, url, data=invalid_swhid_sha1, status_code=400)
 
-    assert resp.status_code == 400, resp.data
-
-    resp2 = api_client.post(
-        url, data=invalid_swhid_type, format="json", HTTP_ACCEPT="application/json"
-    )
-
-    assert resp2.status_code == 400, resp.data
+    check_api_post_responses(api_client, url, data=invalid_swhid_type, status_code=400)
 
 
 def test_api_known_raises_large_payload_error(api_client):
@@ -185,10 +162,6 @@ def test_api_known_raises_large_payload_error(api_client):
     swhids = [random_swhid for i in range(limit)]
 
     url = reverse("api-1-known")
-    resp = api_client.post(
-        url, data=swhids, format="json", HTTP_ACCEPT="application/json"
-    )
+    resp = check_api_post_responses(api_client, url, data=swhids, status_code=413)
 
-    assert resp.status_code == 413, resp.data
-    assert resp["Content-Type"] == "application/json"
     assert resp.data == {"exception": "LargePayloadExc", "reason": err_msg}

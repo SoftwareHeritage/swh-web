@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta
+import hashlib
 from typing import Any, Dict, Optional
 
 from django.core.cache import cache
@@ -11,7 +12,7 @@ from django.http import HttpRequest
 from django.utils import timezone
 
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 import sentry_sdk
 
@@ -130,7 +131,7 @@ class OIDCBearerTokenAuthentication(BaseAuthentication):
             return None
 
         try:
-            auth_type, token = auth_header.split(" ", 1)
+            auth_type, refresh_token = auth_header.split(" ", 1)
         except ValueError:
             raise AuthenticationFailed("Invalid HTTP authorization header format")
 
@@ -139,10 +140,39 @@ class OIDCBearerTokenAuthentication(BaseAuthentication):
                 (f"Invalid or unsupported HTTP authorization" f" type ({auth_type}).")
             )
         try:
-            # attempt to decode token
-            decoded_token = _oidc_client.decode_token(token)
+
+            # compute a cache key from the token that does not exceed
+            # memcached key size limit
+            hasher = hashlib.sha1()
+            hasher.update(refresh_token.encode("ascii"))
+            cache_key = f"api_token_{hasher.hexdigest()}"
+
+            # check if an access token is cached
+            access_token = cache.get(cache_key)
+
+            # attempt to decode access token
+            try:
+                decoded_token = _oidc_client.decode_token(access_token)
+            except Exception:
+                # access token is None or it has expired
+                decoded_token = None
+
+            if access_token is None or decoded_token is None:
+                # get a new access token from authentication provider
+                access_token = _oidc_client.refresh_token(refresh_token)["access_token"]
+                # decode access token
+                decoded_token = _oidc_client.decode_token(access_token)
+                # compute access token expiration
+                exp = datetime.fromtimestamp(decoded_token["exp"])
+                ttl = int(exp.timestamp() - timezone.now().timestamp())
+                # save access token in cache while it is valid
+                cache.set(cache_key, access_token, timeout=max(0, ttl))
+
             # create Django user
             user = _oidc_user_from_decoded_token(decoded_token)
+        except UnicodeEncodeError as e:
+            sentry_sdk.capture_exception(e)
+            raise ValidationError("Invalid bearer token")
         except Exception as e:
             sentry_sdk.capture_exception(e)
             raise AuthenticationFailed(str(e))

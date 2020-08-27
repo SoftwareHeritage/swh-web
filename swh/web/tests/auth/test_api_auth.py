@@ -46,10 +46,10 @@ def test_drf_oidc_bearer_token_auth_success(mocker, api_client):
     """
     url = reverse("api-1-stat-counters")
 
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
 
     mock_keycloak(mocker)
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     response = api_client.get(url)
     request = response.wsgi_request
@@ -68,11 +68,11 @@ def test_drf_oidc_bearer_token_auth_success(mocker, api_client):
 def test_drf_oidc_bearer_token_auth_failure(mocker, api_client):
     url = reverse("api-1-stat-counters")
 
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
 
     # check for failed authentication but with expected token format
     mock_keycloak(mocker, auth_success=False)
-    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     response = api_client.get(url)
     request = response.wsgi_request
@@ -81,23 +81,22 @@ def test_drf_oidc_bearer_token_auth_failure(mocker, api_client):
     assert isinstance(request.user, AnonymousUser)
 
     # check for failed authentication when token format is invalid
-    mock_keycloak(mocker)
-    api_client.credentials(HTTP_AUTHORIZATION="Bearer invalid-token-format")
+    api_client.credentials(HTTP_AUTHORIZATION="Bearer invalid-token-format-ééàà")
 
     response = api_client.get(url)
     request = response.wsgi_request
 
-    assert response.status_code == 403
+    assert response.status_code == 400
     assert isinstance(request.user, AnonymousUser)
 
 
 def test_drf_oidc_auth_invalid_or_missing_authorization_type(api_client):
     url = reverse("api-1-stat-counters")
 
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
 
     # missing authorization type
-    api_client.credentials(HTTP_AUTHORIZATION=f"{access_token}")
+    api_client.credentials(HTTP_AUTHORIZATION=f"{refresh_token}")
 
     response = api_client.get(url)
     request = response.wsgi_request
