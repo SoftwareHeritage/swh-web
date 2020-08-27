@@ -288,7 +288,6 @@ class APIDocException(Exception):
 def api_doc(
     route: str,
     noargs: bool = False,
-    need_params: bool = False,
     tags: List[str] = [],
     handle_response: bool = False,
     api_version: str = "1",
@@ -305,9 +304,6 @@ def api_doc(
         noargs: set to True if the route has no arguments, and its
             result should be displayed anytime its documentation
             is requested. Default to False
-        need_params: specify the route requires query parameters
-            otherwise errors will occur. It enables to avoid displaying the
-            invalid response in its HTML documentation. Default to False.
         tags: Further information on api endpoints. Two values are
             possibly expected:
 
@@ -353,19 +349,11 @@ def api_doc(
         @wraps(f)
         def documented_view(request, **kwargs):
             doc_data = get_doc_data(f, route, noargs)
-
             try:
                 response = f(request, **kwargs)
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)
-                if (
-                    request.accepted_media_type == "text/html"
-                    and need_params
-                    and not request.query_params
-                ):
-                    response = None
-                else:
-                    return error_response(request, exc, doc_data)
+                return error_response(request, exc, doc_data)
 
             if handle_response:
                 return response

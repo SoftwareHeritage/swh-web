@@ -9,6 +9,7 @@ from hypothesis import given
 
 from swh.web.api.utils import enrich_directory
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import directory
 
@@ -17,10 +18,7 @@ from swh.web.tests.strategies import directory
 def test_api_directory(api_client, archive_data, directory):
 
     url = reverse("api-1-directory", url_args={"sha1_git": directory})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
     dir_content = list(archive_data.directory_ls(directory))
     expected_data = list(
@@ -34,10 +32,7 @@ def test_api_directory_not_found(api_client):
     unknown_directory_ = random_sha1()
 
     url = reverse("api-1-directory", url_args={"sha1_git": unknown_directory_})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": "Directory with sha1_git %s not found" % unknown_directory_,
@@ -53,10 +48,7 @@ def test_api_directory_with_path_found(api_client, archive_data, directory):
     url = reverse(
         "api-1-directory", url_args={"sha1_git": directory, "path": path["name"]}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == enrich_directory(path, rv.wsgi_request)
 
 
@@ -65,10 +57,7 @@ def test_api_directory_with_path_not_found(api_client, directory):
 
     path = "some/path/to/nonexistent/dir/"
     url = reverse("api-1-directory", url_args={"sha1_git": directory, "path": path})
-    rv = api_client.get(url)
-
-    assert rv.status_code == 404, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
         "exception": "NotFoundExc",
         "reason": (

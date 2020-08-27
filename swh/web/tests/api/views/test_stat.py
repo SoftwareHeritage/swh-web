@@ -7,6 +7,7 @@ from swh.storage.exc import StorageDBError, StorageAPIError
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 
 
 def test_api_1_stat_counters_raise_error(api_client, mocker):
@@ -16,10 +17,7 @@ def test_api_1_stat_counters_raise_error(api_client, mocker):
     )
 
     url = reverse("api-1-stat-counters")
-    rv = api_client.get(url)
-
-    assert rv.status_code == 400, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=400)
     assert rv.data == {
         "exception": "BadInputExc",
         "reason": "voluntary error to check the bad request middleware.",
@@ -33,10 +31,7 @@ def test_api_1_stat_counters_raise_from_db(api_client, mocker):
     )
 
     url = reverse("api-1-stat-counters")
-    rv = api_client.get(url)
-
-    assert rv.status_code == 503, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageDBError",
         "reason": "An unexpected error occurred in the backend: "
@@ -51,10 +46,7 @@ def test_api_1_stat_counters_raise_from_api(api_client, mocker):
     )
 
     url = reverse("api-1-stat-counters")
-    rv = api_client.get(url)
-
-    assert rv.status_code == 503, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageAPIError",
         "reason": "An unexpected error occurred in the api backend: "
@@ -64,9 +56,5 @@ def test_api_1_stat_counters_raise_from_api(api_client, mocker):
 
 def test_api_1_stat_counters(api_client, archive_data):
     url = reverse("api-1-stat-counters")
-
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == archive_data.stat_counters()

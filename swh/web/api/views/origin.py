@@ -218,7 +218,7 @@ def api_origin_search(request, url_pattern):
 
 
 @api_route(r"/origin/metadata-search/", "api-1-origin-metadata-search")
-@api_doc("/origin/metadata-search/", noargs=True, need_params=True)
+@api_doc("/origin/metadata-search/", noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origin_metadata_search(request):
     """
@@ -248,7 +248,6 @@ def api_origin_metadata_search(request):
     """
     fulltext = request.query_params.get("fulltext", None)
     limit = min(int(request.query_params.get("limit", "70")), 100)
-
     if not fulltext:
         content = '"fulltext" must be provided and non-empty.'
         raise BadInputExc(content)

@@ -62,16 +62,19 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
             ),
         }
         self.authorization_code = Mock()
+        self.refresh_token = Mock()
         self.userinfo = Mock()
         self.logout = Mock()
         if auth_success:
             self.authorization_code.return_value = copy(oidc_profile)
+            self.refresh_token.return_value = copy(oidc_profile)
             self.userinfo.return_value = copy(userinfo)
         else:
             self.authorization_url = Mock()
             exception = Exception("Authentication failed")
             self.authorization_code.side_effect = exception
             self.authorization_url.side_effect = exception
+            self.refresh_token.side_effect = exception
             self.userinfo.side_effect = exception
             self.logout.side_effect = exception
 

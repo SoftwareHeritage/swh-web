@@ -78,10 +78,8 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .thresholds(monthBins);
 
   // use D3 nest function to group the visits by status
-  let visitsByStatus = d3.nest()
-    .key(d => d['status'])
-    .sortKeys(d3.ascending)
-    .entries(visitsData);
+  let visitsByStatus = d3.groups(visitsData, d => d['status'])
+    .sort((a, b) => d3.ascending(a[0], b[0]));
 
   // prepare data in order to be able to stack visit statuses by month
   let statuses = [];
@@ -90,12 +88,12 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     histData[i] = {};
   }
   visitsByStatus.forEach(entry => {
-    statuses.push(entry.key);
-    let monthsData = binByMonth(entry.values);
+    statuses.push(entry[0]);
+    let monthsData = binByMonth(entry[1]);
     for (let i = 0; i < monthsData.length; ++i) {
       histData[i]['x0'] = monthsData[i]['x0'];
       histData[i]['x1'] = monthsData[i]['x1'];
-      histData[i][entry.key] = monthsData[i];
+      histData[i][entry[0]] = monthsData[i];
     }
   });
 
@@ -141,6 +139,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   // create one fill only rectangle by displayed year
   // each rectangle will be made visible when hovering the mouse over a year range
   // user will then be able to select a year by clicking in the rectangle
+
   g.append('g')
     .selectAll('rect')
     .data(yearBins)
@@ -162,11 +161,11 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     })
     // mouse event callbacks used to show rectangle years
     // when hovering the mouse over the histograms
-    .on('mouseover', d => {
+    .on('mouseover', (event, d) => {
       svg.selectAll('rect.year' + d.getUTCFullYear())
         .attr('fill-opacity', 0.5);
     })
-    .on('mouseout', d => {
+    .on('mouseout', (event, d) => {
       svg.selectAll('rect.year' + d.getUTCFullYear())
         .attr('fill-opacity', 0);
       svg.selectAll('rect.year' + currentYear)
@@ -174,7 +173,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     })
     // callback to select a year after a mouse click
     // in a rectangle year
-    .on('click', d => {
+    .on('click', (event, d) => {
       svg.selectAll('rect.year' + currentYear)
         .attr('fill-opacity', 0);
       svg.selectAll('rect.yearoutline' + currentYear)
@@ -204,7 +203,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     // mouse event callbacks used to show rectangle years
     // but also to show tooltip when hovering the mouse
     // over the histogram bars
-    .on('mouseover', d => {
+    .on('mouseover', (event, d) => {
       svg.selectAll('rect.year' + d.data.x1.getUTCFullYear())
         .attr('fill-opacity', 0.5);
       tooltip.transition()
@@ -220,10 +219,10 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
         if (i !== statuses.length - 1) tooltipText += '<br/>';
       }
       tooltip.html(tooltipText)
-        .style('left', d3.event.pageX + 15 + 'px')
-        .style('top', d3.event.pageY + 'px');
+        .style('left', event.pageX + 15 + 'px')
+        .style('top', event.pageY + 'px');
     })
-    .on('mouseout', d => {
+    .on('mouseout', (event, d) => {
       svg.selectAll('rect.year' + d.data.x1.getUTCFullYear())
         .attr('fill-opacity', 0);
       svg.selectAll('rect.year' + currentYear)
@@ -232,13 +231,13 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
         .duration(500)
         .style('opacity', 0);
     })
-    .on('mousemove', () => {
-      tooltip.style('left', d3.event.pageX + 15 + 'px')
-        .style('top', d3.event.pageY + 'px');
+    .on('mousemove', (event) => {
+      tooltip.style('left', event.pageX + 15 + 'px')
+        .style('top', event.pageY + 'px');
     })
     // callback to select a year after a mouse click
     // inside a histogram bar
-    .on('click', d => {
+    .on('click', (event, d) => {
       svg.selectAll('rect.year' + currentYear)
         .attr('fill-opacity', 0);
       svg.selectAll('rect.yearoutline' + currentYear)

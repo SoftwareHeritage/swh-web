@@ -121,10 +121,12 @@ def test_drf_oidc_bearer_token_auth_backend_success(mocker, api_request_factory)
 
     kc_oidc_mock = mock_keycloak(mocker)
 
+    refresh_token = sample_data.oidc_profile["refresh_token"]
     access_token = sample_data.oidc_profile["access_token"]
+
     decoded_token = kc_oidc_mock.decode_token(access_token)
 
-    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     user, _ = drf_auth_backend.authenticate(request)
     _check_authenticated_user(user, decoded_token, kc_oidc_mock)
@@ -144,16 +146,14 @@ def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory)
     # simulate a failed authentication with a bearer token in expected format
     mock_keycloak(mocker, auth_success=False)
 
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
 
-    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     with pytest.raises(AuthenticationFailed):
         drf_auth_backend.authenticate(request)
 
     # simulate a failed authentication with an invalid bearer token format
-    mock_keycloak(mocker)
-
     request = api_request_factory.get(
         url, HTTP_AUTHORIZATION="Bearer invalid-token-format"
     )
@@ -171,7 +171,7 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
 
     # Invalid authorization type
     request = api_request_factory.get(url, HTTP_AUTHORIZATION="Foo token")
@@ -180,7 +180,7 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
         drf_auth_backend.authenticate(request)
 
     # Missing authorization type
-    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"{access_token}")
+    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"{refresh_token}")
 
     with pytest.raises(AuthenticationFailed):
         drf_auth_backend.authenticate(request)
@@ -196,9 +196,9 @@ def test_drf_oidc_bearer_token_auth_backend_permissions(mocker, api_request_fact
     mock_keycloak(mocker, user_permissions=[permission])
 
     drf_auth_backend = OIDCBearerTokenAuthentication()
-    access_token = sample_data.oidc_profile["access_token"]
+    refresh_token = sample_data.oidc_profile["refresh_token"]
     url = reverse("api-1-stat-counters")
-    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {access_token}")
+    request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
     user, _ = drf_auth_backend.authenticate(request)
 
     assert user.has_perm(permission)
