@@ -1,5 +1,5 @@
-import {slice} from "./array";
-import identity from "./identity";
+import {slice} from "./array.js";
+import identity from "./identity.js";
 
 var top = 1,
     right = 2,
@@ -16,9 +16,7 @@ function translateY(y) {
 }
 
 function number(scale) {
-  return function(d) {
-    return +scale(d);
-  };
+  return d => +scale(d);
 }
 
 function center(scale) {

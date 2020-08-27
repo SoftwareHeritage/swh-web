@@ -8,6 +8,7 @@ from hypothesis import given
 from swh.model import hashutil
 from swh.vault.exc import NotFoundExc
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.strategies import (
     directory,
     revision,
@@ -41,14 +42,14 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         mock_service.vault_cook.return_value = stub_cook
         mock_service.vault_fetch.return_value = stub_fetch
 
+        email = "test@test.mail"
         url = reverse(
-            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
+            f"api-1-vault-cook-{obj_type}",
+            url_args={f"{obj_type[:3]}_id": obj_id},
+            query_params={"email": email},
         )
 
-        rv = api_client.post(url, {"email": "test@test.mail"})
-
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_post_responses(api_client, url, data=None, status_code=200)
 
         stub_cook["fetch_url"] = rv.wsgi_request.build_absolute_uri(
             stub_cook["fetch_url"]
@@ -56,7 +57,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
 
         assert rv.data == stub_cook
         mock_service.vault_cook.assert_called_with(
-            obj_type, hashutil.hash_to_bytes(obj_id), "test@test.mail"
+            obj_type, hashutil.hash_to_bytes(obj_id), email
         )
 
         rv = api_client.get(fetch_url)
@@ -127,10 +128,8 @@ def test_api_vault_cook_notfound(
             f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
-        rv = api_client.get(url)
+        rv = check_api_get_responses(api_client, url, status_code=404)
 
-        assert rv.status_code == 404, rv.data
-        assert rv["Content-Type"] == "application/json"
         assert rv.data["exception"] == "NotFoundExc"
         assert (
             rv.data["reason"]
@@ -147,10 +146,7 @@ def test_api_vault_cook_notfound(
         url = reverse(
             f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
         )
-        rv = api_client.post(url)
-
-        assert rv.status_code == 404, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_post_responses(api_client, url, data=None, status_code=404)
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"{obj_name.title()} '{obj_id}' not found."
@@ -162,10 +158,7 @@ def test_api_vault_cook_notfound(
             f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
-        rv = api_client.get(fetch_url)
-
-        assert rv.status_code == 404, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, fetch_url, status_code=404)
         assert rv.data["exception"] == "NotFoundExc"
         assert (
             rv.data["reason"] == f"Cooked archive for {obj_name} '{obj_id}' not found."

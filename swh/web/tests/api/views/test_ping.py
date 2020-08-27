@@ -4,13 +4,10 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views import check_api_get_responses
 
 
 def test_api_1_ping(api_client):
     url = reverse("api-1-ping")
-
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/json"
+    rv = check_api_get_responses(api_client, url, status_code=200)
     assert rv.data == "pong"
