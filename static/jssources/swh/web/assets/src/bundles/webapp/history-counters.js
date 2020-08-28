@@ -115,9 +115,9 @@ export async function drawHistoryCounterGraph(container, historyData) {
    .attr('class', 'swh-history-counter-overlay')
    .attr('width', width)
    .attr('height', height)
-   .on('mouseover', function() {
+   .on('mouseover', function(event) {
      focus.style('display', null);
-     updateTooltip(this);
+     updateTooltip(event);
      tooltip.transition()
             .duration(200)
             .style('opacity', 1);
@@ -128,12 +128,12 @@ export async function drawHistoryCounterGraph(container, historyData) {
             .duration(200)
             .style('opacity', 0);
    })
-   .on('mousemove', function() {
-     updateTooltip(this);
+   .on('mousemove', function(event) {
+     updateTooltip(event);
    });
 
-  function updateTooltip(elt) {
-    const x0 = xScale.invert(d3.mouse(elt)[0]);
+  function updateTooltip(event) {
+    const x0 = xScale.invert(d3.pointer(event)[0]);
     const i = bisectDate(historyData, x0, 1);
     if (i >= historyData.length) return;
     const d0 = historyData[i - 1];
@@ -142,7 +142,7 @@ export async function drawHistoryCounterGraph(container, historyData) {
     focus.attr('transform', `translate(${xScale(d[0])}, ${yScale(d[1])})`);
     const tooltipText = `${dateFormatter(d[0])} ${valueFormatter(d[1])}`;
     tooltip.html(tooltipText)
-           .style('left', d3.event.pageX + 15 + 'px')
-           .style('top', d3.event.pageY + 'px');
+           .style('left', event.pageX + 15 + 'px')
+           .style('top', event.pageY + 'px');
   }
 }
