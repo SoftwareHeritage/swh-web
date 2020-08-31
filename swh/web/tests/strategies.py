@@ -336,13 +336,21 @@ def release():
     return _known_swh_object("releases")
 
 
+def releases(min_size=2, max_size=8):
+    """
+    Hypothesis strategy returning random releases ingested
+    into the test archive.
+    """
+    return lists(release(), min_size=min_size, max_size=max_size)
+
+
 def unknown_release():
     """
     Hypothesis strategy returning a random revision not ingested
     into the test archive.
     """
     return sha1().filter(
-        lambda s: next(get_tests_data()["storage"].release_get([s])) is None
+        lambda s: get_tests_data()["storage"].release_get([s])[0] is None
     )
 
 

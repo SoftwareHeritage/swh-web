@@ -205,10 +205,10 @@ class _ArchiveData:
         )
         return list(dir_content)
 
-    def release_get(self, rel_id):
+    def release_get(self, rel_id: str) -> Optional[Dict[str, Any]]:
         rel_id_bytes = hash_to_bytes(rel_id)
-        rel_data = next(self.storage.release_get([rel_id_bytes]))
-        return converters.from_release(rel_data)
+        rel_data = self.storage.release_get([rel_id_bytes])[0]
+        return converters.from_release(rel_data) if rel_data else None
 
     def revision_get(self, rev_id):
         rev_id_bytes = hash_to_bytes(rev_id)

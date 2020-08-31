@@ -446,7 +446,7 @@ def lookup_directory_with_path(sha1_git, path_string):
     return converters.from_directory_entry(queried_dir)
 
 
-def lookup_release(release_sha1_git):
+def lookup_release(release_sha1_git: str) -> Dict[str, Any]:
     """Return information about the release with sha1 release_sha1_git.
 
     Args:
@@ -462,27 +462,31 @@ def lookup_release(release_sha1_git):
     sha1_git_bin = _to_sha1_bin(release_sha1_git)
     release = _first_element(storage.release_get([sha1_git_bin]))
     if not release:
-        raise NotFoundExc("Release with sha1_git %s not found." % release_sha1_git)
+        raise NotFoundExc(f"Release with sha1_git {release_sha1_git} not found.")
     return converters.from_release(release)
 
 
-def lookup_release_multiple(sha1_git_list):
-    """Return information about the revisions identified with
+def lookup_release_multiple(sha1_git_list) -> Iterator[Optional[Dict[str, Any]]]:
+    """Return information about the releases identified with
     their sha1_git identifiers.
 
     Args:
-        sha1_git_list: A list of revision sha1_git identifiers
+        sha1_git_list: A list of release sha1_git identifiers
 
     Returns:
-        Release information as dict.
+        Iterator of Release metadata information as dict.
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
 
     """
     sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
-    releases = storage.release_get(sha1_bin_list) or []
-    return (converters.from_release(r) for r in releases)
+    releases = storage.release_get(sha1_bin_list)
+    for r in releases:
+        if r is not None:
+            yield converters.from_release(r)
+        else:
+            yield None
 
 
 def lookup_revision(rev_sha1_git):

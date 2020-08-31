@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,13 @@
 import datetime
 
 from swh.model import hashutil
+from swh.model.model import (
+    ObjectType,
+    Person,
+    Release,
+    TimestampWithTimezone,
+    Timestamp,
+)
 from swh.web.common import converters
 
 
@@ -200,26 +207,30 @@ def test_from_origin_visit():
 
 
 def test_from_release():
-    release_input = {
-        "id": hashutil.hash_to_bytes("aad23fa492a0c5fed0708a6703be875448c86884"),
-        "target": hashutil.hash_to_bytes("5e46d564378afc44b31bb89f99d5675195fbdf67"),
-        "target_type": "revision",
-        "date": {
-            "timestamp": datetime.datetime(
-                2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
-        "author": {
-            "name": b"author name",
-            "fullname": b"Author Name author@email",
-            "email": b"author@email",
-        },
-        "name": b"v0.0.1",
-        "message": b"some comment on release",
-        "synthetic": True,
-    }
+    """Convert release model object to a dict should be ok"""
+    ts = int(
+        datetime.datetime(
+            2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
+        ).timestamp()
+    )
+    release_input = Release(
+        id=hashutil.hash_to_bytes("aad23fa492a0c5fed0708a6703be875448c86884"),
+        target=hashutil.hash_to_bytes("5e46d564378afc44b31bb89f99d5675195fbdf67"),
+        target_type=ObjectType.REVISION,
+        date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        author=Person(
+            name=b"author name",
+            fullname=b"Author Name author@email",
+            email=b"author@email",
+        ),
+        name=b"v0.0.1",
+        message=b"some comment on release",
+        synthetic=True,
+    )
 
     expected_release = {
         "id": "aad23fa492a0c5fed0708a6703be875448c86884",
@@ -235,46 +246,6 @@ def test_from_release():
         "message": "some comment on release",
         "target_type": "revision",
         "synthetic": True,
-    }
-
-    actual_release = converters.from_release(release_input)
-
-    assert actual_release == expected_release
-
-
-def test_from_release_no_revision():
-    release_input = {
-        "id": hashutil.hash_to_bytes("b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e"),
-        "target": None,
-        "date": {
-            "timestamp": datetime.datetime(
-                2016, 3, 2, 10, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": True,
-        },
-        "name": b"v0.1.1",
-        "message": b"comment on release",
-        "synthetic": False,
-        "author": {
-            "name": b"bob",
-            "fullname": b"Bob bob@alice.net",
-            "email": b"bob@alice.net",
-        },
-    }
-
-    expected_release = {
-        "id": "b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e",
-        "target": None,
-        "date": "2016-03-02T10:00:00-00:00",
-        "name": "v0.1.1",
-        "message": "comment on release",
-        "synthetic": False,
-        "author": {
-            "name": "bob",
-            "fullname": "Bob bob@alice.net",
-            "email": "bob@alice.net",
-        },
     }
 
     actual_release = converters.from_release(release_input)

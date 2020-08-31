@@ -31,6 +31,7 @@ from swh.web.tests.strategies import (
     unknown_directory,
     release,
     unknown_release,
+    releases,
     revision,
     unknown_revision,
     revisions,
@@ -254,6 +255,26 @@ def test_lookup_release_ko_id_checksum_too_long(sha256):
     with pytest.raises(BadInputExc) as e:
         service.lookup_release(sha256)
     assert e.match("Only sha1_git is supported.")
+
+
+@given(releases())
+def test_lookup_release_multiple(archive_data, releases):
+    actual_releases = list(service.lookup_release_multiple(releases))
+
+    expected_releases = []
+    for release_id in releases:
+        release_info = archive_data.release_get(release_id)
+        expected_releases.append(release_info)
+
+    assert actual_releases == expected_releases
+
+
+def test_lookup_release_multiple_none_found():
+    unknown_releases_ = [random_sha1(), random_sha1(), random_sha1()]
+
+    actual_releases = list(service.lookup_release_multiple(unknown_releases_))
+
+    assert actual_releases == [None] * len(unknown_releases_)
 
 
 @given(directory())

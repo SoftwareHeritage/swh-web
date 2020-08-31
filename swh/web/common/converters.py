@@ -1,14 +1,16 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import datetime
 import json
-from typing import Dict, Any
+
+from typing import Any, Dict
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
+from swh.model.model import Release
 from swh.storage.interface import PartialBranches
 
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
@@ -204,23 +206,14 @@ def from_origin(origin: Dict[str, Any]) -> OriginInfo:
     return from_swh(origin)
 
 
-def from_release(release):
+def from_release(release: Release) -> Dict[str, Any]:
     """Convert from a swh release to a json serializable release dictionary.
 
     Args:
-        release (dict): dictionary with keys:
-
-            - id: identifier of the revision (sha1 in bytes)
-            - revision: identifier of the revision the release points to (sha1
-              in bytes)
-
-        comment: release's comment message (bytes)
-        name: release's name (string)
-        author: release's author identifier (swh's id)
-        synthetic: the synthetic property (boolean)
+        release: A release model object
 
     Returns:
-        dict: Release dictionary with the following keys:
+        release dictionary with the following keys
 
         - id: hexadecimal sha1 (string)
         - revision: hexadecimal sha1 (string)
@@ -231,7 +224,7 @@ def from_release(release):
 
     """
     return from_swh(
-        release,
+        release.to_dict(),
         hashess={"id", "target"},
         bytess={"message", "name", "fullname", "email"},
         dates={"date"},

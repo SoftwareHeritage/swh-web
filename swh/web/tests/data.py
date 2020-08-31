@@ -227,8 +227,8 @@ def _init_tests_data():
             if target_type == "revision":
                 revisions.add(branch_data.target)
             elif target_type == "release":
-                release = next(storage.release_get([branch_data.target]))
-                revisions.add(release["target"])
+                release = storage.release_get([branch_data.target])[0]
+                revisions.add(release.target)
                 releases.add(hash_to_hex(branch_data.target))
 
         for rev_log in storage.revision_shortlog(set(revisions)):
