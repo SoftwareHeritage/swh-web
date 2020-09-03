@@ -36,13 +36,29 @@ function checkAlertVisible(alertType, msg) {
 }
 
 // Stub requests to save an origin
-function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus,
-                         responseStatus = 200, errorMessage = '') {
+function stubSaveRequest({
+  requestUrl,
+  visitType = 'git',
+  saveRequestStatus,
+  originUrl,
+  saveTaskStatus,
+  responseStatus = 200,
+  errorMessage = '',
+  saveRequestDate = new Date(),
+  visitDate = new Date()
+} = {}) {
   let response;
   if (responseStatus !== 200 && errorMessage) {
-    response = {'detail': errorMessage};
+    response = {
+      'detail': errorMessage
+    };
   } else {
-    response = genOriginSaveResponse(objectType, status, originUrl, Date().toString(), taskStatus);
+    response = genOriginSaveResponse({visitType: visitType,
+                                      saveRequestStatus: saveRequestStatus,
+                                      originUrl: originUrl,
+                                      saveRequestDate: saveRequestDate,
+                                      saveTaskStatus: saveTaskStatus,
+                                      visitDate: visitDate});
   }
   cy.route({
     method: 'POST',
@@ -52,17 +68,24 @@ function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus,
   }).as('saveRequest');
 }
 
-// Mocks API response : /save/(:object_type)/(:origin_url)
-// object_type : {'git', 'hg', 'svn'}
-function genOriginSaveResponse(objectType, saveRequestStatus, originUrl, saveRequestDate, saveTaskStatus, visitDate = Date().toString()) {
+// Mocks API response : /save/(:visit_type)/(:origin_url)
+// visit_type : {'git', 'hg', 'svn'}
+function genOriginSaveResponse({
+  visitType = 'git',
+  saveRequestStatus,
+  originUrl,
+  saveRequestDate = new Date(),
+  saveTaskStatus,
+  visitDate = new Date()
+} = {}) {
   return {
-    'visit_type': objectType,
+    'visit_type': visitType,
     'save_request_status': saveRequestStatus,
     'origin_url': originUrl,
     'id': 1,
-    'save_request_date': saveRequestDate,
+    'save_request_date': saveRequestDate ? saveRequestDate.toISOString() : null,
     'save_task_status': saveTaskStatus,
-    'visit_date': visitDate
+    'visit_date': visitDate ? visitDate.toISOString() : null
   };
 };
 
@@ -81,8 +104,10 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display accepted message when accepted', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type, 'accepted',
-                    origin.url, 'not yet scheduled');
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'accepted',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not yet scheduled'});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -94,8 +119,11 @@ describe('Origin Save Tests', function() {
   it('should validate gitlab subproject url', function() {
     const gitlabSubProjectUrl = 'https://gitlab.com/user/project/sub/';
     const originSaveUrl = this.Urls.origin_save_request('git', gitlabSubProjectUrl);
-    stubSaveRequest(originSaveUrl, 'git', 'accepted',
-                    gitlabSubProjectUrl, 'not yet scheduled');
+
+    stubSaveRequest({requestUrl: originSaveUrl,
+                     saveRequestStatus: 'accepted',
+                     originurl: gitlabSubProjectUrl,
+                     saveTaskStatus: 'not yet scheduled'});
 
     makeOriginSaveRequest('git', gitlabSubProjectUrl);
 
@@ -105,8 +133,10 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display warning message when pending', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type, 'pending',
-                    origin.url, 'not created');
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'pending',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not created'});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -116,8 +146,12 @@ describe('Origin Save Tests', function() {
   });
 
   it('should show error when csrf validation failed (status: 403)', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type, 'rejected',
-                    origin.url, 'not created', 403, saveCodeMsg['csrfError']);
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'rejected',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not created',
+                     responseStatus: 403,
+                     errorMessage: saveCodeMsg['csrfError']});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -127,8 +161,12 @@ describe('Origin Save Tests', function() {
   });
 
   it('should show error when origin is rejected (status: 403)', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type, 'rejected',
-                    origin.url, 'not created', 403, saveCodeMsg['rejected']);
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'rejected',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not created',
+                     responseStatus: 403,
+                     errorMessage: saveCodeMsg['rejected']});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -138,9 +176,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should show error when rate limited (status: 429)', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type,
-                    'Request was throttled. Expected available in 60 seconds.',
-                    origin.url, 'not created', 429);
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'Request was throttled. Expected available in 60 seconds.',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not created',
+                     responseStatus: 429});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -150,8 +190,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should show error when unknown error occurs (status other than 200, 403, 429)', function() {
-    stubSaveRequest(this.originSaveUrl, origin.type, 'Error',
-                    origin.url, 'not created', 406);
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     saveRequestStatus: 'Error',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not created',
+                     responseStatus: 406});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -191,7 +234,12 @@ describe('Origin Save Tests', function() {
 
   it('should not add timestamp to the browse origin URL is no visit date has been found', function() {
     const originUrl = 'https://git.example.org/example.git';
-    const saveRequestData = genOriginSaveResponse('git', 'accepted', originUrl, Date().toString(), 'succeed', null);
+    const saveRequestData = genOriginSaveResponse({
+      saveRequestStatus: 'accepted',
+      originUrl: originUrl,
+      saveTaskStatus: 'succeed',
+      visitDate: null
+    });
     const saveRequestsListData = {
       'recordsTotal': 1,
       'draw': 2,
@@ -264,16 +312,20 @@ describe('Origin Save Tests', function() {
     });
   });
 
-  it('should select correct origin type if possible when clicking on "Save again" button', function() {
+  it('should select correct visit type if possible when clicking on "Save again" button', function() {
     const originUrl = 'https://gitlab.inria.fr/solverstack/maphys/maphys/';
-    const badOriginType = 'hg';
-    const goodOriginType = 'git';
+    const badVisitType = 'hg';
+    const goodVisitType = 'git';
     cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
-    stubSaveRequest(this.Urls.origin_save_request(badOriginType, originUrl),
-                    badOriginType, 'accepted',
-                    originUrl, 'failed', 200, saveCodeMsg['accepted']);
+    stubSaveRequest({requestUrl: this.Urls.origin_save_request(badVisitType, originUrl),
+                     visitType: badVisitType,
+                     saveRequestStatus: 'accepted',
+                     originUrl: originUrl,
+                     saveTaskStatus: 'failed',
+                     responseStatus: 200,
+                     errorMessage: saveCodeMsg['accepted']});
 
-    makeOriginSaveRequest(badOriginType, originUrl);
+    makeOriginSaveRequest(badVisitType, originUrl);
 
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.wait('@saveRequest').then(() => {
@@ -284,7 +336,7 @@ describe('Origin Save Tests', function() {
       cy.get('tbody tr').eq(0).then(row => {
         const cells = row[0].cells;
         cy.get('#swh-input-visit-type')
-          .should('have.value', goodOriginType);
+          .should('have.value', goodVisitType);
         cy.get('#swh-input-origin-url')
           .should('have.value', $(cells[2]).text().slice(0, -1));
       });
