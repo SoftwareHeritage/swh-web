@@ -6,11 +6,11 @@
 import datetime
 import json
 
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
-from swh.model.model import Release
+from swh.model.model import Release, Revision
 from swh.storage.interface import PartialBranches
 
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
@@ -258,26 +258,11 @@ def convert_revision_metadata(metadata):
     return json.loads(json.dumps(metadata, cls=SWHMetadataEncoder))
 
 
-def from_revision(revision):
-    """Convert from a swh revision to a json serializable revision dictionary.
+def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
+    """Convert swh revision model object to a json serializable revision dictionary.
 
     Args:
-        revision (dict): dict with keys:
-
-            - id: identifier of the revision (sha1 in bytes)
-            - directory: identifier of the directory the revision points to
-              (sha1 in bytes)
-            - author_name, author_email: author's revision name and email
-            - committer_name, committer_email: committer's revision name and
-              email
-            - message: revision's message
-            - date, date_offset: revision's author date
-            - committer_date, committer_date_offset: revision's commit date
-            - parents: list of parents for such revision
-            - synthetic: revision's property nature
-            - type: revision's type (git, tar or dsc at the moment)
-            - metadata: if the revision is synthetic, this can reference
-              dynamic properties.
+        revision: revision model object
 
     Returns:
         dict: Revision dictionary with the same keys as inputs, except:
@@ -289,26 +274,30 @@ def from_revision(revision):
         Remaining keys are left as is
 
     """
-    revision = from_swh(
-        revision,
+    if isinstance(revision, Revision):
+        revision_d = revision.to_dict()
+    else:
+        revision_d = revision
+    revision_d = from_swh(
+        revision_d,
         hashess={"id", "directory", "parents", "children"},
-        bytess={"name", "fullname", "email"},
+        bytess={"name", "fullname", "email", "extra_headers"},
         convert={"metadata"},
         convert_fn=convert_revision_metadata,
         dates={"date", "committer_date"},
     )
 
-    if revision:
-        if "parents" in revision:
-            revision["merge"] = len(revision["parents"]) > 1
-        if "message" in revision:
+    if revision_d:
+        if "parents" in revision_d:
+            revision_d["merge"] = len(revision_d["parents"]) > 1
+        if "message" in revision_d:
             try:
-                revision["message"] = revision["message"].decode("utf-8")
+                revision_d["message"] = revision_d["message"].decode("utf-8")
             except UnicodeDecodeError:
-                revision["message_decoding_failed"] = True
-                revision["message"] = None
+                revision_d["message_decoding_failed"] = True
+                revision_d["message"] = None
 
-    return revision
+    return revision_d
 
 
 def from_content(content):

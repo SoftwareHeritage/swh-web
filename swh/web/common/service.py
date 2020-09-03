@@ -8,11 +8,11 @@ import os
 import re
 
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Tuple
+from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Union, Tuple
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-from swh.model.model import OriginVisit
+from swh.model.model import OriginVisit, Revision
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -489,7 +489,7 @@ def lookup_release_multiple(sha1_git_list) -> Iterator[Optional[Dict[str, Any]]]
             yield None
 
 
-def lookup_revision(rev_sha1_git):
+def lookup_revision(rev_sha1_git) -> Dict[str, Any]:
     """Return information about the revision with sha1 revision_sha1_git.
 
     Args:
@@ -504,32 +504,36 @@ def lookup_revision(rev_sha1_git):
 
     """
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
-    revision = _first_element(storage.revision_get([sha1_git_bin]))
+    revision = storage.revision_get([sha1_git_bin])[0]
     if not revision:
-        raise NotFoundExc("Revision with sha1_git %s not found." % rev_sha1_git)
+        raise NotFoundExc(f"Revision with sha1_git {rev_sha1_git} not found.")
     return converters.from_revision(revision)
 
 
-def lookup_revision_multiple(sha1_git_list):
+def lookup_revision_multiple(sha1_git_list) -> Iterator[Optional[Dict[str, Any]]]:
     """Return information about the revisions identified with
     their sha1_git identifiers.
 
     Args:
         sha1_git_list: A list of revision sha1_git identifiers
 
-    Returns:
-        Iterator of revisions information as dict.
+    Yields:
+        revision information as dict if the revision exists, None otherwise.
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
 
     """
     sha1_bin_list = [_to_sha1_bin(sha1_git) for sha1_git in sha1_git_list]
-    revisions = storage.revision_get(sha1_bin_list) or []
-    return (converters.from_revision(r) for r in revisions)
+    revisions = storage.revision_get(sha1_bin_list)
+    for revision in revisions:
+        if revision is not None:
+            yield converters.from_revision(revision)
+        else:
+            yield None
 
 
-def lookup_revision_message(rev_sha1_git):
+def lookup_revision_message(rev_sha1_git) -> Dict[str, bytes]:
     """Return the raw message of the revision with sha1 revision_sha1_git.
 
     Args:
@@ -544,14 +548,12 @@ def lookup_revision_message(rev_sha1_git):
 
     """
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
-
-    revision = _first_element(storage.revision_get([sha1_git_bin]))
+    revision = storage.revision_get([sha1_git_bin])[0]
     if not revision:
-        raise NotFoundExc("Revision with sha1_git %s not found." % rev_sha1_git)
-    if "message" not in revision:
-        raise NotFoundExc("No message for revision with sha1_git %s." % rev_sha1_git)
-    res = {"message": revision["message"]}
-    return res
+        raise NotFoundExc(f"Revision with sha1_git {rev_sha1_git} not found.")
+    if not revision.message:
+        raise NotFoundExc(f"No message for revision with sha1_git {rev_sha1_git}.")
+    return {"message": revision.message}
 
 
 def _lookup_revision_id_by(origin, branch_name, timestamp):
@@ -689,15 +691,16 @@ def lookup_revision_with_context_by(
 
     rev_root_id_bin = hashutil.hash_to_bytes(rev_root_id)
 
-    rev_root = _first_element(storage.revision_get([rev_root_id_bin]))
-
+    rev_root = storage.revision_get([rev_root_id_bin])[0]
     return (
-        converters.from_revision(rev_root),
+        converters.from_revision(rev_root) if rev_root else None,
         lookup_revision_with_context(rev_root, sha1_git, limit),
     )
 
 
-def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
+def lookup_revision_with_context(
+    sha1_git_root: Union[str, Dict[str, Any], Revision], sha1_git: str, limit: int = 100
+) -> Dict[str, Any]:
     """Return information about revision sha1_git, limited to the
     sub-graph of all transitive parents of sha1_git_root.
 
@@ -721,22 +724,24 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
     """
     sha1_git_bin = _to_sha1_bin(sha1_git)
 
-    revision = _first_element(storage.revision_get([sha1_git_bin]))
+    revision = storage.revision_get([sha1_git_bin])[0]
     if not revision:
-        raise NotFoundExc("Revision %s not found" % sha1_git)
+        raise NotFoundExc(f"Revision {sha1_git} not found")
 
     if isinstance(sha1_git_root, str):
         sha1_git_root_bin = _to_sha1_bin(sha1_git_root)
 
-        revision_root = _first_element(storage.revision_get([sha1_git_root_bin]))
+        revision_root = storage.revision_get([sha1_git_root_bin])[0]
         if not revision_root:
-            raise NotFoundExc("Revision root %s not found" % sha1_git_root)
+            raise NotFoundExc(f"Revision root {sha1_git_root} not found")
+    elif isinstance(sha1_git_root, Revision):
+        sha1_git_root_bin = sha1_git_root.id
     else:
         sha1_git_root_bin = sha1_git_root["id"]
 
     revision_log = storage.revision_log([sha1_git_root_bin], limit)
 
-    parents = {}
+    parents: Dict[str, List[str]] = {}
     children = defaultdict(list)
 
     for rev in revision_log:
@@ -746,14 +751,12 @@ def lookup_revision_with_context(sha1_git_root, sha1_git, limit=100):
             parents[rev_id].append(parent_id)
             children[parent_id].append(rev_id)
 
-    if revision["id"] not in parents:
-        raise NotFoundExc(
-            "Revision %s is not an ancestor of %s" % (sha1_git, sha1_git_root)
-        )
+    if revision.id not in parents:
+        raise NotFoundExc(f"Revision {sha1_git} is not an ancestor of {sha1_git_root}")
 
-    revision["children"] = children[revision["id"]]
-
-    return converters.from_revision(revision)
+    revision_d = revision.to_dict()
+    revision_d["children"] = children[revision.id]
+    return converters.from_revision(revision_d)
 
 
 def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
@@ -779,10 +782,10 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
 
     """
     sha1_git_bin = _to_sha1_bin(sha1_git)
-    revision = _first_element(storage.revision_get([sha1_git_bin]))
+    revision = storage.revision_get([sha1_git_bin])[0]
     if not revision:
-        raise NotFoundExc("Revision %s not found" % sha1_git)
-    dir_sha1_git_bin = revision["directory"]
+        raise NotFoundExc(f"Revision {sha1_git} not found")
+    dir_sha1_git_bin = revision.directory
     if dir_path:
         paths = dir_path.strip(os.path.sep).split(os.path.sep)
         entity = storage.directory_entry_get_by_path(
@@ -819,12 +822,12 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             "content": converters.from_content(content_d),
         }
     elif entity["type"] == "rev":  # revision
-        revision = next(storage.revision_get([entity["target"]]))
+        revision = storage.revision_get([entity["target"]])[0]
         return {
             "type": "rev",
             "path": "." if not dir_path else dir_path,
             "revision": sha1_git,
-            "content": converters.from_revision(revision),
+            "content": converters.from_revision(revision) if revision else None,
         }
     else:
         raise NotImplementedError("Entity of type %s not implemented." % entity["type"])

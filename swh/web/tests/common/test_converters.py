@@ -10,6 +10,8 @@ from swh.model.model import (
     ObjectType,
     Person,
     Release,
+    Revision,
+    RevisionType,
     TimestampWithTimezone,
     Timestamp,
 )
@@ -253,7 +255,107 @@ def test_from_release():
     assert actual_release == expected_release
 
 
+def test_from_revision_model_object():
+    ts = int(
+        datetime.datetime(
+            2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
+        ).timestamp()
+    )
+    revision_input = Revision(
+        directory=hashutil.hash_to_bytes("7834ef7e7c357ce2af928115c6c6a42b7e2a44e6"),
+        author=Person(
+            name=b"Software Heritage",
+            fullname=b"robot robot@softwareheritage.org",
+            email=b"robot@softwareheritage.org",
+        ),
+        committer=Person(
+            name=b"Software Heritage",
+            fullname=b"robot robot@softwareheritage.org",
+            email=b"robot@softwareheritage.org",
+        ),
+        message=b"synthetic revision message",
+        date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        committer_date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        synthetic=True,
+        type=RevisionType.TAR,
+        parents=tuple(
+            [
+                hashutil.hash_to_bytes("29d8be353ed3480476f032475e7c244eff7371d5"),
+                hashutil.hash_to_bytes("30d8be353ed3480476f032475e7c244eff7371d5"),
+            ]
+        ),
+        extra_headers=((b"gpgsig", b"some-signature"),),
+        metadata={
+            "original_artifact": [
+                {
+                    "archive_type": "tar",
+                    "name": "webbase-5.7.0.tar.gz",
+                    "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+                    "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+                    "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f"
+                    "309d36484e7edf7bb912",
+                }
+            ],
+        },
+    )
+
+    expected_revision = {
+        "id": "a001358278a0d811fe7072463f805da601121c2a",
+        "directory": "7834ef7e7c357ce2af928115c6c6a42b7e2a44e6",
+        "author": {
+            "name": "Software Heritage",
+            "fullname": "robot robot@softwareheritage.org",
+            "email": "robot@softwareheritage.org",
+        },
+        "committer": {
+            "name": "Software Heritage",
+            "fullname": "robot robot@softwareheritage.org",
+            "email": "robot@softwareheritage.org",
+        },
+        "message": "synthetic revision message",
+        "date": "2000-01-17T11:23:54+00:00",
+        "committer_date": "2000-01-17T11:23:54+00:00",
+        "parents": tuple(
+            [
+                "29d8be353ed3480476f032475e7c244eff7371d5",
+                "30d8be353ed3480476f032475e7c244eff7371d5",
+            ]
+        ),
+        "type": "tar",
+        "synthetic": True,
+        "extra_headers": (("gpgsig", "some-signature"),),
+        "metadata": {
+            "original_artifact": [
+                {
+                    "archive_type": "tar",
+                    "name": "webbase-5.7.0.tar.gz",
+                    "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+                    "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+                    "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f"
+                    "309d36484e7edf7bb912",
+                }
+            ],
+        },
+        "merge": True,
+    }
+
+    actual_revision = converters.from_revision(revision_input)
+
+    assert actual_revision == expected_revision
+
+
 def test_from_revision():
+    ts = datetime.datetime(
+        2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
+    ).timestamp()
     revision_input = {
         "id": hashutil.hash_to_bytes("18d8be353ed3480476f032475e7c233eff7371d5"),
         "directory": hashutil.hash_to_bytes("7834ef7e7c357ce2af928115c6c6a42b7e2a44e6"),
@@ -268,20 +370,8 @@ def test_from_revision():
             "email": b"robot@softwareheritage.org",
         },
         "message": b"synthetic revision message",
-        "date": {
-            "timestamp": datetime.datetime(
-                2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
-        "committer_date": {
-            "timestamp": datetime.datetime(
-                2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
+        "date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
+        "committer_date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
         "synthetic": True,
         "type": "tar",
         "parents": [

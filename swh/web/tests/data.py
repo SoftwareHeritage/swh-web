@@ -236,7 +236,9 @@ def _init_tests_data():
             revisions.add(rev_id)
 
         for rev in storage.revision_get(revisions):
-            dir_id = rev["directory"]
+            if rev is None:
+                continue
+            dir_id = rev.directory
             directories.add(hash_to_hex(dir_id))
             for entry in dir_iterator(storage, dir_id):
                 if entry["type"] == "file":

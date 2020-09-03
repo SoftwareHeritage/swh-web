@@ -210,10 +210,10 @@ class _ArchiveData:
         rel_data = self.storage.release_get([rel_id_bytes])[0]
         return converters.from_release(rel_data) if rel_data else None
 
-    def revision_get(self, rev_id):
+    def revision_get(self, rev_id: str) -> Optional[Dict[str, Any]]:
         rev_id_bytes = hash_to_bytes(rev_id)
-        rev_data = next(self.storage.revision_get([rev_id_bytes]))
-        return converters.from_revision(rev_data)
+        rev_data = self.storage.revision_get([rev_id_bytes])[0]
+        return converters.from_revision(rev_data) if rev_data else None
 
     def revision_log(self, rev_id, limit=None):
         rev_id_bytes = hash_to_bytes(rev_id)

@@ -368,7 +368,7 @@ def unknown_revision():
     into the test archive.
     """
     return sha1().filter(
-        lambda s: next(get_tests_data()["storage"].revision_get([hash_to_bytes(s)]))
+        lambda s: get_tests_data()["storage"].revision_get([hash_to_bytes(s)])[0]
         is None
     )
 
