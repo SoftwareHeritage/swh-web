@@ -54,7 +54,7 @@ function stubSaveRequest(requestUrl, objectType, status, originUrl, taskStatus,
 
 // Mocks API response : /save/(:object_type)/(:origin_url)
 // object_type : {'git', 'hg', 'svn'}
-function genOriginSaveResponse(objectType, saveRequestStatus, originUrl, saveRequestDate, saveTaskStatus) {
+function genOriginSaveResponse(objectType, saveRequestStatus, originUrl, saveRequestDate, saveTaskStatus, visitDate = Date().toString()) {
   return {
     'visit_type': objectType,
     'save_request_status': saveRequestStatus,
@@ -62,7 +62,7 @@ function genOriginSaveResponse(objectType, saveRequestStatus, originUrl, saveReq
     'id': 1,
     'save_request_date': saveRequestDate,
     'save_task_status': saveTaskStatus,
-    'visit_date': null
+    'visit_date': visitDate
   };
 };
 
@@ -186,6 +186,25 @@ describe('Origin Save Tests', function() {
         assert.equal($(cells[4]).text(), saveStatus);
         ++i;
       }
+    });
+  });
+
+  it('should not add timestamp to the browse origin URL is no visit date has been found', function() {
+    const originUrl = 'https://git.example.org/example.git';
+    const saveRequestData = genOriginSaveResponse('git', 'accepted', originUrl, Date().toString(), 'succeed', null);
+    const saveRequestsListData = {
+      'recordsTotal': 1,
+      'draw': 2,
+      'recordsFiltered': 1,
+      'data': [saveRequestData]
+    };
+    cy.route('GET', '/save/requests/list/**', saveRequestsListData);
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('tbody tr').then(rows => {
+      const firstRowCells = rows[0].cells;
+      const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${originUrl}`;
+      const browseOriginLink = `<a href="${browseOriginUrl}">${originUrl}</a>`;
+      expect($(firstRowCells[2]).html()).to.have.string(browseOriginLink);
     });
   });
 
