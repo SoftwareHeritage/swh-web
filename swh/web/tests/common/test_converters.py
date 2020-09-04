@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,15 @@
 import datetime
 
 from swh.model import hashutil
+from swh.model.model import (
+    ObjectType,
+    Person,
+    Release,
+    Revision,
+    RevisionType,
+    TimestampWithTimezone,
+    Timestamp,
+)
 from swh.web.common import converters
 
 
@@ -200,26 +209,30 @@ def test_from_origin_visit():
 
 
 def test_from_release():
-    release_input = {
-        "id": hashutil.hash_to_bytes("aad23fa492a0c5fed0708a6703be875448c86884"),
-        "target": hashutil.hash_to_bytes("5e46d564378afc44b31bb89f99d5675195fbdf67"),
-        "target_type": "revision",
-        "date": {
-            "timestamp": datetime.datetime(
-                2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
-        "author": {
-            "name": b"author name",
-            "fullname": b"Author Name author@email",
-            "email": b"author@email",
-        },
-        "name": b"v0.0.1",
-        "message": b"some comment on release",
-        "synthetic": True,
-    }
+    """Convert release model object to a dict should be ok"""
+    ts = int(
+        datetime.datetime(
+            2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
+        ).timestamp()
+    )
+    release_input = Release(
+        id=hashutil.hash_to_bytes("aad23fa492a0c5fed0708a6703be875448c86884"),
+        target=hashutil.hash_to_bytes("5e46d564378afc44b31bb89f99d5675195fbdf67"),
+        target_type=ObjectType.REVISION,
+        date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        author=Person(
+            name=b"author name",
+            fullname=b"Author Name author@email",
+            email=b"author@email",
+        ),
+        name=b"v0.0.1",
+        message=b"some comment on release",
+        synthetic=True,
+    )
 
     expected_release = {
         "id": "aad23fa492a0c5fed0708a6703be875448c86884",
@@ -242,47 +255,107 @@ def test_from_release():
     assert actual_release == expected_release
 
 
-def test_from_release_no_revision():
-    release_input = {
-        "id": hashutil.hash_to_bytes("b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e"),
-        "target": None,
-        "date": {
-            "timestamp": datetime.datetime(
-                2016, 3, 2, 10, 0, 0, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": True,
+def test_from_revision_model_object():
+    ts = int(
+        datetime.datetime(
+            2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
+        ).timestamp()
+    )
+    revision_input = Revision(
+        directory=hashutil.hash_to_bytes("7834ef7e7c357ce2af928115c6c6a42b7e2a44e6"),
+        author=Person(
+            name=b"Software Heritage",
+            fullname=b"robot robot@softwareheritage.org",
+            email=b"robot@softwareheritage.org",
+        ),
+        committer=Person(
+            name=b"Software Heritage",
+            fullname=b"robot robot@softwareheritage.org",
+            email=b"robot@softwareheritage.org",
+        ),
+        message=b"synthetic revision message",
+        date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        committer_date=TimestampWithTimezone(
+            timestamp=Timestamp(seconds=ts, microseconds=0),
+            offset=0,
+            negative_utc=False,
+        ),
+        synthetic=True,
+        type=RevisionType.TAR,
+        parents=tuple(
+            [
+                hashutil.hash_to_bytes("29d8be353ed3480476f032475e7c244eff7371d5"),
+                hashutil.hash_to_bytes("30d8be353ed3480476f032475e7c244eff7371d5"),
+            ]
+        ),
+        extra_headers=((b"gpgsig", b"some-signature"),),
+        metadata={
+            "original_artifact": [
+                {
+                    "archive_type": "tar",
+                    "name": "webbase-5.7.0.tar.gz",
+                    "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+                    "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+                    "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f"
+                    "309d36484e7edf7bb912",
+                }
+            ],
         },
-        "name": b"v0.1.1",
-        "message": b"comment on release",
-        "synthetic": False,
+    )
+
+    expected_revision = {
+        "id": "a001358278a0d811fe7072463f805da601121c2a",
+        "directory": "7834ef7e7c357ce2af928115c6c6a42b7e2a44e6",
         "author": {
-            "name": b"bob",
-            "fullname": b"Bob bob@alice.net",
-            "email": b"bob@alice.net",
+            "name": "Software Heritage",
+            "fullname": "robot robot@softwareheritage.org",
+            "email": "robot@softwareheritage.org",
         },
+        "committer": {
+            "name": "Software Heritage",
+            "fullname": "robot robot@softwareheritage.org",
+            "email": "robot@softwareheritage.org",
+        },
+        "message": "synthetic revision message",
+        "date": "2000-01-17T11:23:54+00:00",
+        "committer_date": "2000-01-17T11:23:54+00:00",
+        "parents": tuple(
+            [
+                "29d8be353ed3480476f032475e7c244eff7371d5",
+                "30d8be353ed3480476f032475e7c244eff7371d5",
+            ]
+        ),
+        "type": "tar",
+        "synthetic": True,
+        "extra_headers": (("gpgsig", "some-signature"),),
+        "metadata": {
+            "original_artifact": [
+                {
+                    "archive_type": "tar",
+                    "name": "webbase-5.7.0.tar.gz",
+                    "sha1": "147f73f369733d088b7a6fa9c4e0273dcd3c7ccd",
+                    "sha1_git": "6a15ea8b881069adedf11feceec35588f2cfe8f1",
+                    "sha256": "401d0df797110bea805d358b85bcc1ced29549d3d73f"
+                    "309d36484e7edf7bb912",
+                }
+            ],
+        },
+        "merge": True,
     }
 
-    expected_release = {
-        "id": "b2171ee2bdf119cd99a7ec7eff32fa8013ef9a4e",
-        "target": None,
-        "date": "2016-03-02T10:00:00-00:00",
-        "name": "v0.1.1",
-        "message": "comment on release",
-        "synthetic": False,
-        "author": {
-            "name": "bob",
-            "fullname": "Bob bob@alice.net",
-            "email": "bob@alice.net",
-        },
-    }
+    actual_revision = converters.from_revision(revision_input)
 
-    actual_release = converters.from_release(release_input)
-
-    assert actual_release == expected_release
+    assert actual_revision == expected_revision
 
 
 def test_from_revision():
+    ts = datetime.datetime(
+        2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
+    ).timestamp()
     revision_input = {
         "id": hashutil.hash_to_bytes("18d8be353ed3480476f032475e7c233eff7371d5"),
         "directory": hashutil.hash_to_bytes("7834ef7e7c357ce2af928115c6c6a42b7e2a44e6"),
@@ -297,20 +370,8 @@ def test_from_revision():
             "email": b"robot@softwareheritage.org",
         },
         "message": b"synthetic revision message",
-        "date": {
-            "timestamp": datetime.datetime(
-                2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
-        "committer_date": {
-            "timestamp": datetime.datetime(
-                2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
-            ).timestamp(),
-            "offset": 0,
-            "negative_utc": False,
-        },
+        "date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
+        "committer_date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
         "synthetic": True,
         "type": "tar",
         "parents": [

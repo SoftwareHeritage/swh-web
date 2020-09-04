@@ -253,6 +253,8 @@ def process_snapshot_branches(
 
     releases_info = service.lookup_release_multiple(release_to_branch.keys())
     for release in releases_info:
+        if release is None:
+            continue
         branches_to_update = release_to_branch[release["id"]]
         for branch in branches_to_update:
             _add_release_info(branch, release)
@@ -268,8 +270,8 @@ def process_snapshot_branches(
             continue
         for branch in revision_to_branch[revision["id"]]:
             _add_branch_info(branch, revision)
-        for release in revision_to_release[revision["id"]]:
-            releases[release]["directory"] = revision["directory"]
+        for release_id in revision_to_release[revision["id"]]:
+            releases[release_id]["directory"] = revision["directory"]
 
     for branch_alias, branch_target in branch_aliases.items():
         if branch_target in branches:
