@@ -3,4 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-default_app_config = "swh.web.auth.apps.AuthConfig"
+from django.apps import AppConfig
+
+
+class AuthConfig(AppConfig):
+    name = "swh.web.auth"
+    label = "swh.web.auth"
