@@ -153,7 +153,7 @@
   var IS_ALLOWED_URI = seal(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
   );
   var IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
-  var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\u3000]/g // eslint-disable-line no-control-regex
+  var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g // eslint-disable-line no-control-regex
   );
 
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -214,7 +214,7 @@
      * Version label, exposed for easier checks
      * if DOMPurify is up to date or not
      */
-    DOMPurify.version = '2.0.14';
+    DOMPurify.version = '2.0.15';
 
     /**
      * Array of elements that DOMPurify removed during sanitation.
@@ -350,7 +350,7 @@
      * DOMPurify. */
     var RETURN_DOM_IMPORT = false;
 
-    /* Try to return a Trusted Type object instead of a string, retrun a string in
+    /* Try to return a Trusted Type object instead of a string, return a string in
      * case Trusted Types are not supported  */
     var RETURN_TRUSTED_TYPE = false;
 
@@ -518,7 +518,6 @@
     var _forceRemove = function _forceRemove(node) {
       arrayPush(DOMPurify.removed, { element: node });
       try {
-        // eslint-disable-next-line unicorn/prefer-node-remove
         node.parentNode.removeChild(node);
       } catch (_) {
         node.outerHTML = emptyHTML;
@@ -735,7 +734,7 @@
       }
 
       /* Convert markup to cover jQuery behavior */
-      if (SAFE_FOR_JQUERY && !currentNode.firstElementChild && (!currentNode.content || !currentNode.content.firstElementChild) && regExpTest(/</g, currentNode.textContent)) {
+      if (SAFE_FOR_JQUERY && !_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/</g, currentNode.textContent)) {
         arrayPush(DOMPurify.removed, { element: currentNode.cloneNode() });
         if (currentNode.innerHTML) {
           currentNode.innerHTML = stringReplace(currentNode.innerHTML, /</g, '&lt;');
