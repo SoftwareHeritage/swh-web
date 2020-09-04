@@ -90,7 +90,9 @@ export function initOriginSave() {
                 const sanitizedURL = $.fn.dataTable.render.text().display(data);
                 if (row.save_task_status === 'succeed') {
                   let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${sanitizedURL}`;
-                  browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
+                  if (row.visit_date) {
+                    browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
+                  }
                   html += `<a href="${browseOriginUrl}">${sanitizedURL}</a>`;
                 } else {
                   html += sanitizedURL;
