@@ -1,3 +1,13 @@
+swh-web (0.0.257-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.257     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-09-15 12:15:49
+    +0200)
+  * Upstream changes:     - v0.0.257     - common/highlightjs: Fix issue
+    with Pygments 2.7
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 15 Sep 2020 10:27:21 +0000
+
 swh-web (0.0.255-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.255     - (tagged by Antoine R. Dumont
