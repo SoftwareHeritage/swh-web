@@ -7,7 +7,7 @@ import hashlib
 import json
 import textwrap
 
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
@@ -187,8 +187,7 @@ def _revision_diff(request, sha1_git):
         "changes": changes[:_max_displayed_file_diffs],
         "changes_msg": changes_msg,
     }
-    diff_data_json = json.dumps(diff_data, separators=(",", ": "))
-    return HttpResponse(diff_data_json, content_type="application/json")
+    return JsonResponse(diff_data)
 
 
 NB_LOG_ENTRIES = 100

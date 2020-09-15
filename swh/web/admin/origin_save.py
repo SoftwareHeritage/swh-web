@@ -3,13 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
@@ -56,8 +54,7 @@ def _datatables_origin_urls_response(request, urls_query_set):
     paginator = Paginator(urls_query_set, length)
     urls_query_set = paginator.page(page).object_list
     table_data["data"] = [{"url": u.url} for u in urls_query_set]
-    table_data_json = json.dumps(table_data, separators=(",", ": "))
-    return HttpResponse(table_data_json, content_type="application/json")
+    return JsonResponse(table_data)
 
 
 @admin_route(
