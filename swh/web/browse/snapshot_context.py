@@ -1135,7 +1135,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
     query_params["per_page"] = per_page
     revs_ordering = request.GET.get("revs_ordering", "")
-    query_params["revs_ordering"] = revs_ordering
+    query_params["revs_ordering"] = revs_ordering or None
 
     if origin_info:
         browse_view_name = "browse-origin-log"

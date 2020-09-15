@@ -262,7 +262,7 @@ def revision_log_browse(request, sha1_git):
             query_params={
                 "per_page": per_page,
                 "offset": offset + per_page,
-                "revs_ordering": revs_ordering,
+                "revs_ordering": revs_ordering or None,
             },
         )
 
@@ -274,7 +274,7 @@ def revision_log_browse(request, sha1_git):
             query_params={
                 "per_page": per_page,
                 "offset": offset - per_page,
-                "revs_ordering": revs_ordering,
+                "revs_ordering": revs_ordering or None,
             },
         )
 

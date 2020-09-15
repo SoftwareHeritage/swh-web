@@ -80,7 +80,7 @@ def reverse(
     )
 
     if query_params:
-        query_params = {k: v for k, v in query_params.items() if v}
+        query_params = {k: v for k, v in query_params.items() if v is not None}
 
     if query_params and len(query_params) > 0:
         query_dict = QueryDict("", mutable=True)
