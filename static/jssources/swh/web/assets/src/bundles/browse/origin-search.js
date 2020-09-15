@@ -35,7 +35,7 @@ function populateOriginSearchResultsTable(origins) {
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
     for (let [i, origin] of origins.entries()) {
-      let browseUrl = `${Urls.browse_origin()}?origin_url=${origin.url}`;
+      let browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
       let tableRow =
         `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow +=
@@ -44,7 +44,7 @@ function populateOriginSearchResultsTable(origins) {
         'Checking</td>';
       tableRow +=
         '<td style="white-space: nowrap;">' +
-        `<a href="${encodeURI(browseUrl)}">${encodeURI(origin.url)}</a></td>`;
+        `<a href="${browseUrl}">${origin.url}</a></td>`;
       tableRow +=
         `<td class="swh-visit-status" id="visit-status-origin-${i}">` +
         '<i title="Checking archiving status" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
