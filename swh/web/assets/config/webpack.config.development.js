@@ -54,29 +54,30 @@ let cssLoaders = [
   {
     loader: 'postcss-loader',
     options: {
-      ident: 'postcss',
       sourceMap: !isDevServer,
-      plugins: [
-        // lint swh-web stylesheets
-        require('stylelint')({
-          'config': {
-            'extends': 'stylelint-config-standard',
-            'rules': {
-              'indentation': 4,
-              'font-family-no-missing-generic-family-keyword': null,
-              'no-descending-specificity': null
-            },
-            'ignoreFiles': ['node_modules/**/*.css',
-                            'swh/web/assets/src/thirdparty/**/*.css']
-          }
-        }),
-        // automatically add vendor prefixes to css rules
-        require('autoprefixer')(),
-        require('postcss-normalize')(),
-        require('postcss-reporter')({
-          clearReportedMessages: true
-        })
-      ]
+      postcssOptions: {
+        plugins: [
+          // lint swh-web stylesheets
+          require('stylelint')({
+            'config': {
+              'extends': 'stylelint-config-standard',
+              'rules': {
+                'indentation': 4,
+                'font-family-no-missing-generic-family-keyword': null,
+                'no-descending-specificity': null
+              },
+              'ignoreFiles': ['node_modules/**/*.css',
+                              'swh/web/assets/src/thirdparty/**/*.css']
+            }
+          }),
+          // automatically add vendor prefixes to css rules
+          require('autoprefixer')(),
+          require('postcss-normalize')(),
+          require('postcss-reporter')({
+            clearReportedMessages: true
+          })
+        ]
+      }
     }
   }
 ];

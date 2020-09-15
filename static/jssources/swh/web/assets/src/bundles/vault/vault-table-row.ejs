@@ -28,7 +28,7 @@ $ zcat <%= cookingTask.object_id %>.gitfast.gz | git fast-import">
     <% if (cookingTask.origin) { %>
       <td class="vault-origin">
         <a href="<%= Urls.browse_origin() %>?origin_url=<%= cookingTask.origin %>">
-          <%= cookingTask.origin %>
+          <%= decodeURIComponent(cookingTask.origin) %>
         </a>
       </td>
     <% } else { %>

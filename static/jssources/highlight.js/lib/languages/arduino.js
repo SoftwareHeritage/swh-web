@@ -104,6 +104,7 @@ function arduino(hljs) {
   kws.built_in += ' ' + ARDUINO_KW.built_in;
 
   ARDUINO.name = 'Arduino';
+  ARDUINO.aliases = ['ino'];
 
   return ARDUINO;
 }

@@ -441,7 +441,8 @@ def _init_pygments_to_hljs_map():
 
             if lang:
                 for lang_mime_type in lang_mime_types:
-                    _mime_type_to_hljs_language[lang_mime_type] = lang
+                    if lang_mime_type not in _mime_type_to_hljs_language:
+                        _mime_type_to_hljs_language[lang_mime_type] = lang
 
 
 def get_hljs_language_from_filename(filename):

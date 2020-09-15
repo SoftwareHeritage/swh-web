@@ -66,6 +66,10 @@ describe('Test origin-search', function() {
       .should('have.class', 'mdi-check-bold')
       .and('have.attr', 'title',
            'Software origin has been archived by Software Heritage');
+
+    const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
+    cy.get('tr a')
+      .should('have.attr', 'href', browseOriginUrl);
   });
 
   it('should show not found message when no repo matches', function() {

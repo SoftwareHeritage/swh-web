@@ -89,7 +89,7 @@ export function initOriginSave() {
                 let html = '';
                 const sanitizedURL = $.fn.dataTable.render.text().display(data);
                 if (row.save_task_status === 'succeed') {
-                  let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${sanitizedURL}`;
+                  let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(sanitizedURL)}`;
                   if (row.visit_date) {
                     browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
                   }

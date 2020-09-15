@@ -55,7 +55,7 @@ export function captureMessage(message, captureContext) {
         syntheticException = exception;
     }
     // This is necessary to provide explicit scopes upgrade, without changing the original
-    // arrity of the `captureMessage(message, level)` method.
+    // arity of the `captureMessage(message, level)` method.
     var level = typeof captureContext === 'string' ? captureContext : undefined;
     var context = typeof captureContext !== 'string' ? { captureContext: captureContext } : undefined;
     return callOnHub('captureMessage', message, level, __assign({ originalException: message, syntheticException: syntheticException }, context));

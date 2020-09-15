@@ -332,7 +332,7 @@ function javascript(hljs) {
           lookahead(concat(
             // we also need to allow for multiple possible comments inbetween
             // the first key:value pairing
-            /(((\/\/.*)|(\/\*(.|\n)*\*\/))\s*)*/,
+            /(((\/\/.*$)|(\/\*(.|\n)*\*\/))\s*)*/,
             IDENT_RE$1 + '\\s*:'))),
         relevance: 0,
         contains: [
