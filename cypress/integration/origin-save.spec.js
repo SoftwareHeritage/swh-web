@@ -216,7 +216,7 @@ describe('Origin Save Tests', function() {
         assert.equal($(cells[1]).text(), this.originSaveJSON.data[i].visit_type);
         let html = '';
         if (saveStatus === 'succeed') {
-          let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${this.originSaveJSON.data[i].origin_url}`;
+          let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(this.originSaveJSON.data[i].origin_url)}`;
           browseOriginUrl += `&amp;timestamp=${encodeURIComponent(this.originSaveJSON.data[i].visit_date)}`;
           html += `<a href="${browseOriginUrl}">${this.originSaveJSON.data[i].origin_url}</a>`;
         } else {
@@ -250,7 +250,7 @@ describe('Origin Save Tests', function() {
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('tbody tr').then(rows => {
       const firstRowCells = rows[0].cells;
-      const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${originUrl}`;
+      const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(originUrl)}`;
       const browseOriginLink = `<a href="${browseOriginUrl}">${originUrl}</a>`;
       expect($(firstRowCells[2]).html()).to.have.string(browseOriginLink);
     });
