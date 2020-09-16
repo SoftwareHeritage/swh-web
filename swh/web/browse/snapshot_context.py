@@ -14,7 +14,6 @@ from django.core.cache import cache
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
-import sentry_sdk
 
 from swh.model.identifiers import (
     swhid,
@@ -536,13 +535,7 @@ def get_snapshot_context(
         query_params["revision"] = revision_id
     elif snapshot_total_size and release_name:
         release = _get_release(releases, release_name, snapshot_id)
-        try:
-            root_directory = release["directory"]
-            revision_id = release["target"]
-            release_id = release["id"]
-            query_params["release"] = release_name
-        except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+        if release is None:
             _branch_not_found(
                 "release",
                 release_name,
@@ -552,16 +545,16 @@ def get_snapshot_context(
                 timestamp,
                 visit_id,
             )
+        else:
+            root_directory = release["directory"]
+            revision_id = release["target"]
+            release_id = release["id"]
+            query_params["release"] = release_name
     elif snapshot_total_size:
         if branch_name:
             query_params["branch"] = branch_name
         branch = _get_branch(branches, branch_name or "HEAD", snapshot_id)
-        try:
-            branch_name = branch["name"]
-            revision_id = branch["revision"]
-            root_directory = branch["directory"]
-        except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+        if branch is None:
             _branch_not_found(
                 "branch",
                 branch_name,
@@ -571,6 +564,10 @@ def get_snapshot_context(
                 timestamp,
                 visit_id,
             )
+        else:
+            branch_name = branch["name"]
+            revision_id = branch["revision"]
+            root_directory = branch["directory"]
 
     for b in branches:
         branch_query_params = dict(query_params)
@@ -1138,7 +1135,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
     query_params["per_page"] = per_page
     revs_ordering = request.GET.get("revs_ordering", "")
-    query_params["revs_ordering"] = revs_ordering
+    query_params["revs_ordering"] = revs_ordering or None
 
     if origin_info:
         browse_view_name = "browse-origin-log"

@@ -4,8 +4,13 @@
 # See top-level LICENSE file for more information
 
 import datetime
+from urllib.parse import quote
 
 import pytest
+
+from django.conf.urls import url
+from django.test.utils import override_settings
+from django.urls.exceptions import NoReverseMatch
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
@@ -138,3 +143,93 @@ def test_rst_to_html():
     )
 
     assert utils.rst_to_html(rst) == expected_html
+
+
+def sample_test_view(request, string, number):
+    pass
+
+
+def sample_test_view_no_url_args(request):
+    pass
+
+
+urlpatterns = [
+    url(
+        r"^sample/test/(?P<string>.+)/view/(?P<number>[0-9]+)/$",
+        sample_test_view,
+        name="sample-test-view",
+    ),
+    url(
+        r"^sample/test/view/no/url/args/$",
+        sample_test_view_no_url_args,
+        name="sample-test-view-no-url-args",
+    ),
+]
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_url_args_only_ok():
+    string = "foo"
+    number = 55
+    url = utils.reverse(
+        "sample-test-view", url_args={"string": string, "number": number}
+    )
+    assert url == f"/sample/test/{string}/view/{number}/"
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_url_args_only_ko():
+    string = "foo"
+    with pytest.raises(NoReverseMatch):
+        utils.reverse("sample-test-view", url_args={"string": string, "number": string})
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_no_url_args():
+    url = utils.reverse("sample-test-view-no-url-args")
+    assert url == "/sample/test/view/no/url/args/"
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_query_params_only():
+    start = 0
+    scope = "foo"
+    url = utils.reverse(
+        "sample-test-view-no-url-args", query_params={"start": start, "scope": scope}
+    )
+    assert url == f"/sample/test/view/no/url/args/?scope={scope}&start={start}"
+
+    url = utils.reverse(
+        "sample-test-view-no-url-args", query_params={"start": start, "scope": None}
+    )
+    assert url == f"/sample/test/view/no/url/args/?start={start}"
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_query_params_encode():
+    libname = "libstc++"
+    url = utils.reverse(
+        "sample-test-view-no-url-args", query_params={"libname": libname}
+    )
+    assert url == f"/sample/test/view/no/url/args/?libname={quote(libname, safe='/;:')}"
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_url_args_query_params():
+    string = "foo"
+    number = 55
+    start = 10
+    scope = "bar"
+    url = utils.reverse(
+        "sample-test-view",
+        url_args={"string": string, "number": number},
+        query_params={"start": start, "scope": scope},
+    )
+    assert url == f"/sample/test/{string}/view/{number}/?scope={scope}&start={start}"
+
+
+@override_settings(ROOT_URLCONF=__name__)
+def test_reverse_absolute_uri(request_factory):
+    request = request_factory.get(utils.reverse("sample-test-view-no-url-args"))
+    url = utils.reverse("sample-test-view-no-url-args", request=request)
+    assert url == f"http://{request.META['SERVER_NAME']}/sample/test/view/no/url/args/"
