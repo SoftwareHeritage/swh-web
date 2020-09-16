@@ -58,7 +58,7 @@ let cssLoaders = [
       postcssOptions: {
         plugins: [
           // lint swh-web stylesheets
-          require('stylelint')({
+          ['stylelint', {
             'config': {
               'extends': 'stylelint-config-standard',
               'rules': {
@@ -69,13 +69,13 @@ let cssLoaders = [
               'ignoreFiles': ['node_modules/**/*.css',
                               'swh/web/assets/src/thirdparty/**/*.css']
             }
-          }),
+          }],
           // automatically add vendor prefixes to css rules
-          require('autoprefixer')(),
-          require('postcss-normalize')(),
-          require('postcss-reporter')({
+          'autoprefixer',
+          'postcss-normalize',
+          ['postcss-reporter', {
             clearReportedMessages: true
-          })
+          }]
         ]
       }
     }

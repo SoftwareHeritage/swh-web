@@ -3,11 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-
 from django.conf.urls import url
 from django.core.cache import caches
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -203,11 +201,10 @@ def _swh_coverage_count(request):
                     "origin_types": code_provider["origin_types"],
                 }
             )
-        results = json.dumps(results)
     except Exception as exc:
         return handle_view_exception(request, exc, html_response=False)
 
-    return HttpResponse(results, content_type="application/json")
+    return JsonResponse(results)
 
 
 urlpatterns = [

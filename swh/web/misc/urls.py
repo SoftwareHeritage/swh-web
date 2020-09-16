@@ -10,7 +10,7 @@ import sentry_sdk
 
 from django.conf.urls import url, include
 from django.contrib.staticfiles import finders
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 
 from swh.web.common import service
@@ -28,7 +28,7 @@ def _jslicenses(request):
 
 
 def _stat_counters(request):
-    stat = service.stat_counters()
+    stat_counters = service.stat_counters()
     url = get_config()["history_counters_url"]
     stat_counters_history = "null"
     if url:
@@ -37,11 +37,11 @@ def _stat_counters(request):
             stat_counters_history = response.text
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
-    json_data = '{"stat_counters": %s, "stat_counters_history": %s}' % (
-        json.dumps(stat),
-        stat_counters_history,
-    )
-    return HttpResponse(json_data, content_type="application/json")
+    counters = {
+        "stat_counters": stat_counters,
+        "stat_counters_history": stat_counters_history,
+    }
+    return JsonResponse(counters)
 
 
 urlpatterns = [
