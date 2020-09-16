@@ -224,3 +224,44 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     assert len(sors) == 2
     assert sors[0]["visit_date"] is None
     mock_get_origin_visits.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_get_save_origin_requests_no_visit_date_found(mocker):
+    # create a save request
+    SaveOriginRequest.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type=_visit_type,
+        origin_url=_origin_url,
+        status="accepted",
+        visit_date=None,
+        loading_task_id=_task_id,
+    )
+
+    # mock scheduler and services
+    _mock_scheduler(mocker)
+    mock_service = mocker.patch("swh.web.common.origin_save.service")
+    mock_service.lookup_origin.return_value = {"url": _origin_url}
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_save.get_origin_visits"
+    )
+    # create a visit for the save request with status created
+    visit_date = datetime.now(tz=timezone.utc).isoformat()
+    visit_info = OriginVisitInfo(
+        date=visit_date,
+        formatted_date="",
+        metadata={},
+        origin=_origin_url,
+        snapshot=None,
+        status="created",
+        type=_visit_type,
+        url="",
+        visit=34,
+    )
+    mock_get_origin_visits.return_value = [visit_info]
+
+    # check no visit date has been found
+    sors = get_save_origin_requests(_visit_type, _origin_url)
+    assert len(sors) == 1
+    assert sors[0]["visit_date"] is None
+    mock_get_origin_visits.assert_called_once()

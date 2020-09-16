@@ -3,11 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-
 from django.conf.urls import url
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
+from django.http import JsonResponse
 from django.shortcuts import render
 
 from rest_framework.decorators import api_view, authentication_classes
@@ -42,23 +40,17 @@ def _origin_save_request(request, visit_type, origin_url):
     per user to avoid being possibly flooded by bots.
     """
     try:
-        response = json.dumps(
-            create_save_origin_request(visit_type, origin_url), separators=(",", ": ")
-        )
-        return HttpResponse(response, content_type="application/json")
+        response = create_save_origin_request(visit_type, origin_url)
+        return JsonResponse(response)
     except ForbiddenExc as exc:
-        return HttpResponseForbidden(
-            json.dumps({"detail": str(exc)}), content_type="application/json"
-        )
+        return JsonResponse({"detail": str(exc)}, status=403)
     except Exception as exc:
-        return HttpResponseServerError(
-            json.dumps({"detail": str(exc)}), content_type="application/json"
-        )
+        return JsonResponse({"detail": str(exc)}, status=500)
 
 
 def _visit_save_types_list(request):
-    visit_types = json.dumps(get_savable_visit_types(), separators=(",", ": "))
-    return HttpResponse(visit_types, content_type="application/json")
+    visit_types = get_savable_visit_types()
+    return JsonResponse(visit_types, safe=False)
 
 
 def _origin_save_requests_list(request, status):
@@ -98,8 +90,7 @@ def _origin_save_requests_list(request, status):
     table_data["recordsFiltered"] = len(save_requests)
     paginator = Paginator(save_requests, length)
     table_data["data"] = paginator.page(page).object_list
-    table_data_json = json.dumps(table_data, separators=(",", ": "))
-    return HttpResponse(table_data_json, content_type="application/json")
+    return JsonResponse(table_data)
 
 
 def _save_origin_task_info(request, save_request_id):
@@ -109,7 +100,7 @@ def _save_origin_task_info(request, save_request_id):
     for date_field in ("scheduled", "started", "ended"):
         if date_field in request_info and request_info[date_field] is not None:
             request_info[date_field] = request_info[date_field].isoformat()
-    return HttpResponse(json.dumps(request_info), content_type="application/json")
+    return JsonResponse(request_info)
 
 
 urlpatterns = [

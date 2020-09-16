@@ -57,7 +57,7 @@ def test_revision_log_browse(client, archive_data, revision):
     next_page_url = reverse(
         "browse-revision-log",
         url_args={"sha1_git": revision},
-        query_params={"offset": per_page, "per_page": per_page},
+        query_params={"offset": per_page, "per_page": per_page,},
     )
 
     nb_log_entries = per_page
@@ -91,7 +91,7 @@ def test_revision_log_browse(client, archive_data, revision):
     prev_page_url = reverse(
         "browse-revision-log",
         url_args={"sha1_git": revision},
-        query_params={"per_page": per_page},
+        query_params={"offset": 0, "per_page": per_page},
     )
     next_page_url = reverse(
         "browse-revision-log",

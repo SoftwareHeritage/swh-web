@@ -3,16 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
-import requests
-
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 
+import requests
 from requests.auth import HTTPBasicAuth
 import sentry_sdk
 
@@ -108,4 +106,4 @@ def _admin_deposit_list(request):
             "An error occurred while retrieving " "the list of deposits !"
         )
 
-    return HttpResponse(json.dumps(table_data), content_type="application/json")
+    return JsonResponse(table_data)

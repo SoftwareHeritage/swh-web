@@ -4,11 +4,10 @@
 # See top-level LICENSE file for more information
 
 import difflib
-import json
 
 from distutils.util import strtobool
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 import sentry_sdk
@@ -174,8 +173,7 @@ def _contents_diff(request, from_query_string, to_query_string):
 
     diff_data["diff_str"] = diff_str
     diff_data["language"] = language
-    diff_data_json = json.dumps(diff_data, separators=(",", ": "))
-    return HttpResponse(diff_data_json, content_type="application/json")
+    return JsonResponse(diff_data)
 
 
 @browse_route(

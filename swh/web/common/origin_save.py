@@ -164,7 +164,7 @@ def _get_visit_info_for_save_request(save_request):
             if i != len(visit_dates):
                 visit_date = visit_dates[i]
                 visit_status = origin_visits[i]["status"]
-                if origin_visits[i]["status"] == "ongoing":
+                if origin_visits[i]["status"] not in ("full", "partial"):
                     visit_date = None
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
