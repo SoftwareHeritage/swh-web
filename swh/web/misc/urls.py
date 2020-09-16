@@ -34,7 +34,7 @@ def _stat_counters(request):
     if url:
         try:
             response = requests.get(url, timeout=5)
-            stat_counters_history = response.text
+            stat_counters_history = json.loads(response.text)
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
     counters = {
