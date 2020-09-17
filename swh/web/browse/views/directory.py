@@ -5,10 +5,11 @@
 
 import os
 
+import sentry_sdk
+
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template.defaultfilters import filesizeformat
-import sentry_sdk
 
 from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route

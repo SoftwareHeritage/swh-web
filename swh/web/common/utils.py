@@ -8,14 +8,15 @@ import re
 from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
-from django.http import HttpRequest, QueryDict
-from django.urls import reverse as django_reverse
 from docutils.core import publish_parts
 import docutils.parsers.rst
 import docutils.utils
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 from prometheus_client.registry import CollectorRegistry
+
+from django.http import HttpRequest, QueryDict
+from django.urls import reverse as django_reverse
 from rest_framework.authentication import SessionAuthentication
 
 from swh.web.common.exc import BadInputExc

@@ -5,8 +5,9 @@
 
 from datetime import datetime, timedelta
 
-from django.utils import timezone
 import pytest
+
+from django.utils import timezone
 
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,

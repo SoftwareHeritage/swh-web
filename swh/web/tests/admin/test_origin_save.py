@@ -5,8 +5,9 @@
 
 from urllib.parse import unquote
 
-from django.contrib.auth import get_user_model
 import pytest
+
+from django.contrib.auth import get_user_model
 
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,

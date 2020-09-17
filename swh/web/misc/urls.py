@@ -5,12 +5,13 @@
 
 import json
 
+import requests
+import sentry_sdk
+
 from django.conf.urls import include, url
 from django.contrib.staticfiles import finders
 from django.http import JsonResponse
 from django.shortcuts import render
-import requests
-import sentry_sdk
 
 from swh.web.common import service
 from swh.web.config import get_config

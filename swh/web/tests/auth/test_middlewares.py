@@ -5,8 +5,9 @@
 
 from datetime import datetime
 
-from django.test import modify_settings
 import pytest
+
+from django.test import modify_settings
 
 from swh.web.common.utils import reverse
 

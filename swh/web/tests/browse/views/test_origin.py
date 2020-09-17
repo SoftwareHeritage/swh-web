@@ -7,8 +7,9 @@ import random
 import re
 import string
 
-from django.utils.html import escape
 from hypothesis import given
+
+from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT

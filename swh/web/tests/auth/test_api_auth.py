@@ -3,8 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.contrib.auth.models import AnonymousUser, User
 import pytest
+
+from django.contrib.auth.models import AnonymousUser, User
 
 from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse

@@ -6,10 +6,11 @@
 import difflib
 from distutils.util import strtobool
 
+import sentry_sdk
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
-import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT

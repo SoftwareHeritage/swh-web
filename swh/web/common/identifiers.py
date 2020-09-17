@@ -6,8 +6,9 @@
 from typing import Any, Dict, Iterable, List, Optional, cast
 from urllib.parse import quote
 
-from django.http import QueryDict
 from typing_extensions import TypedDict
+
+from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes

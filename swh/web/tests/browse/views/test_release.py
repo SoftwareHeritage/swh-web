@@ -5,8 +5,9 @@
 
 import random
 
-from django.utils.html import escape
 from hypothesis import given
+
+from django.utils.html import escape
 
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse

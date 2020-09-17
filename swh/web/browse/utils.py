@@ -8,11 +8,12 @@ import stat
 import textwrap
 from threading import Lock
 
+import magic
+import sentry_sdk
+
 from django.core.cache import cache
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-import magic
-import sentry_sdk
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import http_status_code_message

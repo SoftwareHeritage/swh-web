@@ -5,8 +5,9 @@
 
 from typing import Any, Dict, List, Optional, TypeVar, Union
 
-from django.http import QueryDict
 from typing_extensions import TypedDict
+
+from django.http import QueryDict
 
 from swh.core.api.classes import PagedResult as CorePagedResult
 

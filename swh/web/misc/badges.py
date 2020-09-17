@@ -6,10 +6,11 @@
 from base64 import b64encode
 from typing import Optional, cast
 
+from pybadges import badge
+
 from django.conf.urls import url
 from django.contrib.staticfiles import finders
 from django.http import HttpRequest, HttpResponse
-from pybadges import badge
 
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (

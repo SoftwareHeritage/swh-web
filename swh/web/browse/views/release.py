@@ -3,8 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.shortcuts import render
 import sentry_sdk
+
+from django.shortcuts import render
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route

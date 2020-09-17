@@ -4,6 +4,8 @@
 # See top-level LICENSE file for more information
 
 
+from django_js_reverse.views import urls_js
+
 from django.conf import settings
 from django.conf.urls import (
     handler400,
@@ -17,7 +19,6 @@ from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
 from django.views.generic.base import RedirectView
-from django_js_reverse.views import urls_js
 
 from swh.web.browse.identifiers import swhid_browse
 from swh.web.common.exc import (

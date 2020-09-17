@@ -10,12 +10,13 @@ import json
 import logging
 from typing import Any, Dict
 
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.validators import URLValidator
-from django.utils.html import escape
 from prometheus_client import Gauge
 import requests
 import sentry_sdk
+
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import URLValidator
+from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web import config

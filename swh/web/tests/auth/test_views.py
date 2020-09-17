@@ -6,9 +6,10 @@
 from urllib.parse import urljoin, urlparse
 import uuid
 
+import pytest
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import QueryDict
-import pytest
 
 from swh.web.auth.models import OIDCUser
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID

@@ -7,12 +7,13 @@ from datetime import datetime, timedelta
 import hashlib
 from typing import Any, Dict, Optional
 
+import sentry_sdk
+
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
-import sentry_sdk
 
 from swh.web.auth.keycloak import KeycloakOpenIDConnect
 from swh.web.auth.models import OIDCUser

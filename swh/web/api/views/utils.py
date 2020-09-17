@@ -6,10 +6,11 @@
 from types import GeneratorType
 from typing import Any, Callable, Dict, Mapping, Optional
 
+from typing_extensions import Protocol
+
 from django.http import HttpRequest
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from typing_extensions import Protocol
 
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.common.exc import NotFoundExc

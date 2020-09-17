@@ -6,10 +6,11 @@
 from ipaddress import IPv4Network, IPv6Network, ip_address, ip_network
 from typing import Callable, List, TypeVar, Union
 
+import sentry_sdk
+
 from django.core.exceptions import ImproperlyConfigured
 import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
-import sentry_sdk
 
 from swh.web.config import get_config
 

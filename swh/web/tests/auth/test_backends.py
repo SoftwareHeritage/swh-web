@@ -5,9 +5,10 @@
 
 from datetime import datetime, timedelta
 
+import pytest
+
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
-import pytest
 from rest_framework.exceptions import AuthenticationFailed
 
 from swh.web.auth.backends import OIDCBearerTokenAuthentication

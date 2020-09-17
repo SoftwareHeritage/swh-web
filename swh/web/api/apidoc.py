@@ -14,8 +14,9 @@ from typing import List
 import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
-from rest_framework.decorators import api_view
 import sentry_sdk
+
+from rest_framework.decorators import api_view
 
 from swh.web.api.apiresponse import error_response, make_api_response
 from swh.web.api.apiurls import APIUrls

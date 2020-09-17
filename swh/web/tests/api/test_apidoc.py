@@ -6,6 +6,7 @@
 import textwrap
 
 import pytest
+
 from rest_framework.response import Response
 
 from swh.storage.exc import StorageAPIError, StorageDBError

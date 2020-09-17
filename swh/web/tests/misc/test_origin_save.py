@@ -5,8 +5,9 @@
 
 from datetime import datetime
 
-from django.test import Client
 import pytest
+
+from django.test import Client
 
 from swh.web.common.origin_save import (
     SAVE_REQUEST_ACCEPTED,

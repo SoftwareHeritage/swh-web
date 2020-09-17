@@ -10,9 +10,10 @@ from subprocess import PIPE, run
 import sys
 from typing import Any, Dict, List, Optional
 
-from django.core.cache import cache
 from hypothesis import HealthCheck, settings
 import pytest
+
+from django.core.cache import cache
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes

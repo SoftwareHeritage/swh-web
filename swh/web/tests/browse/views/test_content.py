@@ -5,8 +5,9 @@
 
 import random
 
-from django.utils.html import escape
 from hypothesis import given
+
+from django.utils.html import escape
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.snapshot_context import process_snapshot_branches
