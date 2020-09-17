@@ -42,6 +42,11 @@ repos:
     language: system
     types: [javascript]
 
+- repo: https://github.com/PyCQA/isort
+  rev: 5.5.2
+  hooks:
+  - id: isort
+
 - repo: https://github.com/python/black
   rev: 19.10b0
   hooks:
