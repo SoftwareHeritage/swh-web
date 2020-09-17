@@ -6,15 +6,14 @@
 from urllib.parse import urljoin, urlparse
 import uuid
 
-from django.http import QueryDict
 from django.contrib.auth.models import AnonymousUser, User
-
+from django.http import QueryDict
 import pytest
 
 from swh.web.auth.models import OIDCUser
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
-from swh.web.tests.django_asserts import assert_template_used, assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.urls import _default_view as homepage_view
 
 from . import sample_data

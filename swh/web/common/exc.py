@@ -7,8 +7,8 @@ import traceback
 
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
 import sentry_sdk
 
 from swh.web.config import get_config

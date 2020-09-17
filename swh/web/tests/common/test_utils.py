@@ -6,11 +6,10 @@
 import datetime
 from urllib.parse import quote
 
-import pytest
-
 from django.conf.urls import url
 from django.test.utils import override_settings
 from django.urls.exceptions import NoReverseMatch
+import pytest
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc

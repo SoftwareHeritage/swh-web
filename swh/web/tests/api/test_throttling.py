@@ -3,21 +3,19 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import pytest
-
 from django.conf.urls import url
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.test.utils import override_settings
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
+import pytest
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from swh.web.api.throttling import (
+    API_THROTTLING_EXEMPTED_PERM,
     SwhWebRateThrottle,
     throttle_scope,
-    API_THROTTLING_EXEMPTED_PERM,
 )
 from swh.web.settings.tests import (
     scope1_limiter_rate,

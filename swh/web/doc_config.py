@@ -6,9 +6,8 @@
 import importlib.util
 import os
 
-from sphinxcontrib import httpdomain
-
 from sphinx.ext import autodoc
+from sphinxcontrib import httpdomain
 
 # guard to avoid ImportError when running tests through sbuild
 # as there is no Debian package built for swh-docs

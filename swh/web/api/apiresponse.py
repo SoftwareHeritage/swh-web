@@ -7,15 +7,13 @@ import json
 import traceback
 
 from django.utils.html import escape
-
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 
-from swh.storage.exc import StorageDBError, StorageAPIError
-
+from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api import utils
-from swh.web.common.exc import NotFoundExc, ForbiddenExc, BadInputExc, LargePayloadExc
-from swh.web.common.utils import shorten_path, gen_path_info
+from swh.web.common.exc import BadInputExc, ForbiddenExc, LargePayloadExc, NotFoundExc
+from swh.web.common.utils import gen_path_info, shorten_path
 from swh.web.config import get_config
 
 

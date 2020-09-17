@@ -3,49 +3,48 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
 import itertools
-import pytest
 import random
 
-from collections import defaultdict
 from hypothesis import given
+import pytest
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.from_disk import DentryPerms
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.model.model import Directory, DirectoryEntry, Origin, OriginVisit, Revision
-
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.tests.data import random_sha1, random_content
+from swh.web.tests.conftest import ctags_json_missing, fossology_missing
+from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
+    ancestor_revisions,
     content,
-    unknown_content,
     contents,
-    unknown_contents,
     contents_with_ctags,
-    origin,
-    new_origin,
-    visit_dates,
     directory,
-    unknown_directory,
+    empty_directory,
+    invalid_sha1,
+    new_origin,
+    new_revision,
+    non_ancestor_revisions,
+    origin,
     release,
-    unknown_release,
     releases,
     revision,
-    unknown_revision,
-    revisions,
-    ancestor_revisions,
-    non_ancestor_revisions,
-    invalid_sha1,
-    sha256,
     revision_with_submodules,
-    empty_directory,
-    new_revision,
+    revisions,
+    sha256,
     snapshot,
+    unknown_content,
+    unknown_contents,
+    unknown_directory,
+    unknown_release,
+    unknown_revision,
     unknown_snapshot,
+    visit_dates,
 )
-from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 
 
 @given(contents())

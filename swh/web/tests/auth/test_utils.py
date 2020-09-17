@@ -3,10 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from base64 import urlsafe_b64encode
 import hashlib
 import re
-
-from base64 import urlsafe_b64encode
 
 from swh.web.auth.utils import gen_oidc_pkce_codes
 

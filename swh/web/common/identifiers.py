@@ -3,17 +3,15 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Any, Dict, Iterable, List, Optional, cast
 from urllib.parse import quote
-from typing import cast, Any, Dict, Iterable, List, Optional
-from typing_extensions import TypedDict
 
 from django.http import QueryDict
+from typing_extensions import TypedDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import (
-    swhid,
-    parse_swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
@@ -21,16 +19,17 @@ from swh.model.identifiers import (
     REVISION,
     SNAPSHOT,
     SWHID,
+    parse_swhid,
+    swhid,
 )
-
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (
     QueryParameters,
     SnapshotContext,
-    SWHObjectInfo,
-    SWHIDInfo,
     SWHIDContext,
+    SWHIDInfo,
+    SWHObjectInfo,
 )
 from swh.web.common.utils import reverse
 

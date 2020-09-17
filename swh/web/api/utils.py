@@ -3,12 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest
 
-from swh.web.common.utils import reverse, resolve_branch_alias
 from swh.web.common.query import parse_hash
+from swh.web.common.utils import resolve_branch_alias, reverse
 
 
 def filter_field_keys(data, field_keys):

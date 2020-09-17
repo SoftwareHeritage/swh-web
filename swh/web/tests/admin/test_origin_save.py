@@ -5,22 +5,19 @@
 
 from urllib.parse import unquote
 
+from django.contrib.auth import get_user_model
 import pytest
 
-from django.contrib.auth import get_user_model
-
 from swh.web.common.models import (
-    SaveAuthorizedOrigin,
-    SaveUnauthorizedOrigin,
-    SaveOriginRequest,
-)
-from swh.web.common.origin_save import can_save_origin
-from swh.web.common.models import (
-    SAVE_REQUEST_PENDING,
     SAVE_REQUEST_ACCEPTED,
+    SAVE_REQUEST_PENDING,
     SAVE_REQUEST_REJECTED,
     SAVE_TASK_NOT_YET_SCHEDULED,
+    SaveAuthorizedOrigin,
+    SaveOriginRequest,
+    SaveUnauthorizedOrigin,
 )
+from swh.web.common.origin_save import can_save_origin
 from swh.web.common.utils import reverse
 
 _user_name = "swh-web-admin"

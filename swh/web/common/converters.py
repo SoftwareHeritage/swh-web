@@ -5,14 +5,12 @@
 
 import datetime
 import json
-
 from typing import Any, Dict, Union
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
 from swh.model.model import Release, Revision
 from swh.storage.interface import PartialBranches
-
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 
 

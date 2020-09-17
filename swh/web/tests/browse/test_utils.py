@@ -4,10 +4,10 @@
 # See top-level LICENSE file for more information
 
 from swh.web.browse.utils import (
-    get_mimetype_and_encoding_for_content,
     gen_link,
-    gen_revision_link,
     gen_person_mail_link,
+    gen_revision_link,
+    get_mimetype_and_encoding_for_content,
 )
 from swh.web.common.utils import reverse
 

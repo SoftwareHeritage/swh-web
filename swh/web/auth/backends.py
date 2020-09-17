@@ -10,16 +10,13 @@ from typing import Any, Dict, Optional
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.utils import timezone
-
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
-
 import sentry_sdk
 
 from swh.web.auth.keycloak import KeycloakOpenIDConnect
-from swh.web.auth.utils import get_oidc_client
 from swh.web.auth.models import OIDCUser
-
+from swh.web.auth.utils import get_oidc_client
 
 # OpenID Connect client to communicate with Keycloak server
 _oidc_client: KeycloakOpenIDConnect = get_oidc_client()

@@ -6,23 +6,21 @@
 import json
 import os
 import shutil
+from subprocess import PIPE, run
 import sys
-
-from subprocess import run, PIPE
 from typing import Any, Dict, List, Optional
 
-import pytest
-
 from django.core.cache import cache
-from hypothesis import settings, HealthCheck
+from hypothesis import HealthCheck, settings
+import pytest
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
+from swh.storage.algos.origin import origin_get_latest_visit_status
+from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 from swh.web.common import converters
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.tests.data import get_tests_data, override_storages
-from swh.storage.algos.origin import origin_get_latest_visit_status
-from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 
 # Used to skip some tests
 ctags_json_missing = (

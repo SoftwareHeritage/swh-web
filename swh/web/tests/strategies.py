@@ -3,33 +3,30 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import random
-
 from collections import defaultdict
 from datetime import datetime
+import random
 
-from hypothesis import settings, assume
+from hypothesis import assume, settings
 from hypothesis.extra.dateutil import timezones
 from hypothesis.strategies import (
-    just,
-    sampled_from,
-    lists,
+    binary,
+    characters,
     composite,
     datetimes,
-    binary,
+    just,
+    lists,
+    sampled_from,
     text,
-    characters,
 )
 
-from swh.model.hashutil import hash_to_hex, hash_to_bytes
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.hypothesis_strategies import origins as new_origin_strategy
+from swh.model.hypothesis_strategies import snapshots as new_snapshot
 from swh.model.identifiers import directory_identifier
 from swh.model.model import Person, Revision, RevisionType, TimestampWithTimezone
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest
-from swh.model.hypothesis_strategies import (
-    origins as new_origin_strategy,
-    snapshots as new_snapshot,
-)
 from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.tests.data import get_tests_data
 

@@ -3,15 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import pytest
-
 from django.contrib.auth.models import AnonymousUser, User
+import pytest
 
 from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
 
-from .keycloak_mock import mock_keycloak
 from . import sample_data
+from .keycloak_mock import mock_keycloak
 
 
 @pytest.mark.django_db

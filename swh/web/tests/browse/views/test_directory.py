@@ -17,8 +17,8 @@ from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
     invalid_sha1,
-    unknown_directory,
     origin_with_multiple_visits,
+    unknown_directory,
 )
 
 

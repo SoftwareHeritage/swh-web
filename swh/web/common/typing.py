@@ -3,12 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.core.api.classes import PagedResult as CorePagedResult
-
 from typing import Any, Dict, List, Optional, TypeVar, Union
-from typing_extensions import TypedDict
 
 from django.http import QueryDict
+from typing_extensions import TypedDict
+
+from swh.core.api.classes import PagedResult as CorePagedResult
 
 QueryParameters = Union[Dict[str, Any], QueryDict]
 

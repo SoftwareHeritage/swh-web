@@ -3,9 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import yaml
-
 from rest_framework import renderers
+import yaml
 
 
 class YAMLRenderer(renderers.BaseRenderer):

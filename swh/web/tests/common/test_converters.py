@@ -12,8 +12,8 @@ from swh.model.model import (
     Release,
     Revision,
     RevisionType,
-    TimestampWithTimezone,
     Timestamp,
+    TimestampWithTimezone,
 )
 from swh.web.common import converters
 

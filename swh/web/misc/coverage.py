@@ -14,7 +14,6 @@ from swh.web.common import service
 from swh.web.common.exc import handle_view_exception
 from swh.web.config import get_config
 
-
 # Current coverage list of the archive
 # TODO: Retrieve that list dynamically instead of hardcoding it
 _code_providers = [

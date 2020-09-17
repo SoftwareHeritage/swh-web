@@ -10,9 +10,9 @@ from hypothesis import given
 
 from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import reverse, format_utc_iso_date, parse_iso8601_date_to_utc
+from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
-from swh.web.tests.strategies import origin, revision, unknown_revision, new_origin
+from swh.web.tests.strategies import new_origin, origin, revision, unknown_revision
 
 
 @given(revision())

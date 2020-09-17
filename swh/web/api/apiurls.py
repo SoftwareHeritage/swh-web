@@ -4,13 +4,12 @@
 # See top-level LICENSE file for more information
 
 import functools
-
 from typing import Dict
 
 from rest_framework.decorators import api_view
 
-from swh.web.common.urlsindex import UrlsIndex
 from swh.web.api import throttling
+from swh.web.common.urlsindex import UrlsIndex
 
 
 class APIUrls(UrlsIndex):

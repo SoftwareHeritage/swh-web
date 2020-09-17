@@ -5,8 +5,8 @@
 
 import pytest
 
-from swh.web.common.exc import NotFoundExc
 from swh.web.api.views import utils
+from swh.web.common.exc import NotFoundExc
 
 
 def test_genericapi_lookup_nothing_is_found():

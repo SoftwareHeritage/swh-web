@@ -4,16 +4,15 @@
 # See top-level LICENSE file for more information
 
 from types import GeneratorType
-from typing import Callable, Any, Optional, Mapping, Dict
-from typing_extensions import Protocol
+from typing import Any, Callable, Dict, Mapping, Optional
 
 from django.http import HttpRequest
-
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from typing_extensions import Protocol
 
-from swh.web.common.exc import NotFoundExc
 from swh.web.api.apiurls import APIUrls, api_route
+from swh.web.common.exc import NotFoundExc
 
 
 class EnrichFunction(Protocol):

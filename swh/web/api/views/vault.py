@@ -8,11 +8,11 @@ from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
 
 from swh.model import hashutil
-from swh.web.common import service, query
-from swh.web.common.utils import reverse
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
+from swh.web.common import query, service
+from swh.web.common.utils import reverse
 
 
 # XXX: a bit spaghetti. Would be better with class-based views.

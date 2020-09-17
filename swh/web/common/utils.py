@@ -3,32 +3,24 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import re
-
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
-
-import docutils.parsers.rst
-import docutils.utils
+import re
+from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup
-
-from docutils.core import publish_parts
-from docutils.writers.html5_polyglot import Writer, HTMLTranslator
-
+from django.http import HttpRequest, QueryDict
 from django.urls import reverse as django_reverse
-from django.http import QueryDict, HttpRequest
-
-from iso8601 import parse_date, ParseError
-
+from docutils.core import publish_parts
+import docutils.parsers.rst
+import docutils.utils
+from docutils.writers.html5_polyglot import HTMLTranslator, Writer
+from iso8601 import ParseError, parse_date
 from prometheus_client.registry import CollectorRegistry
-
 from rest_framework.authentication import SessionAuthentication
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
 from swh.web.config import get_config
-
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 

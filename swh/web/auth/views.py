@@ -3,13 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import cast
 import uuid
 
-from typing import cast
-
 from django.conf.urls import url
-from django.core.cache import cache
 from django.contrib.auth import authenticate, login, logout
+from django.core.cache import cache
 from django.http import HttpRequest
 from django.http.response import (
     HttpResponse,
@@ -19,7 +18,7 @@ from django.http.response import (
 
 from swh.web.auth.models import OIDCUser
 from swh.web.auth.utils import gen_oidc_pkce_codes, get_oidc_client
-from swh.web.common.exc import handle_view_exception, BadInputExc
+from swh.web.common.exc import BadInputExc, handle_view_exception
 from swh.web.common.utils import reverse
 
 

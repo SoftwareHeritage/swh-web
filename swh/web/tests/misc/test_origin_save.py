@@ -3,11 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import pytest
-
 from datetime import datetime
 
 from django.test import Client
+import pytest
 
 from swh.web.common.origin_save import (
     SAVE_REQUEST_ACCEPTED,
@@ -15,7 +14,6 @@ from swh.web.common.origin_save import (
 )
 from swh.web.common.utils import reverse
 from swh.web.settings.tests import save_origin_rate_post
-
 
 visit_type = "git"
 origin = {"url": "https://github.com/python/cpython"}

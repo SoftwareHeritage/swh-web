@@ -6,24 +6,19 @@
 import os
 
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.template.defaultfilters import filesizeformat
 import sentry_sdk
-
 
 from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
-from swh.web.browse.utils import (
-    get_directory_entries,
-    get_readme_to_display,
-    gen_link,
-)
+from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
 from swh.web.common import service
-from swh.web.common.exc import handle_view_exception, NotFoundExc
+from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
-from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
+from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
 
 
 def _directory_browse(request, sha1_git, path=None):

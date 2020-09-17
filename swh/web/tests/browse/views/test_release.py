@@ -9,9 +9,9 @@ from django.utils.html import escape
 from hypothesis import given
 
 from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import reverse, format_utc_iso_date
+from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
-from swh.web.tests.strategies import release, origin_with_releases, unknown_release
+from swh.web.tests.strategies import origin_with_releases, release, unknown_release
 
 
 @given(release())

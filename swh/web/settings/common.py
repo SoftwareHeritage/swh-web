@@ -10,7 +10,6 @@ Django common settings for swh-web.
 
 import os
 import sys
-
 from typing import Any, Dict
 
 from swh.web.config import get_config

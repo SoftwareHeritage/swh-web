@@ -3,10 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from base64 import urlsafe_b64encode
 import hashlib
 import secrets
-
-from base64 import urlsafe_b64encode
 from typing import Tuple
 
 from swh.web.auth.keycloak import KeycloakOpenIDConnect, get_keycloak_oidc_client

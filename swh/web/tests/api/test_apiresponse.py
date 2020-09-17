@@ -7,9 +7,9 @@ import json
 
 from swh.web.api.apiresponse import (
     compute_link_header,
-    transform,
-    make_api_response,
     filter_by_fields,
+    make_api_response,
+    transform,
 )
 
 

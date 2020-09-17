@@ -3,22 +3,21 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.shortcuts import render, redirect
-
+from django.shortcuts import redirect, render
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import (
-    browse_snapshot_directory,
-    browse_snapshot_content,
-    browse_snapshot_log,
     browse_snapshot_branches,
+    browse_snapshot_content,
+    browse_snapshot_directory,
+    browse_snapshot_log,
     browse_snapshot_releases,
     get_snapshot_context,
 )
 from swh.web.common import service
-from swh.web.common.exc import handle_view_exception, BadInputExc
+from swh.web.common.exc import BadInputExc, handle_view_exception
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse, format_utc_iso_date, parse_iso8601_date_to_utc
+from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 
 
 @browse_route(

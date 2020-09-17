@@ -4,24 +4,23 @@
 # See top-level LICENSE file for more information
 
 import base64
-import magic
 import stat
 import textwrap
-
 from threading import Lock
 
 from django.core.cache import cache
-from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
+import magic
 import sentry_sdk
 
 from swh.web.common import highlightjs, service
 from swh.web.common.exc import http_status_code_message
 from swh.web.common.utils import (
-    reverse,
-    format_utc_iso_date,
-    rst_to_html,
     browsers_supported_image_mimes,
+    format_utc_iso_date,
+    reverse,
+    rst_to_html,
 )
 from swh.web.config import get_config
 

@@ -3,24 +3,21 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import re
-
 from datetime import datetime, timedelta, timezone
 from functools import partial
+import re
 
 import pytest
 import requests
 
 from swh.core.pytest_plugin import get_response_cb
-
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
-    get_save_origin_task_info,
     get_save_origin_requests,
+    get_save_origin_task_info,
 )
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.config import get_config
-
 
 _es_url = "http://esnode1.internal.softwareheritage.org:9200"
 _es_workers_index_url = "%s/swh_workers-*" % _es_url

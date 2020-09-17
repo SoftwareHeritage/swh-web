@@ -5,12 +5,10 @@
 
 
 import re
-
 from uuid import UUID
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common.exc import BadInputExc
-
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$", re.IGNORECASE)
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)

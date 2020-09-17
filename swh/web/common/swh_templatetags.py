@@ -9,7 +9,6 @@ import re
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
-
 import sentry_sdk
 
 from swh.web.common.origin_save import get_savable_visit_types

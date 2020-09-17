@@ -4,43 +4,39 @@
 # See top-level LICENSE file for more information
 
 from bisect import bisect_right
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import product
 import json
 import logging
 from typing import Any, Dict
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
 from django.utils.html import escape
-
 from prometheus_client import Gauge
-
 import requests
 import sentry_sdk
 
+from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web import config
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.models import (
-    SaveUnauthorizedOrigin,
-    SaveAuthorizedOrigin,
-    SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED,
-    SAVE_REQUEST_REJECTED,
     SAVE_REQUEST_PENDING,
+    SAVE_REQUEST_REJECTED,
+    SAVE_TASK_FAILED,
+    SAVE_TASK_NOT_CREATED,
     SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEED,
-    SAVE_TASK_FAILED,
-    SAVE_TASK_RUNNING,
-    SAVE_TASK_NOT_CREATED,
+    SaveAuthorizedOrigin,
+    SaveOriginRequest,
+    SaveUnauthorizedOrigin,
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import parse_iso8601_date_to_utc, SWH_WEB_METRICS_REGISTRY
-
-from swh.scheduler.utils import create_oneshot_task_dict
+from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 
 scheduler = config.scheduler()
 
