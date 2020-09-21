@@ -29,9 +29,7 @@ _task_id = 203525448
 
 @pytest.fixture(autouse=True)
 def requests_mock_datadir(datadir, requests_mock_datadir):
-    """Override default behavior to deal with post method
-
-    """
+    """Override default behavior to deal with post method"""
     cb = partial(get_response_cb, datadir=datadir)
     requests_mock_datadir.post(re.compile("https?://"), body=cb)
     return requests_mock_datadir
@@ -57,7 +55,7 @@ def test_get_save_origin_task_info_without_es(mocker):
     _get_save_origin_task_info_test(mocker, es_available=False)
 
 
-def _mock_scheduler(mocker, task_status="succeed", task_archived=False):
+def _mock_scheduler(mocker, task_status="succeeded", task_archived=False):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
     task = (
         {

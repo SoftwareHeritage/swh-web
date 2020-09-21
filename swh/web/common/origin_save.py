@@ -31,7 +31,7 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED,
+    SAVE_TASK_SUCCEEDED,
     SaveAuthorizedOrigin,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
@@ -106,7 +106,7 @@ _visit_type_task = {"git": "load-git", "hg": "load-hg", "svn": "load-svn"}
 _save_task_status = {
     "next_run_not_scheduled": SAVE_TASK_NOT_YET_SCHEDULED,
     "next_run_scheduled": SAVE_TASK_SCHEDULED,
-    "completed": SAVE_TASK_SUCCEED,
+    "completed": SAVE_TASK_SUCCEEDED,
     "disabled": SAVE_TASK_FAILED,
 }
 
@@ -173,7 +173,7 @@ def _check_visit_update_status(save_request, save_task_status):
     save_request.visit_date = visit_date
     # visit has been performed, mark the saving task as succeed
     if visit_date and visit_status is not None:
-        save_task_status = SAVE_TASK_SUCCEED
+        save_task_status = SAVE_TASK_SUCCEEDED
     elif visit_status == "ongoing":
         save_task_status = SAVE_TASK_RUNNING
     else:
@@ -195,8 +195,11 @@ def _save_request_dict(save_request, task=None):
         # Consider request from which a visit date has already been found
         # as succeeded to avoid retrieving it again
         if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
-            save_task_status = SAVE_TASK_SUCCEED
-        if save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEED) and not visit_date:
+            save_task_status = SAVE_TASK_SUCCEEDED
+        if (
+            save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
+            and not visit_date
+        ):
             visit_date, _ = _get_visit_info_for_save_request(save_request)
             save_request.visit_date = visit_date
             must_save = True
@@ -313,7 +316,10 @@ def create_save_origin_request(visit_type, origin_url):
                 task_status = _save_request_dict(sor, task)["save_task_status"]
                 # create a new scheduler task only if the previous one has been
                 # already executed
-                if task_status == SAVE_TASK_FAILED or task_status == SAVE_TASK_SUCCEED:
+                if (
+                    task_status == SAVE_TASK_FAILED
+                    or task_status == SAVE_TASK_SUCCEEDED
+                ):
                     can_create_task = True
                     sor = None
                 else:
@@ -589,7 +595,7 @@ def compute_save_requests_metrics():
         SAVE_TASK_NOT_CREATED,
         SAVE_TASK_NOT_YET_SCHEDULED,
         SAVE_TASK_SCHEDULED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         SAVE_TASK_FAILED,
         SAVE_TASK_RUNNING,
     )

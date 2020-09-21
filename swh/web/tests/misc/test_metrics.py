@@ -18,7 +18,7 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED,
+    SAVE_TASK_SUCCEEDED,
     SaveOriginRequest,
 )
 from swh.web.common.origin_save import (
@@ -43,7 +43,7 @@ def test_origin_save_metrics(client):
         SAVE_TASK_NOT_CREATED,
         SAVE_TASK_NOT_YET_SCHEDULED,
         SAVE_TASK_SCHEDULED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         SAVE_TASK_FAILED,
         SAVE_TASK_RUNNING,
     )

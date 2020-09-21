@@ -17,7 +17,7 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_CREATED,
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED,
-    SAVE_TASK_SUCCEED,
+    SAVE_TASK_SUCCEEDED,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
@@ -195,7 +195,7 @@ def test_save_request_succeed(api_client, mocker):
         mocker,
         origin_url,
         SAVE_REQUEST_ACCEPTED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         scheduler_task_status="completed",
         visit_date=None,
     )
@@ -205,7 +205,7 @@ def test_save_request_succeed(api_client, mocker):
         mocker,
         origin_url,
         SAVE_REQUEST_ACCEPTED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         scheduler_task_status="completed",
         visit_date=visit_date,
     )
