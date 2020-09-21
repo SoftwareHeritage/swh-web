@@ -11,7 +11,13 @@ import pytest
 import requests
 
 from swh.core.pytest_plugin import get_response_cb
-from swh.web.common.models import SaveOriginRequest
+from swh.web.common.models import (
+    SAVE_REQUEST_ACCEPTED,
+    SAVE_TASK_FAILED,
+    SAVE_TASK_RUNNING,
+    SAVE_TASK_SUCCEEDED,
+    SaveOriginRequest,
+)
 from swh.web.common.origin_save import (
     get_save_origin_requests,
     get_save_origin_task_info,
@@ -55,7 +61,7 @@ def test_get_save_origin_task_info_without_es(mocker):
     _get_save_origin_task_info_test(mocker, es_available=False)
 
 
-def _mock_scheduler(mocker, task_status="succeeded", task_archived=False):
+def _mock_scheduler(mocker, task_status="completed", task_archived=False):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
     task = (
         {
@@ -66,7 +72,7 @@ def _mock_scheduler(mocker, task_status="succeeded", task_archived=False):
             "policy": "oneshot",
             "priority": "high",
             "retries_left": 0,
-            "status": "disabled",
+            "status": task_status,
             "type": "load-git",
         }
         if not task_archived
@@ -102,7 +108,7 @@ def _get_save_origin_task_info_test(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
         origin_url="https://gitlab.com/inkscape/inkscape",
-        status="accepted",
+        status=SAVE_REQUEST_ACCEPTED,
         visit_date=datetime.now(tz=timezone.utc) + timedelta(hours=1),
         loading_task_id=_task_id,
     )
@@ -163,7 +169,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
         origin_url=_origin_url,
-        status="accepted",
+        status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
         loading_task_id=_task_id,
     )
@@ -193,6 +199,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     # check visit date has been correctly found
     sors = get_save_origin_requests(_visit_type, _origin_url)
     assert len(sors) == 1
+    assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] == visit_date
     mock_get_origin_visits.assert_called_once()
 
@@ -205,18 +212,19 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     sor = SaveOriginRequest.objects.create(
         visit_type=_visit_type,
         origin_url=_origin_url,
-        status="accepted",
+        status=SAVE_REQUEST_ACCEPTED,
         loading_task_id=_task_id,
         visit_date=None,
     )
     sor.request_date = datetime.now(tz=timezone.utc) - timedelta(days=31)
     sor.save()
 
-    _mock_scheduler(mocker, task_status="failed")
+    _mock_scheduler(mocker, task_status="disabled")
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
 
     assert len(sors) == 2
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
     assert sors[0]["visit_date"] is None
     mock_get_origin_visits.assert_called_once()
 
@@ -228,13 +236,13 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
         origin_url=_origin_url,
-        status="accepted",
+        status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
         loading_task_id=_task_id,
     )
 
     # mock scheduler and services
-    _mock_scheduler(mocker)
+    _mock_scheduler(mocker, task_status="next_run_scheduled")
     mock_service = mocker.patch("swh.web.common.origin_save.service")
     mock_service.lookup_origin.return_value = {"url": _origin_url}
     mock_get_origin_visits = mocker.patch(
@@ -258,5 +266,6 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
     # check no visit date has been found
     sors = get_save_origin_requests(_visit_type, _origin_url)
     assert len(sors) == 1
+    assert sors[0]["save_task_status"] == SAVE_TASK_RUNNING
     assert sors[0]["visit_date"] is None
     mock_get_origin_visits.assert_called_once()

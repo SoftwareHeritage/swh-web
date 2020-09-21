@@ -174,7 +174,7 @@ def _check_visit_update_status(save_request, save_task_status):
     # visit has been performed, mark the saving task as succeed
     if visit_date and visit_status is not None:
         save_task_status = SAVE_TASK_SUCCEEDED
-    elif visit_status == "ongoing":
+    elif visit_status in ("created", "ongoing"):
         save_task_status = SAVE_TASK_RUNNING
     else:
         time_now = datetime.now(tz=timezone.utc)
