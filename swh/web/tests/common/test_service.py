@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
+import hashlib
 import itertools
 import random
 
@@ -16,6 +17,7 @@ from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHO
 from swh.model.model import Directory, DirectoryEntry, Origin, OriginVisit, Revision
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
+from swh.web.common.typing import OriginInfo
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
@@ -993,3 +995,24 @@ def test_lookup_snapshot_branch_name_from_tip_revision(archive_data, snapshot_id
         )
         in possible_results
     )
+
+
+@given(origin(), new_origin())
+def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
+    hasher = hashlib.sha1()
+    hasher.update(origin["url"].encode("ascii"))
+    origin_info = OriginInfo(url=origin["url"])
+    origin_sha1 = hasher.hexdigest()
+
+    hasher = hashlib.sha1()
+    hasher.update(unknown_origin.url.encode("ascii"))
+    unknown_origin_sha1 = hasher.hexdigest()
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1]))
+    assert origins == [origin_info]
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1, origin_sha1]))
+    assert origins == [origin_info, origin_info]
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1, unknown_origin_sha1]))
+    assert origins == [origin_info, None]

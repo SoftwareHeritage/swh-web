@@ -1341,3 +1341,18 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
     )
 
     return missing
+
+
+def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:
+    """Lookup origins from the sha1 hash values of their URLs.
+
+    Args:
+        sha1s: list of sha1s hexadecimal representation
+
+    Yields:
+        origin information as dict
+    """
+    sha1s_bytes = [hashutil.hash_to_bytes(sha1) for sha1 in sha1s]
+    origins = storage.origin_get_by_sha1(sha1s_bytes)
+    for origin in origins:
+        yield converters.from_origin(origin)
