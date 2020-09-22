@@ -522,8 +522,8 @@ def test_lookup_revision_invalid_msg(archive_data, new_revision):
     archive_data.revision_add([Revision.from_dict(new_revision)])
 
     revision = service.lookup_revision(hash_to_hex(new_revision["id"]))
-    assert revision["message"] is None
-    assert revision["message_decoding_failed"] is True
+    assert revision["message"] == "elegant fix for bug \\xff"
+    assert revision["decoding_failures"] == ["message"]
 
 
 @given(new_revision())

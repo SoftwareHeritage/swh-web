@@ -238,7 +238,7 @@ def enrich_revision(
             )
         revision["children_urls"] = children
 
-    if "message_decoding_failed" in revision:
+    if "decoding_failures" in revision and "message" in revision["decoding_failures"]:
         revision["message_url"] = reverse(
             "api-1-revision-raw-message",
             url_args={"sha1_git": revision["id"]},

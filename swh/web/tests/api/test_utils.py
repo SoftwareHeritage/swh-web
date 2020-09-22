@@ -471,8 +471,7 @@ def test_enrich_revision_with_invalid_message(
 ):
 
     revision_data = archive_data.revision_get(revision)
-    revision_data["message"] = None
-    revision_data["message_decoding_failed"] = (True,)
+    revision_data["decoding_failures"] = ["message"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
     revision_data["children"] = child_revision
 
