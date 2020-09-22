@@ -5,8 +5,10 @@
 
 import json
 import traceback
+from typing import Any, Dict, Optional
 
 from django.utils.html import escape
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
 
@@ -17,7 +19,7 @@ from swh.web.common.utils import gen_path_info, shorten_path
 from swh.web.config import get_config
 
 
-def compute_link_header(rv, options):
+def compute_link_header(rv: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
     """Add Link header in returned value results.
 
     Args:
@@ -55,7 +57,7 @@ def compute_link_header(rv, options):
     return {}
 
 
-def filter_by_fields(request, data):
+def filter_by_fields(request: Request, data: Dict[str, Any]) -> Dict[str, Any]:
     """Extract a request parameter 'fields' if it exists to permit the filtering on
     the data dict's keys.
 
@@ -64,13 +66,12 @@ def filter_by_fields(request, data):
     """
     fields = request.query_params.get("fields")
     if fields:
-        fields = set(fields.split(","))
-        data = utils.filter_field_keys(data, fields)
+        data = utils.filter_field_keys(data, set(fields.split(",")))
 
     return data
 
 
-def transform(rv):
+def transform(rv: Dict[str, Any]) -> Dict[str, Any]:
     """Transform an eventual returned value with multiple layer of
     information with only what's necessary.
 
@@ -90,7 +91,12 @@ def transform(rv):
     return rv
 
 
-def make_api_response(request, data, doc_data={}, options={}):
+def make_api_response(
+    request: Request,
+    data: Dict[str, Any],
+    doc_data: Optional[Dict[str, Any]] = None,
+    options: Optional[Dict[str, Any]] = None,
+) -> Response:
     """Generates an API response based on the requested mimetype.
 
     Args:
@@ -103,21 +109,22 @@ def make_api_response(request, data, doc_data={}, options={}):
         a DRF Response a object
 
     """
+    options = options or {}
     if data:
         options["headers"] = compute_link_header(data, options)
         data = transform(data)
         data = filter_by_fields(request, data)
-    doc_env = doc_data
+    doc_data = doc_data or {}
     headers = {}
     if "headers" in options:
-        doc_env["headers_data"] = options["headers"]
+        doc_data["headers_data"] = options["headers"]
         headers = options["headers"]
 
     # get request status code
-    doc_env["status_code"] = options.get("status", 200)
+    doc_data["status_code"] = options.get("status", 200)
 
     response_args = {
-        "status": doc_env["status_code"],
+        "status": doc_data["status_code"],
         "headers": headers,
         "content_type": request.accepted_media_type,
     }
@@ -126,23 +133,23 @@ def make_api_response(request, data, doc_data={}, options={}):
     # documented views, we need to enrich the input data with documentation
     # related ones and inform DRF that we request HTML template rendering
     if request.accepted_media_type == "text/html":
-
+        doc_data["response_data"] = data
         if data:
-            data = json.dumps(
+            doc_data["response_data"] = json.dumps(
                 data, cls=JSONEncoder, sort_keys=True, indent=4, separators=(",", ": ")
             )
-        doc_env["response_data"] = data
-        doc_env["heading"] = shorten_path(str(request.path))
+
+        doc_data["heading"] = shorten_path(str(request.path))
 
         # generate breadcrumbs data
-        if "route" in doc_env:
-            doc_env["endpoint_path"] = gen_path_info(doc_env["route"])
-            for i in range(len(doc_env["endpoint_path"]) - 1):
-                doc_env["endpoint_path"][i]["path"] += "/doc/"
-            if not doc_env["noargs"]:
-                doc_env["endpoint_path"][-1]["path"] += "/doc/"
+        if "route" in doc_data:
+            doc_data["endpoint_path"] = gen_path_info(doc_data["route"])
+            for i in range(len(doc_data["endpoint_path"]) - 1):
+                doc_data["endpoint_path"][i]["path"] += "/doc/"
+            if not doc_data["noargs"]:
+                doc_data["endpoint_path"][-1]["path"] += "/doc/"
 
-        response_args["data"] = doc_env
+        response_args["data"] = doc_data
         response_args["template_name"] = "api/apidoc.html"
 
     # otherwise simply return the raw data and let DRF picks
@@ -153,7 +160,9 @@ def make_api_response(request, data, doc_data={}, options={}):
     return Response(**response_args)
 
 
-def error_response(request, error, doc_data):
+def error_response(
+    request: Request, error: Exception, doc_data: Dict[str, Any]
+) -> Response:
     """Private function to create a custom error response.
 
     Args:
