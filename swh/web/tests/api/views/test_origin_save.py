@@ -3,24 +3,25 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime, timedelta
+
 import pytest
 
-from datetime import datetime, timedelta
 from django.utils import timezone
 
-from swh.web.common.utils import reverse
 from swh.web.common.models import (
-    SaveUnauthorizedOrigin,
-    SaveOriginRequest,
     SAVE_REQUEST_ACCEPTED,
-    SAVE_REQUEST_REJECTED,
     SAVE_REQUEST_PENDING,
+    SAVE_REQUEST_REJECTED,
+    SAVE_TASK_FAILED,
     SAVE_TASK_NOT_CREATED,
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED,
-    SAVE_TASK_FAILED,
-    SAVE_TASK_SUCCEED,
+    SAVE_TASK_SUCCEEDED,
+    SaveOriginRequest,
+    SaveUnauthorizedOrigin,
 )
+from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 
 pytestmark = pytest.mark.django_db
@@ -194,7 +195,7 @@ def test_save_request_succeed(api_client, mocker):
         mocker,
         origin_url,
         SAVE_REQUEST_ACCEPTED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         scheduler_task_status="completed",
         visit_date=None,
     )
@@ -204,7 +205,7 @@ def test_save_request_succeed(api_client, mocker):
         mocker,
         origin_url,
         SAVE_REQUEST_ACCEPTED,
-        SAVE_TASK_SUCCEED,
+        SAVE_TASK_SUCCEEDED,
         scheduler_task_status="completed",
         visit_date=visit_date,
     )

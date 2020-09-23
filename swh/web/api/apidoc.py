@@ -14,13 +14,13 @@ from typing import List
 import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
-
-from rest_framework.decorators import api_view
 import sentry_sdk
 
-from swh.web.common.utils import parse_rst
+from rest_framework.decorators import api_view
+
+from swh.web.api.apiresponse import error_response, make_api_response
 from swh.web.api.apiurls import APIUrls
-from swh.web.api.apiresponse import make_api_response, error_response
+from swh.web.common.utils import parse_rst
 
 
 class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):

@@ -1,4 +1,5 @@
 beautifulsoup4
+cryptography
 django<3
 django-cors-headers
 django-js-reverse

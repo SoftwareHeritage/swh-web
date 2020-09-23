@@ -3,12 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
 import itertools
 import os
 import re
-
-from collections import defaultdict
-from typing import Any, Dict, List, Set, Iterable, Iterator, Optional, Union, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
@@ -18,16 +17,14 @@ from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
-from swh.web.common import converters
-from swh.web.common import query
+from swh.web.common import converters, query
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import (
     OriginInfo,
-    OriginVisitInfo,
     OriginMetadataInfo,
+    OriginVisitInfo,
     PagedResult,
 )
-
 
 search = config.search()
 storage = config.storage()
@@ -1344,3 +1341,18 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
     )
 
     return missing
+
+
+def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:
+    """Lookup origins from the sha1 hash values of their URLs.
+
+    Args:
+        sha1s: list of sha1s hexadecimal representation
+
+    Yields:
+        origin information as dict
+    """
+    sha1s_bytes = [hashutil.hash_to_bytes(sha1) for sha1 in sha1s]
+    origins = storage.origin_get_by_sha1(sha1s_bytes)
+    for origin in origins:
+        yield converters.from_origin(origin)

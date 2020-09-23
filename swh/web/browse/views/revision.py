@@ -12,38 +12,32 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
-from swh.model.identifiers import (
-    swhid,
-    CONTENT,
-    DIRECTORY,
-    REVISION,
-    SNAPSHOT,
-)
+from swh.model.identifiers import CONTENT, DIRECTORY, REVISION, SNAPSHOT, swhid
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
+    content_display_max_size,
+    format_log_entries,
+    gen_directory_link,
     gen_link,
+    gen_person_mail_link,
     gen_revision_link,
     gen_revision_url,
-    get_revision_log_url,
-    get_directory_entries,
-    gen_directory_link,
-    request_content,
-    prepare_content_for_display,
-    content_display_max_size,
     gen_snapshot_link,
+    get_directory_entries,
     get_readme_to_display,
-    format_log_entries,
-    gen_person_mail_link,
+    get_revision_log_url,
+    prepare_content_for_display,
+    request_content,
 )
 from swh.web.common import service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
 from swh.web.common.utils import (
-    reverse,
     format_utc_iso_date,
     gen_path_info,
+    reverse,
     swh_object_icons,
 )
 

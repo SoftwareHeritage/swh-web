@@ -155,6 +155,17 @@ See top-level LICENSE file for more information
 </ul>
 <p>Unavailability of the underlying storage backend will result in a
   <code>503 Service Unavailable</code> HTTP response.</p>
+<h4 id="utf8-decoding-errors">UTF-8 decoding errors</h4>
+<p>While attempting to decode UTF-8 strings from raw bytes stored in the archive, some errors
+might happen when generating an API response. In that case, an extra field <code>decoding_failures</code>
+will be added to each concerned JSON object (possibly nested). It will contain the list of its key
+names where UTF-8 decoding failed.
+</p>
+<p>
+A string that could not be decoded will have the bytes of its invalid UTF-8 sequences escaped as
+<code>\\x&lt;hex value&gt;</code>.
+</p>
+</h4>
 <h4 id="pagination">Pagination</h4>
 <p>Requests that might potentially return many items will be paginated.</p>
 <p>Page size is set to a default (usually: 10 items), but might be overridden with the

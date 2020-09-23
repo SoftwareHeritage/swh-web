@@ -10,16 +10,14 @@ import pytest
 from requests.utils import parse_header_links
 
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
-
-from swh.storage.exc import StorageDBError, StorageAPIError
+from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
-
-from swh.web.api.utils import enrich_origin_visit, enrich_origin
+from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
 from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses
-from swh.web.tests.strategies import origin, new_origin, visit_dates, new_snapshots
+from swh.web.tests.strategies import new_origin, new_snapshots, origin, visit_dates
 
 
 def _scroll_results(api_client, url):

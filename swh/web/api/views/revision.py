@@ -5,12 +5,11 @@
 
 from django.http import HttpResponse
 
-from swh.web.common import service
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-
+from swh.web.common import service
 
 DOC_RETURN_REVISION = """
         :>json object author: information about the author of the revision

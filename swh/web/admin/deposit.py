@@ -3,16 +3,16 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.core.cache import cache
-from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.core.paginator import Paginator
-from django.http import JsonResponse
-from django.shortcuts import render
-
 import requests
 from requests.auth import HTTPBasicAuth
 import sentry_sdk
+
+from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.cache import cache
+from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.shortcuts import render
 
 from swh.web.admin.adminurls import admin_route
 from swh.web.config import get_config

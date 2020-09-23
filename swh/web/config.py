@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import os
-
 from typing import Any, Dict
 
 from swh.core import config

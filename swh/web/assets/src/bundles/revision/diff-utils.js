@@ -8,6 +8,7 @@
 import 'waypoints/lib/jquery.waypoints';
 
 import {swhSpinnerSrc} from 'utils/constants';
+import {removeUrlFragment} from 'utils/functions';
 
 import diffPanelTemplate from './diff-panel.ejs';
 
@@ -43,6 +44,8 @@ let focusedDiff = null;
 const lineHighlightColor = '#fdf3da';
 // might contain diff lines to highlight parsed from URL fragment
 let selectedDiffLinesInfo;
+// URL fragment to append when switching to 'Changes' tab
+const changesUrlFragment = '#swh-revision-changes';
 
 // to check if a DOM element is in the viewport
 function isInViewport(elt) {
@@ -185,6 +188,7 @@ function resetHighlightedDiffLines(resetVars = true) {
   $('.hljs-ln-line[data-line-number]').css('mix-blend-mode', 'initial');
   $('.hljs-ln-numbers[data-line-number]').css('color', '#aaa');
   $('.hljs-ln-numbers[data-line-number]').css('font-weight', 'initial');
+  window.location.hash = changesUrlFragment;
 }
 
 // highlight lines in a diff, return first highlighted line numbers element
@@ -657,7 +661,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
   // callback when the 'Changes' tab is activated
   $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', e => {
     if (e.currentTarget.text.trim() === 'Changes') {
-
+      window.location.hash = changesUrlFragment;
       $('#readme-panel').css('display', 'none');
 
       if (changes) {
@@ -705,6 +709,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
 
         });
     } else if (e.currentTarget.text.trim() === 'Files') {
+      removeUrlFragment();
       $('#readme-panel').css('display', 'block');
     }
   });
@@ -765,8 +770,11 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
         selectedDiffLinesInfo = fragmentToSelectedDiffLines(split[1]);
         if (selectedDiffLinesInfo) {
           selectedDiffLinesInfo.diffPanelId = split[0];
-          $('.nav-tabs a[href="#swh-revision-changes"]').tab('show');
+          $(`.nav-tabs a[href="${changesUrlFragment}"]`).tab('show');
         }
+      }
+      if (fragment === changesUrlFragment) {
+        $(`.nav-tabs a[href="${changesUrlFragment}"]`).tab('show');
       }
     }
 

@@ -3,18 +3,20 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
 from urllib.parse import urljoin, urlparse
 import uuid
 
-from django.http import QueryDict
-from django.contrib.auth.models import AnonymousUser, User
-
+from keycloak.exceptions import KeycloakError
 import pytest
 
-from swh.web.auth.models import OIDCUser
+from django.contrib.auth.models import AnonymousUser, User
+from django.http import QueryDict
+
+from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
-from swh.web.tests.django_asserts import assert_template_used, assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.urls import _default_view as homepage_view
 
 from . import sample_data
@@ -336,3 +338,196 @@ def test_view_rendering_when_user_not_set_in_request(request_factory):
 
     response = homepage_view(request)
     assert response.status_code == 200
+
+
+def test_oidc_generate_bearer_token_anonymous_user(client):
+    """
+    Anonymous user should be refused access with forbidden response.
+    """
+    url = reverse("oidc-generate-bearer-token")
+    response = client.post(url, data={"password": "secret"})
+    assert response.status_code == 403
+
+
+def _generate_bearer_token(client, password):
+    client.login(
+        code="code", code_verifier="code-verifier", redirect_uri="redirect-uri"
+    )
+    url = reverse("oidc-generate-bearer-token")
+    return client.post(
+        url, data={"password": password}, content_type="application/json"
+    )
+
+
+@pytest.mark.django_db
+def test_oidc_generate_bearer_token_authenticated_user_success(client, mocker):
+    """
+    User with correct credentials should be allowed to generate a token.
+    """
+    kc_mock = mock_keycloak(mocker)
+    password = "secret"
+    response = _generate_bearer_token(client, password)
+    user = response.wsgi_request.user
+    assert response.status_code == 200
+    assert response.content.decode("ascii") == kc_mock.offline_token(
+        username=user.username, password=password
+    )
+
+
+@pytest.mark.django_db
+def test_oidc_generate_bearer_token_authenticated_user_failure(client, mocker):
+    """
+    User with wrong credentials should not be allowed to generate a token.
+    """
+    response_code = 401
+    kc_mock = mock_keycloak(mocker)
+    kc_mock.offline_token.side_effect = KeycloakError(
+        error_message="Invalid password", response_code=response_code
+    )
+    response = _generate_bearer_token(client, password="invalid-password")
+    assert response.status_code == response_code
+
+
+def test_oidc_list_bearer_tokens_anonymous_user(client):
+    """
+    Anonymous user should be refused access with forbidden response.
+    """
+    url = reverse(
+        "oidc-list-bearer-tokens", query_params={"draw": 1, "start": 0, "length": 10}
+    )
+    response = client.get(url)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_oidc_list_bearer_tokens(client, mocker):
+    """
+    User with correct credentials should be allowed to list his tokens.
+    """
+    mock_keycloak(mocker)
+    nb_tokens = 3
+    password = "secret"
+
+    for _ in range(nb_tokens):
+        response = _generate_bearer_token(client, password)
+
+    url = reverse(
+        "oidc-list-bearer-tokens", query_params={"draw": 1, "start": 0, "length": 10}
+    )
+    response = client.get(url)
+    assert response.status_code == 200
+    tokens_data = list(reversed(json.loads(response.content.decode("utf-8"))["data"]))
+
+    for oidc_token in OIDCUserOfflineTokens.objects.all():
+        assert (
+            oidc_token.creation_date.isoformat()
+            == tokens_data[oidc_token.id - 1]["creation_date"]
+        )
+
+
+def test_oidc_get_bearer_token_anonymous_user(client):
+    """
+    Anonymous user should be refused access with forbidden response.
+    """
+    url = reverse("oidc-get-bearer-token")
+    response = client.post(url)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_oidc_get_bearer_token(client, mocker):
+    """
+    User with correct credentials should be allowed to display a token.
+    """
+    mock_keycloak(mocker)
+    nb_tokens = 3
+    password = "secret"
+
+    for i in range(nb_tokens):
+        response = _generate_bearer_token(client, password)
+        token = response.content
+
+        url = reverse("oidc-get-bearer-token")
+        response = client.post(
+            url,
+            data={"password": password, "token_id": i + 1},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert response.content == token
+
+
+@pytest.mark.django_db
+def test_oidc_get_bearer_token_invalid_password(client, mocker):
+    """
+    User with wrong credentials should not be allowed to display a token.
+    """
+    mock_keycloak(mocker)
+    password = "secret"
+    _generate_bearer_token(client, password)
+
+    url = reverse("oidc-get-bearer-token")
+    response = client.post(
+        url,
+        data={"password": "invalid-password", "token_id": 1},
+        content_type="application/json",
+    )
+    assert response.status_code == 401
+
+
+def test_oidc_revoke_bearer_tokens_anonymous_user(client):
+    """
+    Anonymous user should be refused access with forbidden response.
+    """
+    url = reverse("oidc-revoke-bearer-tokens")
+    response = client.post(url)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_oidc_revoke_bearer_tokens(client, mocker):
+    """
+    User with correct credentials should be allowed to revoke tokens.
+    """
+    mock_keycloak(mocker)
+    nb_tokens = 3
+    password = "secret"
+
+    for _ in range(nb_tokens):
+        _generate_bearer_token(client, password)
+
+    url = reverse("oidc-revoke-bearer-tokens")
+    response = client.post(
+        url,
+        data={"password": password, "token_ids": [1]},
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    assert len(OIDCUserOfflineTokens.objects.all()) == 2
+
+    response = client.post(
+        url,
+        data={"password": password, "token_ids": [2, 3]},
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    assert len(OIDCUserOfflineTokens.objects.all()) == 0
+
+
+@pytest.mark.django_db
+def test_oidc_revoke_bearer_token_invalid_password(client, mocker):
+    """
+    User with wrong credentials should not be allowed to revoke tokens.
+    """
+    mock_keycloak(mocker)
+    password = "secret"
+
+    _generate_bearer_token(client, password)
+
+    url = reverse("oidc-revoke-bearer-tokens")
+    response = client.post(
+        url,
+        data={"password": "invalid-password", "token_ids": [1]},
+        content_type="application/json",
+    )
+    assert response.status_code == 401

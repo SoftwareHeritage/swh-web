@@ -3,13 +3,13 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.common import service
-from swh.web.common.utils import reverse
-from swh.web.config import get_config
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
+from swh.web.common import service
+from swh.web.common.utils import reverse
+from swh.web.config import get_config
 
 
 @api_route(

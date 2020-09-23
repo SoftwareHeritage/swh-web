@@ -7,11 +7,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import service
 from swh.web.common.exc import LargePayloadExc
-from swh.web.common.identifiers import (
-    resolve_swhid,
-    get_swhid,
-    group_swhids,
-)
+from swh.web.common.identifiers import get_swhid, group_swhids, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.*)/", "api-1-resolve-swhid")

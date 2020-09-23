@@ -88,7 +88,7 @@ export function initOriginSave() {
               if (type === 'display') {
                 let html = '';
                 const sanitizedURL = $.fn.dataTable.render.text().display(data);
-                if (row.save_task_status === 'succeed') {
+                if (row.save_task_status === 'succeeded') {
                   let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(sanitizedURL)}`;
                   if (row.visit_date) {
                     browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
@@ -114,7 +114,7 @@ export function initOriginSave() {
           {
             name: 'info',
             render: (data, type, row) => {
-              if (row.save_task_status === 'succeed' || row.save_task_status === 'failed') {
+              if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed') {
                 return `<i class="mdi mdi-information-outline swh-save-request-info" ` +
                        'aria-hidden="true" style="cursor: pointer"' +
                        `onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;

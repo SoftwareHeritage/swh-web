@@ -3,21 +3,20 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from copy import deepcopy
+from datetime import timedelta
 import os
 import random
 import time
-
-from copy import deepcopy
-from datetime import timedelta
 from typing import Dict, List, Optional, Set
 
+from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
-from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.model.hashutil import hash_to_hex, hash_to_bytes, DEFAULT_ALGORITHMS
-from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
 from swh.loader.git.from_disk import GitLoaderFromArchive
+from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
+from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
 from swh.search import get_search
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -25,9 +24,9 @@ from swh.storage.interface import Sha1
 from swh.storage.utils import now
 from swh.web import config
 from swh.web.browse.utils import (
+    _re_encode_content,
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
-    _re_encode_content,
 )
 from swh.web.common import service
 

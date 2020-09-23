@@ -4,30 +4,29 @@
 # See top-level LICENSE file for more information
 
 from base64 import b64encode
-from typing import cast, Optional
-
-from django.conf.urls import url
-from django.contrib.staticfiles import finders
-from django.http import HttpResponse, HttpRequest
+from typing import Optional, cast
 
 from pybadges import badge
 
+from django.conf.urls import url
+from django.contrib.staticfiles import finders
+from django.http import HttpRequest, HttpResponse
+
 from swh.model.exceptions import ValidationError
 from swh.model.identifiers import (
-    swhid,
-    parse_swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
     RELEASE,
     REVISION,
     SNAPSHOT,
+    parse_swhid,
+    swhid,
 )
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
-
 
 _orange = "#f36a24"
 _blue = "#0172b2"

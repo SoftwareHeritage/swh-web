@@ -7,7 +7,6 @@ from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
-
 from rest_framework.decorators import api_view, authentication_classes
 
 from swh.web.api.throttling import throttle_scope

@@ -15,14 +15,18 @@ var UserAgent = /** @class */ (function () {
      */
     UserAgent.prototype.setupOnce = function () {
         addGlobalEventProcessor(function (event) {
+            var _a, _b, _c;
             if (getCurrentHub().getIntegration(UserAgent)) {
-                if (!global.navigator || !global.location) {
+                // if none of the information we want exists, don't bother
+                if (!global.navigator && !global.location && !global.document) {
                     return event;
                 }
-                var request = event.request || {};
-                request.url = request.url || global.location.href;
-                request.headers = request.headers || {};
-                request.headers['User-Agent'] = global.navigator.userAgent;
+                // grab as much info as exists and add it to the event
+                var url = ((_a = event.request) === null || _a === void 0 ? void 0 : _a.url) || ((_b = global.location) === null || _b === void 0 ? void 0 : _b.href);
+                var referrer = (global.document || {}).referrer;
+                var userAgent = (global.navigator || {}).userAgent;
+                var headers = __assign(__assign(__assign({}, (_c = event.request) === null || _c === void 0 ? void 0 : _c.headers), (referrer && { Referer: referrer })), (userAgent && { 'User-Agent': userAgent }));
+                var request = __assign(__assign({}, (url && { url: url })), { headers: headers });
                 return __assign(__assign({}, event), { request: request });
             }
             return event;

@@ -3,49 +3,50 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
+import hashlib
 import itertools
-import pytest
 import random
 
-from collections import defaultdict
 from hypothesis import given
+import pytest
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.from_disk import DentryPerms
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.model.model import Directory, DirectoryEntry, Origin, OriginVisit, Revision
-
 from swh.web.common import service
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.tests.data import random_sha1, random_content
+from swh.web.common.typing import OriginInfo
+from swh.web.tests.conftest import ctags_json_missing, fossology_missing
+from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
+    ancestor_revisions,
     content,
-    unknown_content,
     contents,
-    unknown_contents,
     contents_with_ctags,
-    origin,
-    new_origin,
-    visit_dates,
     directory,
-    unknown_directory,
+    empty_directory,
+    invalid_sha1,
+    new_origin,
+    new_revision,
+    non_ancestor_revisions,
+    origin,
     release,
-    unknown_release,
     releases,
     revision,
-    unknown_revision,
-    revisions,
-    ancestor_revisions,
-    non_ancestor_revisions,
-    invalid_sha1,
-    sha256,
     revision_with_submodules,
-    empty_directory,
-    new_revision,
+    revisions,
+    sha256,
     snapshot,
+    unknown_content,
+    unknown_contents,
+    unknown_directory,
+    unknown_release,
+    unknown_revision,
     unknown_snapshot,
+    visit_dates,
 )
-from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 
 
 @given(contents())
@@ -523,8 +524,8 @@ def test_lookup_revision_invalid_msg(archive_data, new_revision):
     archive_data.revision_add([Revision.from_dict(new_revision)])
 
     revision = service.lookup_revision(hash_to_hex(new_revision["id"]))
-    assert revision["message"] is None
-    assert revision["message_decoding_failed"] is True
+    assert revision["message"] == "elegant fix for bug \\xff"
+    assert revision["decoding_failures"] == ["message"]
 
 
 @given(new_revision())
@@ -994,3 +995,24 @@ def test_lookup_snapshot_branch_name_from_tip_revision(archive_data, snapshot_id
         )
         in possible_results
     )
+
+
+@given(origin(), new_origin())
+def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
+    hasher = hashlib.sha1()
+    hasher.update(origin["url"].encode("ascii"))
+    origin_info = OriginInfo(url=origin["url"])
+    origin_sha1 = hasher.hexdigest()
+
+    hasher = hashlib.sha1()
+    hasher.update(unknown_origin.url.encode("ascii"))
+    unknown_origin_sha1 = hasher.hexdigest()
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1]))
+    assert origins == [origin_info]
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1, origin_sha1]))
+    assert origins == [origin_info, origin_info]
+
+    origins = list(service.lookup_origins_by_sha1s([origin_sha1, unknown_origin_sha1]))
+    assert origins == [origin_info, None]

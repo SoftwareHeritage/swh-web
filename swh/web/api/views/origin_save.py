@@ -49,7 +49,7 @@ def api_save_origin(request, visit_type, origin_url):
             * **not yet scheduled**: saving task has been created but its
               execution has not yet been scheduled
             * **scheduled**: the task execution has been scheduled
-            * **succeed**: the saving task has been successfully executed
+            * **succeeded**: the saving task has been successfully executed
             * **failed**: the saving task has been executed but it failed
 
         When issuing a POST request an object will be returned while a GET
@@ -70,7 +70,7 @@ def api_save_origin(request, visit_type, origin_url):
             either **accepted**, **rejected** or **pending**
         :>json string save_task_status: the status of the origin saving task,
             either **not created**, **not yet scheduled**, **scheduled**,
-            **succeed** or **failed**
+            **succeeded** or **failed**
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
