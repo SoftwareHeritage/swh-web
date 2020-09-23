@@ -40,6 +40,29 @@ const diffsHighlightingData = {
 let diffData;
 let swh;
 
+describe('Test Revision View', function() {
+
+  it('should add/remove #swh-revision-changes url fragment when switching tab', function() {
+    const url = this.Urls.browse_revision(revision) + `?origin=${origin}`;
+    cy.visit(url);
+    cy.get('a[data-toggle="tab"]')
+      .contains('Changes')
+      .click();
+    cy.hash().should('be.equal', '#swh-revision-changes');
+    cy.get('a[data-toggle="tab"]')
+      .contains('Files')
+      .click();
+    cy.hash().should('be.equal', '');
+  });
+
+  it('should display Changes tab by default when url ends with #swh-revision-changes', function() {
+    const url = this.Urls.browse_revision(revision) + `?origin=${origin}`;
+    cy.visit(url + '#swh-revision-changes');
+    cy.get('#swh-revision-changes-list')
+      .should('be.visible');
+  });
+});
+
 describe('Test Diffs View', function() {
 
   beforeEach(function() {
