@@ -6,7 +6,6 @@
 from hypothesis import given
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses

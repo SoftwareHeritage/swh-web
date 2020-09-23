@@ -215,7 +215,7 @@ describe('Origin Save Tests', function() {
         assert.equal($(cells[0]).text(), requestDateStr);
         assert.equal($(cells[1]).text(), this.originSaveJSON.data[i].visit_type);
         let html = '';
-        if (saveStatus === 'succeed') {
+        if (saveStatus === 'succeeded') {
           let browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(this.originSaveJSON.data[i].origin_url)}`;
           browseOriginUrl += `&amp;timestamp=${encodeURIComponent(this.originSaveJSON.data[i].visit_date)}`;
           html += `<a href="${browseOriginUrl}">${this.originSaveJSON.data[i].origin_url}</a>`;
@@ -237,7 +237,7 @@ describe('Origin Save Tests', function() {
     const saveRequestData = genOriginSaveResponse({
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
-      saveTaskStatus: 'succeed',
+      saveTaskStatus: 'succeeded',
       visitDate: null
     });
     const saveRequestsListData = {

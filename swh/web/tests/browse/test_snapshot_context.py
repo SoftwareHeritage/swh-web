@@ -8,24 +8,24 @@ import random
 from hypothesis import given
 
 from swh.web.browse.snapshot_context import (
+    _get_release,
     get_origin_visit_snapshot,
     get_snapshot_content,
     get_snapshot_context,
-    _get_release,
 )
 from swh.web.browse.utils import gen_revision_url
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
 from swh.web.common.typing import (
     SnapshotBranchInfo,
-    SnapshotReleaseInfo,
     SnapshotContext,
+    SnapshotReleaseInfo,
 )
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.strategies import (
     origin_with_multiple_visits,
-    snapshot,
     origin_with_releases,
+    snapshot,
 )
 
 

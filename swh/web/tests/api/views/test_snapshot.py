@@ -13,7 +13,7 @@ from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import snapshot, new_snapshot
+from swh.web.tests.strategies import new_snapshot, snapshot
 
 
 @given(snapshot())

@@ -9,59 +9,55 @@ from collections import defaultdict
 from copy import copy
 from typing import Any, Dict, List, Optional, Tuple
 
-
 from django.core.cache import cache
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 
 from swh.model.identifiers import (
-    swhid,
-    snapshot_identifier,
     CONTENT,
     DIRECTORY,
-    REVISION,
     RELEASE,
+    REVISION,
     SNAPSHOT,
+    snapshot_identifier,
+    swhid,
 )
-
 from swh.web.browse.utils import (
-    get_directory_entries,
-    gen_directory_link,
-    gen_revision_link,
-    gen_revision_url,
-    request_content,
-    gen_content_link,
-    prepare_content_for_display,
     content_display_max_size,
     format_log_entries,
-    gen_revision_log_link,
+    gen_content_link,
+    gen_directory_link,
     gen_release_link,
-    get_readme_to_display,
+    gen_revision_link,
+    gen_revision_log_link,
+    gen_revision_url,
     gen_snapshot_link,
+    get_directory_entries,
+    get_readme_to_display,
+    prepare_content_for_display,
+    request_content,
 )
-
-from swh.web.common import service, highlightjs
-from swh.web.common.exc import handle_view_exception, NotFoundExc, BadInputExc
+from swh.web.common import highlightjs, service
+from swh.web.common.exc import BadInputExc, NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
-    OriginInfo,
-    SnapshotBranchInfo,
-    SnapshotReleaseInfo,
-    SnapshotContext,
     ContentMetadata,
     DirectoryMetadata,
+    OriginInfo,
+    SnapshotBranchInfo,
+    SnapshotContext,
+    SnapshotReleaseInfo,
     SWHObjectInfo,
 )
 from swh.web.common.utils import (
-    reverse,
-    gen_path_info,
     format_utc_iso_date,
+    gen_path_info,
+    reverse,
     swh_object_icons,
 )
 from swh.web.config import get_config
-
 
 _empty_snapshot_id = snapshot_identifier({"branches": {}})
 

@@ -5,10 +5,9 @@
 
 from typing import Dict, List
 
-import django.urls
-
 from django.conf.urls import url
 from django.shortcuts import redirect
+import django.urls
 
 
 class UrlsIndex(object):

@@ -8,19 +8,17 @@ import random
 from hypothesis import given
 
 from swh.model.hashutil import DEFAULT_ALGORITHMS
-
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse, resolve_branch_alias
+from swh.web.common.utils import resolve_branch_alias, reverse
 from swh.web.tests.strategies import (
-    release,
-    directory,
     content,
+    directory,
+    origin,
+    release,
     revision,
     snapshot,
-    origin,
 )
-
 
 url_map = [
     {
@@ -473,8 +471,7 @@ def test_enrich_revision_with_invalid_message(
 ):
 
     revision_data = archive_data.revision_get(revision)
-    revision_data["message"] = None
-    revision_data["message_decoding_failed"] = (True,)
+    revision_data["decoding_failures"] = ["message"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
     revision_data["children"] = child_revision
 

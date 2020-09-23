@@ -5,9 +5,13 @@ repos:
   rev: v2.4.0
   hooks:
   - id: trailing-whitespace
-  - id: flake8
   - id: check-json
   - id: check-yaml
+
+- repo: https://gitlab.com/pycqa/flake8
+  rev: 3.8.3
+  hooks:
+  - id: flake8
 
 - repo: https://github.com/codespell-project/codespell
   rev: v1.16.0
@@ -37,6 +41,11 @@ repos:
     entry: node_modules/.bin/eslint -c swh/web/assets/config/.eslintrc
     language: system
     types: [javascript]
+
+- repo: https://github.com/PyCQA/isort
+  rev: 5.5.2
+  hooks:
+  - id: isort
 
 - repo: https://github.com/python/black
   rev: 19.10b0

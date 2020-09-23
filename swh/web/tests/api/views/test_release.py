@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime
+
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
@@ -17,7 +18,7 @@ from swh.model.model import (
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import release, content, directory
+from swh.web.tests.strategies import content, directory, release
 
 
 @given(release())

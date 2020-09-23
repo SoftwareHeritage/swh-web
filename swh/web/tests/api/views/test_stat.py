@@ -3,8 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.storage.exc import StorageDBError, StorageAPIError
-
+from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views import check_api_get_responses

@@ -7,15 +7,14 @@
 from django.shortcuts import redirect
 
 from swh.web.browse.browseurls import browse_route
-from swh.web.common.utils import reverse
-
 from swh.web.browse.snapshot_context import (
-    browse_snapshot_directory,
-    browse_snapshot_content,
-    browse_snapshot_log,
     browse_snapshot_branches,
+    browse_snapshot_content,
+    browse_snapshot_directory,
+    browse_snapshot_log,
     browse_snapshot_releases,
 )
+from swh.web.common.utils import reverse
 
 
 @browse_route(

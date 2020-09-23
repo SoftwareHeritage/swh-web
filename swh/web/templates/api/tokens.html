@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2020  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+{% load swh_templatetags %}
+
+{% block title %} Web API bearer tokens &ndash; Software Heritage API {% endblock %}
+
+{% block header %}
+{% render_bundle 'auth' %}
+{% endblock %}
+
+{% block navbar-content %}
+<h4>Web API bearer tokens management</h4>
+{% endblock %}
+
+{% block content %}
+
+<p>
+  That interface enables to manage bearer tokens for Web API authentication.
+  A token has to be sent in HTTP authorization headers to make authenticated API requests.
+</p>
+<p>
+  For instance when using <code>curl</code> proceed as follows:
+  <pre>curl -H "Authorization: Bearer ${TOKEN}" {{ request.scheme }}://{{ request.META.HTTP_HOST }}/api/...</pre>
+</p>
+
+<div class="mt-3">
+  <div class="float-right">
+    <button class="btn btn-default" onclick="swh.auth.applyTokenAction('generate')">
+      Generate new token
+    </button>
+    <button class="btn btn-default float-right" onclick="swh.auth.applyTokenAction('revokeAll')">
+      Revoke all tokens
+    </button>
+  </div>
+  <table id="swh-bearer-tokens-table" class="table swh-table swh-table-striped" width="100%">
+    <thead>
+      <tr>
+        <th>Creation date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<script>
+  swh.auth.initApiTokensPage();
+</script>
+
+{% endblock content %}

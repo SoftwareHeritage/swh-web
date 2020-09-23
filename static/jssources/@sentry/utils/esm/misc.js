@@ -1,23 +1,5 @@
-import { isString } from './is';
+import { dynamicRequire, isNodeEnv } from './node';
 import { snipLine } from './string';
-/**
- * Requires a module which is protected against bundler minification.
- *
- * @param request The module path to resolve
- */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function dynamicRequire(mod, request) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return mod.require(request);
-}
-/**
- * Checks whether we're in the Node.js or Browser environment
- *
- * @returns Answer to given question
- */
-export function isNodeEnv() {
-    return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
-}
 var fallbackGlobalObject = {};
 /**
  * Safely get global scope object
@@ -32,6 +14,13 @@ export function getGlobalObject() {
             : typeof self !== 'undefined'
                 ? self
                 : fallbackGlobalObject);
+}
+/**
+ * Determines if running in react native
+ */
+export function isReactNative() {
+    var _a;
+    return ((_a = getGlobalObject().navigator) === null || _a === void 0 ? void 0 : _a.product) === 'ReactNative';
 }
 /**
  * UUID4 generator
@@ -118,10 +107,12 @@ export function consoleSandbox(callback) {
     if (!('console' in global)) {
         return callback();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     var originalConsole = global.console;
     var wrappedLevels = {};
     // Restore all wrapped console methods
     levels.forEach(function (level) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (level in global.console && originalConsole[level].__sentry_original__) {
             wrappedLevels[level] = originalConsole[level];
             originalConsole[level] = originalConsole[level].__sentry_original__;
@@ -183,85 +174,6 @@ export function getLocationHref() {
         return '';
     }
 }
-/**
- * Given a child DOM element, returns a query-selector statement describing that
- * and its ancestors
- * e.g. [HTMLElement] => body > div > input#foo.btn[name=baz]
- * @returns generated DOM path
- */
-export function htmlTreeAsString(elem) {
-    // try/catch both:
-    // - accessing event.target (see getsentry/raven-js#838, #768)
-    // - `htmlTreeAsString` because it's complex, and just accessing the DOM incorrectly
-    // - can throw an exception in some circumstances.
-    try {
-        var currentElem = elem;
-        var MAX_TRAVERSE_HEIGHT = 5;
-        var MAX_OUTPUT_LEN = 80;
-        var out = [];
-        var height = 0;
-        var len = 0;
-        var separator = ' > ';
-        var sepLength = separator.length;
-        var nextStr = void 0;
-        // eslint-disable-next-line no-plusplus
-        while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
-            nextStr = _htmlElementAsString(currentElem);
-            // bail out if
-            // - nextStr is the 'html' element
-            // - the length of the string that would be created exceeds MAX_OUTPUT_LEN
-            //   (ignore this limit if we are on the first iteration)
-            if (nextStr === 'html' || (height > 1 && len + out.length * sepLength + nextStr.length >= MAX_OUTPUT_LEN)) {
-                break;
-            }
-            out.push(nextStr);
-            len += nextStr.length;
-            currentElem = currentElem.parentNode;
-        }
-        return out.reverse().join(separator);
-    }
-    catch (_oO) {
-        return '<unknown>';
-    }
-}
-/**
- * Returns a simple, query-selector representation of a DOM element
- * e.g. [HTMLElement] => input#foo.btn[name=baz]
- * @returns generated DOM path
- */
-function _htmlElementAsString(el) {
-    var elem = el;
-    var out = [];
-    var className;
-    var classes;
-    var key;
-    var attr;
-    var i;
-    if (!elem || !elem.tagName) {
-        return '';
-    }
-    out.push(elem.tagName.toLowerCase());
-    if (elem.id) {
-        out.push("#" + elem.id);
-    }
-    // eslint-disable-next-line prefer-const
-    className = elem.className;
-    if (className && isString(className)) {
-        classes = className.split(/\s+/);
-        for (i = 0; i < classes.length; i++) {
-            out.push("." + classes[i]);
-        }
-    }
-    var allowedAttrs = ['type', 'name', 'title', 'alt'];
-    for (i = 0; i < allowedAttrs.length; i++) {
-        key = allowedAttrs[i];
-        attr = elem.getAttribute(key);
-        if (attr) {
-            out.push("[" + key + "=\"" + attr + "\"]");
-        }
-    }
-    return out.join('');
-}
 var INITIAL_TIME = Date.now();
 var prevNow = 0;
 var performanceFallback = {
@@ -275,7 +187,28 @@ var performanceFallback = {
     },
     timeOrigin: INITIAL_TIME,
 };
+/**
+ * Performance wrapper for react native as performance.now() has been found to start off with an unusual offset.
+ */
+function getReactNativePerformanceWrapper() {
+    // Performance only available >= RN 0.63
+    var performance = getGlobalObject().performance;
+    if (performance && typeof performance.now === 'function') {
+        var INITIAL_OFFSET_1 = performance.now();
+        return {
+            now: function () {
+                return performance.now() - INITIAL_OFFSET_1;
+            },
+            timeOrigin: INITIAL_TIME,
+        };
+    }
+    return performanceFallback;
+}
 export var crossPlatformPerformance = (function () {
+    // React Native's performance.now() starts with a gigantic offset, so we need to wrap it.
+    if (isReactNative()) {
+        return getReactNativePerformanceWrapper();
+    }
     if (isNodeEnv()) {
         try {
             var perfHooks = dynamicRequire(module, 'perf_hooks');
@@ -346,23 +279,6 @@ export function parseRetryAfterHeader(now, header) {
         return headerDate - now;
     }
     return defaultRetryAfter;
-}
-var defaultFunctionName = '<anonymous>';
-/**
- * Safely extract function name from itself
- */
-export function getFunctionName(fn) {
-    try {
-        if (!fn || typeof fn !== 'function') {
-            return defaultFunctionName;
-        }
-        return fn.name || defaultFunctionName;
-    }
-    catch (e) {
-        // Just accessing custom props in some Selenium environments
-        // can cause a "Permission denied" exception (see raven-js#495).
-        return defaultFunctionName;
-    }
 }
 /**
  * This function adds context (pre/post/line) lines to the provided frame

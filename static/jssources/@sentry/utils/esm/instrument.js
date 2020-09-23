@@ -1,8 +1,9 @@
 import { __assign, __values } from "tslib";
 import { isInstanceOf, isString } from './is';
 import { logger } from './logger';
-import { getFunctionName, getGlobalObject } from './misc';
+import { getGlobalObject } from './misc';
 import { fill } from './object';
+import { getFunctionName } from './stacktrace';
 import { supportsHistory, supportsNativeFetch } from './supports';
 var global = getGlobalObject();
 /**
@@ -174,6 +175,9 @@ function instrumentXHR() {
     if (!('XMLHttpRequest' in global)) {
         return;
     }
+    // Poor man implementation of ES6 `Map` by tracking and keeping in sync key and value separately.
+    var requestKeys = [];
+    var requestValues = [];
     var xhrproto = XMLHttpRequest.prototype;
     fill(xhrproto, 'open', function (originalOpen) {
         return function () {
@@ -201,6 +205,20 @@ function instrumentXHR() {
                         // an exception
                         if (xhr.__sentry_xhr__) {
                             xhr.__sentry_xhr__.status_code = xhr.status;
+                        }
+                    }
+                    catch (e) {
+                        /* do nothing */
+                    }
+                    try {
+                        var requestPos = requestKeys.indexOf(xhr);
+                        if (requestPos !== -1) {
+                            // Make sure to pop both, key and value to keep it in sync.
+                            requestKeys.splice(requestPos);
+                            var args_1 = requestValues.splice(requestPos)[0];
+                            if (xhr.__sentry_xhr__ && args_1[0] !== undefined) {
+                                xhr.__sentry_xhr__.body = args_1[0];
+                            }
                         }
                     }
                     catch (e) {
@@ -238,6 +256,8 @@ function instrumentXHR() {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
+            requestKeys.push(this);
+            requestValues.push(args);
             triggerHandlers('xhr', {
                 args: args,
                 startTimestamp: Date.now(),

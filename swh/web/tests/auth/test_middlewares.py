@@ -5,12 +5,13 @@
 
 from datetime import datetime
 
-from django.test import modify_settings
 import pytest
 
-from .keycloak_mock import mock_keycloak
+from django.test import modify_settings
 
 from swh.web.common.utils import reverse
+
+from .keycloak_mock import mock_keycloak
 
 
 @pytest.mark.django_db

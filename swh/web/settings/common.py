@@ -10,7 +10,6 @@ Django common settings for swh-web.
 
 import os
 import sys
-
 from typing import Any, Dict
 
 from swh.web.config import get_config
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "swh.web.common",
     "swh.web.api",
+    "swh.web.auth",
     "swh.web.browse",
     "webpack_loader",
     "django_js_reverse",

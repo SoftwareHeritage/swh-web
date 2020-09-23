@@ -6,15 +6,14 @@
 from distutils.util import strtobool
 from functools import partial
 
-from swh.web.common import service
-from swh.web.common.exc import BadInputExc
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.api.views.utils import api_lookup
-
+from swh.web.common import service
+from swh.web.common.exc import BadInputExc
+from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.utils import reverse
 
 DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information

@@ -4,31 +4,30 @@
 # See top-level LICENSE file for more information
 
 import difflib
-
 from distutils.util import strtobool
+
+import sentry_sdk
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
-import sentry_sdk
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
-    request_content,
-    prepare_content_for_display,
     content_display_max_size,
-    gen_link,
     gen_directory_link,
+    gen_link,
+    prepare_content_for_display,
+    request_content,
 )
-from swh.web.common import query, service, highlightjs
+from swh.web.common import highlightjs, query, service
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
-from swh.web.common.utils import reverse, gen_path_info, swh_object_icons
+from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
 
 
 @browse_route(

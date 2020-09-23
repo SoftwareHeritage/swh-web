@@ -10,8 +10,7 @@
 
   var hasOwnProperty = Object.hasOwnProperty,
       setPrototypeOf = Object.setPrototypeOf,
-      isFrozen = Object.isFrozen,
-      objectKeys = Object.keys;
+      isFrozen = Object.isFrozen;
   var freeze = Object.freeze,
       seal = Object.seal,
       create = Object.create; // eslint-disable-line import/no-mutable-exports
@@ -46,7 +45,6 @@
 
   var arrayForEach = unapply(Array.prototype.forEach);
   var arrayIndexOf = unapply(Array.prototype.indexOf);
-  var arrayJoin = unapply(Array.prototype.join);
   var arrayPop = unapply(Array.prototype.pop);
   var arrayPush = unapply(Array.prototype.push);
   var arraySlice = unapply(Array.prototype.slice);
@@ -58,7 +56,6 @@
   var stringTrim = unapply(String.prototype.trim);
 
   var regExpTest = unapply(RegExp.prototype.test);
-  var regExpCreate = unconstruct(RegExp);
 
   var typeErrorCreate = unconstruct(TypeError);
 
@@ -214,7 +211,7 @@
      * Version label, exposed for easier checks
      * if DOMPurify is up to date or not
      */
-    DOMPurify.version = '2.0.15';
+    DOMPurify.version = '2.1.0';
 
     /**
      * Array of elements that DOMPurify removed during sanitation.
@@ -270,7 +267,10 @@
     var importNode = originalDocument.importNode;
 
 
-    var documentMode = clone(document).documentMode ? document.documentMode : {};
+    var documentMode = {};
+    try {
+      documentMode = clone(document).documentMode ? document.documentMode : {};
+    } catch (_) {}
 
     var hooks = {};
 
@@ -315,9 +315,6 @@
 
     /* Decide if unknown protocols are okay */
     var ALLOW_UNKNOWN_PROTOCOLS = false;
-
-    /* Output should be safe for jQuery's $() factory? */
-    var SAFE_FOR_JQUERY = false;
 
     /* Output should be safe for common template engines.
      * This means, DOMPurify removes data attributes, mustaches and ERB
@@ -416,7 +413,6 @@
       ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false; // Default true
       ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false; // Default true
       ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false; // Default false
-      SAFE_FOR_JQUERY = cfg.SAFE_FOR_JQUERY || false; // Default false
       SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false; // Default false
       WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
       RETURN_DOM = cfg.RETURN_DOM || false; // Default false
@@ -674,7 +670,6 @@
      * @param   {Node} currentNode to check for permission to exist
      * @return  {Boolean} true if node was killed, false if left alive
      */
-    // eslint-disable-next-line complexity
     var _sanitizeElements = function _sanitizeElements(currentNode) {
       var content = void 0;
 
@@ -702,8 +697,8 @@
         allowedTags: ALLOWED_TAGS
       });
 
-      /* Take care of an mXSS pattern using p, br inside svg, math */
-      if ((tagName === 'svg' || tagName === 'math') && currentNode.querySelectorAll('p, br').length !== 0) {
+      /* Detect mXSS attempts abusing namespace confusion */
+      if (!_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/<[!/\w]/g, currentNode.innerHTML) && regExpTest(/<[!/\w]/g, currentNode.textContent)) {
         _forceRemove(currentNode);
         return true;
       }
@@ -723,24 +718,9 @@
       }
 
       /* Remove in case a noscript/noembed XSS is suspected */
-      if (tagName === 'noscript' && regExpTest(/<\/noscript/i, currentNode.innerHTML)) {
+      if ((tagName === 'noscript' || tagName === 'noembed') && regExpTest(/<\/no(script|embed)/i, currentNode.innerHTML)) {
         _forceRemove(currentNode);
         return true;
-      }
-
-      if (tagName === 'noembed' && regExpTest(/<\/noembed/i, currentNode.innerHTML)) {
-        _forceRemove(currentNode);
-        return true;
-      }
-
-      /* Convert markup to cover jQuery behavior */
-      if (SAFE_FOR_JQUERY && !_isNode(currentNode.firstElementChild) && (!_isNode(currentNode.content) || !_isNode(currentNode.content.firstElementChild)) && regExpTest(/</g, currentNode.textContent)) {
-        arrayPush(DOMPurify.removed, { element: currentNode.cloneNode() });
-        if (currentNode.innerHTML) {
-          currentNode.innerHTML = stringReplace(currentNode.innerHTML, /</g, '&lt;');
-        } else {
-          currentNode.innerHTML = stringReplace(currentNode.textContent, /</g, '&lt;');
-        }
       }
 
       /* Sanitize element content to be template-safe */
@@ -801,7 +781,6 @@
      *
      * @param  {Node} currentNode to sanitize
      */
-    // eslint-disable-next-line complexity
     var _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
       var attr = void 0;
       var value = void 0;
@@ -883,13 +862,7 @@
         }
 
         /* Work around a security issue in jQuery 3.0 */
-        if (SAFE_FOR_JQUERY && regExpTest(/\/>/i, value)) {
-          _removeAttribute(name, currentNode);
-          continue;
-        }
-
-        /* Take care of an mXSS pattern using namespace switches */
-        if (regExpTest(/svg|math/i, currentNode.namespaceURI) && regExpTest(regExpCreate('</(' + arrayJoin(objectKeys(FORBID_CONTENTS), '|') + ')', 'i'), value)) {
+        if (regExpTest(/\/>/i, value)) {
           _removeAttribute(name, currentNode);
           continue;
         }

@@ -4,9 +4,9 @@
 # See top-level LICENSE file for more information
 
 from swh.web.common.swh_templatetags import (
-    urlize_links_and_mails,
-    urlize_header_links,
     docstring_display,
+    urlize_header_links,
+    urlize_links_and_mails,
 )
 
 

@@ -10,8 +10,8 @@ from django.contrib.auth.models import AnonymousUser, User
 from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
 
-from .keycloak_mock import mock_keycloak
 from . import sample_data
+from .keycloak_mock import mock_keycloak
 
 
 @pytest.mark.django_db

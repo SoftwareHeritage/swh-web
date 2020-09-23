@@ -6,40 +6,31 @@
 import random
 
 from hypothesis import given
-
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    SWHID,
-)
-
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT, SWHID
+from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.common.exc import BadInputExc
 from swh.web.common.identifiers import (
     gen_swhid,
-    resolve_swhid,
     get_swhid,
-    group_swhids,
     get_swhids_info,
+    group_swhids,
+    resolve_swhid,
 )
-from swh.web.browse.snapshot_context import get_snapshot_context
-from swh.web.common.utils import reverse
 from swh.web.common.typing import SWHObjectInfo
+from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
     content,
     directory,
+    directory_with_subdirs,
+    origin,
+    origin_with_multiple_visits,
     release,
     revision,
     snapshot,
-    origin,
-    origin_with_multiple_visits,
-    directory_with_subdirs,
 )
 
 
