@@ -5,14 +5,12 @@
 
 import datetime
 import json
-
 from typing import Any, Dict, Union
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
 from swh.model.model import Release, Revision
 from swh.storage.interface import PartialBranches
-
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 
 
@@ -281,7 +279,7 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
     revision_d = from_swh(
         revision_d,
         hashess={"id", "directory", "parents", "children"},
-        bytess={"name", "fullname", "email", "extra_headers"},
+        bytess={"name", "fullname", "email", "extra_headers", "message"},
         convert={"metadata"},
         convert_fn=convert_revision_metadata,
         dates={"date", "committer_date"},
@@ -290,12 +288,6 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
     if revision_d:
         if "parents" in revision_d:
             revision_d["merge"] = len(revision_d["parents"]) > 1
-        if "message" in revision_d:
-            try:
-                revision_d["message"] = revision_d["message"].decode("utf-8")
-            except UnicodeDecodeError:
-                revision_d["message_decoding_failed"] = True
-                revision_d["message"] = None
 
     return revision_d
 

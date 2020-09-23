@@ -171,12 +171,18 @@ var Breadcrumbs = /** @class */ (function () {
             if (handlerData.xhr.__sentry_own_request__) {
                 return;
             }
+            var _a = handlerData.xhr.__sentry_xhr__ || {}, method = _a.method, url = _a.url, status_code = _a.status_code, body = _a.body;
             getCurrentHub().addBreadcrumb({
                 category: 'xhr',
-                data: handlerData.xhr.__sentry_xhr__,
+                data: {
+                    method: method,
+                    url: url,
+                    status_code: status_code,
+                },
                 type: 'http',
             }, {
                 xhr: handlerData.xhr,
+                input: body,
             });
             return;
         }

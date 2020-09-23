@@ -38,5 +38,5 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
 });
 
 export function filterXSS(html) {
-  return DOMPurify.sanitize(html, {SAFE_FOR_JQUERY: true});
+  return DOMPurify.sanitize(html);
 }

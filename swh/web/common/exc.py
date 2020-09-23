@@ -5,11 +5,12 @@
 
 import traceback
 
+import sentry_sdk
+
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
 from django.utils.html import escape
-import sentry_sdk
+from django.utils.safestring import mark_safe
 
 from swh.web.config import get_config
 

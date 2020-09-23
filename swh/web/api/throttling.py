@@ -3,16 +3,16 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from ipaddress import ip_address, ip_network, IPv4Network, IPv6Network
+from ipaddress import IPv4Network, IPv6Network, ip_address, ip_network
 from typing import Callable, List, TypeVar, Union
+
+import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
-import sentry_sdk
 
 from swh.web.config import get_config
-
 
 APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
 Request = rest_framework.request.Request

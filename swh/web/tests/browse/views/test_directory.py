@@ -5,8 +5,9 @@
 
 import random
 
-from django.utils.html import escape
 from hypothesis import given
+
+from django.utils.html import escape
 
 from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.snapshot_context import process_snapshot_branches
@@ -17,8 +18,8 @@ from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
     invalid_sha1,
-    unknown_directory,
     origin_with_multiple_visits,
+    unknown_directory,
 )
 
 

@@ -7,13 +7,13 @@ from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
 
 from swh.model.identifiers import (
-    swhid,
     CONTENT,
     DIRECTORY,
     ORIGIN,
     RELEASE,
     REVISION,
     SNAPSHOT,
+    swhid,
 )
 from swh.web.common import service
 from swh.web.common.identifiers import resolve_swhid
@@ -23,17 +23,17 @@ from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     content,
     directory,
+    invalid_sha1,
+    new_origin,
     origin,
     release,
     revision,
     snapshot,
     unknown_content,
     unknown_directory,
-    new_origin,
     unknown_release,
     unknown_revision,
     unknown_snapshot,
-    invalid_sha1,
 )
 
 

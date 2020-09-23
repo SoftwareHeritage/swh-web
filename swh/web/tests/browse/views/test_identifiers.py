@@ -15,8 +15,8 @@ from swh.web.tests.strategies import (
     content,
     directory,
     origin,
-    revision,
     release,
+    revision,
     snapshot,
 )
 

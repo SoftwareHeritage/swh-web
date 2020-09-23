@@ -8,9 +8,7 @@ Django production settings for swh-web.
 """
 
 from .common import *  # noqa
-from .common import MIDDLEWARE, CACHES, WEBPACK_LOADER
-from .common import swh_web_config
-from .common import REST_FRAMEWORK
+from .common import CACHES, MIDDLEWARE, REST_FRAMEWORK, WEBPACK_LOADER, swh_web_config
 
 # activate per-site caching
 if "GZip" in MIDDLEWARE[0]:

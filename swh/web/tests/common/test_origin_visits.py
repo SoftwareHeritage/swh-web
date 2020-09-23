@@ -6,14 +6,13 @@
 from datetime import timedelta
 
 from hypothesis import given
-
 import pytest
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.origin_visits import get_origin_visits, get_origin_visit
+from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
 from swh.web.common.typing import OriginInfo
 from swh.web.tests.strategies import (
     new_origin,

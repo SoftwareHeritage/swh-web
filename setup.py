@@ -4,12 +4,11 @@
 # License: GNU Affero General Public License v3 or later
 # See top-level LICENSE file for more information
 
-import os
-
-from setuptools import setup, find_packages
-
-from os import path
 from io import open
+import os
+from os import path
+
+from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 

@@ -82,7 +82,8 @@ swh_web_config.update(
 
 
 from .common import *  # noqa
-from .common import ALLOWED_HOSTS, LOGGING  # noqa
+
+from .common import ALLOWED_HOSTS, LOGGING  # noqa, isort: skip
 
 DATABASES = {
     "default": {

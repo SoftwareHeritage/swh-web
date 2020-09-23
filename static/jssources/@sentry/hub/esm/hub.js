@@ -304,8 +304,8 @@ var Hub = /** @class */ (function () {
     /**
      * @inheritDoc
      */
-    Hub.prototype.startTransaction = function (context) {
-        return this._callExtensionMethod('startTransaction', context);
+    Hub.prototype.startTransaction = function (context, customSamplingContext) {
+        return this._callExtensionMethod('startTransaction', context, customSamplingContext);
     };
     /**
      * @inheritDoc
@@ -394,21 +394,21 @@ export function getCurrentHub() {
     return getHubFromCarrier(registry);
 }
 /**
+ * Returns the active domain, if one exists
+ *
+ * @returns The domain, or undefined if there is no active domain
+ */
+export function getActiveDomain() {
+    var sentry = getMainCarrier().__SENTRY__;
+    return sentry && sentry.extensions && sentry.extensions.domain && sentry.extensions.domain.active;
+}
+/**
  * Try to read the hub from an active domain, and fallback to the registry if one doesn't exist
  * @returns discovered hub
  */
 function getHubFromActiveDomain(registry) {
     try {
-        var property = 'domain';
-        var carrier = getMainCarrier();
-        var sentry = carrier.__SENTRY__;
-        if (!sentry || !sentry.extensions || !sentry.extensions[property]) {
-            return getHubFromCarrier(registry);
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        var domain = sentry.extensions[property];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        var activeDomain = domain.active;
+        var activeDomain = getActiveDomain();
         // If there's no active domain, just return global hub
         if (!activeDomain) {
             return getHubFromCarrier(registry);

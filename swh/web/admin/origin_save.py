@@ -12,17 +12,15 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from swh.web.admin.adminurls import admin_route
-
 from swh.web.common.models import (
     SaveAuthorizedOrigin,
-    SaveUnauthorizedOrigin,
     SaveOriginRequest,
+    SaveUnauthorizedOrigin,
 )
-
 from swh.web.common.origin_save import (
-    create_save_origin_request,
     SAVE_REQUEST_PENDING,
     SAVE_REQUEST_REJECTED,
+    create_save_origin_request,
 )
 
 

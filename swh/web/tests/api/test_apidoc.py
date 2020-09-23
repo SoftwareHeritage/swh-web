@@ -9,14 +9,12 @@ import pytest
 
 from rest_framework.response import Response
 
-from swh.storage.exc import StorageDBError, StorageAPIError
-
-from swh.web.api.apidoc import api_doc, _parse_httpdomain_doc
+from swh.storage.exc import StorageAPIError, StorageDBError
+from swh.web.api.apidoc import _parse_httpdomain_doc, api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
-from swh.web.common.utils import reverse, prettify_html
+from swh.web.common.utils import prettify_html, reverse
 from swh.web.tests.django_asserts import assert_template_used
-
 
 _httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/

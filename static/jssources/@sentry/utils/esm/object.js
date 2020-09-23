@@ -1,7 +1,8 @@
 import { __values } from "tslib";
+import { htmlTreeAsString } from './browser';
 import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
 import { Memo } from './memo';
-import { getFunctionName, htmlTreeAsString } from './misc';
+import { getFunctionName } from './stacktrace';
 import { truncate } from './string';
 /**
  * Wrap a given object method with a higher-order function

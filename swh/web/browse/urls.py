@@ -4,17 +4,16 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
-import swh.web.browse.views.directory  # noqa
+from swh.web.browse.browseurls import BrowseUrls
+from swh.web.browse.identifiers import swhid_browse
 import swh.web.browse.views.content  # noqa
+import swh.web.browse.views.directory  # noqa
 import swh.web.browse.views.origin  # noqa
 import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
-
-from swh.web.browse.browseurls import BrowseUrls
-from swh.web.browse.identifiers import swhid_browse
 from swh.web.common.utils import reverse
 
 

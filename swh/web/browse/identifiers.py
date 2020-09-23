@@ -5,8 +5,8 @@
 
 from django.shortcuts import redirect
 
-from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.exc import handle_view_exception
+from swh.web.common.identifiers import resolve_swhid
 
 
 def swhid_browse(request, swhid):

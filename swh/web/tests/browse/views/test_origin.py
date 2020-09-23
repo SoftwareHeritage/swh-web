@@ -7,43 +7,40 @@ import random
 import re
 import string
 
-from django.utils.html import escape
-
 from hypothesis import given
 
-from swh.storage.utils import now
+from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.model.model import (
+    OriginVisit,
+    OriginVisitStatus,
     Snapshot,
     SnapshotBranch,
     TargetType,
-    OriginVisit,
-    OriginVisitStatus,
 )
+from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import (
-    reverse,
-    gen_path_info,
     format_utc_iso_date,
+    gen_path_info,
     parse_iso8601_date_to_utc,
+    reverse,
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
-    origin,
-    origin_with_multiple_visits,
     new_origin,
     new_snapshot,
-    visit_dates,
-    revisions,
+    origin,
+    origin_with_multiple_visits,
     origin_with_releases,
-    release as existing_release,
-    unknown_revision,
 )
+from swh.web.tests.strategies import release as existing_release
+from swh.web.tests.strategies import revisions, unknown_revision, visit_dates
 
 
 @given(origin_with_multiple_visits())

@@ -7,16 +7,15 @@
 # when executing end to end tests with cypress
 
 import os
-
 from typing import Dict
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from swh.model import from_disk
+from swh.model.from_disk import DiskBackedContent
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import Content
-from swh.model.from_disk import DiskBackedContent
 from swh.web.common.highlightjs import get_hljs_language_from_filename
 from swh.web.tests.data import get_tests_data
 

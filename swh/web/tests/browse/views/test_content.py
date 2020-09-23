@@ -5,16 +5,16 @@
 
 import random
 
-from django.utils.html import escape
-
 from hypothesis import given
+
+from django.utils.html import escape
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
+    _re_encode_content,
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
-    _re_encode_content,
 )
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
@@ -26,15 +26,15 @@ from swh.web.tests.django_asserts import (
 )
 from swh.web.tests.strategies import (
     content,
-    content_text_non_utf8,
-    content_text_no_highlight,
     content_image_type,
-    content_unsupported_image_type_rendering,
     content_text,
-    invalid_sha1,
-    unknown_content,
+    content_text_no_highlight,
+    content_text_non_utf8,
+    content_unsupported_image_type_rendering,
     content_utf8_detected_as_binary,
+    invalid_sha1,
     origin_with_multiple_visits,
+    unknown_content,
 )
 
 
