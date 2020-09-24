@@ -8,8 +8,9 @@
 function genSwhLink(data, type) {
   if (type === 'display') {
     if (data && data.startsWith('swh')) {
-      let browseUrl = Urls.browse_swhid(data);
-      return `<a href="${browseUrl}">${data}</a>`;
+      const browseUrl = Urls.browse_swhid(data);
+      const formattedSWHID = data.replace(/;/g, ';<br/>');
+      return `<a href="${browseUrl}">${formattedSWHID}</a>`;
     }
   }
   return data;
