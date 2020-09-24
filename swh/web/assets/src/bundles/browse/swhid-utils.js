@@ -23,8 +23,8 @@ export function swhIdContextOptionToggled(event) {
   let swhIdWithContextUrl = $(event.target).data('swhid-with-context-url');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
-    currentSwhId = swhIdWithContext;
     swhIdElt.attr('href', swhIdWithContextUrl);
+    currentSwhId = swhIdWithContext.replace(/;/g, ';\n');
   } else {
     const pos = currentSwhId.indexOf(';');
     if (pos !== -1) {
@@ -39,7 +39,7 @@ export function swhIdContextOptionToggled(event) {
 
 function addLinesInfo() {
   let swhIdElt = $('#swhid-tab-content').find('.swhid');
-  let currentSwhId = swhIdElt.text();
+  let currentSwhId = swhIdElt.text().replace(/;\n/g, ';');
   let lines = [];
   let linesPart = ';lines=';
   let linesRegexp = new RegExp(/L(\d+)/g);
@@ -61,7 +61,7 @@ function addLinesInfo() {
       currentSwhId += linesPart;
     }
 
-    swhIdElt.text(currentSwhId);
+    swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
     swhIdElt.attr('href', '/' + currentSwhId + '/');
   }
 }
@@ -70,7 +70,7 @@ $(document).ready(() => {
   new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
       let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
-      return swhId;
+      return swhId.replace(/;\n/g, ';');
     }
   });
 
