@@ -4,12 +4,21 @@
 # See top-level LICENSE file for more information
 
 import random
+from urllib.parse import quote
 
 from hypothesis import given
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT, SWHID
+from swh.model.identifiers import (
+    CONTENT,
+    DIRECTORY,
+    RELEASE,
+    REVISION,
+    SNAPSHOT,
+    SWHID,
+    parse_swhid,
+)
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.common.exc import BadInputExc
 from swh.web.common.identifiers import (
@@ -393,19 +402,30 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
 
 
 @given(origin(), directory())
-def test_get_swhids_info_path_encoding(archive_data, origin, directory):
+def test_get_swhids_info_characters_and_url_escaping(archive_data, origin, directory):
     snapshot_context = get_snapshot_context(origin_url=origin["url"])
     snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
     path = "/foo;/bar%"
 
-    swhid = get_swhids_info(
+    swhid_info = get_swhids_info(
         [SWHObjectInfo(object_type=DIRECTORY, object_id=directory)],
         snapshot_context=snapshot_context,
         extra_context={"path": path},
     )[0]
 
-    assert swhid["context"]["origin"] == "http://example.org/?project%3Dabc%3Bdef%25"
-    assert swhid["context"]["path"] == "/foo%3B/bar%25"
+    # check special characters in SWHID have been escaped
+    assert (
+        swhid_info["context"]["origin"] == "http://example.org/?project%3Dabc%3Bdef%25"
+    )
+    assert swhid_info["context"]["path"] == "/foo%3B/bar%25"
+
+    # check special characters in SWHID URL have been escaped
+    parsed_url_swhid = parse_swhid(swhid_info["swhid_with_context_url"][1:-1])
+    assert (
+        parsed_url_swhid.metadata["origin"]
+        == "http://example.org/%3Fproject%253Dabc%253Bdef%2525"
+    )
+    assert parsed_url_swhid.metadata["path"] == "/foo%253B/bar%2525"
 
 
 @given(origin_with_multiple_visits())
@@ -574,3 +594,14 @@ def _check_resolved_swhid_browse_url(
             expected_url += f"-L{lines_number[1]}"
 
     assert obj_swhid_resolved["browse_url"] == expected_url
+
+
+@given(directory())
+def test_resolve_swhid_with_escaped_chars(directory):
+    origin = "http://example.org/?project=abc;"
+    origin_swhid_escaped = quote(origin, safe="/?:@&")
+    origin_swhid_url_escaped = quote(origin, safe="/:@;")
+    swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
+    resolved_swhid = resolve_swhid(swhid)
+    assert resolved_swhid["swhid_parsed"].metadata["origin"] == origin_swhid_escaped
+    assert origin_swhid_url_escaped in resolved_swhid["browse_url"]

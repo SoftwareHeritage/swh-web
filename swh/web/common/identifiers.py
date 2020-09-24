@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from typing import Any, Dict, Iterable, List, Optional, cast
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from typing_extensions import TypedDict
 
@@ -113,13 +113,13 @@ def resolve_swhid(
             query_dict[k] = query_params[k]
 
     if "origin" in swhid_parsed.metadata:
-        query_dict["origin_url"] = swhid_parsed.metadata["origin"]
+        query_dict["origin_url"] = unquote(swhid_parsed.metadata["origin"])
 
     if "anchor" in swhid_parsed.metadata:
         anchor_swhid_parsed = get_swhid(swhid_parsed.metadata["anchor"])
 
     if "path" in swhid_parsed.metadata and swhid_parsed.metadata["path"] != "/":
-        query_dict["path"] = swhid_parsed.metadata["path"]
+        query_dict["path"] = unquote(swhid_parsed.metadata["path"])
         if anchor_swhid_parsed:
             directory = ""
             if anchor_swhid_parsed.object_type == DIRECTORY:
