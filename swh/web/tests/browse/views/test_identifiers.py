@@ -4,10 +4,11 @@
 # See top-level LICENSE file for more information
 
 import random
+from urllib.parse import quote
 
 from hypothesis import given
 
-from swh.model.identifiers import CONTENT, REVISION, SNAPSHOT
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
@@ -20,13 +21,11 @@ from swh.web.tests.strategies import (
     snapshot,
 )
 
-swhid_prefix = "swh:1:"
-
 
 @given(content())
 def test_content_id_browse(client, content):
     cnt_sha1_git = content["sha1_git"]
-    swhid = swhid_prefix + "cnt:" + cnt_sha1_git
+    swhid = gen_swhid(CONTENT, cnt_sha1_git)
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     query_string = "sha1_git:" + cnt_sha1_git
@@ -42,7 +41,7 @@ def test_content_id_browse(client, content):
 
 @given(directory())
 def test_directory_id_browse(client, directory):
-    swhid = swhid_prefix + "dir:" + directory
+    swhid = gen_swhid(DIRECTORY, directory)
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     directory_browse_url = reverse("browse-directory", url_args={"sha1_git": directory})
@@ -55,7 +54,7 @@ def test_directory_id_browse(client, directory):
 
 @given(revision())
 def test_revision_id_browse(client, revision):
-    swhid = swhid_prefix + "rev:" + revision
+    swhid = gen_swhid(REVISION, revision)
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     revision_browse_url = reverse("browse-revision", url_args={"sha1_git": revision})
@@ -80,7 +79,7 @@ def test_revision_id_browse(client, revision):
 
 @given(release())
 def test_release_id_browse(client, release):
-    swhid = swhid_prefix + "rel:" + release
+    swhid = gen_swhid(RELEASE, release)
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     release_browse_url = reverse("browse-release", url_args={"sha1_git": release})
@@ -105,7 +104,7 @@ def test_release_id_browse(client, release):
 
 @given(snapshot())
 def test_snapshot_id_browse(client, snapshot):
-    swhid = swhid_prefix + "snp:" + snapshot
+    swhid = gen_swhid(SNAPSHOT, snapshot)
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     snapshot_browse_url = reverse("browse-snapshot", url_args={"snapshot_id": snapshot})
@@ -130,7 +129,7 @@ def test_snapshot_id_browse(client, snapshot):
 
 @given(release())
 def test_bad_id_browse(client, release):
-    swhid = swhid_prefix + "foo:" + release
+    swhid = f"swh:1:foo:{release}"
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     resp = client.get(url)
@@ -140,15 +139,17 @@ def test_bad_id_browse(client, release):
 @given(content())
 def test_content_id_optional_parts_browse(client, content):
     cnt_sha1_git = content["sha1_git"]
-    optional_parts = ";lines=4-20;origin=https://github.com/user/repo"
-    swhid = swhid_prefix + "cnt:" + cnt_sha1_git + optional_parts
+    origin_url = "https://github.com/user/repo"
+    swhid = gen_swhid(
+        CONTENT, cnt_sha1_git, metadata={"lines": "4-20", "origin": origin_url},
+    )
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     query_string = "sha1_git:" + cnt_sha1_git
     content_browse_url = reverse(
         "browse-content",
         url_args={"query_string": query_string},
-        query_params={"origin_url": "https://github.com/user/repo"},
+        query_params={"origin_url": origin_url},
     )
     content_browse_url += "#L4-L20"
 
@@ -198,3 +199,14 @@ def test_legacy_swhid_browse(archive_data, client, origin):
     )
 
     assert_contains(resp, swhid)
+
+
+@given(directory())
+def test_browse_swhid_special_characters_escaping(client, directory):
+    origin = "http://example.org/?project=abc;"
+    origin_swhid_escaped = quote(origin, safe="/?:@&")
+    origin_swhid_url_escaped = quote(origin, safe="/:@;")
+    swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
+    url = reverse("browse-swhid", url_args={"swhid": swhid})
+    resp = client.get(url)
+    assert origin_swhid_url_escaped in resp["location"]

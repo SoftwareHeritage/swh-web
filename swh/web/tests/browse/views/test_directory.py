@@ -305,7 +305,7 @@ def _directory_view_checks(
     if root_directory_sha1 != directory_entries[0]["dir_id"]:
         swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
 
-    swhid_context["path"] = f"/{path}/" if path else "/"
+    swhid_context["path"] = f"/{path}/" if path else None
 
     if root_directory_sha1 != directory_entries[0]["dir_id"]:
         swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)

@@ -14,18 +14,20 @@ export function showBadgeInfoModal(objectType, objectSWHID) {
   } else {
     const pos = objectSWHID.indexOf(';');
     if (pos !== -1) {
-      badgeImageUrl = Urls.swh_badge_swhid(objectSWHID.slice(0, pos));
+      const objectSWHIDNoContext = objectSWHID.slice(0, pos);
+      badgeImageUrl = Urls.swh_badge_swhid(objectSWHIDNoContext);
+      $('.swhid').each((i, swhid) => {
+        if (swhid.id === objectSWHIDNoContext) {
+          badgeLinkUrl = swhid.pathname;
+        }
+      });
     } else {
       badgeImageUrl = Urls.swh_badge_swhid(objectSWHID);
+      badgeLinkUrl = Urls.browse_swhid(objectSWHID);
     }
-    badgeLinkUrl = Urls.browse_swhid(objectSWHID);
   }
-  let urlPrefix = `${window.location.protocol}//${window.location.hostname}`;
-  if (window.location.port) {
-    urlPrefix += `:${window.location.port}`;
-  }
-  const absoluteBadgeImageUrl = `${urlPrefix}${badgeImageUrl}`;
-  const absoluteBadgeLinkUrl = `${urlPrefix}${badgeLinkUrl}`;
+  const absoluteBadgeImageUrl = `${window.location.origin}${badgeImageUrl}`;
+  const absoluteBadgeLinkUrl = `${window.location.origin}${badgeLinkUrl}`;
   const html = `
   <a href="${absoluteBadgeLinkUrl}">
     <img class="swh-badge" src="${absoluteBadgeImageUrl}">
