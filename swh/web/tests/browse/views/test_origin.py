@@ -721,7 +721,6 @@ def test_origin_release_browse(client, archive_data, origin):
         "origin": origin["url"],
         "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
         "anchor": gen_swhid(RELEASE, release_data["id"]),
-        "path": "/",
     }
 
     swh_dir_id = gen_swhid(
@@ -1083,7 +1082,7 @@ def _origin_directory_view_test_helper(
         "origin": origin_info["url"],
         "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
         "anchor": gen_swhid(REVISION, head_rev_id),
-        "path": f"/{path}" if path else "/",
+        "path": f"/{path}" if path else None,
     }
 
     swh_dir_id = gen_swhid(

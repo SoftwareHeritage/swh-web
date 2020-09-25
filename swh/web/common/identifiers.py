@@ -64,7 +64,10 @@ def gen_swhid(
     """
     try:
         obj_swhid = swhid(
-            object_type, object_id, scheme_version, cast(Dict[str, Any], metadata)
+            object_type,
+            object_id,
+            scheme_version,
+            cast(Dict[str, Any], {k: v for k, v in metadata.items() if v is not None}),
         )
     except ValidationError as e:
         raise BadInputExc("Invalid object (%s) for SWHID. %s" % (object_id, e))
@@ -353,6 +356,8 @@ def get_swhids_info(
                 path = extra_context["path"] or "/"
                 if "filename" in extra_context and object_type == CONTENT:
                     path += extra_context["filename"]
+                if object_type == DIRECTORY and path == "/":
+                    path = None
             if path:
                 swhid_context["path"] = quote(path, safe="/?:@&")
 

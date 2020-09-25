@@ -52,6 +52,15 @@ def test_gen_swhid(content):
 
     assert gen_swhid(swh_object_type, sha1_git) == expected_swhid
 
+    assert (
+        gen_swhid(swh_object_type, sha1_git, metadata={"foo": "bar"})
+        == expected_swhid + ";foo=bar"
+    )
+
+    assert (
+        gen_swhid(swh_object_type, sha1_git, metadata={"foo": None}) == expected_swhid
+    )
+
     with pytest.raises(BadInputExc) as e:
         gen_swhid("foo", sha1_git)
     assert e.match("Invalid object")
@@ -137,15 +146,19 @@ def test_group_swhids(content, directory, release, revision, snapshot):
 
 @given(directory_with_subdirs())
 def test_get_swhids_info_directory_context(archive_data, directory):
-    extra_context = {"path": "/"}
     swhid = get_swhids_info(
         [SWHObjectInfo(object_type=DIRECTORY, object_id=directory)],
         snapshot_context=None,
-        extra_context=extra_context,
     )[0]
-    swhid_dir_parsed = get_swhid(swhid["swhid_with_context"])
+    assert swhid["swhid_with_context"] is None
 
-    assert swhid_dir_parsed.metadata == extra_context
+    # path qualifier should be discarded for a root directory
+    swhid = get_swhids_info(
+        [SWHObjectInfo(object_type=DIRECTORY, object_id=directory)],
+        snapshot_context=None,
+        extra_context={"path": "/"},
+    )[0]
+    assert swhid["swhid_with_context"] is None
 
     dir_content = archive_data.directory_ls(directory)
     dir_subdirs = [e for e in dir_content if e["type"] == "dir"]
@@ -227,7 +240,6 @@ def test_get_swhids_info_revision_context(archive_data, revision):
 
     assert swhid_dir_parsed.metadata == {
         "anchor": anchor,
-        "path": "/",
     }
 
     if dir_entry["type"] == "file":
@@ -379,7 +391,6 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
             expected_dir_context = {
                 "visit": snapshot_swhid,
                 "anchor": anchor,
-                "path": "/",
             }
 
             expected_rev_context = {"visit": snapshot_swhid}
