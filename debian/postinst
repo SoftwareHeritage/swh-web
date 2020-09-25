@@ -1,4 +1,9 @@
 #!/bin/bash
 
-django-admin migrate --settings=swh.web.settings.production
-django-admin createcachetable --settings=swh.web.settings.production
+set -e
+
+if [ -f /var/lib/swh/web.sqlite3 ]; then
+    echo "Software Heritage production db detected; running migrations"
+    django-admin migrate --settings=swh.web.settings.production
+    django-admin createcachetable --settings=swh.web.settings.production
+fi
