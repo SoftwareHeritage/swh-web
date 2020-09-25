@@ -20,24 +20,26 @@ export function swhIdContextOptionToggled(event) {
   event.stopPropagation();
   let swhIdElt = $(event.target).closest('.swhid-ui').find('.swhid');
   let swhIdWithContext = $(event.target).data('swhid-with-context');
+  let swhIdWithContextUrl = $(event.target).data('swhid-with-context-url');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
-    currentSwhId = swhIdWithContext;
+    swhIdElt.attr('href', swhIdWithContextUrl);
+    currentSwhId = swhIdWithContext.replace(/;/g, ';\n');
   } else {
     const pos = currentSwhId.indexOf(';');
     if (pos !== -1) {
       currentSwhId = currentSwhId.slice(0, pos);
     }
+    swhIdElt.attr('href', '/' + currentSwhId + '/');
   }
   swhIdElt.text(currentSwhId);
-  swhIdElt.attr('href', '/' + currentSwhId + '/');
 
   addLinesInfo();
 }
 
 function addLinesInfo() {
   let swhIdElt = $('#swhid-tab-content').find('.swhid');
-  let currentSwhId = swhIdElt.text();
+  let currentSwhId = swhIdElt.text().replace(/;\n/g, ';');
   let lines = [];
   let linesPart = ';lines=';
   let linesRegexp = new RegExp(/L(\d+)/g);
@@ -59,7 +61,7 @@ function addLinesInfo() {
       currentSwhId += linesPart;
     }
 
-    swhIdElt.text(currentSwhId);
+    swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
     swhIdElt.attr('href', '/' + currentSwhId + '/');
   }
 }
@@ -68,14 +70,14 @@ $(document).ready(() => {
   new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
       let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
-      return swhId;
+      return swhId.replace(/;\n/g, ';');
     }
   });
 
   new ClipboardJS('.btn-swhid-url-copy', {
     text: trigger => {
-      let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
-      return window.location.origin + '/' + swhId + '/';
+      let swhIdUrl = $(trigger).closest('.swhid-ui').find('.swhid').attr('href');
+      return window.location.origin + swhIdUrl;
     }
   });
 
