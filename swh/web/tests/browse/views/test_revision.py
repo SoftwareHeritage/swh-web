@@ -287,7 +287,6 @@ def _revision_browse_checks(
     assert_contains(resp, swh_rev_id_url)
 
     swhid_context["anchor"] = gen_swhid(REVISION, revision)
-    swhid_context["path"] = "/"
 
     swh_dir_id = gen_swhid(DIRECTORY, dir_id, metadata=swhid_context)
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})

@@ -142,6 +142,10 @@ describe('Test admin deposit page', function() {
           if (deposit.swhid !== null) {
             cy.contains(deposit.swhid).should('be.visible');
             cy.contains(deposit.swhid_context).should('be.visible');
+            // check SWHID link text formatting
+            cy.contains(deposit.swhid_context).then(elt => {
+              expect(elt[0].innerHTML).to.equal(deposit.swhid_context.replace(/;/g, ';<br>'));
+            });
           }
         });
       });

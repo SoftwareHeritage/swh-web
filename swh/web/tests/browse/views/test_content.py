@@ -458,7 +458,6 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
             "origin": origin["url"],
             "visit": gen_swhid(SNAPSHOT, snapshot),
             "anchor": gen_swhid(REVISION, branch_info["revision"]),
-            "path": "/",
         },
     )
     assert_contains(resp, dir_swhid)
@@ -524,7 +523,6 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
             "origin": origin["url"],
             "visit": gen_swhid(SNAPSHOT, snapshot),
             "anchor": gen_swhid(RELEASE, release_info["id"]),
-            "path": "/",
         },
     )
     assert_contains(resp, dir_swhid)

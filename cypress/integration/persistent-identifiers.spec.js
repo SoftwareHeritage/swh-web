@@ -117,7 +117,7 @@ describe('Persistent Identifiers Tests', function() {
         .should('be.visible');
 
       cy.get(`#swhid-tab-${td.objectType} .swhid`)
-        .contains(td.objectSWHIDs[0])
+        .should('have.text', td.objectSWHIDs[0].replace(/;/g, ';\n'))
         .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
 
     }
@@ -134,7 +134,7 @@ describe('Persistent Identifiers Tests', function() {
         .click();
 
       cy.get(`#swhid-tab-${td.objectType} .swhid`)
-        .contains(td.objectSWHIDs[0])
+        .should('have.text', td.objectSWHIDs[0].replace(/;/g, ';\n'))
         .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
 
       cy.get(`#swhid-tab-${td.objectType} .swhid-option`)
@@ -148,7 +148,7 @@ describe('Persistent Identifiers Tests', function() {
         .click();
 
       cy.get(`#swhid-tab-${td.objectType} .swhid`)
-        .contains(td.objectSWHIDs[0])
+        .should('have.text', td.objectSWHIDs[0].replace(/;/g, ';\n'))
         .should('have.attr', 'href', this.Urls.browse_swhid(td.objectSWHIDs[0]));
     }
 
