@@ -165,7 +165,6 @@ class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     encoding: str
     size: str
     language: str
-    licenses: str
     path: Optional[str]
     filename: Optional[str]
     directory: Optional[str]

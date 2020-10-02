@@ -1000,7 +1000,6 @@ def browse_snapshot_content(
         encoding=content_data.get("encoding"),
         size=filesizeformat(content_data.get("length", 0)),
         language=content_data.get("language"),
-        licenses=content_data.get("licenses"),
         root_directory=root_directory,
         path=f"/{filepath}",
         filename=filename,

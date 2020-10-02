@@ -152,13 +152,11 @@ def request_content(
     content_data = service.lookup_content(query_string)
     filetype = None
     language = None
-    license = None
     # requests to the indexer db may fail so properly handle
     # those cases in order to avoid content display errors
     try:
         filetype = service.lookup_content_filetype(query_string)
         language = service.lookup_content_language(query_string)
-        license = service.lookup_content_license(query_string)
     except Exception as exc:
         sentry_sdk.capture_exception(exc)
     mimetype = "unknown"
@@ -217,10 +215,6 @@ def request_content(
         content_data["language"] = language["lang"]
     else:
         content_data["language"] = "not detected"
-    if license:
-        content_data["licenses"] = ", ".join(license["facts"][0]["licenses"])
-    else:
-        content_data["licenses"] = "not detected"
 
     return content_data
 

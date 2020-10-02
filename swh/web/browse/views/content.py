@@ -328,7 +328,6 @@ def content_display(request, query_string):
         encoding=content_data["encoding"],
         size=filesizeformat(content_data["length"]),
         language=content_data["language"],
-        licenses=content_data["licenses"],
         root_directory=root_dir,
         path=f"/{path}" if path else None,
         filename=filename or "",
