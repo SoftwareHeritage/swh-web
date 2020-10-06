@@ -4,14 +4,9 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
-from django.core.cache import caches
-from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from swh.web.common import service
-from swh.web.common.exc import handle_view_exception
 from swh.web.config import get_config
 
 # Current coverage list of the archive
@@ -161,52 +156,6 @@ def _swh_coverage(request):
     )
 
 
-@never_cache
-def _swh_coverage_count(request):
-    """Internal browse endpoint to count the number of origins associated
-    to each code provider declared in the archive coverage list.
-    As this operation takes some times, we execute it once per day and
-    cache its results to database. The cached origin counts are then served.
-    Cache management is handled in the implementation to avoid sending
-    the same count query twice to the storage database.
-    """
-    try:
-        cache = caches["db_cache"]
-        results = []
-        for code_provider in _code_providers:
-            provider_id = code_provider["provider_id"]
-            url_regexp = code_provider["origin_url_regexp"]
-            cache_key = "%s_origins_count" % provider_id
-            prev_cache_key = "%s_origins_prev_count" % provider_id
-            # get cached origin count
-            origin_count = cache.get(cache_key, -2)
-            # cache entry has expired or does not exist
-            if origin_count == -2:
-                # mark the origin count as processing
-                cache.set(cache_key, -1, timeout=10 * 60)
-                # execute long count query
-                origin_count = service.storage.origin_count(url_regexp, regexp=True)
-                # cache count result
-                cache.set(cache_key, origin_count, timeout=24 * 60 * 60)
-                cache.set(prev_cache_key, origin_count, timeout=None)
-            # origin count is currently processing
-            elif origin_count == -1:
-                # return previous count if it exists
-                origin_count = cache.get(prev_cache_key, -1)
-            results.append(
-                {
-                    "provider_id": provider_id,
-                    "origin_count": origin_count,
-                    "origin_types": code_provider["origin_types"],
-                }
-            )
-    except Exception as exc:
-        return handle_view_exception(request, exc, html_response=False)
-
-    return JsonResponse(results)
-
-
 urlpatterns = [
     url(r"^coverage/$", _swh_coverage, name="swh-coverage"),
-    url(r"^coverage/count/$", _swh_coverage_count, name="swh-coverage-count"),
 ]
