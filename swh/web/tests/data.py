@@ -10,6 +10,7 @@ import random
 import time
 from typing import Dict, List, Optional, Set
 
+from swh.core.config import merge_configs
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
@@ -68,49 +69,46 @@ def random_content():
     }
 
 
-# MimetypeIndexer with custom configuration for tests
-class _MimetypeIndexer(MimetypeIndexer):
-    def parse_config_file(self, *args, **kwargs):
-        return {
-            **_TEST_INDEXER_BASE_CONFIG,
-            "tools": {
-                "name": "file",
-                "version": "1:5.30-1+deb9u1",
-                "configuration": {"type": "library", "debian-package": "python3-magic"},
-            },
+_TEST_MIMETYPE_INDEXER_CONFIG = merge_configs(
+    _TEST_INDEXER_BASE_CONFIG,
+    {
+        "tools": {
+            "name": "file",
+            "version": "1:5.30-1+deb9u1",
+            "configuration": {"type": "library", "debian-package": "python3-magic"},
         }
+    },
+)
 
 
-# FossologyLicenseIndexer with custom configuration for tests
-class _FossologyLicenseIndexer(FossologyLicenseIndexer):
-    def parse_config_file(self, *args, **kwargs):
-        return {
-            **_TEST_INDEXER_BASE_CONFIG,
-            "workdir": "/tmp/swh/indexer.fossology.license",
-            "tools": {
-                "name": "nomos",
-                "version": "3.1.0rc2-31-ga2cbb8c",
-                "configuration": {"command_line": "nomossa <filepath>",},
+_TEST_LICENSE_INDEXER_CONFIG = merge_configs(
+    _TEST_INDEXER_BASE_CONFIG,
+    {
+        "workdir": "/tmp/swh/indexer.fossology.license",
+        "tools": {
+            "name": "nomos",
+            "version": "3.1.0rc2-31-ga2cbb8c",
+            "configuration": {"command_line": "nomossa <filepath>",},
+        },
+    },
+)
+
+
+_TEST_CTAGS_INDEXER_CONFIG = merge_configs(
+    _TEST_INDEXER_BASE_CONFIG,
+    {
+        "workdir": "/tmp/swh/indexer.ctags",
+        "languages": {"c": "c"},
+        "tools": {
+            "name": "universal-ctags",
+            "version": "~git7859817b",
+            "configuration": {
+                "command_line": """ctags --fields=+lnz --sort=no --links=no """
+                """--output-format=json <filepath>"""
             },
-        }
-
-
-# CtagsIndexer with custom configuration for tests
-class _CtagsIndexer(CtagsIndexer):
-    def parse_config_file(self, *args, **kwargs):
-        return {
-            **_TEST_INDEXER_BASE_CONFIG,
-            "workdir": "/tmp/swh/indexer.ctags",
-            "languages": {"c": "c"},
-            "tools": {
-                "name": "universal-ctags",
-                "version": "~git7859817b",
-                "configuration": {
-                    "command_line": """ctags --fields=+lnz --sort=no --links=no """
-                    """--output-format=json <filepath>"""
-                },
-            },
-        }
+        },
+    },
+)
 
 
 # Lightweight git repositories that will be loaded to generate
@@ -308,12 +306,12 @@ def _init_indexers(tests_data):
     # Instantiate content indexers that will be used in tests
     # and force them to use the memory storages
     indexers = {}
-    for idx_name, idx_class in (
-        ("mimetype_indexer", _MimetypeIndexer),
-        ("license_indexer", _FossologyLicenseIndexer),
-        ("ctags_indexer", _CtagsIndexer),
+    for idx_name, idx_class, idx_config in (
+        ("mimetype_indexer", MimetypeIndexer, _TEST_MIMETYPE_INDEXER_CONFIG),
+        ("license_indexer", FossologyLicenseIndexer, _TEST_LICENSE_INDEXER_CONFIG),
+        ("ctags_indexer", CtagsIndexer, _TEST_CTAGS_INDEXER_CONFIG),
     ):
-        idx = idx_class()
+        idx = idx_class(config=idx_config)
         idx.storage = tests_data["storage"]
         idx.objstorage = tests_data["storage"].objstorage
         idx.idx_storage = tests_data["idx_storage"]
