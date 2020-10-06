@@ -15,7 +15,7 @@ from django.core.cache import cache
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from swh.web.common import highlightjs, service
+from swh.web.common import archive, highlightjs
 from swh.web.common.exc import http_status_code_message
 from swh.web.common.utils import (
     browsers_supported_image_mimes,
@@ -49,7 +49,7 @@ def get_directory_entries(sha1_git):
     if cache_entry:
         return cache_entry
 
-    entries = list(service.lookup_directory(sha1_git))
+    entries = list(archive.lookup_directory(sha1_git))
     for e in entries:
         e["perms"] = stat.filemode(e["perms"])
         if e["type"] == "rev":
@@ -149,14 +149,14 @@ def request_content(
     Raises:
         NotFoundExc if the content is not found
     """
-    content_data = service.lookup_content(query_string)
+    content_data = archive.lookup_content(query_string)
     filetype = None
     language = None
     # requests to the indexer db may fail so properly handle
     # those cases in order to avoid content display errors
     try:
-        filetype = service.lookup_content_filetype(query_string)
-        language = service.lookup_content_language(query_string)
+        filetype = archive.lookup_content_filetype(query_string)
+        language = archive.lookup_content_language(query_string)
     except Exception as exc:
         sentry_sdk.capture_exception(exc)
     mimetype = "unknown"
@@ -176,7 +176,7 @@ def request_content(
 
     if not max_size or content_data["length"] < max_size:
         try:
-            content_raw = service.lookup_content_raw(query_string)
+            content_raw = archive.lookup_content_raw(query_string)
         except Exception as exc:
             if raise_if_unavailable:
                 raise exc

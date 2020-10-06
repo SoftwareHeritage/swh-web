@@ -29,7 +29,7 @@ from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
 )
-from swh.web.common import service
+from swh.web.common import archive
 
 # Module used to initialize data that will be provided as tests input
 
@@ -167,13 +167,13 @@ def _init_tests_data():
 
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
-        for i, archive in enumerate(origin["archives"]):
+        for i, archive_ in enumerate(origin["archives"]):
             if i > 0:
                 # ensure visit dates will be different when simulating
                 # multiple visits of an origin
                 time.sleep(1)
             origin_repo_archive = os.path.join(
-                os.path.dirname(__file__), "resources/repos/%s" % archive
+                os.path.dirname(__file__), "resources/repos/%s" % archive_
             )
             loader = GitLoaderFromArchive(
                 origin["url"],
@@ -362,6 +362,6 @@ def override_storages(storage, idx_storage, search):
         {"storage": storage, "indexer_storage": idx_storage, "search": search,}
     )
 
-    service.storage = storage
-    service.idx_storage = idx_storage
-    service.search = search
+    archive.storage = storage
+    archive.idx_storage = idx_storage
+    archive.search = search

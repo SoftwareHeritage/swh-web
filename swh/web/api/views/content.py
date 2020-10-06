@@ -11,7 +11,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
 
@@ -58,7 +58,7 @@ def api_content_filetype(request, q):
             :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/filetype/`
     """
     return api_lookup(
-        service.lookup_content_filetype,
+        archive.lookup_content_filetype,
         q,
         notfound_msg="No filetype information found for content {}.".format(q),
         enrich_fn=utils.enrich_metadata_endpoint,
@@ -109,7 +109,7 @@ def api_content_language(request, q):
             :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/language/`
     """
     return api_lookup(
-        service.lookup_content_language,
+        archive.lookup_content_language,
         q,
         notfound_msg="No language information found for content {}.".format(q),
         enrich_fn=utils.enrich_metadata_endpoint,
@@ -157,7 +157,7 @@ def api_content_license(request, q):
             :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/license/`
     """
     return api_lookup(
-        service.lookup_content_license,
+        archive.lookup_content_license,
         q,
         notfound_msg="No license information found for content {}.".format(q),
         enrich_fn=utils.enrich_metadata_endpoint,
@@ -173,7 +173,7 @@ def api_content_ctags(request, q):
     symbols defined in a content object.
     """
     return api_lookup(
-        service.lookup_content_ctags,
+        archive.lookup_content_ctags,
         q,
         notfound_msg="No ctags symbol found for content {}.".format(q),
         enrich_fn=utils.enrich_metadata_endpoint,
@@ -218,7 +218,7 @@ def api_content_raw(request, q):
     def generate(content):
         yield content["data"]
 
-    content_raw = service.lookup_content_raw(q)
+    content_raw = archive.lookup_content_raw(q)
     if not content_raw:
         raise NotFoundExc("Content %s is not found." % q)
 
@@ -245,7 +245,7 @@ def api_content_symbol(request, q=None):
     per_page = int(request.query_params.get("per_page", "10"))
 
     def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
-        exp = list(service.lookup_expression(exp, last_sha1, per_page))
+        exp = list(archive.lookup_expression(exp, last_sha1, per_page))
         return exp if exp else None
 
     symbols = api_lookup(
@@ -334,7 +334,7 @@ def api_check_content_known(request, q=None):
                     queries.append({"filename": k, "sha1": v})
 
     if queries:
-        lookup = service.lookup_multiple_hashes(queries)
+        lookup = archive.lookup_multiple_hashes(queries)
         result = []
         nb_queries = len(queries)
         for el in lookup:
@@ -401,7 +401,7 @@ def api_content_metadata(request, q):
             :swh_web_api:`content/sha1_git:fe95a46679d128ff167b7c55df5d02356c5a1ae1/`
     """
     return api_lookup(
-        service.lookup_content,
+        archive.lookup_content,
         q,
         notfound_msg="Content with {} not found.".format(q),
         enrich_fn=functools.partial(utils.enrich_content, query_string=q),

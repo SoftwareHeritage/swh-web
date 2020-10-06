@@ -17,7 +17,7 @@ from swh.model.identifiers import ORIGIN, parse_swhid
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.config import get_config
 
 API_GRAPH_PERM = "swh.web.api.graph"
@@ -33,7 +33,7 @@ def _resolve_origin_swhid(swhid: str, origin_urls: Dict[str, str]) -> str:
             return origin_urls[parsed_swhid.object_id]
         else:
             origin_info = list(
-                service.lookup_origins_by_sha1s([parsed_swhid.object_id])
+                archive.lookup_origins_by_sha1s([parsed_swhid.object_id])
             )[0]
             assert origin_info is not None
             origin_urls[parsed_swhid.object_id] = origin_info["url"]
@@ -94,7 +94,7 @@ def api_graph(request: Request) -> None:
             special user permission in order to be able to request it.
 
         :param string graph_query: query to forward to the Software Heritage Graph
-            service (see its `documentation
+            archive (see its `documentation
             <https://docs.softwareheritage.org/devel/swh-graph/api.html>`_)
         :query boolean resolve_origins: extra parameter defined by that proxy enabling
             to resolve origin urls from their sha1 representations

@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from django.core.cache import cache
 
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 from swh.web.common.utils import parse_iso8601_date_to_utc
@@ -32,12 +32,12 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
         swh.web.common.exc.NotFoundExc: if the origin is not found
     """
 
-    from swh.web.common import service
+    from swh.web.common import archive
 
     if "url" in origin_info:
         origin_url = origin_info["url"]
     else:
-        origin_url = service.lookup_origin(origin_info)["url"]
+        origin_url = archive.lookup_origin(origin_info)["url"]
 
     cache_entry_id = "origin_visits_%s" % origin_url
     cache_entry = cache.get(cache_entry_id)
@@ -45,20 +45,20 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
     if cache_entry:
         last_visit = cache_entry[-1]["visit"]
         new_visits = list(
-            service.lookup_origin_visits(origin_url, last_visit=last_visit)
+            archive.lookup_origin_visits(origin_url, last_visit=last_visit)
         )
         if not new_visits:
-            last_snp = service.lookup_latest_origin_snapshot(origin_url)
+            last_snp = archive.lookup_latest_origin_snapshot(origin_url)
             if not last_snp or last_snp["id"] == cache_entry[-1]["snapshot"]:
                 return cache_entry
 
     origin_visits = []
 
-    per_page = service.MAX_LIMIT
+    per_page = archive.MAX_LIMIT
     last_visit = None
     while 1:
         visits = list(
-            service.lookup_origin_visits(
+            archive.lookup_origin_visits(
                 origin_url, last_visit=last_visit, per_page=per_page
             )
         )
@@ -112,12 +112,12 @@ def get_origin_visit(
         swh.web.common.exc.NotFoundExc: if no visit can be found
     """
     # returns the latest full visit with a valid snapshot
-    visit = service.lookup_origin_visit_latest(
+    visit = archive.lookup_origin_visit_latest(
         origin_info["url"], allowed_statuses=["full"], require_snapshot=True
     )
     if not visit:
         # or the latest partial visit with a valid snapshot otherwise
-        visit = service.lookup_origin_visit_latest(
+        visit = archive.lookup_origin_visit_latest(
             origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
         )
 

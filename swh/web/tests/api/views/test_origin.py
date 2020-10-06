@@ -414,7 +414,7 @@ def test_api_origin_not_found(api_client, new_origin):
 def test_api_origin_search(api_client, mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.service.search", None)
+        mocker.patch("swh.web.common.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -454,7 +454,7 @@ def test_api_origin_search(api_client, mocker, backend):
 def test_api_origin_search_words(api_client, mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.service.search", None)
+        mocker.patch("swh.web.common.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -506,7 +506,7 @@ def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backe
 
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.service.search", None)
+        mocker.patch("swh.web.common.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -532,7 +532,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
         )
     else:
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.service.search", None)
+        mocker.patch("swh.web.common.archive.search", None)
 
         archive_data.origin_add(
             [Origin(url="http://foobar/{}".format(i)) for i in range(2000)]
@@ -549,7 +549,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 
 @given(origin())
 def test_api_origin_metadata_search(api_client, mocker, origin):
-    mock_idx_storage = mocker.patch("swh.web.common.service.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
     oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
     oimsft.side_effect = lambda conjunction, limit: [
         {
@@ -597,7 +597,7 @@ def test_api_origin_metadata_search(api_client, mocker, origin):
 
 @given(origin())
 def test_api_origin_metadata_search_limit(api_client, mocker, origin):
-    mock_idx_storage = mocker.patch("swh.web.common.service.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
     oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
 
     oimsft.side_effect = lambda conjunction, limit: [
@@ -643,7 +643,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker, origin):
 
 @given(origin())
 def test_api_origin_intrinsic_metadata(api_client, mocker, origin):
-    mock_idx_storage = mocker.patch("swh.web.common.service.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
     oimg = mock_idx_storage.origin_intrinsic_metadata_get
     oimg.side_effect = lambda origin_urls: [
         {
@@ -676,7 +676,7 @@ def test_api_origin_intrinsic_metadata(api_client, mocker, origin):
 
 
 def test_api_origin_metadata_search_invalid(api_client, mocker):
-    mock_idx_storage = mocker.patch("swh.web.common.service.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
     url = reverse("api-1-origin-metadata-search")
     check_api_get_responses(api_client, url, status_code=400)
     mock_idx_storage.assert_not_called()

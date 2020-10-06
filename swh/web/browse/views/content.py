@@ -23,7 +23,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import highlightjs, query, service
+from swh.web.common import archive, highlightjs, query
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
@@ -289,7 +289,7 @@ def content_display(request, query_string):
 
     if path and root_dir != path:
         try:
-            dir_info = service.lookup_directory_with_path(root_dir, path)
+            dir_info = archive.lookup_directory_with_path(root_dir, path)
             directory_id = dir_info["target"]
         except Exception as exc:
             return handle_view_exception(request, exc)

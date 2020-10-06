@@ -15,7 +15,7 @@ from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
@@ -26,7 +26,7 @@ def _directory_browse(request, sha1_git, path=None):
     root_sha1_git = sha1_git
     try:
         if path:
-            dir_info = service.lookup_directory_with_path(sha1_git, path)
+            dir_info = archive.lookup_directory_with_path(sha1_git, path)
             sha1_git = dir_info["target"]
 
         dirs, files = get_directory_entries(sha1_git)
@@ -260,7 +260,7 @@ def _directory_resolve_content_path(request, sha1_git):
     try:
         path = os.path.normpath(request.GET.get("path"))
         if not path.startswith("../"):
-            dir_info = service.lookup_directory_with_path(sha1_git, path)
+            dir_info = archive.lookup_directory_with_path(sha1_git, path)
             if dir_info["type"] == "file":
                 sha1 = dir_info["checksums"]["sha1"]
                 data_url = reverse(
