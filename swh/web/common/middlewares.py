@@ -3,9 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+
 from htmlmin import minify
 import sentry_sdk
 
+from swh.web.common.exc import handle_view_exception
 from swh.web.common.utils import prettify_html
 
 
@@ -71,3 +73,19 @@ class ThrottlingHeadersMiddleware(object):
         if "RateLimit-Reset" in request.META:
             resp["X-RateLimit-Reset"] = request.META["RateLimit-Reset"]
         return resp
+
+
+class ExceptionMiddleware(object):
+    """
+    Django middleware for handling uncaught exception raised when
+    processing a view.
+    """
+
+    def __init__(self, get_response=None):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        return handle_view_exception(request, exception)

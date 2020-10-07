@@ -20,7 +20,7 @@ from swh.web.browse.utils import (
     gen_snapshot_link,
 )
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ReleaseMetadata, SWHObjectInfo
 from swh.web.common.utils import format_utc_iso_date, reverse
@@ -38,43 +38,40 @@ def release_browse(request, sha1_git):
 
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.
     """
-    try:
-        release = archive.lookup_release(sha1_git)
-        snapshot_context = {}
-        origin_info = None
-        snapshot_id = request.GET.get("snapshot_id")
-        if not snapshot_id:
-            snapshot_id = request.GET.get("snapshot")
-        origin_url = request.GET.get("origin_url")
-        if not origin_url:
-            origin_url = request.GET.get("origin")
-        timestamp = request.GET.get("timestamp")
-        visit_id = request.GET.get("visit_id")
-        if origin_url:
-            try:
-                snapshot_context = get_snapshot_context(
-                    snapshot_id, origin_url, timestamp, visit_id
-                )
-            except NotFoundExc as e:
-                raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
-                error_message = (
-                    "The Software Heritage archive has a release "
-                    "with the hash you provided but the origin "
-                    "mentioned in your request appears broken: %s. "
-                    "Please check the URL and try again.\n\n"
-                    "Nevertheless, you can still browse the release "
-                    "without origin information: %s"
-                    % (gen_link(origin_url), gen_link(raw_rel_url))
-                )
-                if str(e).startswith("Origin"):
-                    raise NotFoundExc(error_message)
-                else:
-                    raise e
-            origin_info = snapshot_context["origin_info"]
-        elif snapshot_id:
-            snapshot_context = get_snapshot_context(snapshot_id)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    release = archive.lookup_release(sha1_git)
+    snapshot_context = {}
+    origin_info = None
+    snapshot_id = request.GET.get("snapshot_id")
+    if not snapshot_id:
+        snapshot_id = request.GET.get("snapshot")
+    origin_url = request.GET.get("origin_url")
+    if not origin_url:
+        origin_url = request.GET.get("origin")
+    timestamp = request.GET.get("timestamp")
+    visit_id = request.GET.get("visit_id")
+    if origin_url:
+        try:
+            snapshot_context = get_snapshot_context(
+                snapshot_id, origin_url, timestamp, visit_id
+            )
+        except NotFoundExc as e:
+            raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
+            error_message = (
+                "The Software Heritage archive has a release "
+                "with the hash you provided but the origin "
+                "mentioned in your request appears broken: %s. "
+                "Please check the URL and try again.\n\n"
+                "Nevertheless, you can still browse the release "
+                "without origin information: %s"
+                % (gen_link(origin_url), gen_link(raw_rel_url))
+            )
+            if str(e).startswith("Origin"):
+                raise NotFoundExc(error_message)
+            else:
+                raise e
+        origin_info = snapshot_context["origin_info"]
+    elif snapshot_id:
+        snapshot_context = get_snapshot_context(snapshot_id)
 
     target_url = None
     if release["target_type"] == REVISION:

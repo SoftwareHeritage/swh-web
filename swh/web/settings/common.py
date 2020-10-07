@@ -61,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "swh.web.common.middlewares.ThrottlingHeadersMiddleware",
+    "swh.web.common.middlewares.ExceptionMiddleware",
 ]
 
 # Compress all assets (static ones and dynamically generated html)
