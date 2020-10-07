@@ -167,6 +167,7 @@ REST_FRAMEWORK: Dict[str, Any] = {
         "rest_framework.authentication.SessionAuthentication",
         "swh.web.auth.backends.OIDCBearerTokenAuthentication",
     ],
+    "EXCEPTION_HANDLER": "swh.web.api.apiresponse.error_response_handler",
 }
 
 LOGGING = {

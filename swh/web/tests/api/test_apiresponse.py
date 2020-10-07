@@ -11,6 +11,8 @@ from swh.web.api.apiresponse import (
     make_api_response,
     transform,
 )
+from swh.web.common.utils import reverse
+from swh.web.tests.django_asserts import assert_contains
 
 
 def test_compute_link_header():
@@ -76,6 +78,7 @@ def test_swh_multi_response_mimetype(mocker, api_request_factory):
 
     mock_filter.return_value = data
     mock_shorten_path.return_value = "my_short_path"
+    mock_json.dumps.return_value = json.dumps(data)
 
     accepted_response_formats = {
         "html": "text/html",
@@ -83,34 +86,23 @@ def test_swh_multi_response_mimetype(mocker, api_request_factory):
         "json": "application/json",
     }
 
-    for format in accepted_response_formats:
+    for resp_format in accepted_response_formats:
 
         request = api_request_factory.get("/api/test/path/")
 
-        mime_type = accepted_response_formats[format]
-        setattr(request, "accepted_media_type", mime_type)
-
-        if mime_type == "text/html":
-
-            expected_data = {
-                "response_data": json.dumps(data),
-                "headers_data": {},
-                "heading": "my_short_path",
-                "status_code": 200,
-            }
-
-            mock_json.dumps.return_value = json.dumps(data)
-        else:
-            expected_data = data
+        content_type = accepted_response_formats[resp_format]
+        setattr(request, "accepted_media_type", content_type)
 
         rv = make_api_response(request, data)
 
         mock_filter.assert_called_with(request, data)
 
-        assert rv.status_code == 200, rv.data
-        assert rv.data == expected_data
-        if mime_type == "text/html":
-            assert rv.template_name == "api/apidoc.html"
+        if resp_format != "html":
+            assert rv.status_code == 200, rv.data
+            assert rv.data == data
+        else:
+            assert rv.status_code == 200, rv.content
+            assert_contains(rv, json.dumps(data))
 
 
 def test_swh_filter_renderer_do_nothing(api_request_factory):
@@ -138,3 +130,11 @@ def test_swh_filter_renderer_do_filter(mocker, api_request_factory):
     assert actual_data == {"a": "some-data"}
 
     mock_ffk.assert_called_once_with(input_data, {"a", "c"})
+
+
+def test_error_response_handler(mocker, api_client):
+    mock_archive = mocker.patch("swh.web.api.views.stat.archive")
+    mock_archive.stat_counters.side_effect = Exception("Something went wrong")
+    url = reverse("api-1-stat-counters")
+    resp = api_client.get(url)
+    assert resp.status_code == 500

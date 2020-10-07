@@ -4,11 +4,13 @@
 # See top-level LICENSE file for more information
 
 import functools
-from typing import Dict
+from typing import Dict, List, Optional
 
+from django.http import HttpResponse
 from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
+from swh.web.api.apiresponse import make_api_response
 from swh.web.common.urlsindex import UrlsIndex
 
 
@@ -26,11 +28,18 @@ class APIUrls(UrlsIndex):
     scope = "api"
 
     @classmethod
-    def get_app_endpoints(cls):
+    def get_app_endpoints(cls) -> Dict[str, Dict[str, str]]:
         return cls._apidoc_routes
 
     @classmethod
-    def add_doc_route(cls, route, docstring, noargs=False, api_version="1", **kwargs):
+    def add_doc_route(
+        cls,
+        route: str,
+        docstring: str,
+        noargs: bool = False,
+        api_version: str = "1",
+        **kwargs,
+    ) -> None:
         """
         Add a route to the self-documenting API reference
         """
@@ -50,12 +59,12 @@ class APIUrls(UrlsIndex):
 
 
 def api_route(
-    url_pattern=None,
-    view_name=None,
-    methods=["GET", "HEAD", "OPTIONS"],
-    throttle_scope="swh_api",
-    api_version="1",
-    checksum_args=None,
+    url_pattern: str,
+    view_name: Optional[str] = None,
+    methods: List[str] = ["GET", "HEAD", "OPTIONS"],
+    throttle_scope: str = "swh_api",
+    api_version: str = "1",
+    checksum_args: Optional[List[str]] = None,
 ):
     """
     Decorator to ease the registration of an API endpoint
@@ -66,6 +75,9 @@ def api_route(
         view_name: the name of the API view associated to the route used to
            reverse the url
         methods: array of HTTP methods supported by the API route
+        throttle_scope: Named scope for rate limiting
+        api_version: web API version
+        checksum_args: list of view argument names holding checksum values
 
     """
 
@@ -76,8 +88,18 @@ def api_route(
         @api_view(methods)
         @throttling.throttle_scope(throttle_scope)
         @functools.wraps(f)
-        def api_view_f(*args, **kwargs):
-            return f(*args, **kwargs)
+        def api_view_f(request, **kwargs):
+            response = f(request, **kwargs)
+            doc_data = None
+            # check if response has been forwarded by api_doc decorator
+            if isinstance(response, dict) and "doc_data" in response:
+                doc_data = response["doc_data"]
+                response = response["data"]
+            # check if HTTP response needs to be created
+            if not isinstance(response, HttpResponse):
+                return make_api_response(request, data=response, doc_data=doc_data)
+            else:
+                return response
 
         # small hacks for correctly generating API endpoints index doc
         api_view_f.__name__ = f.__name__

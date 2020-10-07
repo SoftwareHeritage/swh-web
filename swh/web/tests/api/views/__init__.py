@@ -27,7 +27,7 @@ def check_api_get_responses(
     html_content_type = "text/html"
     resp = api_client.get(url, HTTP_ACCEPT=html_content_type)
     assert resp.status_code == status_code, resp.content
-    assert resp["Content-Type"] == html_content_type
+    assert resp["Content-Type"].startswith(html_content_type)
 
     # check YAML response
     yaml_content_type = "application/yaml"
