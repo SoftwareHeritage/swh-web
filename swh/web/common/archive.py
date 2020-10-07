@@ -182,7 +182,7 @@ def lookup_content_filetype(q):
     filetype = _first_element(list(idx_storage.content_mimetype_get([sha1])))
     if not filetype:
         return None
-    return converters.from_filetype(filetype)
+    return converters.from_filetype(filetype.to_dict())
 
 
 def lookup_content_language(q):
