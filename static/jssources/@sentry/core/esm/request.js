@@ -1,4 +1,3 @@
-import { timestampWithMs } from '@sentry/utils';
 /** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {
     var useEnvelope = event.type === 'transaction';
@@ -16,7 +15,7 @@ export function eventToSentryRequest(event, api) {
             event_id: event.event_id,
             // We need to add * 1000 since we divide it by 1000 by default but JS works with ms precision
             // The reason we use timestampWithMs here is that all clocks across the SDK use the same clock
-            sent_at: new Date(timestampWithMs() * 1000).toISOString(),
+            sent_at: new Date().toISOString(),
         });
         var itemHeaders = JSON.stringify({
             type: event.type,

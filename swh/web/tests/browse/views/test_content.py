@@ -325,12 +325,12 @@ def test_content_request_errors(client, invalid_sha1, unknown_content):
 
 @given(content())
 def test_content_bytes_missing(client, archive_data, mocker, content):
-    mock_service = mocker.patch("swh.web.browse.utils.service")
+    mock_archive = mocker.patch("swh.web.browse.utils.archive")
     content_data = archive_data.content_get(content["sha1"])
 
-    mock_service.lookup_content.return_value = content_data
-    mock_service.lookup_content_filetype.side_effect = Exception()
-    mock_service.lookup_content_raw.side_effect = NotFoundExc(
+    mock_archive.lookup_content.return_value = content_data
+    mock_archive.lookup_content_filetype.side_effect = Exception()
+    mock_archive.lookup_content_raw.side_effect = NotFoundExc(
         "Content bytes not available!"
     )
 

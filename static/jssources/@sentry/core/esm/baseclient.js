@@ -1,7 +1,7 @@
 import { __assign } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
-import { Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, timestampWithMs, truncate, uuid4, } from '@sentry/utils';
+import { dateTimestampInSeconds, Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -211,7 +211,7 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype._prepareEvent = function (event, scope, hint) {
         var _this = this;
         var _a = this.getOptions().normalizeDepth, normalizeDepth = _a === void 0 ? 3 : _a;
-        var prepared = __assign(__assign({}, event), { event_id: event.event_id || (hint && hint.event_id ? hint.event_id : uuid4()), timestamp: event.timestamp || timestampWithMs() });
+        var prepared = __assign(__assign({}, event), { event_id: event.event_id || (hint && hint.event_id ? hint.event_id : uuid4()), timestamp: event.timestamp || dateTimestampInSeconds() });
         this._applyClientOptions(prepared);
         this._applyIntegrationsMetadata(prepared);
         // If we have scope given to us, use it as the base for further modifications.

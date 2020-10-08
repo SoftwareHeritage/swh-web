@@ -11,7 +11,7 @@ from swh.model import hashutil
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import query, service
+from swh.web.common import archive, query
 from swh.web.common.utils import reverse
 
 
@@ -21,7 +21,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
     object_name = obj_type.split("_")[0]
     if request.method == "GET":
         return api_lookup(
-            service.vault_progress,
+            archive.vault_progress,
             obj_type,
             obj_id,
             notfound_msg=(
@@ -32,7 +32,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
     elif request.method == "POST":
         email = request.POST.get("email", request.GET.get("email", None))
         return api_lookup(
-            service.vault_cook,
+            archive.vault_cook,
             obj_type,
             obj_id,
             email,
@@ -135,7 +135,7 @@ def api_vault_fetch_directory(request, dir_id):
         dir_id, ["sha1"], "Only sha1_git is supported."
     )
     res = api_lookup(
-        service.vault_fetch,
+        archive.vault_fetch,
         "directory",
         obj_id,
         notfound_msg="Cooked archive for directory '{}' not found.".format(dir_id),
@@ -242,7 +242,7 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
         rev_id, ["sha1"], "Only sha1_git is supported."
     )
     res = api_lookup(
-        service.vault_fetch,
+        archive.vault_fetch,
         "revision_gitfast",
         obj_id,
         notfound_msg="Cooked archive for revision '{}' not found.".format(rev_id),

@@ -1,5 +1,5 @@
 import { __assign, __read, __spread } from "tslib";
-import { consoleSandbox, getGlobalObject, isNodeEnv, logger, timestampWithMs, uuid4 } from '@sentry/utils';
+import { consoleSandbox, dateTimestampInSeconds, getGlobalObject, isNodeEnv, logger, uuid4 } from '@sentry/utils';
 import { Scope } from './scope';
 /**
  * API compatibility version of this hub.
@@ -187,7 +187,7 @@ var Hub = /** @class */ (function () {
         if (maxBreadcrumbs <= 0) {
             return;
         }
-        var timestamp = timestampWithMs();
+        var timestamp = dateTimestampInSeconds();
         var mergedBreadcrumb = __assign({ timestamp: timestamp }, breadcrumb);
         var finalBreadcrumb = beforeBreadcrumb
             ? consoleSandbox(function () { return beforeBreadcrumb(mergedBreadcrumb, hint); })

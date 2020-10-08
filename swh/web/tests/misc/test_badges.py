@@ -15,7 +15,7 @@ from swh.model.identifiers import (
     SNAPSHOT,
     swhid,
 )
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
@@ -165,7 +165,7 @@ def _check_generated_badge(response, object_type, object_id, error=None):
         text = swhid(object_type, object_id)
         link = resolve_swhid(text)["browse_url"]
         if object_type == RELEASE:
-            release = service.lookup_release(object_id)
+            release = archive.lookup_release(object_id)
             text = release["name"]
     elif error == "invalid id":
         text = "error"

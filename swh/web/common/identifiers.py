@@ -23,7 +23,7 @@ from swh.model.identifiers import (
     parse_swhid,
     swhid,
 )
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (
     QueryParameters,
@@ -128,12 +128,12 @@ def resolve_swhid(
             if anchor_swhid_parsed.object_type == DIRECTORY:
                 directory = anchor_swhid_parsed.object_id
             elif anchor_swhid_parsed.object_type == REVISION:
-                revision = service.lookup_revision(anchor_swhid_parsed.object_id)
+                revision = archive.lookup_revision(anchor_swhid_parsed.object_id)
                 directory = revision["directory"]
             elif anchor_swhid_parsed.object_type == RELEASE:
-                release = service.lookup_release(anchor_swhid_parsed.object_id)
+                release = archive.lookup_release(anchor_swhid_parsed.object_id)
                 if release["target_type"] == REVISION:
-                    revision = service.lookup_revision(release["target"])
+                    revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
             if object_type == CONTENT:
                 if "origin" not in swhid_parsed.metadata:
@@ -159,7 +159,7 @@ def resolve_swhid(
         if anchor_swhid_parsed:
             if anchor_swhid_parsed.object_type == REVISION:
                 # check if the anchor revision is the tip of a branch
-                branch_name = service.lookup_snapshot_branch_name_from_tip_revision(
+                branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
                     snp_swhid_parsed.object_id, anchor_swhid_parsed.object_id
                 )
                 if branch_name:
@@ -168,12 +168,12 @@ def resolve_swhid(
                     query_dict["revision"] = anchor_swhid_parsed.object_id
 
             elif anchor_swhid_parsed.object_type == RELEASE:
-                release = service.lookup_release(anchor_swhid_parsed.object_id)
+                release = archive.lookup_release(anchor_swhid_parsed.object_id)
                 if release:
                     query_dict["release"] = release["name"]
 
         if object_type == REVISION and "release" not in query_dict:
-            branch_name = service.lookup_snapshot_branch_name_from_tip_revision(
+            branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
                 snp_swhid_parsed.object_id, object_id
             )
             if branch_name:

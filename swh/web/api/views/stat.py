@@ -5,7 +5,7 @@
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import service
+from swh.web.common import archive
 
 
 @api_route(r"/stat/counters/", "api-1-stat-counters")
@@ -47,4 +47,4 @@ def api_stats(request):
 
             :swh_web_api:`stat/counters/`
     """
-    return service.stat_counters()
+    return archive.stat_counters()

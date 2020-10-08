@@ -23,8 +23,8 @@ from swh.web.tests.strategies import (
 
 @given(new_snapshots(3))
 def test_get_origin_visits(mocker, snapshots):
-    mock_service = mocker.patch("swh.web.common.service")
-    mock_service.MAX_LIMIT = 2
+    mock_archive = mocker.patch("swh.web.common.archive")
+    mock_archive.MAX_LIMIT = 2
 
     def _lookup_origin_visits(*args, **kwargs):
         if kwargs["last_visit"] is None:
@@ -55,7 +55,7 @@ def test_get_origin_visits(mocker, snapshots):
                 }
             ]
 
-    mock_service.lookup_origin_visits.side_effect = _lookup_origin_visits
+    mock_archive.lookup_origin_visits.side_effect = _lookup_origin_visits
 
     origin_info = {
         "url": "https://github.com/foo/bar",

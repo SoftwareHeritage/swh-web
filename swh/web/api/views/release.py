@@ -7,7 +7,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 
 
 @api_route(
@@ -52,7 +52,7 @@ def api_release(request, sha1_git):
     """
     error_msg = "Release with sha1_git %s not found." % sha1_git
     return api_lookup(
-        service.lookup_release,
+        archive.lookup_release,
         sha1_git,
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_release,

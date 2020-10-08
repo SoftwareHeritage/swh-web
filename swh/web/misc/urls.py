@@ -13,7 +13,7 @@ from django.contrib.staticfiles import finders
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.config import get_config
 from swh.web.misc.metrics import prometheus_metrics
 
@@ -28,7 +28,7 @@ def _jslicenses(request):
 
 
 def _stat_counters(request):
-    stat_counters = service.stat_counters()
+    stat_counters = archive.stat_counters()
     url = get_config()["history_counters_url"]
     stat_counters_history = "null"
     if url:

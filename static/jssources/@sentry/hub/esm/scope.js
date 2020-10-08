@@ -1,5 +1,5 @@
 import { __assign, __read, __spread } from "tslib";
-import { getGlobalObject, isPlainObject, isThenable, SyncPromise, timestampWithMs } from '@sentry/utils';
+import { dateTimestampInSeconds, getGlobalObject, isPlainObject, isThenable, SyncPromise } from '@sentry/utils';
 /**
  * Holds additional event information. {@link Scope.applyToEvent} will be
  * called by the client before an event will be sent.
@@ -19,10 +19,8 @@ var Scope = /** @class */ (function () {
         /** Tags */
         this._tags = {};
         /** Extra */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this._extra = {};
         /** Contexts */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this._contexts = {};
     }
     /**
@@ -135,10 +133,15 @@ var Scope = /** @class */ (function () {
     /**
      * @inheritDoc
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Scope.prototype.setContext = function (key, context) {
         var _a;
-        this._contexts = __assign(__assign({}, this._contexts), (_a = {}, _a[key] = context, _a));
+        if (context === null) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete this._contexts[key];
+        }
+        else {
+            this._contexts = __assign(__assign({}, this._contexts), (_a = {}, _a[key] = context, _a));
+        }
         this._notifyScopeListeners();
         return this;
     };
@@ -160,10 +163,18 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.getTransaction = function () {
+        var _a, _b, _c, _d;
+        // often, this span will be a transaction, but it's not guaranteed to be
         var span = this.getSpan();
-        if (span && span.spanRecorder && span.spanRecorder.spans[0]) {
+        // try it the new way first
+        if ((_a = span) === null || _a === void 0 ? void 0 : _a.transaction) {
+            return (_b = span) === null || _b === void 0 ? void 0 : _b.transaction;
+        }
+        // fallback to the old way (known bug: this only finds transactions with sampled = true)
+        if ((_d = (_c = span) === null || _c === void 0 ? void 0 : _c.spanRecorder) === null || _d === void 0 ? void 0 : _d.spans[0]) {
             return span.spanRecorder.spans[0];
         }
+        // neither way found a transaction
         return undefined;
     };
     /**
@@ -229,7 +240,7 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.addBreadcrumb = function (breadcrumb, maxBreadcrumbs) {
-        var mergedBreadcrumb = __assign({ timestamp: timestampWithMs() }, breadcrumb);
+        var mergedBreadcrumb = __assign({ timestamp: dateTimestampInSeconds() }, breadcrumb);
         this._breadcrumbs =
             maxBreadcrumbs !== undefined && maxBreadcrumbs >= 0
                 ? __spread(this._breadcrumbs, [mergedBreadcrumb]).slice(-maxBreadcrumbs)

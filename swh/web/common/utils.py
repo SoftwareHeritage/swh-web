@@ -291,9 +291,9 @@ def resolve_branch_alias(
         if branch["target"] in snapshot["branches"]:
             branch = snapshot["branches"][branch["target"]]
         else:
-            from swh.web.common import service
+            from swh.web.common import archive
 
-            snp = service.lookup_snapshot(
+            snp = archive.lookup_snapshot(
                 snapshot["id"], branches_from=branch["target"], branches_count=1
             )
             if snp and branch["target"] in snp["branches"]:

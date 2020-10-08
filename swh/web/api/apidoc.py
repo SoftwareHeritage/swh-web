@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -212,9 +212,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         # literal block in endpoint description
         if not self.field_list_visited:
             self.data["description"] += ":\n\n%s\n" % textwrap.indent(text, "\t")
-        # extract example url
+        # extract example urls
         if ":swh_web_api:" in text:
-            self.data["examples"].append("/api/1/" + re.sub(".*`(.*)`.*", r"\1", text))
+            examples_str = re.sub(".*`(.+)`.*", r"/api/1/\1", text)
+            self.data["examples"] += examples_str.split("\n")
 
     def visit_bullet_list(self, node):
         # bullet list in endpoint description
