@@ -20,7 +20,7 @@ requests
 sentry-sdk
 typing-extensions
 swh.core>=0.0.95
-swh.indexer>=0.0.171
+swh.indexer>=0.3.0
 swh.model>=0.5.0
 swh.scheduler>=0.1.1
 swh.search>=0.2.0

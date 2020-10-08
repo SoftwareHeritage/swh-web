@@ -7,7 +7,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 
 
 @api_route(
@@ -75,7 +75,7 @@ def api_directory(request, sha1_git, path=None):
             "Entry with path %s relative to directory " "with sha1_git %s not found."
         ) % (path, sha1_git)
         return api_lookup(
-            service.lookup_directory_with_path,
+            archive.lookup_directory_with_path,
             sha1_git,
             path,
             notfound_msg=error_msg_path,
@@ -85,7 +85,7 @@ def api_directory(request, sha1_git, path=None):
     else:
         error_msg_nopath = "Directory with sha1_git %s not found." % sha1_git
         return api_lookup(
-            service.lookup_directory,
+            archive.lookup_directory,
             sha1_git,
             notfound_msg=error_msg_nopath,
             enrich_fn=utils.enrich_directory,

@@ -330,7 +330,9 @@ class _IndexerData:
         self.mimetype_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
 
     def content_get_mimetype(self, cnt_id):
-        mimetype = next(self.idx_storage.content_mimetype_get([hash_to_bytes(cnt_id)]))
+        mimetype = self.idx_storage.content_mimetype_get([hash_to_bytes(cnt_id)])[
+            0
+        ].to_dict()
         return converters.from_filetype(mimetype)
 
     def content_add_language(self, cnt_id):

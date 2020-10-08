@@ -267,10 +267,6 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
-    "db_cache": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "swh_web_cache",
-    },
 }
 
 JS_REVERSE_JS_MINIFY = False

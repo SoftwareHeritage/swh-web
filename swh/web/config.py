@@ -90,6 +90,10 @@ DEFAULT_CONFIG = {
     ),
     "client_config": ("dict", {}),
     "keycloak": ("dict", {"server_url": "", "realm_name": ""}),
+    "graph": (
+        "dict",
+        {"server_url": "http://graph.internal.softwareheritage.org:5009/graph/"},
+    ),
 }
 
 swhweb_config = {}  # type: Dict[str, Any]

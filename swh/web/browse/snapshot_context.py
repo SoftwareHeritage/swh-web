@@ -38,7 +38,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import highlightjs, service
+from swh.web.common import archive, highlightjs
 from swh.web.common.exc import BadInputExc, NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
@@ -80,7 +80,7 @@ def _get_branch(branches, branch_name, snapshot_id):
             return branches[0]
     else:
         # case where a large branches list has been truncated
-        snp = service.lookup_snapshot(
+        snp = archive.lookup_snapshot(
             snapshot_id,
             branches_from=branch_name,
             branches_count=1,
@@ -104,14 +104,14 @@ def _get_release(releases, release_name, snapshot_id):
         # case where a large branches list has been truncated
         try:
             # git origins have specific branches for releases
-            snp = service.lookup_snapshot(
+            snp = archive.lookup_snapshot(
                 snapshot_id,
                 branches_from=f"refs/tags/{release_name}",
                 branches_count=1,
                 target_types=["release"],
             )
         except NotFoundExc:
-            snp = service.lookup_snapshot(
+            snp = archive.lookup_snapshot(
                 snapshot_id,
                 branches_from=release_name,
                 branches_count=1,
@@ -187,7 +187,7 @@ def process_snapshot_branches(
 
     Args:
         snapshot: A dict describing a snapshot as returned for instance by
-            :func:`swh.web.common.service.lookup_snapshot`
+            :func:`swh.web.common.archive.lookup_snapshot`
 
     Returns:
         A tuple whose first member is the sorted list of branches
@@ -246,7 +246,7 @@ def process_snapshot_branches(
             url=None,
         )
 
-    releases_info = service.lookup_release_multiple(release_to_branch.keys())
+    releases_info = archive.lookup_release_multiple(release_to_branch.keys())
     for release in releases_info:
         if release is None:
             continue
@@ -256,7 +256,7 @@ def process_snapshot_branches(
         if release["target_type"] == "revision":
             revision_to_release[release["target"]].update(branches_to_update)
 
-    revisions = service.lookup_revision_multiple(
+    revisions = archive.lookup_revision_multiple(
         set(revision_to_branch.keys()) | set(revision_to_release.keys())
     )
 
@@ -272,7 +272,7 @@ def process_snapshot_branches(
         if branch_target in branches:
             branches[branch_alias] = copy(branches[branch_target])
         else:
-            snp = service.lookup_snapshot(
+            snp = archive.lookup_snapshot(
                 snapshot["id"], branches_from=branch_target, branches_count=1
             )
             if snp and branch_target in snp["branches"]:
@@ -284,10 +284,10 @@ def process_snapshot_branches(
                 target = snp["branches"][branch_target]["target"]
                 if target_type == "revision":
                     branches[branch_alias] = snp["branches"][branch_target]
-                    revision = service.lookup_revision(target)
+                    revision = archive.lookup_revision(target)
                     _add_branch_info(branch_alias, revision)
                 elif target_type == "release":
-                    release = service.lookup_release(target)
+                    release = archive.lookup_release(target)
                     _add_release_info(branch_alias, release)
 
         if branch_alias in branches:
@@ -333,7 +333,7 @@ def get_snapshot_content(
     snapshot_content_max_size = get_config()["snapshot_content_max_size"]
 
     if snapshot_id:
-        snapshot = service.lookup_snapshot(
+        snapshot = archive.lookup_snapshot(
             snapshot_id, branches_count=snapshot_content_max_size
         )
         branches, releases = process_snapshot_branches(snapshot)
@@ -442,7 +442,7 @@ def get_snapshot_context(
         elif snapshot_id is not None:
             query_params["snapshot"] = snapshot_id
 
-        origin_info = service.lookup_origin({"url": origin_url})
+        origin_info = archive.lookup_origin({"url": origin_url})
 
         visit_info = get_origin_visit(origin_info, timestamp, visit_id, snapshot_id)
         formatted_date = format_utc_iso_date(visit_info["date"])
@@ -492,7 +492,7 @@ def get_snapshot_context(
 
     releases = list(reversed(releases))
 
-    snapshot_sizes = service.lookup_snapshot_sizes(snapshot_id)
+    snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
 
     is_empty = sum(snapshot_sizes.values()) == 0
 
@@ -515,7 +515,7 @@ def get_snapshot_context(
         query_params["path"] = path
 
     if snapshot_total_size and revision_id is not None:
-        revision = service.lookup_revision(revision_id)
+        revision = archive.lookup_revision(revision_id)
         root_directory = revision["directory"]
         branches.append(
             SnapshotBranchInfo(
@@ -587,7 +587,7 @@ def get_snapshot_context(
     revision_info = None
     if revision_id:
         try:
-            revision_info = service.lookup_revision(revision_id)
+            revision_info = archive.lookup_revision(revision_id)
         except NotFoundExc:
             pass
         else:
@@ -696,7 +696,7 @@ def browse_snapshot_directory(
         root_directory = snapshot_context["root_directory"]
         sha1_git = root_directory
         if root_directory and path:
-            dir_info = service.lookup_directory_with_path(root_directory, path)
+            dir_info = archive.lookup_directory_with_path(root_directory, path)
             sha1_git = dir_info["target"]
 
         dirs = []
@@ -783,7 +783,7 @@ def browse_snapshot_directory(
     revision_found = True
     if sha1_git is None and revision_id is not None:
         try:
-            service.lookup_revision(revision_id)
+            archive.lookup_revision(revision_id)
         except NotFoundExc:
             revision_found = False
 
@@ -915,13 +915,13 @@ def browse_snapshot_content(
         filename = split_path[-1]
         filepath = path[: -len(filename)]
         if root_directory:
-            content_info = service.lookup_directory_with_path(root_directory, path)
+            content_info = archive.lookup_directory_with_path(root_directory, path)
             sha1_git = content_info["target"]
             query_string = "sha1_git:" + sha1_git
             content_data = request_content(query_string, raise_if_unavailable=False)
 
             if filepath:
-                dir_info = service.lookup_directory_with_path(root_directory, filepath)
+                dir_info = archive.lookup_directory_with_path(root_directory, filepath)
                 directory_id = dir_info["target"]
             else:
                 directory_id = root_directory
@@ -1000,7 +1000,6 @@ def browse_snapshot_content(
         encoding=content_data.get("encoding"),
         size=filesizeformat(content_data.get("length", 0)),
         language=content_data.get("language"),
-        licenses=content_data.get("licenses"),
         root_directory=root_directory,
         path=f"/{filepath}",
         filename=filename,
@@ -1103,7 +1102,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
             revs_walker_state = rev_log_session["revs_walker_state"]
 
         if len(rev_log) < offset + per_page:
-            revs_walker = service.get_revisions_walker(
+            revs_walker = archive.get_revisions_walker(
                 revs_ordering,
                 revision_id,
                 max_revs=offset + per_page + 1,
@@ -1113,7 +1112,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
             revs_walker_state = revs_walker.export_state()
 
         revs = rev_log[offset : offset + per_page]
-        revision_log = service.lookup_revision_multiple(revs)
+        revision_log = archive.lookup_revision_multiple(revs)
 
         request.session[session_key] = {
             "rev_log": rev_log,
@@ -1243,7 +1242,7 @@ def browse_snapshot_branches(
         else:
             browse_view_name = "browse-snapshot-directory"
 
-        snapshot = service.lookup_snapshot(
+        snapshot = archive.lookup_snapshot(
             snapshot_context["snapshot_id"],
             branches_from,
             PER_PAGE + 1,
@@ -1352,7 +1351,7 @@ def browse_snapshot_releases(
         url_args = snapshot_context["url_args"]
         query_params = snapshot_context["query_params"]
 
-        snapshot = service.lookup_snapshot(
+        snapshot = archive.lookup_snapshot(
             snapshot_context["snapshot_id"],
             rel_from,
             PER_PAGE + 1,

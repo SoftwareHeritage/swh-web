@@ -19,7 +19,7 @@ from swh.web.browse.utils import (
     gen_revision_link,
     gen_snapshot_link,
 )
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ReleaseMetadata, SWHObjectInfo
@@ -39,7 +39,7 @@ def release_browse(request, sha1_git):
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.
     """
     try:
-        release = service.lookup_release(sha1_git)
+        release = archive.lookup_release(sha1_git)
         snapshot_context = {}
         origin_info = None
         snapshot_id = request.GET.get("snapshot_id")
@@ -128,7 +128,7 @@ def release_browse(request, sha1_git):
             link_attrs=None,
         )
         try:
-            revision = service.lookup_revision(release["target"])
+            revision = archive.lookup_revision(release["target"])
             rev_directory = revision["directory"]
             vault_cooking = {
                 "directory_context": True,
@@ -147,7 +147,7 @@ def release_browse(request, sha1_git):
         )
         try:
             # check directory exists
-            service.lookup_directory(release["target"])
+            archive.lookup_directory(release["target"])
             vault_cooking = {
                 "directory_context": True,
                 "directory_id": release["target"],

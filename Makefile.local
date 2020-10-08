@@ -25,18 +25,15 @@ build-webpack-prod: yarn-install
 .PHONY: run-migrations
 run-migrations:
 	python3 swh/web/manage.py migrate --settings=swh.web.settings.development -v0 2>/dev/null
-	python3 swh/web/manage.py createcachetable --settings=swh.web.settings.development -v0 2>/dev/null
 
 .PHONY: run-migrations-prod
 run-migrations-prod:
 	django-admin migrate --settings=swh.web.settings.production -v0 2>/dev/null
-	django-admin createcachetable --settings=swh.web.settings.production -v0 2>/dev/null
 
 .PHONY: run-migrations-test
 run-migrations-test:
 	rm -f swh/web/settings/testdb.sqlite3
 	django-admin migrate --settings=swh.web.settings.tests -v0 2>/dev/null
-	django-admin createcachetable --settings=swh.web.settings.tests -v0 2>/dev/null
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=swh.web.settings.tests
 
 .PHONY: clear-memcached

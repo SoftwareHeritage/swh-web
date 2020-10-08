@@ -174,10 +174,10 @@ def test_get_save_origin_requests_find_visit_date(mocker):
         loading_task_id=_task_id,
     )
 
-    # mock scheduler and services
+    # mock scheduler and archive
     _mock_scheduler(mocker)
-    mock_service = mocker.patch("swh.web.common.origin_save.service")
-    mock_service.lookup_origin.return_value = {"url": _origin_url}
+    mock_archive = mocker.patch("swh.web.common.origin_save.archive")
+    mock_archive.lookup_origin.return_value = {"url": _origin_url}
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_save.get_origin_visits"
     )
@@ -241,10 +241,10 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
         loading_task_id=_task_id,
     )
 
-    # mock scheduler and services
+    # mock scheduler and archives
     _mock_scheduler(mocker, task_status="next_run_scheduled")
-    mock_service = mocker.patch("swh.web.common.origin_save.service")
-    mock_service.lookup_origin.return_value = {"url": _origin_url}
+    mock_archive = mocker.patch("swh.web.common.origin_save.archive")
+    mock_archive.lookup_origin.return_value = {"url": _origin_url}
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_save.get_origin_visits"
     )

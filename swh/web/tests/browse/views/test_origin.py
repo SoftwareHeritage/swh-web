@@ -510,8 +510,8 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    mock_service = mocker.patch("swh.web.common.origin_visits.service")
-    mock_service.lookup_origin_visit_latest.return_value = None
+    mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
+    mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 404
@@ -556,8 +556,8 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
         "swh.web.common.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    mock_service = mocker.patch("swh.web.common.origin_visits.service")
-    mock_service.lookup_origin_visit_latest.return_value = None
+    mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
+    mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse(
         "browse-origin-content",
         query_params={"origin_url": origin["url"], "path": "foo"},
@@ -589,13 +589,13 @@ def test_browse_origin_content_unknown_visit(client, mocker, origin):
 
 @given(origin())
 def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
-    mock_snapshot_service = mocker.patch("swh.web.browse.snapshot_context.service")
+    mock_snapshot_archive = mocker.patch("swh.web.browse.snapshot_context.archive")
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_snapshot_service.lookup_origin.return_value = origin
-    mock_snapshot_service.lookup_snapshot_sizes.return_value = {
+    mock_snapshot_archive.lookup_origin.return_value = origin
+    mock_snapshot_archive.lookup_snapshot_sizes.return_value = {
         "revision": 0,
         "release": 0,
     }
@@ -611,8 +611,8 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
         assert_template_used(resp, f"browse/{browse_context}.html")
         assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
         assert mock_get_origin_visit_snapshot.called
-        assert mock_snapshot_service.lookup_origin.called
-        assert mock_snapshot_service.lookup_snapshot_sizes.called
+        assert mock_snapshot_archive.lookup_origin.called
+        assert mock_snapshot_archive.lookup_snapshot_sizes.called
 
 
 @given(origin())
@@ -643,16 +643,16 @@ def test_browse_directory_snapshot_not_found(client, mocker, origin):
 
 @given(origin())
 def test_origin_empty_snapshot(client, mocker, origin):
-    mock_service = mocker.patch("swh.web.browse.snapshot_context.service")
+    mock_archive = mocker.patch("swh.web.browse.snapshot_context.archive")
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
     mock_get_origin_visit_snapshot.return_value = ([], [])
-    mock_service.lookup_snapshot_sizes.return_value = {
+    mock_archive.lookup_snapshot_sizes.return_value = {
         "revision": 0,
         "release": 0,
     }
-    mock_service.lookup_origin.return_value = origin
+    mock_archive.lookup_origin.return_value = origin
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
     resp = client.get(url)
     assert resp.status_code == 200
@@ -661,7 +661,7 @@ def test_origin_empty_snapshot(client, mocker, origin):
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
     assert mock_get_origin_visit_snapshot.called
-    assert mock_service.lookup_snapshot_sizes.called
+    assert mock_archive.lookup_snapshot_sizes.called
 
 
 @given(new_origin())

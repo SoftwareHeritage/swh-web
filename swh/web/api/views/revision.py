@@ -9,7 +9,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 
 DOC_RETURN_REVISION = """
         :>json object author: information about the author of the revision
@@ -56,7 +56,7 @@ def _revision_directory_by(revision, path, request_path, limit=100, with_data=Fa
     def enrich_directory_local(dir, context_url=request_path):
         return utils.enrich_directory(dir, context_url)
 
-    rev_id, result = service.lookup_directory_through_revision(
+    rev_id, result = archive.lookup_directory_through_revision(
         revision, path, limit=limit, with_data=with_data
     )
 
@@ -104,7 +104,7 @@ def api_revision(request, sha1_git):
             :swh_web_api:`revision/aafb16d69fd30ff58afdd69036a26047f3aebdc6/`
     """
     return api_lookup(
-        service.lookup_revision,
+        archive.lookup_revision,
         sha1_git,
         notfound_msg="Revision with sha1_git {} not found.".format(sha1_git),
         enrich_fn=utils.enrich_revision,
@@ -121,7 +121,7 @@ def api_revision(request, sha1_git):
 def api_revision_raw_message(request, sha1_git):
     """Return the raw data of the message of revision identified by sha1_git
     """
-    raw = service.lookup_revision_message(sha1_git)
+    raw = archive.lookup_revision_message(sha1_git)
     response = HttpResponse(raw["message"], content_type="application/octet-stream")
     response["Content-disposition"] = "attachment;filename=rev_%s_raw" % sha1_git
     return response
@@ -226,7 +226,7 @@ def api_revision_log(request, sha1_git):
 
     error_msg = "Revision with sha1_git %s not found." % sha1_git
     revisions = api_lookup(
-        service.lookup_revision_log,
+        archive.lookup_revision_log,
         sha1_git,
         limit,
         notfound_msg=error_msg,

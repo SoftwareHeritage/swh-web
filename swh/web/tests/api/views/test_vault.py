@@ -19,7 +19,7 @@ from swh.web.tests.strategies import (
 
 @given(directory(), revision())
 def test_api_vault_cook(api_client, mocker, directory, revision):
-    mock_service = mocker.patch("swh.web.api.views.vault.service")
+    mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
     for obj_type, obj_id in (
         ("directory", directory),
@@ -39,8 +39,8 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         }
         stub_fetch = b"content"
 
-        mock_service.vault_cook.return_value = stub_cook
-        mock_service.vault_fetch.return_value = stub_fetch
+        mock_archive.vault_cook.return_value = stub_cook
+        mock_archive.vault_fetch.return_value = stub_fetch
 
         email = "test@test.mail"
         url = reverse(
@@ -56,7 +56,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         )
 
         assert rv.data == stub_cook
-        mock_service.vault_cook.assert_called_with(
+        mock_archive.vault_cook.assert_called_with(
             obj_type, hashutil.hash_to_bytes(obj_id), email
         )
 
@@ -65,7 +65,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         assert rv.status_code == 200
         assert rv["Content-Type"] == "application/gzip"
         assert rv.content == stub_fetch
-        mock_service.vault_fetch.assert_called_with(
+        mock_archive.vault_fetch.assert_called_with(
             obj_type, hashutil.hash_to_bytes(obj_id)
         )
 
@@ -112,7 +112,7 @@ def test_api_vault_cook_uppercase_hash(api_client, directory, revision):
 def test_api_vault_cook_notfound(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):
-    mock_vault = mocker.patch("swh.web.common.service.vault")
+    mock_vault = mocker.patch("swh.web.common.archive.vault")
     mock_vault.cook.side_effect = NotFoundExc("object not found")
     mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
     mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
