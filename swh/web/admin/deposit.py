@@ -94,8 +94,8 @@ def _admin_deposit_list(request):
                 "reception_date": d["reception_date"],
                 "status": d["status"],
                 "status_detail": d["status_detail"],
-                "swhid": d["swh_id"],
-                "swhid_context": d["swh_id_context"],
+                "swhid": d["swhid"],
+                "swhid_context": d["swhid_context"],
             }
             for d in data
         ]

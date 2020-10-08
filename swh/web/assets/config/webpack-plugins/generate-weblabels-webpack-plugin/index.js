@@ -16,7 +16,7 @@ const path = require('path');
 const schema = require('./plugin-options-schema.json');
 const spdxParse = require('spdx-expression-parse');
 const spdxLicensesMapping = require('./spdx-licenses-mapping');
-const validateOptions = require('schema-utils');
+const {validate} = require('schema-utils');
 
 const pluginName = 'GenerateWebLabelsPlugin';
 
@@ -24,7 +24,7 @@ class GenerateWebLabelsPlugin {
 
   constructor(opts) {
     // check that provided options match JSON schema
-    validateOptions(schema, opts, pluginName);
+    validate(schema, opts, pluginName);
     this.options = opts || {};
     this.weblabelsDirName = this.options['outputDir'] || 'jssources';
     this.outputType = this.options['outputType'] || 'html';

@@ -7,7 +7,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
 
@@ -76,7 +76,7 @@ def api_snapshot(request, snapshot_id):
     target_types = target_types.split(",") if target_types else None
 
     results = api_lookup(
-        service.lookup_snapshot,
+        archive.lookup_snapshot,
         snapshot_id,
         branches_from,
         branches_count,

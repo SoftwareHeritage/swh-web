@@ -20,7 +20,7 @@ from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web import config
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -154,7 +154,7 @@ def _get_visit_info_for_save_request(save_request):
     if time_delta.days <= 30:
         try:
             origin = {"url": save_request.origin_url}
-            origin_info = service.lookup_origin(origin)
+            origin_info = archive.lookup_origin(origin)
             origin_visits = get_origin_visits(origin_info)
             visit_dates = [parse_iso8601_date_to_utc(v["date"]) for v in origin_visits]
             i = bisect_right(visit_dates, save_request.request_date)

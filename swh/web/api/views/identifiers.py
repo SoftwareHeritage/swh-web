@@ -5,7 +5,7 @@
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import LargePayloadExc
 from swh.web.common.identifiers import get_swhid, group_swhids, resolve_swhid
 
@@ -55,7 +55,7 @@ def api_resolve_swhid(request, swhid):
     swhid_parsed = swhid_resolved["swhid_parsed"]
     object_type = swhid_parsed.object_type
     object_id = swhid_parsed.object_id
-    service.lookup_object(object_type, object_id)
+    archive.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
     swhid_data = swhid_parsed.to_dict()
     swhid_data["browse_url"] = request.build_absolute_uri(swhid_resolved["browse_url"])
@@ -103,7 +103,7 @@ def api_swhid_known(request):
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
     # search for hashes not present in the storage
-    missing_hashes = service.lookup_missing_hashes(swhids_by_type)
+    missing_hashes = archive.lookup_missing_hashes(swhids_by_type)
 
     for swhid in swhids:
         if swhid.object_id not in missing_hashes:

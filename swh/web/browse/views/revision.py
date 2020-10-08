@@ -30,7 +30,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc, handle_view_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
@@ -129,7 +129,7 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
                 "new file:  %s" % _gen_diff_link(i, diff_link, change["to_path"])
             )
         elif change["type"] == "delete":
-            parent = service.lookup_revision(revision["parents"][0])
+            parent = archive.lookup_revision(revision["parents"][0])
             change["content_url"] = _gen_content_url(
                 parent, from_query_string, change["from_path"], snapshot_context
             )
@@ -159,7 +159,7 @@ def _revision_diff(request, sha1_git):
     Browse internal endpoint to compute revision diff
     """
     try:
-        revision = service.lookup_revision(sha1_git)
+        revision = archive.lookup_revision(sha1_git)
         snapshot_context = None
         origin_url = request.GET.get("origin_url", None)
         if not origin_url:
@@ -173,7 +173,7 @@ def _revision_diff(request, sha1_git):
     except Exception as exc:
         return handle_view_exception(request, exc)
 
-    changes = service.diff_revision(sha1_git)
+    changes = archive.diff_revision(sha1_git)
     changes_msg = _gen_revision_changes_list(revision, changes, snapshot_context)
 
     diff_data = {
@@ -225,7 +225,7 @@ def revision_log_browse(request, sha1_git):
             revs_walker_state = rev_log_session["revs_walker_state"]
 
         if len(rev_log) < offset + per_page:
-            revs_walker = service.get_revisions_walker(
+            revs_walker = archive.get_revisions_walker(
                 revs_ordering,
                 sha1_git,
                 max_revs=offset + per_page + 1,
@@ -236,7 +236,7 @@ def revision_log_browse(request, sha1_git):
             revs_walker_state = revs_walker.export_state()
 
         revs = rev_log[offset : offset + per_page]
-        revision_log = service.lookup_revision_multiple(revs)
+        revision_log = archive.lookup_revision_multiple(revs)
 
         request.session[session_key] = {
             "rev_log": rev_log,
@@ -310,7 +310,7 @@ def revision_browse(request, sha1_git):
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.
     """
     try:
-        revision = service.lookup_revision(sha1_git)
+        revision = archive.lookup_revision(sha1_git)
         origin_info = None
         snapshot_context = None
         origin_url = request.GET.get("origin_url")
@@ -359,7 +359,7 @@ def revision_browse(request, sha1_git):
             snapshot_context = get_snapshot_context(snapshot_id)
 
         if path:
-            file_info = service.lookup_directory_with_path(revision["directory"], path)
+            file_info = archive.lookup_directory_with_path(revision["directory"], path)
             if file_info["type"] == "dir":
                 dir_id = file_info["target"]
             else:

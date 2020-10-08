@@ -1,4 +1,4 @@
-import { dynamicRequire, isNodeEnv } from './node';
+import { isNodeEnv } from './node';
 import { snipLine } from './string';
 var fallbackGlobalObject = {};
 /**
@@ -14,13 +14,6 @@ export function getGlobalObject() {
             : typeof self !== 'undefined'
                 ? self
                 : fallbackGlobalObject);
-}
-/**
- * Determines if running in react native
- */
-export function isReactNative() {
-    var _a;
-    return ((_a = getGlobalObject().navigator) === null || _a === void 0 ? void 0 : _a.product) === 'ReactNative';
 }
 /**
  * UUID4 generator
@@ -173,73 +166,6 @@ export function getLocationHref() {
     catch (oO) {
         return '';
     }
-}
-var INITIAL_TIME = Date.now();
-var prevNow = 0;
-var performanceFallback = {
-    now: function () {
-        var now = Date.now() - INITIAL_TIME;
-        if (now < prevNow) {
-            now = prevNow;
-        }
-        prevNow = now;
-        return now;
-    },
-    timeOrigin: INITIAL_TIME,
-};
-/**
- * Performance wrapper for react native as performance.now() has been found to start off with an unusual offset.
- */
-function getReactNativePerformanceWrapper() {
-    // Performance only available >= RN 0.63
-    var performance = getGlobalObject().performance;
-    if (performance && typeof performance.now === 'function') {
-        var INITIAL_OFFSET_1 = performance.now();
-        return {
-            now: function () {
-                return performance.now() - INITIAL_OFFSET_1;
-            },
-            timeOrigin: INITIAL_TIME,
-        };
-    }
-    return performanceFallback;
-}
-export var crossPlatformPerformance = (function () {
-    // React Native's performance.now() starts with a gigantic offset, so we need to wrap it.
-    if (isReactNative()) {
-        return getReactNativePerformanceWrapper();
-    }
-    if (isNodeEnv()) {
-        try {
-            var perfHooks = dynamicRequire(module, 'perf_hooks');
-            return perfHooks.performance;
-        }
-        catch (_) {
-            return performanceFallback;
-        }
-    }
-    var performance = getGlobalObject().performance;
-    if (!performance || !performance.now) {
-        return performanceFallback;
-    }
-    // Polyfill for performance.timeOrigin.
-    //
-    // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
-    // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
-    if (performance.timeOrigin === undefined) {
-        // As of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always a
-        // valid fallback. In the absence of a initial time provided by the browser, fallback to INITIAL_TIME.
-        // @ts-ignore ignored because timeOrigin is a readonly property but we want to override
-        // eslint-disable-next-line deprecation/deprecation
-        performance.timeOrigin = (performance.timing && performance.timing.navigationStart) || INITIAL_TIME;
-    }
-    return performance;
-})();
-/**
- * Returns a timestamp in seconds with milliseconds precision since the UNIX epoch calculated with the monotonic clock.
- */
-export function timestampWithMs() {
-    return (crossPlatformPerformance.timeOrigin + crossPlatformPerformance.now()) / 1000;
 }
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 var SEMVER_REGEXP = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;

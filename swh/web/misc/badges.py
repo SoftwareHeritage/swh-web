@@ -23,7 +23,7 @@ from swh.model.identifiers import (
     parse_swhid,
     swhid,
 )
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
@@ -90,7 +90,7 @@ def _swh_badge(
 
     try:
         if object_type == ORIGIN:
-            service.lookup_origin({"url": object_id})
+            archive.lookup_origin({"url": object_id})
             right_text = "repository"
             whole_link = reverse(
                 "browse-origin", query_params={"origin_url": object_id}
@@ -102,7 +102,7 @@ def _swh_badge(
                 parsed_swhid = parse_swhid(object_swhid)
                 object_type = parsed_swhid.object_type
                 object_id = parsed_swhid.object_id
-            swh_object = service.lookup_object(object_type, object_id)
+            swh_object = archive.lookup_object(object_type, object_id)
             if object_swhid:
                 right_text = object_swhid
             else:

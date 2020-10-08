@@ -123,7 +123,7 @@ function instrumentFetch() {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var commonHandlerData = {
+            var handlerData = {
                 args: args,
                 fetchData: {
                     method: getFetchMethod(args),
@@ -131,13 +131,13 @@ function instrumentFetch() {
                 },
                 startTimestamp: Date.now(),
             };
-            triggerHandlers('fetch', __assign({}, commonHandlerData));
+            triggerHandlers('fetch', __assign({}, handlerData));
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return originalFetch.apply(global, args).then(function (response) {
-                triggerHandlers('fetch', __assign(__assign({}, commonHandlerData), { endTimestamp: Date.now(), response: response }));
+                triggerHandlers('fetch', __assign(__assign({}, handlerData), { endTimestamp: Date.now(), response: response }));
                 return response;
             }, function (error) {
-                triggerHandlers('fetch', __assign(__assign({}, commonHandlerData), { endTimestamp: Date.now(), error: error }));
+                triggerHandlers('fetch', __assign(__assign({}, handlerData), { endTimestamp: Date.now(), error: error }));
                 // NOTE: If you are a Sentry user, and you are seeing this stack frame,
                 //       it means the sentry.javascript SDK caught an error invoking your application code.
                 //       This is expected behavior and NOT indicative of a bug with sentry.javascript.
@@ -175,7 +175,7 @@ function instrumentXHR() {
     if (!('XMLHttpRequest' in global)) {
         return;
     }
-    // Poor man implementation of ES6 `Map` by tracking and keeping in sync key and value separately.
+    // Poor man's implementation of ES6 `Map`, tracking and keeping in sync key and value separately.
     var requestKeys = [];
     var requestValues = [];
     var xhrproto = XMLHttpRequest.prototype;
@@ -213,7 +213,7 @@ function instrumentXHR() {
                     try {
                         var requestPos = requestKeys.indexOf(xhr);
                         if (requestPos !== -1) {
-                            // Make sure to pop both, key and value to keep it in sync.
+                            // Make sure to pop both key and value to keep it in sync.
                             requestKeys.splice(requestPos);
                             var args_1 = requestValues.splice(requestPos)[0];
                             if (xhr.__sentry_xhr__ && args_1[0] !== undefined) {

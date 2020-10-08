@@ -10,8 +10,8 @@ from swh.web.tests.api.views import check_api_get_responses
 
 
 def test_api_1_stat_counters_raise_error(api_client, mocker):
-    mock_service = mocker.patch("swh.web.api.views.stat.service")
-    mock_service.stat_counters.side_effect = BadInputExc(
+    mock_archive = mocker.patch("swh.web.api.views.stat.archive")
+    mock_archive.stat_counters.side_effect = BadInputExc(
         "voluntary error to check the bad request middleware."
     )
 
@@ -24,8 +24,8 @@ def test_api_1_stat_counters_raise_error(api_client, mocker):
 
 
 def test_api_1_stat_counters_raise_from_db(api_client, mocker):
-    mock_service = mocker.patch("swh.web.api.views.stat.service")
-    mock_service.stat_counters.side_effect = StorageDBError(
+    mock_archive = mocker.patch("swh.web.api.views.stat.archive")
+    mock_archive.stat_counters.side_effect = StorageDBError(
         "Storage exploded! Will be back online shortly!"
     )
 
@@ -39,8 +39,8 @@ def test_api_1_stat_counters_raise_from_db(api_client, mocker):
 
 
 def test_api_1_stat_counters_raise_from_api(api_client, mocker):
-    mock_service = mocker.patch("swh.web.api.views.stat.service")
-    mock_service.stat_counters.side_effect = StorageAPIError(
+    mock_archive = mocker.patch("swh.web.api.views.stat.archive")
+    mock_archive.stat_counters.side_effect = StorageAPIError(
         "Storage API dropped dead! Will resurrect from its ashes asap!"
     )
 

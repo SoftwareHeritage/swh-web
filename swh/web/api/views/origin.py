@@ -10,7 +10,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import service
+from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
@@ -89,7 +89,7 @@ def api_origins(request):
     page_token = request.query_params.get("page_token", None)
     limit = min(int(request.query_params.get("origin_count", "100")), 10000)
 
-    page_result = service.lookup_origins(page_token, limit)
+    page_result = archive.lookup_origins(page_token, limit)
     origins = [enrich_origin(o, request=request) for o in page_result.results]
     next_page_token = page_result.next_page_token
 
@@ -133,7 +133,7 @@ def api_origin(request, origin_url):
     error_msg = "Origin with url %s not found." % ori_dict["url"]
 
     return api_lookup(
-        service.lookup_origin,
+        archive.lookup_origin,
         ori_dict,
         notfound_msg=error_msg,
         enrich_fn=enrich_origin,
@@ -188,7 +188,7 @@ def api_origin_search(request, url_pattern):
     with_visit = request.query_params.get("with_visit", "false")
 
     (results, page_token) = api_lookup(
-        service.search_origin,
+        archive.search_origin,
         url_pattern,
         limit,
         bool(strtobool(with_visit)),
@@ -252,7 +252,7 @@ def api_origin_metadata_search(request):
         raise BadInputExc(content)
 
     results = api_lookup(
-        service.search_origin_metadata, fulltext, limit, request=request
+        archive.search_origin_metadata, fulltext, limit, request=request
     )
 
     return {
@@ -382,7 +382,7 @@ def api_origin_visit_latest(request, origin_url=None):
     """
     require_snapshot = request.query_params.get("require_snapshot", "false")
     return api_lookup(
-        service.lookup_origin_visit_latest,
+        archive.lookup_origin_visit_latest,
         origin_url,
         bool(strtobool(require_snapshot)),
         notfound_msg=("No visit for origin {} found".format(origin_url)),
@@ -422,7 +422,7 @@ def api_origin_visit(request, visit_id, origin_url):
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/1/`
     """
     return api_lookup(
-        service.lookup_origin_visit,
+        archive.lookup_origin_visit,
         origin_url,
         int(visit_id),
         notfound_msg=("No visit {} for origin {} found".format(visit_id, origin_url)),
@@ -460,7 +460,7 @@ def api_origin_intrinsic_metadata(request, origin_url):
             :swh_web_api:`origin/https://github.com/python/cpython/intrinsic-metadata`
     """
     return api_lookup(
-        service.lookup_origin_intrinsic_metadata,
+        archive.lookup_origin_intrinsic_metadata,
         origin_url,
         notfound_msg=f"Origin with url {origin_url} not found",
         enrich_fn=enrich_origin,
