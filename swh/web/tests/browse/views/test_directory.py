@@ -9,7 +9,23 @@ from hypothesis import given
 
 from django.utils.html import escape
 
+from swh.model.from_disk import DentryPerms
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.model import (
+    Directory,
+    DirectoryEntry,
+    Origin,
+    OriginVisit,
+    OriginVisitStatus,
+    Revision,
+    RevisionType,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+    TimestampWithTimezone,
+)
+from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
@@ -17,7 +33,10 @@ from swh.web.tests.django_asserts import assert_contains, assert_template_used
 from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
+    empty_directory,
     invalid_sha1,
+    new_person,
+    new_swh_date,
     origin_with_multiple_visits,
     unknown_directory,
 )
@@ -34,6 +53,88 @@ def test_sub_directory_view(client, archive_data, directory):
     subdir = random.choice([e for e in dir_content if e["type"] == "dir"])
     subdir_content = archive_data.directory_ls(subdir["target"])
     _directory_view_checks(client, directory, subdir_content, subdir["name"])
+
+
+@given(empty_directory(), new_person(), new_swh_date())
+def test_sub_directory_view_origin_context(
+    client, archive_data, empty_directory, person, date
+):
+    origin_url = "test_sub_directory_view_origin_context"
+    subdir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"foo",
+                type="dir",
+                target=hash_to_bytes(empty_directory),
+                perms=DentryPerms.directory,
+            ),
+            DirectoryEntry(
+                name=b"bar",
+                type="dir",
+                target=hash_to_bytes(empty_directory),
+                perms=DentryPerms.directory,
+            ),
+        )
+    )
+
+    parentdir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"baz", type="dir", target=subdir.id, perms=DentryPerms.directory,
+            ),
+        )
+    )
+    archive_data.directory_add([subdir, parentdir])
+
+    revision = Revision(
+        directory=parentdir.id,
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    archive_data.revision_add([revision])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target="refs/head/master".encode(), target_type=TargetType.ALIAS,
+            ),
+            b"refs/head/master": SnapshotBranch(
+                target=revision.id, target_type=TargetType.REVISION,
+            ),
+        }
+    )
+    archive_data.snapshot_add([snapshot])
+
+    archive_data.origin_add([Origin(url=origin_url)])
+    date = now()
+    visit = OriginVisit(origin=origin_url, date=date, type="git")
+    visit = archive_data.origin_visit_add([visit])[0]
+    visit_status = OriginVisitStatus(
+        origin=origin_url,
+        visit=visit.visit,
+        date=date,
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    dir_content = archive_data.directory_ls(hash_to_hex(parentdir.id))
+    subdir = dir_content[0]
+    subdir_content = archive_data.directory_ls(subdir["target"])
+    _directory_view_checks(
+        client,
+        hash_to_hex(parentdir.id),
+        subdir_content,
+        subdir["name"],
+        origin_url,
+        hash_to_hex(snapshot.id),
+        hash_to_hex(revision.id),
+    )
 
 
 @given(invalid_sha1(), unknown_directory())
@@ -232,17 +333,22 @@ def _directory_view_checks(
     path=None,
     origin_url=None,
     snapshot_id=None,
+    revision_id=None,
 ):
     dirs = [e for e in directory_entries if e["type"] in ("dir", "rev")]
     files = [e for e in directory_entries if e["type"] == "file"]
 
     url_args = {"sha1_git": root_directory_sha1}
-    query_params = {"path": path, "origin_url": origin_url, "snapshot": snapshot_id}
+    query_params = {"origin_url": origin_url, "snapshot": snapshot_id}
 
-    url = reverse("browse-directory", url_args=url_args, query_params=query_params)
+    url = reverse(
+        "browse-directory",
+        url_args=url_args,
+        query_params={**query_params, "path": path},
+    )
 
     root_dir_url = reverse(
-        "browse-directory", url_args={"sha1_git": root_directory_sha1}
+        "browse-directory", url_args=url_args, query_params=query_params,
     )
 
     resp = client.get(url)
@@ -250,7 +356,7 @@ def _directory_view_checks(
     assert resp.status_code == 200
     assert_template_used(resp, "browse/directory.html")
     assert_contains(
-        resp, '<a href="' + root_dir_url + '">' + root_directory_sha1[:7] + "</a>"
+        resp, '<a href="' + root_dir_url + '">' + root_directory_sha1[:7] + "</a>",
     )
     assert_contains(resp, '<td class="swh-directory">', count=len(dirs))
     assert_contains(resp, '<td class="swh-content">', count=len(files))
@@ -265,7 +371,7 @@ def _directory_view_checks(
             dir_url = reverse(
                 "browse-directory",
                 url_args={"sha1_git": root_directory_sha1},
-                query_params={"path": dir_path},
+                query_params={**query_params, "path": dir_path},
             )
         assert_contains(resp, dir_url)
 
@@ -277,7 +383,7 @@ def _directory_view_checks(
         file_url = reverse(
             "browse-content",
             url_args={"query_string": query_string},
-            query_params={"path": file_path},
+            query_params={**query_params, "path": file_path},
         )
         assert_contains(resp, file_url)
 
@@ -292,7 +398,7 @@ def _directory_view_checks(
         dir_url = reverse(
             "browse-directory",
             url_args={"sha1_git": root_directory_sha1},
-            query_params={"path": p["path"]},
+            query_params={**query_params, "path": p["path"]},
         )
         assert_contains(resp, '<a href="%s">%s</a>' % (dir_url, p["name"]))
 
@@ -302,13 +408,17 @@ def _directory_view_checks(
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
 
     swhid_context = {}
+    if origin_url:
+        swhid_context["origin"] = origin_url
+    if snapshot_id:
+        swhid_context["visit"] = gen_swhid(SNAPSHOT, snapshot_id)
     if root_directory_sha1 != directory_entries[0]["dir_id"]:
         swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
-
+    if root_directory_sha1 != directory_entries[0]["dir_id"]:
+        swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
+    if revision_id:
+        swhid_context["anchor"] = gen_swhid(REVISION, revision_id)
     swhid_context["path"] = f"/{path}/" if path else None
-
-    if root_directory_sha1 != directory_entries[0]["dir_id"]:
-        swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
 
     swh_dir_id = gen_swhid(
         DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
