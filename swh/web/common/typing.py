@@ -54,7 +54,7 @@ class SnapshotBranchInfo(TypedDict):
     """directory associated to branch heading revision"""
     message: Optional[str]
     """message of branch heading revision"""
-    name: Optional[str]
+    name: str
     """branch name"""
     revision: str
     """branch heading revision"""
