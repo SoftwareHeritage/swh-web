@@ -20,11 +20,17 @@ from hypothesis.strategies import (
     text,
 )
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
 from swh.model.identifiers import directory_identifier
-from swh.model.model import Person, Revision, RevisionType, TimestampWithTimezone
+from swh.model.model import (
+    Content,
+    Person,
+    Revision,
+    RevisionType,
+    TimestampWithTimezone,
+)
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.web.common.utils import browsers_supported_image_mimes
@@ -91,6 +97,17 @@ def contents():
     into the test archive.
     """
     return lists(content(), min_size=2, max_size=8)
+
+
+def empty_content():
+    """
+    Hypothesis strategy returning the empty content ingested
+    into the test archive.
+    """
+    empty_content = Content.from_data(data=b"").to_dict()
+    for algo in DEFAULT_ALGORITHMS:
+        empty_content[algo] = hash_to_hex(empty_content[algo])
+    return just(empty_content)
 
 
 def content_text():
