@@ -482,7 +482,7 @@ def test_apidoc_with_links(client):
     third_link = textwrap.indent(
         (
             '<a class="reference external" '
-            'href="https:/archive.softwareheritage.org">\n'
+            'href="https://archive.softwareheritage.org">\n'
             " archive\n"
             "</a>"
         ),
