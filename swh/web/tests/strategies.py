@@ -23,9 +23,9 @@ from hypothesis.strategies import (
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
-from swh.model.identifiers import directory_identifier
 from swh.model.model import (
     Content,
+    Directory,
     Person,
     Revision,
     RevisionType,
@@ -245,7 +245,7 @@ def empty_directory():
     Hypothesis strategy returning the empty directory ingested
     into the test archive.
     """
-    return just(directory_identifier({"entries": []}))
+    return just(Directory(entries=()).id.hex())
 
 
 def unknown_directory():

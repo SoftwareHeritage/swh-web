@@ -14,15 +14,8 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    snapshot_identifier,
-    swhid,
-)
+from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT, swhid
+from swh.model.model import Snapshot
 from swh.web.browse.utils import (
     content_display_max_size,
     format_log_entries,
@@ -59,7 +52,7 @@ from swh.web.common.utils import (
 )
 from swh.web.config import get_config
 
-_empty_snapshot_id = snapshot_identifier({"branches": {}})
+_empty_snapshot_id = Snapshot(branches={}).id.hex()
 
 
 def _get_branch(branches, branch_name, snapshot_id):
