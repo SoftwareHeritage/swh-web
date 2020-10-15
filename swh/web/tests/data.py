@@ -282,7 +282,7 @@ def _init_tests_data():
         contents.append(content_metadata)
 
     # Create indexer storage instance that will be shared by indexers
-    idx_storage = get_indexer_storage("memory", {})
+    idx_storage = get_indexer_storage("memory")
 
     # Add the empty directory to the test archive
     storage.directory_add([Directory(entries=())])
