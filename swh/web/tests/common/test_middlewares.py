@@ -39,3 +39,5 @@ def test_exception_middleware_enabled(client, mocker, snapshot):
 
     resp = client.get(url)
     assert resp.status_code == 500
+    assert hasattr(resp, "traceback")
+    assert "Traceback" in getattr(resp, "traceback")

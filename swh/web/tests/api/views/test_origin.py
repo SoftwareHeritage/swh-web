@@ -16,8 +16,8 @@ from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.strategies import new_origin, new_snapshots, origin, visit_dates
+from swh.web.tests.utils import check_api_get_responses
 
 
 def _scroll_results(api_client, url):
@@ -25,9 +25,7 @@ def _scroll_results(api_client, url):
     results = []
 
     while True:
-        rv = api_client.get(url)
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         results.extend(rv.data)
 

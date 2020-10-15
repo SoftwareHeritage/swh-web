@@ -31,7 +31,7 @@ from swh.web.common.utils import (
     reverse,
 )
 from swh.web.tests.data import get_content, random_sha1
-from swh.web.tests.django_asserts import assert_contains, assert_template_used
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     new_origin,
     new_snapshot,
@@ -41,21 +41,16 @@ from swh.web.tests.strategies import (
 )
 from swh.web.tests.strategies import release as existing_release
 from swh.web.tests.strategies import revisions, unknown_revision, visit_dates
+from swh.web.tests.utils import check_html_get_response
 
 
 @given(origin_with_multiple_visits())
 def test_origin_visits_browse(client, archive_data, origin):
     url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
-    resp = client.get(url)
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/origin-visits.html")
-
-    url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/origin-visits.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/origin-visits.html"
+    )
 
     visits = archive_data.origin_visit_get(origin["url"])
 
@@ -451,8 +446,10 @@ def test_origin_snapshot_null_branch(
     url = reverse(
         "browse-origin-directory", query_params={"origin_url": new_origin.url}
     )
-    rv = client.get(url)
-    assert rv.status_code == 200
+
+    check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
 
 
 @given(
@@ -489,16 +486,17 @@ def test_origin_snapshot_invalid_branch(
         "browse-origin-directory",
         query_params={"origin_url": new_origin.url, "branch": "invalid_branch"},
     )
-    rv = client.get(url)
-    assert rv.status_code == 404
+
+    check_html_get_response(client, url, status_code=404, template_used="error.html")
 
 
 @given(new_origin())
 def test_browse_visits_origin_not_found(client, new_origin):
     url = reverse("browse-origin-visits", query_params={"origin_url": new_origin.url})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(
         resp, f"Origin with url {new_origin.url} not found", status_code=404
     )
@@ -513,9 +511,10 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
     mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
     mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(resp, "No valid visit", status_code=404)
     assert not mock_get_origin_visits.called
 
@@ -531,9 +530,10 @@ def test_browse_origin_directory_unknown_visit(client, mocker, origin):
         "browse-origin-directory",
         query_params={"origin_url": origin["url"], "visit_id": 2},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert re.search("Visit.*not found", resp.content.decode("utf-8"))
     assert mock_get_origin_visits.called
 
@@ -544,9 +544,10 @@ def test_browse_origin_directory_not_found(client, origin):
         "browse-origin-directory",
         query_params={"origin_url": origin["url"], "path": "/invalid/dir/path/"},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert re.search("Directory.*not found", resp.content.decode("utf-8"))
 
 
@@ -562,9 +563,10 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
         "browse-origin-content",
         query_params={"origin_url": origin["url"], "path": "foo"},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(resp, "No valid visit", status_code=404)
     assert not mock_get_origin_visits.called
 
@@ -580,9 +582,10 @@ def test_browse_origin_content_unknown_visit(client, mocker, origin):
         "browse-origin-content",
         query_params={"origin_url": origin["url"], "path": "foo", "visit_id": 2},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert re.search("Visit.*not found", resp.content.decode("utf-8"))
     assert mock_get_origin_visits.called
 
@@ -601,14 +604,14 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
     }
 
     for browse_context in ("content", "directory"):
-
         url = reverse(
             f"browse-origin-{browse_context}",
             query_params={"origin_url": origin["url"], "path": "baz"},
         )
-        resp = client.get(url)
-        assert resp.status_code == 200
-        assert_template_used(resp, f"browse/{browse_context}.html")
+
+        resp = check_html_get_response(
+            client, url, status_code=200, template_used=f"browse/{browse_context}.html"
+        )
         assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
         assert mock_get_origin_visit_snapshot.called
         assert mock_snapshot_archive.lookup_origin.called
@@ -621,9 +624,10 @@ def test_browse_origin_content_not_found(client, origin):
         "browse-origin-content",
         query_params={"origin_url": origin["url"], "path": "/invalid/file/path"},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert re.search("Directory entry.*not found", resp.content.decode("utf-8"))
 
 
@@ -634,9 +638,10 @@ def test_browse_directory_snapshot_not_found(client, mocker, origin):
     )
     mock_get_snapshot_context.side_effect = NotFoundExc("Snapshot not found")
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(resp, "Snapshot not found", status_code=404)
     assert mock_get_snapshot_context.called
 
@@ -654,9 +659,10 @@ def test_origin_empty_snapshot(client, mocker, origin):
     }
     mock_archive.lookup_origin.return_value = origin
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
@@ -691,9 +697,10 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     url = reverse(
         "browse-origin-directory", query_params={"origin_url": new_origin.url},
     )
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
@@ -712,8 +719,9 @@ def test_origin_release_browse(client, archive_data, origin):
         query_params={"origin_url": origin["url"], "release": release_data["name"]},
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     assert_contains(resp, release_data["name"])
     assert_contains(resp, release["target"])
 
@@ -740,8 +748,9 @@ def test_origin_release_browse_not_found(client, origin):
         query_params={"origin_url": origin["url"], "release": invalid_release_name},
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 404
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert re.search(
         f"Release {invalid_release_name}.*not found", resp.content.decode("utf-8")
     )
@@ -778,9 +787,9 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
         query_params={"origin_url": new_origin.url, "branch": branch_name},
     )
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     assert_contains(
         resp, f"Revision {unknown_revision } could not be found in the archive."
     )
@@ -790,9 +799,9 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
 def test_origin_content_no_path(client, origin):
     url = reverse("browse-origin-content", query_params={"origin_url": origin["url"]})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 400
+    resp = check_html_get_response(
+        client, url, status_code=400, template_used="error.html"
+    )
     assert_contains(
         resp, "The path of a content must be given as query parameter.", status_code=400
     )
@@ -808,8 +817,10 @@ def test_origin_views_no_url_query_parameter(client):
         "visits",
     ):
         url = reverse(f"browse-origin-{browse_context}")
-        resp = client.get(url)
-        assert resp.status_code == 400
+
+        resp = check_html_get_response(
+            client, url, status_code=400, template_used="error.html"
+        )
         assert_contains(
             resp, "An origin URL must be provided as query parameter.", status_code=400
         )
@@ -845,10 +856,9 @@ def _origin_content_view_test_helper(
 
     url = reverse("browse-origin-content", query_params=query_params)
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     assert type(content["data"]) == str
 
@@ -929,9 +939,9 @@ def _origin_content_view_test_helper(
 
     url = reverse("browse-origin-content", query_params=query_params)
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     snapshot = archive_data.snapshot_get(origin_visit["snapshot"])
     head_rev_id = archive_data.snapshot_get_head(snapshot)
@@ -987,14 +997,9 @@ def _origin_directory_view_test_helper(
 
     url = reverse("browse-origin-directory", query_params=query_params)
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
-
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     assert_contains(resp, '<td class="swh-directory">', count=len(dirs))
     assert_contains(resp, '<td class="swh-content">', count=len(files))
 
@@ -1104,10 +1109,9 @@ def _origin_branches_test_helper(
 
     url = reverse("browse-origin-branches", query_params=query_params)
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/branches.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/branches.html"
+    )
 
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
@@ -1150,9 +1154,9 @@ def _origin_releases_test_helper(
 
     url = reverse("browse-origin-releases", query_params=query_params)
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/releases.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/releases.html"
+    )
 
     origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
@@ -1231,9 +1235,10 @@ def test_origin_branches_pagination_with_alias(
     archive_data.origin_visit_status_add([visit_status])
 
     url = reverse("browse-origin-branches", query_params={"origin_url": new_origin.url})
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/branches.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/branches.html"
+    )
     assert_contains(resp, '<ul class="pagination')
 
 

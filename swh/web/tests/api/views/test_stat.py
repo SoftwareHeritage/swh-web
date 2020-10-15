@@ -6,7 +6,7 @@
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
+from swh.web.tests.utils import check_api_get_responses
 
 
 def test_api_1_stat_counters_raise_error(api_client, mocker):

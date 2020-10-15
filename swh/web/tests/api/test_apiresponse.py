@@ -138,3 +138,5 @@ def test_error_response_handler(mocker, api_client):
     url = reverse("api-1-stat-counters")
     resp = api_client.get(url)
     assert resp.status_code == 500
+    assert "traceback" in resp.data
+    assert "Traceback" in resp.data["traceback"]

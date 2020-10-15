@@ -22,7 +22,7 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
+from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
 
 pytestmark = pytest.mark.django_db
 

@@ -16,7 +16,12 @@ from django.http import QueryDict
 from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
-from swh.web.tests.django_asserts import assert_contains, assert_template_used
+from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.utils import (
+    check_html_get_response,
+    check_http_get_response,
+    check_http_post_response,
+)
 from swh.web.urls import _default_view as homepage_view
 
 from . import sample_data
@@ -34,12 +39,12 @@ def test_oidc_login_views_success(client, mocker):
 
     # user initiates login process
     login_url = reverse("oidc-login")
-    response = client.get(login_url)
-    request = response.wsgi_request
 
     # should redirect to Keycloak authentication page in order
     # for a user to login with its username / password
-    assert response.status_code == 302
+    response = check_html_get_response(client, login_url, status_code=302)
+    request = response.wsgi_request
+
     assert isinstance(request.user, AnonymousUser)
 
     parsed_url = urlparse(response["location"])
@@ -88,12 +93,10 @@ def test_oidc_login_views_success(client, mocker):
         },
     )
 
-    # login process finalization
-    response = client.get(login_complete_url)
+    # login process finalization, should redirect to root url by default
+    response = check_html_get_response(client, login_complete_url, status_code=302)
     request = response.wsgi_request
 
-    # should redirect to root url by default
-    assert response.status_code == 302
     assert response["location"] == request.build_absolute_uri("/")
 
     # user should be authenticated
@@ -117,11 +120,11 @@ def test_oidc_logout_view_success(client, mocker):
 
     # user initiates logout
     oidc_logout_url = reverse("oidc-logout")
-    response = client.get(oidc_logout_url)
-    request = response.wsgi_request
 
     # should redirect to logout page
-    assert response.status_code == 302
+    response = check_html_get_response(client, oidc_logout_url, status_code=302)
+    request = response.wsgi_request
+
     logout_url = reverse("logout", query_params={"remote_user": 1})
     assert response["location"] == request.build_absolute_uri(logout_url)
 
@@ -142,12 +145,11 @@ def test_oidc_login_view_failure(client, mocker):
 
     # user initiates login process
     login_url = reverse("oidc-login")
-    response = client.get(login_url)
-    request = response.wsgi_request
-
     # should render an error page
-    assert response.status_code == 500
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, login_url, status_code=500, template_used="error.html"
+    )
+    request = response.wsgi_request
 
     # no users should be logged in
     assert isinstance(request.user, AnonymousUser)
@@ -159,10 +161,11 @@ def test_oidc_login_view_failure(client, mocker):
 def test_oidc_login_complete_view_no_login_data(client, mocker):
     # user initiates login process
     login_url = reverse("oidc-login-complete")
-    response = client.get(login_url)
-
     # should render an error page
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, login_url, status_code=500, template_used="error.html"
+    )
+
     assert_contains(
         response, "Login process has not been initialized.", status_code=500
     )
@@ -182,11 +185,11 @@ def test_oidc_login_complete_view_missing_parameters(client, mocker):
 
     # user initiates login process
     login_url = reverse("oidc-login-complete")
-    response = client.get(login_url)
-    request = response.wsgi_request
-
     # should render an error page
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, login_url, status_code=400, template_used="error.html"
+    )
+    request = response.wsgi_request
     assert_contains(
         response, "Missing query parameters for authentication.", status_code=400
     )
@@ -215,11 +218,11 @@ def test_oidc_login_complete_wrong_csrf_token(client, mocker):
         "oidc-login-complete", query_params={"code": "some-code", "state": "some-state"}
     )
 
-    response = client.get(login_url)
-    request = response.wsgi_request
-
     # should render an error page
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, login_url, status_code=400, template_used="error.html"
+    )
+    request = response.wsgi_request
     assert_contains(
         response, "Wrong CSRF token, aborting login process.", status_code=400
     )
@@ -250,11 +253,11 @@ def test_oidc_login_complete_wrong_code_verifier(client, mocker):
         query_params={"code": "some-code", "state": session["login_data"]["state"]},
     )
 
-    response = client.get(login_url)
-    request = response.wsgi_request
-
     # should render an error page
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, login_url, status_code=500, template_used="error.html"
+    )
+    request = response.wsgi_request
     assert_contains(response, "User authentication failed.", status_code=500)
 
     # no user should be logged in
@@ -276,11 +279,11 @@ def test_oidc_logout_view_failure(client, mocker):
 
     # user initiates logout process
     logout_url = reverse("oidc-logout")
-    response = client.get(logout_url)
-    request = response.wsgi_request
-
     # should render an error page
-    assert_template_used(response, "error.html")
+    response = check_html_get_response(
+        client, logout_url, status_code=500, template_used="error.html"
+    )
+    request = response.wsgi_request
     assert_contains(response, err_msg, status_code=500)
 
     # user should be logged out from Django anyway
@@ -298,7 +301,7 @@ def test_oidc_silent_refresh_failure(client, mocker):
     login_url = reverse(
         "oidc-login", query_params={"next_path": next_path, "prompt": "none"}
     )
-    response = client.get(login_url)
+    response = check_http_get_response(client, login_url, status_code=302)
     request = response.wsgi_request
 
     login_data = request.session["login_data"]
@@ -319,12 +322,9 @@ def test_oidc_silent_refresh_failure(client, mocker):
         },
     )
 
-    # login process finalization
-    response = client.get(login_complete_url)
+    # login process finalization, should redirect to logout page
+    response = check_http_get_response(client, login_complete_url, status_code=302)
     request = response.wsgi_request
-
-    # should redirect to logout page
-    assert response.status_code == 302
     logout_url = reverse(
         "logout", query_params={"next_path": next_path, "remote_user": 1}
     )
@@ -345,8 +345,7 @@ def test_oidc_generate_bearer_token_anonymous_user(client):
     Anonymous user should be refused access with forbidden response.
     """
     url = reverse("oidc-generate-bearer-token")
-    response = client.post(url, data={"password": "secret"})
-    assert response.status_code == 403
+    check_http_post_response(client, url, data={"password": "secret"}, status_code=403)
 
 
 def _generate_bearer_token(client, password):
@@ -395,8 +394,7 @@ def test_oidc_list_bearer_tokens_anonymous_user(client):
     url = reverse(
         "oidc-list-bearer-tokens", query_params={"draw": 1, "start": 0, "length": 10}
     )
-    response = client.get(url)
-    assert response.status_code == 403
+    check_http_get_response(client, url, status_code=403)
 
 
 @pytest.mark.django_db
@@ -414,8 +412,8 @@ def test_oidc_list_bearer_tokens(client, mocker):
     url = reverse(
         "oidc-list-bearer-tokens", query_params={"draw": 1, "start": 0, "length": 10}
     )
-    response = client.get(url)
-    assert response.status_code == 200
+
+    response = check_http_get_response(client, url, status_code=200)
     tokens_data = list(reversed(json.loads(response.content.decode("utf-8"))["data"]))
 
     for oidc_token in OIDCUserOfflineTokens.objects.all():
@@ -430,8 +428,7 @@ def test_oidc_get_bearer_token_anonymous_user(client):
     Anonymous user should be refused access with forbidden response.
     """
     url = reverse("oidc-get-bearer-token")
-    response = client.post(url)
-    assert response.status_code == 403
+    check_http_post_response(client, url, status_code=403)
 
 
 @pytest.mark.django_db
@@ -448,12 +445,14 @@ def test_oidc_get_bearer_token(client, mocker):
         token = response.content
 
         url = reverse("oidc-get-bearer-token")
-        response = client.post(
+
+        response = check_http_post_response(
+            client,
             url,
+            status_code=200,
             data={"password": password, "token_id": i + 1},
-            content_type="application/json",
+            content_type="text/plain",
         )
-        assert response.status_code == 200
         assert response.content == token
 
 
@@ -467,12 +466,12 @@ def test_oidc_get_bearer_token_invalid_password(client, mocker):
     _generate_bearer_token(client, password)
 
     url = reverse("oidc-get-bearer-token")
-    response = client.post(
+    check_http_post_response(
+        client,
         url,
+        status_code=401,
         data={"password": "invalid-password", "token_id": 1},
-        content_type="application/json",
     )
-    assert response.status_code == 401
 
 
 def test_oidc_revoke_bearer_tokens_anonymous_user(client):
@@ -480,8 +479,7 @@ def test_oidc_revoke_bearer_tokens_anonymous_user(client):
     Anonymous user should be refused access with forbidden response.
     """
     url = reverse("oidc-revoke-bearer-tokens")
-    response = client.post(url)
-    assert response.status_code == 403
+    check_http_post_response(client, url, status_code=403)
 
 
 @pytest.mark.django_db
@@ -497,20 +495,15 @@ def test_oidc_revoke_bearer_tokens(client, mocker):
         _generate_bearer_token(client, password)
 
     url = reverse("oidc-revoke-bearer-tokens")
-    response = client.post(
-        url,
-        data={"password": password, "token_ids": [1]},
-        content_type="application/json",
+
+    check_http_post_response(
+        client, url, status_code=200, data={"password": password, "token_ids": [1]},
     )
-    assert response.status_code == 200
     assert len(OIDCUserOfflineTokens.objects.all()) == 2
 
-    response = client.post(
-        url,
-        data={"password": password, "token_ids": [2, 3]},
-        content_type="application/json",
+    check_http_post_response(
+        client, url, status_code=200, data={"password": password, "token_ids": [2, 3]},
     )
-    assert response.status_code == 200
     assert len(OIDCUserOfflineTokens.objects.all()) == 0
 
 
@@ -525,9 +518,10 @@ def test_oidc_revoke_bearer_token_invalid_password(client, mocker):
     _generate_bearer_token(client, password)
 
     url = reverse("oidc-revoke-bearer-tokens")
-    response = client.post(
+
+    check_http_post_response(
+        client,
         url,
+        status_code=401,
         data={"password": "invalid-password", "token_ids": [1]},
-        content_type="application/json",
     )
-    assert response.status_code == 401

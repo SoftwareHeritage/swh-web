@@ -24,7 +24,8 @@ swh_web_config = get_config()
 
 swh_web_config.update(
     {
-        "debug": False,
+        # disable django debug mode when running cypress tests
+        "debug": "pytest" in sys.argv[0] or "PYTEST_XDIST_WORKER" in os.environ,
         "secret_key": "test",
         "history_counters_url": "",
         "throttling": {

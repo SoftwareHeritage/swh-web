@@ -142,4 +142,7 @@ def handle_view_exception(request, exc):
     if isinstance(exc, NotFoundExc):
         error_code = 404
 
-    return _generate_error_page(request, error_code, error_description)
+    resp = _generate_error_page(request, error_code, error_description)
+    if get_config()["debug"]:
+        resp.traceback = error_description
+    return resp

@@ -20,6 +20,7 @@ from swh.web.tests.strategies import (
     revision,
     snapshot,
 )
+from swh.web.tests.utils import check_html_get_response
 
 
 @given(content())
@@ -33,9 +34,7 @@ def test_content_id_browse(client, content):
         "browse-content", url_args={"query_string": query_string}
     )
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == content_browse_url
 
 
@@ -46,9 +45,7 @@ def test_directory_id_browse(client, directory):
 
     directory_browse_url = reverse("browse-directory", url_args={"sha1_git": directory})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == directory_browse_url
 
 
@@ -59,21 +56,17 @@ def test_revision_id_browse(client, revision):
 
     revision_browse_url = reverse("browse-revision", url_args={"sha1_git": revision})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == revision_browse_url
 
     query_params = {"origin_url": "https://github.com/user/repo"}
-
     url = reverse("browse-swhid", url_args={"swhid": swhid}, query_params=query_params)
 
     revision_browse_url = reverse(
         "browse-revision", url_args={"sha1_git": revision}, query_params=query_params
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == revision_browse_url
 
 
@@ -84,9 +77,7 @@ def test_release_id_browse(client, release):
 
     release_browse_url = reverse("browse-release", url_args={"sha1_git": release})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == release_browse_url
 
     query_params = {"origin_url": "https://github.com/user/repo"}
@@ -97,8 +88,7 @@ def test_release_id_browse(client, release):
         "browse-release", url_args={"sha1_git": release}, query_params=query_params
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == release_browse_url
 
 
@@ -109,9 +99,7 @@ def test_snapshot_id_browse(client, snapshot):
 
     snapshot_browse_url = reverse("browse-snapshot", url_args={"snapshot_id": snapshot})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == snapshot_browse_url
 
     query_params = {"origin_url": "https://github.com/user/repo"}
@@ -122,8 +110,7 @@ def test_snapshot_id_browse(client, snapshot):
         "browse-snapshot", url_args={"snapshot_id": snapshot}, query_params=query_params
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == release_browse_url
 
 
@@ -132,8 +119,7 @@ def test_bad_id_browse(client, release):
     swhid = f"swh:1:foo:{release}"
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    resp = client.get(url)
-    assert resp.status_code == 400
+    check_html_get_response(client, url, status_code=400)
 
 
 @given(content())
@@ -153,9 +139,7 @@ def test_content_id_optional_parts_browse(client, content):
     )
     content_browse_url += "#L4-L20"
 
-    resp = client.get(url)
-
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     assert resp["location"] == content_browse_url
 
 
@@ -163,8 +147,8 @@ def test_content_id_optional_parts_browse(client, content):
 def test_origin_id_not_resolvable(client, release):
     swhid = "swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb"
     url = reverse("browse-swhid", url_args={"swhid": swhid})
-    resp = client.get(url)
-    assert resp.status_code == 400
+
+    check_html_get_response(client, url, status_code=400)
 
 
 @given(origin())
@@ -183,10 +167,11 @@ def test_legacy_swhid_browse(archive_data, client, origin):
     )
 
     url = reverse("browse-swhid", url_args={"swhid": legacy_swhid})
-    resp = client.get(url)
-    assert resp.status_code == 302
 
-    resp = client.get(resp["location"])
+    resp = check_html_get_response(client, url, status_code=302)
+    resp = check_html_get_response(
+        client, resp["location"], status_code=200, template_used="browse/content.html"
+    )
 
     swhid = gen_swhid(
         CONTENT,
@@ -208,5 +193,6 @@ def test_browse_swhid_special_characters_escaping(client, directory):
     origin_swhid_url_escaped = quote(origin, safe="/:@;")
     swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
     url = reverse("browse-swhid", url_args={"swhid": swhid})
-    resp = client.get(url)
+
+    resp = check_html_get_response(client, url, status_code=302)
     assert origin_swhid_url_escaped in resp["location"]
