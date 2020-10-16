@@ -1,5 +1,5 @@
 swh.core >= 0.0.95
-swh.indexer >= 0.3.0
+swh.indexer >= 0.4.1
 swh.model >= 0.5.0
 swh.scheduler >= 0.7.0
 swh.search >= 0.2.0

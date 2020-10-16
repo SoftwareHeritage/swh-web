@@ -28,7 +28,7 @@ DEFAULT_CONFIG = {
     ),
     "indexer_storage": (
         "dict",
-        {"cls": "remote", "args": {"url": "http://127.0.0.1:5007/", "timeout": 1,}},
+        {"cls": "remote", "url": "http://127.0.0.1:5007/", "timeout": 1,},
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
