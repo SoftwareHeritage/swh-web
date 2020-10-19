@@ -866,7 +866,7 @@ def lookup_content_raw(q: str) -> Dict[str, Any]:
     c = lookup_content(q)
     content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
     content_data = storage.content_get_data(content_sha1_bytes)
-    if not content_data:
+    if content_data is None:
         algo, hash_ = query.parse_hash(q)
         raise NotFoundExc(
             f"Bytes of content with {algo} checksum equals "
