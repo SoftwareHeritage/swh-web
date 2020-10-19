@@ -1,3 +1,22 @@
+swh-web (0.0.264-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.264     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2020-10-19 12:03:15
+    +0200)
+  * Upstream changes:     - v0.0.264     - web.config: Adapt indexer
+    configuration structure     - web.config: Adapt scheduler
+    configuration structure     - swh.web.tests: Adapt
+    get_indexer_storage to latest version     - Use swh.model.model
+    helpers to compute object identifiers     - common/archive: Fix
+    empty content handling in lookup_content_raw     - apidoc: Fix bad
+    URL replacement missed due to an invalid test     - common/typing:
+    Fix error with mypy 0.790     - browse/directory: Fix invalid query
+    parameter value for content links     - templates/directory-display:
+    Remove permissions display for directories     - templates: Update
+    save code now icon and new snapshot button
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 19 Oct 2020 12:06:32 +0000
+
 swh-web (0.0.263-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.263     - (tagged by Antoine Lambert
