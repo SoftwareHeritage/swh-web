@@ -94,7 +94,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         subs_made = 1
         while subs_made:
             (par, subs_made) = re.subn(r"(:http:.*)(\[.*\])", r"\1", par)
-        par = par.replace("//", "/")
+        par = re.sub(r"([^:])//", r"\1/", par)
         # transform references to api endpoints doc into valid rst links
         par = re.sub(":http:get:`([^,`]*)`", r"`\1 <\1doc/>`_", par)
         # transform references to some elements into bold text

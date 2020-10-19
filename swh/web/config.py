@@ -28,7 +28,7 @@ DEFAULT_CONFIG = {
     ),
     "indexer_storage": (
         "dict",
-        {"cls": "remote", "args": {"url": "http://127.0.0.1:5007/", "timeout": 1,}},
+        {"cls": "remote", "url": "http://127.0.0.1:5007/", "timeout": 1,},
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -69,7 +69,7 @@ DEFAULT_CONFIG = {
         },
     ),
     "vault": ("dict", {"cls": "remote", "args": {"url": "http://127.0.0.1:5005/",}}),
-    "scheduler": ("dict", {"cls": "remote", "args": {"url": "http://127.0.0.1:5008/"}}),
+    "scheduler": ("dict", {"cls": "remote", "url": "http://127.0.0.1:5008/"}),
     "development_db": ("string", os.path.join(SETTINGS_DIR, "db.sqlite3")),
     "test_db": ("string", os.path.join(SETTINGS_DIR, "testdb.sqlite3")),
     "production_db": ("string", "/var/lib/swh/web.sqlite3"),
