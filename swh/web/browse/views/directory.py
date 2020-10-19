@@ -76,10 +76,11 @@ def _directory_browse(request, sha1_git, path=None):
             "url": reverse(
                 "browse-directory",
                 url_args={"sha1_git": root_sha1_git},
-                query_params=query_params,
+                query_params={**query_params, "path": None},
             ),
         }
     )
+
     for pi in path_info:
         breadcrumbs.append(
             {
@@ -87,7 +88,7 @@ def _directory_browse(request, sha1_git, path=None):
                 "url": reverse(
                     "browse-directory",
                     url_args={"sha1_git": root_sha1_git},
-                    query_params={"path": pi["path"], **query_params},
+                    query_params={**query_params, "path": pi["path"],},
                 ),
             }
         )
@@ -105,7 +106,7 @@ def _directory_browse(request, sha1_git, path=None):
             d["url"] = reverse(
                 "browse-directory",
                 url_args={"sha1_git": root_sha1_git},
-                query_params={"path": path + d["name"], **query_params},
+                query_params={**query_params, "path": path + d["name"],},
             )
 
     sum_file_sizes = 0
@@ -118,8 +119,8 @@ def _directory_browse(request, sha1_git, path=None):
             "browse-content",
             url_args={"query_string": query_string},
             query_params={
-                "path": root_sha1_git + "/" + path + f["name"],
                 **query_params,
+                "path": root_sha1_git + "/" + path + f["name"],
             },
         )
         if f["length"] is not None:

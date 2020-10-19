@@ -26,6 +26,7 @@ from swh.web.tests.strategies import (
     contents,
     contents_with_ctags,
     directory,
+    empty_content,
     empty_directory,
     invalid_sha1,
     new_origin,
@@ -625,6 +626,12 @@ def test_lookup_content_raw(archive_data, content):
     expected_content = archive_data.content_get_data(content["sha1"])
 
     assert actual_content == expected_content
+
+
+@given(empty_content())
+def test_lookup_empty_content_raw(archive_data, empty_content):
+    content_raw = archive.lookup_content_raw(f"sha1_git:{empty_content['sha1_git']}")
+    assert content_raw["data"] == b""
 
 
 def test_lookup_content_not_found():
