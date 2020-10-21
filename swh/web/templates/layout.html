@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2015-2019  The Software Heritage developers
+Copyright (C) 2015-2020  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -26,7 +26,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2015-2019  The Software Heritage developers
+Copyright (C) 2015-2020  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -92,10 +92,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <li class="swh-position-right">
             {% url 'logout' as logout_url %}
             {% if user.is_authenticated %}
-              Logged in as <strong>{{ user.username }}</strong>,
+              Logged in as
               {% if 'OIDC' in user.backend %}
+                <a href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
                 <a href="{% url 'oidc-logout' %}">logout</a>
               {% else %}
+                <strong>{{ user.username }}</strong>,
                 <a href="{{ logout_url }}">logout</a>
               {% endif %}
             {% elif oidc_enabled %}

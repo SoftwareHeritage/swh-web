@@ -13,6 +13,7 @@ import sentry_sdk
 
 from django.conf.urls import url
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import HttpRequest
@@ -23,6 +24,7 @@ from django.http.response import (
     HttpResponseServerError,
     JsonResponse,
 )
+from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
@@ -216,6 +218,11 @@ def oidc_revoke_bearer_tokens(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=401)
 
 
+@login_required(login_url="/oidc/login/", redirect_field_name="next_path")
+def _oidc_profile_view(request: HttpRequest) -> HttpResponse:
+    return render(request, "auth/profile.html")
+
+
 urlpatterns = [
     url(r"^oidc/login/$", oidc_login, name="oidc-login"),
     url(r"^oidc/login-complete/$", oidc_login_complete, name="oidc-login-complete"),
@@ -240,4 +247,5 @@ urlpatterns = [
         oidc_revoke_bearer_tokens,
         name="oidc-revoke-bearer-tokens",
     ),
+    url(r"^oidc/profile/$", _oidc_profile_view, name="oidc-profile",),
 ]

@@ -16,6 +16,7 @@ from django.http import QueryDict
 from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common.utils import reverse
+from swh.web.config import get_config
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.utils import (
     check_html_get_response,
@@ -525,3 +526,41 @@ def test_oidc_revoke_bearer_token_invalid_password(client, mocker):
         status_code=401,
         data={"password": "invalid-password", "token_ids": [1]},
     )
+
+
+def test_oidc_profile_view_anonymous_user(client):
+    """
+    Non authenticated users should be redirected to login page when
+    requesting profile view.
+    """
+    url = reverse("oidc-profile")
+    login_url = reverse("oidc-login", query_params={"next_path": url})
+    resp = check_html_get_response(client, url, status_code=302)
+    assert resp["location"] == login_url
+
+
+@pytest.mark.django_db
+def test_oidc_profile_view(client, mocker):
+    """
+    Authenticated users should be able to request the profile page
+    and link to Keycloak account UI should be present.
+    """
+    url = reverse("oidc-profile")
+    kc_config = get_config()["keycloak"]
+    user_permissions = ["perm1", "perm2"]
+    mock_keycloak(mocker, user_permissions=user_permissions)
+    client.login(code="", code_verifier="", redirect_uri="")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="auth/profile.html"
+    )
+    user = resp.wsgi_request.user
+    kc_account_url = (
+        f"{kc_config['server_url']}realms/{kc_config['realm_name']}/account/"
+    )
+    assert_contains(resp, kc_account_url)
+    assert_contains(resp, user.username)
+    assert_contains(resp, user.first_name)
+    assert_contains(resp, user.last_name)
+    assert_contains(resp, user.email)
+    for perm in user_permissions:
+        assert_contains(resp, perm)
