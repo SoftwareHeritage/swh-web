@@ -86,7 +86,7 @@ def api_graph(request: Request) -> None:
         <https://docs.softwareheritage.org/devel/swh-model/data-model.html#data-structure>`_
         of the Software Heritage archive.
 
-        The full documentation of the available Graph REST API can be found `here
+        For more details please refer to the `Graph REST API documentation
         <https://docs.softwareheritage.org/devel/swh-graph/api.html>`_.
 
         .. warning::
