@@ -39,6 +39,7 @@ def check_http_get_response(
     status_code: int,
     content_type: str = "*/*",
     http_origin: Optional[str] = None,
+    server_name: Optional[str] = None,
 ) -> HttpResponse:
     """Helper function to check HTTP response for a GET request.
 
@@ -53,7 +54,12 @@ def check_http_get_response(
         The HTTP response
     """
     return _assert_http_response(
-        response=client.get(url, HTTP_ACCEPT=content_type, HTTP_ORIGIN=http_origin),
+        response=client.get(
+            url,
+            HTTP_ACCEPT=content_type,
+            HTTP_ORIGIN=http_origin,
+            SERVER_NAME=server_name if server_name else "testserver",
+        ),
         status_code=status_code,
         content_type=content_type,
     )

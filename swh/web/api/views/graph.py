@@ -18,7 +18,7 @@ from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
 from swh.web.common import archive
-from swh.web.config import get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
 
 API_GRAPH_PERM = "swh.web.api.graph"
 
@@ -122,12 +122,13 @@ def api_graph(request: Request) -> None:
 @api_route(r"/graph/(?P<graph_query>.+)/", "api-1-graph")
 @renderer_classes([PlainTextRenderer])
 def api_graph_proxy(request: Request, graph_query: str) -> Response:
-    if not bool(request.user and request.user.is_authenticated):
-        return Response("Authentication credentials were not provided.", status=401)
-    if not request.user.has_perm(API_GRAPH_PERM):
-        return Response(
-            "You do not have permission to perform this action.", status=403
-        )
+    if request.get_host() != SWH_WEB_INTERNAL_SERVER_NAME:
+        if not bool(request.user and request.user.is_authenticated):
+            return Response("Authentication credentials were not provided.", status=401)
+        if not request.user.has_perm(API_GRAPH_PERM):
+            return Response(
+                "You do not have permission to perform this action.", status=403
+            )
     graph_query_url = get_config()["graph"]["server_url"]
     graph_query_url += graph_query
     if request.GET:

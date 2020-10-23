@@ -10,7 +10,7 @@ Django tests settings for swh-web.
 import os
 import sys
 
-from swh.web.config import get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
 
 scope1_limiter_rate = 3
 scope1_limiter_rate_post = 1
@@ -103,7 +103,7 @@ if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
         test_data["storage"], test_data["idx_storage"], test_data["search"]
     )
 else:
-    ALLOWED_HOSTS += ["testserver"]
+    ALLOWED_HOSTS += ["testserver", SWH_WEB_INTERNAL_SERVER_NAME]
 
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore

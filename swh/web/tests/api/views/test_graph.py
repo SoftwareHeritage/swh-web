@@ -12,11 +12,24 @@ from hypothesis import given
 from swh.model.identifiers import ORIGIN, SNAPSHOT, swhid
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
-from swh.web.config import get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
 from swh.web.tests.auth.keycloak_mock import mock_keycloak
 from swh.web.tests.auth.sample_data import oidc_profile
 from swh.web.tests.strategies import origin
 from swh.web.tests.utils import check_http_get_response
+
+
+def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_mock):
+    graph_query = "stats"
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+    )
 
 
 def test_graph_endpoint_needs_authentication(api_client):
