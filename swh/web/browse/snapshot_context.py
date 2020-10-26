@@ -481,7 +481,11 @@ def get_snapshot_context(
 
     releases = list(reversed(releases))
 
-    snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
+    snapshot_sizes_cache_id = f"swh_snapshot_{snapshot_id}_sizes"
+    snapshot_sizes = cache.get(snapshot_sizes_cache_id)
+    if snapshot_sizes is None:
+        snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
+        cache.set(snapshot_sizes_cache_id, snapshot_sizes)
 
     is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
 
