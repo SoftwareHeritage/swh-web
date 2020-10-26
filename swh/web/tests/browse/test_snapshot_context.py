@@ -39,12 +39,13 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
         branches = []
         releases = []
 
-        def _process_branch_data(branch, branch_data):
+        def _process_branch_data(branch, branch_data, alias=False):
             if branch_data["target_type"] == "revision":
                 rev_data = archive_data.revision_get(branch_data["target"])
                 branches.append(
                     SnapshotBranchInfo(
                         name=branch,
+                        alias=alias,
                         revision=branch_data["target"],
                         directory=rev_data["directory"],
                         date=format_utc_iso_date(rev_data["date"]),
@@ -58,6 +59,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
                 releases.append(
                     SnapshotReleaseInfo(
                         name=rel_data["name"],
+                        alias=alias,
                         branch_name=branch,
                         date=format_utc_iso_date(rel_data["date"]),
                         id=rel_data["id"],
@@ -73,7 +75,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
             branch_data = snapshot["branches"][branch]
             if branch_data["target_type"] == "alias":
                 target_data = snapshot["branches"][branch_data["target"]]
-                _process_branch_data(branch, target_data)
+                _process_branch_data(branch, target_data, alias=True)
             else:
                 _process_branch_data(branch, branch_data)
 
@@ -126,7 +128,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
         is_empty = not branches and not releases
         snapshot_swhid = gen_swhid("snapshot", snapshot)
-        snapshot_sizes = {"revision": len(branches), "release": len(releases)}
+        snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
 
         expected = SnapshotContext(
             branch="HEAD",
@@ -217,7 +219,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
         )
         is_empty = not branches and not releases
         snapshot_swhid = gen_swhid("snapshot", snapshot)
-        snapshot_sizes = {"revision": len(branches), "release": len(releases)}
+        snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
 
         visit_info["url"] = reverse(
             "browse-origin-directory", query_params=query_params
@@ -341,6 +343,7 @@ def _check_branch_release_revision_parameters(
     branches.append(
         SnapshotBranchInfo(
             name=revision["id"],
+            alias=False,
             revision=revision["id"],
             directory=revision["directory"],
             date=revision["date"],

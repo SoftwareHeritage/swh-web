@@ -6,7 +6,6 @@
 # Utility module for browsing the archive in a snapshot context.
 
 from collections import defaultdict
-from copy import copy
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.core.cache import cache
@@ -203,6 +202,7 @@ def process_snapshot_branches(
         if target_type == "revision":
             branches[branch_name] = SnapshotBranchInfo(
                 name=branch_name,
+                alias=False,
                 revision=target_id,
                 date=None,
                 directory=None,
@@ -216,9 +216,10 @@ def process_snapshot_branches(
             branch_aliases[branch_name] = target_id
         # FIXME: handle pointers to other object types
 
-    def _add_release_info(branch, release):
+    def _add_release_info(branch, release, alias=False):
         releases[branch] = SnapshotReleaseInfo(
             name=release["name"],
+            alias=alias,
             branch_name=branch,
             date=format_utc_iso_date(release["date"]),
             directory=None,
@@ -229,9 +230,10 @@ def process_snapshot_branches(
             url=None,
         )
 
-    def _add_branch_info(branch, revision):
+    def _add_branch_info(branch, revision, alias=False):
         branches[branch] = SnapshotBranchInfo(
             name=branch,
+            alias=alias,
             revision=revision["id"],
             directory=revision["directory"],
             date=format_utc_iso_date(revision["date"]),
@@ -262,26 +264,20 @@ def process_snapshot_branches(
             releases[release_id]["directory"] = revision["directory"]
 
     for branch_alias, branch_target in branch_aliases.items():
-        if branch_target in branches:
-            branches[branch_alias] = copy(branches[branch_target])
-        else:
-            snp = archive.lookup_snapshot(
-                snapshot["id"], branches_from=branch_target, branches_count=1
-            )
-            if snp and branch_target in snp["branches"]:
+        resolved_alias = archive.lookup_snapshot_alias(snapshot["id"], branch_alias)
+        if resolved_alias is None:
+            continue
 
-                if snp["branches"][branch_target] is None:
-                    continue
+        target_type = resolved_alias["target_type"]
+        target = resolved_alias["target"]
 
-                target_type = snp["branches"][branch_target]["target_type"]
-                target = snp["branches"][branch_target]["target"]
-                if target_type == "revision":
-                    branches[branch_alias] = snp["branches"][branch_target]
-                    revision = archive.lookup_revision(target)
-                    _add_branch_info(branch_alias, revision)
-                elif target_type == "release":
-                    release = archive.lookup_release(target)
-                    _add_release_info(branch_alias, release)
+        if target_type == "revision":
+            branches[branch_alias] = target
+            revision = archive.lookup_revision(target)
+            _add_branch_info(branch_alias, revision, alias=True)
+        elif target_type == "release":
+            release = archive.lookup_release(target)
+            _add_release_info(branch_alias, release, alias=True)
 
         if branch_alias in branches:
             branches[branch_alias]["name"] = branch_alias
@@ -487,7 +483,7 @@ def get_snapshot_context(
 
     snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
 
-    is_empty = sum(snapshot_sizes.values()) == 0
+    is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
 
     swh_snp_id = swhid("snapshot", snapshot_id)
 
@@ -502,7 +498,7 @@ def get_snapshot_context(
     release_id = None
     root_directory = None
 
-    snapshot_total_size = sum(snapshot_sizes.values())
+    snapshot_total_size = snapshot_sizes["release"] + snapshot_sizes["revision"]
 
     if path is not None:
         query_params["path"] = path
@@ -513,6 +509,7 @@ def get_snapshot_context(
         branches.append(
             SnapshotBranchInfo(
                 name=revision_id,
+                alias=False,
                 revision=revision_id,
                 directory=root_directory,
                 date=revision["date"],

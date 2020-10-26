@@ -56,6 +56,8 @@ class SnapshotBranchInfo(TypedDict):
     """message of branch heading revision"""
     name: str
     """branch name"""
+    alias: bool
+    """define if the branch is an alias"""
     revision: str
     """branch heading revision"""
     url: Optional[str]
@@ -75,6 +77,8 @@ class SnapshotReleaseInfo(TypedDict):
     """release message"""
     name: str
     """release name"""
+    alias: bool
+    """define if the branch is an alias"""
     target: str
     """release target"""
     target_type: str
