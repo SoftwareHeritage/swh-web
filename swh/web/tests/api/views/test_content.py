@@ -167,9 +167,14 @@ def test_api_content_license(api_client, indexer_data, content):
         url_args={"q": "sha1:%s" % content["sha1"]},
         request=rv.wsgi_request,
     )
-    expected_data = indexer_data.content_get_license(content["sha1"])
-    expected_data["content_url"] = content_url
-    assert rv.data == expected_data
+    expected_data = list(indexer_data.content_get_license(content["sha1"]))
+    for license in expected_data:
+        del license["id"]
+    assert rv.data == {
+        "content_url": content_url,
+        "id": content["sha1"],
+        "facts": expected_data,
+    }
 
 
 def test_api_content_license_sha_not_found(api_client):

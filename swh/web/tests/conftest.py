@@ -340,10 +340,9 @@ class _IndexerData:
 
     def content_get_license(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        lic = next(self.idx_storage.content_fossology_license_get([cnt_id_bytes]))
-        return converters.from_swh(
-            {"id": cnt_id_bytes, "facts": lic[cnt_id_bytes]}, hashess={"id"}
-        )
+        licenses = self.idx_storage.content_fossology_license_get([cnt_id_bytes])
+        for license in licenses:
+            yield converters.from_swh(license.to_dict(), hashess={"id"})
 
     def content_add_ctags(self, cnt_id):
         self.ctags_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
