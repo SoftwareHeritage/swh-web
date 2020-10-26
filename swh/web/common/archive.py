@@ -186,7 +186,10 @@ def lookup_content_filetype(q):
 
 
 def lookup_content_language(q):
-    """Return language information from a specified content.
+    """Always returns None.
+
+    This used to return language information from a specified content,
+    but this is currently disabled.
 
     Args:
         q: query string of the form <hash_algo:hash>
@@ -195,13 +198,7 @@ def lookup_content_language(q):
         language information (dict) list if the content is found.
 
     """
-    sha1 = _lookup_content_sha1(q)
-    if not sha1:
-        return None
-    lang = _first_element(list(idx_storage.content_language_get([sha1])))
-    if not lang:
-        return None
-    return converters.from_swh(lang, hashess={"id"})
+    return None
 
 
 def lookup_content_license(q):

@@ -335,14 +335,6 @@ class _IndexerData:
         ].to_dict()
         return converters.from_filetype(mimetype)
 
-    def content_add_language(self, cnt_id):
-        raise NotImplementedError("Language indexer is disabled.")
-        self.language_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
-
-    def content_get_language(self, cnt_id):
-        lang = next(self.idx_storage.content_language_get([hash_to_bytes(cnt_id)]))
-        return converters.from_swh(lang, hashess={"id"})
-
     def content_add_license(self, cnt_id):
         self.license_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
 

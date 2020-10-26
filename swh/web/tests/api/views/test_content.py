@@ -50,25 +50,6 @@ def test_api_content_filetype_sha_not_found(api_client):
     }
 
 
-@pytest.mark.skip  # Language indexer is disabled
-@given(content())
-def test_api_content_language(api_client, indexer_data, content):
-    indexer_data.content_add_language(content["sha1"])
-    url = reverse(
-        "api-1-content-language", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
-
-    content_url = reverse(
-        "api-1-content",
-        url_args={"q": "sha1:%s" % content["sha1"]},
-        request=rv.wsgi_request,
-    )
-    expected_data = indexer_data.content_get_language(content["sha1"])
-    expected_data["content_url"] = content_url
-    assert rv.data == expected_data
-
-
 def test_api_content_language_sha_not_found(api_client):
     unknown_content_ = random_content()
 
