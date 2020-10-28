@@ -110,6 +110,17 @@ _save_task_status = {
     "disabled": SAVE_TASK_FAILED,
 }
 
+# map scheduler task_run status to origin save status
+_save_task_run_status = {
+    "scheduled": SAVE_TASK_SCHEDULED,
+    "started": SAVE_TASK_RUNNING,
+    "eventful": SAVE_TASK_SUCCEEDED,
+    "uneventful": SAVE_TASK_SUCCEEDED,
+    "failed": SAVE_TASK_FAILED,
+    "permfailed": SAVE_TASK_FAILED,
+    "lost": SAVE_TASK_FAILED,
+}
+
 
 def get_savable_visit_types():
     return sorted(list(_visit_type_task.keys()))
@@ -186,12 +197,14 @@ def _check_visit_update_status(save_request, save_task_status):
     return visit_date, save_task_status
 
 
-def _save_request_dict(save_request, task=None):
+def _save_request_dict(save_request, task=None, task_run=None):
     must_save = False
     visit_date = save_request.visit_date
     # save task still in scheduler db
     if task:
         save_task_status = _save_task_status[task["status"]]
+        if task_run:
+            save_task_status = _save_task_run_status[task_run["status"]]
         # Consider request from which a visit date has already been found
         # as succeeded to avoid retrieving it again
         if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
@@ -313,7 +326,10 @@ def create_save_origin_request(visit_type, origin_url):
                 # get the scheduler task and its status
                 tasks = scheduler.get_tasks([sor.loading_task_id])
                 task = tasks[0] if tasks else None
-                task_status = _save_request_dict(sor, task)["save_task_status"]
+                task_runs = scheduler.get_task_runs([sor.loading_task_id])
+                task_run = task_runs[0] if task_runs else None
+                save_request = _save_request_dict(sor, task, task_run)
+                task_status = save_request["save_task_status"]
                 # create a new scheduler task only if the previous one has been
                 # already executed
                 if (
@@ -392,8 +408,12 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     if task_ids:
         tasks = scheduler.get_tasks(task_ids)
         tasks = {task["id"]: task for task in tasks}
+        task_runs = scheduler.get_task_runs(tasks)
+        task_runs = {task_run["task"]: task_run for task_run in task_runs}
         for sor in requests_queryset:
-            sr_dict = _save_request_dict(sor, tasks.get(sor.loading_task_id))
+            sr_dict = _save_request_dict(
+                sor, tasks.get(sor.loading_task_id), task_runs.get(sor.loading_task_id)
+            )
             save_requests.append(sr_dict)
     return save_requests
 
