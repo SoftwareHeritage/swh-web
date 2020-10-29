@@ -345,6 +345,7 @@ def search_origin_metadata(
     matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit
     )
+    matches = [match.to_dict() for match in matches]
     results = []
     origins = storage.origin_get([match["id"] for match in matches])
     for origin, match in zip(origins, matches):
@@ -378,7 +379,7 @@ def lookup_origin_intrinsic_metadata(origin_url: str) -> Dict[str, Any]:
     match = _first_element(idx_storage.origin_intrinsic_metadata_get(origins))
     result = {}
     if match:
-        result = match["metadata"]
+        result = match.metadata
     return result
 
 
