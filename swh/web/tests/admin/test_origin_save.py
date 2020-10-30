@@ -20,6 +20,7 @@ from swh.web.common.models import (
 )
 from swh.web.common.origin_save import can_save_origin
 from swh.web.common.utils import reverse
+from swh.web.tests.utils import check_http_get_response, check_http_post_response
 
 _user_name = "swh-web-admin"
 _user_mail = "admin@swh-web.org"
@@ -44,9 +45,9 @@ def populated_db():
 
 def check_not_login(client, url):
     login_url = reverse("login", query_params={"next": url})
-    response = client.post(url)
-    assert response.status_code == 302
-    assert unquote(response.url) == login_url
+
+    resp = check_http_post_response(client, url, status_code=302)
+    assert unquote(resp.url) == login_url
 
 
 def test_add_authorized_origin_url(client):
@@ -62,8 +63,8 @@ def test_add_authorized_origin_url(client):
     assert can_save_origin(authorized_url) == SAVE_REQUEST_PENDING
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(url)
-    assert response.status_code == 200
+
+    check_http_post_response(client, url, status_code=200)
     assert can_save_origin(authorized_url) == SAVE_REQUEST_ACCEPTED
 
 
@@ -80,8 +81,7 @@ def test_remove_authorized_origin_url(client):
     assert can_save_origin(_authorized_origin_url) == SAVE_REQUEST_ACCEPTED
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(url)
-    assert response.status_code == 200
+    check_http_post_response(client, url, status_code=200)
     assert can_save_origin(_authorized_origin_url) == SAVE_REQUEST_PENDING
 
 
@@ -99,8 +99,7 @@ def test_add_unauthorized_origin_url(client):
     assert can_save_origin(unauthorized_url) == SAVE_REQUEST_PENDING
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(url)
-    assert response.status_code == 200
+    check_http_post_response(client, url, status_code=200)
     assert can_save_origin(unauthorized_url) == SAVE_REQUEST_REJECTED
 
 
@@ -117,8 +116,7 @@ def test_remove_unauthorized_origin_url(client):
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_REJECTED
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(url)
-    assert response.status_code == 200
+    check_http_post_response(client, url, status_code=200)
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_PENDING
 
 
@@ -130,10 +128,7 @@ def test_accept_pending_save_request(client, mocker):
         "api-1-save-origin",
         url_args={"visit_type": visit_type, "origin_url": origin_url},
     )
-    response = client.post(
-        save_request_url, data={}, content_type="application/x-www-form-urlencoded"
-    )
-    assert response.status_code == 200
+    response = check_http_post_response(client, save_request_url, status_code=200)
     assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
 
     accept_request_url = reverse(
@@ -158,11 +153,9 @@ def test_accept_pending_save_request(client, mocker):
     mock_scheduler.get_tasks.return_value = tasks_data
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(accept_request_url)
-    assert response.status_code == 200
+    response = check_http_post_response(client, accept_request_url, status_code=200)
 
-    response = client.get(save_request_url)
-    assert response.status_code == 200
+    response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_ACCEPTED
     assert response.data[0]["save_task_status"] == SAVE_TASK_NOT_YET_SCHEDULED
 
@@ -175,10 +168,8 @@ def test_reject_pending_save_request(client, mocker):
         "api-1-save-origin",
         url_args={"visit_type": visit_type, "origin_url": origin_url},
     )
-    response = client.post(
-        save_request_url, data={}, content_type="application/x-www-form-urlencoded"
-    )
-    assert response.status_code == 200
+
+    response = check_http_post_response(client, save_request_url, status_code=200)
     assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
 
     reject_request_url = reverse(
@@ -189,8 +180,7 @@ def test_reject_pending_save_request(client, mocker):
     check_not_login(client, reject_request_url)
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(reject_request_url)
-    assert response.status_code == 200
+    response = check_http_post_response(client, reject_request_url, status_code=200)
 
     tasks_data = [
         {
@@ -206,8 +196,7 @@ def test_reject_pending_save_request(client, mocker):
     mock_scheduler.create_tasks.return_value = tasks_data
     mock_scheduler.get_tasks.return_value = tasks_data
 
-    response = client.get(save_request_url)
-    assert response.status_code == 200
+    response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
 
 
@@ -226,6 +215,5 @@ def test_remove_save_request(client):
     check_not_login(client, remove_request_url)
 
     client.login(username=_user_name, password=_user_password)
-    response = client.post(remove_request_url)
-    assert response.status_code == 200
+    check_http_post_response(client, remove_request_url, status_code=200)
     assert SaveOriginRequest.objects.count() == 0

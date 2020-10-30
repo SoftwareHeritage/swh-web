@@ -81,7 +81,13 @@ export function init(options) {
             options.release = window_1.SENTRY_RELEASE.id;
         }
     }
+    if (options.autoSessionTracking === undefined) {
+        options.autoSessionTracking = false;
+    }
     initAndBind(BrowserClient, options);
+    if (options.autoSessionTracking) {
+        startSessionTracking();
+    }
 }
 /**
  * Present the user with a report dialog.
@@ -156,5 +162,59 @@ export function close(timeout) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function wrap(fn) {
     return internalWrap(fn)();
+}
+/**
+ * Enable automatic Session Tracking for the initial page load.
+ */
+function startSessionTracking() {
+    var window = getGlobalObject();
+    var hub = getCurrentHub();
+    /**
+     * We should be using `Promise.all([windowLoaded, firstContentfulPaint])` here,
+     * but, as always, it's not available in the IE10-11. Thanks IE.
+     */
+    var loadResolved = document.readyState === 'complete';
+    var fcpResolved = false;
+    var possiblyEndSession = function () {
+        if (fcpResolved && loadResolved) {
+            hub.endSession();
+        }
+    };
+    var resolveWindowLoaded = function () {
+        loadResolved = true;
+        possiblyEndSession();
+        window.removeEventListener('load', resolveWindowLoaded);
+    };
+    hub.startSession();
+    if (!loadResolved) {
+        // IE doesn't support `{ once: true }` for event listeners, so we have to manually
+        // attach and then detach it once completed.
+        window.addEventListener('load', resolveWindowLoaded);
+    }
+    try {
+        var po = new PerformanceObserver(function (entryList, po) {
+            entryList.getEntries().forEach(function (entry) {
+                if (entry.name === 'first-contentful-paint' && entry.startTime < firstHiddenTime_1) {
+                    po.disconnect();
+                    fcpResolved = true;
+                    possiblyEndSession();
+                }
+            });
+        });
+        // There's no need to even attach this listener if `PerformanceObserver` constructor will fail,
+        // so we do it below here.
+        var firstHiddenTime_1 = document.visibilityState === 'hidden' ? 0 : Infinity;
+        document.addEventListener('visibilitychange', function (event) {
+            firstHiddenTime_1 = Math.min(firstHiddenTime_1, event.timeStamp);
+        }, { once: true });
+        po.observe({
+            type: 'paint',
+            buffered: true,
+        });
+    }
+    catch (e) {
+        fcpResolved = true;
+        possiblyEndSession();
+    }
 }
 //# sourceMappingURL=sdk.js.map

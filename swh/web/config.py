@@ -14,6 +14,8 @@ from swh.storage import get_storage
 from swh.vault import get_vault
 from swh.web import settings
 
+SWH_WEB_INTERNAL_SERVER_NAME = "archive.internal.softwareheritage.org"
+
 SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {

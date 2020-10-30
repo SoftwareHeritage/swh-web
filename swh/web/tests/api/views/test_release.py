@@ -16,9 +16,9 @@ from swh.model.model import (
     TimestampWithTimezone,
 )
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import content, directory, release
+from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
 @given(release())
@@ -113,8 +113,7 @@ def test_api_release_uppercase(api_client, release):
         "api-1-release-uppercase-checksum", url_args={"sha1_git": release.upper()}
     )
 
-    resp = api_client.get(url)
-    assert resp.status_code == 302
+    resp = check_http_get_response(api_client, url, status_code=302)
 
     redirect_url = reverse(
         "api-1-release-uppercase-checksum", url_args={"sha1_git": release}

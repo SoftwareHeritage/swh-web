@@ -11,8 +11,9 @@ from django.utils.html import escape
 
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
-from swh.web.tests.django_asserts import assert_contains, assert_template_used
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import origin_with_releases, release, unknown_release
+from swh.web.tests.utils import check_html_get_response
 
 
 @given(release())
@@ -45,9 +46,10 @@ def test_release_browse_with_origin_snapshot(client, archive_data, origin):
 @given(unknown_release())
 def test_release_browse_not_found(client, archive_data, unknown_release):
     url = reverse("browse-release", url_args={"sha1_git": unknown_release})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     err_msg = "Release with sha1_git %s not found" % unknown_release
     assert_contains(resp, err_msg, status_code=404)
 
@@ -58,8 +60,7 @@ def test_release_uppercase(client, release):
         "browse-release-uppercase-checksum", url_args={"sha1_git": release.upper()}
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
 
     redirect_url = reverse("browse-release", url_args={"sha1_git": release})
 
@@ -77,8 +78,6 @@ def _release_browse_checks(
 
     release_data = archive_data.release_get(release)
 
-    resp = client.get(url)
-
     release_id = release_data["id"]
     release_name = release_data["name"]
     author_name = release_data["author"]["name"]
@@ -93,8 +92,9 @@ def _release_browse_checks(
     )
     message_lines = message.split("\n")
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/release.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/release.html"
+    )
     assert_contains(resp, author_name)
     assert_contains(resp, format_utc_iso_date(release_date))
     assert_contains(

@@ -1,6 +1,7 @@
 import { __assign, __read, __spread } from "tslib";
 import { consoleSandbox, dateTimestampInSeconds, getGlobalObject, isNodeEnv, logger, uuid4 } from '@sentry/utils';
 import { Scope } from './scope';
+import { Session } from './session';
 /**
  * API compatibility version of this hub.
  *
@@ -37,8 +38,8 @@ var Hub = /** @class */ (function () {
         if (_version === void 0) { _version = API_VERSION; }
         this._version = _version;
         /** Is a {@link Layer}[] containing the client and scope */
-        this._stack = [];
-        this._stack.push({ client: client, scope: scope });
+        this._stack = [{}];
+        this.getStackTop().scope = scope;
         this.bindClient(client);
     }
     /**
@@ -62,9 +63,7 @@ var Hub = /** @class */ (function () {
      */
     Hub.prototype.pushScope = function () {
         // We want to clone the content of prev scope
-        var stack = this.getStack();
-        var parentScope = stack.length > 0 ? stack[stack.length - 1].scope : undefined;
-        var scope = Scope.clone(parentScope);
+        var scope = Scope.clone(this.getScope());
         this.getStack().push({
             client: this.getClient(),
             scope: scope,
@@ -75,7 +74,9 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.popScope = function () {
-        return this.getStack().pop() !== undefined;
+        if (this.getStack().length <= 1)
+            return false;
+        return !!this.getStack().pop();
     };
     /**
      * @inheritDoc
@@ -178,93 +179,78 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.addBreadcrumb = function (breadcrumb, hint) {
-        var top = this.getStackTop();
-        if (!top.scope || !top.client) {
+        var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
+        if (!scope || !client)
             return;
-        }
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        var _a = (top.client.getOptions && top.client.getOptions()) || {}, _b = _a.beforeBreadcrumb, beforeBreadcrumb = _b === void 0 ? null : _b, _c = _a.maxBreadcrumbs, maxBreadcrumbs = _c === void 0 ? DEFAULT_BREADCRUMBS : _c;
-        if (maxBreadcrumbs <= 0) {
+        var _b = (client.getOptions && client.getOptions()) || {}, _c = _b.beforeBreadcrumb, beforeBreadcrumb = _c === void 0 ? null : _c, _d = _b.maxBreadcrumbs, maxBreadcrumbs = _d === void 0 ? DEFAULT_BREADCRUMBS : _d;
+        if (maxBreadcrumbs <= 0)
             return;
-        }
         var timestamp = dateTimestampInSeconds();
         var mergedBreadcrumb = __assign({ timestamp: timestamp }, breadcrumb);
         var finalBreadcrumb = beforeBreadcrumb
             ? consoleSandbox(function () { return beforeBreadcrumb(mergedBreadcrumb, hint); })
             : mergedBreadcrumb;
-        if (finalBreadcrumb === null) {
+        if (finalBreadcrumb === null)
             return;
-        }
-        top.scope.addBreadcrumb(finalBreadcrumb, Math.min(maxBreadcrumbs, MAX_BREADCRUMBS));
+        scope.addBreadcrumb(finalBreadcrumb, Math.min(maxBreadcrumbs, MAX_BREADCRUMBS));
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.setUser = function (user) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setUser(user);
+        var scope = this.getScope();
+        if (scope)
+            scope.setUser(user);
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.setTags = function (tags) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setTags(tags);
+        var scope = this.getScope();
+        if (scope)
+            scope.setTags(tags);
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.setExtras = function (extras) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setExtras(extras);
+        var scope = this.getScope();
+        if (scope)
+            scope.setExtras(extras);
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.setTag = function (key, value) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setTag(key, value);
+        var scope = this.getScope();
+        if (scope)
+            scope.setTag(key, value);
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.setExtra = function (key, extra) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setExtra(key, extra);
+        var scope = this.getScope();
+        if (scope)
+            scope.setExtra(key, extra);
     };
     /**
      * @inheritDoc
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Hub.prototype.setContext = function (name, context) {
-        var top = this.getStackTop();
-        if (!top.scope) {
-            return;
-        }
-        top.scope.setContext(name, context);
+        var scope = this.getScope();
+        if (scope)
+            scope.setContext(name, context);
     };
     /**
      * @inheritDoc
      */
     Hub.prototype.configureScope = function (callback) {
-        var top = this.getStackTop();
-        if (top.scope && top.client) {
-            callback(top.scope);
+        var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
+        if (scope && client) {
+            callback(scope);
         }
     };
     /**
@@ -284,9 +270,8 @@ var Hub = /** @class */ (function () {
      */
     Hub.prototype.getIntegration = function (integration) {
         var client = this.getClient();
-        if (!client) {
+        if (!client)
             return null;
-        }
         try {
             return client.getIntegration(integration);
         }
@@ -314,6 +299,37 @@ var Hub = /** @class */ (function () {
         return this._callExtensionMethod('traceHeaders');
     };
     /**
+     * @inheritDoc
+     */
+    Hub.prototype.startSession = function (context) {
+        // End existing session if there's one
+        this.endSession();
+        var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
+        var _b = (client && client.getOptions()) || {}, release = _b.release, environment = _b.environment;
+        var session = new Session(__assign(__assign({ release: release,
+            environment: environment }, (scope && { user: scope.getUser() })), context));
+        if (scope) {
+            scope.setSession(session);
+        }
+        return session;
+    };
+    /**
+     * @inheritDoc
+     */
+    Hub.prototype.endSession = function () {
+        var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
+        if (!scope)
+            return;
+        var session = scope.getSession();
+        if (session) {
+            session.close();
+            if (client && client.captureSession) {
+                client.captureSession(session);
+            }
+            scope.setSession();
+        }
+    };
+    /**
      * Internal helper function to call a method on the top client if it exists.
      *
      * @param method The method to call on the client.
@@ -326,10 +342,10 @@ var Hub = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var top = this.getStackTop();
-        if (top && top.client && top.client[method]) {
+        var _b = this.getStackTop(), scope = _b.scope, client = _b.client;
+        if (client && client[method]) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-            (_a = top.client)[method].apply(_a, __spread(args, [top.scope]));
+            (_a = client)[method].apply(_a, __spread(args, [scope]));
         }
     };
     /**
@@ -431,10 +447,7 @@ function getHubFromActiveDomain(registry) {
  * @param carrier object
  */
 function hasHubOnCarrier(carrier) {
-    if (carrier && carrier.__SENTRY__ && carrier.__SENTRY__.hub) {
-        return true;
-    }
-    return false;
+    return !!(carrier && carrier.__SENTRY__ && carrier.__SENTRY__.hub);
 }
 /**
  * This will create a new {@link Hub} and add to the passed object on
@@ -443,9 +456,8 @@ function hasHubOnCarrier(carrier) {
  * @hidden
  */
 export function getHubFromCarrier(carrier) {
-    if (carrier && carrier.__SENTRY__ && carrier.__SENTRY__.hub) {
+    if (carrier && carrier.__SENTRY__ && carrier.__SENTRY__.hub)
         return carrier.__SENTRY__.hub;
-    }
     carrier.__SENTRY__ = carrier.__SENTRY__ || {};
     carrier.__SENTRY__.hub = new Hub();
     return carrier.__SENTRY__.hub;
@@ -456,9 +468,8 @@ export function getHubFromCarrier(carrier) {
  * @param hub Hub
  */
 export function setHubOnCarrier(carrier, hub) {
-    if (!carrier) {
+    if (!carrier)
         return false;
-    }
     carrier.__SENTRY__ = carrier.__SENTRY__ || {};
     carrier.__SENTRY__.hub = hub;
     return true;

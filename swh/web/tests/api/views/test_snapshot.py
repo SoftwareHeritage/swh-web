@@ -11,9 +11,9 @@ from swh.model.hashutil import hash_to_hex
 from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import new_snapshot, snapshot
+from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
 @given(snapshot())
@@ -131,8 +131,7 @@ def test_api_snapshot_uppercase(api_client, snapshot):
         "api-1-snapshot-uppercase-checksum", url_args={"snapshot_id": snapshot.upper()}
     )
 
-    resp = api_client.get(url)
-    assert resp.status_code == 302
+    resp = check_http_get_response(api_client, url, status_code=302)
 
     redirect_url = reverse(
         "api-1-snapshot-uppercase-checksum", url_args={"snapshot_id": snapshot}

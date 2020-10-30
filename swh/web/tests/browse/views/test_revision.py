@@ -12,8 +12,9 @@ from django.utils.html import escape
 from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
-from swh.web.tests.django_asserts import assert_contains, assert_template_used
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import new_origin, origin, revision, unknown_revision
+from swh.web.tests.utils import check_html_get_response
 
 
 @given(revision())
@@ -53,8 +54,6 @@ def test_revision_log_browse(client, archive_data, revision):
         query_params={"per_page": per_page},
     )
 
-    resp = client.get(url)
-
     next_page_url = reverse(
         "browse-revision-log",
         url_args={"sha1_git": revision},
@@ -65,8 +64,9 @@ def test_revision_log_browse(client, archive_data, revision):
     if len(revision_log_sorted) < per_page:
         nb_log_entries = len(revision_log_sorted)
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/revision-log.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/revision-log.html"
+    )
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
     assert_contains(resp, '<a class="page-link">Newer</a>')
 
@@ -87,7 +87,9 @@ def test_revision_log_browse(client, archive_data, revision):
     if len(revision_log_sorted) <= per_page:
         return
 
-    resp = client.get(next_page_url)
+    resp = check_html_get_response(
+        client, next_page_url, status_code=200, template_used="browse/revision-log.html"
+    )
 
     prev_page_url = reverse(
         "browse-revision-log",
@@ -104,8 +106,6 @@ def test_revision_log_browse(client, archive_data, revision):
     if nb_log_entries > per_page:
         nb_log_entries = per_page
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/revision-log.html")
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
 
     assert_contains(
@@ -120,7 +120,9 @@ def test_revision_log_browse(client, archive_data, revision):
     if len(revision_log_sorted) <= 2 * per_page:
         return
 
-    resp = client.get(next_page_url)
+    resp = check_html_get_response(
+        client, next_page_url, status_code=200, template_used="browse/revision-log.html"
+    )
 
     prev_page_url = reverse(
         "browse-revision-log",
@@ -137,8 +139,6 @@ def test_revision_log_browse(client, archive_data, revision):
     if nb_log_entries > per_page:
         nb_log_entries = per_page
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/revision-log.html")
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
     assert_contains(
         resp, '<a class="page-link" href="%s">Newer</a>' % escape(prev_page_url)
@@ -153,9 +153,10 @@ def test_revision_log_browse(client, archive_data, revision):
 @given(revision(), unknown_revision(), new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
     url = reverse("browse-revision", url_args={"sha1_git": unknown_revision})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(
         resp, "Revision with sha1_git %s not found" % unknown_revision, status_code=404
     )
@@ -166,9 +167,9 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
         query_params={"origin_url": new_origin.url},
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
     assert_contains(
         resp, "the origin mentioned in your request" " appears broken", status_code=404
     )
@@ -180,8 +181,7 @@ def test_revision_uppercase(client, revision):
         "browse-revision-uppercase-checksum", url_args={"sha1_git": revision.upper()}
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
 
     redirect_url = reverse("browse-revision", url_args={"sha1_git": revision})
 
@@ -222,10 +222,9 @@ def _revision_browse_checks(
     else:
         history_url = reverse("browse-revision-log", url_args={"sha1_git": revision})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/revision.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/revision.html"
+    )
     assert_contains(resp, author_name)
     assert_contains(resp, committer_name)
     assert_contains(resp, history_url)

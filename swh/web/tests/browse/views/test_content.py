@@ -19,11 +19,7 @@ from swh.web.browse.utils import (
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
-from swh.web.tests.django_asserts import (
-    assert_contains,
-    assert_not_contains,
-    assert_template_used,
-)
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     content,
     content_image_type,
@@ -36,6 +32,7 @@ from swh.web.tests.strategies import (
     origin_with_multiple_visits,
     unknown_content,
 )
+from swh.web.tests.utils import check_html_get_response, check_http_get_response
 
 
 @given(content_text())
@@ -50,13 +47,12 @@ def test_content_view_text(client, archive_data, content):
 
     url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     content_display = _process_content_for_display(archive_data, content)
     mimetype = content_display["mimetype"]
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
 
     if mimetype.startswith("text/"):
         assert_contains(resp, '<code class="%s">' % content_display["language"])
@@ -77,12 +73,11 @@ def test_content_view_text_no_highlight(client, archive_data, content):
 
     url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     content_display = _process_content_for_display(archive_data, content)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
 
     assert_contains(resp, '<code class="nohighlight">')
     assert_contains(resp, escape(content_display["content_data"]))
@@ -101,12 +96,12 @@ def test_content_view_no_utf8_text(client, archive_data, content):
 
     url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     content_display = _process_content_for_display(archive_data, content)
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
     swh_cnt_id = gen_swhid(CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id_url)
@@ -119,14 +114,13 @@ def test_content_view_image(client, archive_data, content):
 
     url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     content_display = _process_content_for_display(archive_data, content)
     mimetype = content_display["mimetype"]
     content_data = content_display["content_data"]
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
     assert_contains(resp, '<img src="data:%s;base64,%s"/>' % (mimetype, content_data))
     assert_contains(resp, url_raw)
 
@@ -135,13 +129,12 @@ def test_content_view_image(client, archive_data, content):
 def test_content_view_image_no_rendering(client, archive_data, content):
     url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     mimetype = content["mimetype"]
     encoding = content["encoding"]
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
     assert_contains(
         resp,
         (
@@ -161,9 +154,9 @@ def test_content_view_text_with_path(client, archive_data, content):
         query_params={"path": path},
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     assert_contains(resp, '<nav class="bread-crumbs')
 
@@ -224,9 +217,9 @@ def test_content_view_text_with_path(client, archive_data, content):
         query_params={"path": filename},
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     assert_not_contains(resp, '<nav class="bread-crumbs')
 
@@ -236,19 +229,22 @@ def test_content_view_text_with_path(client, archive_data, content):
         url_args={"query_string": content["sha1"]},
         query_params={"path": invalid_path},
     )
-    resp = client.get(url)
-    assert resp.status_code == 404
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="error.html"
+    )
 
 
 @given(content_text())
 def test_content_raw_text(client, archive_data, content):
     url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="text/plain"
+    )
 
     content_data = archive_data.content_get_data(content["sha1"])["data"]
 
-    assert resp.status_code == 200
     assert resp["Content-Type"] == "text/plain"
     assert resp["Content-disposition"] == ("filename=%s_%s" % ("sha1", content["sha1"]))
     assert resp.content == content_data
@@ -261,9 +257,10 @@ def test_content_raw_text(client, archive_data, content):
         query_params={"filename": filename},
     )
 
-    resp = client.get(url)
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="text/plain"
+    )
 
-    assert resp.status_code == 200
     assert resp["Content-Type"] == "text/plain"
     assert resp["Content-disposition"] == "filename=%s" % filename
     assert resp.content == content_data
@@ -273,8 +270,9 @@ def test_content_raw_text(client, archive_data, content):
 def test_content_raw_no_utf8_text(client, content):
     url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
-    assert resp.status_code == 200
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="text/plain"
+    )
     _, encoding = get_mimetype_and_encoding_for_content(resp.content)
     assert encoding == content["encoding"]
 
@@ -283,12 +281,13 @@ def test_content_raw_no_utf8_text(client, content):
 def test_content_raw_bin(client, archive_data, content):
     url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="application/octet-stream"
+    )
 
     filename = content["path"].split("/")[-1]
     content_data = archive_data.content_get_data(content["sha1"])["data"]
 
-    assert resp.status_code == 200
     assert resp["Content-Type"] == "application/octet-stream"
     assert resp["Content-disposition"] == "attachment; filename=%s_%s" % (
         "sha1",
@@ -302,9 +301,10 @@ def test_content_raw_bin(client, archive_data, content):
         query_params={"filename": filename},
     )
 
-    resp = client.get(url)
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="application/octet-stream"
+    )
 
-    assert resp.status_code == 200
     assert resp["Content-Type"] == "application/octet-stream"
     assert resp["Content-disposition"] == "attachment; filename=%s" % filename
     assert resp.content == content_data
@@ -313,14 +313,10 @@ def test_content_raw_bin(client, archive_data, content):
 @given(invalid_sha1(), unknown_content())
 def test_content_request_errors(client, invalid_sha1, unknown_content):
     url = reverse("browse-content", url_args={"query_string": invalid_sha1})
-    resp = client.get(url)
-    assert resp.status_code == 400
-    assert_template_used(resp, "error.html")
+    check_html_get_response(client, url, status_code=400, template_used="error.html")
 
     url = reverse("browse-content", url_args={"query_string": unknown_content["sha1"]})
-    resp = client.get(url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+    check_html_get_response(client, url, status_code=404, template_used="error.html")
 
 
 @given(content())
@@ -336,10 +332,9 @@ def test_content_bytes_missing(client, archive_data, mocker, content):
 
     url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 404
-    assert_template_used(resp, "browse/content.html")
+    check_html_get_response(
+        client, url, status_code=404, template_used="browse/content.html"
+    )
 
 
 def test_content_too_large(client, mocker):
@@ -374,10 +369,9 @@ def test_content_too_large(client, mocker):
 
     url_raw = reverse("browse-content-raw", url_args={"query_string": content_sha1})
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     assert_contains(resp, "Content is too large to be displayed")
     assert_contains(resp, url_raw)
@@ -389,8 +383,8 @@ def test_content_uppercase(client, content):
         "browse-content-uppercase-checksum",
         url_args={"query_string": content["sha1"].upper()},
     )
-    resp = client.get(url)
-    assert resp.status_code == 302
+
+    resp = check_html_get_response(client, url, status_code=302)
 
     redirect_url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
@@ -400,7 +394,10 @@ def test_content_uppercase(client, content):
 @given(content_utf8_detected_as_binary())
 def test_content_utf8_detected_as_binary_display(client, archive_data, content):
     url = reverse("browse-content", url_args={"query_string": content["sha1"]})
-    resp = client.get(url)
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
 
     content_display = _process_content_for_display(archive_data, content)
 
@@ -432,9 +429,10 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         },
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
+
     _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
@@ -497,9 +495,10 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         },
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/content.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/content.html"
+    )
+
     _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")

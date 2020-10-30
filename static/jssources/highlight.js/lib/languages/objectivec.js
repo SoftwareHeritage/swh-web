@@ -48,7 +48,7 @@ function objectivec(hljs) {
   };
   return {
     name: 'Objective-C',
-    aliases: ['mm', 'objc', 'obj-c'],
+    aliases: ['mm', 'objc', 'obj-c', 'obj-c++', 'objective-c++'],
     keywords: OBJC_KEYWORDS,
     illegal: '</',
     contains: [

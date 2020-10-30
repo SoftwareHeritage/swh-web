@@ -7,7 +7,6 @@ import traceback
 
 import sentry_sdk
 
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -126,7 +125,7 @@ def swh_handle500(request):
     return _generate_error_page(request, 500, error_description)
 
 
-def handle_view_exception(request, exc, html_response=True):
+def handle_view_exception(request, exc):
     """
     Function used to generate an error page when an exception
     was raised inside a swh-web browse view.
@@ -142,9 +141,8 @@ def handle_view_exception(request, exc, html_response=True):
         error_code = 403
     if isinstance(exc, NotFoundExc):
         error_code = 404
-    if html_response:
-        return _generate_error_page(request, error_code, error_description)
-    else:
-        return HttpResponse(
-            error_description, content_type="text/plain", status=error_code
-        )
+
+    resp = _generate_error_page(request, error_code, error_description)
+    if get_config()["debug"]:
+        resp.traceback = error_description
+    return resp

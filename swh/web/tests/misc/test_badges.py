@@ -35,6 +35,7 @@ from swh.web.tests.strategies import (
     unknown_revision,
     unknown_snapshot,
 )
+from swh.web.tests.utils import check_http_get_response
 
 
 @given(content())
@@ -96,13 +97,17 @@ def test_badge_errors(
     ):
         url_args = {"object_type": object_type, "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
-        resp = client.get(url)
+        resp = check_http_get_response(
+            client, url, status_code=200, content_type="image/svg+xml"
+        )
         _check_generated_badge(resp, **url_args, error="not found")
 
         if object_type != ORIGIN:
             object_swhid = swhid(object_type, object_id)
             url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
-            resp = client.get(url)
+            resp = check_http_get_response(
+                client, url, status_code=200, content_type="image/svg+xml"
+            )
             _check_generated_badge(resp, **url_args, error="not found")
 
     for object_type, object_id in (
@@ -114,12 +119,17 @@ def test_badge_errors(
     ):
         url_args = {"object_type": object_type, "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
-        resp = client.get(url)
+
+        resp = check_http_get_response(
+            client, url, status_code=200, content_type="image/svg+xml"
+        )
         _check_generated_badge(resp, **url_args, error="invalid id")
 
         object_swhid = f"swh:1:{object_type[:3]}:{object_id}"
         url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
-        resp = client.get(url)
+        resp = check_http_get_response(
+            client, url, status_code=200, content_type="image/svg+xml"
+        )
         _check_generated_badge(resp, "", "", error="invalid id")
 
 
@@ -128,26 +138,41 @@ def test_badge_endpoints_have_cors_header(client, origin, release):
     url = reverse(
         "swh-badge", url_args={"object_type": ORIGIN, "object_id": origin["url"]}
     )
-    resp = client.get(url, HTTP_ORIGIN="https://example.org")
-    assert resp.status_code == 200, resp.content
+
+    resp = check_http_get_response(
+        client,
+        url,
+        status_code=200,
+        content_type="image/svg+xml",
+        http_origin="https://example.org",
+    )
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
     release_swhid = swhid(RELEASE, release)
     url = reverse("swh-badge-swhid", url_args={"object_swhid": release_swhid})
-    resp = client.get(url, HTTP_ORIGIN="https://example.org")
-    assert resp.status_code == 200, resp.content
+    resp = check_http_get_response(
+        client,
+        url,
+        status_code=200,
+        content_type="image/svg+xml",
+        http_origin="https://example.org",
+    )
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
 
 def _test_badge_endpoints(client, object_type, object_id):
     url_args = {"object_type": object_type, "object_id": object_id}
     url = reverse("swh-badge", url_args=url_args)
-    resp = client.get(url)
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type="image/svg+xml"
+    )
     _check_generated_badge(resp, **url_args)
     if object_type != ORIGIN:
         obj_swhid = swhid(object_type, object_id)
         url = reverse("swh-badge-swhid", url_args={"object_swhid": obj_swhid})
-        resp = client.get(url)
+        resp = check_http_get_response(
+            client, url, status_code=200, content_type="image/svg+xml"
+        )
         _check_generated_badge(resp, **url_args)
 
 

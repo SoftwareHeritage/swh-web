@@ -117,7 +117,7 @@ def api_revision(request, sha1_git):
     "api-1-revision-raw-message",
     checksum_args=["sha1_git"],
 )
-@api_doc("/revision/raw/", tags=["hidden"], handle_response=True)
+@api_doc("/revision/raw/", tags=["hidden"])
 def api_revision_raw_message(request, sha1_git):
     """Return the raw data of the message of revision identified by sha1_git
     """

@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, removeUrlFragment} from 'utils/functions';
 import './auth.css';
 
 let apiTokensTable;
@@ -169,7 +169,7 @@ export function applyTokenAction(action, tokenId) {
   });
 }
 
-export function initApiTokensPage() {
+export function initProfilePage() {
   $(document).ready(() => {
     apiTokensTable = $('#swh-bearer-tokens-table')
       .on('error.dt', (e, settings, techNote, message) => {
@@ -212,5 +212,15 @@ export function initApiTokensPage() {
         scrollY: '50vh',
         scrollCollapse: true
       });
+    $('#swh-oidc-profile-tokens-tab').on('shown.bs.tab', () => {
+      apiTokensTable.draw();
+      window.location.hash = '#tokens';
+    });
+    $('#swh-oidc-profile-account-tab').on('shown.bs.tab', () => {
+      removeUrlFragment();
+    });
+    if (window.location.hash === '#tokens') {
+      $('.nav-tabs a[href="#swh-oidc-profile-tokens"]').tab('show');
+    }
   });
 }

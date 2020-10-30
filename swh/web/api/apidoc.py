@@ -14,11 +14,10 @@ from typing import List
 import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
-import sentry_sdk
 
 from rest_framework.decorators import api_view
 
-from swh.web.api.apiresponse import error_response, make_api_response
+from swh.web.api.apiresponse import make_api_response
 from swh.web.api.apiurls import APIUrls
 from swh.web.common.utils import parse_rst
 
@@ -287,11 +286,7 @@ class APIDocException(Exception):
 
 
 def api_doc(
-    route: str,
-    noargs: bool = False,
-    tags: List[str] = [],
-    handle_response: bool = False,
-    api_version: str = "1",
+    route: str, noargs: bool = False, tags: List[str] = [], api_version: str = "1",
 ):
     """
     Decorator for an API endpoint implementation used to generate a dedicated
@@ -310,10 +305,6 @@ def api_doc(
 
                 * hidden: remove the entry points from the listing
                 * upcoming: display the entry point but it is not followable
-
-        handle_response: indicate if the decorated function takes
-            care of creating the HTTP response or delegates that task to the
-            apiresponse module
         api_version: api version string
     """
 
@@ -351,15 +342,10 @@ def api_doc(
         def documented_view(request, **kwargs):
             doc_data = get_doc_data(f, route, noargs)
             try:
-                response = f(request, **kwargs)
+                return {"data": f(request, **kwargs), "doc_data": doc_data}
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
-                return error_response(request, exc, doc_data)
-
-            if handle_response:
-                return response
-            else:
-                return make_api_response(request, response, doc_data)
+                exc.doc_data = doc_data
+                raise exc
 
         return documented_view
 

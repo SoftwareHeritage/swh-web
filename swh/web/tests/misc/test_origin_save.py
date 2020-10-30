@@ -15,6 +15,11 @@ from swh.web.common.origin_save import (
 )
 from swh.web.common.utils import reverse
 from swh.web.settings.tests import save_origin_rate_post
+from swh.web.tests.utils import (
+    check_api_post_response,
+    check_http_get_response,
+    check_http_post_response,
+)
 
 visit_type = "git"
 origin = {"url": "https://github.com/python/cpython"}
@@ -36,12 +41,10 @@ def test_save_request_form_csrf_token(client, mocker):
         url_args={"visit_type": visit_type, "origin_url": origin["url"]},
     )
 
-    resp = client.post(url)
-    assert resp.status_code == 403
+    check_http_post_response(client, url, status_code=403)
 
     data = _get_csrf_token(client, reverse("origin-save"))
-    resp = client.post(url, data=data)
-    assert resp.status_code == 200
+    check_api_post_response(client, url, data=data, status_code=200)
 
 
 def test_save_request_form_rate_limit(client, mocker):
@@ -57,11 +60,9 @@ def test_save_request_form_rate_limit(client, mocker):
 
     data = _get_csrf_token(client, reverse("origin-save"))
     for _ in range(save_origin_rate_post):
-        resp = client.post(url, data=data)
-        assert resp.status_code == 200
+        check_api_post_response(client, url, data=data, status_code=200)
 
-    resp = client.post(url, data=data)
-    assert resp.status_code == 429
+    check_api_post_response(client, url, data=data, status_code=429)
 
 
 def test_save_request_form_server_error(client, mocker):
@@ -76,16 +77,14 @@ def test_save_request_form_server_error(client, mocker):
     )
 
     data = _get_csrf_token(client, reverse("origin-save"))
-
-    resp = client.post(url, data=data)
-    assert resp.status_code == 500
+    check_api_post_response(client, url, data=data, status_code=500)
 
 
 def test_old_save_url_redirection(client):
     url = reverse("browse-origin-save")
-    resp = client.get(url)
-    assert resp.status_code == 302
     redirect_url = reverse("origin-save")
+
+    resp = check_http_get_response(client, url, status_code=302)
     assert resp["location"] == redirect_url
 
 

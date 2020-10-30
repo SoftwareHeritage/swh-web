@@ -9,6 +9,8 @@ from hypothesis import given
 import pytest
 from requests.utils import parse_header_links
 
+from swh.indexer.storage.model import OriginIntrinsicMetadataRow
+from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
@@ -16,8 +18,14 @@ from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
+from swh.web.tests.data import (
+    INDEXER_TOOL,
+    ORIGIN_MASTER_REVISION,
+    ORIGIN_METADATA_KEY,
+    ORIGIN_METADATA_VALUE,
+)
 from swh.web.tests.strategies import new_origin, new_snapshots, origin, visit_dates
+from swh.web.tests.utils import check_api_get_responses
 
 
 def _scroll_results(api_client, url):
@@ -25,9 +33,7 @@ def _scroll_results(api_client, url):
     results = []
 
     while True:
-        rv = api_client.get(url)
-        assert rv.status_code == 200, rv.data
-        assert rv["Content-Type"] == "application/json"
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
         results.extend(rv.data)
 
@@ -547,131 +553,82 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
     assert len(rv.data) == 1000
 
 
-@given(origin())
-def test_api_origin_metadata_search(api_client, mocker, origin):
-    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
-    oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
-    oimsft.side_effect = lambda conjunction, limit: [
-        {
-            "from_revision": (
-                b"p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed " b"\xf2U\xfa\x05B8"
-            ),
-            "metadata": {"author": "Jane Doe"},
-            "id": origin["url"],
-            "tool": {
-                "configuration": {
-                    "context": ["NpmMapping", "CodemetaMapping"],
-                    "type": "local",
-                },
-                "id": 3,
-                "name": "swh-metadata-detector",
-                "version": "0.0.1",
-            },
-        }
-    ]
+def test_api_origin_metadata_search(api_client):
 
-    url = reverse("api-1-origin-metadata-search", query_params={"fulltext": "Jane Doe"})
+    url = reverse(
+        "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
+    )
     rv = check_api_get_responses(api_client, url, status_code=200)
+
     expected_data = [
         {
-            "url": origin["url"],
+            "url": origin_url,
             "metadata": {
-                "metadata": {"author": "Jane Doe"},
-                "from_revision": ("7026b7c1a2af56521e951c01ed20f255fa054238"),
+                "from_revision": master_rev,
                 "tool": {
-                    "configuration": {
-                        "context": ["NpmMapping", "CodemetaMapping"],
-                        "type": "local",
-                    },
-                    "id": 3,
-                    "name": "swh-metadata-detector",
-                    "version": "0.0.1",
+                    "name": INDEXER_TOOL["tool_name"],
+                    "version": INDEXER_TOOL["tool_version"],
+                    "configuration": INDEXER_TOOL["tool_configuration"],
+                    "id": INDEXER_TOOL["id"],
                 },
+                "metadata": {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
+                "mappings": [],
             },
         }
+        for origin_url, master_rev in ORIGIN_MASTER_REVISION.items()
     ]
 
     assert rv.data == expected_data
-    oimsft.assert_called_with(conjunction=["Jane Doe"], limit=70)
 
 
-@given(origin())
-def test_api_origin_metadata_search_limit(api_client, mocker, origin):
+def test_api_origin_metadata_search_limit(api_client, mocker):
     mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
     oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
 
     oimsft.side_effect = lambda conjunction, limit: [
-        {
-            "from_revision": (
-                b"p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed " b"\xf2U\xfa\x05B8"
-            ),
-            "metadata": {"author": "Jane Doe"},
-            "id": origin["url"],
-            "tool": {
-                "configuration": {
-                    "context": ["NpmMapping", "CodemetaMapping"],
-                    "type": "local",
-                },
-                "id": 3,
-                "name": "swh-metadata-detector",
-                "version": "0.0.1",
-            },
-        }
+        OriginIntrinsicMetadataRow(
+            id=origin_url,
+            from_revision=hash_to_bytes(master_rev),
+            indexer_configuration_id=INDEXER_TOOL["id"],
+            metadata={ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
+            mappings=[],
+        )
+        for origin_url, master_rev in ORIGIN_MASTER_REVISION.items()
     ]
 
-    url = reverse("api-1-origin-metadata-search", query_params={"fulltext": "Jane Doe"})
+    url = reverse(
+        "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
+    )
     rv = check_api_get_responses(api_client, url, status_code=200)
-    assert len(rv.data) == 1
-    oimsft.assert_called_with(conjunction=["Jane Doe"], limit=70)
+    assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
+    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=70)
 
     url = reverse(
         "api-1-origin-metadata-search",
-        query_params={"fulltext": "Jane Doe", "limit": 10},
+        query_params={"fulltext": ORIGIN_METADATA_VALUE, "limit": 10},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
-    assert len(rv.data) == 1
-    oimsft.assert_called_with(conjunction=["Jane Doe"], limit=10)
+    assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
+    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=10)
 
     url = reverse(
         "api-1-origin-metadata-search",
-        query_params={"fulltext": "Jane Doe", "limit": 987},
+        query_params={"fulltext": ORIGIN_METADATA_VALUE, "limit": 987},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
-    assert len(rv.data) == 1
-    oimsft.assert_called_with(conjunction=["Jane Doe"], limit=100)
+    assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
+    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=100)
 
 
 @given(origin())
-def test_api_origin_intrinsic_metadata(api_client, mocker, origin):
-    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
-    oimg = mock_idx_storage.origin_intrinsic_metadata_get
-    oimg.side_effect = lambda origin_urls: [
-        {
-            "from_revision": (
-                b"p&\xb7\xc1\xa2\xafVR\x1e\x95\x1c\x01\xed " b"\xf2U\xfa\x05B8"
-            ),
-            "metadata": {"author": "Jane Doe"},
-            "id": origin["url"],
-            "tool": {
-                "configuration": {
-                    "context": ["NpmMapping", "CodemetaMapping"],
-                    "type": "local",
-                },
-                "id": 3,
-                "name": "swh-metadata-detector",
-                "version": "0.0.1",
-            },
-        }
-    ]
+def test_api_origin_intrinsic_metadata(api_client, origin):
 
     url = reverse(
         "api-origin-intrinsic-metadata", url_args={"origin_url": origin["url"]}
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    oimg.assert_called_with([origin["url"]])
-
-    expected_data = {"author": "Jane Doe"}
+    expected_data = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
     assert rv.data == expected_data
 
 

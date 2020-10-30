@@ -1,7 +1,8 @@
-import { __assign } from "tslib";
+import { __assign, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
-import { dateTimestampInSeconds, Dsn, isPrimitive, isThenable, logger, normalize, SyncPromise, truncate, uuid4, } from '@sentry/utils';
+import { SessionStatus, } from '@sentry/types';
+import { dateTimestampInSeconds, Dsn, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -45,8 +46,8 @@ var BaseClient = /** @class */ (function () {
     function BaseClient(backendClass, options) {
         /** Array of used integrations. */
         this._integrations = {};
-        /** Is the client still processing a call? */
-        this._processing = false;
+        /** Number of call being processed */
+        this._processing = 0;
         this._backend = new backendClass(options);
         this._options = options;
         if (options.dsn) {
@@ -60,13 +61,12 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype.captureException = function (exception, hint, scope) {
         var _this = this;
         var eventId = hint && hint.event_id;
-        this._processing = true;
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._getBackend()
+        this._process(this._getBackend()
             .eventFromException(exception, hint)
-            .then(function (event) {
-            eventId = _this.captureEvent(event, hint, scope);
-        });
+            .then(function (event) { return _this._captureEvent(event, hint, scope); })
+            .then(function (result) {
+            eventId = result;
+        }));
         return eventId;
     };
     /**
@@ -75,34 +75,36 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype.captureMessage = function (message, level, hint, scope) {
         var _this = this;
         var eventId = hint && hint.event_id;
-        this._processing = true;
         var promisedEvent = isPrimitive(message)
             ? this._getBackend().eventFromMessage("" + message, level, hint)
             : this._getBackend().eventFromException(message, hint);
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        promisedEvent.then(function (event) {
-            eventId = _this.captureEvent(event, hint, scope);
-        });
+        this._process(promisedEvent
+            .then(function (event) { return _this._captureEvent(event, hint, scope); })
+            .then(function (result) {
+            eventId = result;
+        }));
         return eventId;
     };
     /**
      * @inheritDoc
      */
     BaseClient.prototype.captureEvent = function (event, hint, scope) {
-        var _this = this;
         var eventId = hint && hint.event_id;
-        this._processing = true;
-        this._processEvent(event, hint, scope)
-            .then(function (finalEvent) {
-            // We need to check for finalEvent in case beforeSend returned null
-            eventId = finalEvent && finalEvent.event_id;
-            _this._processing = false;
-        })
-            .then(null, function (reason) {
-            logger.error(reason);
-            _this._processing = false;
-        });
+        this._process(this._captureEvent(event, hint, scope).then(function (result) {
+            eventId = result;
+        }));
         return eventId;
+    };
+    /**
+     * @inheritDoc
+     */
+    BaseClient.prototype.captureSession = function (session) {
+        if (!session.release) {
+            logger.warn('Discarded session because of missing release');
+        }
+        else {
+            this._sendSession(session);
+        }
     };
     /**
      * @inheritDoc
@@ -121,12 +123,11 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype.flush = function (timeout) {
         var _this = this;
-        return this._isClientProcessing(timeout).then(function (status) {
-            clearInterval(status.interval);
+        return this._isClientProcessing(timeout).then(function (ready) {
             return _this._getBackend()
                 .getTransport()
                 .close(timeout)
-                .then(function (transportFlushed) { return status.ready && transportFlushed; });
+                .then(function (transportFlushed) { return ready && transportFlushed; });
         });
     };
     /**
@@ -159,28 +160,66 @@ var BaseClient = /** @class */ (function () {
             return null;
         }
     };
+    /** Updates existing session based on the provided event */
+    BaseClient.prototype._updateSessionFromEvent = function (session, event) {
+        var e_1, _a;
+        var crashed = false;
+        var errored = false;
+        var userAgent;
+        var exceptions = event.exception && event.exception.values;
+        if (exceptions) {
+            errored = true;
+            try {
+                for (var exceptions_1 = __values(exceptions), exceptions_1_1 = exceptions_1.next(); !exceptions_1_1.done; exceptions_1_1 = exceptions_1.next()) {
+                    var ex = exceptions_1_1.value;
+                    var mechanism = ex.mechanism;
+                    if (mechanism && mechanism.handled === false) {
+                        crashed = true;
+                        break;
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (exceptions_1_1 && !exceptions_1_1.done && (_a = exceptions_1.return)) _a.call(exceptions_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        var user = event.user;
+        if (!session.userAgent) {
+            var headers = event.request ? event.request.headers : {};
+            for (var key in headers) {
+                if (key.toLowerCase() === 'user-agent') {
+                    userAgent = headers[key];
+                    break;
+                }
+            }
+        }
+        session.update(__assign(__assign({}, (crashed && { status: SessionStatus.Crashed })), { user: user,
+            userAgent: userAgent, errors: session.errors + Number(errored || crashed) }));
+    };
+    /** Deliver captured session to Sentry */
+    BaseClient.prototype._sendSession = function (session) {
+        this._getBackend().sendSession(session);
+    };
     /** Waits for the client to be done with processing. */
     BaseClient.prototype._isClientProcessing = function (timeout) {
         var _this = this;
         return new SyncPromise(function (resolve) {
             var ticked = 0;
             var tick = 1;
-            var interval = 0;
-            clearInterval(interval);
-            interval = setInterval(function () {
-                if (!_this._processing) {
-                    resolve({
-                        interval: interval,
-                        ready: true,
-                    });
+            var interval = setInterval(function () {
+                if (_this._processing == 0) {
+                    clearInterval(interval);
+                    resolve(true);
                 }
                 else {
                     ticked += tick;
                     if (timeout && ticked >= timeout) {
-                        resolve({
-                            interval: interval,
-                            ready: false,
-                        });
+                        clearInterval(interval);
+                        resolve(false);
                     }
                 }
             }, tick);
@@ -280,9 +319,10 @@ var BaseClient = /** @class */ (function () {
      * @param event event instance to be enhanced
      */
     BaseClient.prototype._applyClientOptions = function (event) {
-        var _a = this.getOptions(), environment = _a.environment, release = _a.release, dist = _a.dist, _b = _a.maxValueLength, maxValueLength = _b === void 0 ? 250 : _b;
-        if (event.environment === undefined && environment !== undefined) {
-            event.environment = environment;
+        var options = this.getOptions();
+        var environment = options.environment, release = options.release, dist = options.dist, _a = options.maxValueLength, maxValueLength = _a === void 0 ? 250 : _a;
+        if (!('environment' in event)) {
+            event.environment = 'environment' in options ? environment : 'production';
         }
         if (event.release === undefined && release !== undefined) {
             event.release = release;
@@ -321,6 +361,20 @@ var BaseClient = /** @class */ (function () {
         this._getBackend().sendEvent(event);
     };
     /**
+     * Processes the event and logs an error in case of rejection
+     * @param event
+     * @param hint
+     * @param scope
+     */
+    BaseClient.prototype._captureEvent = function (event, hint, scope) {
+        return this._processEvent(event, hint, scope).then(function (finalEvent) {
+            return finalEvent.event_id;
+        }, function (reason) {
+            logger.error(reason);
+            return undefined;
+        });
+    };
+    /**
      * Processes an event (either error or message) and sends it to Sentry.
      *
      * This also adds breadcrumbs and context information to the event. However,
@@ -338,77 +392,71 @@ var BaseClient = /** @class */ (function () {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         var _a = this.getOptions(), beforeSend = _a.beforeSend, sampleRate = _a.sampleRate;
         if (!this._isEnabled()) {
-            return SyncPromise.reject('SDK not enabled, will not send event.');
+            return SyncPromise.reject(new SentryError('SDK not enabled, will not send event.'));
         }
         var isTransaction = event.type === 'transaction';
         // 1.0 === 100% events are sent
         // 0.0 === 0% events are sent
         // Sampling for transaction happens somewhere else
         if (!isTransaction && typeof sampleRate === 'number' && Math.random() > sampleRate) {
-            return SyncPromise.reject('This event has been sampled, will not send event.');
+            return SyncPromise.reject(new SentryError('This event has been sampled, will not send event.'));
         }
-        return new SyncPromise(function (resolve, reject) {
-            _this._prepareEvent(event, scope, hint)
-                .then(function (prepared) {
-                if (prepared === null) {
-                    reject('An event processor returned null, will not send event.');
-                    return;
-                }
-                var finalEvent = prepared;
-                var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
-                // We skip beforeSend in case of transactions
-                if (isInternalException || !beforeSend || isTransaction) {
-                    _this._sendEvent(finalEvent);
-                    resolve(finalEvent);
-                    return;
-                }
-                var beforeSendResult = beforeSend(prepared, hint);
-                if (typeof beforeSendResult === 'undefined') {
-                    logger.error('`beforeSend` method has to return `null` or a valid event.');
-                }
-                else if (isThenable(beforeSendResult)) {
-                    _this._handleAsyncBeforeSend(beforeSendResult, resolve, reject);
-                }
-                else {
-                    finalEvent = beforeSendResult;
-                    if (finalEvent === null) {
-                        logger.log('`beforeSend` returned `null`, will not send event.');
-                        resolve(null);
-                        return;
-                    }
-                    // From here on we are really async
-                    _this._sendEvent(finalEvent);
-                    resolve(finalEvent);
-                }
-            })
-                .then(null, function (reason) {
-                _this.captureException(reason, {
-                    data: {
-                        __sentry__: true,
-                    },
-                    originalException: reason,
+        return this._prepareEvent(event, scope, hint)
+            .then(function (prepared) {
+            if (prepared === null) {
+                throw new SentryError('An event processor returned null, will not send event.');
+            }
+            var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
+            if (isInternalException || isTransaction || !beforeSend) {
+                return prepared;
+            }
+            var beforeSendResult = beforeSend(prepared, hint);
+            if (typeof beforeSendResult === 'undefined') {
+                throw new SentryError('`beforeSend` method has to return `null` or a valid event.');
+            }
+            else if (isThenable(beforeSendResult)) {
+                return beforeSendResult.then(function (event) { return event; }, function (e) {
+                    throw new SentryError("beforeSend rejected with " + e);
                 });
-                reject("Event processing pipeline threw an error, original event will not be sent. Details have been sent as a new event.\nReason: " + reason);
+            }
+            return beforeSendResult;
+        })
+            .then(function (processedEvent) {
+            if (processedEvent === null) {
+                throw new SentryError('`beforeSend` returned `null`, will not send event.');
+            }
+            var session = scope && scope.getSession();
+            if (!isTransaction && session) {
+                _this._updateSessionFromEvent(session, processedEvent);
+            }
+            _this._sendEvent(processedEvent);
+            return processedEvent;
+        })
+            .then(null, function (reason) {
+            if (reason instanceof SentryError) {
+                throw reason;
+            }
+            _this.captureException(reason, {
+                data: {
+                    __sentry__: true,
+                },
+                originalException: reason,
             });
+            throw new SentryError("Event processing pipeline threw an error, original event will not be sent. Details have been sent as a new event.\nReason: " + reason);
         });
     };
     /**
-     * Resolves before send Promise and calls resolve/reject on parent SyncPromise.
+     * Occupies the client with processing and event
      */
-    BaseClient.prototype._handleAsyncBeforeSend = function (beforeSend, resolve, reject) {
+    BaseClient.prototype._process = function (promise) {
         var _this = this;
-        beforeSend
-            .then(function (processedEvent) {
-            if (processedEvent === null) {
-                reject('`beforeSend` returned `null`, will not send event.');
-                return;
-            }
-            // From here on we are really async
-            _this._sendEvent(processedEvent);
-            resolve(processedEvent);
-        })
-            .then(null, function (e) {
-            reject("beforeSend rejected with " + e);
+        this._processing += 1;
+        promise.then(function (value) {
+            _this._processing -= 1;
+            return value;
+        }, function (reason) {
+            _this._processing -= 1;
+            return reason;
         });
     };
     return BaseClient;

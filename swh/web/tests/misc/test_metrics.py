@@ -28,6 +28,7 @@ from swh.web.common.origin_save import (
 )
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.utils import check_http_get_response
 
 
 @pytest.mark.django_db
@@ -61,10 +62,9 @@ def test_origin_save_metrics(client):
         )
 
     url = reverse("metrics-prometheus")
-    resp = client.get(url)
-
-    assert resp.status_code == 200
-    assert resp["Content-Type"] == CONTENT_TYPE_LATEST
+    resp = check_http_get_response(
+        client, url, status_code=200, content_type=CONTENT_TYPE_LATEST
+    )
 
     accepted_requests = SaveOriginRequest.objects.filter(status=SAVE_REQUEST_ACCEPTED)
 

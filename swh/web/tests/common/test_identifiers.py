@@ -616,3 +616,24 @@ def test_resolve_swhid_with_escaped_chars(directory):
     resolved_swhid = resolve_swhid(swhid)
     assert resolved_swhid["swhid_parsed"].metadata["origin"] == origin_swhid_escaped
     assert origin_swhid_url_escaped in resolved_swhid["browse_url"]
+
+
+@given(directory_with_subdirs())
+def test_resolve_directory_swhid_path_without_trailing_slash(archive_data, directory):
+    dir_content = archive_data.directory_ls(directory)
+    dir_subdirs = [e for e in dir_content if e["type"] == "dir"]
+    dir_subdir = random.choice(dir_subdirs)
+    dir_subdir_path = dir_subdir["name"]
+    anchor = gen_swhid(DIRECTORY, directory)
+    swhid = gen_swhid(
+        DIRECTORY,
+        dir_subdir["target"],
+        metadata={"anchor": anchor, "path": "/" + dir_subdir_path},
+    )
+    resolved_swhid = resolve_swhid(swhid)
+    browse_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory},
+        query_params={"path": dir_subdir_path},
+    )
+    assert resolved_swhid["browse_url"] == browse_url

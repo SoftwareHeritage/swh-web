@@ -61,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "swh.web.common.middlewares.ThrottlingHeadersMiddleware",
+    "swh.web.common.middlewares.ExceptionMiddleware",
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -167,6 +168,7 @@ REST_FRAMEWORK: Dict[str, Any] = {
         "rest_framework.authentication.SessionAuthentication",
         "swh.web.auth.backends.OIDCBearerTokenAuthentication",
     ],
+    "EXCEPTION_HANDLER": "swh.web.api.apiresponse.error_response_handler",
 }
 
 LOGGING = {

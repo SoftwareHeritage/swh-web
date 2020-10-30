@@ -37,6 +37,7 @@ var Scope = /** @class */ (function () {
             newScope._user = scope._user;
             newScope._level = scope._level;
             newScope._span = scope._span;
+            newScope._session = scope._session;
             newScope._transactionName = scope._transactionName;
             newScope._fingerprint = scope._fingerprint;
             newScope._eventProcessors = __spread(scope._eventProcessors);
@@ -62,8 +63,17 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.setUser = function (user) {
         this._user = user || {};
+        if (this._session) {
+            this._session.update({ user: user });
+        }
         this._notifyScopeListeners();
         return this;
+    };
+    /**
+     * @inheritDoc
+     */
+    Scope.prototype.getUser = function () {
+        return this._user;
     };
     /**
      * @inheritDoc
@@ -180,6 +190,25 @@ var Scope = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    Scope.prototype.setSession = function (session) {
+        if (!session) {
+            delete this._session;
+        }
+        else {
+            this._session = session;
+        }
+        this._notifyScopeListeners();
+        return this;
+    };
+    /**
+     * @inheritDoc
+     */
+    Scope.prototype.getSession = function () {
+        return this._session;
+    };
+    /**
+     * @inheritDoc
+     */
     Scope.prototype.update = function (captureContext) {
         if (!captureContext) {
             return this;
@@ -192,7 +221,7 @@ var Scope = /** @class */ (function () {
             this._tags = __assign(__assign({}, this._tags), captureContext._tags);
             this._extra = __assign(__assign({}, this._extra), captureContext._extra);
             this._contexts = __assign(__assign({}, this._contexts), captureContext._contexts);
-            if (captureContext._user) {
+            if (captureContext._user && Object.keys(captureContext._user).length) {
                 this._user = captureContext._user;
             }
             if (captureContext._level) {
@@ -233,6 +262,7 @@ var Scope = /** @class */ (function () {
         this._transactionName = undefined;
         this._fingerprint = undefined;
         this._span = undefined;
+        this._session = undefined;
         this._notifyScopeListeners();
         return this;
     };

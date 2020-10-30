@@ -8,7 +8,6 @@ from hypothesis import given
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
     content,
@@ -23,6 +22,7 @@ from swh.web.tests.strategies import (
     unknown_revision,
     unknown_snapshot,
 )
+from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
 
 
 @given(origin(), content(), directory(), release(), revision(), snapshot())

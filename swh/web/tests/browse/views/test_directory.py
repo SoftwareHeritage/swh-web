@@ -29,7 +29,7 @@ from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
-from swh.web.tests.django_asserts import assert_contains, assert_template_used
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
@@ -40,6 +40,7 @@ from swh.web.tests.strategies import (
     origin_with_multiple_visits,
     unknown_directory,
 )
+from swh.web.tests.utils import check_html_get_response
 
 
 @given(directory())
@@ -141,15 +142,15 @@ def test_sub_directory_view_origin_context(
 def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     dir_url = reverse("browse-directory", url_args={"sha1_git": invalid_sha1})
 
-    resp = client.get(dir_url)
-    assert resp.status_code == 400
-    assert_template_used(resp, "error.html")
+    check_html_get_response(
+        client, dir_url, status_code=400, template_used="error.html"
+    )
 
     dir_url = reverse("browse-directory", url_args={"sha1_git": unknown_directory})
 
-    resp = client.get(dir_url)
-    assert resp.status_code == 404
-    assert_template_used(resp, "error.html")
+    check_html_get_response(
+        client, dir_url, status_code=404, template_used="error.html"
+    )
 
 
 @given(directory())
@@ -158,8 +159,7 @@ def test_directory_uppercase(client, directory):
         "browse-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
 
     redirect_url = reverse("browse-directory", url_args={"sha1_git": directory})
 
@@ -175,9 +175,9 @@ def test_permalink_box_context(client, tests_data, directory):
         query_params={"origin_url": origin_url},
     )
 
-    resp = client.get(url)
-
-    assert resp.status_code == 200
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
     assert_contains(resp, 'id="swhid-context-option-directory"')
 
 
@@ -206,10 +206,10 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         },
     )
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
     _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
@@ -262,9 +262,10 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         },
     )
 
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
+
     _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
@@ -351,10 +352,10 @@ def _directory_view_checks(
         "browse-directory", url_args=url_args, query_params=query_params,
     )
 
-    resp = client.get(url)
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
 
-    assert resp.status_code == 200
-    assert_template_used(resp, "browse/directory.html")
     assert_contains(
         resp, '<a href="' + root_dir_url + '">' + root_directory_sha1[:7] + "</a>",
     )
