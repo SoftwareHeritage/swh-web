@@ -61,6 +61,8 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def __init__(self):
         super().__init__()
         self.exempted_networks = None
+        self.num_requests = 0
+        self.duration = 0
 
     def get_exempted_networks(
         self, scope_name: str

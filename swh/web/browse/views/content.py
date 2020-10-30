@@ -24,7 +24,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive, highlightjs, query
-from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -42,13 +42,10 @@ def content_raw(request, query_string):
     The url that points to it is
     :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
     """
-    try:
-        re_encode = bool(strtobool(request.GET.get("re_encode", "false")))
-        algo, checksum = query.parse_hash(query_string)
-        checksum = hash_to_hex(checksum)
-        content_data = request_content(query_string, max_size=None, re_encode=re_encode)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    re_encode = bool(strtobool(request.GET.get("re_encode", "false")))
+    algo, checksum = query.parse_hash(query_string)
+    checksum = hash_to_hex(checksum)
+    content_data = request_content(query_string, max_size=None, re_encode=re_encode)
 
     filename = request.GET.get("filename", None)
     if not filename:
@@ -187,48 +184,44 @@ def content_display(request, query_string):
     The url that points to it is
     :http:get:`/browse/content/[(algo_hash):](hash)/`
     """
-    try:
-        algo, checksum = query.parse_hash(query_string)
-        checksum = hash_to_hex(checksum)
-        content_data = request_content(query_string, raise_if_unavailable=False)
-        origin_url = request.GET.get("origin_url")
-        selected_language = request.GET.get("language")
-        if not origin_url:
-            origin_url = request.GET.get("origin")
-        snapshot_id = request.GET.get("snapshot")
-        path = request.GET.get("path")
-        snapshot_context = None
-        if origin_url is not None or snapshot_id is not None:
-            try:
-                snapshot_context = get_snapshot_context(
-                    origin_url=origin_url,
-                    snapshot_id=snapshot_id,
-                    branch_name=request.GET.get("branch"),
-                    release_name=request.GET.get("release"),
-                    revision_id=request.GET.get("revision"),
-                    path=path,
-                    browse_context=CONTENT,
+    algo, checksum = query.parse_hash(query_string)
+    checksum = hash_to_hex(checksum)
+    content_data = request_content(query_string, raise_if_unavailable=False)
+    origin_url = request.GET.get("origin_url")
+    selected_language = request.GET.get("language")
+    if not origin_url:
+        origin_url = request.GET.get("origin")
+    snapshot_id = request.GET.get("snapshot")
+    path = request.GET.get("path")
+    snapshot_context = None
+    if origin_url is not None or snapshot_id is not None:
+        try:
+            snapshot_context = get_snapshot_context(
+                origin_url=origin_url,
+                snapshot_id=snapshot_id,
+                branch_name=request.GET.get("branch"),
+                release_name=request.GET.get("release"),
+                revision_id=request.GET.get("revision"),
+                path=path,
+                browse_context=CONTENT,
+            )
+        except NotFoundExc as e:
+            if str(e).startswith("Origin"):
+                raw_cnt_url = reverse(
+                    "browse-content", url_args={"query_string": query_string}
                 )
-            except NotFoundExc as e:
-                if str(e).startswith("Origin"):
-                    raw_cnt_url = reverse(
-                        "browse-content", url_args={"query_string": query_string}
-                    )
-                    error_message = (
-                        "The Software Heritage archive has a content "
-                        "with the hash you provided but the origin "
-                        "mentioned in your request appears broken: %s. "
-                        "Please check the URL and try again.\n\n"
-                        "Nevertheless, you can still browse the content "
-                        "without origin information: %s"
-                        % (gen_link(origin_url), gen_link(raw_cnt_url))
-                    )
-                    raise NotFoundExc(error_message)
-                else:
-                    raise e
-    except Exception as exc:
-        return handle_view_exception(request, exc)
-
+                error_message = (
+                    "The Software Heritage archive has a content "
+                    "with the hash you provided but the origin "
+                    "mentioned in your request appears broken: %s. "
+                    "Please check the URL and try again.\n\n"
+                    "Nevertheless, you can still browse the content "
+                    "without origin information: %s"
+                    % (gen_link(origin_url), gen_link(raw_cnt_url))
+                )
+                raise NotFoundExc(error_message)
+            else:
+                raise e
     content = None
     language = None
     mimetype = None
@@ -288,11 +281,8 @@ def content_display(request, query_string):
         breadcrumbs.append({"name": filename, "url": None})
 
     if path and root_dir != path:
-        try:
-            dir_info = archive.lookup_directory_with_path(root_dir, path)
-            directory_id = dir_info["target"]
-        except Exception as exc:
-            return handle_view_exception(request, exc)
+        dir_info = archive.lookup_directory_with_path(root_dir, path)
+        directory_id = dir_info["target"]
     elif root_dir != path:
         directory_id = root_dir
     else:

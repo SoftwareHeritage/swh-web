@@ -186,7 +186,10 @@ def lookup_content_filetype(q):
 
 
 def lookup_content_language(q):
-    """Return language information from a specified content.
+    """Always returns None.
+
+    This used to return language information from a specified content,
+    but this is currently disabled.
 
     Args:
         q: query string of the form <hash_algo:hash>
@@ -195,13 +198,7 @@ def lookup_content_language(q):
         language information (dict) list if the content is found.
 
     """
-    sha1 = _lookup_content_sha1(q)
-    if not sha1:
-        return None
-    lang = _first_element(list(idx_storage.content_language_get([sha1])))
-    if not lang:
-        return None
-    return converters.from_swh(lang, hashess={"id"})
+    return None
 
 
 def lookup_content_license(q):
@@ -217,11 +214,18 @@ def lookup_content_license(q):
     sha1 = _lookup_content_sha1(q)
     if not sha1:
         return None
-    lic = _first_element(idx_storage.content_fossology_license_get([sha1]))
+    licenses = list(idx_storage.content_fossology_license_get([sha1]))
 
-    if not lic:
+    if not licenses:
         return None
-    return converters.from_swh({"id": sha1, "facts": lic[sha1]}, hashess={"id"})
+    license_dicts = [license.to_dict() for license in licenses]
+    for license_dict in license_dicts:
+        del license_dict["id"]
+    lic = {
+        "id": sha1,
+        "facts": license_dicts,
+    }
+    return converters.from_swh(lic, hashess={"id"})
 
 
 def lookup_origin(origin: OriginInfo) -> OriginInfo:
@@ -341,6 +345,7 @@ def search_origin_metadata(
     matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
         conjunction=[fulltext], limit=limit
     )
+    matches = [match.to_dict() for match in matches]
     results = []
     origins = storage.origin_get([match["id"] for match in matches])
     for origin, match in zip(origins, matches):
@@ -374,7 +379,7 @@ def lookup_origin_intrinsic_metadata(origin_url: str) -> Dict[str, Any]:
     match = _first_element(idx_storage.origin_intrinsic_metadata_get(origins))
     result = {}
     if match:
-        result = match["metadata"]
+        result = match.metadata
     return result
 
 

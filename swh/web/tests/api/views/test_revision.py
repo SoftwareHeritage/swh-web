@@ -8,9 +8,9 @@ from hypothesis import given
 from swh.web.api.utils import enrich_revision
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import revision
+from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
 @given(revision())
@@ -39,13 +39,11 @@ def test_api_revision_not_found(api_client):
 @given(revision())
 def test_api_revision_raw_ok(api_client, archive_data, revision):
     url = reverse("api-1-revision-raw-message", url_args={"sha1_git": revision})
-    rv = api_client.get(url)
 
     expected_message = archive_data.revision_get(revision)["message"]
 
-    assert rv.status_code == 200
+    rv = check_http_get_response(api_client, url, status_code=200)
     assert rv["Content-Type"] == "application/octet-stream"
-
     assert rv.content == expected_message.encode()
 
 
@@ -192,8 +190,7 @@ def test_api_revision_uppercase(api_client, revision):
         "api-1-revision-uppercase-checksum", url_args={"sha1_git": revision.upper()}
     )
 
-    resp = api_client.get(url)
-    assert resp.status_code == 302
+    resp = check_http_get_response(api_client, url, status_code=302)
 
     redirect_url = reverse("api-1-revision", url_args={"sha1_git": revision})
 

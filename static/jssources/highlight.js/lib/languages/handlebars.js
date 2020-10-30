@@ -243,6 +243,12 @@ function handlebars(hljs) {
         keywords: 'else'
       },
       {
+        className: 'template-tag',
+        begin: /\{\{(?=else if)/,
+        end: /\}\}/,
+        keywords: 'else if'
+      },
+      {
         // closing block statement
         className: 'template-tag',
         begin: /\{\{\//,

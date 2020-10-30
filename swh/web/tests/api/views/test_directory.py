@@ -9,9 +9,9 @@ from hypothesis import given
 
 from swh.web.api.utils import enrich_directory
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import directory
+from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
 @given(directory())
@@ -72,8 +72,7 @@ def test_api_directory_uppercase(api_client, directory):
         "api-1-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}
     )
 
-    resp = api_client.get(url)
-    assert resp.status_code == 302
+    resp = check_http_get_response(api_client, url, status_code=302)
 
     redirect_url = reverse("api-1-directory", url_args={"sha1_git": directory})
 

@@ -15,6 +15,7 @@ from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.storage import get_indexer_storage
+from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
@@ -116,16 +117,16 @@ _TEST_CTAGS_INDEXER_CONFIG = merge_configs(
 _TEST_ORIGINS = [
     {
         "type": "git",
+        "url": "https://github.com/memononen/libtess2",
+        "archives": ["libtess2.zip"],
+    },
+    {
+        "type": "git",
         "url": "https://github.com/wcoder/highlightjs-line-numbers.js",
         "archives": [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
-    },
-    {
-        "type": "git",
-        "url": "https://github.com/memononen/libtess2",
-        "archives": ["libtess2.zip"],
     },
     {
         "type": "git",
@@ -155,6 +156,18 @@ def _add_extra_contents(storage, contents):
     contents.add(pbm_content.sha1)
 
 
+INDEXER_TOOL = {
+    "tool_name": "swh-web tests",
+    "tool_version": "1.0",
+    "tool_configuration": {},
+}
+
+ORIGIN_METADATA_KEY = "vcs"
+ORIGIN_METADATA_VALUE = "git"
+
+ORIGIN_MASTER_REVISION = {}
+
+
 # Tests data initialization
 def _init_tests_data():
     # To hold reference to the memory storage
@@ -164,6 +177,13 @@ def _init_tests_data():
     search = get_search("memory")
     search.initialize()
     search.origin_update({"url": origin["url"]} for origin in _TEST_ORIGINS)
+
+    # Create indexer storage instance that will be shared by indexers
+    idx_storage = get_indexer_storage("memory")
+
+    # Declare a test tool for origin intrinsic metadata tests
+    idx_tool = idx_storage.indexer_configuration_add([INDEXER_TOOL])[0]
+    INDEXER_TOOL["id"] = idx_tool["id"]
 
     # Load git repositories from archives
     for origin in _TEST_ORIGINS:
@@ -223,6 +243,19 @@ def _init_tests_data():
             target_type = branch_data.target_type.value
             if target_type == "revision":
                 revisions.add(branch_data.target)
+                if b"master" in branch_name:
+                    # Add some origin intrinsic metadata for tests
+                    origin_metadata = OriginIntrinsicMetadataRow(
+                        id=origin["url"],
+                        from_revision=branch_data.target,
+                        indexer_configuration_id=idx_tool["id"],
+                        metadata={ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
+                        mappings=[],
+                    )
+                    idx_storage.origin_intrinsic_metadata_add([origin_metadata])
+                    ORIGIN_MASTER_REVISION[origin["url"]] = hash_to_hex(
+                        branch_data.target
+                    )
             elif target_type == "release":
                 release = storage.release_get([branch_data.target])[0]
                 revisions.add(release.target)
@@ -280,9 +313,6 @@ def _init_tests_data():
         )
         _contents[sha1] = content_metadata
         contents.append(content_metadata)
-
-    # Create indexer storage instance that will be shared by indexers
-    idx_storage = get_indexer_storage("memory")
 
     # Add the empty directory to the test archive
     storage.directory_add([Directory(entries=())])

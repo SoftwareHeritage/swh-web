@@ -7,10 +7,14 @@ from hypothesis import given
 import pytest
 
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content
 from swh.web.tests.strategies import content, contents_with_ctags
+from swh.web.tests.utils import (
+    check_api_get_responses,
+    check_api_post_responses,
+    check_http_get_response,
+)
 
 
 @given(content())
@@ -44,25 +48,6 @@ def test_api_content_filetype_sha_not_found(api_client):
         "reason": "No filetype information found for content "
         "sha1:%s." % unknown_content_["sha1"],
     }
-
-
-@pytest.mark.skip  # Language indexer is disabled
-@given(content())
-def test_api_content_language(api_client, indexer_data, content):
-    indexer_data.content_add_language(content["sha1"])
-    url = reverse(
-        "api-1-content-language", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
-
-    content_url = reverse(
-        "api-1-content",
-        url_args={"q": "sha1:%s" % content["sha1"]},
-        request=rv.wsgi_request,
-    )
-    expected_data = indexer_data.content_get_language(content["sha1"])
-    expected_data["content_url"] = content_url
-    assert rv.data == expected_data
 
 
 def test_api_content_language_sha_not_found(api_client):
@@ -182,9 +167,14 @@ def test_api_content_license(api_client, indexer_data, content):
         url_args={"q": "sha1:%s" % content["sha1"]},
         request=rv.wsgi_request,
     )
-    expected_data = indexer_data.content_get_license(content["sha1"])
-    expected_data["content_url"] = content_url
-    assert rv.data == expected_data
+    expected_data = list(indexer_data.content_get_license(content["sha1"]))
+    for license in expected_data:
+        del license["id"]
+    assert rv.data == {
+        "content_url": content_url,
+        "id": content["sha1"],
+        "facts": expected_data,
+    }
 
 
 def test_api_content_license_sha_not_found(api_client):
@@ -250,15 +240,12 @@ def test_api_content_raw_ko_not_found(api_client):
 def test_api_content_raw_text(api_client, archive_data, content):
     url = reverse("api-1-content-raw", url_args={"q": "sha1:%s" % content["sha1"]})
 
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
+    rv = check_http_get_response(api_client, url, status_code=200)
     assert rv["Content-Type"] == "application/octet-stream"
     assert (
         rv["Content-disposition"]
         == "attachment; filename=content_sha1_%s_raw" % content["sha1"]
     )
-    assert rv["Content-Type"] == "application/octet-stream"
     expected_data = archive_data.content_get_data(content["sha1"])
     assert rv.content == expected_data["data"]
 
@@ -270,10 +257,7 @@ def test_api_content_raw_text_with_filename(api_client, archive_data, content):
         url_args={"q": "sha1:%s" % content["sha1"]},
         query_params={"filename": "filename.txt"},
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
-    assert rv["Content-Type"] == "application/octet-stream"
+    rv = check_http_get_response(api_client, url, status_code=200)
     assert rv["Content-disposition"] == "attachment; filename=filename.txt"
     assert rv["Content-Type"] == "application/octet-stream"
     expected_data = archive_data.content_get_data(content["sha1"])
@@ -320,9 +304,6 @@ def test_api_content_uppercase(api_client, content):
         "api-1-content-uppercase-checksum", url_args={"q": content["sha1"].upper()}
     )
 
-    rv = api_client.get(url)
-    assert rv.status_code == 302, rv.data
-
+    rv = check_http_get_response(api_client, url, status_code=302)
     redirect_url = reverse("api-1-content", url_args={"q": content["sha1"]})
-
     assert rv["location"] == redirect_url

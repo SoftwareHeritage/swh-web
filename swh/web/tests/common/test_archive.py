@@ -142,16 +142,6 @@ def test_lookup_content_filetype(indexer_data, content):
     assert actual_filetype == expected_filetype
 
 
-@pytest.mark.skip  # Language indexer is disabled.
-@given(content())
-def test_lookup_content_language(indexer_data, content):
-    indexer_data.content_add_language(content["sha1"])
-    actual_language = archive.lookup_content_language(content["sha1"])
-
-    expected_language = indexer_data.content_get_language(content["sha1"])
-    assert actual_language == expected_language
-
-
 @given(contents_with_ctags())
 def test_lookup_expression(indexer_data, contents_with_ctags):
     per_page = 10

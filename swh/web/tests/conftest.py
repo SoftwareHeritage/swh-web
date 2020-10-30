@@ -335,23 +335,14 @@ class _IndexerData:
         ].to_dict()
         return converters.from_filetype(mimetype)
 
-    def content_add_language(self, cnt_id):
-        raise NotImplementedError("Language indexer is disabled.")
-        self.language_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
-
-    def content_get_language(self, cnt_id):
-        lang = next(self.idx_storage.content_language_get([hash_to_bytes(cnt_id)]))
-        return converters.from_swh(lang, hashess={"id"})
-
     def content_add_license(self, cnt_id):
         self.license_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
 
     def content_get_license(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        lic = next(self.idx_storage.content_fossology_license_get([cnt_id_bytes]))
-        return converters.from_swh(
-            {"id": cnt_id_bytes, "facts": lic[cnt_id_bytes]}, hashess={"id"}
-        )
+        licenses = self.idx_storage.content_fossology_license_get([cnt_id_bytes])
+        for license in licenses:
+            yield converters.from_swh(license.to_dict(), hashess={"id"})
 
     def content_add_ctags(self, cnt_id):
         self.ctags_indexer.run([hash_to_bytes(cnt_id)], "update-dups")

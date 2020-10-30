@@ -1,8 +1,23 @@
 /** Creates a SentryRequest from an event. */
+export function sessionToSentryRequest(session, api) {
+    var envelopeHeaders = JSON.stringify({
+        sent_at: new Date().toISOString(),
+    });
+    var itemHeaders = JSON.stringify({
+        type: 'session',
+    });
+    return {
+        body: envelopeHeaders + "\n" + itemHeaders + "\n" + JSON.stringify(session),
+        type: 'session',
+        url: api.getEnvelopeEndpointWithUrlEncodedAuth(),
+    };
+}
+/** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {
     var useEnvelope = event.type === 'transaction';
     var req = {
         body: JSON.stringify(event),
+        type: event.type || 'event',
         url: useEnvelope ? api.getEnvelopeEndpointWithUrlEncodedAuth() : api.getStoreEndpointWithUrlEncodedAuth(),
     };
     // https://develop.sentry.dev/sdk/envelopes/

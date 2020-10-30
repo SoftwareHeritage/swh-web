@@ -8,12 +8,17 @@ from hypothesis import given
 from swh.model import hashutil
 from swh.vault.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.api.views import check_api_get_responses, check_api_post_responses
 from swh.web.tests.strategies import (
     directory,
     revision,
     unknown_directory,
     unknown_revision,
+)
+from swh.web.tests.utils import (
+    check_api_get_responses,
+    check_api_post_responses,
+    check_http_get_response,
+    check_http_post_response,
 )
 
 
@@ -60,9 +65,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
             obj_type, hashutil.hash_to_bytes(obj_id), email
         )
 
-        rv = api_client.get(fetch_url)
-
-        assert rv.status_code == 200
+        rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == "application/gzip"
         assert rv.content == stub_fetch
         mock_archive.vault_fetch.assert_called_with(
@@ -82,9 +85,9 @@ def test_api_vault_cook_uppercase_hash(api_client, directory, revision):
             f"api-1-vault-cook-{obj_type}-uppercase-checksum",
             url_args={f"{obj_type[:3]}_id": obj_id.upper()},
         )
-        rv = api_client.post(url, {"email": "test@test.mail"})
-
-        assert rv.status_code == 302
+        rv = check_http_post_response(
+            api_client, url, data={"email": "test@test.mail"}, status_code=302
+        )
 
         redirect_url = reverse(
             f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
@@ -97,9 +100,7 @@ def test_api_vault_cook_uppercase_hash(api_client, directory, revision):
             url_args={f"{obj_type[:3]}_id": obj_id.upper()},
         )
 
-        rv = api_client.get(fetch_url)
-
-        assert rv.status_code == 302
+        rv = check_http_get_response(api_client, fetch_url, status_code=302)
 
         redirect_url = reverse(
             f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},

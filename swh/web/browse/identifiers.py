@@ -5,7 +5,6 @@
 
 from django.shortcuts import redirect
 
-from swh.web.common.exc import handle_view_exception
 from swh.web.common.identifiers import resolve_swhid
 
 
@@ -15,9 +14,6 @@ def swhid_browse(request, swhid):
 
     The url that points to it is :http:get:`/(swhid)/`.
     """
-    try:
-        swhid_resolved = resolve_swhid(swhid, query_params=request.GET)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    swhid_resolved = resolve_swhid(swhid, query_params=request.GET)
 
     return redirect(swhid_resolved["browse_url"])

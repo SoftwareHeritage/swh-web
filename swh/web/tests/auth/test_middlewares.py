@@ -10,6 +10,7 @@ import pytest
 from django.test import modify_settings
 
 from swh.web.common.utils import reverse
+from swh.web.tests.utils import check_html_get_response
 
 from .keycloak_mock import mock_keycloak
 
@@ -25,9 +26,8 @@ def test_oidc_session_refresh_middleware_disabled(client, mocker):
     kc_oidc_mock.authorization_code.assert_called()
 
     url = reverse("swh-web-homepage")
-    resp = client.get(url)
     # no redirection for silent refresh
-    assert resp.status_code != 302
+    check_html_get_response(client, url, status_code=200)
 
 
 @pytest.mark.django_db
@@ -38,10 +38,9 @@ def test_oidc_session_refresh_middleware_enabled(client, mocker):
     kc_oidc_mock.authorization_code.assert_called()
 
     url = reverse("swh-web-homepage")
-    resp = client.get(url)
 
     # should redirect for silent session refresh
-    assert resp.status_code == 302
+    resp = check_html_get_response(client, url, status_code=302)
     silent_refresh_url = reverse(
         "oidc-login", query_params={"next_path": url, "prompt": "none"}
     )
