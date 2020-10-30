@@ -41,6 +41,7 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
         )
 
 
+@never_cache
 @api_route(
     r"/vault/directory/(?P<dir_id>[0-9a-f]+)/",
     "api-1-vault-cook-directory",
@@ -48,7 +49,6 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
     checksum_args=["dir_id"],
     throttle_scope="swh_vault_cooking",
 )
-@never_cache
 @api_doc("/vault/directory/")
 @format_docstring()
 def api_vault_cook_directory(request, dir_id):
@@ -111,7 +111,7 @@ def api_vault_cook_directory(request, dir_id):
     "api-1-vault-fetch-directory",
     checksum_args=["dir_id"],
 )
-@api_doc("/vault/directory/raw/", handle_response=True)
+@api_doc("/vault/directory/raw/")
 def api_vault_fetch_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
@@ -147,6 +147,7 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
+@never_cache
 @api_route(
     r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/",
     "api-1-vault-cook-revision_gitfast",
@@ -154,7 +155,6 @@ def api_vault_fetch_directory(request, dir_id):
     checksum_args=["rev_id"],
     throttle_scope="swh_vault_cooking",
 )
-@never_cache
 @api_doc("/vault/revision/gitfast/")
 @format_docstring()
 def api_vault_cook_revision_gitfast(request, rev_id):
@@ -218,7 +218,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     "api-1-vault-fetch-revision_gitfast",
     checksum_args=["rev_id"],
 )
-@api_doc("/vault/revision/gitfast/raw/", handle_response=True)
+@api_doc("/vault/revision/gitfast/raw/")
 def api_vault_fetch_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
@@ -259,7 +259,7 @@ def api_vault_fetch_revision_gitfast(request, rev_id):
     "api-1-vault-revision_gitfast-raw",
     checksum_args=["rev_id"],
 )
-@api_doc("/vault/revision_gitfast/raw/", tags=["hidden"], handle_response=True)
+@api_doc("/vault/revision_gitfast/raw/", tags=["hidden"])
 def _api_vault_revision_gitfast_raw(request, rev_id):
     """
     The vault backend sends an email containing an invalid url to fetch a

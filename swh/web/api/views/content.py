@@ -186,7 +186,7 @@ def api_content_ctags(request, q):
     "api-1-content-raw",
     checksum_args=["q"],
 )
-@api_doc("/content/raw/", handle_response=True)
+@api_doc("/content/raw/")
 def api_content_raw(request, q):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/raw/

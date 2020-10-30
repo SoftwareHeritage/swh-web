@@ -146,7 +146,10 @@ def resolve_swhid(
             elif object_type == DIRECTORY:
                 object_id = directory
                 # remove leading and trailing slashes from SWHID directory path
-                query_dict["path"] = query_dict["path"][1:-1]
+                if query_dict["path"].endswith("/"):
+                    query_dict["path"] = query_dict["path"][1:-1]
+                else:
+                    query_dict["path"] = query_dict["path"][1:]
 
     # snapshot context
     if "visit" in swhid_parsed.metadata:

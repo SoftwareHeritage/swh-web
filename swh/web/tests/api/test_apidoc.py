@@ -14,7 +14,7 @@ from swh.web.api.apidoc import _parse_httpdomain_doc, api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.utils import prettify_html, reverse
-from swh.web.tests.django_asserts import assert_template_used
+from swh.web.tests.utils import check_api_get_responses, check_html_get_response
 
 _httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/
@@ -98,16 +98,14 @@ def apidoc_route(request, myarg, myotherarg, akw=0):
 
 def test_apidoc_route_doc(client):
     url = reverse("api-1-some-doc-route-doc")
-    rv = client.get(url, HTTP_ACCEPT="text/html")
-
-    assert rv.status_code == 200, rv.content
-    assert_template_used(rv, "api/apidoc.html")
+    check_html_get_response(
+        client, url, status_code=200, template_used="api/apidoc.html"
+    )
 
 
 def test_apidoc_route_fn(api_client):
     url = reverse("api-1-some-doc-route", url_args={"myarg": 1, "myotherarg": 1})
-    rv = api_client.get(url)
-    assert rv.status_code == 200, rv.data
+    check_api_get_responses(api_client, url, status_code=200)
 
 
 @api_route(r"/test/error/(?P<exc_name>.+)/", "api-1-test-error")
@@ -124,9 +122,7 @@ def apidoc_test_error_route(request, exc_name):
 def test_apidoc_error(api_client):
     for exc, code in _exception_http_code.items():
         url = reverse("api-1-test-error", url_args={"exc_name": exc.__name__})
-        rv = api_client.get(url)
-
-        assert rv.status_code == code, rv.data
+        check_api_get_responses(api_client, url, status_code=code)
 
 
 @api_route(
@@ -143,18 +139,16 @@ def apidoc_full_stack(request, myarg, myotherarg, akw=0):
 
 def test_apidoc_full_stack_doc(client):
     url = reverse("api-1-some-complete-doc-route-doc")
-    rv = client.get(url, HTTP_ACCEPT="text/html")
-    assert rv.status_code == 200, rv.content
-    assert_template_used(rv, "api/apidoc.html")
+    check_html_get_response(
+        client, url, status_code=200, template_used="api/apidoc.html"
+    )
 
 
 def test_apidoc_full_stack_fn(api_client):
     url = reverse(
         "api-1-some-complete-doc-route", url_args={"myarg": 1, "myotherarg": 1}
     )
-    rv = api_client.get(url)
-
-    assert rv.status_code == 200, rv.data
+    check_api_get_responses(api_client, url, status_code=200)
 
 
 @api_route(r"/test/post/only/", "api-1-test-post-only", methods=["POST"])
@@ -170,9 +164,9 @@ def test_apidoc_post_only(client):
     # a dedicated view accepting GET requests should have
     # been created to display the HTML documentation
     url = reverse("api-1-test-post-only-doc")
-    rv = client.get(url, HTTP_ACCEPT="text/html")
-    assert rv.status_code == 200, rv.content
-    assert_template_used(rv, "api/apidoc.html")
+    check_html_get_response(
+        client, url, status_code=200, template_used="api/apidoc.html"
+    )
 
 
 def test_api_doc_parse_httpdomain():
@@ -370,9 +364,9 @@ def apidoc_test_post_endpoint(request):
 
 def test_apidoc_input_output_doc(client):
     url = reverse("api-1-post-endpoint-doc")
-    rv = client.get(url, HTTP_ACCEPT="text/html")
-    assert rv.status_code == 200, rv.content
-    assert_template_used(rv, "api/apidoc.html")
+    rv = check_html_get_response(
+        client, url, status_code=200, template_used="api/apidoc.html"
+    )
 
     input_html_doc = textwrap.indent(
         (
@@ -455,9 +449,9 @@ def apidoc_test_endpoint_with_links_in_doc(request):
 
 def test_apidoc_with_links(client):
     url = reverse("api-1-endpoint-links-in-doc")
-    rv = client.get(url, HTTP_ACCEPT="text/html")
-    assert rv.status_code == 200, rv.content
-    assert_template_used(rv, "api/apidoc.html")
+    rv = check_html_get_response(
+        client, url, status_code=200, template_used="api/apidoc.html"
+    )
 
     html = prettify_html(rv.content)
 

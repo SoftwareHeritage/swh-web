@@ -15,7 +15,7 @@ from swh.web.browse.snapshot_context import (
     get_snapshot_context,
 )
 from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, handle_view_exception
+from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 
@@ -227,16 +227,12 @@ def origin_releases_browse_legacy(request, origin_url, timestamp=None):
 
 
 def _origin_visits_browse(request, origin_url):
-    try:
+    if origin_url is None:
+        raise BadInputExc("An origin URL must be provided as query parameter.")
 
-        if origin_url is None:
-            raise BadInputExc("An origin URL must be provided as query parameter.")
-
-        origin_info = archive.lookup_origin({"url": origin_url})
-        origin_visits = get_origin_visits(origin_info)
-        snapshot_context = get_snapshot_context(origin_url=origin_url)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    origin_info = archive.lookup_origin({"url": origin_url})
+    origin_visits = get_origin_visits(origin_info)
+    snapshot_context = get_snapshot_context(origin_url=origin_url)
 
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")

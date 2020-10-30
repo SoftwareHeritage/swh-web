@@ -13,13 +13,13 @@ from swh.web.common.origin_save import (
 )
 
 
+@never_cache
 @api_route(
     r"/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/",
     "api-1-save-origin",
     methods=["GET", "POST"],
     throttle_scope="swh_save_origin",
 )
-@never_cache
 @api_doc("/origin/save/")
 @format_docstring()
 def api_save_origin(request, visit_type, origin_url):

@@ -31,7 +31,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, handle_view_exception
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
 from swh.web.common.utils import (
@@ -158,20 +158,17 @@ def _revision_diff(request, sha1_git):
     """
     Browse internal endpoint to compute revision diff
     """
-    try:
-        revision = archive.lookup_revision(sha1_git)
-        snapshot_context = None
-        origin_url = request.GET.get("origin_url", None)
-        if not origin_url:
-            origin_url = request.GET.get("origin", None)
-        timestamp = request.GET.get("timestamp", None)
-        visit_id = request.GET.get("visit_id", None)
-        if origin_url:
-            snapshot_context = get_snapshot_context(
-                origin_url=origin_url, timestamp=timestamp, visit_id=visit_id
-            )
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    revision = archive.lookup_revision(sha1_git)
+    snapshot_context = None
+    origin_url = request.GET.get("origin_url", None)
+    if not origin_url:
+        origin_url = request.GET.get("origin", None)
+    timestamp = request.GET.get("timestamp", None)
+    visit_id = request.GET.get("visit_id", None)
+    if origin_url:
+        snapshot_context = get_snapshot_context(
+            origin_url=origin_url, timestamp=timestamp, visit_id=visit_id
+        )
 
     changes = archive.diff_revision(sha1_git)
     changes_msg = _gen_revision_changes_list(revision, changes, snapshot_context)
@@ -199,51 +196,48 @@ def revision_log_browse(request, sha1_git):
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/log/`
     """
-    try:
-        origin_url = request.GET.get("origin_url")
-        snapshot_id = request.GET.get("snapshot")
-        snapshot_context = None
-        if origin_url or snapshot_id:
-            snapshot_context = get_snapshot_context(
-                snapshot_id=snapshot_id,
-                origin_url=origin_url,
-                timestamp=request.GET.get("timestamp"),
-                visit_id=request.GET.get("visit_id"),
-                branch_name=request.GET.get("branch"),
-                release_name=request.GET.get("release"),
-                revision_id=sha1_git,
-            )
-        per_page = int(request.GET.get("per_page", NB_LOG_ENTRIES))
-        offset = int(request.GET.get("offset", 0))
-        revs_ordering = request.GET.get("revs_ordering", "committer_date")
-        session_key = "rev_%s_log_ordering_%s" % (sha1_git, revs_ordering)
-        rev_log_session = request.session.get(session_key, None)
-        rev_log = []
-        revs_walker_state = None
-        if rev_log_session:
-            rev_log = rev_log_session["rev_log"]
-            revs_walker_state = rev_log_session["revs_walker_state"]
+    origin_url = request.GET.get("origin_url")
+    snapshot_id = request.GET.get("snapshot")
+    snapshot_context = None
+    if origin_url or snapshot_id:
+        snapshot_context = get_snapshot_context(
+            snapshot_id=snapshot_id,
+            origin_url=origin_url,
+            timestamp=request.GET.get("timestamp"),
+            visit_id=request.GET.get("visit_id"),
+            branch_name=request.GET.get("branch"),
+            release_name=request.GET.get("release"),
+            revision_id=sha1_git,
+        )
+    per_page = int(request.GET.get("per_page", NB_LOG_ENTRIES))
+    offset = int(request.GET.get("offset", 0))
+    revs_ordering = request.GET.get("revs_ordering", "committer_date")
+    session_key = "rev_%s_log_ordering_%s" % (sha1_git, revs_ordering)
+    rev_log_session = request.session.get(session_key, None)
+    rev_log = []
+    revs_walker_state = None
+    if rev_log_session:
+        rev_log = rev_log_session["rev_log"]
+        revs_walker_state = rev_log_session["revs_walker_state"]
 
-        if len(rev_log) < offset + per_page:
-            revs_walker = archive.get_revisions_walker(
-                revs_ordering,
-                sha1_git,
-                max_revs=offset + per_page + 1,
-                state=revs_walker_state,
-            )
+    if len(rev_log) < offset + per_page:
+        revs_walker = archive.get_revisions_walker(
+            revs_ordering,
+            sha1_git,
+            max_revs=offset + per_page + 1,
+            state=revs_walker_state,
+        )
 
-            rev_log += [rev["id"] for rev in revs_walker]
-            revs_walker_state = revs_walker.export_state()
+        rev_log += [rev["id"] for rev in revs_walker]
+        revs_walker_state = revs_walker.export_state()
 
-        revs = rev_log[offset : offset + per_page]
-        revision_log = archive.lookup_revision_multiple(revs)
+    revs = rev_log[offset : offset + per_page]
+    revision_log = archive.lookup_revision_multiple(revs)
 
-        request.session[session_key] = {
-            "rev_log": rev_log,
-            "revs_walker_state": revs_walker_state,
-        }
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    request.session[session_key] = {
+        "rev_log": rev_log,
+        "revs_walker_state": revs_walker_state,
+    }
 
     revs_ordering = request.GET.get("revs_ordering", "")
 
@@ -309,70 +303,65 @@ def revision_browse(request, sha1_git):
 
     The url that points to it is :http:get:`/browse/revision/(sha1_git)/`.
     """
-    try:
-        revision = archive.lookup_revision(sha1_git)
-        origin_info = None
-        snapshot_context = None
-        origin_url = request.GET.get("origin_url")
-        if not origin_url:
-            origin_url = request.GET.get("origin")
-        timestamp = request.GET.get("timestamp")
-        visit_id = request.GET.get("visit_id")
-        snapshot_id = request.GET.get("snapshot_id")
-        if not snapshot_id:
-            snapshot_id = request.GET.get("snapshot")
-        path = request.GET.get("path")
-        dir_id = None
-        dirs, files = None, None
-        content_data = {}
-        if origin_url:
-            try:
-                snapshot_context = get_snapshot_context(
-                    snapshot_id=snapshot_id,
-                    origin_url=origin_url,
-                    timestamp=timestamp,
-                    visit_id=visit_id,
-                    branch_name=request.GET.get("branch"),
-                    release_name=request.GET.get("release"),
-                    revision_id=sha1_git,
-                )
-            except NotFoundExc as e:
-                raw_rev_url = reverse(
-                    "browse-revision", url_args={"sha1_git": sha1_git}
-                )
-                error_message = (
-                    "The Software Heritage archive has a revision "
-                    "with the hash you provided but the origin "
-                    "mentioned in your request appears broken: %s. "
-                    "Please check the URL and try again.\n\n"
-                    "Nevertheless, you can still browse the revision "
-                    "without origin information: %s"
-                    % (gen_link(origin_url), gen_link(raw_rev_url))
-                )
-                if str(e).startswith("Origin"):
-                    raise NotFoundExc(error_message)
-                else:
-                    raise e
-            origin_info = snapshot_context["origin_info"]
-            snapshot_id = snapshot_context["snapshot_id"]
-        elif snapshot_id:
-            snapshot_context = get_snapshot_context(snapshot_id)
-
-        if path:
-            file_info = archive.lookup_directory_with_path(revision["directory"], path)
-            if file_info["type"] == "dir":
-                dir_id = file_info["target"]
+    revision = archive.lookup_revision(sha1_git)
+    origin_info = None
+    snapshot_context = None
+    origin_url = request.GET.get("origin_url")
+    if not origin_url:
+        origin_url = request.GET.get("origin")
+    timestamp = request.GET.get("timestamp")
+    visit_id = request.GET.get("visit_id")
+    snapshot_id = request.GET.get("snapshot_id")
+    if not snapshot_id:
+        snapshot_id = request.GET.get("snapshot")
+    path = request.GET.get("path")
+    dir_id = None
+    dirs, files = None, None
+    content_data = {}
+    if origin_url:
+        try:
+            snapshot_context = get_snapshot_context(
+                snapshot_id=snapshot_id,
+                origin_url=origin_url,
+                timestamp=timestamp,
+                visit_id=visit_id,
+                branch_name=request.GET.get("branch"),
+                release_name=request.GET.get("release"),
+                revision_id=sha1_git,
+            )
+        except NotFoundExc as e:
+            raw_rev_url = reverse("browse-revision", url_args={"sha1_git": sha1_git})
+            error_message = (
+                "The Software Heritage archive has a revision "
+                "with the hash you provided but the origin "
+                "mentioned in your request appears broken: %s. "
+                "Please check the URL and try again.\n\n"
+                "Nevertheless, you can still browse the revision "
+                "without origin information: %s"
+                % (gen_link(origin_url), gen_link(raw_rev_url))
+            )
+            if str(e).startswith("Origin"):
+                raise NotFoundExc(error_message)
             else:
-                query_string = "sha1_git:" + file_info["target"]
-                content_data = request_content(query_string, raise_if_unavailable=False)
-        else:
-            dir_id = revision["directory"]
+                raise e
+        origin_info = snapshot_context["origin_info"]
+        snapshot_id = snapshot_context["snapshot_id"]
+    elif snapshot_id:
+        snapshot_context = get_snapshot_context(snapshot_id)
 
-        if dir_id:
-            path = "" if path is None else (path + "/")
-            dirs, files = get_directory_entries(dir_id)
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    if path:
+        file_info = archive.lookup_directory_with_path(revision["directory"], path)
+        if file_info["type"] == "dir":
+            dir_id = file_info["target"]
+        else:
+            query_string = "sha1_git:" + file_info["target"]
+            content_data = request_content(query_string, raise_if_unavailable=False)
+    else:
+        dir_id = revision["directory"]
+
+    if dir_id:
+        path = "" if path is None else (path + "/")
+        dirs, files = get_directory_entries(dir_id)
 
     revision_metadata = RevisionMetadata(
         object_type=REVISION,

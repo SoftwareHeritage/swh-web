@@ -1,33 +1,42 @@
 import { __extends } from "tslib";
-import { eventToSentryRequest } from '@sentry/core';
-import { Status } from '@sentry/types';
-import { getGlobalObject, logger, parseRetryAfterHeader, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
+import { eventToSentryRequest, sessionToSentryRequest } from '@sentry/core';
+import { getGlobalObject, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
 var global = getGlobalObject();
 /** `fetch` based transport */
 var FetchTransport = /** @class */ (function (_super) {
     __extends(FetchTransport, _super);
     function FetchTransport() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        /** Locks transport after receiving 429 response */
-        _this._disabledUntil = new Date(Date.now());
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     /**
      * @inheritDoc
      */
     FetchTransport.prototype.sendEvent = function (event) {
+        return this._sendRequest(eventToSentryRequest(event, this._api), event);
+    };
+    /**
+     * @inheritDoc
+     */
+    FetchTransport.prototype.sendSession = function (session) {
+        return this._sendRequest(sessionToSentryRequest(session, this._api), session);
+    };
+    /**
+     * @param sentryRequest Prepared SentryRequest to be delivered
+     * @param originalPayload Original payload used to create SentryRequest
+     */
+    FetchTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
         var _this = this;
-        if (new Date(Date.now()) < this._disabledUntil) {
+        if (this._isRateLimited(sentryRequest.type)) {
             return Promise.reject({
-                event: event,
-                reason: "Transport locked till " + this._disabledUntil + " due to too many requests.",
+                event: originalPayload,
+                type: sentryRequest.type,
+                reason: "Transport locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
                 status: 429,
             });
         }
-        var sentryReq = eventToSentryRequest(event, this._api);
         var options = {
-            body: sentryReq.body,
+            body: sentryRequest.body,
             method: 'POST',
             // Despite all stars in the sky saying that Edge supports old draft syntax, aka 'never', 'always', 'origin' and 'default
             // https://caniuse.com/#feat=referrer-policy
@@ -43,24 +52,13 @@ var FetchTransport = /** @class */ (function (_super) {
         }
         return this._buffer.add(new SyncPromise(function (resolve, reject) {
             global
-                .fetch(sentryReq.url, options)
+                .fetch(sentryRequest.url, options)
                 .then(function (response) {
-                var status = Status.fromHttpCode(response.status);
-                if (status === Status.Success) {
-                    resolve({ status: status });
-                    return;
-                }
-                if (status === Status.RateLimit) {
-                    var now = Date.now();
-                    /**
-                     * "The name is case-insensitive."
-                     * https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
-                     */
-                    var retryAfterHeader = response.headers.get('Retry-After');
-                    _this._disabledUntil = new Date(now + parseRetryAfterHeader(now, retryAfterHeader));
-                    logger.warn("Too many requests, backing off till: " + _this._disabledUntil);
-                }
-                reject(response);
+                var headers = {
+                    'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
+                    'retry-after': response.headers.get('Retry-After'),
+                };
+                _this._handleResponse({ requestType: sentryRequest.type, response: response, headers: headers, resolve: resolve, reject: reject });
             })
                 .catch(reject);
         }));

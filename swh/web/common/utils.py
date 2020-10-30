@@ -260,6 +260,7 @@ def context_processor(request):
         "swh_client_config": config["client_config"],
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
+        "keycloak": config["keycloak"],
     }
 
 

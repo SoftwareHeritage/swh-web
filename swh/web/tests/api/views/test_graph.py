@@ -12,16 +12,29 @@ from hypothesis import given
 from swh.model.identifiers import ORIGIN, SNAPSHOT, swhid
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
-from swh.web.config import get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
 from swh.web.tests.auth.keycloak_mock import mock_keycloak
 from swh.web.tests.auth.sample_data import oidc_profile
 from swh.web.tests.strategies import origin
+from swh.web.tests.utils import check_http_get_response
+
+
+def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_mock):
+    graph_query = "stats"
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+    )
 
 
 def test_graph_endpoint_needs_authentication(api_client):
     url = reverse("api-1-graph", url_args={"graph_query": "stats"})
-    resp = api_client.get(url)
-    assert resp.status_code == 401
+    check_http_get_response(api_client, url, status_code=401)
 
 
 def _authenticate_graph_user(api_client, mocker):
@@ -35,8 +48,7 @@ def test_graph_endpoint_needs_permission(api_client, mocker, requests_mock):
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
     mock_keycloak(mocker, user_permissions=[])
-    resp = api_client.get(url)
-    assert resp.status_code == 403
+    check_http_get_response(api_client, url, status_code=403)
 
     _authenticate_graph_user(api_client, mocker)
     requests_mock.get(
@@ -44,8 +56,7 @@ def test_graph_endpoint_needs_permission(api_client, mocker, requests_mock):
         json={},
         headers={"Content-Type": "application/json"},
     )
-    resp = api_client.get(url)
-    assert resp.status_code == 200
+    check_http_get_response(api_client, url, status_code=200)
 
 
 def test_graph_text_plain_response(api_client, mocker, requests_mock):
@@ -81,10 +92,9 @@ def test_graph_text_plain_response(api_client, mocker, requests_mock):
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
-    resp = api_client.get(url)
-
-    assert resp.status_code == 200
-    assert resp.content_type == "text/plain"
+    resp = check_http_get_response(
+        api_client, url, status_code=200, content_type="text/plain"
+    )
     assert resp.content == response_text.encode()
 
 
@@ -114,9 +124,7 @@ def test_graph_json_response(api_client, mocker, requests_mock):
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
-    resp = api_client.get(url)
-
-    assert resp.status_code == 200
+    resp = check_http_get_response(api_client, url, status_code=200)
     assert resp.content_type == "application/json"
     assert resp.content == json.dumps(_response_json).encode()
 
@@ -145,9 +153,7 @@ def test_graph_ndjson_response(api_client, mocker, requests_mock):
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
-    resp = api_client.get(url)
-
-    assert resp.status_code == 200
+    resp = check_http_get_response(api_client, url, status_code=200)
     assert resp.content_type == "application/x-ndjson"
     assert resp.content == response_ndjson.encode()
 
@@ -198,9 +204,7 @@ def test_graph_response_resolve_origins(
             query_params={"direction": "backward"},
         )
 
-        resp = api_client.get(url)
-
-        assert resp.status_code == 200
+        resp = check_http_get_response(api_client, url, status_code=200)
         assert resp.content_type == content_type
         assert resp.content == response_text.encode()
 
@@ -210,9 +214,7 @@ def test_graph_response_resolve_origins(
             query_params={"direction": "backward", "resolve_origins": "true"},
         )
 
-        resp = api_client.get(url)
-
-        assert resp.status_code == 200
+        resp = check_http_get_response(api_client, url, status_code=200)
         assert resp.content_type == content_type
         assert (
             resp.content == response_text.replace(origin_swhid, origin["url"]).encode()
@@ -238,8 +240,6 @@ def test_graph_response_resolve_origins_nothing_to_do(
         query_params={"resolve_origins": "true"},
     )
 
-    resp = api_client.get(url)
-
-    assert resp.status_code == 200
+    resp = check_http_get_response(api_client, url, status_code=200)
     assert resp.content_type == "application/json"
     assert resp.content == json.dumps(_response_json).encode()

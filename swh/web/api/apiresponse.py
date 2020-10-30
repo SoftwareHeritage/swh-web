@@ -7,7 +7,12 @@ import json
 import traceback
 from typing import Any, Dict, Optional
 
+import sentry_sdk
+
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils.html import escape
+from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
@@ -96,7 +101,7 @@ def make_api_response(
     data: Dict[str, Any],
     doc_data: Optional[Dict[str, Any]] = None,
     options: Optional[Dict[str, Any]] = None,
-) -> Response:
+) -> HttpResponse:
     """Generates an API response based on the requested mimetype.
 
     Args:
@@ -123,15 +128,9 @@ def make_api_response(
     # get request status code
     doc_data["status_code"] = options.get("status", 200)
 
-    response_args = {
-        "status": doc_data["status_code"],
-        "headers": headers,
-        "content_type": request.accepted_media_type,
-    }
-
     # when requesting HTML, typically when browsing the API through its
     # documented views, we need to enrich the input data with documentation
-    # related ones and inform DRF that we request HTML template rendering
+    # and render the apidoc HTML template
     if request.accepted_media_type == "text/html":
         doc_data["response_data"] = data
         if data:
@@ -149,20 +148,24 @@ def make_api_response(
             if not doc_data["noargs"]:
                 doc_data["endpoint_path"][-1]["path"] += "/doc/"
 
-        response_args["data"] = doc_data
-        response_args["template_name"] = "api/apidoc.html"
+        return render(
+            request, "api/apidoc.html", doc_data, status=doc_data["status_code"]
+        )
 
     # otherwise simply return the raw data and let DRF picks
     # the correct renderer (JSON or YAML)
     else:
-        response_args["data"] = data
-
-    return Response(**response_args)
+        return Response(
+            data,
+            headers=headers,
+            content_type=request.accepted_media_type,
+            status=doc_data["status_code"],
+        )
 
 
 def error_response(
-    request: Request, error: Exception, doc_data: Dict[str, Any]
-) -> Response:
+    request: Request, exception: Exception, doc_data: Dict[str, Any]
+) -> HttpResponse:
     """Private function to create a custom error response.
 
     Args:
@@ -172,23 +175,25 @@ def error_response(
 
     """
     error_code = 500
-    if isinstance(error, BadInputExc):
+    if isinstance(exception, BadInputExc):
         error_code = 400
-    elif isinstance(error, NotFoundExc):
+    elif isinstance(exception, NotFoundExc):
         error_code = 404
-    elif isinstance(error, ForbiddenExc):
+    elif isinstance(exception, ForbiddenExc):
         error_code = 403
-    elif isinstance(error, LargePayloadExc):
+    elif isinstance(exception, LargePayloadExc):
         error_code = 413
-    elif isinstance(error, StorageDBError):
+    elif isinstance(exception, StorageDBError):
         error_code = 503
-    elif isinstance(error, StorageAPIError):
+    elif isinstance(exception, StorageAPIError):
         error_code = 503
+    elif isinstance(exception, APIException):
+        error_code = exception.status_code
 
     error_opts = {"status": error_code}
     error_data = {
-        "exception": error.__class__.__name__,
-        "reason": str(error),
+        "exception": exception.__class__.__name__,
+        "reason": str(exception),
     }
 
     if request.accepted_media_type == "text/html":
@@ -198,3 +203,13 @@ def error_response(
         error_data["traceback"] = traceback.format_exc()
 
     return make_api_response(request, error_data, doc_data, options=error_opts)
+
+
+def error_response_handler(
+    exc: Exception, context: Dict[str, Any]
+) -> Optional[HttpResponse]:
+    """Custom DRF exception handler used to generate API error responses.
+    """
+    sentry_sdk.capture_exception(exc)
+    doc_data = getattr(exc, "doc_data", None)
+    return error_response(context["request"], exc, doc_data)

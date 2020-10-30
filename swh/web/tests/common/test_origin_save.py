@@ -61,24 +61,22 @@ def test_get_save_origin_task_info_without_es(mocker):
     _get_save_origin_task_info_test(mocker, es_available=False)
 
 
-def _mock_scheduler(mocker, task_status="completed", task_archived=False):
+def _mock_scheduler(
+    mocker, task_status="completed", task_run_status="eventful", task_archived=False
+):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
-    task = (
-        {
-            "arguments": {"args": [], "kwargs": {"repo_url": _origin_url},},
-            "current_interval": timedelta(days=64),
-            "id": _task_id,
-            "next_run": datetime.now(tz=timezone.utc) + timedelta(days=64),
-            "policy": "oneshot",
-            "priority": "high",
-            "retries_left": 0,
-            "status": task_status,
-            "type": "load-git",
-        }
-        if not task_archived
-        else None
-    )
-    mock_scheduler.get_tasks.return_value = [dict(task) if task else None]
+    task = {
+        "arguments": {"args": [], "kwargs": {"repo_url": _origin_url},},
+        "current_interval": timedelta(days=64),
+        "id": _task_id,
+        "next_run": datetime.now(tz=timezone.utc) + timedelta(days=64),
+        "policy": "oneshot",
+        "priority": "high",
+        "retries_left": 0,
+        "status": task_status,
+        "type": "load-git",
+    }
+    mock_scheduler.get_tasks.return_value = [dict(task) if not task_archived else None]
 
     task_run = {
         "backend_id": "f00c712c-e820-41ce-a07c-9bf8df914205",
@@ -87,10 +85,12 @@ def _mock_scheduler(mocker, task_status="completed", task_archived=False):
         "metadata": {},
         "scheduled": datetime.now(tz=timezone.utc),
         "started": None,
-        "status": task_status,
+        "status": task_run_status,
         "task": _task_id,
     }
-    mock_scheduler.get_task_runs.return_value = [dict(task_run)]
+    mock_scheduler.get_task_runs.return_value = [
+        dict(task_run) if not task_archived else None
+    ]
     return task, task_run
 
 
@@ -219,7 +219,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     sor.request_date = datetime.now(tz=timezone.utc) - timedelta(days=31)
     sor.save()
 
-    _mock_scheduler(mocker, task_status="disabled")
+    _mock_scheduler(mocker, task_status="disabled", task_run_status="failed")
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
 
@@ -242,7 +242,9 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
     )
 
     # mock scheduler and archives
-    _mock_scheduler(mocker, task_status="next_run_scheduled")
+    _mock_scheduler(
+        mocker, task_status="next_run_scheduled", task_run_status="scheduled"
+    )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     mock_get_origin_visits = mocker.patch(

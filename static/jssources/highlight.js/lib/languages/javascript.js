@@ -161,6 +161,14 @@ function lookahead(re) {
 }
 
 /**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function optional(re) {
+  return concat('(', re, ')?');
+}
+
+/**
  * @param {...(RegExp | string) } args
  * @returns {string}
  */
@@ -176,68 +184,167 @@ Category: common, scripting
 Website: https://developer.mozilla.org/en-US/docs/Web/JavaScript
 */
 
+/** @type LanguageFn */
 function javascript(hljs) {
-  var IDENT_RE$1 = IDENT_RE;
-  var FRAGMENT = {
+  /**
+   * Takes a string like "<Booger" and checks to see
+   * if we can find a matching "</Booger" later in the
+   * content.
+   * @param {RegExpMatchArray} match
+   * @param {{after:number}} param1
+   */
+  const hasClosingTag = (match, { after }) => {
+    const tag = match[0].replace("<", "</");
+    const pos = match.input.indexOf(tag, after);
+    return pos !== -1;
+  };
+
+  const IDENT_RE$1 = IDENT_RE;
+  const FRAGMENT = {
     begin: '<>',
     end: '</>'
   };
-  var XML_TAG = {
+  const XML_TAG = {
     begin: /<[A-Za-z0-9\\._:-]+/,
-    end: /\/[A-Za-z0-9\\._:-]+>|\/>/
+    end: /\/[A-Za-z0-9\\._:-]+>|\/>/,
+    /**
+     * @param {RegExpMatchArray} match
+     * @param {CallbackResponse} response
+     */
+    isTrulyOpeningTag: (match, response) => {
+      const afterMatchIndex = match[0].length + match.index;
+      const nextChar = match.input[afterMatchIndex];
+      // nested type?
+      // HTML should not include another raw `<` inside a tag
+      // But a type might: `<Array<Array<number>>`, etc.
+      if (nextChar === "<") {
+        response.ignoreMatch();
+        return;
+      }
+      // <something>
+      // This is now either a tag or a type.
+      if (nextChar === ">") {
+        // if we cannot find a matching closing tag, then we
+        // will ignore it
+        if (!hasClosingTag(match, { after: afterMatchIndex })) {
+          response.ignoreMatch();
+        }
+      }
+    }
   };
-  var KEYWORDS$1 = {
+  const KEYWORDS$1 = {
     $pattern: IDENT_RE,
     keyword: KEYWORDS.join(" "),
     literal: LITERALS.join(" "),
     built_in: BUILT_INS.join(" ")
   };
-  var NUMBER = {
+  const nonDecimalLiterals = (prefixLetters, validChars) =>
+    `\\b0[${prefixLetters}][${validChars}]([${validChars}_]*[${validChars}])?n?`;
+  const noLeadingZeroDecimalDigits = /[1-9]([0-9_]*\d)?/;
+  const decimalDigits = /\d([0-9_]*\d)?/;
+  const exponentPart = concat(/[eE][+-]?/, decimalDigits);
+  const NUMBER = {
     className: 'number',
     variants: [
-      { begin: '\\b(0[bB][01]+)n?' },
-      { begin: '\\b(0[oO][0-7]+)n?' },
-      { begin: hljs.C_NUMBER_RE + 'n?' }
+      { begin: nonDecimalLiterals('bB', '01') }, // Binary literals
+      { begin: nonDecimalLiterals('oO', '0-7') }, // Octal literals
+      { begin: nonDecimalLiterals('xX', '0-9a-fA-F') }, // Hexadecimal literals
+      { begin: concat(/\b/, noLeadingZeroDecimalDigits, 'n') }, // Non-zero BigInt literals
+      { begin: concat(/(\b0)?\./, decimalDigits, optional(exponentPart)) }, // Decimal literals between 0 and 1
+      { begin: concat(
+        /\b/,
+        noLeadingZeroDecimalDigits,
+        optional(concat(/\./, optional(decimalDigits))), // fractional part
+        optional(exponentPart)
+        ) }, // Decimal literals >= 1
+      { begin: /\b0[\.n]?/ }, // Zero literals (`0`, `0.`, `0n`)
     ],
     relevance: 0
   };
-  var SUBST = {
+  const SUBST = {
     className: 'subst',
-    begin: '\\$\\{', end: '\\}',
+    begin: '\\$\\{',
+    end: '\\}',
     keywords: KEYWORDS$1,
-    contains: []  // defined later
+    contains: [] // defined later
   };
-  var HTML_TEMPLATE = {
-    begin: 'html`', end: '',
+  const HTML_TEMPLATE = {
+    begin: 'html`',
+    end: '',
     starts: {
-      end: '`', returnEnd: false,
+      end: '`',
+      returnEnd: false,
       contains: [
         hljs.BACKSLASH_ESCAPE,
         SUBST
       ],
-      subLanguage: 'xml',
+      subLanguage: 'xml'
     }
   };
-  var CSS_TEMPLATE = {
-    begin: 'css`', end: '',
+  const CSS_TEMPLATE = {
+    begin: 'css`',
+    end: '',
     starts: {
-      end: '`', returnEnd: false,
+      end: '`',
+      returnEnd: false,
       contains: [
         hljs.BACKSLASH_ESCAPE,
         SUBST
       ],
-      subLanguage: 'css',
+      subLanguage: 'css'
     }
   };
-  var TEMPLATE_STRING = {
+  const TEMPLATE_STRING = {
     className: 'string',
-    begin: '`', end: '`',
+    begin: '`',
+    end: '`',
     contains: [
       hljs.BACKSLASH_ESCAPE,
       SUBST
     ]
   };
-  SUBST.contains = [
+  const JSDOC_COMMENT = hljs.COMMENT(
+    '/\\*\\*',
+    '\\*/',
+    {
+      relevance: 0,
+      contains: [
+        {
+          className: 'doctag',
+          begin: '@[A-Za-z]+',
+          contains: [
+            {
+              className: 'type',
+              begin: '\\{',
+              end: '\\}',
+              relevance: 0
+            },
+            {
+              className: 'variable',
+              begin: IDENT_RE$1 + '(?=\\s*(-)|$)',
+              endsParent: true,
+              relevance: 0
+            },
+            // eat spaces (not newlines) so we can find
+            // types or variables
+            {
+              begin: /(?=[^\n])\s/,
+              relevance: 0
+            }
+          ]
+        }
+      ]
+    }
+  );
+  const COMMENT = {
+    className: "comment",
+    variants: [
+      JSDOC_COMMENT,
+      hljs.C_BLOCK_COMMENT_MODE,
+      hljs.C_LINE_COMMENT_MODE
+    ]
+  };
+  const SUBST_INTERNALS = [
     hljs.APOS_STRING_MODE,
     hljs.QUOTE_STRING_MODE,
     HTML_TEMPLATE,
@@ -246,32 +353,52 @@ function javascript(hljs) {
     NUMBER,
     hljs.REGEXP_MODE
   ];
-  var PARAMS_CONTAINS = SUBST.contains.concat([
+  SUBST.contains = SUBST_INTERNALS
+    .concat({
+      // we need to pair up {} inside our subst to prevent
+      // it from ending too early by matching another }
+      begin: /{/,
+      end: /}/,
+      keywords: KEYWORDS$1,
+      contains: [
+        "self"
+      ].concat(SUBST_INTERNALS)
+    });
+  const SUBST_AND_COMMENTS = [].concat(COMMENT, SUBST.contains);
+  const PARAMS_CONTAINS = SUBST_AND_COMMENTS.concat([
     // eat recursive parens in sub expressions
-    { begin: /\(/, end: /\)/,
-      contains: ["self"].concat(SUBST.contains, [hljs.C_BLOCK_COMMENT_MODE, hljs.C_LINE_COMMENT_MODE])
-    },
-    hljs.C_BLOCK_COMMENT_MODE,
-    hljs.C_LINE_COMMENT_MODE
+    {
+      begin: /\(/,
+      end: /\)/,
+      keywords: KEYWORDS$1,
+      contains: ["self"].concat(SUBST_AND_COMMENTS)
+    }
   ]);
-  var PARAMS = {
+  const PARAMS = {
     className: 'params',
-    begin: /\(/, end: /\)/,
+    begin: /\(/,
+    end: /\)/,
     excludeBegin: true,
     excludeEnd: true,
+    keywords: KEYWORDS$1,
     contains: PARAMS_CONTAINS
   };
 
   return {
-    name: 'JavaScript',
+    name: 'Javascript',
     aliases: ['js', 'jsx', 'mjs', 'cjs'],
     keywords: KEYWORDS$1,
+    // this will be extended by TypeScript
+    exports: { PARAMS_CONTAINS },
+    illegal: /#(?![$_A-z])/,
     contains: [
       hljs.SHEBANG({
+        label: "shebang",
         binary: "node",
         relevance: 5
       }),
       {
+        label: "use_strict",
         className: 'meta',
         relevance: 10,
         begin: /^\s*['"]use (strict|asm)['"]/
@@ -281,41 +408,7 @@ function javascript(hljs) {
       HTML_TEMPLATE,
       CSS_TEMPLATE,
       TEMPLATE_STRING,
-      hljs.C_LINE_COMMENT_MODE,
-      hljs.COMMENT(
-        '/\\*\\*',
-        '\\*/',
-        {
-          relevance : 0,
-          contains : [
-            {
-              className : 'doctag',
-              begin : '@[A-Za-z]+',
-              contains : [
-                {
-                  className: 'type',
-                  begin: '\\{',
-                  end: '\\}',
-                  relevance: 0
-                },
-                {
-                  className: 'variable',
-                  begin: IDENT_RE$1 + '(?=\\s*(-)|$)',
-                  endsParent: true,
-                  relevance: 0
-                },
-                // eat spaces (not newlines) so we can find
-                // types or variables
-                {
-                  begin: /(?=[^\n])\s/,
-                  relevance: 0
-                },
-              ]
-            }
-          ]
-        }
-      ),
-      hljs.C_BLOCK_COMMENT_MODE,
+      COMMENT,
       NUMBER,
       { // object attr container
         begin: concat(/[{,\n]\s*/,
@@ -332,35 +425,38 @@ function javascript(hljs) {
           lookahead(concat(
             // we also need to allow for multiple possible comments inbetween
             // the first key:value pairing
-            /(((\/\/.*$)|(\/\*(.|\n)*\*\/))\s*)*/,
+            /(\/\/.*$)*/,
+            /(\/\*(.|\n)*\*\/)*/,
+            /\s*/,
             IDENT_RE$1 + '\\s*:'))),
         relevance: 0,
         contains: [
           {
             className: 'attr',
             begin: IDENT_RE$1 + lookahead('\\s*:'),
-            relevance: 0,
-          },
+            relevance: 0
+          }
         ]
       },
       { // "value" container
         begin: '(' + hljs.RE_STARTERS_RE + '|\\b(case|return|throw)\\b)\\s*',
         keywords: 'return throw case',
         contains: [
-          hljs.C_LINE_COMMENT_MODE,
-          hljs.C_BLOCK_COMMENT_MODE,
+          COMMENT,
           hljs.REGEXP_MODE,
           {
             className: 'function',
             // we have to count the parens to make sure we actually have the
             // correct bounding ( ) before the =>.  There could be any number of
             // sub-expressions inside also surrounded by parens.
-            begin: '(\\([^(]*' +
-              '(\\([^(]*' +
-                '(\\([^(]*' +
-                '\\))?' +
-              '\\))?' +
-            '\\)|' + hljs.UNDERSCORE_IDENT_RE + ')\\s*=>', returnBegin: true,
+            begin: '(\\(' +
+            '[^()]*(\\(' +
+            '[^()]*(\\(' +
+            '[^()]*' +
+            '\\))*[^()]*' +
+            '\\))*[^()]*' +
+            '\\)|' + hljs.UNDERSCORE_IDENT_RE + ')\\s*=>',
+            returnBegin: true,
             end: '\\s*=>',
             contains: [
               {
@@ -375,8 +471,10 @@ function javascript(hljs) {
                     skip: true
                   },
                   {
-                    begin: /\(/, end: /\)/,
-                    excludeBegin: true, excludeEnd: true,
+                    begin: /\(/,
+                    end: /\)/,
+                    excludeBegin: true,
+                    excludeEnd: true,
                     keywords: KEYWORDS$1,
                     contains: PARAMS_CONTAINS
                   }
@@ -385,69 +483,115 @@ function javascript(hljs) {
             ]
           },
           { // could be a comma delimited list of params to a function call
-            begin: /,/, relevance: 0,
+            begin: /,/, relevance: 0
           },
           {
             className: '',
             begin: /\s/,
             end: /\s*/,
-            skip: true,
+            skip: true
           },
           { // JSX
             variants: [
               { begin: FRAGMENT.begin, end: FRAGMENT.end },
-              { begin: XML_TAG.begin, end: XML_TAG.end }
+              {
+                begin: XML_TAG.begin,
+                // we carefully check the opening tag to see if it truly
+                // is a tag and not a false positive
+                'on:begin': XML_TAG.isTrulyOpeningTag,
+                end: XML_TAG.end
+              }
             ],
             subLanguage: 'xml',
             contains: [
               {
-                begin: XML_TAG.begin, end: XML_TAG.end, skip: true,
+                begin: XML_TAG.begin,
+                end: XML_TAG.end,
+                skip: true,
                 contains: ['self']
               }
             ]
-          },
+          }
         ],
         relevance: 0
       },
       {
         className: 'function',
-        beginKeywords: 'function', end: /\{/, excludeEnd: true,
+        beginKeywords: 'function',
+        end: /[{;]/,
+        excludeEnd: true,
+        keywords: KEYWORDS$1,
         contains: [
-          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE$1}),
+          'self',
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE$1 }),
           PARAMS
         ],
-        illegal: /\[|%/
+        illegal: /%/
       },
       {
-        begin: /\$[(.]/ // relevance booster for a pattern common to JS libs: `$(something)` and `$.something`
+        className: 'function',
+        // we have to count the parens to make sure we actually have the correct
+        // bounding ( ).  There could be any number of sub-expressions inside
+        // also surrounded by parens.
+        begin: hljs.UNDERSCORE_IDENT_RE +
+          '\\(' + // first parens
+          '[^()]*(\\(' +
+            '[^()]*(\\(' +
+              '[^()]*' +
+            '\\))*[^()]*' +
+          '\\))*[^()]*' +
+          '\\)\\s*{', // end parens
+        returnBegin:true,
+        contains: [
+          PARAMS,
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE$1 }),
+        ]
       },
-
-      hljs.METHOD_GUARD,
+      // hack: prevents detection of keywords in some circumstances
+      // .keyword()
+      // $keyword = x
+      {
+        variants: [
+          { begin: '\\.' + IDENT_RE$1 },
+          { begin: '\\$' + IDENT_RE$1 }
+        ],
+        relevance: 0
+      },
       { // ES6 class
         className: 'class',
-        beginKeywords: 'class', end: /[{;=]/, excludeEnd: true,
+        beginKeywords: 'class',
+        end: /[{;=]/,
+        excludeEnd: true,
         illegal: /[:"\[\]]/,
         contains: [
-          {beginKeywords: 'extends'},
+          { beginKeywords: 'extends' },
           hljs.UNDERSCORE_TITLE_MODE
         ]
       },
       {
-        beginKeywords: 'constructor', end: /\{/, excludeEnd: true
+        begin: /\b(?=constructor)/,
+        end: /[\{;]/,
+        excludeEnd: true,
+        contains: [
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE$1 }),
+          'self',
+          PARAMS
+        ]
       },
       {
         begin: '(get|set)\\s+(?=' + IDENT_RE$1 + '\\()',
         end: /{/,
         keywords: "get set",
         contains: [
-          hljs.inherit(hljs.TITLE_MODE, {begin: IDENT_RE$1}),
+          hljs.inherit(hljs.TITLE_MODE, { begin: IDENT_RE$1 }),
           { begin: /\(\)/ }, // eat to avoid empty params
           PARAMS
         ]
-
+      },
+      {
+        begin: /\$[(.]/ // relevance booster for a pattern common to JS libs: `$(something)` and `$.something`
       }
-    ],
-    illegal: /#(?!!)/
+    ]
   };
 }
 

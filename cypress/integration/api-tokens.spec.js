@@ -8,7 +8,7 @@
 describe('Test API tokens UI', function() {
 
   it('should ask for user to login', function() {
-    cy.visit(this.Urls.api_tokens(), {failOnStatusCode: false});
+    cy.visit(`${this.Urls.oidc_profile()}#tokens`, {failOnStatusCode: false});
     cy.location().should(loc => {
       expect(loc.pathname).to.eq(this.Urls.oidc_login());
     });
@@ -29,7 +29,7 @@ describe('Test API tokens UI', function() {
     // the tested UI should not be accessible for standard Django users
     // but we need a user logged in for testing it
     cy.adminLogin();
-    cy.visit(Urls.api_tokens());
+    cy.visit(`${Urls.oidc_profile()}#tokens`);
   }
 
   function generateToken(Urls, status, tokenValue = '') {
@@ -104,7 +104,7 @@ describe('Test API tokens UI', function() {
     }).as('getTokenRequest');
 
     cy.contains('Display token')
-      .click();
+      .click({force: true});
 
     cy.get('.modal-dialog')
       .should('be.visible');
@@ -116,13 +116,13 @@ describe('Test API tokens UI', function() {
       .should('be.disabled');
 
     cy.get('#swh-user-password')
-      .type('secret');
+      .type('secret', {force: true});
 
     cy.get('#swh-user-password-submit')
       .should('be.enabled');
 
     cy.get('#swh-user-password-submit')
-      .click();
+      .click({force: true});
 
     cy.wait('@getTokenRequest');
 
@@ -162,7 +162,7 @@ describe('Test API tokens UI', function() {
     }).as('revokeTokenRequest');
 
     cy.contains('Revoke token')
-      .click();
+      .click({force: true});
 
     cy.get('.modal-dialog')
       .should('be.visible');
@@ -174,13 +174,13 @@ describe('Test API tokens UI', function() {
       .should('be.disabled');
 
     cy.get('#swh-user-password')
-      .type('secret');
+      .type('secret', {force: true});
 
     cy.get('#swh-user-password-submit')
       .should('be.enabled');
 
     cy.get('#swh-user-password-submit')
-      .click();
+      .click({force: true});
 
     cy.wait('@revokeTokenRequest');
 

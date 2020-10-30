@@ -32,7 +32,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive, highlightjs
-from swh.web.common.exc import BadInputExc, NotFoundExc, handle_view_exception
+from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
@@ -670,35 +670,30 @@ def browse_snapshot_directory(
     """
     Django view implementation for browsing a directory in a snapshot context.
     """
-    try:
+    _check_origin_url(snapshot_id, origin_url)
 
-        _check_origin_url(snapshot_id, origin_url)
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot_id,
+        origin_url=origin_url,
+        timestamp=timestamp,
+        visit_id=request.GET.get("visit_id"),
+        path=path,
+        browse_context="directory",
+        branch_name=request.GET.get("branch"),
+        release_name=request.GET.get("release"),
+        revision_id=request.GET.get("revision"),
+    )
 
-        snapshot_context = get_snapshot_context(
-            snapshot_id=snapshot_id,
-            origin_url=origin_url,
-            timestamp=timestamp,
-            visit_id=request.GET.get("visit_id"),
-            path=path,
-            browse_context="directory",
-            branch_name=request.GET.get("branch"),
-            release_name=request.GET.get("release"),
-            revision_id=request.GET.get("revision"),
-        )
+    root_directory = snapshot_context["root_directory"]
+    sha1_git = root_directory
+    if root_directory and path:
+        dir_info = archive.lookup_directory_with_path(root_directory, path)
+        sha1_git = dir_info["target"]
 
-        root_directory = snapshot_context["root_directory"]
-        sha1_git = root_directory
-        if root_directory and path:
-            dir_info = archive.lookup_directory_with_path(root_directory, path)
-            sha1_git = dir_info["target"]
-
-        dirs = []
-        files = []
-        if sha1_git:
-            dirs, files = get_directory_entries(sha1_git)
-
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    dirs = []
+    files = []
+    if sha1_git:
+        dirs, files = get_directory_entries(sha1_git)
 
     origin_info = snapshot_context["origin_info"]
     visit_info = snapshot_context["visit_info"]
@@ -880,47 +875,42 @@ def browse_snapshot_content(
     """
     Django view implementation for browsing a content in a snapshot context.
     """
-    try:
+    _check_origin_url(snapshot_id, origin_url)
 
-        _check_origin_url(snapshot_id, origin_url)
+    if path is None:
+        raise BadInputExc("The path of a content must be given as query parameter.")
 
-        if path is None:
-            raise BadInputExc("The path of a content must be given as query parameter.")
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot_id,
+        origin_url=origin_url,
+        timestamp=timestamp,
+        visit_id=request.GET.get("visit_id"),
+        path=path,
+        browse_context="content",
+        branch_name=request.GET.get("branch"),
+        release_name=request.GET.get("release"),
+        revision_id=request.GET.get("revision"),
+    )
 
-        snapshot_context = get_snapshot_context(
-            snapshot_id=snapshot_id,
-            origin_url=origin_url,
-            timestamp=timestamp,
-            visit_id=request.GET.get("visit_id"),
-            path=path,
-            browse_context="content",
-            branch_name=request.GET.get("branch"),
-            release_name=request.GET.get("release"),
-            revision_id=request.GET.get("revision"),
-        )
+    root_directory = snapshot_context["root_directory"]
+    sha1_git = None
+    query_string = None
+    content_data = {}
+    directory_id = None
+    split_path = path.split("/")
+    filename = split_path[-1]
+    filepath = path[: -len(filename)]
+    if root_directory:
+        content_info = archive.lookup_directory_with_path(root_directory, path)
+        sha1_git = content_info["target"]
+        query_string = "sha1_git:" + sha1_git
+        content_data = request_content(query_string, raise_if_unavailable=False)
 
-        root_directory = snapshot_context["root_directory"]
-        sha1_git = None
-        query_string = None
-        content_data = {}
-        directory_id = None
-        split_path = path.split("/")
-        filename = split_path[-1]
-        filepath = path[: -len(filename)]
-        if root_directory:
-            content_info = archive.lookup_directory_with_path(root_directory, path)
-            sha1_git = content_info["target"]
-            query_string = "sha1_git:" + sha1_git
-            content_data = request_content(query_string, raise_if_unavailable=False)
-
-            if filepath:
-                dir_info = archive.lookup_directory_with_path(root_directory, filepath)
-                directory_id = dir_info["target"]
-            else:
-                directory_id = root_directory
-
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+        if filepath:
+            dir_info = archive.lookup_directory_with_path(root_directory, filepath)
+            directory_id = dir_info["target"]
+        else:
+            directory_id = root_directory
 
     revision_id = snapshot_context["revision_id"]
     origin_info = snapshot_context["origin_info"]
@@ -1066,54 +1056,49 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     Django view implementation for browsing a revision history in a
     snapshot context.
     """
-    try:
+    _check_origin_url(snapshot_id, origin_url)
 
-        _check_origin_url(snapshot_id, origin_url)
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot_id,
+        origin_url=origin_url,
+        timestamp=timestamp,
+        visit_id=request.GET.get("visit_id"),
+        browse_context="log",
+        branch_name=request.GET.get("branch"),
+        release_name=request.GET.get("release"),
+        revision_id=request.GET.get("revision"),
+    )
 
-        snapshot_context = get_snapshot_context(
-            snapshot_id=snapshot_id,
-            origin_url=origin_url,
-            timestamp=timestamp,
-            visit_id=request.GET.get("visit_id"),
-            browse_context="log",
-            branch_name=request.GET.get("branch"),
-            release_name=request.GET.get("release"),
-            revision_id=request.GET.get("revision"),
+    revision_id = snapshot_context["revision_id"]
+
+    per_page = int(request.GET.get("per_page", PER_PAGE))
+    offset = int(request.GET.get("offset", 0))
+    revs_ordering = request.GET.get("revs_ordering", "committer_date")
+    session_key = "rev_%s_log_ordering_%s" % (revision_id, revs_ordering)
+    rev_log_session = request.session.get(session_key, None)
+    rev_log = []
+    revs_walker_state = None
+    if rev_log_session:
+        rev_log = rev_log_session["rev_log"]
+        revs_walker_state = rev_log_session["revs_walker_state"]
+
+    if len(rev_log) < offset + per_page:
+        revs_walker = archive.get_revisions_walker(
+            revs_ordering,
+            revision_id,
+            max_revs=offset + per_page + 1,
+            state=revs_walker_state,
         )
+        rev_log += [rev["id"] for rev in revs_walker]
+        revs_walker_state = revs_walker.export_state()
 
-        revision_id = snapshot_context["revision_id"]
+    revs = rev_log[offset : offset + per_page]
+    revision_log = archive.lookup_revision_multiple(revs)
 
-        per_page = int(request.GET.get("per_page", PER_PAGE))
-        offset = int(request.GET.get("offset", 0))
-        revs_ordering = request.GET.get("revs_ordering", "committer_date")
-        session_key = "rev_%s_log_ordering_%s" % (revision_id, revs_ordering)
-        rev_log_session = request.session.get(session_key, None)
-        rev_log = []
-        revs_walker_state = None
-        if rev_log_session:
-            rev_log = rev_log_session["rev_log"]
-            revs_walker_state = rev_log_session["revs_walker_state"]
-
-        if len(rev_log) < offset + per_page:
-            revs_walker = archive.get_revisions_walker(
-                revs_ordering,
-                revision_id,
-                max_revs=offset + per_page + 1,
-                state=revs_walker_state,
-            )
-            rev_log += [rev["id"] for rev in revs_walker]
-            revs_walker_state = revs_walker.export_state()
-
-        revs = rev_log[offset : offset + per_page]
-        revision_log = archive.lookup_revision_multiple(revs)
-
-        request.session[session_key] = {
-            "rev_log": rev_log,
-            "revs_walker_state": revs_walker_state,
-        }
-
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    request.session[session_key] = {
+        "rev_log": rev_log,
+        "revs_walker_state": revs_walker_state,
+    }
 
     origin_info = snapshot_context["origin_info"]
     visit_info = snapshot_context["visit_info"]
@@ -1211,41 +1196,36 @@ def browse_snapshot_branches(
     Django view implementation for browsing a list of branches in a snapshot
     context.
     """
-    try:
+    _check_origin_url(snapshot_id, origin_url)
 
-        _check_origin_url(snapshot_id, origin_url)
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot_id,
+        origin_url=origin_url,
+        timestamp=timestamp,
+        visit_id=request.GET.get("visit_id"),
+    )
 
-        snapshot_context = get_snapshot_context(
-            snapshot_id=snapshot_id,
-            origin_url=origin_url,
-            timestamp=timestamp,
-            visit_id=request.GET.get("visit_id"),
-        )
+    branches_bc = request.GET.get("branches_breadcrumbs", "")
+    branches_bc = branches_bc.split(",") if branches_bc else []
+    branches_from = branches_bc[-1] if branches_bc else ""
 
-        branches_bc = request.GET.get("branches_breadcrumbs", "")
-        branches_bc = branches_bc.split(",") if branches_bc else []
-        branches_from = branches_bc[-1] if branches_bc else ""
+    origin_info = snapshot_context["origin_info"]
+    url_args = snapshot_context["url_args"]
+    query_params = snapshot_context["query_params"]
 
-        origin_info = snapshot_context["origin_info"]
-        url_args = snapshot_context["url_args"]
-        query_params = snapshot_context["query_params"]
+    if origin_info:
+        browse_view_name = "browse-origin-directory"
+    else:
+        browse_view_name = "browse-snapshot-directory"
 
-        if origin_info:
-            browse_view_name = "browse-origin-directory"
-        else:
-            browse_view_name = "browse-snapshot-directory"
+    snapshot = archive.lookup_snapshot(
+        snapshot_context["snapshot_id"],
+        branches_from,
+        PER_PAGE + 1,
+        target_types=["revision", "alias"],
+    )
 
-        snapshot = archive.lookup_snapshot(
-            snapshot_context["snapshot_id"],
-            branches_from,
-            PER_PAGE + 1,
-            target_types=["revision", "alias"],
-        )
-
-        displayed_branches, _ = process_snapshot_branches(snapshot)
-
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    displayed_branches, _ = process_snapshot_branches(snapshot)
 
     for branch in displayed_branches:
         rev_query_params = {}
@@ -1325,36 +1305,31 @@ def browse_snapshot_releases(
     Django view implementation for browsing a list of releases in a snapshot
     context.
     """
-    try:
+    _check_origin_url(snapshot_id, origin_url)
 
-        _check_origin_url(snapshot_id, origin_url)
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot_id,
+        origin_url=origin_url,
+        timestamp=timestamp,
+        visit_id=request.GET.get("visit_id"),
+    )
 
-        snapshot_context = get_snapshot_context(
-            snapshot_id=snapshot_id,
-            origin_url=origin_url,
-            timestamp=timestamp,
-            visit_id=request.GET.get("visit_id"),
-        )
+    rel_bc = request.GET.get("releases_breadcrumbs", "")
+    rel_bc = rel_bc.split(",") if rel_bc else []
+    rel_from = rel_bc[-1] if rel_bc else ""
 
-        rel_bc = request.GET.get("releases_breadcrumbs", "")
-        rel_bc = rel_bc.split(",") if rel_bc else []
-        rel_from = rel_bc[-1] if rel_bc else ""
+    origin_info = snapshot_context["origin_info"]
+    url_args = snapshot_context["url_args"]
+    query_params = snapshot_context["query_params"]
 
-        origin_info = snapshot_context["origin_info"]
-        url_args = snapshot_context["url_args"]
-        query_params = snapshot_context["query_params"]
+    snapshot = archive.lookup_snapshot(
+        snapshot_context["snapshot_id"],
+        rel_from,
+        PER_PAGE + 1,
+        target_types=["release", "alias"],
+    )
 
-        snapshot = archive.lookup_snapshot(
-            snapshot_context["snapshot_id"],
-            rel_from,
-            PER_PAGE + 1,
-            target_types=["release", "alias"],
-        )
-
-        _, displayed_releases = process_snapshot_branches(snapshot)
-
-    except Exception as exc:
-        return handle_view_exception(request, exc)
+    _, displayed_releases = process_snapshot_branches(snapshot)
 
     for release in displayed_releases:
         query_params_tgt = {"snapshot": snapshot_id}
