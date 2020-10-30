@@ -21,9 +21,7 @@ webpackProdConfig.mode = 'production';
 webpackProdConfig.optimization.minimizer = [
   // use terser for minimizing js and generate source map files
   new TerserPlugin({
-    cache: true,
-    parallel: true,
-    sourceMap: true
+    parallel: true
   }),
   // use cssnano for minimizing css and generate source map files
   new OptimizeCSSAssetsPlugin({
