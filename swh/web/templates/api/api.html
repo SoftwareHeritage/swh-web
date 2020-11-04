@@ -242,8 +242,9 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
   <h4 id="rate-limiting">Rate limiting</h4>
   <p>
     Due to limited resource availability on the back end side, API usage is currently rate limited.
-    Furthermore, as API usage is currently entirely anonymous (i.e., without any authentication),
-    API "users" are currently identified by their origin IP address.
+    API users can be either anonymous or authenticated. For rate-limiting purposes, anonymous users
+    are identified by their origin IP address; authenticated users identify themselves via user-specific
+    credentials, like <a href="#authentication">authentication tokens</a>.
   </p>
 
   <p>
@@ -270,6 +271,30 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
 X-RateLimit-Limit: 60
 X-RateLimit-Remaining: 54
 X-RateLimit-Reset: 1485794532</code></pre>
+
+  <h4 id="authentication">Authentication</h4>
+  <p>
+    It is possible to perform authenticated requests to the Web API through the use of a bearer token
+    sent in HTTP Authorization headers.
+    <br/>
+    To obtain such a token, an account to the
+    <a href="{% url 'oidc-login' %}">Software Heritage Authentication service</a> must be created.
+    <br/>
+    To generate and manage bearer tokens, a dedicated interface is available on the
+    <a href="{% url 'oidc-profile' %}#tokens">user profile page</a> once logged in.
+  </p>
+  <p>
+    The following shows how to perform an authenticated request to the Web API using <code>curl</code>.
+    <pre>export TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhMTMxYTQ1My1hM2IyLTQwMTUtO...
+curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}api/...</pre>
+  </p>
+  <p>
+    Authenticated requests can be used to lift rate limiting if the user account has the adequate
+    permission.
+    If you are in such a need, please <a href="https://www.softwareheritage.org/contact/">contact us</a>
+    and we will review your request.
+  </p>
+
 </div>
 <script>
   swh.webapp.initPage('api');
