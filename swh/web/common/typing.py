@@ -90,6 +90,8 @@ class SnapshotReleaseInfo(TypedDict):
 class SnapshotContext(TypedDict):
     branch: Optional[str]
     """optional branch name set when browsing snapshot in that scope"""
+    branch_alias: bool
+    """indicates if the focused branch is an alias"""
     branches: List[SnapshotBranchInfo]
     """list of snapshot branches (possibly truncated)"""
     branches_url: str
@@ -104,6 +106,8 @@ class SnapshotContext(TypedDict):
     """common query parameters when browsing snapshot content"""
     release: Optional[str]
     """optional release name set when browsing snapshot in that scope"""
+    release_alias: bool
+    """indicates if the focused release is an alias"""
     release_id: Optional[str]
     """optional release identifier set when browsing snapshot in that scope"""
     releases: List[SnapshotReleaseInfo]

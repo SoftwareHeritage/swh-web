@@ -76,7 +76,7 @@ def test_origin_content_view(client, archive_data, origin):
         dir_content = archive_data.directory_ls(head_rev["directory"])
         dir_files = [e for e in dir_content if e["type"] == "file"]
         dir_file = random.choice(dir_files)
-        branches, releases = process_snapshot_branches(snapshot)
+        branches, releases, _ = process_snapshot_branches(snapshot)
         return {
             "branches": branches,
             "releases": releases,
@@ -166,7 +166,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
     head_rev = archive_data.revision_get(head_rev_id)
     root_dir_sha1 = head_rev["directory"]
     dir_content = archive_data.directory_ls(root_dir_sha1)
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
 
     _origin_directory_view_test_helper(
         client,
@@ -284,7 +284,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
     subdirs = [
         e for e in archive_data.directory_ls(root_dir_sha1) if e["type"] == "dir"
     ]
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
 
     if len(subdirs) == 0:
         return
@@ -622,9 +622,10 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_get_origin_visit_snapshot.return_value = ([], [], {})
     mock_snapshot_archive.lookup_origin.return_value = origin
     mock_snapshot_archive.lookup_snapshot_sizes.return_value = {
+        "alias": 0,
         "revision": 0,
         "release": 0,
     }
@@ -678,8 +679,9 @@ def test_origin_empty_snapshot(client, mocker, origin):
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_get_origin_visit_snapshot.return_value = ([], [], {})
     mock_archive.lookup_snapshot_sizes.return_value = {
+        "alias": 0,
         "revision": 0,
         "release": 0,
     }

@@ -71,10 +71,13 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
                     )
                 )
 
+        aliases = {}
+
         for branch in sorted(snapshot["branches"].keys()):
             branch_data = snapshot["branches"][branch]
             if branch_data["target_type"] == "alias":
                 target_data = snapshot["branches"][branch_data["target"]]
+                aliases[branch] = target_data
                 _process_branch_data(branch, target_data, alias=True)
             else:
                 _process_branch_data(branch, branch_data)
@@ -85,7 +88,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
             origin, visit_id=visit["visit"]
         )
 
-        assert origin_visit_branches == (branches, releases)
+        assert origin_visit_branches == (branches, releases, aliases)
 
 
 @given(snapshot())
@@ -104,7 +107,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
 
-        branches, releases = get_snapshot_content(snapshot)
+        branches, releases, _ = get_snapshot_content(snapshot)
         releases = list(reversed(releases))
         revision_id = None
         root_directory = None
@@ -132,12 +135,14 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
         expected = SnapshotContext(
             branch="HEAD",
+            branch_alias=True,
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
             origin_info=None,
             origin_visits_url=None,
             release=None,
+            release_alias=False,
             release_id=None,
             query_params=query_params,
             releases=releases,
@@ -192,7 +197,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
 
         query_params = dict(kwargs)
 
-        branches, releases = get_snapshot_content(snapshot)
+        branches, releases, _ = get_snapshot_content(snapshot)
         releases = list(reversed(releases))
         revision_id = None
         root_directory = None
@@ -231,12 +236,14 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
 
         expected = SnapshotContext(
             branch="HEAD",
+            branch_alias=True,
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
             origin_info={"url": origin["url"]},
             origin_visits_url=origin_visits_url,
             release=None,
+            release_alias=False,
             release_id=None,
             query_params=query_params,
             releases=releases,
@@ -283,6 +290,7 @@ def _check_branch_release_revision_parameters(
 
     expected_branch = dict(base_expected_context)
     expected_branch["branch"] = branch["name"]
+    expected_branch["branch_alias"] = branch["alias"]
     expected_branch["revision_id"] = branch["revision"]
     expected_branch["revision_info"] = _get_revision_info(
         archive_data, branch["revision"]
@@ -305,6 +313,7 @@ def _check_branch_release_revision_parameters(
 
         expected_release = dict(base_expected_context)
         expected_release["branch"] = None
+        expected_release["branch_alias"] = False
         expected_release["release"] = release["name"]
         expected_release["release_id"] = release["id"]
         if release["target_type"] == "revision":
@@ -354,6 +363,7 @@ def _check_branch_release_revision_parameters(
 
     expected_revision = dict(base_expected_context)
     expected_revision["branch"] = revision["id"]
+    expected_revision["branch_alias"] = False
     expected_revision["branches"] = branches
     expected_revision["revision_id"] = revision["id"]
     expected_revision["revision_info"] = _get_revision_info(

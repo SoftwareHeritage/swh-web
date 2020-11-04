@@ -26,6 +26,7 @@ from swh.web.config import get_config
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 swh_object_icons = {
+    "alias": "mdi mdi-star",
     "branch": "mdi mdi-source-branch",
     "branches": "mdi mdi-source-branch",
     "content": "mdi mdi-file-document",

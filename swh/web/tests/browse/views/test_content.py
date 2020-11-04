@@ -410,7 +410,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
     branch_info = random.choice(branches)
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
@@ -480,7 +480,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
     release_info = random.choice(releases)
 
     directory_content = archive_data.directory_ls(release_info["directory"])
