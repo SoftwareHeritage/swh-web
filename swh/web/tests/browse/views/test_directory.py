@@ -186,7 +186,8 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
     visits = archive_data.origin_visit_get(origin["url"])
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
-    branches, releases = process_snapshot_branches(snapshot)
+    snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
+    branches, releases, _ = process_snapshot_branches(snapshot)
     branch_info = random.choice(branches)
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
@@ -210,7 +211,9 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         client, url, status_code=200, template_used="browse/directory.html"
     )
 
-    _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
+    _check_origin_snapshot_related_html(
+        resp, origin, snapshot, snapshot_sizes, branches, releases
+    )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
 
@@ -242,7 +245,8 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     visits = archive_data.origin_visit_get(origin["url"])
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
-    branches, releases = process_snapshot_branches(snapshot)
+    snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
+    branches, releases, _ = process_snapshot_branches(snapshot)
     release_info = random.choice(releases)
 
     directory = release_info["directory"]
@@ -266,7 +270,9 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         client, url, status_code=200, template_used="browse/directory.html"
     )
 
-    _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases)
+    _check_origin_snapshot_related_html(
+        resp, origin, snapshot, snapshot_sizes, branches, releases
+    )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
 
@@ -300,7 +306,9 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     assert_contains(resp, snp_swhid)
 
 
-def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releases):
+def _check_origin_snapshot_related_html(
+    resp, origin, snapshot, snapshot_sizes, branches, releases
+):
     browse_origin_url = reverse(
         "browse-origin", query_params={"origin_url": origin["url"]}
     )
@@ -313,7 +321,7 @@ def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releas
     )
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({len(branches)})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
 
     origin_releases_url = reverse(
         "browse-origin-releases",
@@ -321,7 +329,7 @@ def _check_origin_snapshot_related_html(resp, origin, snapshot, branches, releas
     )
 
     assert_contains(resp, f'href="{escape(origin_releases_url)}"')
-    assert_contains(resp, f"Releases ({len(releases)})")
+    assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
     assert_contains(resp, '<li class="swh-branch">', count=len(branches))
     assert_contains(resp, '<li class="swh-release">', count=len(releases))

@@ -14,7 +14,7 @@ from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHO
 from swh.model.model import OriginVisit, Revision
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
-from swh.storage.algos.snapshot import snapshot_get_latest
+from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.common import converters, query
@@ -993,7 +993,7 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
-def lookup_snapshot_sizes(snapshot_id):
+def lookup_snapshot_sizes(snapshot_id: str) -> Dict[str, int]:
     """Count the number of branches in the snapshot with the given id
 
     Args:
@@ -1004,34 +1004,12 @@ def lookup_snapshot_sizes(snapshot_id):
         values their corresponding amount
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    snapshot_sizes = storage.snapshot_count_branches(snapshot_id_bin)
-    if "revision" not in snapshot_sizes:
-        snapshot_sizes["revision"] = 0
-    if "release" not in snapshot_sizes:
-        snapshot_sizes["release"] = 0
-    # adjust revision / release count for display if aliases are defined
-    if "alias" in snapshot_sizes:
-        aliases = lookup_snapshot(
-            snapshot_id, branches_count=snapshot_sizes["alias"], target_types=["alias"]
-        )
-        for alias in aliases["branches"].values():
-            try:
-                for target_type in ("revision", "release"):
-                    snapshot = lookup_snapshot(
-                        snapshot_id,
-                        branches_from=alias["target"],
-                        branches_count=1,
-                        target_types=[target_type],
-                    )
-                    if snapshot and alias["target"] in snapshot["branches"]:
-                        snapshot_sizes[target_type] += 1
-            except NotFoundExc:
-                # aliased revision or release is missing in the snapshot
-                pass
-        del snapshot_sizes["alias"]
-        # remove possible None key returned by snapshot_count_branches
-        # when null branches are present in the snapshot
-        snapshot_sizes.pop(None, None)
+    snapshot_sizes = dict.fromkeys(("alias", "release", "revision"), 0)
+    branch_counts = storage.snapshot_count_branches(snapshot_id_bin)
+    # remove possible None key returned by snapshot_count_branches
+    # when null branches are present in the snapshot
+    branch_counts.pop(None, None)
+    snapshot_sizes.update(branch_counts)
     return snapshot_sizes
 
 
@@ -1121,6 +1099,29 @@ def lookup_snapshot_branch_name_from_tip_revision(
         if branch["target"] == revision_id:
             return branch["name"]
     return None
+
+
+def lookup_snapshot_alias(
+    snapshot_id: str, alias_name: str
+) -> Optional[Dict[str, Any]]:
+    """Try to resolve a branch alias in a snapshot.
+
+    Args:
+        snapshot_id: hexadecimal representation of a snapshot id
+        alias_name: name of the branch alias to resolve
+
+    Returns:
+        Target branch information or None if the alias does not exist
+        or target a dangling branch.
+    """
+    resolved_alias = snapshot_resolve_alias(
+        storage, _to_sha1_bin(snapshot_id), alias_name.encode()
+    )
+    return (
+        converters.from_swh(resolved_alias.to_dict(), hashess={"target"})
+        if resolved_alias is not None
+        else None
+    )
 
 
 def lookup_revision_through(revision, limit=100):

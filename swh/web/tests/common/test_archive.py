@@ -1013,3 +1013,28 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
 
     origins = list(archive.lookup_origins_by_sha1s([origin_sha1, unknown_origin_sha1]))
     assert origins == [origin_info, None]
+
+
+@given(snapshot())
+def test_lookup_snapshot_sizes(archive_data, snapshot):
+    branches = archive_data.snapshot_get(snapshot)["branches"]
+
+    expected_sizes = {
+        "alias": 0,
+        "release": 0,
+        "revision": 0,
+    }
+
+    for branch_name, branch_info in branches.items():
+        if branch_info is not None:
+            expected_sizes[branch_info["target_type"]] += 1
+
+    assert archive.lookup_snapshot_sizes(snapshot) == expected_sizes
+
+
+@given(snapshot())
+def test_lookup_snapshot_alias(snapshot):
+    resolved_alias = archive.lookup_snapshot_alias(snapshot, "HEAD")
+    assert resolved_alias is not None
+    assert resolved_alias["target_type"] == "revision"
+    assert resolved_alias["target"] is not None

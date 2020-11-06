@@ -307,6 +307,12 @@ class _ArchiveData:
             head = snapshot["branches"]["HEAD"]["target"]
         return head
 
+    def snapshot_count_branches(self, snapshot_id):
+        counts = dict.fromkeys(("alias", "release", "revision"), 0)
+        counts.update(self.storage.snapshot_count_branches(hash_to_bytes(snapshot_id)))
+        counts.pop(None, None)
+        return counts
+
 
 class _IndexerData:
     """

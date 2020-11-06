@@ -26,6 +26,7 @@ from swh.web.config import get_config
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 swh_object_icons = {
+    "alias": "mdi mdi-star",
     "branch": "mdi mdi-source-branch",
     "branches": "mdi mdi-source-branch",
     "content": "mdi mdi-file-document",
@@ -261,6 +262,7 @@ def context_processor(request):
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
+        "site_base_url": request.build_absolute_uri("/"),
     }
 
 

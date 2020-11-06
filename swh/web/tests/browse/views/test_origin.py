@@ -76,13 +76,14 @@ def test_origin_content_view(client, archive_data, origin):
         dir_content = archive_data.directory_ls(head_rev["directory"])
         dir_files = [e for e in dir_content if e["type"] == "file"]
         dir_file = random.choice(dir_files)
-        branches, releases = process_snapshot_branches(snapshot)
+        branches, releases, _ = process_snapshot_branches(snapshot)
         return {
             "branches": branches,
             "releases": releases,
             "root_dir_sha1": head_rev["directory"],
             "content": get_content(dir_file["checksums"]["sha1"]),
             "visit": origin_visits[visit_idx],
+            "snapshot_sizes": archive_data.snapshot_count_branches(snapshot["id"]),
         }
 
     tdata = _get_archive_data(-1)
@@ -92,6 +93,7 @@ def test_origin_content_view(client, archive_data, origin):
         archive_data,
         origin,
         origin_visits[-1],
+        tdata["snapshot_sizes"],
         tdata["branches"],
         tdata["releases"],
         tdata["root_dir_sha1"],
@@ -103,6 +105,7 @@ def test_origin_content_view(client, archive_data, origin):
         archive_data,
         origin,
         origin_visits[-1],
+        tdata["snapshot_sizes"],
         tdata["branches"],
         tdata["releases"],
         tdata["root_dir_sha1"],
@@ -115,6 +118,7 @@ def test_origin_content_view(client, archive_data, origin):
         archive_data,
         origin,
         origin_visits[-1],
+        tdata["snapshot_sizes"],
         tdata["branches"],
         tdata["releases"],
         tdata["root_dir_sha1"],
@@ -129,6 +133,7 @@ def test_origin_content_view(client, archive_data, origin):
         archive_data,
         origin,
         origin_visits[0],
+        tdata["snapshot_sizes"],
         tdata["branches"],
         tdata["releases"],
         tdata["root_dir_sha1"],
@@ -141,6 +146,7 @@ def test_origin_content_view(client, archive_data, origin):
         archive_data,
         origin,
         origin_visits[0],
+        tdata["snapshot_sizes"],
         tdata["branches"],
         tdata["releases"],
         tdata["root_dir_sha1"],
@@ -155,17 +161,19 @@ def test_origin_root_directory_view(client, archive_data, origin):
 
     visit = origin_visits[-1]
     snapshot = archive_data.snapshot_get(visit["snapshot"])
+    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
     head_rev_id = archive_data.snapshot_get_head(snapshot)
     head_rev = archive_data.revision_get(head_rev_id)
     root_dir_sha1 = head_rev["directory"]
     dir_content = archive_data.directory_ls(root_dir_sha1)
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
 
     _origin_directory_view_test_helper(
         client,
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -177,6 +185,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -189,6 +198,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -201,6 +211,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -213,6 +224,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -224,6 +236,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -236,6 +249,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -248,6 +262,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -262,13 +277,14 @@ def test_origin_sub_directory_view(client, archive_data, origin):
 
     visit = origin_visits[-1]
     snapshot = archive_data.snapshot_get(visit["snapshot"])
+    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
     head_rev_id = archive_data.snapshot_get_head(snapshot)
     head_rev = archive_data.revision_get(head_rev_id)
     root_dir_sha1 = head_rev["directory"]
     subdirs = [
         e for e in archive_data.directory_ls(root_dir_sha1) if e["type"] == "dir"
     ]
-    branches, releases = process_snapshot_branches(snapshot)
+    branches, releases, _ = process_snapshot_branches(snapshot)
 
     if len(subdirs) == 0:
         return
@@ -282,6 +298,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -294,6 +311,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -307,6 +325,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -320,6 +339,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -333,6 +353,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -345,6 +366,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -358,6 +380,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -371,6 +394,7 @@ def test_origin_sub_directory_view(client, archive_data, origin):
         archive_data,
         origin,
         visit,
+        snapshot_sizes,
         branches,
         releases,
         root_dir_sha1,
@@ -386,12 +410,13 @@ def test_origin_branches(client, archive_data, origin):
 
     visit = origin_visits[-1]
     snapshot = archive_data.snapshot_get(visit["snapshot"])
+    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
     snapshot_content = process_snapshot_branches(snapshot)
 
-    _origin_branches_test_helper(client, origin, snapshot_content)
+    _origin_branches_test_helper(client, origin, snapshot_content, snapshot_sizes)
 
     _origin_branches_test_helper(
-        client, origin, snapshot_content, snapshot_id=visit["snapshot"]
+        client, origin, snapshot_content, snapshot_sizes, snapshot_id=visit["snapshot"]
     )
 
 
@@ -401,12 +426,13 @@ def test_origin_releases(client, archive_data, origin):
 
     visit = origin_visits[-1]
     snapshot = archive_data.snapshot_get(visit["snapshot"])
+    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
     snapshot_content = process_snapshot_branches(snapshot)
 
-    _origin_releases_test_helper(client, origin, snapshot_content)
+    _origin_releases_test_helper(client, origin, snapshot_content, snapshot_sizes)
 
     _origin_releases_test_helper(
-        client, origin, snapshot_content, snapshot_id=visit["snapshot"]
+        client, origin, snapshot_content, snapshot_sizes, snapshot_id=visit["snapshot"]
     )
 
 
@@ -596,9 +622,10 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_get_origin_visit_snapshot.return_value = ([], [], {})
     mock_snapshot_archive.lookup_origin.return_value = origin
     mock_snapshot_archive.lookup_snapshot_sizes.return_value = {
+        "alias": 0,
         "revision": 0,
         "release": 0,
     }
@@ -652,8 +679,9 @@ def test_origin_empty_snapshot(client, mocker, origin):
     mock_get_origin_visit_snapshot = mocker.patch(
         "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [])
+    mock_get_origin_visit_snapshot.return_value = ([], [], {})
     mock_archive.lookup_snapshot_sizes.return_value = {
+        "alias": 0,
         "revision": 0,
         "release": 0,
     }
@@ -831,6 +859,7 @@ def _origin_content_view_test_helper(
     archive_data,
     origin_info,
     origin_visit,
+    snapshot_sizes,
     origin_branches,
     origin_releases,
     root_dir_sha1,
@@ -907,12 +936,12 @@ def _origin_content_view_test_helper(
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({len(origin_branches)})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_releases_url)}">')
-    assert_contains(resp, f"Releases ({len(origin_releases)})")
+    assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
     assert_contains(resp, '<li class="swh-branch">', count=len(origin_branches))
 
@@ -968,6 +997,7 @@ def _origin_directory_view_test_helper(
     archive_data,
     origin_info,
     origin_visit,
+    snapshot_sizes,
     origin_branches,
     origin_releases,
     root_directory_sha1,
@@ -1044,14 +1074,14 @@ def _origin_directory_view_test_helper(
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({len(origin_branches)})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(resp, f'href="{escape(origin_releases_url)}"')
-        assert_contains(resp, f"Releases ({nb_releases})")
+        assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
     if path:
         query_params["path"] = path
@@ -1103,7 +1133,7 @@ def _origin_directory_view_test_helper(
 
 
 def _origin_branches_test_helper(
-    client, origin_info, origin_snapshot, snapshot_id=None
+    client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id=None
 ):
     query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
 
@@ -1119,14 +1149,14 @@ def _origin_branches_test_helper(
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({len(origin_branches)})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(resp, f'href="{escape(origin_releases_url)}">')
-        assert_contains(resp, f"Releases ({nb_releases})")
+        assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
     assert_contains(resp, '<tr class="swh-branch-entry', count=len(origin_branches))
 
@@ -1148,7 +1178,7 @@ def _origin_branches_test_helper(
 
 
 def _origin_releases_test_helper(
-    client, origin_info, origin_snapshot, snapshot_id=None
+    client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id=None
 ):
     query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
 
@@ -1158,20 +1188,19 @@ def _origin_releases_test_helper(
         client, url, status_code=200, template_used="browse/releases.html"
     )
 
-    origin_branches = origin_snapshot[0]
     origin_releases = origin_snapshot[1]
 
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({len(origin_branches)})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
     nb_releases = len(origin_releases)
     if nb_releases > 0:
         assert_contains(resp, f'href="{escape(origin_releases_url)}"')
-        assert_contains(resp, f"Releases ({nb_releases})")
+        assert_contains(resp, f"Releases ({snapshot_sizes['release']}")
 
     assert_contains(resp, '<tr class="swh-release-entry', count=nb_releases)
 
