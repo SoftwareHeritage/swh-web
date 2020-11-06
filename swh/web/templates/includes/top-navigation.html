@@ -13,10 +13,18 @@ See top-level LICENSE file for more information
       <div class="dropdown" id="swh-branches-releases-dd">
         <button class="btn btn-block btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
           {% if snapshot_context.branch %}
-            <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+            {% if snapshot_context.branch_alias %}
+              <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+            {% else %}
+              <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+            {% endif %}
             Branch: <strong>{{ snapshot_context.branch }}</strong>
           {% else %}
-            <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+            {% if snapshot_context.release_alias %}
+              <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+            {% else %}
+              <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+            {% endif %}
             Release: <strong>{{ snapshot_context.release }}</strong>
           {% endif %}
           <span class="caret"></span>
@@ -31,7 +39,11 @@ See top-level LICENSE file for more information
               {% for b in snapshot_context.branches %}
                 <li class="swh-branch">
                   <a href="{{ b.url | safe }}">
-                    <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+                    {% if b.alias %}
+                      <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                    {% else %}
+                      <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+                    {% endif %}
                     {% if b.name == snapshot_context.branch %}
                       <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
                     {% else %}
@@ -56,7 +68,11 @@ See top-level LICENSE file for more information
                   {% if r.target_type == 'revision' %}
                     <li class="swh-release">
                       <a href="{{ r.url | safe }}">
-                        <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                        {% if r.alias %}
+                          <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                        {% else %}
+                          <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                        {% endif %}
                         {% if r.name == snapshot_context.release %}
                           <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
                         {% else %}

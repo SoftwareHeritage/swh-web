@@ -320,7 +320,7 @@ var Hub = /** @class */ (function () {
         var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
         if (!scope)
             return;
-        var session = scope.getSession();
+        var session = scope.getSession && scope.getSession();
         if (session) {
             session.close();
             if (client && client.captureSession) {

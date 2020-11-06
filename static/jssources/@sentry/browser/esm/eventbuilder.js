@@ -1,3 +1,4 @@
+import { __assign } from "tslib";
 import { Severity } from '@sentry/types';
 import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, SyncPromise, } from '@sentry/utils';
 import { eventFromPlainObject, eventFromStacktrace, prepareFramesForEvent } from './parsers';
@@ -53,7 +54,7 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     }
     if (isDOMError(exception) || isDOMException(exception)) {
         // If it is a DOMError or DOMException (which are legacy APIs, but still supported in some browsers)
-        // then we just extract the name and message, as they don't provide anything else
+        // then we just extract the name, code, and message, as they don't provide anything else
         // https://developer.mozilla.org/en-US/docs/Web/API/DOMError
         // https://developer.mozilla.org/en-US/docs/Web/API/DOMException
         var domException = exception;
@@ -61,6 +62,9 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
         var message = domException.message ? name_1 + ": " + domException.message : name_1;
         event = eventFromString(message, syntheticException, options);
         addExceptionTypeValue(event, message);
+        if ('code' in domException) {
+            event.tags = __assign(__assign({}, event.tags), { 'DOMException.code': "" + domException.code });
+        }
         return event;
     }
     if (isError(exception)) {

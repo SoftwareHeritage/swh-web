@@ -27,7 +27,12 @@ See top-level LICENSE file for more information
           <tr class="swh-branch-entry swh-tr-hover-highlight">
             <td class="swh-branch-name">
               <a href="{{ branch.directory_url }}">
-                <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>{{ branch.name }}
+                {% if branch.alias %}
+                  <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                {% else %}
+                  <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+                {% endif %}
+                {{ branch.name }}
               </a>
             </td>
             <td>

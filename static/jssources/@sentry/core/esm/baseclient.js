@@ -425,7 +425,7 @@ var BaseClient = /** @class */ (function () {
             if (processedEvent === null) {
                 throw new SentryError('`beforeSend` returned `null`, will not send event.');
             }
-            var session = scope && scope.getSession();
+            var session = scope && scope.getSession && scope.getSession();
             if (!isTransaction && session) {
                 _this._updateSessionFromEvent(session, processedEvent);
             }
