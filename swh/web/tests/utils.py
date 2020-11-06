@@ -71,6 +71,7 @@ def check_http_post_response(
     status_code: int,
     content_type: str = "*/*",
     data: Optional[Dict[str, Any]] = None,
+    http_origin: Optional[str] = None,
 ) -> HttpResponse:
     """Helper function to check HTTP response for a POST request.
 
@@ -86,7 +87,11 @@ def check_http_post_response(
     """
     return _assert_http_response(
         response=client.post(
-            url, data=data, content_type="application/json", HTTP_ACCEPT=content_type,
+            url,
+            data=data,
+            content_type="application/json",
+            HTTP_ACCEPT=content_type,
+            HTTP_ORIGIN=http_origin,
         ),
         status_code=status_code,
         content_type=content_type,
