@@ -6,7 +6,6 @@
 # Utility module for browsing the archive in a snapshot context.
 
 from collections import defaultdict
-from copy import copy
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.core.cache import cache
@@ -79,7 +78,7 @@ def _get_branch(branches, branch_name, snapshot_id):
             branches_count=1,
             target_types=["revision", "alias"],
         )
-        snp_branch, _ = process_snapshot_branches(snp)
+        snp_branch, _, _ = process_snapshot_branches(snp)
         if snp_branch and snp_branch[0]["name"] == branch_name:
             branches.append(snp_branch[0])
             return snp_branch[0]
@@ -110,7 +109,7 @@ def _get_release(releases, release_name, snapshot_id):
                 branches_count=1,
                 target_types=["release"],
             )
-        _, snp_release = process_snapshot_branches(snp)
+        _, snp_release, _ = process_snapshot_branches(snp)
         if snp_release and snp_release[0]["name"] == release_name:
             releases.append(snp_release[0])
             return snp_release[0]
@@ -172,7 +171,7 @@ def _branch_not_found(
 
 def process_snapshot_branches(
     snapshot: Dict[str, Any]
-) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo]]:
+) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo], Dict[str, Any]]:
     """
     Process a dictionary describing snapshot branches: extract those
     targeting revisions and releases, put them in two different lists,
@@ -184,8 +183,9 @@ def process_snapshot_branches(
 
     Returns:
         A tuple whose first member is the sorted list of branches
-        targeting revisions and second member the sorted list of branches
-        targeting releases
+        targeting revisions, second member the sorted list of branches
+        targeting releases and third member a dict mapping resolved branch
+        aliases to their real target.
     """
     snapshot_branches = snapshot["branches"]
     branches: Dict[str, SnapshotBranchInfo] = {}
@@ -203,6 +203,7 @@ def process_snapshot_branches(
         if target_type == "revision":
             branches[branch_name] = SnapshotBranchInfo(
                 name=branch_name,
+                alias=False,
                 revision=target_id,
                 date=None,
                 directory=None,
@@ -216,9 +217,10 @@ def process_snapshot_branches(
             branch_aliases[branch_name] = target_id
         # FIXME: handle pointers to other object types
 
-    def _add_release_info(branch, release):
+    def _add_release_info(branch, release, alias=False):
         releases[branch] = SnapshotReleaseInfo(
             name=release["name"],
+            alias=alias,
             branch_name=branch,
             date=format_utc_iso_date(release["date"]),
             directory=None,
@@ -229,9 +231,10 @@ def process_snapshot_branches(
             url=None,
         )
 
-    def _add_branch_info(branch, revision):
+    def _add_branch_info(branch, revision, alias=False):
         branches[branch] = SnapshotBranchInfo(
             name=branch,
+            alias=alias,
             revision=revision["id"],
             directory=revision["directory"],
             date=format_utc_iso_date(revision["date"]),
@@ -261,27 +264,23 @@ def process_snapshot_branches(
         for release_id in revision_to_release[revision["id"]]:
             releases[release_id]["directory"] = revision["directory"]
 
+    resolved_aliases = {}
+
     for branch_alias, branch_target in branch_aliases.items():
-        if branch_target in branches:
-            branches[branch_alias] = copy(branches[branch_target])
-        else:
-            snp = archive.lookup_snapshot(
-                snapshot["id"], branches_from=branch_target, branches_count=1
-            )
-            if snp and branch_target in snp["branches"]:
+        resolved_alias = archive.lookup_snapshot_alias(snapshot["id"], branch_alias)
+        resolved_aliases[branch_alias] = resolved_alias
+        if resolved_alias is None:
+            continue
 
-                if snp["branches"][branch_target] is None:
-                    continue
+        target_type = resolved_alias["target_type"]
+        target = resolved_alias["target"]
 
-                target_type = snp["branches"][branch_target]["target_type"]
-                target = snp["branches"][branch_target]["target"]
-                if target_type == "revision":
-                    branches[branch_alias] = snp["branches"][branch_target]
-                    revision = archive.lookup_revision(target)
-                    _add_branch_info(branch_alias, revision)
-                elif target_type == "release":
-                    release = archive.lookup_release(target)
-                    _add_release_info(branch_alias, release)
+        if target_type == "revision":
+            revision = archive.lookup_revision(target)
+            _add_branch_info(branch_alias, revision, alias=True)
+        elif target_type == "release":
+            release = archive.lookup_release(target)
+            _add_release_info(branch_alias, release, alias=True)
 
         if branch_alias in branches:
             branches[branch_alias]["name"] = branch_alias
@@ -289,12 +288,12 @@ def process_snapshot_branches(
     ret_branches = list(sorted(branches.values(), key=lambda b: b["name"]))
     ret_releases = list(sorted(releases.values(), key=lambda b: b["name"]))
 
-    return ret_branches, ret_releases
+    return ret_branches, ret_releases, resolved_aliases
 
 
 def get_snapshot_content(
     snapshot_id: str,
-) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo]]:
+) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo], Dict[str, Any]]:
     """Returns the lists of branches and releases
     associated to a swh snapshot.
     That list is put in  cache in order to speedup the navigation
@@ -307,9 +306,10 @@ def get_snapshot_content(
         snapshot_id: hexadecimal representation of the snapshot identifier
 
     Returns:
-        A tuple with two members. The first one is a list of dict describing
+        A tuple with three members. The first one is a list of dict describing
         the snapshot branches. The second one is a list of dict describing the
-        snapshot releases.
+        snapshot releases. The third one is a dict mapping resolved branch
+        aliases to their real target.
 
     Raises:
         NotFoundExc if the snapshot does not exist
@@ -318,10 +318,15 @@ def get_snapshot_content(
     cache_entry = cache.get(cache_entry_id)
 
     if cache_entry:
-        return cache_entry["branches"], cache_entry["releases"]
+        return (
+            cache_entry["branches"],
+            cache_entry["releases"],
+            cache_entry.get("aliases", {}),
+        )
 
     branches: List[SnapshotBranchInfo] = []
     releases: List[SnapshotReleaseInfo] = []
+    aliases: Dict[str, Any] = {}
 
     snapshot_content_max_size = get_config()["snapshot_content_max_size"]
 
@@ -329,11 +334,13 @@ def get_snapshot_content(
         snapshot = archive.lookup_snapshot(
             snapshot_id, branches_count=snapshot_content_max_size
         )
-        branches, releases = process_snapshot_branches(snapshot)
+        branches, releases, aliases = process_snapshot_branches(snapshot)
 
-    cache.set(cache_entry_id, {"branches": branches, "releases": releases,})
+    cache.set(
+        cache_entry_id, {"branches": branches, "releases": releases, "aliases": aliases}
+    )
 
-    return branches, releases
+    return branches, releases, aliases
 
 
 def get_origin_visit_snapshot(
@@ -341,7 +348,7 @@ def get_origin_visit_snapshot(
     visit_ts: Optional[str] = None,
     visit_id: Optional[int] = None,
     snapshot_id: Optional[str] = None,
-) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo]]:
+) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo], Dict[str, Any]]:
     """Returns the lists of branches and releases associated to an origin for
     a given visit.
 
@@ -368,10 +375,11 @@ def get_origin_visit_snapshot(
         snapshot_id: if provided, visit associated to the snapshot will be processed
 
     Returns:
-        A tuple with two members. The first one is a list of dict describing
+        A tuple with three members. The first one is a list of dict describing
         the origin branches for the given visit.
         The second one is a list of dict describing the origin releases
-        for the given visit.
+        for the given visit. The third one is a dict mapping resolved branch
+        aliases to their real target.
 
     Raises:
         NotFoundExc if the origin or its visit are not found
@@ -454,7 +462,7 @@ def get_snapshot_context(
         if timestamp:
             timestamp = visit_info["date"]
 
-        branches, releases = get_origin_visit_snapshot(
+        branches, releases, aliases = get_origin_visit_snapshot(
             origin_info, timestamp, visit_id, snapshot_id
         )
 
@@ -477,7 +485,7 @@ def get_snapshot_context(
         releases_url = reverse("browse-origin-releases", query_params=query_params)
     else:
         assert snapshot_id is not None
-        branches, releases = get_snapshot_content(snapshot_id)
+        branches, releases, aliases = get_snapshot_content(snapshot_id)
         url_args = {"snapshot_id": snapshot_id}
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
 
@@ -485,9 +493,13 @@ def get_snapshot_context(
 
     releases = list(reversed(releases))
 
-    snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
+    snapshot_sizes_cache_id = f"swh_snapshot_{snapshot_id}_sizes"
+    snapshot_sizes = cache.get(snapshot_sizes_cache_id)
+    if snapshot_sizes is None:
+        snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
+        cache.set(snapshot_sizes_cache_id, snapshot_sizes)
 
-    is_empty = sum(snapshot_sizes.values()) == 0
+    is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
 
     swh_snp_id = swhid("snapshot", snapshot_id)
 
@@ -502,7 +514,7 @@ def get_snapshot_context(
     release_id = None
     root_directory = None
 
-    snapshot_total_size = sum(snapshot_sizes.values())
+    snapshot_total_size = snapshot_sizes["release"] + snapshot_sizes["revision"]
 
     if path is not None:
         query_params["path"] = path
@@ -513,6 +525,7 @@ def get_snapshot_context(
         branches.append(
             SnapshotBranchInfo(
                 name=revision_id,
+                alias=False,
                 revision=revision_id,
                 directory=root_directory,
                 date=revision["date"],
@@ -596,12 +609,14 @@ def get_snapshot_context(
 
     snapshot_context = SnapshotContext(
         branch=branch_name,
+        branch_alias=branch_name in aliases,
         branches=branches,
         branches_url=branches_url,
         is_empty=is_empty,
         origin_info=origin_info,
         origin_visits_url=origin_visits_url,
         release=release_name,
+        release_alias=release_name in aliases,
         release_id=release_id,
         query_params=query_params,
         releases=releases,
@@ -1225,7 +1240,7 @@ def browse_snapshot_branches(
         target_types=["revision", "alias"],
     )
 
-    displayed_branches, _ = process_snapshot_branches(snapshot)
+    displayed_branches, _, _ = process_snapshot_branches(snapshot)
 
     for branch in displayed_branches:
         rev_query_params = {}
@@ -1329,7 +1344,7 @@ def browse_snapshot_releases(
         target_types=["release", "alias"],
     )
 
-    _, displayed_releases = process_snapshot_branches(snapshot)
+    _, displayed_releases, _ = process_snapshot_branches(snapshot)
 
     for release in displayed_releases:
         query_params_tgt = {"snapshot": snapshot_id}

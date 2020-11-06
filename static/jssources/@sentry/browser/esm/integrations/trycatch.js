@@ -149,8 +149,9 @@ var TryCatch = /** @class */ (function () {
                 }), options);
             };
         });
-        fill(proto, 'removeEventListener', function (original) {
+        fill(proto, 'removeEventListener', function (originalRemoveEventListener) {
             return function (eventName, fn, options) {
+                var _a;
                 /**
                  * There are 2 possible scenarios here:
                  *
@@ -168,13 +169,17 @@ var TryCatch = /** @class */ (function () {
                  * then we have to detach both of them. Otherwise, if we'd detach only wrapped one, it'd be impossible
                  * to get rid of the initial handler and it'd stick there forever.
                  */
+                var wrappedEventHandler = fn;
                 try {
-                    original.call(this, eventName, fn.__sentry_wrapped__, options);
+                    var originalEventHandler = (_a = wrappedEventHandler) === null || _a === void 0 ? void 0 : _a.__sentry_wrapped__;
+                    if (originalEventHandler) {
+                        originalRemoveEventListener.call(this, eventName, originalEventHandler, options);
+                    }
                 }
                 catch (e) {
                     // ignore, accessing __sentry_wrapped__ will throw in some Selenium environments
                 }
-                return original.call(this, eventName, fn, options);
+                return originalRemoveEventListener.call(this, eventName, wrappedEventHandler, options);
             };
         });
     };

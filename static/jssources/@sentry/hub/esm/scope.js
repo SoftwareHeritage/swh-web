@@ -295,6 +295,7 @@ var Scope = /** @class */ (function () {
      * @hidden
      */
     Scope.prototype.applyToEvent = function (event, hint) {
+        var _a;
         if (this._extra && Object.keys(this._extra).length) {
             event.extra = __assign(__assign({}, this._extra), event.extra);
         }
@@ -318,6 +319,10 @@ var Scope = /** @class */ (function () {
         // errors with transaction and it relys on that.
         if (this._span) {
             event.contexts = __assign({ trace: this._span.getTraceContext() }, event.contexts);
+            var transactionName = (_a = this._span.transaction) === null || _a === void 0 ? void 0 : _a.name;
+            if (transactionName) {
+                event.tags = __assign({ transaction: transactionName }, event.tags);
+            }
         }
         this._applyFingerprint(event);
         event.breadcrumbs = __spread((event.breadcrumbs || []), this._breadcrumbs);

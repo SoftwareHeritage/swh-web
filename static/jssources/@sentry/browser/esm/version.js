@@ -1,3 +1,3 @@
 export var SDK_NAME = 'sentry.javascript.browser';
-export var SDK_VERSION = '5.27.2';
+export var SDK_VERSION = '5.27.3';
 //# sourceMappingURL=version.js.map
