@@ -333,7 +333,7 @@ class _IndexerData:
         self.ctags_indexer = tests_data["ctags_indexer"]
 
     def content_add_mimetype(self, cnt_id):
-        self.mimetype_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
+        self.mimetype_indexer.run([hash_to_bytes(cnt_id)])
 
     def content_get_mimetype(self, cnt_id):
         mimetype = self.idx_storage.content_mimetype_get([hash_to_bytes(cnt_id)])[
@@ -342,7 +342,7 @@ class _IndexerData:
         return converters.from_filetype(mimetype)
 
     def content_add_license(self, cnt_id):
-        self.license_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
+        self.license_indexer.run([hash_to_bytes(cnt_id)])
 
     def content_get_license(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
@@ -351,7 +351,7 @@ class _IndexerData:
             yield converters.from_swh(license.to_dict(), hashess={"id"})
 
     def content_add_ctags(self, cnt_id):
-        self.ctags_indexer.run([hash_to_bytes(cnt_id)], "update-dups")
+        self.ctags_indexer.run([hash_to_bytes(cnt_id)])
 
     def content_get_ctags(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
