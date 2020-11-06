@@ -5,7 +5,11 @@
 
 import json
 
-from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
+from corsheaders.middleware import (
+    ACCESS_CONTROL_ALLOW_HEADERS,
+    ACCESS_CONTROL_ALLOW_METHODS,
+    ACCESS_CONTROL_ALLOW_ORIGIN,
+)
 from hypothesis import given
 
 from swh.model.identifiers import CONTENT, DIRECTORY, REVISION
@@ -164,9 +168,21 @@ def test_api_endpoints_have_cors_headers(client, content, directory, revision):
         gen_swhid(REVISION, revision),
     ]
     url = reverse("api-1-known")
-    resp = client.options(url, HTTP_ORIGIN="https://example.org")
+    ac_request_method = "POST"
+    ac_request_headers = "Content-Type"
+    resp = client.options(
+        url,
+        HTTP_ORIGIN="https://example.org",
+        HTTP_ACCESS_CONTROL_REQUEST_METHOD=ac_request_method,
+        HTTP_ACCESS_CONTROL_REQUEST_HEADERS=ac_request_headers,
+    )
+
     assert resp.status_code == 200
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
+    assert ACCESS_CONTROL_ALLOW_METHODS in resp
+    assert ac_request_method in resp[ACCESS_CONTROL_ALLOW_METHODS]
+    assert ACCESS_CONTROL_ALLOW_HEADERS in resp
+    assert ac_request_headers.lower() in resp[ACCESS_CONTROL_ALLOW_HEADERS]
 
     resp = resp = check_http_post_response(
         client, url, data=swhids, status_code=200, http_origin="https://example.org"
