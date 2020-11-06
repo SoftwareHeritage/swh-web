@@ -274,7 +274,7 @@ CACHES = {
 JS_REVERSE_JS_MINIFY = False
 
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = r"^/badge/.*$"
+CORS_URLS_REGEX = r"^/(badge|api)/.*$"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
