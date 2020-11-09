@@ -1338,9 +1338,9 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
         elif obj_type == REVISION:
             missing_hashes.append(storage.revision_missing(obj_ids))
         elif obj_type == RELEASE:
-            missing_hashes.append(storage.directory_missing(obj_ids))
+            missing_hashes.append(storage.release_missing(obj_ids))
         elif obj_type == SNAPSHOT:
-            missing_hashes.append(storage.directory_missing(obj_ids))
+            missing_hashes.append(storage.snapshot_missing(obj_ids))
 
     missing = set(
         map(lambda x: hashutil.hash_to_hex(x), itertools.chain(*missing_hashes))
