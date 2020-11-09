@@ -64,6 +64,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <link rel="search" type="application/opensearchdescription+xml" title="Software Heritage archive of public source code" href="{% static 'xml/swh-opensearch.xml' %}">
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
 
+    {% if "production" in DJANGO_SETTINGS_MODULE  %}
+
+      <!-- Matomo -->
+      <script type="text/javascript">
+        var _paq = window._paq = window._paq || [];
+        _paq.push(['trackPageView']);
+        (function() {
+          var u="https://piwik.inria.fr/";
+          _paq.push(['setTrackerUrl', u+'matomo.php']);
+          _paq.push(['setSiteId', '59']);
+          var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+      </script>
+      <!-- End Matomo Code -->
+
+    {% endif %}
+
   </head>
 
   <body class="hold-transition layout-fixed sidebar-mini">
