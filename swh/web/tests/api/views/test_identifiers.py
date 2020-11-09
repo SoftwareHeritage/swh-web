@@ -113,6 +113,25 @@ def test_swh_origin_id_not_resolvable(api_client):
     check_api_get_responses(api_client, url, status_code=400)
 
 
+@given(content(), directory(), release(), revision(), snapshot())
+def test_api_known_swhid_all_present(
+    api_client, content, directory, release, revision, snapshot
+):
+    input_swhids = [
+        gen_swhid(CONTENT, content["sha1_git"]),
+        gen_swhid(DIRECTORY, directory),
+        gen_swhid(REVISION, revision),
+        gen_swhid(RELEASE, release),
+        gen_swhid(SNAPSHOT, snapshot),
+    ]
+
+    url = reverse("api-1-known")
+
+    resp = check_api_post_responses(api_client, url, data=input_swhids, status_code=200)
+
+    assert resp.data == {swhid: {"known": True} for swhid in input_swhids}
+
+
 @given(content(), directory())
 def test_api_known_swhid_some_present(api_client, content, directory):
     content_ = gen_swhid(CONTENT, content["sha1_git"])
