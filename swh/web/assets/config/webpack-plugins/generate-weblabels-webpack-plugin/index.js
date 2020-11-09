@@ -191,10 +191,16 @@ class GenerateWebLabelsPlugin {
             let parsedSpdxLicenses = this.parseSpdxLicenseExpression(scriptSrc['spdxLicenseExpression'],
                                                                      `file ${scriptSrc['path']}`);
             scriptSrcData['licenses'] = this.spdxToWebLabelsLicenses(parsedSpdxLicenses);
-            let licenseCopyUrl = this.copyLicenseFile(licenceFilePath);
-            scriptSrcData['licenses'].forEach(license => {
-              license['copy_url'] = licenseCopyUrl;
-            });
+            if (licenceFilePath.indexOf('://') === -1 && !licenceFilePath.startsWith('/')) {
+              let licenseCopyUrl = this.copyLicenseFile(licenceFilePath);
+              scriptSrcData['licenses'].forEach(license => {
+                license['copy_url'] = licenseCopyUrl;
+              });
+            } else {
+              scriptSrcData['licenses'].forEach(license => {
+                license['copy_url'] = licenceFilePath;
+              });
+            }
             if (scriptSrc['path'].indexOf('://') === -1 && !scriptSrc['path'].startsWith('/')) {
               scriptSrcData['src_url'] = stats.publicPath + path.join(this.weblabelsDirName, scriptSrc['id']);
             } else {
