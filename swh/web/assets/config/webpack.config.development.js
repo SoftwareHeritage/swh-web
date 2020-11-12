@@ -431,6 +431,14 @@ module.exports = {
               'spdxLicenseExpression': 'AGPL-3.0-or-later',
               'licenseFilePath': './LICENSE'
             }
+          ],
+          'https://piwik.inria.fr/matomo.js': [
+            {
+              'id': 'matomo.js',
+              'path': 'https://github.com/matomo-org/matomo/blob/master/js/piwik.js',
+              'spdxLicenseExpression': 'BSD-3-Clause',
+              'licenseFilePath': 'https://github.com/matomo-org/matomo/blob/master/js/LICENSE.txt'
+            }
           ]
         }
       )

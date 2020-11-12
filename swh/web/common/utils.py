@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timezone
+import os
 import re
 from typing import Any, Dict, Optional
 
@@ -263,6 +264,7 @@ def context_processor(request):
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
         "site_base_url": request.build_absolute_uri("/"),
+        "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
     }
 
 
