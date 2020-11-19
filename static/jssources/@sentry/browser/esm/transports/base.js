@@ -1,6 +1,6 @@
 import { __values } from "tslib";
 import { API } from '@sentry/core';
-import { Status } from '@sentry/types';
+import { Status, } from '@sentry/types';
 import { logger, parseRetryAfterHeader, PromiseBuffer, SentryError } from '@sentry/utils';
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {
