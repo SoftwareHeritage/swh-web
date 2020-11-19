@@ -35,12 +35,11 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
             f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
         )
         stub_cook = {
-            "fetch_url": fetch_url,
-            "obj_id": obj_id,
-            "obj_type": obj_type,
-            "progress_message": None,
-            "status": "done",
-            "task_uuid": "de75c902-5ee5-4739-996e-448376a93eff",
+            "type": obj_type,
+            "progress_msg": None,
+            "task_id": 1,
+            "task_status": "done",
+            "object_id": obj_id,
         }
         stub_fetch = b"content"
 
@@ -55,12 +54,14 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         )
 
         rv = check_api_post_responses(api_client, url, data=None, status_code=200)
-
-        stub_cook["fetch_url"] = rv.wsgi_request.build_absolute_uri(
-            stub_cook["fetch_url"]
-        )
-
-        assert rv.data == stub_cook
+        assert rv.data == {
+            "fetch_url": rv.wsgi_request.build_absolute_uri(fetch_url),
+            "obj_type": obj_type,
+            "progress_message": None,
+            "id": 1,
+            "status": "done",
+            "obj_id": obj_id,
+        }
         mock_archive.vault_cook.assert_called_with(
             obj_type, hashutil.hash_to_bytes(obj_id), email
         )

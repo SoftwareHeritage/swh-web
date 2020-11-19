@@ -19,22 +19,27 @@ class FixSwhSourceMapsPlugin {
   }
 
   apply(compiler) {
-    compiler.hooks.afterCompile.tap('FixSwhSourceMapsPlugin', compilation => {
-      Object.keys(compilation.assets).filter(key => {
-        return this.sourceMapRegexp.test(key);
-      }).forEach(key => {
-        let bundleName = key.replace(/^js\//, '');
-        bundleName = bundleName.replace(/^css\//, '');
-        let pos = bundleName.indexOf('.');
-        bundleName = bundleName.slice(0, pos);
-        let asset = compilation.assets[key];
-        let source = asset.source().replace(/swh.\[name\]/g, 'swh.' + bundleName);
-        compilation.assets[key] = Object.assign(asset, {
-          source: () => {
-            return source;
-          }
-        });
-      });
+    compiler.hooks.compilation.tap('FixSwhSourceMapsPlugin', compilation => {
+      const {Compilation, sources} = require('webpack');
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'FixSwhSourceMapsPlugin',
+          stage: Compilation.PROCESS_ASSETS_STAGE_ANALYSE
+        },
+        () => {
+          Object.keys(compilation.assets).filter(key => {
+            return this.sourceMapRegexp.test(key);
+          }).forEach(key => {
+            let bundleName = key.replace(/^js\//, '');
+            bundleName = bundleName.replace(/^css\//, '');
+            let pos = bundleName.indexOf('.');
+            bundleName = bundleName.slice(0, pos);
+            let asset = compilation.assets[key];
+            let source = asset.source().replace(/swh.\[name\]/g, 'swh.' + bundleName);
+            compilation.updateAsset(key, new sources.RawSource(source));
+          });
+        }
+      );
     });
   }
 
