@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Any, Dict
+
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.decorators.cache import never_cache
@@ -39,6 +41,17 @@ def _dispatch_cook_progress(request, obj_type, obj_id):
             notfound_msg=("{} '{}' not found.".format(object_name.title(), hex_id)),
             request=request,
         )
+
+
+def _vault_response(vault_response: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "fetch_url": vault_response["fetch_url"],
+        "obj_type": vault_response["type"],
+        "progress_message": vault_response["progress_msg"],
+        "id": vault_response["task_id"],
+        "status": vault_response["task_status"],
+        "obj_id": vault_response["object_id"],
+    }
 
 
 @never_cache
@@ -101,9 +114,9 @@ def api_vault_cook_directory(request, dir_id):
 
     res = _dispatch_cook_progress(request, "directory", obj_id)
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-directory", url_args={"dir_id": dir_id}
+        "api-1-vault-fetch-directory", url_args={"dir_id": dir_id}, request=request,
     )
-    return res
+    return _vault_response(res)
 
 
 @api_route(
@@ -208,9 +221,11 @@ def api_vault_cook_revision_gitfast(request, rev_id):
 
     res = _dispatch_cook_progress(request, "revision_gitfast", obj_id)
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-revision_gitfast", url_args={"rev_id": rev_id}
+        "api-1-vault-fetch-revision_gitfast",
+        url_args={"rev_id": rev_id},
+        request=request,
     )
-    return res
+    return _vault_response(res)
 
 
 @api_route(
