@@ -5,9 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-// export overridden d3 functions first
-export * from './d3-custom';
-
 // export required d3 modules
 export * from 'd3-array';
 export * from 'd3-axis';

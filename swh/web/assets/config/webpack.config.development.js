@@ -20,9 +20,10 @@ const FixSwhSourceMapsPlugin = require('./webpack-plugins/fix-swh-source-maps-we
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const FixWebpackStatsFormatPlugin = require('./webpack-plugins/fix-webpack-stats-format-plugin');
 
 // are we running webpack-dev-server ?
-const isDevServer = process.argv.find(v => v.includes('webpack-dev-server'));
+const isDevServer = process.argv.find(v => v.includes('serve'));
 // webpack-dev-server configuration
 const devServerPort = 3000;
 const devServerPublicPath = 'http://localhost:' + devServerPort + '/static/';
@@ -37,6 +38,10 @@ var bundles = {};
 const bundlesDir = path.join(__dirname, '../src/bundles');
 fs.readdirSync(bundlesDir).forEach(file => {
   bundles[file] = ['bundles/' + file + '/index.js'];
+  // workaround for https://github.com/webpack/webpack-dev-server/issues/2692
+  if (isDevServer) {
+    bundles[file].unshift(`webpack-dev-server/client/index.js?http://localhost:${devServerPort}`);
+  }
 });
 
 // common loaders for css related assets (css, sass)
@@ -85,9 +90,13 @@ let cssLoaders = [
 // webpack development configuration
 module.exports = {
   // use caching to speedup incremental builds
-  cache: true,
+  cache: {
+    type: 'memory'
+  },
   // set mode to development
   mode: 'development',
+  // workaround for https://github.com/webpack/webpack-dev-server/issues/2758
+  target: process.env.NODE_ENV === 'development' ? 'web' : 'browserslist',
   // use eval source maps when using webpack-dev-server for quick debugging,
   // otherwise generate source map files (more expensive)
   devtool: isDevServer ? 'eval' : 'source-map',
@@ -111,15 +120,17 @@ module.exports = {
     overlay: {
       warnings: true,
       errors: true
-    }
+    },
+    // workaround for https://github.com/webpack/webpack-dev-server/issues/2692
+    injectClient: false
   },
   // set entries to the bundles we want to produce
   entry: bundles,
   // assets output configuration
   output: {
     path: path.resolve('./static/'),
-    filename: 'js/[name].[chunkhash].js',
-    chunkFilename: 'js/[name].[chunkhash].js',
+    filename: 'js/[name].[contenthash].js',
+    chunkFilename: 'js/[name].[contenthash].js',
     publicPath: publicPath,
     // each bundle will be compiled as a umd module with its own namespace
     // in order to easily use them in django templates
@@ -347,7 +358,8 @@ module.exports = {
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
-      filename: './static/webpack-stats.json'
+      path: path.resolve('./static/'),
+      filename: 'webpack-stats.json'
     }),
     // for generating the robots.txt file
     new RobotstxtPlugin({
@@ -358,8 +370,8 @@ module.exports = {
     }),
     // for extracting all stylesheets in separate css files
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[chunkhash].css',
-      chunkFilename: 'css/[name].[chunkhash].css'
+      filename: 'css/[name].[contenthash].css',
+      chunkFilename: 'css/[name].[contenthash].css'
     }),
     // fix generated asset sourcemaps to workaround a Firefox issue
     new FixSwhSourceMapsPlugin(),
@@ -446,14 +458,15 @@ module.exports = {
     new ProgressBarPlugin({
       format: chalk.cyan.bold('webpack build of swh-web assets') + ' [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
       width: 50
-    })
+    }),
+    new FixWebpackStatsFormatPlugin()
   ],
   // webpack optimizations
   optimization: {
     // ensure the vendors bundle gets emitted in a single chunk
     splitChunks: {
       cacheGroups: {
-        vendors: {
+        defaultVendors: {
           test: 'vendors',
           chunks: 'all',
           name: 'vendors',

@@ -397,10 +397,12 @@ export { Scope };
  * Retruns the global event processors.
  */
 function getGlobalEventProcessors() {
+    /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access  */
     var global = getGlobalObject();
     global.__SENTRY__ = global.__SENTRY__ || {};
     global.__SENTRY__.globalEventProcessors = global.__SENTRY__.globalEventProcessors || [];
     return global.__SENTRY__.globalEventProcessors;
+    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
 }
 /**
  * Add a EventProcessor to be kept globally.

@@ -193,7 +193,9 @@ function checkVaultCookingTasks() {
       localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
       checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
     })
-    .catch(() => {});
+    .catch(error => {
+      console.log('Error when fetching vault cooking tasks:', error);
+    });
 }
 
 export function removeCookingTaskInfo(tasksToRemove) {

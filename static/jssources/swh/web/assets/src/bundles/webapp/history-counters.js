@@ -69,7 +69,9 @@ export async function drawHistoryCounterGraph(container, historyData) {
 
   // utility functions
   const dateFormatter = d3.timeFormat('%d %b %Y');
-  const valueFormatter = d3.format('.3s');
+  const valueFormatter = (v) => {
+    return d3.format('.3s')(v).replace(/G/, 'B');
+  };
   const bisectDate = d3.bisector(d => d[0]).left;
 
   // add x axis
