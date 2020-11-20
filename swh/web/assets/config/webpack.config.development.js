@@ -21,6 +21,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const FixWebpackStatsFormatPlugin = require('./webpack-plugins/fix-webpack-stats-format-plugin');
+const DumpHighlightjsLanguagesDataPlugin = require('./webpack-plugins/dump-highlightjs-languages-data-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('serve'));
@@ -354,7 +355,7 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['**/*', '!xml', '!xml/*', '!img', '!img/*',
                                      '!img/logos', '!img/logos/*', '!img/icons',
-                                     '!img/icons/*']
+                                     '!img/icons/*', '!json', '!json/*']
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
@@ -459,7 +460,8 @@ module.exports = {
       format: chalk.cyan.bold('webpack build of swh-web assets') + ' [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
       width: 50
     }),
-    new FixWebpackStatsFormatPlugin()
+    new FixWebpackStatsFormatPlugin(),
+    new DumpHighlightjsLanguagesDataPlugin()
   ],
   // webpack optimizations
   optimization: {
