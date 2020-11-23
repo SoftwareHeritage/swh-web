@@ -53,8 +53,8 @@ def _revision_directory_by(revision, path, request_path, limit=100, with_data=Fa
 
     """
 
-    def enrich_directory_local(dir, context_url=request_path):
-        return utils.enrich_directory(dir, context_url)
+    def enrich_directory_entry_local(dir, context_url=request_path):
+        return utils.enrich_directory_entry(dir, context_url)
 
     rev_id, result = archive.lookup_directory_through_revision(
         revision, path, limit=limit, with_data=with_data
@@ -62,7 +62,7 @@ def _revision_directory_by(revision, path, request_path, limit=100, with_data=Fa
 
     content = result["content"]
     if result["type"] == "dir":  # dir_entries
-        result["content"] = list(map(enrich_directory_local, content))
+        result["content"] = list(map(enrich_directory_entry_local, content))
     elif result["type"] == "file":  # content
         result["content"] = utils.enrich_content(content)
     elif result["type"] == "rev":  # revision
