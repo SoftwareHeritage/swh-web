@@ -46,6 +46,8 @@ const lineHighlightColor = '#fdf3da';
 let selectedDiffLinesInfo;
 // URL fragment to append when switching to 'Changes' tab
 const changesUrlFragment = '#swh-revision-changes';
+// current displayed tab name
+let currentTabName = 'Files';
 
 // to check if a DOM element is in the viewport
 function isInViewport(elt) {
@@ -188,7 +190,9 @@ function resetHighlightedDiffLines(resetVars = true) {
   $('.hljs-ln-line[data-line-number]').css('mix-blend-mode', 'initial');
   $('.hljs-ln-numbers[data-line-number]').css('color', '#aaa');
   $('.hljs-ln-numbers[data-line-number]').css('font-weight', 'initial');
-  window.location.hash = changesUrlFragment;
+  if (currentTabName === 'Changes' && window.location.hash !== changesUrlFragment) {
+    window.location.hash = changesUrlFragment;
+  }
 }
 
 // highlight lines in a diff, return first highlighted line numbers element
@@ -660,7 +664,8 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
 
   // callback when the 'Changes' tab is activated
   $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', e => {
-    if (e.currentTarget.text.trim() === 'Changes') {
+    currentTabName = e.currentTarget.text.trim();
+    if (currentTabName === 'Changes') {
       window.location.hash = changesUrlFragment;
       $('#readme-panel').css('display', 'none');
 
@@ -708,7 +713,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
           }
 
         });
-    } else if (e.currentTarget.text.trim() === 'Files') {
+    } else if (currentTabName === 'Files') {
       removeUrlFragment();
       $('#readme-panel').css('display', 'block');
     }

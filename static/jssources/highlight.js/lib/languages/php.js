@@ -11,10 +11,14 @@ Category: common
  * @returns {LanguageDetail}
  * */
 function php(hljs) {
-  var VARIABLE = {
-    begin: '\\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*'
+  const VARIABLE = {
+    className: 'variable',
+    begin: '\\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*' +
+      // negative look-ahead tries to avoid matching patterns that are not
+      // Perl at all like $ident$, @ident@, etc.
+      `(?![A-Za-z0-9])(?![$])`
   };
-  var PREPROCESSOR = {
+  const PREPROCESSOR = {
     className: 'meta',
     variants: [
       { begin: /<\?php/, relevance: 10 }, // boost for obvious PHP
@@ -22,26 +26,26 @@ function php(hljs) {
       { begin: /\?>/ } // end php tag
     ]
   };
-  var SUBST = {
+  const SUBST = {
     className: 'subst',
     variants: [
       { begin: /\$\w+/ },
       { begin: /\{\$/, end: /\}/ }
     ]
   };
-  var SINGLE_QUOTED = hljs.inherit(hljs.APOS_STRING_MODE, {
+  const SINGLE_QUOTED = hljs.inherit(hljs.APOS_STRING_MODE, {
     illegal: null,
   });
-  var DOUBLE_QUOTED = hljs.inherit(hljs.QUOTE_STRING_MODE, {
+  const DOUBLE_QUOTED = hljs.inherit(hljs.QUOTE_STRING_MODE, {
     illegal: null,
     contains: hljs.QUOTE_STRING_MODE.contains.concat(SUBST),
   });
-  var HEREDOC = hljs.END_SAME_AS_BEGIN({
+  const HEREDOC = hljs.END_SAME_AS_BEGIN({
     begin: /<<<[ \t]*(\w+)\n/,
     end: /[ \t]*(\w+)\b/,
     contains: hljs.QUOTE_STRING_MODE.contains.concat(SUBST),
   });
-  var STRING = {
+  const STRING = {
     className: 'string',
     contains: [hljs.BACKSLASH_ESCAPE, PREPROCESSOR],
     variants: [
@@ -56,8 +60,8 @@ function php(hljs) {
       HEREDOC
     ]
   };
-  var NUMBER = {variants: [hljs.BINARY_NUMBER_MODE, hljs.C_NUMBER_MODE]};
-  var KEYWORDS = {
+  const NUMBER = {variants: [hljs.BINARY_NUMBER_MODE, hljs.C_NUMBER_MODE]};
+  const KEYWORDS = {
     keyword:
     // Magic constants:
     // <https://www.php.net/manual/en/language.constants.predefined.php>
@@ -70,7 +74,11 @@ function php(hljs) {
     // Other keywords:
     // <https://www.php.net/manual/en/reserved.php>
     // <https://www.php.net/manual/en/language.types.type-juggling.php>
-    'array abstract and as binary bool boolean break callable case catch class clone const continue declare default do double else elseif empty enddeclare endfor endforeach endif endswitch endwhile eval extends final finally float for foreach from global goto if implements instanceof insteadof int integer interface isset iterable list match new object or private protected public real return string switch throw trait try unset use var void while xor yield',
+    'array abstract and as binary bool boolean break callable case catch class clone const continue declare ' +
+    'default do double else elseif empty enddeclare endfor endforeach endif endswitch endwhile eval extends ' +
+    'final finally float for foreach from global goto if implements instanceof insteadof int integer interface ' +
+    'isset iterable list match|0 new object or private protected public real return string switch throw trait ' +
+    'try unset use var void while xor yield',
     literal: 'false null true',
     built_in:
     // Standard PHP library:
@@ -122,10 +130,14 @@ function php(hljs) {
       },
       {
         className: 'function',
+        relevance: 0,
         beginKeywords: 'fn function', end: /[;{]/, excludeEnd: true,
         illegal: '[$%\\[]',
         contains: [
           hljs.UNDERSCORE_TITLE_MODE,
+          {
+            begin: '=>' // No markup, just a relevance booster
+          },
           {
             className: 'params',
             begin: '\\(', end: '\\)',
@@ -144,24 +156,28 @@ function php(hljs) {
       },
       {
         className: 'class',
-        beginKeywords: 'class interface', end: '{', excludeEnd: true,
-        illegal: /[:\(\$"]/,
+        beginKeywords: 'class interface',
+        relevance: 0,
+        end: /\{/,
+        excludeEnd: true,
+        illegal: /[:($"]/,
         contains: [
           {beginKeywords: 'extends implements'},
           hljs.UNDERSCORE_TITLE_MODE
         ]
       },
       {
-        beginKeywords: 'namespace', end: ';',
-        illegal: /[\.']/,
+        beginKeywords: 'namespace',
+        relevance: 0,
+        end: ';',
+        illegal: /[.']/,
         contains: [hljs.UNDERSCORE_TITLE_MODE]
       },
       {
-        beginKeywords: 'use', end: ';',
+        beginKeywords: 'use',
+        relevance: 0,
+        end: ';',
         contains: [hljs.UNDERSCORE_TITLE_MODE]
-      },
-      {
-        begin: '=>' // No markup, just a relevance booster
       },
       STRING,
       NUMBER

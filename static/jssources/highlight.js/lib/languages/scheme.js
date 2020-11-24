@@ -11,7 +11,7 @@ Category: lisp
 
 function scheme(hljs) {
   var SCHEME_IDENT_RE = '[^\\(\\)\\[\\]\\{\\}",\'`;#|\\\\\\s]+';
-  var SCHEME_SIMPLE_NUMBER_RE = '(\\-|\\+)?\\d+([./]\\d+)?';
+  var SCHEME_SIMPLE_NUMBER_RE = '(-|\\+)?\\d+([./]\\d+)?';
   var SCHEME_COMPLEX_NUMBER_RE = SCHEME_SIMPLE_NUMBER_RE + '[+\\-]' + SCHEME_SIMPLE_NUMBER_RE + 'i';
   var KEYWORDS = {
     $pattern: SCHEME_IDENT_RE,
@@ -110,6 +110,7 @@ function scheme(hljs) {
 
   var NAME = {
     className: 'name',
+    relevance: 0,
     begin: SCHEME_IDENT_RE,
     keywords: KEYWORDS
   };

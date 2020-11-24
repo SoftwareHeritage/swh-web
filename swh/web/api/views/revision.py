@@ -37,40 +37,6 @@ DOC_RETURN_REVISION = """
 DOC_RETURN_REVISION_ARRAY = DOC_RETURN_REVISION.replace(":>json", ":>jsonarr")
 
 
-def _revision_directory_by(revision, path, request_path, limit=100, with_data=False):
-    """
-    Compute the revision matching criterion's directory or content data.
-
-    Args:
-        revision: dictionary of criterions representing a revision to lookup
-        path: directory's path to lookup
-        request_path: request path which holds the original context to
-        limit: optional query parameter to limit the revisions log
-        (default to 100). For now, note that this limit could impede the
-        transitivity conclusion about sha1_git not being an ancestor of
-        with_data: indicate to retrieve the content's raw data if path resolves
-        to a content.
-
-    """
-
-    def enrich_directory_local(dir, context_url=request_path):
-        return utils.enrich_directory(dir, context_url)
-
-    rev_id, result = archive.lookup_directory_through_revision(
-        revision, path, limit=limit, with_data=with_data
-    )
-
-    content = result["content"]
-    if result["type"] == "dir":  # dir_entries
-        result["content"] = list(map(enrich_directory_local, content))
-    elif result["type"] == "file":  # content
-        result["content"] = utils.enrich_content(content)
-    elif result["type"] == "rev":  # revision
-        result["content"] = utils.enrich_revision(content)
-
-    return result
-
-
 @api_route(
     r"/revision/(?P<sha1_git>[0-9a-f]+)/", "api-1-revision", checksum_args=["sha1_git"]
 )
@@ -171,9 +137,21 @@ def api_revision_directory(request, sha1_git, dir_path=None, with_data=False):
 
             :swh_web_api:`revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/directory/`
     """
-    return _revision_directory_by(
-        {"sha1_git": sha1_git}, dir_path, request.path, with_data=with_data
+    rev_id, result = archive.lookup_directory_through_revision(
+        {"sha1_git": sha1_git}, dir_path, with_data=with_data
     )
+
+    content = result["content"]
+    if result["type"] == "dir":  # dir_entries
+        result["content"] = [
+            utils.enrich_directory_entry(entry, request=request) for entry in content
+        ]
+    elif result["type"] == "file":  # content
+        result["content"] = utils.enrich_content(content, request=request)
+    elif result["type"] == "rev":  # revision
+        result["content"] = utils.enrich_revision(content, request=request)
+
+    return result
 
 
 @api_route(

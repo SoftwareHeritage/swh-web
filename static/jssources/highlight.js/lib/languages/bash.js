@@ -1,3 +1,28 @@
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
 /*
 Language: Bash
 Author: vah <vahtenberg@gmail.com>
@@ -23,7 +48,10 @@ function bash(hljs) {
   Object.assign(VAR,{
     className: 'variable',
     variants: [
-      {begin: /\$[\w\d#@][\w\d_]*/},
+      {begin: concat(/\$[\w\d#@][\w\d_]*/,
+        // negative look-ahead tries to avoid matching patterns that are not
+        // Perl at all like $ident$, @ident@, etc.
+        `(?![\\w\\d])(?![$])`) },
       BRACED_VAR
     ]
   });
