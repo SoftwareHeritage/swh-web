@@ -1,3 +1,28 @@
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
 /*
 Language: Perl
 Author: Peter Leonov <gojpeg@yandex.ru>
@@ -5,6 +30,7 @@ Website: https://www.perl.org
 Category: common
 */
 
+/** @type LanguageFn */
 function perl(hljs) {
   var PERL_KEYWORDS = {
     $pattern: /[\w.]+/,
@@ -34,14 +60,19 @@ function perl(hljs) {
     keywords: PERL_KEYWORDS
   };
   var METHOD = {
-    begin: '->{', end: '}'
+    begin: /->\{/, end: /\}/
     // contains defined later
   };
   var VAR = {
     variants: [
       {begin: /\$\d/},
-      {begin: /[\$%@](\^\w\b|#\w+(::\w+)*|{\w+}|\w+(::\w*)*)/},
-      {begin: /[\$%@][^\s\w{]/, relevance: 0}
+      {begin: concat(
+        /[$%@](\^\w\b|#\w+(::\w+)*|\{\w+\}|\w+(::\w*)*)/,
+        // negative look-ahead tries to avoid matching patterns that are not
+        // Perl at all like $ident$, @ident@, etc.
+        `(?![A-Za-z])(?![@$%])`
+        )},
+      {begin: /[$%@][^\s\w{]/, relevance: 0}
     ]
   };
   var STRING_CONTAINS = [hljs.BACKSLASH_ESCAPE, SUBST, VAR];
@@ -49,8 +80,8 @@ function perl(hljs) {
     VAR,
     hljs.HASH_COMMENT_MODE,
     hljs.COMMENT(
-      '^\\=\\w',
-      '\\=cut',
+      /^=\w/,
+      /=cut/,
       {
         endsWithParent: true
       }
@@ -77,7 +108,7 @@ function perl(hljs) {
           relevance: 5
         },
         {
-          begin: 'q[qwxr]?\\s*\\<', end: '\\>',
+          begin: 'q[qwxr]?\\s*<', end: '>',
           relevance: 5
         },
         {
@@ -96,12 +127,12 @@ function perl(hljs) {
           contains: [hljs.BACKSLASH_ESCAPE]
         },
         {
-          begin: '{\\w+}',
+          begin: /\{\w+\}/,
           contains: [],
           relevance: 0
         },
         {
-          begin: '\-?\\w+\\s*\\=\\>',
+          begin: '-?\\w+\\s*=>',
           contains: [],
           relevance: 0
         }

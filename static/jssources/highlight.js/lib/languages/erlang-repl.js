@@ -5,6 +5,7 @@ Website: https://www.erlang.org
 Category: functional
 */
 
+/** @type LanguageFn */
 function erlangRepl(hljs) {
   return {
     name: 'Erlang REPL',
@@ -17,7 +18,8 @@ function erlangRepl(hljs) {
     },
     contains: [
       {
-        className: 'meta', begin: '^[0-9]+> ',
+        className: 'meta',
+        begin: '^[0-9]+> ',
         relevance: 10
       },
       hljs.COMMENT('%', '$'),

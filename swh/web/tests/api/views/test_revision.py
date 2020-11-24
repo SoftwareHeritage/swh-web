@@ -5,11 +5,19 @@
 
 from hypothesis import given
 
-from swh.web.api.utils import enrich_revision
-from swh.web.common.exc import NotFoundExc
+from swh.model.from_disk import DentryPerms
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.model import (
+    Directory,
+    DirectoryEntry,
+    Revision,
+    RevisionType,
+    TimestampWithTimezone,
+)
+from swh.web.api.utils import enrich_content, enrich_directory_entry, enrich_revision
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import revision
+from swh.web.tests.strategies import content, new_person, new_swh_date, revision
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
@@ -93,95 +101,123 @@ def test_api_revision_log_not_found(api_client):
     assert not rv.has_header("Link")
 
 
-def test_api_revision_directory_ko_not_found(api_client, mocker):
-    mock_rev_dir = mocker.patch("swh.web.api.views.revision._revision_directory_by")
-    mock_rev_dir.side_effect = NotFoundExc("Not found")
-
-    url = "/api/1/revision/999/directory/some/path/to/dir/"
+def test_api_revision_directory_ko_not_found(api_client):
+    sha1_git = random_sha1()
+    url = reverse("api-1-revision-directory", {"sha1_git": sha1_git})
     rv = check_api_get_responses(api_client, url, status_code=404)
-
-    assert rv.data == {"exception": "NotFoundExc", "reason": "Not found"}
-
-    mock_rev_dir.assert_called_with(
-        {"sha1_git": "999"}, "some/path/to/dir", url, with_data=False,
-    )
+    assert rv.data == {
+        "exception": "NotFoundExc",
+        "reason": f"Revision with sha1_git {sha1_git} not found.",
+    }
 
 
-def test_api_revision_directory_ok_returns_dir_entries(api_client, mocker):
-    mock_rev_dir = mocker.patch("swh.web.api.views.revision._revision_directory_by")
-    stub_dir = {
+@given(revision())
+def test_api_revision_directory_ok_returns_dir_entries(
+    api_client, archive_data, revision
+):
+    url = reverse("api-1-revision-directory", {"sha1_git": revision})
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    rev_data = archive_data.revision_get(revision)
+    dir_content = archive_data.directory_ls(rev_data["directory"])
+    dir_content = [
+        enrich_directory_entry(dir_entry, request=rv.wsgi_request)
+        for dir_entry in dir_content
+    ]
+    assert rv.data == {
+        "content": dir_content,
+        "path": ".",
         "type": "dir",
-        "revision": "999",
-        "content": [
-            {
-                "sha1_git": "789",
-                "type": "file",
-                "target": "101",
-                "target_url": "/api/1/content/sha1_git:101/",
-                "name": "somefile",
-                "file_url": "/api/1/revision/999/directory/some/path/" "somefile/",
-            },
-            {
-                "sha1_git": "123",
-                "type": "dir",
-                "target": "456",
-                "target_url": "/api/1/directory/456/",
-                "name": "to-subdir",
-                "dir_url": "/api/1/revision/999/directory/some/path/" "to-subdir/",
-            },
-        ],
+        "revision": revision,
     }
 
-    mock_rev_dir.return_value = stub_dir
-    url = "/api/1/revision/999/directory/some/path/"
+
+@given(content(), new_person(), new_swh_date())
+def test_api_revision_directory_ok_returns_content(
+    api_client, archive_data, content, person, date
+):
+    content_path = "foo"
+    _dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=content_path.encode(),
+                type="file",
+                target=hash_to_bytes(content["sha1_git"]),
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    archive_data.directory_add([_dir])
+
+    revision = Revision(
+        directory=_dir.id,
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    archive_data.revision_add([revision])
+
+    revision_id = hash_to_hex(revision.id)
+    cnt_data = archive_data.content_get(content["sha1"])
+    url = reverse(
+        "api-1-revision-directory", {"sha1_git": revision_id, "dir_path": content_path},
+    )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    stub_dir["content"][0]["target_url"] = rv.wsgi_request.build_absolute_uri(
-        stub_dir["content"][0]["target_url"]
-    )
-    stub_dir["content"][0]["file_url"] = rv.wsgi_request.build_absolute_uri(
-        stub_dir["content"][0]["file_url"]
-    )
-    stub_dir["content"][1]["target_url"] = rv.wsgi_request.build_absolute_uri(
-        stub_dir["content"][1]["target_url"]
-    )
-    stub_dir["content"][1]["dir_url"] = rv.wsgi_request.build_absolute_uri(
-        stub_dir["content"][1]["dir_url"]
-    )
-
-    assert rv.data == stub_dir
-
-    mock_rev_dir.assert_called_with(
-        {"sha1_git": "999"}, "some/path", url, with_data=False,
-    )
-
-
-def test_api_revision_directory_ok_returns_content(api_client, mocker):
-    mock_rev_dir = mocker.patch("swh.web.api.views.revision._revision_directory_by")
-    stub_content = {
+    assert rv.data == {
+        "content": enrich_content(cnt_data, request=rv.wsgi_request),
+        "path": content_path,
         "type": "file",
-        "revision": "999",
-        "content": {
-            "sha1_git": "789",
-            "sha1": "101",
-            "data_url": "/api/1/content/101/raw/",
-        },
+        "revision": revision_id,
     }
 
-    mock_rev_dir.return_value = stub_content
 
-    url = "/api/1/revision/666/directory/some/other/path/"
+@given(revision(), new_person(), new_swh_date())
+def test_api_revision_directory_ok_returns_revision(
+    api_client, archive_data, revision, person, date
+):
+    rev_path = "foo"
+    _dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=rev_path.encode(),
+                type="rev",
+                target=hash_to_bytes(revision),
+                perms=DentryPerms.revision,
+            ),
+        )
+    )
+    archive_data.directory_add([_dir])
+
+    rev = Revision(
+        directory=_dir.id,
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    archive_data.revision_add([rev])
+
+    revision_id = hash_to_hex(rev.id)
+    rev_data = archive_data.revision_get(revision)
+    url = reverse(
+        "api-1-revision-directory", {"sha1_git": revision_id, "dir_path": rev_path},
+    )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    stub_content["content"]["data_url"] = rv.wsgi_request.build_absolute_uri(
-        stub_content["content"]["data_url"]
-    )
-
-    assert rv.data == stub_content
-
-    mock_rev_dir.assert_called_with(
-        {"sha1_git": "666"}, "some/other/path", url, with_data=False
-    )
+    assert rv.data == {
+        "content": enrich_revision(rev_data, request=rv.wsgi_request),
+        "path": rev_path,
+        "type": "rev",
+        "revision": revision_id,
+    }
 
 
 @given(revision())

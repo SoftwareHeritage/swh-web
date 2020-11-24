@@ -86,17 +86,17 @@ def enrich_object(
 enrich_release = enrich_object
 
 
-def enrich_directory(
+def enrich_directory_entry(
     directory: Dict[str, str], request: Optional[HttpRequest] = None
 ) -> Dict[str, str]:
-    """Enrich directory with url to content or directory.
+    """Enrich directory entry with url to target.
 
     Args:
-        directory: dict of data associated to a swh directory object
+        directory: dict of data associated to a swh directory entry
         request: Absolute URIs will be generated if provided
 
     Returns:
-        An enriched directory dict filled with additional urls
+        An enriched directory dict filled with additional url
     """
     if "type" in directory:
         target_type = directory["type"]

@@ -1,48 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function optional(re) {
-  return concat('(', re, ')?');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Java
 Author: Vsevolod Solovyov <vsevolod.solovyov@gmail.com>
@@ -70,44 +25,38 @@ function java(hljs) {
       },
     ]
   };
-  /**
-   * A given sequence, possibly with underscores
-   * @type {(s: string | RegExp) => string}  */
-  var SEQUENCE_ALLOWING_UNDERSCORES = (seq) => concat('[', seq, ']+([', seq, '_]*[', seq, ']+)?');
-  var JAVA_NUMBER_MODE = {
+
+  // https://docs.oracle.com/javase/specs/jls/se15/html/jls-3.html#jls-3.10
+  var decimalDigits = '[0-9](_*[0-9])*';
+  var frac = `\\.(${decimalDigits})`;
+  var hexDigits = '[0-9a-fA-F](_*[0-9a-fA-F])*';
+  var NUMBER = {
     className: 'number',
     variants: [
-      { begin: `\\b(0[bB]${SEQUENCE_ALLOWING_UNDERSCORES('01')})[lL]?` }, // binary
-      { begin: `\\b(0${SEQUENCE_ALLOWING_UNDERSCORES('0-7')})[dDfFlL]?` }, // octal
-      {
-        begin: concat(
-          /\b0[xX]/,
-          either(
-            concat(SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9'), /\./, SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9')),
-            concat(SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9'), /\.?/),
-            concat(/\./, SEQUENCE_ALLOWING_UNDERSCORES('a-fA-F0-9'))
-          ),
-          /([pP][+-]?(\d+))?/,
-          /[fFdDlL]?/ // decimal & fp mixed for simplicity
-        )
-      },
-      // scientific notation
-      { begin: concat(
-        /\b/,
-        either(
-          concat(/\d*\./, SEQUENCE_ALLOWING_UNDERSCORES("\\d")), // .3, 3.3, 3.3_3
-          SEQUENCE_ALLOWING_UNDERSCORES("\\d") // 3, 3_3
-        ),
-        /[eE][+-]?[\d]+[dDfF]?/)
-      },
-      // decimal & fp mixed for simplicity
-      { begin: concat(
-        /\b/,
-        SEQUENCE_ALLOWING_UNDERSCORES(/\d/),
-        optional(/\.?/),
-        optional(SEQUENCE_ALLOWING_UNDERSCORES(/\d/)),
-        /[dDfFlL]?/)
-      }
+      // DecimalFloatingPointLiteral
+      // including ExponentPart
+      { begin: `(\\b(${decimalDigits})((${frac})|\\.)?|(${frac}))` +
+        `[eE][+-]?(${decimalDigits})[fFdD]?\\b` },
+      // excluding ExponentPart
+      { begin: `\\b(${decimalDigits})((${frac})[fFdD]?\\b|\\.([fFdD]\\b)?)` },
+      { begin: `(${frac})[fFdD]?\\b` },
+      { begin: `\\b(${decimalDigits})[fFdD]\\b` },
+
+      // HexadecimalFloatingPointLiteral
+      { begin: `\\b0[xX]((${hexDigits})\\.?|(${hexDigits})?\\.(${hexDigits}))` +
+        `[pP][+-]?(${decimalDigits})[fFdD]?\\b` },
+
+      // DecimalIntegerLiteral
+      { begin: '\\b(0|[1-9](_*[0-9])*)[lL]?\\b' },
+
+      // HexIntegerLiteral
+      { begin: `\\b0[xX](${hexDigits})[lL]?\\b` },
+
+      // OctalIntegerLiteral
+      { begin: '\\b0(_*[0-7])*[lL]?\\b' },
+
+      // BinaryIntegerLiteral
+      { begin: '\\b0[bB][01](_*[01])*[lL]?\\b' },
     ],
     relevance: 0
   };
@@ -135,6 +84,12 @@ function java(hljs) {
           ]
         }
       ),
+      // relevance boost
+      {
+        begin: /import java\.[a-z]+\./,
+        keywords: "import",
+        relevance: 2
+      },
       hljs.C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE,
       hljs.APOS_STRING_MODE,
@@ -203,7 +158,7 @@ function java(hljs) {
               ANNOTATION,
               hljs.APOS_STRING_MODE,
               hljs.QUOTE_STRING_MODE,
-              hljs.C_NUMBER_MODE,
+              NUMBER,
               hljs.C_BLOCK_COMMENT_MODE
             ]
           },
@@ -211,7 +166,7 @@ function java(hljs) {
           hljs.C_BLOCK_COMMENT_MODE
         ]
       },
-      JAVA_NUMBER_MODE,
+      NUMBER,
       ANNOTATION
     ]
   };

@@ -132,6 +132,22 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should validate project url with _ in username', function() {
+    const gitlabSubProjectUrl = 'https://gitlab.com/user_name/project.git';
+    const originSaveUrl = this.Urls.origin_save_request('git', gitlabSubProjectUrl);
+
+    stubSaveRequest({requestUrl: originSaveUrl,
+                     saveRequestStatus: 'accepted',
+                     originurl: gitlabSubProjectUrl,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', gitlabSubProjectUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+  });
+
   it('should display warning message when pending', function() {
     stubSaveRequest({requestUrl: this.originSaveUrl,
                      saveRequestStatus: 'pending',
