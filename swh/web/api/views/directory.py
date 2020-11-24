@@ -79,7 +79,7 @@ def api_directory(request, sha1_git, path=None):
             sha1_git,
             path,
             notfound_msg=error_msg_path,
-            enrich_fn=utils.enrich_directory,
+            enrich_fn=utils.enrich_directory_entry,
             request=request,
         )
     else:
@@ -88,6 +88,6 @@ def api_directory(request, sha1_git, path=None):
             archive.lookup_directory,
             sha1_git,
             notfound_msg=error_msg_nopath,
-            enrich_fn=utils.enrich_directory,
+            enrich_fn=utils.enrich_directory_entry,
             request=request,
         )

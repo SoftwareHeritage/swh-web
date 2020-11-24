@@ -9,8 +9,8 @@ function crystal(hljs) {
   var INT_SUFFIX = '(_*[ui](8|16|32|64|128))?';
   var FLOAT_SUFFIX = '(_*f(32|64))?';
   var CRYSTAL_IDENT_RE = '[a-zA-Z_]\\w*[!?=]?';
-  var CRYSTAL_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]\\@|<<|>>|[=!]~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~|]|//|//=|&[-+*]=?|&\\*\\*|\\[\\][=?]?';
-  var CRYSTAL_PATH_RE = '[A-Za-z_]\\w*(::\\w+)*(\\?|\\!)?';
+  var CRYSTAL_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]@|<<|>>|[=!]~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~|]|//|//=|&[-+*]=?|&\\*\\*|\\[\\][=?]?';
+  var CRYSTAL_PATH_RE = '[A-Za-z_]\\w*(::\\w+)*(\\?|!)?';
   var CRYSTAL_KEYWORDS = {
     $pattern: CRYSTAL_IDENT_RE,
     keyword:
@@ -22,7 +22,7 @@ function crystal(hljs) {
   };
   var SUBST = {
     className: 'subst',
-    begin: '#{', end: '}',
+    begin: /#\{/, end: /\}/,
     keywords: CRYSTAL_KEYWORDS
   };
   var EXPANSION = {
@@ -49,7 +49,7 @@ function crystal(hljs) {
       {begin: /`/, end: /`/},
       {begin: '%[Qwi]?\\(', end: '\\)', contains: recursiveParen('\\(', '\\)')},
       {begin: '%[Qwi]?\\[', end: '\\]', contains: recursiveParen('\\[', '\\]')},
-      {begin: '%[Qwi]?{', end: '}', contains: recursiveParen('{', '}')},
+      {begin: '%[Qwi]?\\{', end: /\}/, contains: recursiveParen(/\{/, /\}/)},
       {begin: '%[Qwi]?<', end: '>', contains: recursiveParen('<', '>')},
       {begin: '%[Qwi]?\\|', end: '\\|'},
       {begin: /<<-\w+$/, end: /^\s*\w+$/},
@@ -61,7 +61,7 @@ function crystal(hljs) {
     variants: [
       {begin: '%q\\(', end: '\\)', contains: recursiveParen('\\(', '\\)')},
       {begin: '%q\\[', end: '\\]', contains: recursiveParen('\\[', '\\]')},
-      {begin: '%q{', end: '}', contains: recursiveParen('{', '}')},
+      {begin: '%q\\{', end: /\}/, contains: recursiveParen(/\{/, /\}/)},
       {begin: '%q<', end: '>', contains: recursiveParen('<', '>')},
       {begin: '%q\\|', end: '\\|'},
       {begin: /<<-'\w+'$/, end: /^\s*\w+$/},
@@ -69,7 +69,7 @@ function crystal(hljs) {
     relevance: 0,
   };
   var REGEXP = {
-    begin: '(?!%})(' + hljs.RE_STARTERS_RE + '|\\n|\\b(case|if|select|unless|until|when|while)\\b)\\s*',
+    begin: '(?!%\\})(' + hljs.RE_STARTERS_RE + '|\\n|\\b(case|if|select|unless|until|when|while)\\b)\\s*',
     keywords: 'case if select unless until when while',
     contains: [
       {
@@ -89,7 +89,7 @@ function crystal(hljs) {
     variants: [
       {begin: '%r\\(', end: '\\)', contains: recursiveParen('\\(', '\\)')},
       {begin: '%r\\[', end: '\\]', contains: recursiveParen('\\[', '\\]')},
-      {begin: '%r{', end: '}', contains: recursiveParen('{', '}')},
+      {begin: '%r\\{', end: /\}/, contains: recursiveParen(/\{/, /\}/)},
       {begin: '%r<', end: '>', contains: recursiveParen('<', '>')},
       {begin: '%r\\|', end: '\\|'},
     ],
@@ -158,11 +158,11 @@ function crystal(hljs) {
           endsParent: true
         })
       ],
-      relevance: 5
+      relevance: 2
     },
     {
       className: 'symbol',
-      begin: hljs.UNDERSCORE_IDENT_RE + '(\\!|\\?)?:',
+      begin: hljs.UNDERSCORE_IDENT_RE + '(!|\\?)?:',
       relevance: 0
     },
     {

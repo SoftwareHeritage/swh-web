@@ -12,7 +12,7 @@ def test_get_hljs_language_from_mime_type():
     assert lang is None
 
     lang = highlightjs.get_hljs_language_from_mime_type("text/x-c")
-    assert lang == "cpp"
+    assert lang == "c"
 
     lang = highlightjs.get_hljs_language_from_mime_type("text/x-c++")
     assert lang == "cpp"
@@ -27,7 +27,7 @@ def test_get_hljs_language_from_mime_type():
     assert lang == "dos"
 
     lang = highlightjs.get_hljs_language_from_mime_type("text/x-tex")
-    assert lang == "tex"
+    assert lang == "latex"
 
     lang = highlightjs.get_hljs_language_from_mime_type("text/x-lisp")
     assert lang == "lisp"
@@ -49,9 +49,9 @@ def test_get_hljs_language_from_filename():
 
     for filename, language in (
         ("foo", None),
-        ("foo.h", "cpp"),
-        ("foo.c", "cpp"),
-        ("foo.c.in", "cpp"),
+        ("foo.h", "c"),
+        ("foo.c", "c"),
+        ("foo.c.in", "c"),
         ("foo.cpp", "cpp"),
         ("foo.pl", "perl"),
         ("foo.py", "python"),

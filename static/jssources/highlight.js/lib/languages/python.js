@@ -194,12 +194,39 @@ function python(hljs) {
     ]
   };
 
+  // https://docs.python.org/3.9/reference/lexical_analysis.html#numeric-literals
+  const digitpart = '[0-9](_?[0-9])*';
+  const pointfloat = `(\\b(${digitpart}))?\\.(${digitpart})|\\b(${digitpart})\\.`;
   const NUMBER = {
     className: 'number', relevance: 0,
     variants: [
-      {begin: hljs.BINARY_NUMBER_RE + '[lLjJ]?'},
-      {begin: '\\b(0o[0-7]+)[lLjJ]?'},
-      {begin: hljs.C_NUMBER_RE + '[lLjJ]?'}
+      // exponentfloat, pointfloat
+      // https://docs.python.org/3.9/reference/lexical_analysis.html#floating-point-literals
+      // optionally imaginary
+      // https://docs.python.org/3.9/reference/lexical_analysis.html#imaginary-literals
+      // Note: no leading \b because floats can start with a decimal point
+      // and we don't want to mishandle e.g. `fn(.5)`,
+      // no trailing \b for pointfloat because it can end with a decimal point
+      // and we don't want to mishandle e.g. `0..hex()`; this should be safe
+      // because both MUST contain a decimal point and so cannot be confused with
+      // the interior part of an identifier
+      { begin: `(\\b(${digitpart})|(${pointfloat}))[eE][+-]?(${digitpart})[jJ]?\\b` },
+      { begin: `(${pointfloat})[jJ]?` },
+
+      // decinteger, bininteger, octinteger, hexinteger
+      // https://docs.python.org/3.9/reference/lexical_analysis.html#integer-literals
+      // optionally "long" in Python 2
+      // https://docs.python.org/2.7/reference/lexical_analysis.html#integer-and-long-integer-literals
+      // decinteger is optionally imaginary
+      // https://docs.python.org/3.9/reference/lexical_analysis.html#imaginary-literals
+      { begin: '\\b([1-9](_?[0-9])*|0+(_?0)*)[lLjJ]?\\b' },
+      { begin: '\\b0[bB](_?[01])+[lL]?\\b' },
+      { begin: '\\b0[oO](_?[0-7])+[lL]?\\b' },
+      { begin: '\\b0[xX](_?[0-9a-fA-F])+[lL]?\\b' },
+
+      // imagnumber (digitpart-based)
+      // https://docs.python.org/3.9/reference/lexical_analysis.html#imaginary-literals
+      { begin: `\\b(${digitpart})[jJ]\\b` },
     ]
   };
 
@@ -227,6 +254,7 @@ function python(hljs) {
       NUMBER,
       // eat "if" prior to string so that it won't accidentally be
       // labeled as an f-string as in:
+      { begin: /\bself\b/, }, // very common convention
       { beginKeywords: "if", relevance: 0 },
       STRING,
       hljs.HASH_COMMENT_MODE,
@@ -248,7 +276,8 @@ function python(hljs) {
       },
       {
         className: 'meta',
-        begin: /^[\t ]*@/, end: /$/
+        begin: /^[\t ]*@/, end: /(?=#)|$/,
+        contains: [NUMBER, PARAMS, STRING]
       },
       {
         begin: /\b(print|exec)\(/ // don’t highlight keywords-turned-functions in Python 3

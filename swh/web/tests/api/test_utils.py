@@ -183,12 +183,12 @@ def test_enrich_release_release_target(api_request_factory, archive_data, releas
     assert actual_release == release_data
 
 
-def test_enrich_directory_no_type():
-    assert utils.enrich_directory({"id": "dir-id"}) == {"id": "dir-id"}
+def test_enrich_directory_entry_no_type():
+    assert utils.enrich_directory_entry({"id": "dir-id"}) == {"id": "dir-id"}
 
 
 @given(directory())
-def test_enrich_directory_with_type(api_request_factory, archive_data, directory):
+def test_enrich_directory_entry_with_type(api_request_factory, archive_data, directory):
 
     dir_content = archive_data.directory_ls(directory)
 
@@ -197,7 +197,7 @@ def test_enrich_directory_with_type(api_request_factory, archive_data, directory
     url = reverse("api-1-directory", url_args={"sha1_git": directory})
     request = api_request_factory.get(url)
 
-    actual_directory = utils.enrich_directory(dir_entry, request)
+    actual_directory = utils.enrich_directory_entry(dir_entry, request)
 
     if dir_entry["type"] == "file":
         dir_entry["target_url"] = reverse(

@@ -80,11 +80,11 @@ function handlebars(hljs) {
   // this regex matches literal segments like ' abc ' or [ abc ] as well as helpers and paths
   // like a/b, ./abc/cde, and abc.bcd
 
-  const DOUBLE_QUOTED_ID_REGEX=/".*?"/;
-  const SINGLE_QUOTED_ID_REGEX=/'.*?'/;
-  const BRACKET_QUOTED_ID_REGEX=/\[.*?\]/;
-  const PLAIN_ID_REGEX=/[^\s!"#%&'()*+,.\/;<=>@\[\\\]^`{|}~]+/;
-  const PATH_DELIMITER_REGEX=/\.|\//;
+  const DOUBLE_QUOTED_ID_REGEX = /".*?"/;
+  const SINGLE_QUOTED_ID_REGEX = /'.*?'/;
+  const BRACKET_QUOTED_ID_REGEX = /\[.*?\]/;
+  const PLAIN_ID_REGEX = /[^\s!"#%&'()*+,.\/;<=>@\[\\\]^`{|}~]+/;
+  const PATH_DELIMITER_REGEX = /\.|\//;
 
   const IDENTIFIER_REGEX = concat(
     '(',
@@ -142,7 +142,9 @@ function handlebars(hljs) {
   const BLOCK_PARAMS = {
     // parameters of the form '{{#with x as | y |}}...{{/with}}'
     begin: /as\s+\|/,
-    keywords: { keyword: 'as' },
+    keywords: {
+      keyword: 'as'
+    },
     end: /\|/,
     contains: [
       {
@@ -172,19 +174,17 @@ function handlebars(hljs) {
     className: 'name',
     keywords: BUILT_INS,
     starts: hljs.inherit(HELPER_PARAMETERS, {
-      end: /\)/,
+      end: /\)/
     })
   });
 
-  SUB_EXPRESSION.contains = [
-    SUB_EXPRESSION_CONTENTS
-  ];
+  SUB_EXPRESSION.contains = [SUB_EXPRESSION_CONTENTS];
 
   const OPENING_BLOCK_MUSTACHE_CONTENTS = hljs.inherit(HELPER_NAME_OR_PATH_EXPRESSION, {
     keywords: BUILT_INS,
     className: 'name',
     starts: hljs.inherit(HELPER_PARAMETERS, {
-      end: /}}/,
+      end: /\}\}/
     })
   });
 
@@ -197,16 +197,27 @@ function handlebars(hljs) {
     className: 'name',
     keywords: BUILT_INS,
     starts: hljs.inherit(HELPER_PARAMETERS, {
-      end: /}}/,
+      end: /\}\}/
     })
   });
 
-  const ESCAPE_MUSTACHE_WITH_PRECEEDING_BACKSLASH = {begin: /\\\{\{/, skip: true};
-  const PREVENT_ESCAPE_WITH_ANOTHER_PRECEEDING_BACKSLASH = {begin: /\\\\(?=\{\{)/, skip: true};
+  const ESCAPE_MUSTACHE_WITH_PRECEEDING_BACKSLASH = {
+    begin: /\\\{\{/,
+    skip: true
+  };
+  const PREVENT_ESCAPE_WITH_ANOTHER_PRECEEDING_BACKSLASH = {
+    begin: /\\\\(?=\{\{)/,
+    skip: true
+  };
 
   return {
     name: 'Handlebars',
-    aliases: ['hbs', 'html.hbs', 'html.handlebars', 'htmlbars'],
+    aliases: [
+      'hbs',
+      'html.hbs',
+      'html.handlebars',
+      'htmlbars'
+    ],
     case_insensitive: true,
     subLanguage: 'xml',
     contains: [
@@ -220,7 +231,11 @@ function handlebars(hljs) {
         begin: /\{\{\{\{(?!\/)/,
         end: /\}\}\}\}/,
         contains: [OPENING_BLOCK_MUSTACHE_CONTENTS],
-        starts: {end: /\{\{\{\{\//, returnEnd: true, subLanguage: 'xml'}
+        starts: {
+          end: /\{\{\{\{\//,
+          returnEnd: true,
+          subLanguage: 'xml'
+        }
       },
       {
         // close raw block
@@ -234,7 +249,7 @@ function handlebars(hljs) {
         className: 'template-tag',
         begin: /\{\{#/,
         end: /\}\}/,
-        contains: [OPENING_BLOCK_MUSTACHE_CONTENTS],
+        contains: [OPENING_BLOCK_MUSTACHE_CONTENTS]
       },
       {
         className: 'template-tag',
@@ -253,7 +268,7 @@ function handlebars(hljs) {
         className: 'template-tag',
         begin: /\{\{\//,
         end: /\}\}/,
-        contains: [CLOSING_BLOCK_MUSTACHE_CONTENTS],
+        contains: [CLOSING_BLOCK_MUSTACHE_CONTENTS]
       },
       {
         // template variable or helper-call that is NOT html-escaped
