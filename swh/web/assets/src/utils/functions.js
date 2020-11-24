@@ -37,11 +37,16 @@ export function csrfPost(url, headers = {}, body = null) {
   });
 }
 
-export function isGitRepoUrl(url, domain) {
-  let endOfPattern = '\\/[\\w\\.-]+\\/?(?!=.git)(?:\\.git\\/?)?$';
-  let pattern = `(?:git|https?|git@)(?:\\:\\/\\/)?${domain}[/|:][\\w\\.\\-\\/]+?` + endOfPattern;
-  let re = new RegExp(pattern);
-  return re.test(url);
+export function isGitRepoUrl(url, pathPrefix = '/') {
+  let allowedProtocols = ['http:', 'https:', 'git:'];
+  if (allowedProtocols.find(protocol => protocol === url.protocol) === undefined) {
+    return false;
+  }
+  if (!url.pathname.startsWith(pathPrefix)) {
+    return false;
+  }
+  let re = new RegExp('[\\w\\.-]+\\/?(?!=.git)(?:\\.git\\/?)?$');
+  return re.test(url.pathname.slice(pathPrefix.length));
 };
 
 export function removeUrlFragment() {

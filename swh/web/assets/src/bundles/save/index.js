@@ -258,20 +258,20 @@ export function validateSaveOriginUrl(input) {
     // additional checks for well known code hosting providers
     switch (originUrl.hostname) {
       case 'github.com':
-        validUrl = isGitRepoUrl(originUrl.toString(), 'github.com');
+        validUrl = isGitRepoUrl(originUrl);
         break;
 
       case 'git.code.sf.net':
-        validUrl = isGitRepoUrl(originUrl.toString(), 'git.code.sf.net/p');
+        validUrl = isGitRepoUrl(originUrl, '/p/');
         break;
 
       case 'bitbucket.org':
-        validUrl = isGitRepoUrl(originUrl.toString(), 'bitbucket.org');
+        validUrl = isGitRepoUrl(originUrl);
         break;
 
       default:
         if (originUrl.hostname.startsWith('gitlab.')) {
-          validUrl = isGitRepoUrl(originUrl.toString(), originUrl.hostname);
+          validUrl = isGitRepoUrl(originUrl);
         }
         break;
     }
