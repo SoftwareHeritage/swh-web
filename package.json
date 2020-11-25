@@ -47,7 +47,6 @@
     "showdown": "^1.9.1",
     "typeface-alegreya": "^1.1.13",
     "typeface-alegreya-sans": "^1.1.13",
-    "validate.js": "^0.13.1",
     "waypoints": "^4.0.1",
     "whatwg-fetch": "^3.5.0"
   },
