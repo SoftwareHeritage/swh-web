@@ -7,7 +7,6 @@ from typing import Any, Dict
 
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.views.decorators.cache import never_cache
 
 from swh.model import hashutil
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -54,13 +53,13 @@ def _vault_response(vault_response: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-@never_cache
 @api_route(
     r"/vault/directory/(?P<dir_id>[0-9a-f]+)/",
     "api-1-vault-cook-directory",
     methods=["GET", "POST"],
     checksum_args=["dir_id"],
     throttle_scope="swh_vault_cooking",
+    never_cache=True,
 )
 @api_doc("/vault/directory/")
 @format_docstring()
@@ -160,13 +159,13 @@ def api_vault_fetch_directory(request, dir_id):
     return response
 
 
-@never_cache
 @api_route(
     r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/",
     "api-1-vault-cook-revision_gitfast",
     methods=["GET", "POST"],
     checksum_args=["rev_id"],
     throttle_scope="swh_vault_cooking",
+    never_cache=True,
 )
 @api_doc("/vault/revision/gitfast/")
 @format_docstring()
