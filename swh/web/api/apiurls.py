@@ -7,6 +7,7 @@ import functools
 from typing import Dict, List, Optional
 
 from django.http import HttpResponse
+from django.utils.cache import add_never_cache_headers
 from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
@@ -65,6 +66,7 @@ def api_route(
     throttle_scope: str = "swh_api",
     api_version: str = "1",
     checksum_args: Optional[List[str]] = None,
+    never_cache: bool = False,
 ):
     """
     Decorator to ease the registration of an API endpoint
@@ -78,6 +80,7 @@ def api_route(
         throttle_scope: Named scope for rate limiting
         api_version: web API version
         checksum_args: list of view argument names holding checksum values
+        never_cache: define if api response must be cached
 
     """
 
@@ -97,9 +100,16 @@ def api_route(
                 response = response["data"]
             # check if HTTP response needs to be created
             if not isinstance(response, HttpResponse):
-                return make_api_response(request, data=response, doc_data=doc_data)
+                api_response = make_api_response(
+                    request, data=response, doc_data=doc_data
+                )
             else:
-                return response
+                api_response = response
+
+            if never_cache:
+                add_never_cache_headers(api_response)
+
+            return api_response
 
         # small hacks for correctly generating API endpoints index doc
         api_view_f.__name__ = f.__name__

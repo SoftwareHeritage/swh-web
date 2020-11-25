@@ -224,9 +224,8 @@ static/js/pdfjs.199a9b15566765718d6f.js.map
 static/js/revision.0c946fbefc6eb0f6a76e.js
 static/js/revision.0c946fbefc6eb0f6a76e.js.LICENSE.txt
 static/js/revision.0c946fbefc6eb0f6a76e.js.map
-static/js/save.b1ef57457320f3fa8f15.js
-static/js/save.b1ef57457320f3fa8f15.js.LICENSE.txt
-static/js/save.b1ef57457320f3fa8f15.js.map
+static/js/save.4ce74bd22988f6b2b48e.js
+static/js/save.4ce74bd22988f6b2b48e.js.map
 static/js/showdown.214b0cc467f5f61e4a32.js
 static/js/showdown.214b0cc467f5f61e4a32.js.LICENSE.txt
 static/js/showdown.214b0cc467f5f61e4a32.js.map
@@ -1277,8 +1276,6 @@ static/jssources/swh/web/assets/src/utils/org.js
 static/jssources/swh/web/assets/src/utils/showdown.js
 static/jssources/tslib/LICENSE.txt
 static/jssources/tslib/tslib.es6.js
-static/jssources/validate.js/LICENSE.txt
-static/jssources/validate.js/validate.js
 static/jssources/waypoints/licenses.txt.txt
 static/jssources/waypoints/lib/jquery.waypoints.js
 static/jssources/whatwg-fetch/LICENSE.txt
@@ -1516,6 +1513,7 @@ swh/web/tests/api/__init__.py
 swh/web/tests/api/test_api_lookup.py
 swh/web/tests/api/test_apidoc.py
 swh/web/tests/api/test_apiresponse.py
+swh/web/tests/api/test_apiurls.py
 swh/web/tests/api/test_throttling.py
 swh/web/tests/api/test_utils.py
 swh/web/tests/api/views/__init__.py

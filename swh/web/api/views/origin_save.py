@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.views.decorators.cache import never_cache
-
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common.origin_save import (
@@ -13,12 +11,12 @@ from swh.web.common.origin_save import (
 )
 
 
-@never_cache
 @api_route(
     r"/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/",
     "api-1-save-origin",
     methods=["GET", "POST"],
     throttle_scope="swh_save_origin",
+    never_cache=True,
 )
 @api_doc("/origin/save/")
 @format_docstring()
