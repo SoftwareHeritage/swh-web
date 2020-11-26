@@ -14,7 +14,16 @@ import pytest
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
-from swh.model.model import Directory, DirectoryEntry, Origin, OriginVisit, Revision
+from swh.model.model import (
+    Directory,
+    DirectoryEntry,
+    Origin,
+    OriginVisit,
+    Revision,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+)
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo
@@ -1042,9 +1051,151 @@ def test_lookup_snapshot_sizes(archive_data, snapshot):
     assert archive.lookup_snapshot_sizes(snapshot) == expected_sizes
 
 
+@given(revision())
+def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
+    rev_id = hash_to_bytes(revision)
+    snapshot = Snapshot(
+        branches={
+            b"refs/heads/master": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/heads/incoming": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/pull/1": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/pull/2": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    expected_sizes = {"alias": 0, "release": 0, "revision": 2}
+
+    assert (
+        archive.lookup_snapshot_sizes(
+            snapshot.id.hex(), branch_name_exclude_prefix="refs/pull/"
+        )
+        == expected_sizes
+    )
+
+
 @given(snapshot())
 def test_lookup_snapshot_alias(snapshot):
     resolved_alias = archive.lookup_snapshot_alias(snapshot, "HEAD")
     assert resolved_alias is not None
     assert resolved_alias["target_type"] == "revision"
     assert resolved_alias["target"] is not None
+
+
+@given(revision())
+def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
+    rev_id = hash_to_bytes(revision)
+    snapshot = Snapshot(
+        branches={
+            b"refs/heads/master": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/heads/incoming": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/pull/1": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            b"refs/pull/2": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+            "non_ascii_name_é".encode(): SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    for include_pattern, exclude_prefix, nb_results in (
+        ("pull", None, 2),
+        ("incoming", None, 1),
+        ("é", None, 1),
+        (None, "refs/heads/", 3),
+        ("refs", "refs/heads/master", 3),
+    ):
+
+        branches = archive.lookup_snapshot(
+            hash_to_hex(snapshot.id),
+            branch_name_include_substring=include_pattern,
+            branch_name_exclude_prefix=exclude_prefix,
+        )["branches"]
+        assert len(branches) == nb_results
+        for branch_name in branches:
+            if include_pattern:
+                assert include_pattern in branch_name
+            if exclude_prefix:
+                assert not branch_name.startswith(exclude_prefix)
+
+
+@given(directory(), revision())
+def test_lookup_snapshot_branch_names_filtering_paginated(
+    archive_data, directory, revision
+):
+    pattern = "foo"
+    nb_branches_by_target_type = 10
+    branches = {}
+    for i in range(nb_branches_by_target_type):
+        branches[f"branch/directory/bar{i}".encode()] = SnapshotBranch(
+            target=hash_to_bytes(directory), target_type=TargetType.DIRECTORY,
+        )
+        branches[f"branch/revision/bar{i}".encode()] = SnapshotBranch(
+            target=hash_to_bytes(revision), target_type=TargetType.REVISION,
+        )
+        branches[f"branch/directory/{pattern}{i}".encode()] = SnapshotBranch(
+            target=hash_to_bytes(directory), target_type=TargetType.DIRECTORY,
+        )
+        branches[f"branch/revision/{pattern}{i}".encode()] = SnapshotBranch(
+            target=hash_to_bytes(revision), target_type=TargetType.REVISION,
+        )
+
+    snapshot = Snapshot(branches=branches)
+    archive_data.snapshot_add([snapshot])
+
+    branches_count = nb_branches_by_target_type // 2
+
+    for target_type in (
+        DIRECTORY,
+        REVISION,
+    ):
+        partial_branches = archive.lookup_snapshot(
+            hash_to_hex(snapshot.id),
+            target_types=[target_type],
+            branches_count=branches_count,
+            branch_name_include_substring=pattern,
+        )
+        branches = partial_branches["branches"]
+
+        assert len(branches) == branches_count
+        for branch_name, branch_data in branches.items():
+            assert pattern in branch_name
+            assert branch_data["target_type"] == target_type
+        for i in range(branches_count):
+            assert f"branch/{target_type}/{pattern}{i}" in branches
+        assert (
+            partial_branches["next_branch"]
+            == f"branch/{target_type}/{pattern}{branches_count}"
+        )
+
+        partial_branches = archive.lookup_snapshot(
+            hash_to_hex(snapshot.id),
+            target_types=[target_type],
+            branches_from=partial_branches["next_branch"],
+            branch_name_include_substring=pattern,
+        )
+        branches = partial_branches["branches"]
+
+        assert len(branches) == branches_count
+        for branch_name, branch_data in branches.items():
+            assert pattern in branch_name
+            assert branch_data["target_type"] == target_type
+        for i in range(branches_count, 2 * branches_count):
+            assert f"branch/{target_type}/{pattern}{i}" in branches
+        assert partial_branches["next_branch"] is None

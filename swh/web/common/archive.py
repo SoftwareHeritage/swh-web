@@ -1023,7 +1023,9 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
     return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
-def lookup_snapshot_sizes(snapshot_id: str) -> Dict[str, int]:
+def lookup_snapshot_sizes(
+    snapshot_id: str, branch_name_exclude_prefix: Optional[str] = None
+) -> Dict[str, int]:
     """Count the number of branches in the snapshot with the given id
 
     Args:
@@ -1035,7 +1037,10 @@ def lookup_snapshot_sizes(snapshot_id: str) -> Dict[str, int]:
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
     snapshot_sizes = dict.fromkeys(("alias", "release", "revision"), 0)
-    branch_counts = storage.snapshot_count_branches(snapshot_id_bin)
+    branch_counts = storage.snapshot_count_branches(
+        snapshot_id_bin,
+        branch_name_exclude_prefix.encode() if branch_name_exclude_prefix else None,
+    )
     # remove possible None key returned by snapshot_count_branches
     # when null branches are present in the snapshot
     branch_counts.pop(None, None)
@@ -1044,31 +1049,49 @@ def lookup_snapshot_sizes(snapshot_id: str) -> Dict[str, int]:
 
 
 def lookup_snapshot(
-    snapshot_id, branches_from="", branches_count=1000, target_types=None
-):
+    snapshot_id: str,
+    branches_from: str = "",
+    branches_count: int = 1000,
+    target_types: Optional[List[str]] = None,
+    branch_name_include_substring: Optional[str] = None,
+    branch_name_exclude_prefix: Optional[str] = None,
+) -> Dict[str, Any]:
     """Return information about a snapshot, aka the list of named
     branches found during a specific visit of an origin.
 
     Args:
-        snapshot_id (str): sha1 identifier of the snapshot
-        branches_from (str): optional parameter used to skip branches
+        snapshot_id: sha1 identifier of the snapshot
+        branches_from: optional parameter used to skip branches
             whose name is lesser than it before returning them
-        branches_count (int): optional parameter used to restrain
+        branches_count: optional parameter used to restrain
             the amount of returned branches
-        target_types (list): optional parameter used to filter the
+        target_types: optional parameter used to filter the
             target types of branch to return (possible values that can be
             contained in that list are `'content', 'directory',
             'revision', 'release', 'snapshot', 'alias'`)
+        branch_name_include_substring: if provided, only return branches whose name
+            contains given substring
+        branch_name_exclude_prefix: if provided, do not return branches whose name
+            starts with given pattern
+
 
     Returns:
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
     partial_branches = storage.snapshot_get_branches(
-        snapshot_id_bin, branches_from.encode(), branches_count, target_types
+        snapshot_id_bin,
+        branches_from.encode(),
+        branches_count,
+        target_types,
+        branch_name_include_substring.encode()
+        if branch_name_include_substring
+        else None,
+        branch_name_exclude_prefix.encode() if branch_name_exclude_prefix else None,
     )
     if not partial_branches:
         raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
+
     return converters.from_partial_branches(partial_branches)
 
 
