@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2020  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 const url = '/browse/help/';
+const statusUrl = 'https://status.softwareheritage.org';
 
 describe('Test top-bar', function() {
   beforeEach(function() {
@@ -103,6 +104,88 @@ describe('Test top-bar', function() {
       .should('have.class', 'container')
       .should('not.have.class', 'container-fluid');
   });
+
+  function genStatusResponse(status, statusCode) {
+    return {
+      'result': {
+        'status': [
+          {
+            'id': '5f7c4c567f50b304c1e7bd5f',
+            'name': 'Save Code Now',
+            'updated': '2020-11-30T13:51:21.151Z',
+            'status': 'Operational',
+            'status_code': 100
+          },
+          {
+            'id': '5f7c4c6f8338bc04b7f476fe',
+            'name': 'Source Code Crawlers',
+            'updated': '2020-11-30T13:51:21.151Z',
+            'status': status,
+            'status_code': statusCode
+          }
+        ]
+      }
+    };
+  }
+
+  it('should display swh status widget when data are available', function() {
+    const statusTestData = [
+      {
+        status: 'Operational',
+        statusCode: 100,
+        color: 'green'
+      },
+      {
+        status: 'Scheduled Maintenance',
+        statusCode: 200,
+        color: 'blue'
+      },
+      {
+        status: 'Degraded Performance',
+        statusCode: 300,
+        color: 'yellow'
+      },
+      {
+        status: 'Partial Service Disruption',
+        statusCode: 400,
+        color: 'yellow'
+      },
+      {
+        status: 'Service Disruption',
+        statusCode: 500,
+        color: 'red'
+      },
+      {
+        status: 'Security Event',
+        statusCode: 600,
+        color: 'red'
+      }
+    ];
+
+    for (let std of statusTestData) {
+      cy.server();
+      cy.route({
+        url: `${statusUrl}/**`,
+        response: genStatusResponse(std.status, std.statusCode)
+      }).as('getSwhStatusData');
+      cy.visit(url);
+      cy.wait('@getSwhStatusData');
+      cy.get('.swh-current-status-indicator').should('have.class', std.color);
+      cy.get('#swh-current-status-description').should('have.text', std.status);
+    }
+  });
+
+  it('should not display swh status widget when data are not available', function() {
+    cy.server();
+    cy.route({
+      url: `${statusUrl}/**`,
+      response: {}
+    }).as('getSwhStatusData');
+    cy.visit(url);
+    cy.wait('@getSwhStatusData');
+    cy.get('.swh-current-status').should('not.be.visible');
+  });
+
 });
 
 describe('Test navbar', function() {

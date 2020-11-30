@@ -96,6 +96,13 @@ DEFAULT_CONFIG = {
         "dict",
         {"server_url": "http://graph.internal.softwareheritage.org:5009/graph/"},
     ),
+    "status": (
+        "dict",
+        {
+            "server_url": "https://status.softwareheritage.org/",
+            "json_path": "1.0/status/578e5eddcdc0cc7951000520",
+        },
+    ),
 }
 
 swhweb_config = {}  # type: Dict[str, Any]

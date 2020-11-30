@@ -265,6 +265,7 @@ def context_processor(request):
         "keycloak": config["keycloak"],
         "site_base_url": request.build_absolute_uri("/"),
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
+        "status": config["status"],
     }
 
 
