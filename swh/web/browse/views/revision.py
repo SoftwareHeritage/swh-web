@@ -31,7 +31,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
 from swh.web.common.utils import (
@@ -316,7 +316,7 @@ def revision_browse(request, sha1_git):
         snapshot_id = request.GET.get("snapshot")
     path = request.GET.get("path")
     dir_id = None
-    dirs, files = None, None
+    dirs, files = [], []
     content_data = {}
     if origin_url:
         try:
@@ -328,6 +328,7 @@ def revision_browse(request, sha1_git):
                 branch_name=request.GET.get("branch"),
                 release_name=request.GET.get("release"),
                 revision_id=sha1_git,
+                path=path,
             )
         except NotFoundExc as e:
             raw_rev_url = reverse("browse-revision", url_args={"sha1_git": sha1_git})
@@ -349,13 +350,19 @@ def revision_browse(request, sha1_git):
     elif snapshot_id:
         snapshot_context = get_snapshot_context(snapshot_id)
 
+    error_info = {"status_code": 200, "description": None}
+
     if path:
-        file_info = archive.lookup_directory_with_path(revision["directory"], path)
-        if file_info["type"] == "dir":
-            dir_id = file_info["target"]
-        else:
-            query_string = "sha1_git:" + file_info["target"]
-            content_data = request_content(query_string, raise_if_unavailable=False)
+        try:
+            file_info = archive.lookup_directory_with_path(revision["directory"], path)
+            if file_info["type"] == "dir":
+                dir_id = file_info["target"]
+            else:
+                query_string = "sha1_git:" + file_info["target"]
+                content_data = request_content(query_string)
+        except NotFoundExc as e:
+            error_info["status_code"] = 404
+            error_info["description"] = f"NotFoundExc: {str(e)}"
     else:
         dir_id = revision["directory"]
 
@@ -449,9 +456,6 @@ def revision_browse(request, sha1_git):
     readme_url = None
     readme_html = None
     readmes = {}
-    error_code = 200
-    error_message = ""
-    error_description = ""
 
     extra_context = dict(revision_metadata)
     extra_context["path"] = f"/{path}" if path else None
@@ -487,10 +491,6 @@ def revision_browse(request, sha1_git):
         swh_objects.append(
             SWHObjectInfo(object_type=CONTENT, object_id=file_info["target"])
         )
-
-        error_code = content_data["error_code"]
-        error_message = content_data["error_message"]
-        error_description = content_data["error_description"]
     else:
         for d in dirs:
             if d["type"] == "rev":
@@ -580,9 +580,9 @@ def revision_browse(request, sha1_git):
             "diff_revision_url": diff_revision_url,
             "show_actions": True,
             "swhids_info": swhids_info,
-            "error_code": error_code,
-            "error_message": error_message,
-            "error_description": error_description,
+            "error_code": error_info["status_code"],
+            "error_message": http_status_code_message.get(error_info["status_code"]),
+            "error_description": error_info["description"],
         },
-        status=error_code,
+        status=error_info["status_code"],
     )

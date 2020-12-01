@@ -291,3 +291,21 @@ def _revision_browse_checks(
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+
+@given(revision())
+def test_revision_invalid_path(client, archive_data, revision):
+    path = "foo/bar"
+    url = reverse(
+        "browse-revision", url_args={"sha1_git": revision}, query_params={"path": path}
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=404, template_used="browse/revision.html"
+    )
+
+    directory = archive_data.revision_get(revision)["directory"]
+    error_message = (
+        f"Directory entry with path {path} from root directory {directory} not found"
+    )
+    assert_contains(resp, error_message, status_code=404)

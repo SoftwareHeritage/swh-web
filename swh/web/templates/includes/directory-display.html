@@ -58,6 +58,8 @@ See top-level LICENSE file for more information
   <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
   <br/>
   <i>Its associated directory can not be displayed.</i>
+{% elif error_code != 200 %}
+  {% include "includes/http-error.html" %}
 {% elif dirs|length == 0 and files|length == 0 %}
   <i>Directory is empty</i>
 {% endif %}

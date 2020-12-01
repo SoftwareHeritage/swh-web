@@ -316,7 +316,9 @@ def test_content_request_errors(client, invalid_sha1, unknown_content):
     check_html_get_response(client, url, status_code=400, template_used="error.html")
 
     url = reverse("browse-content", url_args={"query_string": unknown_content["sha1"]})
-    check_html_get_response(client, url, status_code=404, template_used="error.html")
+    check_html_get_response(
+        client, url, status_code=404, template_used="browse/content.html"
+    )
 
 
 @given(content())

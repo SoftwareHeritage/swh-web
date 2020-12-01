@@ -154,6 +154,24 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
 
 
 @given(directory())
+def test_directory_with_invalid_path(client, directory):
+    path = "foo/bar"
+    dir_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory},
+        query_params={"path": path},
+    )
+
+    resp = check_html_get_response(
+        client, dir_url, status_code=404, template_used="browse/directory.html"
+    )
+    error_message = (
+        f"Directory entry with path {path} from root directory {directory} not found"
+    )
+    assert_contains(resp, error_message, status_code=404)
+
+
+@given(directory())
 def test_directory_uppercase(client, directory):
     url = reverse(
         "browse-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}

@@ -16,7 +16,7 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from swh.web.common import archive, highlightjs
-from swh.web.common.exc import http_status_code_message
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     browsers_supported_image_mimes,
     format_utc_iso_date,
@@ -123,10 +123,7 @@ def _re_encode_content(mimetype, encoding, content_data):
 
 
 def request_content(
-    query_string,
-    max_size=content_display_max_size,
-    raise_if_unavailable=True,
-    re_encode=True,
+    query_string, max_size=content_display_max_size, re_encode=True,
 ):
     """Function that retrieves a content from the archive.
 
@@ -170,27 +167,15 @@ def request_content(
         if mimetype.startswith("\\"):
             filetype = None
 
-    content_data["error_code"] = 200
-    content_data["error_message"] = ""
-    content_data["error_description"] = ""
-
     if not max_size or content_data["length"] < max_size:
         try:
             content_raw = archive.lookup_content_raw(query_string)
         except Exception as exc:
-            if raise_if_unavailable:
-                raise exc
-            else:
-                sentry_sdk.capture_exception(exc)
-                content_data["raw_data"] = None
-                content_data["error_code"] = 404
-                content_data["error_description"] = (
-                    "The bytes of the content are currently not available "
-                    "in the archive."
-                )
-                content_data["error_message"] = http_status_code_message[
-                    content_data["error_code"]
-                ]
+            sentry_sdk.capture_exception(exc)
+            raise NotFoundExc(
+                "The bytes of the content are currently not available "
+                "in the archive."
+            )
         else:
             content_data["raw_data"] = content_raw["data"]
 

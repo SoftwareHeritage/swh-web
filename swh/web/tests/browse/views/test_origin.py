@@ -572,7 +572,7 @@ def test_browse_origin_directory_not_found(client, origin):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=404, template_used="error.html"
+        client, url, status_code=404, template_used="browse/directory.html"
     )
     assert re.search("Directory.*not found", resp.content.decode("utf-8"))
 
@@ -653,7 +653,7 @@ def test_browse_origin_content_not_found(client, origin):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=404, template_used="error.html"
+        client, url, status_code=404, template_used="browse/content.html"
     )
     assert re.search("Directory entry.*not found", resp.content.decode("utf-8"))
 
