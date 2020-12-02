@@ -183,7 +183,7 @@ describe('Test top-bar', function() {
     }).as('getSwhStatusData');
     cy.visit(url);
     cy.wait('@getSwhStatusData');
-    cy.get('.swh-current-status').should('not.be.visible');
+    cy.get('.swh-current-status').should('not.exist');
   });
 
 });

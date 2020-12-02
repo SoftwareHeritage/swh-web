@@ -87,7 +87,7 @@ describe('Visits tests', function() {
           .trigger('mouseout');
 
         cy.get('.popover')
-          .should('not.be.visible');
+          .should('not.exist');
       });
   });
 

@@ -289,7 +289,7 @@ describe('Origin Save Tests', function() {
       .click();
 
     cy.get('.swh-save-request-info-popover')
-      .should('not.be.visible');
+      .should('not.exist');
   });
 
   it('should hide task info popover when clicking on the close button', function() {
@@ -308,7 +308,7 @@ describe('Origin Save Tests', function() {
       .click();
 
     cy.get('.swh-save-request-info-popover')
-      .should('not.be.visible');
+      .should('not.exist');
   });
 
   it('should fill save request form when clicking on "Save again" button', function() {
