@@ -122,12 +122,6 @@
     "cover 99.5%",
     "not dead"
   ],
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {},
-      "postcss-normalize": {}
-    }
-  },
   "nyc": {
     "report-dir": "cypress/coverage",
     "exclude": [
