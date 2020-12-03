@@ -18,7 +18,6 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
-    gen_directory_link,
     gen_link,
     prepare_content_for_display,
     request_content,
@@ -252,7 +251,6 @@ def content_display(request, query_string):
     filename = None
     path_info = None
     directory_id = None
-    directory_url = None
 
     root_dir = None
     if snapshot_context:
@@ -295,9 +293,6 @@ def content_display(request, query_string):
     else:
         root_dir = None
 
-    if directory_id:
-        directory_url = gen_directory_link(directory_id)
-
     query_params = {"filename": filename}
 
     content_checksums = content_data.get("checksums", {})
@@ -326,7 +321,6 @@ def content_display(request, query_string):
         path=f"/{path}" if path else None,
         filename=filename or "",
         directory=directory_id,
-        directory_url=directory_url,
         revision=None,
         release=None,
         snapshot=None,

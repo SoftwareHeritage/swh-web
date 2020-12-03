@@ -31,7 +31,7 @@ from swh.web.common.utils import (
     reverse,
 )
 from swh.web.tests.data import get_content, random_sha1
-from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     new_origin,
     new_snapshot,
@@ -991,6 +991,8 @@ def _origin_content_view_test_helper(
 
     _check_origin_link(resp, origin_info["url"])
 
+    assert_not_contains(resp, "swh-metadata-popover")
+
 
 def _origin_directory_view_test_helper(
     client,
@@ -1130,6 +1132,8 @@ def _origin_directory_view_test_helper(
     assert_contains(resp, "swh-take-new-snapshot")
 
     _check_origin_link(resp, origin_info["url"])
+
+    assert_not_contains(resp, "swh-metadata-popover")
 
 
 def _origin_branches_test_helper(

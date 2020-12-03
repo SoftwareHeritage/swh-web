@@ -63,6 +63,7 @@ def test_content_view_text(client, archive_data, content):
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
+    assert_not_contains(resp, "swh-metadata-popover")
 
 
 @given(content_text_no_highlight())

@@ -558,7 +558,6 @@ a.toggle-col.col-hidden {
     overflow-y: auto;
     overflow-x: auto;
     padding: 0;
-    padding-right: 1.4em;
 }
 
 @media screen and (min-width: 768px) {
@@ -567,18 +566,9 @@ a.toggle-col.col-hidden {
     }
 }
 
-.swh-metadata-table-row {
-    border-top: 1px solid #ddd !important;
-}
-
-.swh-metadata-table-key {
-    min-width: 200px;
-    max-width: 200px;
-    width: 200px;
-}
-
-.swh-metadata-table-value pre {
+.swh-popover pre {
     white-space: pre-wrap;
+    margin-bottom: 0;
 }
 
 .d3-wrapper {

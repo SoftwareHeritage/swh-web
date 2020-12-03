@@ -3,17 +3,28 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
 import random
 
 from hypothesis import given
 
 from django.utils.html import escape
 
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import DIRECTORY, REVISION, SNAPSHOT
+from swh.model.model import Revision, RevisionType, TimestampWithTimezone
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
-from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import new_origin, origin, revision, unknown_revision
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.strategies import (
+    directory,
+    new_origin,
+    new_person,
+    new_swh_date,
+    origin,
+    revision,
+    unknown_revision,
+)
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -309,3 +320,29 @@ def test_revision_invalid_path(client, archive_data, revision):
         f"Directory entry with path {path} from root directory {directory} not found"
     )
     assert_contains(resp, error_message, status_code=404)
+    assert_not_contains(resp, "swh-metadata-popover", status_code=404)
+
+
+@given(directory(), new_person(), new_swh_date())
+def test_revision_metadata_display(archive_data, client, directory, person, date):
+    metadata = {"foo": "bar"}
+    revision = Revision(
+        directory=hash_to_bytes(directory),
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+        metadata=metadata,
+    )
+    archive_data.revision_add([revision])
+
+    url = reverse("browse-revision", url_args={"sha1_git": hash_to_hex(revision.id)})
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/revision.html"
+    )
+    assert_contains(resp, "swh-metadata-popover")
+    assert_contains(resp, escape(json.dumps(metadata, indent=4)))

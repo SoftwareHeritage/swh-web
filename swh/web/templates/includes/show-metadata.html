@@ -7,30 +7,22 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-<button id="metadata-toggler" class="btn btn-default btn-sm swh-popover-toggler" data-toggle="popover" data-popover-content="#metadata-popover">
+{% if 'metadata' in swh_object_metadata and swh_object_metadata.metadata != '{}' %}
+
+<button id="swh-metadata-toggler" class="btn btn-default btn-sm swh-popover-toggler"
+        data-toggle="popover" data-popover-content="#swh-metadata-popover">
   <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
   Show metadata
 </button>
 
-<div id="metadata-popover" style="display:none;">
+<div id="swh-metadata-popover" style="display:none;">
   <div class="popover-heading">{{ swh_object_name }} metadata</div>
   <div class="popover-body">
-    <table class="table">
-      <tbody>
-        {% for key, val in swh_object_metadata.items|dictsort:"0.lower" %}
-          {% if val is not None and val != '' %}
-            <tr>
-              <th class="swh-metadata-table-row swh-metadata-table-key">{{ key }}</th>
-              <td class="swh-metadata-table-row swh-metadata-table-value">
-                <pre>{{ val | escape }}</pre>
-              </td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+    <pre class="bg-white">{{ swh_object_metadata.metadata | escape }}</pre>
   </div>
 </div>
+
+{% endif %}
 
 <script>
   swh.webapp.setBrowsedSwhObjectMetadata({{ swh_object_metadata|jsonify }})

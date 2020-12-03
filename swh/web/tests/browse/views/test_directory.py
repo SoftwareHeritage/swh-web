@@ -29,7 +29,7 @@ from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
-from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
@@ -453,3 +453,5 @@ def _directory_view_checks(
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+    assert_not_contains(resp, "swh-metadata-popover")

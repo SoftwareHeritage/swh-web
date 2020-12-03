@@ -18,12 +18,9 @@ from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
     format_log_entries,
-    gen_directory_link,
     gen_link,
     gen_person_mail_link,
-    gen_revision_link,
     gen_revision_url,
-    gen_snapshot_link,
     get_directory_entries,
     get_readme_to_display,
     get_revision_log_url,
@@ -374,7 +371,6 @@ def revision_browse(request, sha1_git):
         object_type=REVISION,
         object_id=sha1_git,
         revision=sha1_git,
-        revision_url=gen_revision_link(sha1_git),
         author=revision["author"]["fullname"] if revision["author"] else "None",
         author_url=gen_person_mail_link(revision["author"])
         if revision["author"]
@@ -388,7 +384,6 @@ def revision_browse(request, sha1_git):
         committer_date=format_utc_iso_date(revision["committer_date"]),
         date=format_utc_iso_date(revision["date"]),
         directory=revision["directory"],
-        directory_url=gen_directory_link(revision["directory"]),
         merge=revision["merge"],
         metadata=json.dumps(
             revision["metadata"], sort_keys=True, indent=4, separators=(",", ": ")
@@ -397,7 +392,6 @@ def revision_browse(request, sha1_git):
         synthetic=revision["synthetic"],
         type=revision["type"],
         snapshot=snapshot_id,
-        snapshot_url=gen_snapshot_link(snapshot_id) if snapshot_id else None,
         origin_url=origin_url,
     )
 
