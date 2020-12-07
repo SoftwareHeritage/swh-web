@@ -67,12 +67,10 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
         self.refresh_token = Mock()
         self.userinfo = Mock()
         self.logout = Mock()
-        self.offline_token = Mock()
         if auth_success:
             self.authorization_code.return_value = copy(oidc_profile)
             self.refresh_token.return_value = copy(oidc_profile)
             self.userinfo.return_value = copy(userinfo)
-            self.offline_token.return_value = oidc_profile["refresh_token"]
         else:
             self.authorization_url = Mock()
             exception = KeycloakError(
@@ -83,7 +81,6 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
             self.refresh_token.side_effect = exception
             self.userinfo.side_effect = exception
             self.logout.side_effect = exception
-            self.offline_token = exception
 
     def decode_token(self, token):
         options = {}

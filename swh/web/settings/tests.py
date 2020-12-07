@@ -75,7 +75,7 @@ swh_web_config.update(
             },
         },
         "keycloak": {
-            "server_url": "http://localhost:8080/auth",
+            "server_url": "http://localhost:8080/auth/",
             "realm_name": "SoftwareHeritage",
         },
     }

@@ -32,13 +32,8 @@ describe('Test API tokens UI', function() {
     cy.visit(`${Urls.oidc_profile()}#tokens`);
   }
 
-  function generateToken(Urls, status, tokenValue = '') {
-    cy.route({
-      method: 'POST',
-      url: `${Urls.oidc_generate_bearer_token()}/**`,
-      response: tokenValue,
-      status: status
-    }).as('generateTokenRequest');
+  it('should initiate token generation flow', function() {
+    initTokensPage(this.Urls, []);
 
     cy.contains('Generate new token')
       .click();
@@ -49,50 +44,22 @@ describe('Test API tokens UI', function() {
     cy.get('.modal-header')
       .should('contain', 'Bearer token generation');
 
-    cy.get('#swh-user-password-submit')
-      .should('be.disabled');
-
-    cy.get('#swh-user-password')
-      .type('secret');
-
-    cy.get('#swh-user-password-submit')
-      .should('be.enabled');
-
-    cy.get('#swh-user-password-submit')
+    cy.get('#swh-token-form-submit')
       .click();
 
-    cy.wait('@generateTokenRequest');
-
-    if (status === 200) {
-      cy.get('#swh-user-password-submit')
-        .should('be.disabled');
-    }
-  }
-
-  it('should generate and display bearer token', function() {
-    initTokensPage(this.Urls, []);
-    const tokenValue = 'bearer-token-value';
-    generateToken(this.Urls, 200, tokenValue);
-    cy.get('#swh-token-success-message')
-      .should('contain', 'Below is your token');
-    cy.get('#swh-bearer-token')
-      .should('contain', tokenValue);
+    cy.location().should(loc => {
+      expect(loc.pathname).to.eq(this.Urls.oidc_generate_bearer_token());
+    });
   });
 
-  it('should report errors when token generation failed', function() {
-    initTokensPage(this.Urls, []);
-    generateToken(this.Urls, 400);
-    cy.get('#swh-token-error-message')
+  it('should report error when not logged in and visiting a token generation URL', function() {
+    cy.visit(this.Urls.oidc_generate_bearer_token_complete(), {failOnStatusCode: false});
+    cy.get('.swh-http-error')
+      .should('be.visible');
+    cy.get('.swh-http-error-code')
+      .should('contain', 403);
+    cy.get('.swh-http-error-desc')
       .should('contain', 'You are not allowed to generate bearer tokens');
-    cy.get('#swh-web-modal-html .close').click();
-    generateToken(this.Urls, 401);
-    cy.get('#swh-token-error-message')
-      .should('contain', 'The password is invalid');
-    cy.get('#swh-web-modal-html .close').click();
-    generateToken(this.Urls, 500);
-    cy.get('#swh-token-error-message')
-        .should('contain', 'Internal server error');
-
   });
 
   function displayToken(Urls, status, tokenValue = '') {
@@ -111,45 +78,20 @@ describe('Test API tokens UI', function() {
 
     cy.get('.modal-header')
       .should('contain', 'Display bearer token');
-
-    cy.get('#swh-user-password-submit')
-      .should('be.disabled');
-
-    cy.get('#swh-user-password')
-      .type('secret', {force: true});
-
-    cy.get('#swh-user-password-submit')
-      .should('be.enabled');
-
-    cy.get('#swh-user-password-submit')
-      .click({force: true});
-
-    cy.wait('@getTokenRequest');
-
-    if (status === 200) {
-      cy.get('#swh-user-password-submit')
-        .should('be.disabled');
-    }
   }
 
   it('should show a token when requested', function() {
     initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
     const tokenValue = 'token-value';
     displayToken(this.Urls, 200, tokenValue);
-    cy.get('#swh-token-success-message')
-      .should('contain', 'Below is your token');
     cy.get('#swh-bearer-token')
       .should('contain', tokenValue);
   });
 
   it('should report errors when token display failed', function() {
     initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
-    displayToken(this.Urls, 401);
-    cy.get('#swh-token-error-message')
-      .should('contain', 'The password is invalid');
-    cy.get('#swh-web-modal-html .close').click();
     displayToken(this.Urls, 500);
-    cy.get('#swh-token-error-message')
+    cy.get('.modal-body')
       .should('contain', 'Internal server error');
   });
 
@@ -170,22 +112,13 @@ describe('Test API tokens UI', function() {
     cy.get('.modal-header')
       .should('contain', 'Revoke bearer token');
 
-    cy.get('#swh-user-password-submit')
-      .should('be.disabled');
-
-    cy.get('#swh-user-password')
-      .type('secret', {force: true});
-
-    cy.get('#swh-user-password-submit')
-      .should('be.enabled');
-
-    cy.get('#swh-user-password-submit')
+    cy.get('#swh-token-form-submit')
       .click({force: true});
 
     cy.wait('@revokeTokenRequest');
 
     if (status === 200) {
-      cy.get('#swh-user-password-submit')
+      cy.get('#swh-token-form-submit')
         .should('be.disabled');
     }
   }
@@ -193,16 +126,12 @@ describe('Test API tokens UI', function() {
   it('should revoke a token when requested', function() {
     initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
     revokeToken(this.Urls, 200);
-    cy.get('#swh-token-success-message')
+    cy.get('#swh-token-form-message')
       .should('contain', 'Bearer token successfully revoked');
   });
 
   it('should report errors when token revoke failed', function() {
     initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
-    revokeToken(this.Urls, 401);
-    cy.get('#swh-token-error-message')
-      .should('contain', 'The password is invalid');
-    cy.get('#swh-web-modal-html .close').click();
     revokeToken(this.Urls, 500);
     cy.get('#swh-token-error-message')
       .should('contain', 'Internal server error');
