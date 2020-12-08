@@ -18,13 +18,12 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
-    gen_directory_link,
     gen_link,
     prepare_content_for_display,
     request_content,
 )
 from swh.web.common import archive, highlightjs, query
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -186,13 +185,20 @@ def content_display(request, query_string):
     """
     algo, checksum = query.parse_hash(query_string)
     checksum = hash_to_hex(checksum)
-    content_data = request_content(query_string, raise_if_unavailable=False)
     origin_url = request.GET.get("origin_url")
     selected_language = request.GET.get("language")
     if not origin_url:
         origin_url = request.GET.get("origin")
     snapshot_id = request.GET.get("snapshot")
     path = request.GET.get("path")
+    content_data = {}
+    error_info = {"status_code": 200, "description": None}
+    try:
+        content_data = request_content(query_string)
+    except NotFoundExc as e:
+        error_info["status_code"] = 404
+        error_info["description"] = f"NotFoundExc: {str(e)}"
+
     snapshot_context = None
     if origin_url is not None or snapshot_id is not None:
         try:
@@ -225,7 +231,7 @@ def content_display(request, query_string):
     content = None
     language = None
     mimetype = None
-    if content_data["raw_data"] is not None:
+    if content_data.get("raw_data") is not None:
         content_display_data = prepare_content_for_display(
             content_data["raw_data"], content_data["mimetype"], path
         )
@@ -245,7 +251,6 @@ def content_display(request, query_string):
     filename = None
     path_info = None
     directory_id = None
-    directory_url = None
 
     root_dir = None
     if snapshot_context:
@@ -288,17 +293,11 @@ def content_display(request, query_string):
     else:
         root_dir = None
 
-    if directory_id:
-        directory_url = gen_directory_link(directory_id)
-
     query_params = {"filename": filename}
 
-    content_checksums = content_data["checksums"]
+    content_checksums = content_data.get("checksums", {})
 
-    content_url = reverse(
-        "browse-content",
-        url_args={"query_string": f'sha1_git:{content_checksums["sha1_git"]}'},
-    )
+    content_url = reverse("browse-content", url_args={"query_string": query_string},)
 
     content_raw_url = reverse(
         "browse-content-raw",
@@ -308,21 +307,20 @@ def content_display(request, query_string):
 
     content_metadata = ContentMetadata(
         object_type=CONTENT,
-        object_id=content_checksums["sha1_git"],
-        sha1=content_checksums["sha1"],
-        sha1_git=content_checksums["sha1_git"],
-        sha256=content_checksums["sha256"],
-        blake2s256=content_checksums["blake2s256"],
+        object_id=content_checksums.get("sha1_git"),
+        sha1=content_checksums.get("sha1"),
+        sha1_git=content_checksums.get("sha1_git"),
+        sha256=content_checksums.get("sha256"),
+        blake2s256=content_checksums.get("blake2s256"),
         content_url=content_url,
-        mimetype=content_data["mimetype"],
-        encoding=content_data["encoding"],
-        size=filesizeformat(content_data["length"]),
-        language=content_data["language"],
+        mimetype=content_data.get("mimetype"),
+        encoding=content_data.get("encoding"),
+        size=filesizeformat(content_data.get("length", 0)),
+        language=content_data.get("language"),
         root_directory=root_dir,
         path=f"/{path}" if path else None,
         filename=filename or "",
         directory=directory_id,
-        directory_url=directory_url,
         revision=None,
         release=None,
         snapshot=None,
@@ -330,7 +328,7 @@ def content_display(request, query_string):
     )
 
     swh_objects = [
-        SWHObjectInfo(object_type=CONTENT, object_id=content_checksums["sha1_git"])
+        SWHObjectInfo(object_type=CONTENT, object_id=content_checksums.get("sha1_git"))
     ]
 
     if directory_id:
@@ -358,7 +356,7 @@ def content_display(request, query_string):
         swh_objects, snapshot_context, extra_context=content_metadata,
     )
 
-    heading = "Content - %s" % content_checksums["sha1_git"]
+    heading = "Content - %s" % content_checksums.get("sha1_git")
     if breadcrumbs:
         content_path = "/".join([bc["name"] for bc in breadcrumbs])
         heading += " - %s" % content_path
@@ -372,10 +370,10 @@ def content_display(request, query_string):
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
             "content": content,
-            "content_size": content_data["length"],
+            "content_size": content_data.get("length"),
             "max_content_size": content_display_max_size,
             "filename": filename,
-            "encoding": content_data["encoding"],
+            "encoding": content_data.get("encoding"),
             "mimetype": mimetype,
             "language": language,
             "available_languages": available_languages,
@@ -389,9 +387,9 @@ def content_display(request, query_string):
             "vault_cooking": None,
             "show_actions": True,
             "swhids_info": swhids_info,
-            "error_code": content_data["error_code"],
-            "error_message": content_data["error_message"],
-            "error_description": content_data["error_description"],
+            "error_code": error_info["status_code"],
+            "error_message": http_status_code_message.get(error_info["status_code"]),
+            "error_description": error_info["description"],
         },
-        status=content_data["error_code"],
+        status=error_info["status_code"],
     )

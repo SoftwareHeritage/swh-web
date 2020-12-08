@@ -58,11 +58,12 @@ def test_api_directory_with_path_not_found(api_client, directory):
     path = "some/path/to/nonexistent/dir/"
     url = reverse("api-1-directory", url_args={"sha1_git": directory, "path": path})
     rv = check_api_get_responses(api_client, url, status_code=404)
+    reason = (
+        f"Directory entry with path {path} from root directory {directory} not found"
+    )
     assert rv.data == {
         "exception": "NotFoundExc",
-        "reason": (
-            "Directory entry with path %s from %s not found" % (path, directory)
-        ),
+        "reason": reason,
     }
 
 

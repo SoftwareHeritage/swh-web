@@ -38,7 +38,7 @@ var BaseTransport = /** @class */ (function () {
          */
         var limited = this._handleRateLimit(headers);
         if (limited)
-            logger.warn("Too many requests, backing off till: " + this._disabledUntil(requestType));
+            logger.warn("Too many requests, backing off until: " + this._disabledUntil(requestType));
         if (status === Status.Success) {
             resolve({ status: status });
             return;
@@ -67,6 +67,16 @@ var BaseTransport = /** @class */ (function () {
         var raHeader = headers['retry-after'];
         if (rlHeader) {
             try {
+                // rate limit headers are of the form
+                //     <header>,<header>,..
+                // where each <header> is of the form
+                //     <retry_after>: <categories>: <scope>: <reason_code>
+                // where
+                //     <retry_after> is a delay in ms
+                //     <categories> is the event type(s) (error, transaction, etc) being rate limited and is of the form
+                //         <category>;<category>;...
+                //     <scope> is what's being limited (org, project, or key) - ignored by SDK
+                //     <reason_code> is an arbitrary string like "org_quota" - ignored by SDK
                 for (var _c = __values(rlHeader.trim().split(',')), _d = _c.next(); !_d.done; _d = _c.next()) {
                     var limit = _d.value;
                     var parameters = limit.split(':', 2);

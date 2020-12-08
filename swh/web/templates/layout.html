@@ -108,6 +108,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
           </li>
           <li class="swh-position-right">
+            <a href="{{ status.server_url }}" target="_blank"
+              class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
+              <span id="swh-current-status-description">Operational</span>
+              <i class="swh-current-status-indicator green"></i>
+            </a>
             {% url 'logout' as logout_url %}
             {% if user.is_authenticated %}
               Logged in as
@@ -252,6 +257,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
     <script>
       swh.webapp.setContainerFullWidth();
+      var statusServerURL = {{ status.server_url|jsonify }};
+      var statusJsonPath = {{ status.json_path|jsonify }};
+      swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
     </script>
   </body>
 
