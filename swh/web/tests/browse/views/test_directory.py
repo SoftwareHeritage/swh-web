@@ -29,7 +29,7 @@ from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
-from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     directory,
     directory_with_subdirs,
@@ -151,6 +151,24 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     check_html_get_response(
         client, dir_url, status_code=404, template_used="error.html"
     )
+
+
+@given(directory())
+def test_directory_with_invalid_path(client, directory):
+    path = "foo/bar"
+    dir_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory},
+        query_params={"path": path},
+    )
+
+    resp = check_html_get_response(
+        client, dir_url, status_code=404, template_used="browse/directory.html"
+    )
+    error_message = (
+        f"Directory entry with path {path} from root directory {directory} not found"
+    )
+    assert_contains(resp, error_message, status_code=404)
 
 
 @given(directory())
@@ -435,3 +453,5 @@ def _directory_view_checks(
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+    assert_not_contains(resp, "swh-metadata-popover")

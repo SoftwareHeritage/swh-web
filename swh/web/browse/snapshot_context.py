@@ -19,7 +19,6 @@ from swh.web.browse.utils import (
     content_display_max_size,
     format_log_entries,
     gen_content_link,
-    gen_directory_link,
     gen_release_link,
     gen_revision_link,
     gen_revision_log_link,
@@ -31,7 +30,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive, highlightjs
-from swh.web.common.exc import BadInputExc, NotFoundExc
+from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
@@ -701,9 +700,18 @@ def browse_snapshot_directory(
 
     root_directory = snapshot_context["root_directory"]
     sha1_git = root_directory
+    error_info = {
+        "status_code": 200,
+        "description": None,
+    }
     if root_directory and path:
-        dir_info = archive.lookup_directory_with_path(root_directory, path)
-        sha1_git = dir_info["target"]
+        try:
+            dir_info = archive.lookup_directory_with_path(root_directory, path)
+            sha1_git = dir_info["target"]
+        except NotFoundExc as e:
+            sha1_git = None
+            error_info["status_code"] = 404
+            error_info["description"] = f"NotFoundExc: {str(e)}"
 
     dirs = []
     files = []
@@ -778,11 +786,6 @@ def browse_snapshot_directory(
         sum_file_sizes = filesizeformat(sum_file_sizes)
         dir_path = "/" + path
 
-    browse_dir_link = gen_directory_link(sha1_git)
-
-    browse_rev_link = gen_revision_link(revision_id)
-    browse_snp_link = gen_snapshot_link(snapshot_id)
-
     revision_found = True
     if sha1_git is None and revision_id is not None:
         try:
@@ -803,16 +806,13 @@ def browse_snapshot_directory(
         visit_type = visit_info["type"]
 
     release_id = snapshot_context["release_id"]
-    browse_rel_link = None
     if release_id:
         swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
-        browse_rel_link = gen_release_link(release_id)
 
     dir_metadata = DirectoryMetadata(
         object_type=DIRECTORY,
         object_id=sha1_git,
         directory=sha1_git,
-        directory_url=browse_dir_link,
         nb_files=nb_files,
         nb_dirs=nb_dirs,
         sum_file_sizes=sum_file_sizes,
@@ -820,11 +820,8 @@ def browse_snapshot_directory(
         path=dir_path,
         revision=revision_id,
         revision_found=revision_found,
-        revision_url=browse_rev_link,
         release=release_id,
-        release_url=browse_rel_link,
         snapshot=snapshot_id,
-        snapshot_url=browse_snp_link,
         origin_url=origin_url,
         visit_date=visit_date,
         visit_type=visit_type,
@@ -875,7 +872,11 @@ def browse_snapshot_directory(
             "vault_cooking": vault_cooking,
             "show_actions": True,
             "swhids_info": swhids_info,
+            "error_code": error_info["status_code"],
+            "error_message": http_status_code_message.get(error_info["status_code"]),
+            "error_description": error_info["description"],
         },
+        status=error_info["status_code"],
     )
 
 
@@ -915,17 +916,25 @@ def browse_snapshot_content(
     split_path = path.split("/")
     filename = split_path[-1]
     filepath = path[: -len(filename)]
+    error_info = {
+        "status_code": 200,
+        "description": None,
+    }
     if root_directory:
-        content_info = archive.lookup_directory_with_path(root_directory, path)
-        sha1_git = content_info["target"]
-        query_string = "sha1_git:" + sha1_git
-        content_data = request_content(query_string, raise_if_unavailable=False)
+        try:
+            content_info = archive.lookup_directory_with_path(root_directory, path)
+            sha1_git = content_info["target"]
+            query_string = "sha1_git:" + sha1_git
+            content_data = request_content(query_string)
 
-        if filepath:
-            dir_info = archive.lookup_directory_with_path(root_directory, filepath)
-            directory_id = dir_info["target"]
-        else:
-            directory_id = root_directory
+            if filepath:
+                dir_info = archive.lookup_directory_with_path(root_directory, filepath)
+                directory_id = dir_info["target"]
+            else:
+                directory_id = root_directory
+        except NotFoundExc as e:
+            error_info["status_code"] = 404
+            error_info["description"] = f"NotFoundExc: {str(e)}"
 
     revision_id = snapshot_context["revision_id"]
     origin_info = snapshot_context["origin_info"]
@@ -961,10 +970,6 @@ def browse_snapshot_content(
             query_params={"filename": filename},
         )
 
-    browse_rev_link = gen_revision_link(revision_id)
-
-    browse_dir_link = gen_directory_link(directory_id)
-
     content_checksums = content_data.get("checksums", {})
 
     swh_objects = [
@@ -981,10 +986,8 @@ def browse_snapshot_content(
         visit_type = visit_info["type"]
 
     release_id = snapshot_context["release_id"]
-    browse_rel_link = None
     if release_id:
         swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
-        browse_rel_link = gen_release_link(release_id)
 
     content_metadata = ContentMetadata(
         object_type=CONTENT,
@@ -1002,13 +1005,9 @@ def browse_snapshot_content(
         path=f"/{filepath}",
         filename=filename,
         directory=directory_id,
-        directory_url=browse_dir_link,
         revision=revision_id,
-        revision_url=browse_rev_link,
         release=release_id,
-        release_url=browse_rel_link,
         snapshot=snapshot_id,
-        snapshot_url=gen_snapshot_link(snapshot_id),
         origin_url=origin_url,
         visit_date=visit_date,
         visit_type=visit_type,
@@ -1055,11 +1054,11 @@ def browse_snapshot_content(
             "vault_cooking": None,
             "show_actions": True,
             "swhids_info": swhids_info,
-            "error_code": content_data.get("error_code"),
-            "error_message": content_data.get("error_message"),
-            "error_description": content_data.get("error_description"),
+            "error_code": error_info["status_code"],
+            "error_message": http_status_code_message.get(error_info["status_code"]),
+            "error_description": error_info["description"],
         },
-        status=content_data.get("error_code", 200),
+        status=error_info["status_code"],
     )
 
 

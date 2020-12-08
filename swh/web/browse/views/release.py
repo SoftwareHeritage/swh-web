@@ -17,7 +17,6 @@ from swh.web.browse.utils import (
     gen_person_mail_link,
     gen_release_link,
     gen_revision_link,
-    gen_snapshot_link,
 )
 from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc
@@ -73,27 +72,12 @@ def release_browse(request, sha1_git):
     elif snapshot_id:
         snapshot_context = get_snapshot_context(snapshot_id)
 
-    target_url = None
-    if release["target_type"] == REVISION:
-        target_url = gen_revision_link(release["target"])
-    elif release["target_type"] == CONTENT:
-        target_url = gen_content_link(release["target"])
-    elif release["target_type"] == DIRECTORY:
-        target_url = gen_directory_link(release["target"])
-    elif release["target_type"] == RELEASE:
-        target_url = gen_release_link(release["target"])
-
-    snapshot_id = None
-    browse_snp_link = None
-    if snapshot_context:
-        snapshot_id = snapshot_context["snapshot_id"]
-        browse_snp_link = gen_snapshot_link(snapshot_id)
+    snapshot_id = snapshot_context.get("snapshot_id", None)
 
     release_metadata = ReleaseMetadata(
         object_type=RELEASE,
         object_id=sha1_git,
         release=sha1_git,
-        release_url=gen_release_link(release["id"]),
         author=release["author"]["fullname"] if release["author"] else "None",
         author_url=gen_person_mail_link(release["author"])
         if release["author"]
@@ -103,9 +87,7 @@ def release_browse(request, sha1_git):
         synthetic=release["synthetic"],
         target=release["target"],
         target_type=release["target_type"],
-        target_url=target_url,
-        snapshot=snapshot_context.get("snapshot_id", None),
-        snapshot_url=browse_snp_link,
+        snapshot=snapshot_id,
         origin_url=origin_url,
     )
 

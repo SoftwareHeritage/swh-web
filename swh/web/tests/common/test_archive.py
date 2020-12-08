@@ -274,7 +274,9 @@ def test_lookup_directory_with_path_not_found(directory):
     path = "some/invalid/path/here"
     with pytest.raises(NotFoundExc) as e:
         archive.lookup_directory_with_path(directory, path)
-    assert e.match("Directory entry with path %s from %s not found" % (path, directory))
+    assert e.match(
+        f"Directory entry with path {path} from root directory {directory} not found"
+    )
 
 
 @given(directory())

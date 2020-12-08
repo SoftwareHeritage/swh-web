@@ -24,3 +24,4 @@ export * from './history-counters';
 export * from './badges';
 export * from './sentry';
 export * from './math-typesetting';
+export * from './status-widget';

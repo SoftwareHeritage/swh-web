@@ -58,7 +58,13 @@ var FetchTransport = /** @class */ (function (_super) {
                     'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
                     'retry-after': response.headers.get('Retry-After'),
                 };
-                _this._handleResponse({ requestType: sentryRequest.type, response: response, headers: headers, resolve: resolve, reject: reject });
+                _this._handleResponse({
+                    requestType: sentryRequest.type,
+                    response: response,
+                    headers: headers,
+                    resolve: resolve,
+                    reject: reject,
+                });
             })
                 .catch(reject);
         }));

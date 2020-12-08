@@ -418,15 +418,18 @@ def lookup_directory(sha1_git):
     return map(converters.from_directory_entry, directory_entries)
 
 
-def lookup_directory_with_path(sha1_git, path_string):
-    """Return directory information for entry with path path_string w.r.t.
-    root directory pointed by directory_sha1_git
+def lookup_directory_with_path(sha1_git: str, path: str) -> Dict[str, Any]:
+    """Return directory information for entry with specified path w.r.t.
+    root directory pointed by sha1_git
 
     Args:
-        - directory_sha1_git: sha1_git corresponding to the directory
-        to which we append paths to (hopefully) find the entry
-        - the relative path to the entry starting from the directory pointed by
-        directory_sha1_git
+        sha1_git: sha1_git corresponding to the directory to which we
+            append paths to (hopefully) find the entry
+        path: the relative path to the entry starting from the root
+            directory pointed by sha1_git
+
+    Returns:
+        Directory entry information as dict.
 
     Raises:
         NotFoundExc if the directory entry is not found
@@ -435,14 +438,14 @@ def lookup_directory_with_path(sha1_git, path_string):
 
     _check_directory_exists(sha1_git, sha1_git_bin)
 
-    paths = path_string.strip(os.path.sep).split(os.path.sep)
+    paths = path.strip(os.path.sep).split(os.path.sep)
     queried_dir = storage.directory_entry_get_by_path(
-        sha1_git_bin, list(map(lambda p: p.encode("utf-8"), paths))
+        sha1_git_bin, [p.encode("utf-8") for p in paths]
     )
 
     if not queried_dir:
         raise NotFoundExc(
-            ("Directory entry with path %s from %s not found") % (path_string, sha1_git)
+            f"Directory entry with path {path} from root directory {sha1_git} not found"
         )
 
     return converters.from_directory_entry(queried_dir)
