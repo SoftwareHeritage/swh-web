@@ -1,0 +1,38 @@
+/**
+ * Copyright (C) 2020  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.swh-current-status-indicator {
+    width: 12px;
+    height: 12px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    border-radius: 6px;
+}
+
+.swh-current-status-indicator.small {
+    width: 8px;
+    height: 8px;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+.swh-current-status-indicator.green {
+    background: #27ae60;
+}
+
+.swh-current-status-indicator.yellow {
+    background: #ffa837;
+}
+
+.swh-current-status-indicator.red {
+    background: #c44031;
+}
+
+.swh-current-status-indicator.blue {
+    background: #00aaf0;
+}

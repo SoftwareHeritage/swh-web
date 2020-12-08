@@ -157,10 +157,6 @@ class SWHObjectInfoMetadata(TypedDict, total=False):
     origin_url: Optional[str]
     visit_date: Optional[str]
     visit_type: Optional[str]
-    directory_url: Optional[str]
-    revision_url: Optional[str]
-    release_url: Optional[str]
-    snapshot_url: Optional[str]
 
 
 class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
@@ -204,7 +200,6 @@ class ReleaseMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     synthetic: bool
     target: str
     target_type: str
-    target_url: str
     snapshot: Optional[str]
 
 

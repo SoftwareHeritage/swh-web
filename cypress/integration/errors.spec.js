@@ -98,7 +98,7 @@ describe('Test Errors', function() {
       urlShouldShowError(subDir, {
         code: '404',
         msg: 'NotFoundExc: Directory entry with path ' +
-              origin.invalidSubDir + ' from ' +
+              origin.invalidSubDir + ' from root directory ' +
               origin.rootDirectory + ' not found'
       });
     });

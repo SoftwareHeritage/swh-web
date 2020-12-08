@@ -107,13 +107,13 @@ describe('Test admin deposit page', function() {
         cy.contains(deposit.status).should('be.visible');
         // those are hidden by default, so now visible
         if (deposit.status_detail !== null) {
-          cy.contains(deposit.status_detail).should('not.be.visible');
+          cy.contains(deposit.status_detail).should('not.exist');
         }
 
         // those are hidden by default
         if (deposit.swhid !== null) {
-          cy.contains(deposit.swhid).should('not.be.visible');
-          cy.contains(deposit.swhid_context).should('not.be.visible');
+          cy.contains(deposit.swhid).should('not.exist');
+          cy.contains(deposit.swhid_context).should('not.exist');
         }
       });
 
@@ -126,7 +126,7 @@ describe('Test admin deposit page', function() {
           let expectedOrigin = expectedOrigins[deposit.id];
 
           // ensure it's in the dom
-          cy.contains(deposit.id).should('not.be.visible');
+          cy.contains(deposit.id).should('not.exist');
           if (deposit.status !== 'rejected') {
             expect(row).to.not.contain(deposit.external_id);
             expect(row).to.contain(expectedOrigin);

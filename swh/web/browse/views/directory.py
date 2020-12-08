@@ -16,7 +16,7 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -24,11 +24,19 @@ from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
 
 def _directory_browse(request, sha1_git, path=None):
     root_sha1_git = sha1_git
+    error_info = {"status_code": 200, "description": None}
     if path:
-        dir_info = archive.lookup_directory_with_path(sha1_git, path)
-        sha1_git = dir_info["target"]
+        try:
+            dir_info = archive.lookup_directory_with_path(sha1_git, path)
+            sha1_git = dir_info["target"]
+        except NotFoundExc as e:
+            error_info["status_code"] = 404
+            error_info["description"] = f"NotFoundExc: {str(e)}"
+            sha1_git = None
 
-    dirs, files = get_directory_entries(sha1_git)
+    dirs, files = [], []
+    if sha1_git is not None:
+        dirs, files = get_directory_entries(sha1_git)
     origin_url = request.GET.get("origin_url")
     if not origin_url:
         origin_url = request.GET.get("origin")
@@ -211,7 +219,11 @@ def _directory_browse(request, sha1_git, path=None):
             "vault_cooking": vault_cooking,
             "show_actions": True,
             "swhids_info": swhids_info,
+            "error_code": error_info["status_code"],
+            "error_message": http_status_code_message.get(error_info["status_code"]),
+            "error_description": error_info["description"],
         },
+        status=error_info["status_code"],
     )
 
 
