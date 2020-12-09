@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,11 @@ from functools import partial
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.api.utils import enrich_origin, enrich_origin_visit
+from swh.web.api.utils import (
+    enrich_origin,
+    enrich_origin_search_result,
+    enrich_origin_visit,
+)
 from swh.web.api.views.utils import api_lookup
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
@@ -193,7 +197,7 @@ def api_origin_search(request, url_pattern):
         limit,
         bool(strtobool(with_visit)),
         page_token,
-        enrich_fn=enrich_origin,
+        enrich_fn=enrich_origin_search_result,
         request=request,
     )
 

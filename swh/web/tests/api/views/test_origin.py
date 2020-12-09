@@ -436,6 +436,10 @@ def test_api_origin_search(api_client, mocker, backend):
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} <= expected_origins
+    assert rv.data == [
+        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        for origin in rv.data
+    ]
 
     # Search for 'github.com', get all
     url = reverse(
@@ -445,6 +449,10 @@ def test_api_origin_search(api_client, mocker, backend):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
+    assert rv.data == [
+        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        for origin in rv.data
+    ]
 
     # Search for 'github.com', get more than available
     url = reverse(
@@ -454,6 +462,10 @@ def test_api_origin_search(api_client, mocker, backend):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
+    assert rv.data == [
+        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        for origin in rv.data
+    ]
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
