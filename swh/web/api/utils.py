@@ -1,9 +1,9 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest
 
@@ -294,6 +294,23 @@ def enrich_origin(
         )
 
     return origin
+
+
+def enrich_origin_search_result(
+    origin_search_result: Tuple[List[Dict[str, Any]], Optional[str]],
+    request: Optional[HttpRequest] = None,
+) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    """Enrich origin search result with additional links
+
+    Args:
+        origin_search_result: tuple returned when searching origins
+        request: Absolute URIs will be generated if provided
+
+    Returns:
+        An enriched origin search result filled with additional urls
+    """
+    origins, page_token = origin_search_result
+    return [enrich_origin(origin, request=request) for origin in origins], page_token
 
 
 def enrich_origin_visit(
