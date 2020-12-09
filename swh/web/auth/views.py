@@ -47,7 +47,6 @@ def _oidc_login(request: HttpRequest, redirect_uri: str, scope: str = "openid"):
         "state": state,
         "redirect_uri": redirect_uri,
         "next_path": request.GET.get("next_path", ""),
-        "prompt": request.GET.get("prompt", ""),
     }
 
     authorization_url_params = {
@@ -55,7 +54,6 @@ def _oidc_login(request: HttpRequest, redirect_uri: str, scope: str = "openid"):
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
         "scope": scope,
-        "prompt": request.GET.get("prompt", ""),
     }
 
     oidc_client = get_oidc_client()
@@ -101,15 +99,8 @@ def oidc_login_complete(request: HttpRequest) -> HttpResponse:
     """
     login_data = _get_login_data(request)
     next_path = login_data["next_path"] or request.build_absolute_uri("/")
-    if "error" in request.GET and login_data["prompt"] == "none":
-        # Silent login failed because OIDC session expired.
-        # Redirect to logout page and inform user.
-        logout(request)
-        logout_url = reverse(
-            "logout", query_params={"next_path": next_path, "remote_user": 1}
-        )
-        return HttpResponseRedirect(logout_url)
-    elif "error" in request.GET:
+
+    if "error" in request.GET:
         raise Exception(request.GET["error"])
 
     _check_login_data(request, login_data)

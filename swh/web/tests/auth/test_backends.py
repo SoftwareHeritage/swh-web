@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta
+from unittest.mock import Mock
 
 import pytest
 
@@ -88,6 +89,67 @@ def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
     mock_keycloak(mocker, auth_success=False)
 
     user = _authenticate_user(request_factory)
+
+    assert user is None
+
+
+@pytest.mark.django_db
+def test_oidc_code_pkce_auth_backend_refresh_token_success(mocker, request_factory):
+    """
+    Checks access token renewal success using refresh token.
+    """
+    kc_oidc_mock = mock_keycloak(mocker)
+
+    oidc_profile = sample_data.oidc_profile
+    decoded_token = kc_oidc_mock.decode_token(oidc_profile["access_token"])
+    new_access_token = "new_access_token"
+
+    def _refresh_token(refresh_token):
+        oidc_profile = dict(sample_data.oidc_profile)
+        oidc_profile["access_token"] = new_access_token
+        return oidc_profile
+
+    def _decode_token(access_token):
+        if access_token != new_access_token:
+            raise Exception("access token token has expired")
+        else:
+            return decoded_token
+
+    kc_oidc_mock.decode_token = Mock()
+    kc_oidc_mock.decode_token.side_effect = _decode_token
+    kc_oidc_mock.refresh_token.side_effect = _refresh_token
+
+    user = _authenticate_user(request_factory)
+
+    kc_oidc_mock.refresh_token.assert_called_with(
+        sample_data.oidc_profile["refresh_token"]
+    )
+
+    assert user is not None
+
+
+@pytest.mark.django_db
+def test_oidc_code_pkce_auth_backend_refresh_token_failure(mocker, request_factory):
+    """
+    Checks access token renewal failure using refresh token.
+    """
+    kc_oidc_mock = mock_keycloak(mocker)
+
+    def _refresh_token(refresh_token):
+        raise Exception("OIDC session has expired")
+
+    def _decode_token(access_token):
+        raise Exception("access token token has expired")
+
+    kc_oidc_mock.decode_token = Mock()
+    kc_oidc_mock.decode_token.side_effect = _decode_token
+    kc_oidc_mock.refresh_token.side_effect = _refresh_token
+
+    user = _authenticate_user(request_factory)
+
+    kc_oidc_mock.refresh_token.assert_called_with(
+        sample_data.oidc_profile["refresh_token"]
+    )
 
     assert user is None
 

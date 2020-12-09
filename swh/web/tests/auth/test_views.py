@@ -191,7 +191,6 @@ def test_oidc_login_complete_view_missing_parameters(client, mocker):
         "state": str(uuid.uuid4()),
         "redirect_uri": "",
         "next_path": "",
-        "prompt": "",
     }
     session.save()
 
@@ -221,7 +220,6 @@ def test_oidc_login_complete_wrong_csrf_token(client, mocker):
         "state": str(uuid.uuid4()),
         "redirect_uri": "",
         "next_path": "",
-        "prompt": "",
     }
     session.save()
 
@@ -255,7 +253,6 @@ def test_oidc_login_complete_wrong_code_verifier(client, mocker):
         "state": str(uuid.uuid4()),
         "redirect_uri": "",
         "next_path": "",
-        "prompt": "",
     }
     session.save()
 
@@ -300,47 +297,6 @@ def test_oidc_logout_view_failure(client, mocker):
 
     # user should be logged out from Django anyway
     assert isinstance(request.user, AnonymousUser)
-
-
-@pytest.mark.django_db
-def test_oidc_silent_refresh_failure(client, mocker):
-    # mock Keycloak client
-    mock_keycloak(mocker)
-
-    next_path = reverse("swh-web-homepage")
-
-    # silent session refresh initialization
-    login_url = reverse(
-        "oidc-login", query_params={"next_path": next_path, "prompt": "none"}
-    )
-    response = check_http_get_response(client, login_url, status_code=302)
-    request = response.wsgi_request
-
-    login_data = request.session["login_data"]
-
-    # check prompt value has been registered in user session
-    assert "prompt" in login_data
-    assert login_data["prompt"] == "none"
-
-    # simulate a failed silent session refresh
-    session_state = str(uuid.uuid4())
-
-    login_complete_url = reverse(
-        "oidc-login-complete",
-        query_params={
-            "error": "login_required",
-            "state": login_data["state"],
-            "session_state": session_state,
-        },
-    )
-
-    # login process finalization, should redirect to logout page
-    response = check_http_get_response(client, login_complete_url, status_code=302)
-    request = response.wsgi_request
-    logout_url = reverse(
-        "logout", query_params={"next_path": next_path, "remote_user": 1}
-    )
-    assert response["location"] == logout_url
 
 
 def test_view_rendering_when_user_not_set_in_request(request_factory):
