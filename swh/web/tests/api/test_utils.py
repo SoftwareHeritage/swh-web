@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2020  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -549,7 +549,7 @@ def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
 
 
 @given(origin())
-def test_enrich_origin(api_request_factory, archive_data, origin):
+def test_enrich_origin(api_request_factory, origin):
     url = reverse("api-1-origin", url_args={"origin_url": origin["url"]})
     request = api_request_factory.get(url)
 
@@ -564,7 +564,32 @@ def test_enrich_origin(api_request_factory, archive_data, origin):
 
 
 @given(origin())
-def test_enrich_origin_visit(api_request_factory, archive_data, origin):
+def test_enrich_origin_search_result(api_request_factory, origin):
+    url = reverse("api-1-origin-search", url_args={"url_pattern": origin["url"]})
+    request = api_request_factory.get(url)
+
+    origin_visits_url = reverse(
+        "api-1-origin-visits", url_args={"origin_url": origin["url"]}, request=request
+    )
+
+    origin_search_result_data = (
+        [{"url": origin["url"]}],
+        None,
+    )
+
+    enriched_origin_search_result = (
+        [{"url": origin["url"], "origin_visits_url": origin_visits_url}],
+        None,
+    )
+
+    assert (
+        utils.enrich_origin_search_result(origin_search_result_data, request=request)
+        == enriched_origin_search_result
+    )
+
+
+@given(origin())
+def test_enrich_origin_visit(api_request_factory, origin):
 
     origin_visit = random.choice(get_origin_visits(origin))
 
