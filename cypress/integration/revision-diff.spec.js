@@ -153,11 +153,14 @@ describe('Test Diffs View', function() {
           if (lnNumber === start || lnNumber === end) {
             inHighlightedRange = true;
           }
+          const backgroundColor = $(line).css('background-color');
           const mixBlendMode = $(line).css('mix-blend-mode');
           if (inHighlightedRange && parseInt(lnNumber)) {
             assert.equal(mixBlendMode, 'multiply');
+            assert.notEqual(backgroundColor, 'rgba(0, 0, 0, 0)');
           } else {
             assert.equal(mixBlendMode, 'normal');
+            assert.equal(backgroundColor, 'rgba(0, 0, 0, 0)');
           }
           if (lnNumber === end) {
             inHighlightedRange = false;
@@ -351,20 +354,26 @@ describe('Test Diffs View', function() {
               }
 
               if (fromLn) {
+                const fromBackgroundColor = $(fromLn).css('background-color');
                 const fromMixBlendMode = $(fromLn).css('mix-blend-mode');
                 if (inHighlightedRange && fromLnNumber) {
                   assert.equal(fromMixBlendMode, 'multiply');
+                  assert.notEqual(fromBackgroundColor, 'rgba(0, 0, 0, 0)');
                 } else {
                   assert.equal(fromMixBlendMode, 'normal');
+                  assert.equal(fromBackgroundColor, 'rgba(0, 0, 0, 0)');
                 }
               }
 
               if (toLn) {
+                const toBackgroundColor = $(toLn).css('background-color');
                 const toMixBlendMode = $(toLn).css('mix-blend-mode');
                 if (inHighlightedRange && toLnNumber) {
                   assert.equal(toMixBlendMode, 'multiply');
+                  assert.notEqual(toBackgroundColor, 'rgba(0, 0, 0, 0)');
                 } else {
                   assert.equal(toMixBlendMode, 'normal');
+                  assert.equal(toBackgroundColor, 'rgba(0, 0, 0, 0)');
                 }
               }
 
@@ -464,4 +473,20 @@ describe('Test Diffs View', function() {
 
     splitDiffHighlightingTest(diffId, endLines, startLines);
   });
+
+  it('should highlight diff lines properly when a content is browsed in the Files tab', function() {
+    const url = this.Urls.browse_revision(revision) + `?origin=${origin}&path=README.md`;
+    cy.visit(url);
+    cy.get('a[data-toggle="tab"]')
+      .contains('Changes')
+      .click();
+    const diffHighlightingData = diffsHighlightingData['unified'];
+    const diffId = diffHighlightingData.diffId;
+    let startLines = diffHighlightingData.startLines;
+    let endLines = diffHighlightingData.endLines;
+
+    unifiedDiffHighlightingTest(diffId, startLines, endLines);
+
+  });
+
 });
