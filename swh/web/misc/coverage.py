@@ -90,6 +90,15 @@ _code_providers = [
         "origin_types": "releases",
     },
     {
+        "provider_id": "guix",
+        "provider_url": "https://guix.gnu.org/",
+        "provider_logo": "img/logos/guix.svg",
+        "provider_info": "source code tarballs used to build the Guix package "
+        "collection",
+        "origin_url_regexp": "^https://guix.gnu.org/",
+        "origin_types": "tarballs",
+    },
+    {
         "provider_id": "hal",
         "provider_url": "https://hal.archives-ouvertes.fr/",
         "provider_logo": "img/logos/hal.png",
