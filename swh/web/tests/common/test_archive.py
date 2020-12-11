@@ -975,6 +975,14 @@ def test_lookup_origin_missing_trailing_slash(archive_data):
     assert origin_info["url"] == deb_origin.url
 
 
+def test_lookup_origin_single_slash_after_protocol(archive_data):
+    origin_url = "http://snapshot.debian.org/package/r-base/"
+    malformed_origin_url = "http:/snapshot.debian.org/package/r-base/"
+    archive_data.origin_add([Origin(url=origin_url)])
+    origin_info = archive.lookup_origin({"url": malformed_origin_url})
+    assert origin_info["url"] == origin_url
+
+
 @given(snapshot())
 def test_lookup_snapshot_branch_name_from_tip_revision(archive_data, snapshot_id):
     snapshot = archive_data.snapshot_get(snapshot_id)
