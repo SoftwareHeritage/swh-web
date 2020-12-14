@@ -116,7 +116,9 @@ def resolve_swhid(
             query_dict[k] = query_params[k]
 
     if "origin" in swhid_parsed.metadata:
-        query_dict["origin_url"] = unquote(swhid_parsed.metadata["origin"])
+        origin_url = unquote(swhid_parsed.metadata["origin"])
+        origin_url = archive.lookup_origin({"url": origin_url})["url"]
+        query_dict["origin_url"] = origin_url
 
     if "anchor" in swhid_parsed.metadata:
         anchor_swhid_parsed = get_swhid(swhid_parsed.metadata["anchor"])

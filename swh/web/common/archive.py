@@ -8,6 +8,7 @@ import itertools
 import os
 import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
+from urllib.parse import urlparse
 
 from swh.model import hashutil
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
@@ -248,6 +249,22 @@ def lookup_origin(origin: OriginInfo) -> OriginInfo:
         # slash while the url in storage have it (e.g. Debian source package)
         else:
             origin_urls.append(f"{origin['url']}/")
+        try:
+            # handle case where the "://" character sequence was mangled into ":/"
+            parsed_url = urlparse(origin["url"])
+            if (
+                parsed_url.scheme
+                and not parsed_url.netloc
+                and origin["url"].startswith(f"{parsed_url.scheme}:/")
+                and not origin["url"].startswith(f"{parsed_url.scheme}://")
+            ):
+                origin_urls.append(
+                    origin["url"].replace(
+                        f"{parsed_url.scheme}:/", f"{parsed_url.scheme}://"
+                    )
+                )
+        except Exception:
+            pass
     origins = [o for o in storage.origin_get(origin_urls) if o is not None]
     if not origins:
         msg = "Origin with url %s not found!" % origin["url"]

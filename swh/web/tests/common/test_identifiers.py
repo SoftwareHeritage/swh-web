@@ -19,6 +19,7 @@ from swh.model.identifiers import (
     SWHID,
     parse_swhid,
 )
+from swh.model.model import Origin
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.common.exc import BadInputExc
 from swh.web.common.identifiers import (
@@ -637,3 +638,13 @@ def test_resolve_directory_swhid_path_without_trailing_slash(archive_data, direc
         query_params={"path": dir_subdir_path},
     )
     assert resolved_swhid["browse_url"] == browse_url
+
+
+@given(directory())
+def test_resolve_swhid_with_malformed_origin_url(archive_data, directory):
+    origin_url = "http://example.org/project/abc"
+    malformed_origin_url = "http:/example.org/project/abc"
+    archive_data.origin_add([Origin(url=origin_url)])
+    swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": malformed_origin_url})
+    resolved_swhid = resolve_swhid(swhid)
+    assert origin_url in resolved_swhid["browse_url"]

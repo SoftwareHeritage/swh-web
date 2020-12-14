@@ -43,6 +43,9 @@ export async function highlightCode(showLineNumbers = true) {
     let lines = [];
     let linesRegexp = new RegExp(/L(\d+)/g);
     let line = linesRegexp.exec(window.location.hash);
+    if (line === null) {
+      return;
+    }
     while (line) {
       lines.push(parseInt(line[1]));
       line = linesRegexp.exec(window.location.hash);
@@ -76,7 +79,7 @@ export async function highlightCode(showLineNumbers = true) {
     // click handler to dynamically highlight line(s)
     // when the user clicks on a line number (lines range
     // can also be highlighted while holding the shift key)
-    $('body').click(evt => {
+    $('.swh-content').click(evt => {
       if (evt.target.classList.contains('hljs-ln-n')) {
         let line = parseInt($(evt.target).data('line-number'));
         if (evt.shiftKey && firstHighlightedLine && line > firstHighlightedLine) {
