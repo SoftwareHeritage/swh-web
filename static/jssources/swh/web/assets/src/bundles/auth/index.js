@@ -10,104 +10,64 @@ import './auth.css';
 
 let apiTokensTable;
 
-function updateSubmitButtonState() {
-  const val = $('#swh-user-password').val();
-  $('#swh-user-password-submit').prop('disabled', val.length === 0);
-}
-
-function passwordForm(infoText, buttonText) {
+function tokenForm(infoText, buttonText) {
   const form =
-    `<form id="swh-password-form">
-      <p id="swh-password-form-text">${infoText}</p>
-      <label for="swh-user-password">Password:&nbsp;</label>
-      <input id="swh-user-password" type="password" name="swh-user-password" required>
-      <input id="swh-user-password-submit" type="submit" value="${buttonText}" disabled>
+    `<form id="swh-token-form" class="text-center">
+      <p id="swh-token-form-text">${infoText}</p>
+      <input id="swh-token-form-submit" type="submit" value="${buttonText}">
+      <div id="swh-token-form-message"></div>
     </form>`;
   return form;
 }
 
 function errorMessage(message) {
-  return `<p id="swh-token-error-message" class="mt-3">${message}</p>`;
+  return `<p id="swh-token-error-message" class="mt-3 swh-token-form-message">${message}</p>`;
 }
 
 function successMessage(message) {
-  return `<p id="swh-token-success-message" class="mt-3">${message}</p>`;
+  return `<p id="swh-token-success-message" class="mt-3 swh-token-form-message">${message}</p>`;
 }
 
 function disableSubmitButton() {
-  $('#swh-user-password-submit').prop('disabled', true);
-  $('#swh-user-password').off('change');
-  $('#swh-user-password').off('keyup');
+  $('#swh-token-form-submit').prop('disabled', true);
 }
 
 function generateToken() {
-  csrfPost(Urls.oidc_generate_bearer_token(), {},
-           JSON.stringify({password: $('#swh-user-password').val()}))
-    .then(handleFetchError)
-    .then(response => response.text())
-    .then(token => {
-      disableSubmitButton();
-      const tokenHtml =
-        `${successMessage('Below is your token.')}
-         <pre id="swh-bearer-token">${token}</pre>`;
-      $(`#swh-password-form`).append(tokenHtml);
-      apiTokensTable.draw();
-    })
-    .catch(response => {
-      if (response.status === 400) {
-        $(`#swh-password-form`).append(
-          errorMessage('You are not allowed to generate bearer tokens.'));
-      } else if (response.status === 401) {
-        $(`#swh-password-form`).append(errorMessage('The password is invalid.'));
-      } else {
-        $(`#swh-password-form`).append(errorMessage('Internal server error.'));
-      }
-    });
+  window.location = Urls.oidc_generate_bearer_token();
 }
 
 function displayToken(tokenId) {
   const postData = {
-    password: $('#swh-user-password').val(),
     token_id: tokenId
   };
   csrfPost(Urls.oidc_get_bearer_token(), {}, JSON.stringify(postData))
     .then(handleFetchError)
     .then(response => response.text())
     .then(token => {
-      disableSubmitButton();
       const tokenHtml =
-        `${successMessage('Below is your token.')}
-         <pre id="swh-bearer-token">${token}</pre>`;
-      $(`#swh-password-form`).append(tokenHtml);
+        `<p>Below is your token.</p>
+         <pre id="swh-bearer-token" class="mt-3">${token}</pre>`;
+      swh.webapp.showModalHtml('Display bearer token', tokenHtml);
     })
-    .catch(response => {
-      if (response.status === 401) {
-        $(`#swh-password-form`).append(errorMessage('The password is invalid.'));
-      } else {
-        $(`#swh-password-form`).append(errorMessage('Internal server error.'));
-      }
+    .catch(() => {
+      swh.webapp.showModalHtml('Display bearer token', errorMessage('Internal server error.'));
     });
 }
 
 function revokeTokens(tokenIds) {
   const postData = {
-    password: $('#swh-user-password').val(),
     token_ids: tokenIds
   };
   csrfPost(Urls.oidc_revoke_bearer_tokens(), {}, JSON.stringify(postData))
     .then(handleFetchError)
     .then(() => {
       disableSubmitButton();
-      $(`#swh-password-form`).append(
-        successMessage(`Bearer token${tokenIds.length > 1 ? 's' : ''} successfully revoked`));
+      $('#swh-token-form-message').html(
+        successMessage(`Bearer token${tokenIds.length > 1 ? 's' : ''} successfully revoked.`));
       apiTokensTable.draw();
     })
-    .catch(response => {
-      if (response.status === 401) {
-        $(`#swh-password-form`).append(errorMessage('The password is invalid.'));
-      } else {
-        $(`#swh-password-form`).append(errorMessage('Internal server error.'));
-      }
+    .catch(() => {
+      $('#swh-token-form-message').html(errorMessage('Internal server error.'));
     });
 }
 
@@ -126,27 +86,26 @@ function revokeAllTokens() {
 
 export function applyTokenAction(action, tokenId) {
   const actionData = {
+    display: {
+      submitCallback: displayToken
+    },
     generate: {
       modalTitle: 'Bearer token generation',
-      infoText: 'Enter your password and click on the button to generate the token.',
+      infoText: 'Click on the button to generate the token. You will be redirected to ' +
+                'Software Heritage Authentication Service and might be asked to enter ' +
+                'your password again.',
       buttonText: 'Generate token',
       submitCallback: generateToken
     },
-    display: {
-      modalTitle: 'Display bearer token',
-      infoText: 'Enter your password and click on the button to display the token.',
-      buttonText: 'Display token',
-      submitCallback: displayToken
-    },
     revoke: {
       modalTitle: 'Revoke bearer token',
-      infoText: 'Enter your password and click on the button to revoke the token.',
+      infoText: 'Click on the button to revoke the token.',
       buttonText: 'Revoke token',
       submitCallback: revokeToken
     },
     revokeAll: {
       modalTitle: 'Revoke all bearer tokens',
-      infoText: 'Enter your password and click on the button to revoke all tokens.',
+      infoText: 'Click on the button to revoke all tokens.',
       buttonText: 'Revoke tokens',
       submitCallback: revokeAllTokens
     }
@@ -156,17 +115,19 @@ export function applyTokenAction(action, tokenId) {
     return;
   }
 
-  const passwordFormHtml = passwordForm(
-    actionData[action].infoText, actionData[action].buttonText);
+  if (action !== 'display') {
+    const tokenFormHtml = tokenForm(
+      actionData[action].infoText, actionData[action].buttonText);
 
-  swh.webapp.showModalHtml(actionData[action].modalTitle, passwordFormHtml);
-  $('#swh-user-password').change(updateSubmitButtonState);
-  $('#swh-user-password').keyup(updateSubmitButtonState);
-  $(`#swh-password-form`).submit(event => {
-    event.preventDefault();
-    event.stopPropagation();
+    swh.webapp.showModalHtml(actionData[action].modalTitle, tokenFormHtml);
+    $(`#swh-token-form`).submit(event => {
+      event.preventDefault();
+      event.stopPropagation();
+      actionData[action].submitCallback(tokenId);
+    });
+  } else {
     actionData[action].submitCallback(tokenId);
-  });
+  }
 }
 
 export function initProfilePage() {

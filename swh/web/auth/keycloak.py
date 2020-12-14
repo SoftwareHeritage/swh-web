@@ -83,27 +83,6 @@ class KeycloakOpenIDConnect:
             **extra_params,
         )
 
-    def offline_token(self, username: str, password: str) -> str:
-        """
-        Generate an OpenID Connect offline refresh token.
-
-        Offline tokens are a special type of refresh tokens with long-lived period.
-        It enables to open a new authenticated session without having to login again.
-
-        Args:
-            username: username in the Keycloak realm
-            password: password associated to the username
-
-        Returns:
-            An offline refresh token
-        """
-        return self._keycloak.token(
-            grant_type="password",
-            scope="openid offline_access",
-            username=username,
-            password=password,
-        )["refresh_token"]
-
     def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
         """
         Request a new access token from Keycloak using a refresh token.
