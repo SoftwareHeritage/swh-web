@@ -9,6 +9,7 @@ from urllib.parse import quote
 from hypothesis import given
 
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.model import Origin
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
@@ -123,9 +124,12 @@ def test_bad_id_browse(client, release):
 
 
 @given(content())
-def test_content_id_optional_parts_browse(client, content):
+def test_content_id_optional_parts_browse(client, archive_data, content):
     cnt_sha1_git = content["sha1_git"]
     origin_url = "https://github.com/user/repo"
+
+    archive_data.origin_add([Origin(url=origin_url)])
+
     swhid = gen_swhid(
         CONTENT, cnt_sha1_git, metadata={"lines": "4-20", "origin": origin_url},
     )
@@ -187,8 +191,9 @@ def test_legacy_swhid_browse(archive_data, client, origin):
 
 
 @given(directory())
-def test_browse_swhid_special_characters_escaping(client, directory):
+def test_browse_swhid_special_characters_escaping(client, archive_data, directory):
     origin = "http://example.org/?project=abc;"
+    archive_data.origin_add([Origin(url=origin)])
     origin_swhid_escaped = quote(origin, safe="/?:@&")
     origin_swhid_url_escaped = quote(origin, safe="/:@;")
     swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})

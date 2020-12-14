@@ -405,8 +405,7 @@ module.exports = {
         },
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
-          to: path.resolve(__dirname, '../../../../static/fonts/'),
-          flatten: true
+          to: path.resolve(__dirname, '../../../../static/fonts/[name].[ext]')
         }
       ]
     }),

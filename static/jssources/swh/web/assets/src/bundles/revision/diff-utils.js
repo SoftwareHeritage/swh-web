@@ -191,7 +191,8 @@ function resetHighlightedDiffLines(resetVars = true) {
   $('.hljs-ln-numbers[data-line-number]').css('color', '#aaa');
   $('.hljs-ln-numbers[data-line-number]').css('font-weight', 'initial');
   if (currentTabName === 'Changes' && window.location.hash !== changesUrlFragment) {
-    window.location.hash = changesUrlFragment;
+    window.history.replaceState('', document.title,
+                                window.location.pathname + window.location.search + changesUrlFragment);
   }
 }
 
@@ -736,6 +737,11 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
 
     // click callback for highlighting diff lines
     $('body').click(evt => {
+
+      if (currentTabName !== 'Changes') {
+        return;
+      }
+
       if (evt.target.classList.contains('hljs-ln-n')) {
 
         const diffId = $(evt.target).closest('code').prop('id');
