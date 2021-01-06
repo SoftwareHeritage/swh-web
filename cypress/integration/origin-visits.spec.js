@@ -84,7 +84,7 @@ describe('Visits tests', function() {
         cy.contains('.month', date.monthName)
           .find('.day-content')
           .eq(date.date - 1)
-          .trigger('mouseout');
+          .trigger('mouseout', {force: true});
 
         cy.get('.popover')
           .should('not.exist');
