@@ -57,7 +57,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "swh.web.auth.middlewares.OIDCSessionRefreshMiddleware",
+    "swh.web.auth.middlewares.OIDCSessionExpiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "swh.web.common.middlewares.ThrottlingHeadersMiddleware",

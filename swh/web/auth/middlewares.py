@@ -9,10 +9,9 @@ from django.http.response import HttpResponseRedirect
 from swh.web.common.utils import reverse
 
 
-class OIDCSessionRefreshMiddleware:
+class OIDCSessionExpiredMiddleware:
     """
-    Middleware for silently refreshing on OpenID Connect session from
-    the browser and get new access token.
+    Middleware for checking OIDC user session expiration.
     """
 
     def __init__(self, get_response=None):
@@ -32,13 +31,12 @@ class OIDCSessionRefreshMiddleware:
         ):
             return self.get_response(request)
 
-        # At that point, we know that a OIDC user was previously logged in.
-        # Access token has expired so we attempt a silent OIDC session refresh.
-        # If the latter failed because the session expired, user will be
-        # redirected to logout page and a link will be offered to login again.
-        # See implementation of "oidc-login-complete" view for more details.
+        # At that point, we know that a OIDC user was previously logged in
+        # and his session has expired.
+        # User will be redirected to logout page and a link will be offered to
+        # login again.
         next_path = request.get_full_path()
-        redirect_url = reverse(
-            "oidc-login", query_params={"next_path": next_path, "prompt": "none"}
+        logout_url = reverse(
+            "logout", query_params={"next_path": next_path, "remote_user": 1}
         )
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(logout_url)

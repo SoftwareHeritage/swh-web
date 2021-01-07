@@ -5,6 +5,7 @@
 
 from django.conf.urls import url
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view, authentication_classes
@@ -75,20 +76,20 @@ def _origin_save_requests_list(request, status):
 
     length = int(request.GET["length"])
     page = int(request.GET["start"]) / length + 1
-    save_requests = get_save_origin_requests_from_queryset(save_requests)
-    if search_value:
-        save_requests = [
-            sr
-            for sr in save_requests
-            if search_value.lower() in sr["save_request_status"].lower()
-            or search_value.lower() in sr["save_task_status"].lower()
-            or search_value.lower() in sr["visit_type"].lower()
-            or search_value.lower() in sr["origin_url"].lower()
-        ]
 
-    table_data["recordsFiltered"] = len(save_requests)
+    if search_value:
+        save_requests = save_requests.filter(
+            Q(status__icontains=search_value)
+            | Q(loading_task_status__icontains=search_value)
+            | Q(visit_type__icontains=search_value)
+            | Q(origin_url__icontains=search_value)
+        )
+
+    table_data["recordsFiltered"] = save_requests.count()
     paginator = Paginator(save_requests, length)
-    table_data["data"] = paginator.page(page).object_list
+    table_data["data"] = get_save_origin_requests_from_queryset(
+        paginator.page(page).object_list
+    )
     return JsonResponse(table_data)
 
 

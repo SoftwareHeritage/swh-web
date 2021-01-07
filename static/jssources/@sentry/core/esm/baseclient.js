@@ -76,7 +76,7 @@ var BaseClient = /** @class */ (function () {
         var _this = this;
         var eventId = hint && hint.event_id;
         var promisedEvent = isPrimitive(message)
-            ? this._getBackend().eventFromMessage("" + message, level, hint)
+            ? this._getBackend().eventFromMessage(String(message), level, hint)
             : this._getBackend().eventFromException(message, hint);
         this._process(promisedEvent
             .then(function (event) { return _this._captureEvent(event, hint, scope); })

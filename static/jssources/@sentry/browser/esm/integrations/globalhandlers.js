@@ -105,7 +105,7 @@ var GlobalHandlers = /** @class */ (function () {
                 }
                 var client = currentHub.getClient();
                 var event = isPrimitive(error)
-                    ? _this._eventFromIncompleteRejection(error)
+                    ? _this._eventFromRejectionWithPrimitive(error)
                     : eventFromUnknownInput(error, undefined, {
                         attachStacktrace: client && client.getOptions().attachStacktrace,
                         rejection: true,
@@ -153,16 +153,19 @@ var GlobalHandlers = /** @class */ (function () {
         return this._enhanceEventWithInitialFrame(event, url, line, column);
     };
     /**
-     * This function creates an Event from an TraceKitStackTrace that has part of it missing.
+     * Create an event from a promise rejection where the `reason` is a primitive.
+     *
+     * @param reason: The `reason` property of the promise rejection
+     * @returns An Event object with an appropriate `exception` value
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    GlobalHandlers.prototype._eventFromIncompleteRejection = function (error) {
+    GlobalHandlers.prototype._eventFromRejectionWithPrimitive = function (reason) {
         return {
             exception: {
                 values: [
                     {
                         type: 'UnhandledRejection',
-                        value: "Non-Error promise rejection captured with value: " + error,
+                        // String() is needed because the Primitive type includes symbols (which can't be automatically stringified)
+                        value: "Non-Error promise rejection captured with value: " + String(reason),
                     },
                 ],
             },
