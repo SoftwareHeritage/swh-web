@@ -125,7 +125,15 @@ maxSize) {
     }
     return serialized;
 }
-/** Transforms any input value into a string form, either primitive value or a type of the input */
+/**
+ * Transform any non-primitive, BigInt, or Symbol-type value into a string. Acts as a no-op on strings, numbers,
+ * booleans, null, and undefined.
+ *
+ * @param value The value to stringify
+ * @returns For non-primitive, BigInt, and Symbol-type values, a string denoting the value's type, type and value, or
+ *  type and `description` property, respectively. For non-BigInt, non-Symbol primitives, returns the original value,
+ *  unchanged.
+ */
 function serializeValue(value) {
     var type = Object.prototype.toString.call(value);
     // Node.js REPL notation
@@ -178,6 +186,13 @@ function normalizeValue(value, key) {
     }
     if (typeof value === 'function') {
         return "[Function: " + getFunctionName(value) + "]";
+    }
+    // symbols and bigints are considered primitives by TS, but aren't natively JSON-serilaizable
+    if (typeof value === 'symbol') {
+        return "[" + String(value) + "]";
+    }
+    if (typeof value === 'bigint') {
+        return "[BigInt: " + String(value) + "]";
     }
     return value;
 }

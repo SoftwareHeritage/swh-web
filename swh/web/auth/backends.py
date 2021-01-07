@@ -57,7 +57,15 @@ def _oidc_user_from_decoded_token(decoded_token: Dict[str, Any]) -> OIDCUser:
 def _oidc_user_from_profile(oidc_profile: Dict[str, Any]) -> OIDCUser:
 
     # decode JWT token
-    decoded_token = _oidc_client.decode_token(oidc_profile["access_token"])
+    try:
+        access_token = oidc_profile["access_token"]
+        decoded_token = _oidc_client.decode_token(access_token)
+    # access token has expired or is invalid
+    except Exception:
+        # get a new access token from authentication provider
+        oidc_profile = _oidc_client.refresh_token(oidc_profile["refresh_token"])
+        # decode access token
+        decoded_token = _oidc_client.decode_token(oidc_profile["access_token"])
 
     # create OIDCUser from decoded token
     user = _oidc_user_from_decoded_token(decoded_token)
@@ -77,6 +85,16 @@ def _oidc_user_from_profile(oidc_profile: Dict[str, Any]) -> OIDCUser:
         if hasattr(user, key):
             setattr(user, key, val)
 
+    # put OIDC profile in cache or update it after token renewal
+    cache_key = f"oidc_user_{user.id}"
+    if cache.get(cache_key) is None or access_token != oidc_profile["access_token"]:
+        # set cache key TTL as refresh token expiration time
+        assert user.refresh_expires_at
+        ttl = int(user.refresh_expires_at.timestamp() - timezone.now().timestamp())
+
+        # save oidc_profile in cache
+        cache.set(cache_key, oidc_profile, timeout=max(0, ttl))
+
     return user
 
 
@@ -95,12 +113,6 @@ class OIDCAuthorizationCodePKCEBackend:
             # create Django user
             user = _oidc_user_from_profile(oidc_profile)
 
-            # set cache key TTL as access token expiration time
-            assert user.expires_at
-            ttl = int(user.expires_at.timestamp() - timezone.now().timestamp())
-
-            # save oidc_profile in cache
-            cache.set(f"oidc_user_{user.id}", oidc_profile, timeout=max(0, ttl))
         except Exception as e:
             sentry_sdk.capture_exception(e)
 

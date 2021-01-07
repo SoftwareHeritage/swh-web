@@ -120,8 +120,11 @@ export function setExtra(key, extra) {
 }
 /**
  * Set key:value that will be sent as tags data with the event.
+ *
+ * Can also be used to unset a tag, by passing `undefined`.
+ *
  * @param key String key of tag
- * @param value String value of tag
+ * @param value Value of tag
  */
 export function setTag(key, value) {
     callOnHub('setTag', key, value);

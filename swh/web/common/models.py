@@ -16,6 +16,7 @@ class SaveAuthorizedOrigin(models.Model):
     class Meta:
         app_label = "swh.web.common"
         db_table = "save_authorized_origin"
+        indexes = [models.Index(fields=["url"])]
 
     def __str__(self):
         return self.url
@@ -32,6 +33,7 @@ class SaveUnauthorizedOrigin(models.Model):
     class Meta:
         app_label = "swh.web.common"
         db_table = "save_unauthorized_origin"
+        indexes = [models.Index(fields=["url"])]
 
     def __str__(self):
         return self.url
@@ -84,6 +86,7 @@ class SaveOriginRequest(models.Model):
         app_label = "swh.web.common"
         db_table = "save_origin_request"
         ordering = ["-id"]
+        indexes = [models.Index(fields=["origin_url", "status"])]
 
     def __str__(self):
         return str(

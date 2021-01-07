@@ -114,8 +114,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
             try:
                 self.rate = self.get_rate()
             # use default rate limiting otherwise
-            except ImproperlyConfigured as exc:
-                sentry_sdk.capture_exception(exc)
+            except ImproperlyConfigured:
                 self.scope = default_scope
                 self.rate = self.get_rate()
             self.num_requests, self.duration = self.parse_rate(self.rate)
