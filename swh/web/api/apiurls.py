@@ -6,7 +6,7 @@
 import functools
 from typing import Dict, List, Optional
 
-from django.http import HttpResponse
+from django.http.response import HttpResponseBase
 from django.utils.cache import add_never_cache_headers
 from rest_framework.decorators import api_view
 
@@ -99,7 +99,7 @@ def api_route(
                 doc_data = response["doc_data"]
                 response = response["data"]
             # check if HTTP response needs to be created
-            if not isinstance(response, HttpResponse):
+            if not isinstance(response, HttpResponseBase):
                 api_response = make_api_response(
                     request, data=response, doc_data=doc_data
                 )
