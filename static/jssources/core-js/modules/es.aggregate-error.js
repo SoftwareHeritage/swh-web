@@ -11,6 +11,7 @@ var $AggregateError = function AggregateError(errors, message) {
   var that = this;
   if (!(that instanceof $AggregateError)) return new $AggregateError(errors, message);
   if (setPrototypeOf) {
+    // eslint-disable-next-line unicorn/error-message
     that = setPrototypeOf(new Error(undefined), getPrototypeOf(that));
   }
   if (message !== undefined) createNonEnumerableProperty(that, 'message', String(message));
@@ -26,6 +27,8 @@ $AggregateError.prototype = create(Error.prototype, {
   name: createPropertyDescriptor(5, 'AggregateError')
 });
 
+// `AggregateError` constructor
+// https://tc39.es/ecma262/#sec-aggregate-error-constructor
 $({ global: true }, {
   AggregateError: $AggregateError
 });

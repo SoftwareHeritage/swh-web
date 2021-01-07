@@ -1,3 +1,4 @@
+import { __rest } from "tslib";
 /** Creates a SentryRequest from an event. */
 export function sessionToSentryRequest(session, api) {
     var envelopeHeaders = JSON.stringify({
@@ -14,6 +15,9 @@ export function sessionToSentryRequest(session, api) {
 }
 /** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {
+    // since JS has no Object.prototype.pop()
+    var _a = event.tags || {}, samplingMethod = _a.__sentry_samplingMethod, sampleRate = _a.__sentry_sampleRate, otherTags = __rest(_a, ["__sentry_samplingMethod", "__sentry_sampleRate"]);
+    event.tags = otherTags;
     var useEnvelope = event.type === 'transaction';
     var req = {
         body: JSON.stringify(event),
@@ -32,6 +36,9 @@ export function eventToSentryRequest(event, api) {
         });
         var itemHeaders = JSON.stringify({
             type: event.type,
+            // TODO: Right now, sampleRate may or may not be defined (it won't be in the cases of inheritance and
+            // explicitly-set sampling decisions). Are we good with that?
+            sample_rates: [{ id: samplingMethod, rate: sampleRate }],
         });
         // The trailing newline is optional. We intentionally don't send it to avoid
         // sending unnecessary bytes.

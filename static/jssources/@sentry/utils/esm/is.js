@@ -60,7 +60,7 @@ export function isString(wat) {
     return Object.prototype.toString.call(wat) === '[object String]';
 }
 /**
- * Checks whether given value's is a primitive (undefined, null, number, boolean, string)
+ * Checks whether given value's is a primitive (undefined, null, number, boolean, string, bigint, symbol)
  * {@link isPrimitive}.
  *
  * @param wat A value to be checked.

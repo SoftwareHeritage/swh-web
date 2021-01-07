@@ -54,12 +54,13 @@ def test_gen_swhid(content):
     assert gen_swhid(swh_object_type, sha1_git) == expected_swhid
 
     assert (
-        gen_swhid(swh_object_type, sha1_git, metadata={"foo": "bar"})
-        == expected_swhid + ";foo=bar"
+        gen_swhid(swh_object_type, sha1_git, metadata={"origin": "test"})
+        == expected_swhid + ";origin=test"
     )
 
     assert (
-        gen_swhid(swh_object_type, sha1_git, metadata={"foo": None}) == expected_swhid
+        gen_swhid(swh_object_type, sha1_git, metadata={"origin": None})
+        == expected_swhid
     )
 
     with pytest.raises(BadInputExc) as e:
