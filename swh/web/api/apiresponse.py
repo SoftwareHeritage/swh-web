@@ -133,7 +133,7 @@ def make_api_response(
     # and render the apidoc HTML template
     if request.accepted_media_type == "text/html":
         doc_data["response_data"] = data
-        if data:
+        if data is not None:
             doc_data["response_data"] = json.dumps(
                 data, cls=JSONEncoder, sort_keys=True, indent=4, separators=(",", ": ")
             )

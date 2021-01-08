@@ -5,10 +5,11 @@
 
 from distutils.util import strtobool
 import json
-from typing import Dict
+from typing import Dict, Iterator, Union
 
 import requests
 
+from django.http.response import StreamingHttpResponse
 from rest_framework.decorators import renderer_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -42,7 +43,9 @@ def _resolve_origin_swhid(swhid: str, origin_urls: Dict[str, str]) -> str:
         return swhid
 
 
-def _resolve_origin_swhids_in_graph_response(response: requests.Response) -> str:
+def _resolve_origin_swhids_in_graph_response(
+    response: requests.Response,
+) -> Iterator[bytes]:
     """
     Resolve origin urls from their swhid sha1 representations in graph service
     responses.
@@ -50,24 +53,22 @@ def _resolve_origin_swhids_in_graph_response(response: requests.Response) -> str
     content_type = response.headers["Content-Type"]
     origin_urls: Dict[str, str] = {}
     if content_type == "application/x-ndjson":
-        processed_response = []
-        for line in response.text.split("\n")[:-1]:
-            swhids = json.loads(line)
+        for line in response.iter_lines():
+            swhids = json.loads(line.decode("utf-8"))
             processed_line = []
             for swhid in swhids:
                 processed_line.append(_resolve_origin_swhid(swhid, origin_urls))
-            processed_response.append(json.dumps(processed_line))
-        return "\n".join(processed_response) + "\n"
+            yield (json.dumps(processed_line) + "\n").encode()
     elif content_type == "text/plain":
-        processed_response = []
-        for line in response.text.split("\n")[:-1]:
+        for line in response.iter_lines():
             processed_line = []
-            swhids = line.split(" ")
+            swhids = line.decode("utf-8").split(" ")
             for swhid in swhids:
                 processed_line.append(_resolve_origin_swhid(swhid, origin_urls))
-            processed_response.append(" ".join(processed_line))
-        return "\n".join(processed_response) + "\n"
-    return response.text
+            yield (" ".join(processed_line) + "\n").encode()
+    else:
+        for line in response.iter_lines():
+            yield line + b"\n"
 
 
 @api_route(r"/graph/", "api-1-graph-doc")
@@ -121,7 +122,9 @@ def api_graph(request: Request) -> None:
 
 @api_route(r"/graph/(?P<graph_query>.+)/", "api-1-graph")
 @renderer_classes([PlainTextRenderer])
-def api_graph_proxy(request: Request, graph_query: str) -> Response:
+def api_graph_proxy(
+    request: Request, graph_query: str
+) -> Union[Response, StreamingHttpResponse]:
     if request.get_host() != SWH_WEB_INTERNAL_SERVER_NAME:
         if not bool(request.user and request.user.is_authenticated):
             return Response("Authentication credentials were not provided.", status=401)
@@ -133,13 +136,23 @@ def api_graph_proxy(request: Request, graph_query: str) -> Response:
     graph_query_url += graph_query
     if request.GET:
         graph_query_url += "?" + request.GET.urlencode(safe="/;:")
-    response = requests.get(graph_query_url)
-    response_text = response.text
-    resolve_origins = strtobool(request.GET.get("resolve_origins", "false"))
-    if response.status_code == 200 and resolve_origins:
-        response_text = _resolve_origin_swhids_in_graph_response(response)
-    return Response(
-        response_text,
-        status=response.status_code,
-        content_type=response.headers["Content-Type"],
-    )
+    response = requests.get(graph_query_url, stream=True)
+    # graph stats and counter endpoint responses are not streamed
+    if response.headers.get("Transfer-Encoding") != "chunked":
+        return Response(
+            response.text,
+            status=response.status_code,
+            content_type=response.headers["Content-Type"],
+        )
+    # other endpoint responses are streamed
+    else:
+        resolve_origins = strtobool(request.GET.get("resolve_origins", "false"))
+        if response.status_code == 200 and resolve_origins:
+            response_stream = _resolve_origin_swhids_in_graph_response(response)
+        else:
+            response_stream = map(lambda line: line + b"\n", response.iter_lines())
+        return StreamingHttpResponse(
+            response_stream,
+            status=response.status_code,
+            content_type=response.headers["Content-Type"],
+        )
