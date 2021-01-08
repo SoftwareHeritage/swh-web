@@ -6,8 +6,6 @@
 import json
 import re
 
-import sentry_sdk
-
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
@@ -40,12 +38,9 @@ def urlize_links_and_mails(text):
         The text as is otherwise.
 
     """
-    try:
-        if 'href="' not in text:
-            text = re.sub(r"(http.*)", r'<a href="\1">\1</a>', text)
-            return re.sub(r'([^ <>"]+@[^ <>"]+)', r'<a href="mailto:\1">\1</a>', text)
-    except Exception as exc:
-        sentry_sdk.capture_exception(exc)
+    if 'href="' not in text:
+        text = re.sub(r"(http.*)", r'<a href="\1">\1</a>', text)
+        return re.sub(r'([^ <>"]+@[^ <>"]+)', r'<a href="mailto:\1">\1</a>', text)
 
     return text
 
