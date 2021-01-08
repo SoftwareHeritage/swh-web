@@ -5,7 +5,7 @@
 
 from typing import Any, Dict, Optional, cast
 
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.test.client import Client
 from rest_framework.response import Response
 from rest_framework.test import APIClient
@@ -24,6 +24,8 @@ def _assert_http_response(
             if isinstance(drf_response.data, dict) and "traceback" in drf_response.data
             else drf_response.data
         )
+    elif isinstance(response, StreamingHttpResponse):
+        error_context = getattr(response, "traceback", response.streaming_content)
     else:
         error_context = getattr(response, "traceback", response.content)
 

@@ -9,6 +9,8 @@ import textwrap
 
 from hypothesis import given
 
+from django.http.response import StreamingHttpResponse
+
 from swh.model.identifiers import ORIGIN, SNAPSHOT, swhid
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
@@ -87,7 +89,7 @@ def test_graph_text_plain_response(api_client, mocker, requests_mock):
     requests_mock.get(
         get_config()["graph"]["server_url"] + graph_query,
         text=response_text,
-        headers={"Content-Type": "text/plain"},
+        headers={"Content-Type": "text/plain", "Transfer-Encoding": "chunked"},
     )
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
@@ -95,7 +97,8 @@ def test_graph_text_plain_response(api_client, mocker, requests_mock):
     resp = check_http_get_response(
         api_client, url, status_code=200, content_type="text/plain"
     )
-    assert resp.content == response_text.encode()
+    assert isinstance(resp, StreamingHttpResponse)
+    assert b"".join(resp.streaming_content) == response_text.encode()
 
 
 _response_json = {
@@ -148,14 +151,18 @@ def test_graph_ndjson_response(api_client, mocker, requests_mock):
     requests_mock.get(
         get_config()["graph"]["server_url"] + graph_query,
         text=response_ndjson,
-        headers={"Content-Type": "application/x-ndjson"},
+        headers={
+            "Content-Type": "application/x-ndjson",
+            "Transfer-Encoding": "chunked",
+        },
     )
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
     resp = check_http_get_response(api_client, url, status_code=200)
-    assert resp.content_type == "application/x-ndjson"
-    assert resp.content == response_ndjson.encode()
+    assert isinstance(resp, StreamingHttpResponse)
+    assert resp["Content-Type"] == "application/x-ndjson"
+    assert b"".join(resp.streaming_content) == response_ndjson.encode()
 
 
 @given(origin())
@@ -195,7 +202,7 @@ def test_graph_response_resolve_origins(
         requests_mock.get(
             get_config()["graph"]["server_url"] + graph_query,
             text=response_text,
-            headers={"Content-Type": content_type},
+            headers={"Content-Type": content_type, "Transfer-Encoding": "chunked"},
         )
 
         url = reverse(
@@ -205,8 +212,9 @@ def test_graph_response_resolve_origins(
         )
 
         resp = check_http_get_response(api_client, url, status_code=200)
-        assert resp.content_type == content_type
-        assert resp.content == response_text.encode()
+        assert isinstance(resp, StreamingHttpResponse)
+        assert resp["Content-Type"] == content_type
+        assert b"".join(resp.streaming_content) == response_text.encode()
 
         url = reverse(
             "api-1-graph",
@@ -215,9 +223,11 @@ def test_graph_response_resolve_origins(
         )
 
         resp = check_http_get_response(api_client, url, status_code=200)
-        assert resp.content_type == content_type
+        assert isinstance(resp, StreamingHttpResponse)
+        assert resp["Content-Type"] == content_type
         assert (
-            resp.content == response_text.replace(origin_swhid, origin["url"]).encode()
+            b"".join(resp.streaming_content)
+            == response_text.replace(origin_swhid, origin["url"]).encode()
         )
 
 
