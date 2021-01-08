@@ -19,7 +19,7 @@ def _remove_duplicated_urls_in_authorized_list(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0004_auto_20190204_1324"),
+        ("swh_web_common", "0004_auto_20190204_1324"),
     ]
 
     operations = [migrations.RunPython(_remove_duplicated_urls_in_authorized_list)]

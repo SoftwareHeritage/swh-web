@@ -11,7 +11,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0005_remove_duplicated_authorized_origins"),
+        ("swh_web_common", "0005_remove_duplicated_authorized_origins"),
     ]
 
     operations = [
