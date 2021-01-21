@@ -2,8 +2,17 @@
 
 set -e
 
+GET_VERSION_SCRIPT="
+from pkg_resources import get_distribution
+print(get_distribution('swh.web').version)"
+
 if [ -f /var/lib/swh/web.sqlite3 ]; then
     echo "Software Heritage production db detected; running migrations"
-    django-admin migrate --settings=swh.web.settings.production
-    django-admin createcachetable --settings=swh.web.settings.production
+    SWH_WEB_VERSION=$(python3 -c "$GET_VERSION_SCRIPT")
+    if [ "$SWH_WEB_VERSION" == "0.0.279" ]
+    then
+        # use fake migrations after django app labels renaming in v0.0.279
+        MIGRATE_EXTRA_OPTS="--fake"
+    fi
+    django-admin migrate --settings=swh.web.settings.production $MIGRATE_EXTRA_OPTS
 fi
