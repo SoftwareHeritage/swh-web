@@ -1,10 +1,16 @@
 import { Dsn, urlEncode } from '@sentry/utils';
 var SENTRY_API_VERSION = '7';
-/** Helper class to provide urls to different Sentry endpoints. */
+/**
+ * Helper class to provide urls, headers and metadata that can be used to form
+ * different types of requests to Sentry endpoints.
+ * Supports both envelopes and regular event requests.
+ **/
 var API = /** @class */ (function () {
     /** Create a new instance of API */
-    function API(dsn) {
+    function API(dsn, metadata) {
+        if (metadata === void 0) { metadata = {}; }
         this.dsn = dsn;
+        this.metadata = metadata;
         this._dsnObject = new Dsn(dsn);
     }
     /** Returns the Dsn object. */
@@ -48,6 +54,7 @@ var API = /** @class */ (function () {
      * This is needed for node and the old /store endpoint in sentry
      */
     API.prototype.getRequestHeaders = function (clientName, clientVersion) {
+        // CHANGE THIS to use metadata but keep clientName and clientVersion compatible
         var dsn = this._dsnObject;
         var header = ["Sentry sentry_version=" + SENTRY_API_VERSION];
         header.push("sentry_client=" + clientName + "/" + clientVersion);

@@ -11,7 +11,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0001_initial"),
+        ("swh_web_common", "0001_initial"),
     ]
 
     operations = [

@@ -80,7 +80,11 @@ before(function() {
     }],
     directory: [],
     revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972'],
-    release: 'v2.6.0'
+    release: {
+      name: 'v2.6.0',
+      id: '6877028d6e5412780517d0bfa81f07f6c51abb41',
+      directory: '5b61d50ef35ca9a4618a3572bde947b8cccf71ad'
+    }
   }];
 
   const getMetadataForOrigin = async originUrl => {

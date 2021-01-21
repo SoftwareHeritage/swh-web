@@ -10,7 +10,7 @@ def _rename_request_status_from_succeed_to_succeeded(apps, schema_editor):
     """
     Fix a typo in save request status value.
     """
-    SaveOriginRequest = apps.get_model("swh.web.common", "SaveOriginRequest")
+    SaveOriginRequest = apps.get_model("swh_web_common", "SaveOriginRequest")
     for sor in SaveOriginRequest.objects.all():
         if sor.loading_task_status == "succeed":
             sor.loading_task_status = "succeeded"
@@ -20,7 +20,7 @@ def _rename_request_status_from_succeed_to_succeeded(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0006_rename_origin_type"),
+        ("swh_web_common", "0006_rename_origin_type"),
     ]
 
     operations = [

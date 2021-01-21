@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0007_save_request_task_status_fix_typo"),
+        ("swh_web_common", "0007_save_request_task_status_fix_typo"),
     ]
 
     operations = [

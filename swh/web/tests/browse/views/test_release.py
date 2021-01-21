@@ -9,6 +9,7 @@ from hypothesis import given
 
 from django.utils.html import escape
 
+from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
@@ -106,7 +107,7 @@ def _release_browse_checks(
     assert_contains(resp, target_type)
     assert_contains(resp, '<a href="%s">%s</a>' % (escape(target_url), target))
 
-    swh_rel_id = gen_swhid("release", release_id)
+    swh_rel_id = gen_swhid(RELEASE, release_id)
     swh_rel_id_url = reverse("browse-swhid", url_args={"swhid": swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
@@ -117,11 +118,15 @@ def _release_browse_checks(
         )
         assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot_id:
-        swh_snp_id = gen_swhid("snapshot", snapshot_id)
+        swh_snp_id = gen_swhid(SNAPSHOT, snapshot_id)
         swh_snp_id_url = reverse("browse-swhid", url_args={"swhid": swh_snp_id})
         assert_contains(resp, f'href="{swh_snp_id_url}"')
 
     if release_data["target_type"] == "revision":
+        rev = archive_data.revision_get(release_data["target"])
+        rev_dir = rev["directory"]
+        rev_metadata = {}
+        dir_metadata = {}
         if origin_url:
             directory_url = reverse(
                 "browse-origin-directory",
@@ -131,15 +136,31 @@ def _release_browse_checks(
                     "snapshot": snapshot_id,
                 },
             )
+            rev_metadata["origin"] = dir_metadata["origin"] = origin_url
+            snapshot = archive_data.snapshot_get_latest(origin_url)
+            rev_metadata["visit"] = dir_metadata["visit"] = gen_swhid(
+                SNAPSHOT, snapshot["id"]
+            )
+            dir_metadata["anchor"] = gen_swhid(RELEASE, release_id)
+
         elif snapshot_id:
             directory_url = reverse(
                 "browse-snapshot-directory",
                 url_args={"snapshot_id": snapshot_id},
                 query_params={"release": release_data["name"],},
             )
-        else:
-            rev = archive_data.revision_get(release_data["target"])
-            directory_url = reverse(
-                "browse-directory", url_args={"sha1_git": rev["directory"]}
+            rev_metadata["visit"] = dir_metadata["visit"] = gen_swhid(
+                SNAPSHOT, snapshot_id
             )
+            dir_metadata["anchor"] = gen_swhid(RELEASE, release_id)
+        else:
+            directory_url = reverse("browse-directory", url_args={"sha1_git": rev_dir})
         assert_contains(resp, escape(directory_url))
+
+        swh_rev_id = gen_swhid(REVISION, rev["id"], metadata=rev_metadata)
+        swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
+        assert_contains(resp, swh_rev_id_url)
+
+        swh_dir_id = gen_swhid(DIRECTORY, rev_dir, metadata=dir_metadata)
+        swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
+        assert_contains(resp, swh_dir_id_url)

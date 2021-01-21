@@ -3,7 +3,7 @@ import { isRegExp, isString } from './is';
  * Truncates given string to the maximum characters count
  *
  * @param str An object that contains serializable values
- * @param max Maximum number of characters in truncated string
+ * @param max Maximum number of characters in truncated string (0 = unlimited)
  * @returns string Encoded
  */
 export function truncate(str, max) {

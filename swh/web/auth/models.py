@@ -36,7 +36,7 @@ class OIDCUser(User):
     permissions: Set[str]
 
     class Meta:
-        app_label = "swh.web.auth"
+        app_label = "swh_web_auth"
         proxy = True
 
     def save(self, **kwargs):
@@ -91,5 +91,5 @@ class OIDCUserOfflineTokens(models.Model):
     offline_token = models.BinaryField()
 
     class Meta:
-        app_label = "swh.web.auth"
+        app_label = "swh_web_auth"
         db_table = "oidc_user_offline_tokens"
