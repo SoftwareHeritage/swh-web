@@ -11,7 +11,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0003_saveoriginrequest_loading_task_status"),
+        ("swh_web_common", "0003_saveoriginrequest_loading_task_status"),
     ]
 
     operations = [

@@ -1,5 +1,5 @@
-import { getCurrentHub, initAndBind, Integrations as CoreIntegrations } from '@sentry/core';
-import { getGlobalObject, SyncPromise } from '@sentry/utils';
+import { getCurrentHub, initAndBind, Integrations as CoreIntegrations, SDK_VERSION } from '@sentry/core';
+import { addInstrumentationHandler, getGlobalObject, SyncPromise } from '@sentry/utils';
 import { BrowserClient } from './client';
 import { wrap as internalWrap } from './helpers';
 import { Breadcrumbs, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
@@ -82,8 +82,19 @@ export function init(options) {
         }
     }
     if (options.autoSessionTracking === undefined) {
-        options.autoSessionTracking = false;
+        options.autoSessionTracking = true;
     }
+    options._metadata = options._metadata || {};
+    options._metadata.sdk = {
+        name: 'sentry.javascript.browser',
+        packages: [
+            {
+                name: 'npm:@sentry/browser',
+                version: SDK_VERSION,
+            },
+        ],
+        version: SDK_VERSION,
+    };
     initAndBind(BrowserClient, options);
     if (options.autoSessionTracking) {
         startSessionTracking();
@@ -216,5 +227,17 @@ function startSessionTracking() {
         fcpResolved = true;
         possiblyEndSession();
     }
+    // We want to create a session for every navigation as well
+    addInstrumentationHandler({
+        callback: function () {
+            var _a;
+            if (!((_a = getCurrentHub()
+                .getScope()) === null || _a === void 0 ? void 0 : _a.getSession())) {
+                hub.startSession();
+                hub.endSession();
+            }
+        },
+        type: 'history',
+    });
 }
 //# sourceMappingURL=sdk.js.map

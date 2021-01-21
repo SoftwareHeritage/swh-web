@@ -51,7 +51,11 @@ def release_browse(request, sha1_git):
     if origin_url:
         try:
             snapshot_context = get_snapshot_context(
-                snapshot_id, origin_url, timestamp, visit_id
+                snapshot_id,
+                origin_url,
+                timestamp,
+                visit_id,
+                release_name=release["name"],
             )
         except NotFoundExc as e:
             raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
@@ -70,7 +74,9 @@ def release_browse(request, sha1_git):
                 raise e
         origin_info = snapshot_context["origin_info"]
     elif snapshot_id:
-        snapshot_context = get_snapshot_context(snapshot_id)
+        snapshot_context = get_snapshot_context(
+            snapshot_id, release_name=release["name"]
+        )
 
     snapshot_id = snapshot_context.get("snapshot_id", None)
 
@@ -95,6 +101,8 @@ def release_browse(request, sha1_git):
     if release["message"]:
         release_note_lines = release["message"].split("\n")
 
+    swh_objects = [SWHObjectInfo(object_type=RELEASE, object_id=sha1_git)]
+
     vault_cooking = None
 
     rev_directory = None
@@ -115,6 +123,12 @@ def release_browse(request, sha1_git):
                 "revision_context": True,
                 "revision_id": release["target"],
             }
+            swh_objects.append(
+                SWHObjectInfo(object_type=REVISION, object_id=release["target"])
+            )
+            swh_objects.append(
+                SWHObjectInfo(object_type=DIRECTORY, object_id=rev_directory)
+            )
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
     elif release["target_type"] == DIRECTORY:
@@ -133,6 +147,9 @@ def release_browse(request, sha1_git):
                 "revision_context": False,
                 "revision_id": None,
             }
+            swh_objects.append(
+                SWHObjectInfo(object_type=DIRECTORY, object_id=release["target"])
+            )
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
     elif release["target_type"] == CONTENT:
@@ -141,6 +158,9 @@ def release_browse(request, sha1_git):
             snapshot_context=snapshot_context,
             link_text=None,
             link_attrs=None,
+        )
+        swh_objects.append(
+            SWHObjectInfo(object_type=CONTENT, object_id=release["target"])
         )
     elif release["target_type"] == RELEASE:
         target_link = gen_release_link(
@@ -177,8 +197,6 @@ def release_browse(request, sha1_git):
         directory_link = gen_link(rev_directory_url, rev_directory)
     release["directory_link"] = directory_link
     release["target_link"] = target_link
-
-    swh_objects = [SWHObjectInfo(object_type=RELEASE, object_id=sha1_git)]
 
     if snapshot_context:
         snapshot_id = snapshot_context["snapshot_id"]

@@ -39,3 +39,4 @@ cypress/mochawesome/
 cypress/coverage/
 cypress/fixtures/source*.json
 cypress/junit/
+cypress/downloads/

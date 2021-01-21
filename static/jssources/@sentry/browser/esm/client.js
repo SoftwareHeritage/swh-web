@@ -1,10 +1,9 @@
-import { __assign, __extends, __read, __spread } from "tslib";
+import { __assign, __extends } from "tslib";
 import { BaseClient } from '@sentry/core';
 import { getGlobalObject, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
 import { injectReportDialog } from './helpers';
 import { Breadcrumbs } from './integrations';
-import { SDK_NAME, SDK_VERSION } from './version';
 /**
  * The Sentry Browser SDK Client.
  *
@@ -45,12 +44,6 @@ var BrowserClient = /** @class */ (function (_super) {
      */
     BrowserClient.prototype._prepareEvent = function (event, scope, hint) {
         event.platform = event.platform || 'javascript';
-        event.sdk = __assign(__assign({}, event.sdk), { name: SDK_NAME, packages: __spread(((event.sdk && event.sdk.packages) || []), [
-                {
-                    name: 'npm:@sentry/browser',
-                    version: SDK_VERSION,
-                },
-            ]), version: SDK_VERSION });
         return _super.prototype._prepareEvent.call(this, event, scope, hint);
     };
     /**
