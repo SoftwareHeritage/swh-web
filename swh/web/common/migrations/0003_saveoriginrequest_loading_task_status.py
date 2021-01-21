@@ -18,7 +18,7 @@ def _remove_archived_tasks_with_no_saved_status(apps, schema_editor):
     So remove the rows associated to already archived tasks as
     the loading status can not be retrieved anymore.
     """
-    SaveOriginRequest = apps.get_model("swh.web.common", "SaveOriginRequest")
+    SaveOriginRequest = apps.get_model("swh_web_common", "SaveOriginRequest")
     no_saved_status_tasks = []
     for sor in SaveOriginRequest.objects.all():
         tasks = scheduler().get_tasks([sor.loading_task_id])
@@ -30,7 +30,7 @@ def _remove_archived_tasks_with_no_saved_status(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.common", "0002_saveoriginrequest_visit_date"),
+        ("swh_web_common", "0002_saveoriginrequest_visit_date"),
     ]
 
     operations = [

@@ -14,7 +14,7 @@ class SaveAuthorizedOrigin(models.Model):
     url = models.CharField(max_length=200, null=False)
 
     class Meta:
-        app_label = "swh.web.common"
+        app_label = "swh_web_common"
         db_table = "save_authorized_origin"
         indexes = [models.Index(fields=["url"])]
 
@@ -31,7 +31,7 @@ class SaveUnauthorizedOrigin(models.Model):
     url = models.CharField(max_length=200, null=False)
 
     class Meta:
-        app_label = "swh.web.common"
+        app_label = "swh_web_common"
         db_table = "save_unauthorized_origin"
         indexes = [models.Index(fields=["url"])]
 
@@ -83,7 +83,7 @@ class SaveOriginRequest(models.Model):
     )
 
     class Meta:
-        app_label = "swh.web.common"
+        app_label = "swh_web_common"
         db_table = "save_origin_request"
         ordering = ["-id"]
         indexes = [models.Index(fields=["origin_url", "status"])]

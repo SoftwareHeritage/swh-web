@@ -8,4 +8,4 @@ from django.apps import AppConfig
 
 class AuthConfig(AppConfig):
     name = "swh.web.auth"
-    label = "swh.web.auth"
+    label = "swh_web_auth"

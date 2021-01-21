@@ -21,7 +21,7 @@ _authorized_origins = [
 
 
 def _populate_save_authorized_origins(apps, schema_editor):
-    SaveAuthorizedOrigin = apps.get_model("swh.web.common", "SaveAuthorizedOrigin")
+    SaveAuthorizedOrigin = apps.get_model("swh_web_common", "SaveAuthorizedOrigin")
     for origin_url in _authorized_origins:
         SaveAuthorizedOrigin.objects.create(url=origin_url)
 

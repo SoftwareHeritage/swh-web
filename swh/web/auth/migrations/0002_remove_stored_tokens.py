@@ -16,7 +16,7 @@ def _remove_stored_encrypted_tokens(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("swh.web.auth", "0001_initial"),
+        ("swh_web_auth", "0001_initial"),
     ]
 
     operations = [migrations.RunPython(_remove_stored_encrypted_tokens)]
