@@ -319,7 +319,9 @@ def gen_revision_url(revision_id, snapshot_context=None):
 
     """
     query_params = _snapshot_context_query_params(snapshot_context)
+    # remove query parameters not needed for a revision view
     query_params.pop("revision", None)
+    query_params.pop("release", None)
 
     return reverse(
         "browse-revision", url_args={"sha1_git": revision_id}, query_params=query_params

@@ -21,7 +21,7 @@ describe('Persistent Identifiers Tests', function() {
   before(function() {
     origin = this.origin[1];
     url = `${this.Urls.browse_origin_content()}?origin_url=${origin.url}&path=${origin.content[0].path}`;
-    url = `${url}&release=${origin.release}#L${firstSelLine}-L${lastSelLine}`;
+    url = `${url}&release=${origin.release.name}#L${firstSelLine}-L${lastSelLine}`;
     originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
     originBrowseUrl = `${this.Urls.browse_origin()}?origin_url=${origin.url}`;
     cy.visit(url).window().then(win => {

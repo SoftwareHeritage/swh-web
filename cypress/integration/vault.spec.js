@@ -79,6 +79,10 @@ describe('Vault Cooking User Interface Tests', function() {
     this.vaultRevisionUrl = this.Urls.api_1_vault_cook_revision_gitfast(this.revision);
     this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_revision_gitfast(this.revision);
 
+    const release = this.origin[1].release;
+    this.releaseUrl = this.Urls.browse_release(release.id) + `?origin_url=${this.origin[1].url}`;
+    this.vaultReleaseDirectoryUrl = this.Urls.api_1_vault_cook_directory(release.directory);
+
     vaultItems[0] = {
       'object_type': 'revision',
       'object_id': this.revision,
@@ -362,6 +366,47 @@ describe('Vault Cooking User Interface Tests', function() {
         assert.isNotNull(xhr.response.body);
       });
     });
+  });
+
+  it('should create a directory cooking task from the release view', function() {
+
+    // Browse a directory
+    cy.visit(this.releaseUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // a task has been created
+    cy.route({
+      method: 'GET',
+      url: this.vaultReleaseDirectoryUrl,
+      response: {'exception': 'NotFoundExc'}
+    }).as('checkVaultCookingTask');
+
+    cy.route({
+      method: 'POST',
+      url: this.vaultReleaseDirectoryUrl,
+      response: this.genVaultDirCookingResponse('new')
+    }).as('createVaultCookingTask');
+
+    cy.contains('button', 'Download')
+      .click();
+
+    cy.route({
+      method: 'GET',
+      url: this.vaultReleaseDirectoryUrl,
+      response: this.genVaultDirCookingResponse('new')
+    }).as('checkVaultCookingTask');
+
+    // Create a vault cooking task through the GUI
+    cy.get('.modal-dialog')
+        .contains('button:visible', 'Ok')
+        .click();
+
+    cy.wait('@createVaultCookingTask');
+
+    // Check success alert is displayed
+    cy.get('.alert-success')
+        .should('be.visible')
+        .should('contain', 'Archive cooking request successfully submitted.');
   });
 
   it('should offer to recook an archive if no more available to download', function() {
