@@ -204,7 +204,8 @@ def _init_tests_data():
                 storage = loader.storage
             else:
                 loader.storage = storage
-            loader.load()
+            result = loader.load()
+            assert result["status"] == "eventful"
 
         ori = storage.origin_get([origin["url"]])[0]
         origin.update(ori.to_dict())  # add an 'id' key if enabled
