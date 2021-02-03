@@ -204,7 +204,8 @@ def _init_tests_data():
                 storage = loader.storage
             else:
                 loader.storage = storage
-            loader.load()
+            result = loader.load()
+            assert result["status"] == "eventful"
 
         ori = storage.origin_get([origin["url"]])[0]
         origin.update(ori.to_dict())  # add an 'id' key if enabled
@@ -222,6 +223,7 @@ def _init_tests_data():
             origin=url,
             visit=visit.visit,
             date=date + timedelta(minutes=1),
+            type=visit.type,
             status="full",
             snapshot=hash_to_bytes("1a8893e6a86f444e8be8e7bda6cb34fb1735a00e"),
         )
