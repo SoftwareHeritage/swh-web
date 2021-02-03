@@ -1,8 +1,14 @@
-swh-web (0.0.279-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.280-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.280     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-02-03 15:31:09
+    +0100)
+  * Upstream changes:     - v0.0.280     - Adapt
+    origin_get_latest_visit_status according to latest api change     -
+    tests/data: Ensure git data are properly loaded into the test
+    archive     - tests/resources: Fix mypy 0.800 errors
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 21 Jan 2021 15:43:05 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 03 Feb 2021 14:45:55 +0000
 
 swh-web (0.0.279-1~swh1) unstable-swh; urgency=medium
 

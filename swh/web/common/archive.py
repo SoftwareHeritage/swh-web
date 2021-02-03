@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -977,7 +977,7 @@ def lookup_origin_visit_latest(
 
     """
 
-    visit_and_status = origin_get_latest_visit_status(
+    visit_status = origin_get_latest_visit_status(
         storage,
         origin_url,
         type=type,
@@ -985,11 +985,7 @@ def lookup_origin_visit_latest(
         require_snapshot=require_snapshot,
     )
     return (
-        converters.from_origin_visit(
-            {**visit_and_status[0].to_dict(), **visit_and_status[1].to_dict()}
-        )
-        if visit_and_status
-        else None
+        converters.from_origin_visit(visit_status.to_dict()) if visit_status else None
     )
 
 
