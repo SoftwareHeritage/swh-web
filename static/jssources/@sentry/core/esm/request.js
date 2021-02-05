@@ -40,12 +40,17 @@ export function sessionToSentryRequest(session, api) {
 }
 /** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {
-    // since JS has no Object.prototype.pop()
-    var _a = event.tags || {}, samplingMethod = _a.__sentry_samplingMethod, sampleRate = _a.__sentry_sampleRate, otherTags = __rest(_a, ["__sentry_samplingMethod", "__sentry_sampleRate"]);
-    event.tags = otherTags;
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var eventType = event.type || 'event';
     var useEnvelope = eventType === 'transaction';
+    var _a = event.debug_meta || {}, transactionSampling = _a.transactionSampling, metadata = __rest(_a, ["transactionSampling"]);
+    var _b = transactionSampling || {}, samplingMethod = _b.method, sampleRate = _b.rate;
+    if (Object.keys(metadata).length === 0) {
+        delete event.debug_meta;
+    }
+    else {
+        event.debug_meta = metadata;
+    }
     var req = {
         body: JSON.stringify(sdkInfo ? enhanceEventWithSdkInfo(event, api.metadata.sdk) : event),
         type: eventType,

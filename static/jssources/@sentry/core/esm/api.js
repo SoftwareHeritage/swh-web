@@ -10,8 +10,8 @@ var API = /** @class */ (function () {
     function API(dsn, metadata) {
         if (metadata === void 0) { metadata = {}; }
         this.dsn = dsn;
-        this.metadata = metadata;
         this._dsnObject = new Dsn(dsn);
+        this.metadata = metadata;
     }
     /** Returns the Dsn object. */
     API.prototype.getDsn = function () {
@@ -58,7 +58,7 @@ var API = /** @class */ (function () {
         var dsn = this._dsnObject;
         var header = ["Sentry sentry_version=" + SENTRY_API_VERSION];
         header.push("sentry_client=" + clientName + "/" + clientVersion);
-        header.push("sentry_key=" + dsn.user);
+        header.push("sentry_key=" + dsn.publicKey);
         if (dsn.pass) {
             header.push("sentry_secret=" + dsn.pass);
         }
@@ -114,7 +114,7 @@ var API = /** @class */ (function () {
         var auth = {
             // We send only the minimum set of required information. See
             // https://github.com/getsentry/sentry-javascript/issues/2572.
-            sentry_key: dsn.user,
+            sentry_key: dsn.publicKey,
             sentry_version: SENTRY_API_VERSION,
         };
         return urlEncode(auth);

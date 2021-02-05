@@ -1,8 +1,7 @@
-// notebook.js 0.6.0
 // http://github.com/jsvine/notebookjs
 // notebook.js may be freely distributed under the MIT license.
 (function () {
-    var VERSION = "0.6.0";
+    var VERSION = "0.6.2";
     var root = this;
     var isBrowser = root.window !== undefined;
     var doc;
@@ -43,26 +42,21 @@
     };
 
     // Get supporting libraries
-    var condRequire = function (module_name) {
-        return typeof require === "function" && require(module_name);
-    };
-
     var getMarkdown = function () {
-        return root.marked || condRequire("marked");
+        return root.marked || (typeof require === "function" && require("marked"));
     };
 
     var getAnsi = function () {
-        var lib = root.ansi_up || condRequire("ansi_up");
+        var lib = root.ansi_up || (typeof require === "function" && require("ansi_up"));
         return lib && lib.ansi_to_html;
     };
 
     var getSanitizer = function () {
+        var lib = root.DOMPurify || (typeof require === "function" && require("dompurify"));
         if (isBrowser) {
-            var lib = root.DOMPurify || condRequire("dompurify");
             return lib && lib.sanitize;
         } else {
-            var createDOMPurify = condRequire("dompurify");
-            return createDOMPurify(dom.window).sanitize;
+            return lib(dom.window).sanitize;
         }
     };
 
@@ -272,7 +266,10 @@
             if (root.renderMathInElement != null) {
                 el.innerHTML = nb.sanitizer(joined);
                 root.renderMathInElement(el, { delimiters: math_delimiters });
-                el.innerHTML = nb.sanitizer(nb.markdown(el.innerHTML));
+                el.innerHTML = nb.sanitizer(nb.markdown(
+                    el.innerHTML
+                    .replace(/&gt;/g, ">") // Necessary to enable blockquote syntax
+                ));
             } else {
                 el.innerHTML = nb.sanitizer(nb.markdown(joined));
             }

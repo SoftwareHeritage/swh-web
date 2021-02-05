@@ -27,8 +27,8 @@ var Dsn = /** @class */ (function () {
      */
     Dsn.prototype.toString = function (withPassword) {
         if (withPassword === void 0) { withPassword = false; }
-        var _a = this, host = _a.host, path = _a.path, pass = _a.pass, port = _a.port, projectId = _a.projectId, protocol = _a.protocol, user = _a.user;
-        return (protocol + "://" + user + (withPassword && pass ? ":" + pass : '') +
+        var _a = this, host = _a.host, path = _a.path, pass = _a.pass, port = _a.port, projectId = _a.projectId, protocol = _a.protocol, publicKey = _a.publicKey;
+        return (protocol + "://" + publicKey + (withPassword && pass ? ":" + pass : '') +
             ("@" + host + (port ? ":" + port : '') + "/" + (path ? path + "/" : path) + projectId));
     };
     /** Parses a string into this Dsn. */
@@ -37,7 +37,7 @@ var Dsn = /** @class */ (function () {
         if (!match) {
             throw new SentryError(ERROR_MESSAGE);
         }
-        var _a = __read(match.slice(1), 6), protocol = _a[0], user = _a[1], _b = _a[2], pass = _b === void 0 ? '' : _b, host = _a[3], _c = _a[4], port = _c === void 0 ? '' : _c, lastPath = _a[5];
+        var _a = __read(match.slice(1), 6), protocol = _a[0], publicKey = _a[1], _b = _a[2], pass = _b === void 0 ? '' : _b, host = _a[3], _c = _a[4], port = _c === void 0 ? '' : _c, lastPath = _a[5];
         var path = '';
         var projectId = lastPath;
         var split = projectId.split('/');
@@ -51,12 +51,17 @@ var Dsn = /** @class */ (function () {
                 projectId = projectMatch[0];
             }
         }
-        this._fromComponents({ host: host, pass: pass, path: path, projectId: projectId, port: port, protocol: protocol, user: user });
+        this._fromComponents({ host: host, pass: pass, path: path, projectId: projectId, port: port, protocol: protocol, publicKey: publicKey });
     };
     /** Maps Dsn components into this instance. */
     Dsn.prototype._fromComponents = function (components) {
+        // TODO this is for backwards compatibility, and can be removed in a future version
+        if ('user' in components && !('publicKey' in components)) {
+            components.publicKey = components.user;
+        }
+        this.user = components.publicKey || '';
         this.protocol = components.protocol;
-        this.user = components.user;
+        this.publicKey = components.publicKey || '';
         this.pass = components.pass || '';
         this.host = components.host;
         this.port = components.port || '';
@@ -66,7 +71,7 @@ var Dsn = /** @class */ (function () {
     /** Validates this Dsn and throws on error. */
     Dsn.prototype._validate = function () {
         var _this = this;
-        ['protocol', 'user', 'host', 'projectId'].forEach(function (component) {
+        ['protocol', 'publicKey', 'host', 'projectId'].forEach(function (component) {
             if (!_this[component]) {
                 throw new SentryError(ERROR_MESSAGE + ": " + component + " missing");
             }

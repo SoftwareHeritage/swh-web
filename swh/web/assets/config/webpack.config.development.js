@@ -24,7 +24,7 @@ const FixWebpackStatsFormatPlugin = require('./webpack-plugins/fix-webpack-stats
 const DumpHighlightjsLanguagesDataPlugin = require('./webpack-plugins/dump-highlightjs-languages-data-plugin');
 
 // are we running webpack-dev-server ?
-const isDevServer = process.argv.find(v => v.includes('serve'));
+const isDevServer = process.argv.find(v => v.includes('serve')) !== undefined;
 // webpack-dev-server configuration
 const devServerPort = 3000;
 const devServerPublicPath = 'http://localhost:' + devServerPort + '/static/';

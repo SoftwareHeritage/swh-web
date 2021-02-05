@@ -11,6 +11,7 @@ var Session = /** @class */ (function () {
         this.started = Date.now();
         this.duration = 0;
         this.status = SessionStatus.Ok;
+        this.init = true;
         if (context) {
             this.update(context);
         }
@@ -31,6 +32,9 @@ var Session = /** @class */ (function () {
         if (context.sid) {
             // Good enough uuid validation. — Kamil
             this.sid = context.sid.length === 32 ? context.sid : uuid4();
+        }
+        if (context.init !== undefined) {
+            this.init = context.init;
         }
         if (context.did) {
             this.did = "" + context.did;
@@ -79,7 +83,7 @@ var Session = /** @class */ (function () {
     Session.prototype.toJSON = function () {
         return dropUndefinedKeys({
             sid: "" + this.sid,
-            init: true,
+            init: this.init,
             started: new Date(this.started).toISOString(),
             timestamp: new Date(this.timestamp).toISOString(),
             status: this.status,

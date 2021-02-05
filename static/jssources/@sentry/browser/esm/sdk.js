@@ -1,5 +1,5 @@
 import { getCurrentHub, initAndBind, Integrations as CoreIntegrations, SDK_VERSION } from '@sentry/core';
-import { addInstrumentationHandler, getGlobalObject, SyncPromise } from '@sentry/utils';
+import { addInstrumentationHandler, getGlobalObject, logger, SyncPromise } from '@sentry/utils';
 import { BrowserClient } from './client';
 import { wrap as internalWrap } from './helpers';
 import { Breadcrumbs, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
@@ -179,63 +179,19 @@ export function wrap(fn) {
  */
 function startSessionTracking() {
     var window = getGlobalObject();
+    var document = window.document;
+    if (typeof document === 'undefined') {
+        logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
+        return;
+    }
     var hub = getCurrentHub();
-    /**
-     * We should be using `Promise.all([windowLoaded, firstContentfulPaint])` here,
-     * but, as always, it's not available in the IE10-11. Thanks IE.
-     */
-    var loadResolved = document.readyState === 'complete';
-    var fcpResolved = false;
-    var possiblyEndSession = function () {
-        if (fcpResolved && loadResolved) {
-            hub.endSession();
-        }
-    };
-    var resolveWindowLoaded = function () {
-        loadResolved = true;
-        possiblyEndSession();
-        window.removeEventListener('load', resolveWindowLoaded);
-    };
     hub.startSession();
-    if (!loadResolved) {
-        // IE doesn't support `{ once: true }` for event listeners, so we have to manually
-        // attach and then detach it once completed.
-        window.addEventListener('load', resolveWindowLoaded);
-    }
-    try {
-        var po = new PerformanceObserver(function (entryList, po) {
-            entryList.getEntries().forEach(function (entry) {
-                if (entry.name === 'first-contentful-paint' && entry.startTime < firstHiddenTime_1) {
-                    po.disconnect();
-                    fcpResolved = true;
-                    possiblyEndSession();
-                }
-            });
-        });
-        // There's no need to even attach this listener if `PerformanceObserver` constructor will fail,
-        // so we do it below here.
-        var firstHiddenTime_1 = document.visibilityState === 'hidden' ? 0 : Infinity;
-        document.addEventListener('visibilitychange', function (event) {
-            firstHiddenTime_1 = Math.min(firstHiddenTime_1, event.timeStamp);
-        }, { once: true });
-        po.observe({
-            type: 'paint',
-            buffered: true,
-        });
-    }
-    catch (e) {
-        fcpResolved = true;
-        possiblyEndSession();
-    }
+    hub.captureSession();
     // We want to create a session for every navigation as well
     addInstrumentationHandler({
         callback: function () {
-            var _a;
-            if (!((_a = getCurrentHub()
-                .getScope()) === null || _a === void 0 ? void 0 : _a.getSession())) {
-                hub.startSession();
-                hub.endSession();
-            }
+            hub.startSession();
+            hub.captureSession();
         },
         type: 'history',
     });
