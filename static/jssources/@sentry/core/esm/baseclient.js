@@ -18,7 +18,7 @@ import { setupIntegrations } from './integration';
  * without a valid Dsn, the SDK will not send any events to Sentry.
  *
  * Before sending an event via the backend, it is passed through
- * {@link BaseClient.prepareEvent} to add SDK information and scope data
+ * {@link BaseClient._prepareEvent} to add SDK information and scope data
  * (breadcrumbs and context). To add more custom information, override this
  * method and extend the resulting prepared event.
  *
@@ -104,6 +104,8 @@ var BaseClient = /** @class */ (function () {
         }
         else {
             this._sendSession(session);
+            // After sending, we set init false to inidcate it's not the first occurence
+            session.update({ init: false });
         }
     };
     /**
@@ -199,6 +201,7 @@ var BaseClient = /** @class */ (function () {
         }
         session.update(__assign(__assign({}, (crashed && { status: SessionStatus.Crashed })), { user: user,
             userAgent: userAgent, errors: session.errors + Number(errored || crashed) }));
+        this.captureSession(session);
     };
     /** Deliver captured session to Sentry */
     BaseClient.prototype._sendSession = function (session) {
@@ -344,7 +347,7 @@ var BaseClient = /** @class */ (function () {
     };
     /**
      * This function adds all used integrations to the SDK info in the event.
-     * @param sdkInfo The sdkInfo of the event that will be filled with all integrations.
+     * @param event The event that will be filled with all integrations.
      */
     BaseClient.prototype._applyIntegrationsMetadata = function (event) {
         var sdkInfo = event.sdk;
