@@ -8,9 +8,9 @@ bootstrapVersion: 4
 
 styleLoaders:
   - cache-loader
-  - css-loader?sourceMap
-  - postcss-loader?sourceMap
-  - sass-loader?sourceMap
+  - "css-loader?{\"sourceMap\": true}"
+  - "postcss-loader?{\"sourceMap\": true}"
+  - "sass-loader?{\"sourceMap\": true}"
 
 # Extract styles to stand-alone css file
 # Different settings for different environments can be used,

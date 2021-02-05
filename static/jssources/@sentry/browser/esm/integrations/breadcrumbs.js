@@ -159,6 +159,7 @@ var Breadcrumbs = /** @class */ (function () {
         }, {
             event: handlerData.event,
             name: handlerData.name,
+            global: handlerData.global,
         });
     };
     /**
