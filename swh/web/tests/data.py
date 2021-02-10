@@ -198,13 +198,15 @@ def _init_tests_data():
 
         ori = storage.origin_get([origin["url"]])[0]
         origin.update(ori.to_dict())  # add an 'id' key if enabled
-        search.origin_update([{"url": origin["url"], "has_visits": True}])
+        search.origin_update(
+            [{"url": origin["url"], "has_visits": True, "visit_types": ["git"]}]
+        )
 
     for i in range(250):
         url = "https://many.origins/%d" % (i + 1)
         # storage.origin_add([{'url': url}])
         storage.origin_add([Origin(url=url)])
-        search.origin_update([{"url": url, "has_visits": True}])
+        search.origin_update([{"url": url, "has_visits": True, "visit_types": ["tar"]}])
         date = now()
         visit = OriginVisit(origin=url, date=date, type="tar")
         visit = storage.origin_visit_add([visit])[0]

@@ -106,6 +106,31 @@ describe('Test origin-search', function() {
 
   });
 
+  it('should filter origins by visit type', function() {
+    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+    cy.get('#swh-origins-url-patterns')
+      .type('http');
+
+    for (let visitType of ['git', 'tar']) {
+      cy.get('#swh-search-visit-type')
+        .select(visitType);
+
+      cy.get('.swh-search-icon')
+        .click();
+
+      cy.wait('@checkOriginVisits');
+
+      cy.get('#origin-search-results')
+        .should('be.visible');
+
+      cy.get('tbody tr td.swh-origin-visit-type').then(elts => {
+        for (let elt of elts) {
+          cy.get(elt).should('have.text', visitType);
+        }
+      });
+    }
+  });
+
   it('should show not found message when no repo matches', function() {
     searchShouldShowNotFound(nonExistentText,
                              'No origins matching the search criteria were found.');

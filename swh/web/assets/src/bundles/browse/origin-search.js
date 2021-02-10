@@ -39,7 +39,7 @@ function populateOriginSearchResultsTable(origins) {
       let tableRow =
         `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow +=
-        `<td id="visit-type-origin-${i}" style="width: 120px;">` +
+        `<td id="visit-type-origin-${i}" class="swh-origin-visit-type" style="width: 120px;">` +
         '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
         'Checking</td>';
       tableRow +=
@@ -119,6 +119,10 @@ function searchOriginsFirst(searchQueryText, limit) {
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);
   baseSearchUrl.searchParams.append('with_visit', withVisit);
+  const visitType = $('#swh-search-visit-type').val();
+  if (visitType !== 'any') {
+    baseSearchUrl.searchParams.append('visit_type', visitType);
+  }
   let searchUrl = baseSearchUrl.toString();
   searchOrigins(searchUrl);
 }
@@ -200,6 +204,7 @@ export function initOriginSearch() {
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+      const visitType = $('#swh-search-visit-type').val();
       let queryParameters = new URLSearchParams();
       queryParameters.append('q', searchQueryText);
       if (withVisit) {
@@ -210,6 +215,9 @@ export function initOriginSearch() {
       }
       if (searchMetadata) {
         queryParameters.append('search_metadata', searchMetadata);
+      }
+      if (visitType !== 'any') {
+        queryParameters.append('visit_type', visitType);
       }
       // Update the url, triggering page reload and effective search
       window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
@@ -239,11 +247,15 @@ export function initOriginSearch() {
     let withVisit = urlParams.has('with_visit');
     let withContent = urlParams.has('with_content');
     let searchMetadata = urlParams.has('search_metadata');
+    let visitType = urlParams.get('visit_type');
     if (query) {
       $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
       $('#swh-filter-empty-visits').prop('checked', withContent);
       $('#swh-search-origin-metadata').prop('checked', searchMetadata);
+      if (visitType) {
+        $('#swh-search-visit-type').val(visitType);
+      }
       doSearch();
     }
   });

@@ -21,6 +21,21 @@ STAGING_SERVER_NAMES = [
     "webapp.internal.staging.swh.network",
 ]
 
+ORIGIN_VISIT_TYPES = [
+    "cran",
+    "deb",
+    "deposit",
+    "ftp",
+    "hg",
+    "git",
+    "nixguix",
+    "npm",
+    "pypi",
+    "svn",
+    "tar",
+]
+
+
 SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {

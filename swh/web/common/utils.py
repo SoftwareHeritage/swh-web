@@ -22,7 +22,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
-from swh.web.config import get_config
+from swh.web.config import ORIGIN_VISIT_TYPES, get_config
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -273,6 +273,7 @@ def context_processor(request):
                 for server_name in config["staging_server_names"]
             ]
         ),
+        "visit_types": ORIGIN_VISIT_TYPES,
     }
 
 

@@ -14,6 +14,17 @@ See top-level LICENSE file for more information
       <button class="btn btn-primary" type="submit"><i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i></button>
     </div>
   </div>
+  <div class="row mt-1 mb-1 float-right position-relative" style="z-index: 1000">
+    <div class="form-group form-inline">
+      <label class="control-label mr-1" style="font-weight: inherit">visit type:</label>
+      <select id="swh-search-visit-type" class="custom-select form-control custom-select-sm">
+        <option selected value="any">any</option>
+        {% for visit_type in visit_types %}
+          <option value="{{ visit_type }}">{{ visit_type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
   <div class="custom-control custom-checkbox swhid-option">
     <input class="custom-control-input" value="option-origins-with-visit" type="checkbox"
           id="swh-search-origins-with-visit" checked>
