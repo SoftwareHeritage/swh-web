@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -30,14 +30,13 @@ function searchShouldShowNotFound(searchText, msg) {
     .and('contain', msg);
 }
 
-function stubOriginVisitLatestRequests() {
+function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}) {
   cy.server();
   cy.route({
     method: 'GET',
     url: '**/visit/latest/**',
-    response: {
-      type: 'tar'
-    }
+    response: response,
+    status: status
   }).as('originVisitLatest');
 }
 
@@ -78,6 +77,33 @@ describe('Test origin-search', function() {
     const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
     cy.get('tr a')
       .should('have.attr', 'href', browseOriginUrl);
+  });
+
+  it('should remove origin URL with no archived content', function() {
+    stubOriginVisitLatestRequests(404);
+
+    cy.get('#swh-origins-url-patterns')
+      .type(origin.url);
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.wait('@originVisitLatest');
+
+    cy.get('#origin-search-results')
+      .should('be.visible')
+      .find('tbody tr').should('have.length', 0);
+
+    stubOriginVisitLatestRequests(200, {});
+
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.wait('@originVisitLatest');
+
+    cy.get('#origin-search-results')
+      .should('be.visible')
+      .find('tbody tr').should('have.length', 0);
+
   });
 
   it('should show not found message when no repo matches', function() {
