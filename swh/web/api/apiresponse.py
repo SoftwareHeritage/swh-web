@@ -24,7 +24,7 @@ from swh.web.common.exc import BadInputExc, ForbiddenExc, LargePayloadExc, NotFo
 from swh.web.common.utils import gen_path_info, shorten_path
 from swh.web.config import get_config
 
-logger = logging.Logger(__name__)
+logger = logging.getLogger("django")
 
 
 def compute_link_header(rv: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
@@ -204,7 +204,7 @@ def error_response(
 
     if get_config()["debug"]:
         error_data["traceback"] = traceback.format_exc()
-        logger.error(error_data["traceback"])
+        logger.debug(error_data["traceback"])
 
     return make_api_response(request, error_data, doc_data, options=error_opts)
 
