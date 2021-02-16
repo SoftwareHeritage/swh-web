@@ -238,6 +238,7 @@ def _init_tests_data():
     content_path = {}
 
     # Get all objects loaded into the test archive
+    metadata = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
     for origin in _TEST_ORIGINS:
         snp = snapshot_get_latest(storage, origin["url"])
         snapshots.add(hash_to_hex(snp.id))
@@ -251,10 +252,14 @@ def _init_tests_data():
                         id=origin["url"],
                         from_revision=branch_data.target,
                         indexer_configuration_id=idx_tool["id"],
-                        metadata={ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
+                        metadata=metadata,
                         mappings=[],
                     )
                     idx_storage.origin_intrinsic_metadata_add([origin_metadata])
+                    search.origin_update(
+                        [{"url": origin["url"], "intrinsic_metadata": metadata}]
+                    )
+
                     ORIGIN_MASTER_REVISION[origin["url"]] = hash_to_hex(
                         branch_data.target
                     )
