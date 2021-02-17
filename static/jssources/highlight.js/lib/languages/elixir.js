@@ -137,22 +137,22 @@ function elixir(hljs) {
       {
         begin: /~S"""/,
         end: /"""/,
-        contains: []
+        contains: [] // override default
       },
       {
         begin: /~S"/,
         end: /"/,
-        contains: []
+        contains: [] // override default
       },
       {
         begin: /~S'''/,
         end: /'''/,
-        contains: []
+        contains: [] // override default
       },
       {
         begin: /~S'/,
         end: /'/,
-        contains: []
+        contains: [] // override default
       },
       {
         begin: /'/,

@@ -77,7 +77,7 @@ function accesslog(_hljs) {
         className: 'string',
         begin: concat(/"/, either(...HTTP_VERBS)),
         end: /"/,
-        keywords: HTTP_VERBS.join(" "),
+        keywords: HTTP_VERBS,
         illegal: /\n/,
         relevance: 5,
         contains: [

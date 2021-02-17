@@ -92,7 +92,7 @@ function handlebars(hljs) {
       'view',
       'with',
       'yield'
-    ].join(" ")
+    ]
   };
 
   const LITERALS = {
@@ -101,7 +101,7 @@ function handlebars(hljs) {
       'false',
       'undefined',
       'null'
-    ].join(" ")
+    ]
   };
 
   // as defined in https://handlebarsjs.com/guide/expressions.html#literal-segments

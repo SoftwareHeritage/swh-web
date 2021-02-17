@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import logging
 import traceback
 
 import sentry_sdk
@@ -12,6 +13,8 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from swh.web.config import get_config
+
+logger = logging.getLogger("django")
 
 
 class BadInputExc(ValueError):
@@ -135,6 +138,7 @@ def handle_view_exception(request, exc):
     error_description = "%s: %s" % (type(exc).__name__, str(exc))
     if get_config()["debug"]:
         error_description = traceback.format_exc()
+        logger.debug(error_description)
     if isinstance(exc, BadInputExc):
         error_code = 400
     if isinstance(exc, ForbiddenExc):

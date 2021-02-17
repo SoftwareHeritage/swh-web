@@ -41,8 +41,8 @@ Category: common
 */
 
 function ruby(hljs) {
-  var RUBY_METHOD_RE = '([a-zA-Z_]\\w*[!?=]?|[-+~]@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~`|]|\\[\\]=?)';
-  var RUBY_KEYWORDS = {
+  const RUBY_METHOD_RE = '([a-zA-Z_]\\w*[!?=]?|[-+~]@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~`|]|\\[\\]=?)';
+  const RUBY_KEYWORDS = {
     keyword:
       'and then defined module in return redo if BEGIN retry end for self when ' +
       'next until do begin unless END rescue else break undef not super class case ' +
@@ -52,64 +52,123 @@ function ruby(hljs) {
     literal:
       'true false nil'
   };
-  var YARDOCTAG = {
+  const YARDOCTAG = {
     className: 'doctag',
     begin: '@[A-Za-z]+'
   };
-  var IRB_OBJECT = {
-    begin: '#<', end: '>'
+  const IRB_OBJECT = {
+    begin: '#<',
+    end: '>'
   };
-  var COMMENT_MODES = [
+  const COMMENT_MODES = [
     hljs.COMMENT(
       '#',
       '$',
       {
-        contains: [YARDOCTAG]
+        contains: [ YARDOCTAG ]
       }
     ),
     hljs.COMMENT(
       '^=begin',
       '^=end',
       {
-        contains: [YARDOCTAG],
+        contains: [ YARDOCTAG ],
         relevance: 10
       }
     ),
     hljs.COMMENT('^__END__', '\\n$')
   ];
-  var SUBST = {
+  const SUBST = {
     className: 'subst',
-    begin: /#\{/, end: /\}/,
+    begin: /#\{/,
+    end: /\}/,
     keywords: RUBY_KEYWORDS
   };
-  var STRING = {
+  const STRING = {
     className: 'string',
-    contains: [hljs.BACKSLASH_ESCAPE, SUBST],
+    contains: [
+      hljs.BACKSLASH_ESCAPE,
+      SUBST
+    ],
     variants: [
-      {begin: /'/, end: /'/},
-      {begin: /"/, end: /"/},
-      {begin: /`/, end: /`/},
-      {begin: /%[qQwWx]?\(/, end: /\)/},
-      {begin: /%[qQwWx]?\[/, end: /\]/},
-      {begin: /%[qQwWx]?\{/, end: /\}/},
-      {begin: /%[qQwWx]?</, end: />/},
-      {begin: /%[qQwWx]?\//, end: /\//},
-      {begin: /%[qQwWx]?%/, end: /%/},
-      {begin: /%[qQwWx]?-/, end: /-/},
-      {begin: /%[qQwWx]?\|/, end: /\|/},
       {
-        // \B in the beginning suppresses recognition of ?-sequences where ?
-        // is the last character of a preceding identifier, as in: `func?4`
-        begin: /\B\?(\\\d{1,3}|\\x[A-Fa-f0-9]{1,2}|\\u[A-Fa-f0-9]{4}|\\?\S)\b/
+        begin: /'/,
+        end: /'/
+      },
+      {
+        begin: /"/,
+        end: /"/
+      },
+      {
+        begin: /`/,
+        end: /`/
+      },
+      {
+        begin: /%[qQwWx]?\(/,
+        end: /\)/
+      },
+      {
+        begin: /%[qQwWx]?\[/,
+        end: /\]/
+      },
+      {
+        begin: /%[qQwWx]?\{/,
+        end: /\}/
+      },
+      {
+        begin: /%[qQwWx]?</,
+        end: />/
+      },
+      {
+        begin: /%[qQwWx]?\//,
+        end: /\//
+      },
+      {
+        begin: /%[qQwWx]?%/,
+        end: /%/
+      },
+      {
+        begin: /%[qQwWx]?-/,
+        end: /-/
+      },
+      {
+        begin: /%[qQwWx]?\|/,
+        end: /\|/
+      },
+      // in the following expressions, \B in the beginning suppresses recognition of ?-sequences
+      // where ? is the last character of a preceding identifier, as in: `func?4`
+      {
+        begin: /\B\?(\\\d{1,3})/
+      },
+      {
+        begin: /\B\?(\\x[A-Fa-f0-9]{1,2})/
+      },
+      {
+        begin: /\B\?(\\u\{?[A-Fa-f0-9]{1,6}\}?)/
+      },
+      {
+        begin: /\B\?(\\M-\\C-|\\M-\\c|\\c\\M-|\\M-|\\C-\\M-)[\x20-\x7e]/
+      },
+      {
+        begin: /\B\?\\(c|C-)[\x20-\x7e]/
+      },
+      {
+        begin: /\B\?\\?\S/
       },
       { // heredocs
         begin: /<<[-~]?'?(\w+)\n(?:[^\n]*\n)*?\s*\1\b/,
         returnBegin: true,
         contains: [
-          { begin: /<<[-~]?'?/ },
+          {
+            begin: /<<[-~]?'?/
+          },
           hljs.END_SAME_AS_BEGIN({
-            begin: /(\w+)/, end: /(\w+)/,
-            contains: [hljs.BACKSLASH_ESCAPE, SUBST],
+            begin: /(\w+)/,
+            end: /(\w+)/,
+            contains: [
+              hljs.BACKSLASH_ESCAPE,
+              SUBST
+            ]
           })
         ]
       }
@@ -119,45 +178,68 @@ function ruby(hljs) {
   // Ruby syntax is underdocumented, but this grammar seems to be accurate
   // as of version 2.7.2 (confirmed with (irb and `Ripper.sexp(...)`)
   // https://docs.ruby-lang.org/en/2.7.0/doc/syntax/literals_rdoc.html#label-Numbers
-  var decimal = '[1-9](_?[0-9])*|0';
-  var digits = '[0-9](_?[0-9])*';
-  var NUMBER = {
-    className: 'number', relevance: 0,
+  const decimal = '[1-9](_?[0-9])*|0';
+  const digits = '[0-9](_?[0-9])*';
+  const NUMBER = {
+    className: 'number',
+    relevance: 0,
     variants: [
       // decimal integer/float, optionally exponential or rational, optionally imaginary
-      { begin: `\\b(${decimal})(\\.(${digits}))?([eE][+-]?(${digits})|r)?i?\\b` },
+      {
+        begin: `\\b(${decimal})(\\.(${digits}))?([eE][+-]?(${digits})|r)?i?\\b`
+      },
 
       // explicit decimal/binary/octal/hexadecimal integer,
       // optionally rational and/or imaginary
-      { begin: "\\b0[dD][0-9](_?[0-9])*r?i?\\b" },
-      { begin: "\\b0[bB][0-1](_?[0-1])*r?i?\\b" },
-      { begin: "\\b0[oO][0-7](_?[0-7])*r?i?\\b" },
-      { begin: "\\b0[xX][0-9a-fA-F](_?[0-9a-fA-F])*r?i?\\b" },
+      {
+        begin: "\\b0[dD][0-9](_?[0-9])*r?i?\\b"
+      },
+      {
+        begin: "\\b0[bB][0-1](_?[0-1])*r?i?\\b"
+      },
+      {
+        begin: "\\b0[oO][0-7](_?[0-7])*r?i?\\b"
+      },
+      {
+        begin: "\\b0[xX][0-9a-fA-F](_?[0-9a-fA-F])*r?i?\\b"
+      },
 
       // 0-prefixed implicit octal integer, optionally rational and/or imaginary
-      { begin: "\\b0(_?[0-7])+r?i?\\b" },
+      {
+        begin: "\\b0(_?[0-7])+r?i?\\b"
+      }
     ]
   };
 
-  var PARAMS = {
+  const PARAMS = {
     className: 'params',
-    begin: '\\(', end: '\\)', endsParent: true,
+    begin: '\\(',
+    end: '\\)',
+    endsParent: true,
     keywords: RUBY_KEYWORDS
   };
 
-  var RUBY_DEFAULT_CONTAINS = [
+  const RUBY_DEFAULT_CONTAINS = [
     STRING,
     {
       className: 'class',
-      beginKeywords: 'class module', end: '$|;',
+      beginKeywords: 'class module',
+      end: '$|;',
       illegal: /=/,
       contains: [
-        hljs.inherit(hljs.TITLE_MODE, {begin: '[A-Za-z_]\\w*(::\\w+)*(\\?|!)?'}),
+        hljs.inherit(hljs.TITLE_MODE, {
+          begin: '[A-Za-z_]\\w*(::\\w+)*(\\?|!)?'
+        }),
         {
           begin: '<\\s*',
-          contains: [{
-            begin: '(' + hljs.IDENT_RE + '::)?' + hljs.IDENT_RE
-          }]
+          contains: [
+            {
+              begin: '(' + hljs.IDENT_RE + '::)?' + hljs.IDENT_RE,
+              // we already get points for <, we don't need poitns
+              // for the name also
+              relevance: 0
+            }
+          ]
         }
       ].concat(COMMENT_MODES)
     },
@@ -167,10 +249,13 @@ function ruby(hljs) {
       // def method_name;
       // def method_name (end of line)
       begin: concat(/def\s*/, lookahead(RUBY_METHOD_RE + "\\s*(\\(|;|$)")),
+      relevance: 0, // relevance comes from kewords
       keywords: "def",
       end: '$|;',
       contains: [
-        hljs.inherit(hljs.TITLE_MODE, {begin: RUBY_METHOD_RE}),
+        hljs.inherit(hljs.TITLE_MODE, {
+          begin: RUBY_METHOD_RE
+        }),
         PARAMS
       ].concat(COMMENT_MODES)
     },
@@ -186,7 +271,12 @@ function ruby(hljs) {
     {
       className: 'symbol',
       begin: ':(?!\\s)',
-      contains: [STRING, {begin: RUBY_METHOD_RE}],
+      contains: [
+        STRING,
+        {
+          begin: RUBY_METHOD_RE
+        }
+      ],
       relevance: 0
     },
     NUMBER,
@@ -200,7 +290,7 @@ function ruby(hljs) {
       className: 'params',
       begin: /\|/,
       end: /\|/,
-      relevance:0, // this could be a lot of things (in other languages) other than params
+      relevance: 0, // this could be a lot of things (in other languages) other than params
       keywords: RUBY_KEYWORDS
     },
     { // regexp container
@@ -209,14 +299,32 @@ function ruby(hljs) {
       contains: [
         {
           className: 'regexp',
-          contains: [hljs.BACKSLASH_ESCAPE, SUBST],
+          contains: [
+            hljs.BACKSLASH_ESCAPE,
+            SUBST
+          ],
           illegal: /\n/,
           variants: [
-            {begin: '/', end: '/[a-z]*'},
-            {begin: /%r\{/, end: /\}[a-z]*/},
-            {begin: '%r\\(', end: '\\)[a-z]*'},
-            {begin: '%r!', end: '![a-z]*'},
-            {begin: '%r\\[', end: '\\][a-z]*'}
+            {
+              begin: '/',
+              end: '/[a-z]*'
+            },
+            {
+              begin: /%r\{/,
+              end: /\}[a-z]*/
+            },
+            {
+              begin: '%r\\(',
+              end: '\\)[a-z]*'
+            },
+            {
+              begin: '%r!',
+              end: '![a-z]*'
+            },
+            {
+              begin: '%r\\[',
+              end: '\\][a-z]*'
+            }
           ]
         }
       ].concat(IRB_OBJECT, COMMENT_MODES),
@@ -229,23 +337,25 @@ function ruby(hljs) {
 
   // >>
   // ?>
-  var SIMPLE_PROMPT = "[>?]>";
+  const SIMPLE_PROMPT = "[>?]>";
   // irb(main):001:0>
-  var DEFAULT_PROMPT = "[\\w#]+\\(\\w+\\):\\d+:\\d+>";
-  var RVM_PROMPT = "(\\w+-)?\\d+\\.\\d+\\.\\d+(p\\d+)?[^\\d][^>]+>";
+  const DEFAULT_PROMPT = "[\\w#]+\\(\\w+\\):\\d+:\\d+>";
+  const RVM_PROMPT = "(\\w+-)?\\d+\\.\\d+\\.\\d+(p\\d+)?[^\\d][^>]+>";
 
-  var IRB_DEFAULT = [
+  const IRB_DEFAULT = [
     {
       begin: /^\s*=>/,
       starts: {
-        end: '$', contains: RUBY_DEFAULT_CONTAINS
+        end: '$',
+        contains: RUBY_DEFAULT_CONTAINS
       }
     },
     {
       className: 'meta',
-      begin: '^('+SIMPLE_PROMPT+"|"+DEFAULT_PROMPT+'|'+RVM_PROMPT+')(?=[ ])',
+      begin: '^(' + SIMPLE_PROMPT + "|" + DEFAULT_PROMPT + '|' + RVM_PROMPT + ')(?=[ ])',
       starts: {
-        end: '$', contains: RUBY_DEFAULT_CONTAINS
+        end: '$',
+        contains: RUBY_DEFAULT_CONTAINS
       }
     }
   ];
@@ -254,12 +364,20 @@ function ruby(hljs) {
 
   return {
     name: 'Ruby',
-    aliases: ['rb', 'gemspec', 'podspec', 'thor', 'irb'],
+    aliases: [
+      'rb',
+      'gemspec',
+      'podspec',
+      'thor',
+      'irb'
+    ],
     keywords: RUBY_KEYWORDS,
     illegal: /\/\*/,
     contains: [
-        hljs.SHEBANG({binary:"ruby"}),
-      ]
+      hljs.SHEBANG({
+        binary: "ruby"
+      })
+    ]
       .concat(IRB_DEFAULT)
       .concat(COMMENT_MODES)
       .concat(RUBY_DEFAULT_CONTAINS)
