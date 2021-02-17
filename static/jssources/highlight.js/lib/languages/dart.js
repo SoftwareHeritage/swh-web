@@ -142,7 +142,7 @@ function dart(hljs) {
           'querySelector',
           'querySelectorAll',
           'window'
-        ]).join(' '),
+        ]),
     $pattern: /[A-Za-z][A-Za-z0-9_]*\??/
   };
 

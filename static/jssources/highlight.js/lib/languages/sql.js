@@ -638,7 +638,7 @@ function sql(hljs) {
   const FUNCTION_CALL = {
     begin: concat(/\b/, either(...FUNCTIONS), /\s*\(/),
     keywords: {
-      built_in: FUNCTIONS.join(" ")
+      built_in: FUNCTIONS
     }
   };
 
@@ -665,19 +665,19 @@ function sql(hljs) {
     keywords: {
       $pattern: /\b[\w\.]+/,
       keyword:
-        reduceRelevancy(KEYWORDS, { when: (x) => x.length < 3 }).join(" "),
-      literal: LITERALS.join(" "),
-      type: TYPES.join(" "),
-      built_in: POSSIBLE_WITHOUT_PARENS.join(" ")
+        reduceRelevancy(KEYWORDS, { when: (x) => x.length < 3 }),
+      literal: LITERALS,
+      type: TYPES,
+      built_in: POSSIBLE_WITHOUT_PARENS
     },
     contains: [
       {
         begin: either(...COMBOS),
         keywords: {
           $pattern: /[\w\.]+/,
-          keyword: KEYWORDS.concat(COMBOS).join(" "),
-          literal: LITERALS.join(" "),
-          type: TYPES.join(" ")
+          keyword: KEYWORDS.concat(COMBOS),
+          literal: LITERALS,
+          type: TYPES
         },
       },
       {

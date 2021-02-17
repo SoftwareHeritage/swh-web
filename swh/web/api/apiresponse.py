@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import json
+import logging
 import traceback
 from typing import Any, Dict, Optional
 
@@ -22,6 +23,8 @@ from swh.web.api import utils
 from swh.web.common.exc import BadInputExc, ForbiddenExc, LargePayloadExc, NotFoundExc
 from swh.web.common.utils import gen_path_info, shorten_path
 from swh.web.config import get_config
+
+logger = logging.getLogger("django")
 
 
 def compute_link_header(rv: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
@@ -201,6 +204,7 @@ def error_response(
 
     if get_config()["debug"]:
         error_data["traceback"] = traceback.format_exc()
+        logger.debug(error_data["traceback"])
 
     return make_api_response(request, error_data, doc_data, options=error_opts)
 

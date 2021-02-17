@@ -124,9 +124,9 @@ function python(hljs) {
   ];
 
   const KEYWORDS = {
-    keyword: RESERVED_WORDS.join(' '),
-    built_in: BUILT_INS.join(' '),
-    literal: LITERALS.join(' ')
+    keyword: RESERVED_WORDS,
+    built_in: BUILT_INS,
+    literal: LITERALS
   };
 
   const PROMPT = {

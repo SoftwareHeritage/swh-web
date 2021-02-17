@@ -359,11 +359,18 @@ def search_origin_metadata(
         Iterable of origin metadata information for existing origins
 
     """
-    matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
-        conjunction=[fulltext], limit=limit
-    )
-    matches = [match.to_dict() for match in matches]
     results = []
+    if search and config.get_config()["metadata_search_backend"] == "swh-search":
+        page_result = search.origin_search(metadata_pattern=fulltext, limit=limit,)
+        matches = idx_storage.origin_intrinsic_metadata_get(
+            [r["url"] for r in page_result.results]
+        )
+    else:
+        matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
+            conjunction=[fulltext], limit=limit
+        )
+
+    matches = [match.to_dict() for match in matches]
     origins = storage.origin_get([match["id"] for match in matches])
     for origin, match in zip(origins, matches):
         if not origin:
@@ -371,6 +378,7 @@ def search_origin_metadata(
         match["from_revision"] = hashutil.hash_to_hex(match["from_revision"])
         del match["id"]
         results.append(OriginMetadataInfo(url=origin.url, metadata=match))
+
     return results
 
 
