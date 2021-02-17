@@ -20,6 +20,7 @@ from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
 from swh.search import get_search
+from swh.storage import get_storage
 from swh.storage.algos.dir_iterators import dir_iterator
 from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.storage.interface import Sha1
@@ -33,13 +34,6 @@ from swh.web.browse.utils import (
 from swh.web.common import archive
 
 # Module used to initialize data that will be provided as tests input
-
-# Configuration for git loader
-_TEST_LOADER_CONFIG = {
-    "storage": {"cls": "memory",},
-    "save_data": False,
-    "max_content_size": 100 * 1024 * 1024,
-}
 
 # Base content indexer configuration
 _TEST_INDEXER_BASE_CONFIG = {
@@ -171,7 +165,7 @@ ORIGIN_MASTER_REVISION = {}
 # Tests data initialization
 def _init_tests_data():
     # To hold reference to the memory storage
-    storage = None
+    storage = get_storage("memory")
 
     # Create search instance
     search = get_search("memory")
@@ -196,14 +190,9 @@ def _init_tests_data():
                 os.path.dirname(__file__), "resources/repos/%s" % archive_
             )
             loader = GitLoaderFromArchive(
-                origin["url"],
-                archive_path=origin_repo_archive,
-                config=_TEST_LOADER_CONFIG,
+                storage, origin["url"], archive_path=origin_repo_archive,
             )
-            if storage is None:
-                storage = loader.storage
-            else:
-                loader.storage = storage
+
             result = loader.load()
             assert result["status"] == "eventful"
 
