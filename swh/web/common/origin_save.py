@@ -172,7 +172,7 @@ def _get_visit_info_for_save_request(save_request):
             if i != len(visit_dates):
                 visit_date = visit_dates[i]
                 visit_status = origin_visits[i]["status"]
-                if origin_visits[i]["status"] not in ("full", "partial"):
+                if origin_visits[i]["status"] not in ("full", "partial", "not_found"):
                     visit_date = None
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
@@ -187,6 +187,8 @@ def _check_visit_update_status(save_request, save_task_status):
         save_task_status = SAVE_TASK_SUCCEEDED
     elif visit_status in ("created", "ongoing"):
         save_task_status = SAVE_TASK_RUNNING
+    elif visit_status in ("not_found", "failed"):
+        save_task_status = SAVE_TASK_FAILED
     else:
         time_now = datetime.now(tz=timezone.utc)
         time_delta = time_now - save_request.request_date
@@ -213,8 +215,10 @@ def _save_request_dict(save_request, task=None, task_run=None):
             save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
             and not visit_date
         ):
-            visit_date, _ = _get_visit_info_for_save_request(save_request)
+            visit_date, visit_status = _get_visit_info_for_save_request(save_request)
             save_request.visit_date = visit_date
+            if visit_status in ("failed", "not_found"):
+                save_task_status = SAVE_TASK_FAILED
             must_save = True
         # Check tasks still marked as scheduled / not yet scheduled
         if save_task_status in (SAVE_TASK_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED):

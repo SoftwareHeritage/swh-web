@@ -229,8 +229,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     mock_get_origin_visits.assert_called_once()
 
 
-@pytest.mark.django_db
-def test_get_save_origin_requests_no_visit_date_found(mocker):
+def _get_save_origin_requests(mocker, load_status, visit_status):
     # create a save request
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
@@ -243,7 +242,7 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
 
     # mock scheduler and archives
     _mock_scheduler(
-        mocker, task_status="next_run_scheduled", task_run_status="scheduled"
+        mocker, task_status="next_run_scheduled", task_run_status=load_status
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
@@ -258,16 +257,35 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
         metadata={},
         origin=_origin_url,
         snapshot=None,
-        status="created",
+        status=visit_status,
         type=_visit_type,
         url="",
         visit=34,
     )
     mock_get_origin_visits.return_value = [visit_info]
 
-    # check no visit date has been found
     sors = get_save_origin_requests(_visit_type, _origin_url)
+    mock_get_origin_visits.assert_called_once()
+
+    return sors
+
+
+@pytest.mark.django_db
+def test_get_save_origin_requests_no_visit_date_found(mocker):
+    sors = _get_save_origin_requests(
+        mocker, load_status="scheduled", visit_status="created"
+    )
+    # check no visit date has been found
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_RUNNING
     assert sors[0]["visit_date"] is None
-    mock_get_origin_visits.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_get_save_origin_requests_failed_when_not_found(mocker):
+    sors = _get_save_origin_requests(
+        mocker, load_status="uneventful", visit_status="not_found"
+    )
+    assert len(sors) == 1
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
+    assert sors[0]["visit_date"] is not None

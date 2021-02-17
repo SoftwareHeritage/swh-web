@@ -12,6 +12,7 @@ import sentry_sdk
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils.cache import add_never_cache_headers
 from django.utils.html import escape
 from rest_framework.exceptions import APIException
 from rest_framework.request import Request
@@ -151,19 +152,24 @@ def make_api_response(
             if not doc_data["noargs"]:
                 doc_data["endpoint_path"][-1]["path"] += "/doc/"
 
-        return render(
+        response = render(
             request, "api/apidoc.html", doc_data, status=doc_data["status_code"]
         )
 
     # otherwise simply return the raw data and let DRF picks
     # the correct renderer (JSON or YAML)
     else:
-        return Response(
+        response = Response(
             data,
             headers=headers,
             content_type=request.accepted_media_type,
             status=doc_data["status_code"],
         )
+
+    if getattr(request, "never_cache", False):
+        add_never_cache_headers(response)
+
+    return response
 
 
 def error_response(
