@@ -23,6 +23,15 @@ def api_never_cache_route(request, int_arg):
     return {"result": int(int_arg)}
 
 
+@api_route(
+    r"/never/cache/route/error/",
+    "api-1-never-cache-route-with-error",
+    never_cache=True,
+)
+def api_never_cache_route_with_error(request):
+    raise Exception("error")
+
+
 def test_api_route_with_cache(api_client):
     url = reverse("api-1-some-route", url_args={"int_arg": 1})
     resp = check_api_get_responses(api_client, url, status_code=200)
@@ -30,9 +39,19 @@ def test_api_route_with_cache(api_client):
     assert "Cache-Control" not in resp
 
 
+_cache_control = "max-age=0, no-cache, no-store, must-revalidate"
+
+
 def test_api_route_never_cache(api_client):
     url = reverse("api-1-never-cache-route", url_args={"int_arg": 1})
     resp = check_api_get_responses(api_client, url, status_code=200)
     assert resp.data == {"result": 1}
     assert "Cache-Control" in resp
-    assert resp["Cache-Control"] == "max-age=0, no-cache, no-store, must-revalidate"
+    assert resp["Cache-Control"] == _cache_control
+
+
+def test_api_route_never_cache_with_error(api_client):
+    url = reverse("api-1-never-cache-route-with-error")
+    resp = check_api_get_responses(api_client, url, status_code=500)
+    assert "Cache-Control" in resp
+    assert resp["Cache-Control"] == _cache_control
