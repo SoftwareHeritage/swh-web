@@ -191,9 +191,9 @@ function livescript(hljs) {
     '__indexOf'
   ];
   const KEYWORDS$1 = {
-    keyword: KEYWORDS.concat(LIVESCRIPT_KEYWORDS).join(" "),
-    literal: LITERALS.concat(LIVESCRIPT_LITERALS).join(" "),
-    built_in: BUILT_INS.concat(LIVESCRIPT_BUILT_INS).join(" ")
+    keyword: KEYWORDS.concat(LIVESCRIPT_KEYWORDS),
+    literal: LITERALS.concat(LIVESCRIPT_LITERALS),
+    built_in: BUILT_INS.concat(LIVESCRIPT_BUILT_INS)
   };
   const JS_IDENT_RE = '[A-Za-z$_](?:-[0-9A-Za-z$_]|[0-9A-Za-z$_])*';
   const TITLE = hljs.inherit(hljs.TITLE_MODE, {

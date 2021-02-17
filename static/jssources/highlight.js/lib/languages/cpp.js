@@ -32,13 +32,13 @@ function concat(...args) {
 }
 
 /*
-Language: C-like foundation grammar for C/C++ grammars
-Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
-Contributors: Evgeny Stepanischev <imbolk@gmail.com>, Zaven Muradyan <megalivoithos@gmail.com>, Roel Deckers <admin@codingcat.nl>, Sam Wu <samsam2310@gmail.com>, Jordi Petit <jordi.petit@gmail.com>, Pieter Vantorre <pietervantorre@gmail.com>, Google Inc. (David Benjamin) <davidben@google.com>
+Language: C++
+Category: common, system
+Website: https://isocpp.org
 */
 
 /** @type LanguageFn */
-function cLike(hljs) {
+function cpp(hljs) {
   // added for historic reasons because `hljs.C_LINE_COMMENT_MODE` does
   // not include such support nor can we be sure all the grammars depending
   // on it would desire this behavior
@@ -260,10 +260,9 @@ function cLike(hljs) {
   };
 
   return {
+    name: 'C++',
     aliases: [
-      'c',
       'cc',
-      'h',
       'c++',
       'h++',
       'hpp',
@@ -272,9 +271,6 @@ function cLike(hljs) {
       'cxx'
     ],
     keywords: CPP_KEYWORDS,
-    // the base c-like language will NEVER be auto-detected, rather the
-    // derivitives: c, c++, arduino turn auto-detect back on for themselves
-    disableAutodetect: true,
     illegal: '</',
     contains: [].concat(
       EXPRESSION_CONTEXT,
@@ -313,22 +309,6 @@ function cLike(hljs) {
       keywords: CPP_KEYWORDS
     }
   };
-}
-
-/*
-Language: C++
-Category: common, system
-Website: https://isocpp.org
-*/
-
-/** @type LanguageFn */
-function cpp(hljs) {
-  const lang = cLike(hljs);
-  // return auto-detection back on
-  lang.disableAutodetect = false;
-  lang.name = 'C++';
-  lang.aliases = ['cc', 'c++', 'h++', 'hpp', 'hh', 'hxx', 'cxx'];
-  return lang;
 }
 
 module.exports = cpp;

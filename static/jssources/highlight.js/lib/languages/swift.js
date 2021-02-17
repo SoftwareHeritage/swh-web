@@ -92,7 +92,7 @@ const keywords = [
   'enum',
   'extension',
   'fallthrough',
-  'fileprivate(set)',
+  /fileprivate\(set\)/,
   'fileprivate',
   'final', // contextual
   'for',
@@ -106,7 +106,7 @@ const keywords = [
   /init\?/,
   /init!/,
   'inout',
-  'internal(set)',
+  /internal\(set\)/,
   'internal',
   'in',
   'is', // operator
@@ -114,7 +114,7 @@ const keywords = [
   'let',
   'mutating', // contextual
   'nonmutating', // contextual
-  'open(set)', // contextual
+  /open\(set\)/, // contextual
   'open', // contextual
   'operator',
   'optional', // contextual
@@ -122,10 +122,10 @@ const keywords = [
   'postfix', // contextual
   'precedencegroup',
   'prefix', // contextual
-  'private(set)',
+  /private\(set\)/,
   'private',
   'protocol',
-  'public(set)',
+  /public\(set\)/,
   'public',
   'repeat',
   'required', // contextual
@@ -144,8 +144,8 @@ const keywords = [
   /try!/, // operator
   'try', // operator
   'typealias',
-  'unowned(safe)', // contextual
-  'unowned(unsafe)', // contextual
+  /unowned\(safe\)/, // contextual
+  /unowned\(unsafe\)/, // contextual
   'unowned', // contextual
   'var',
   'weak', // contextual
@@ -157,15 +157,22 @@ const keywords = [
 // NOTE: Contextual keywords are reserved only in specific contexts.
 // Ideally, these should be matched using modes to avoid false positives.
 
-// TODO: Create a PRECEDENCE_GROUP mode to match the remaining contextual keywords:
-// assignment associativity higherThan left lowerThan none right
-// These aren't included in the list because they result in mostly false positives.
-
 // Literals.
 const literals = [
   'false',
   'nil',
   'true'
+];
+
+// Keywords used in precedence groups.
+const precedencegroupKeywords = [
+  'assignment',
+  'associativity',
+  'higherThan',
+  'left',
+  'lowerThan',
+  'none',
+  'right'
 ];
 
 // Keywords that start with a number sign (#).
@@ -280,7 +287,7 @@ const identifierHead = either(
   /[\u2C00-\u2DFF\u2E80-\u2FFF]/,
   /[\u3004-\u3007\u3021-\u302F\u3031-\u303F\u3040-\uD7FF]/,
   /[\uF900-\uFD3D\uFD40-\uFDCF\uFDF0-\uFE1F\uFE30-\uFE44]/,
-  /[\uFE47-\uFFFD]/
+  /[\uFE47-\uFEFE\uFF00-\uFFFD]/ // Should be /[\uFE47-\uFFFD]/, but we have to exclude FEFF.
   // The following characters are also allowed, but the regexes aren't supported yet.
   // /[\u{10000}-\u{1FFFD}\u{20000-\u{2FFFD}\u{30000}-\u{3FFFD}\u{40000}-\u{4FFFD}]/u,
   // /[\u{50000}-\u{5FFFD}\u{60000-\u{6FFFD}\u{70000}-\u{7FFFD}\u{80000}-\u{8FFFD}]/u,
@@ -360,6 +367,10 @@ Category: common, system
 
 /** @type LanguageFn */
 function swift(hljs) {
+  const WHITESPACE = {
+    match: /\s+/,
+    relevance: 0
+  };
   // https://docs.swift.org/swift-book/ReferenceManual/LexicalStructure.html#ID411
   const BLOCK_COMMENT = hljs.COMMENT(
     '/\\*',
@@ -368,6 +379,10 @@ function swift(hljs) {
       contains: [ 'self' ]
     }
   );
+  const COMMENTS = [
+    hljs.C_LINE_COMMENT_MODE,
+    BLOCK_COMMENT
+  ];
 
   // https://docs.swift.org/swift-book/ReferenceManual/LexicalStructure.html#ID413
   // https://docs.swift.org/swift-book/ReferenceManual/zzSummaryOfTheGrammar.html
@@ -379,7 +394,7 @@ function swift(hljs) {
   };
   const KEYWORD_GUARD = {
     // Consume .keyword to prevent highlighting properties and methods as keywords.
-    begin: concat(/\./, either(...keywords)),
+    match: concat(/\./, either(...keywords)),
     relevance: 0
   };
   const PLAIN_KEYWORDS = keywords
@@ -393,20 +408,19 @@ function swift(hljs) {
     variants: [
       {
         className: 'keyword',
-        begin: either(...REGEX_KEYWORDS, ...optionalDotKeywords)
+        match: either(...REGEX_KEYWORDS, ...optionalDotKeywords)
       }
     ]
   };
   // find all the regular keywords
   const KEYWORDS = {
     $pattern: either(
-      /\b\w+(\(\w+\))?/, // kw or kw(arg)
+      /\b\w+/, // regular keywords
       /#\w+/ // number keywords
     ),
     keyword: PLAIN_KEYWORDS
-      .concat(numberSignKeywords)
-      .join(" "),
-    literal: literals.join(" ")
+      .concat(numberSignKeywords),
+    literal: literals
   };
   const KEYWORD_MODES = [
     DOT_KEYWORD,
@@ -417,12 +431,12 @@ function swift(hljs) {
   // https://github.com/apple/swift/tree/main/stdlib/public/core
   const BUILT_IN_GUARD = {
     // Consume .built_in to prevent highlighting properties and methods.
-    begin: concat(/\./, either(...builtIns)),
+    match: concat(/\./, either(...builtIns)),
     relevance: 0
   };
   const BUILT_IN = {
     className: 'built_in',
-    begin: concat(/\b/, either(...builtIns), /(?=\()/)
+    match: concat(/\b/, either(...builtIns), /(?=\()/)
   };
   const BUILT_INS = [
     BUILT_IN_GUARD,
@@ -432,7 +446,7 @@ function swift(hljs) {
   // https://docs.swift.org/swift-book/ReferenceManual/LexicalStructure.html#ID418
   const OPERATOR_GUARD = {
     // Prevent -> from being highlighting as an operator.
-    begin: /->/,
+    match: /->/,
     relevance: 0
   };
   const OPERATOR = {
@@ -440,13 +454,13 @@ function swift(hljs) {
     relevance: 0,
     variants: [
       {
-        begin: operator
+        match: operator
       },
       {
         // dot-operator: only operators that start with a dot are allowed to use dots as
         // characters (..., ...<, .*, etc). So there rule here is: a dot followed by one or more
         // characters that may also include dots.
-        begin: `\\.(\\.|${operatorCharacter})+`
+        match: `\\.(\\.|${operatorCharacter})+`
       }
     ]
   };
@@ -465,19 +479,19 @@ function swift(hljs) {
     variants: [
       // decimal floating-point-literal (subsumes decimal-literal)
       {
-        begin: `\\b(${decimalDigits})(\\.(${decimalDigits}))?` + `([eE][+-]?(${decimalDigits}))?\\b`
+        match: `\\b(${decimalDigits})(\\.(${decimalDigits}))?` + `([eE][+-]?(${decimalDigits}))?\\b`
       },
       // hexadecimal floating-point-literal (subsumes hexadecimal-literal)
       {
-        begin: `\\b0x(${hexDigits})(\\.(${hexDigits}))?` + `([pP][+-]?(${decimalDigits}))?\\b`
+        match: `\\b0x(${hexDigits})(\\.(${hexDigits}))?` + `([pP][+-]?(${decimalDigits}))?\\b`
       },
       // octal-literal
       {
-        begin: /\b0o([0-7]_*)+\b/
+        match: /\b0o([0-7]_*)+\b/
       },
       // binary-literal
       {
-        begin: /\b0b([01]_*)+\b/
+        match: /\b0b([01]_*)+\b/
       }
     ]
   };
@@ -487,16 +501,16 @@ function swift(hljs) {
     className: 'subst',
     variants: [
       {
-        begin: concat(/\\/, rawDelimiter, /[0\\tnr"']/)
+        match: concat(/\\/, rawDelimiter, /[0\\tnr"']/)
       },
       {
-        begin: concat(/\\/, rawDelimiter, /u\{[0-9a-fA-F]{1,8}\}/)
+        match: concat(/\\/, rawDelimiter, /u\{[0-9a-fA-F]{1,8}\}/)
       }
     ]
   });
   const ESCAPED_NEWLINE = (rawDelimiter = "") => ({
     className: 'subst',
-    begin: concat(/\\/, rawDelimiter, /[\t ]*(?:[\r\n]|\r\n)/)
+    match: concat(/\\/, rawDelimiter, /[\t ]*(?:[\r\n]|\r\n)/)
   });
   const INTERPOLATION = (rawDelimiter = "") => ({
     className: 'subst',
@@ -537,15 +551,15 @@ function swift(hljs) {
 
   // https://docs.swift.org/swift-book/ReferenceManual/LexicalStructure.html#ID412
   const QUOTED_IDENTIFIER = {
-    begin: concat(/`/, identifier, /`/)
+    match: concat(/`/, identifier, /`/)
   };
   const IMPLICIT_PARAMETER = {
     className: 'variable',
-    begin: /\$\d+/
+    match: /\$\d+/
   };
   const PROPERTY_WRAPPER_PROJECTION = {
     className: 'variable',
-    begin: `\\$${identifierCharacter}+`
+    match: `\\$${identifierCharacter}+`
   };
   const IDENTIFIERS = [
     QUOTED_IDENTIFIER,
@@ -555,30 +569,30 @@ function swift(hljs) {
 
   // https://docs.swift.org/swift-book/ReferenceManual/Attributes.html
   const AVAILABLE_ATTRIBUTE = {
-    begin: /(@|#)available\(/,
-    end: /\)/,
-    keywords: {
-      $pattern: /[@#]?\w+/,
-      keyword: availabilityKeywords
-        .concat([
-          "@available",
-          "#available"
-        ])
-        .join(' ')
-    },
-    contains: [
-      ...OPERATORS,
-      NUMBER,
-      STRING
-    ]
+    match: /(@|#)available/,
+    className: "keyword",
+    starts: {
+      contains: [
+        {
+          begin: /\(/,
+          end: /\)/,
+          keywords: availabilityKeywords,
+          contains: [
+            ...OPERATORS,
+            NUMBER,
+            STRING
+          ]
+        }
+      ]
+    }
   };
   const KEYWORD_ATTRIBUTE = {
     className: 'keyword',
-    begin: concat(/@/, either(...keywordAttributes))
+    match: concat(/@/, either(...keywordAttributes))
   };
   const USER_DEFINED_ATTRIBUTE = {
     className: 'meta',
-    begin: concat(/@/, identifier)
+    match: concat(/@/, identifier)
   };
   const ATTRIBUTES = [
     AVAILABLE_ATTRIBUTE,
@@ -588,28 +602,28 @@ function swift(hljs) {
 
   // https://docs.swift.org/swift-book/ReferenceManual/Types.html
   const TYPE = {
-    begin: lookahead(/\b[A-Z]/),
+    match: lookahead(/\b[A-Z]/),
     relevance: 0,
     contains: [
       { // Common Apple frameworks, for relevance boost
         className: 'type',
-        begin: concat(/(AV|CA|CF|CG|CI|CL|CM|CN|CT|MK|MP|MTK|MTL|NS|SCN|SK|UI|WK|XC)/, identifierCharacter, '+')
+        match: concat(/(AV|CA|CF|CG|CI|CL|CM|CN|CT|MK|MP|MTK|MTL|NS|SCN|SK|UI|WK|XC)/, identifierCharacter, '+')
       },
       { // Type identifier
         className: 'type',
-        begin: typeIdentifier,
+        match: typeIdentifier,
         relevance: 0
       },
       { // Optional type
-        begin: /[?!]+/,
+        match: /[?!]+/,
         relevance: 0
       },
       { // Variadic parameter
-        begin: /\.\.\./,
+        match: /\.\.\./,
         relevance: 0
       },
       { // Protocol composition
-        begin: concat(/\s+&\s+/, lookahead(typeIdentifier)),
+        match: concat(/\s+&\s+/, lookahead(typeIdentifier)),
         relevance: 0
       }
     ]
@@ -619,6 +633,7 @@ function swift(hljs) {
     end: />/,
     keywords: KEYWORDS,
     contains: [
+      ...COMMENTS,
       ...KEYWORD_MODES,
       ...ATTRIBUTES,
       OPERATOR_GUARD,
@@ -626,6 +641,165 @@ function swift(hljs) {
     ]
   };
   TYPE.contains.push(GENERIC_ARGUMENTS);
+
+  // https://docs.swift.org/swift-book/ReferenceManual/Expressions.html#ID552
+  // Prevents element names from being highlighted as keywords.
+  const TUPLE_ELEMENT_NAME = {
+    match: concat(identifier, /\s*:/),
+    keywords: "_|0",
+    relevance: 0
+  };
+  // Matches tuples as well as the parameter list of a function type.
+  const TUPLE = {
+    begin: /\(/,
+    end: /\)/,
+    relevance: 0,
+    keywords: KEYWORDS,
+    contains: [
+      'self',
+      TUPLE_ELEMENT_NAME,
+      ...COMMENTS,
+      ...KEYWORD_MODES,
+      ...BUILT_INS,
+      ...OPERATORS,
+      NUMBER,
+      STRING,
+      ...IDENTIFIERS,
+      ...ATTRIBUTES,
+      TYPE
+    ]
+  };
+
+  // https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID362
+  // Matches both the keyword func and the function title.
+  // Grouping these lets us differentiate between the operator function <
+  // and the start of the generic parameter clause (also <).
+  const FUNC_PLUS_TITLE = {
+    beginKeywords: 'func',
+    contains: [
+      {
+        className: 'title',
+        match: either(QUOTED_IDENTIFIER.match, identifier, operator),
+        // Required to make sure the opening < of the generic parameter clause
+        // isn't parsed as a second title.
+        endsParent: true,
+        relevance: 0
+      },
+      WHITESPACE
+    ]
+  };
+  const GENERIC_PARAMETERS = {
+    begin: /</,
+    end: />/,
+    contains: [
+      ...COMMENTS,
+      TYPE
+    ]
+  };
+  const FUNCTION_PARAMETER_NAME = {
+    begin: either(
+      lookahead(concat(identifier, /\s*:/)),
+      lookahead(concat(identifier, /\s+/, identifier, /\s*:/))
+    ),
+    end: /:/,
+    relevance: 0,
+    contains: [
+      {
+        className: 'keyword',
+        match: /\b_\b/
+      },
+      {
+        className: 'params',
+        match: identifier
+      }
+    ]
+  };
+  const FUNCTION_PARAMETERS = {
+    begin: /\(/,
+    end: /\)/,
+    keywords: KEYWORDS,
+    contains: [
+      FUNCTION_PARAMETER_NAME,
+      ...COMMENTS,
+      ...KEYWORD_MODES,
+      ...OPERATORS,
+      NUMBER,
+      STRING,
+      ...ATTRIBUTES,
+      TYPE,
+      TUPLE
+    ],
+    endsParent: true,
+    illegal: /["']/
+  };
+  const FUNCTION = {
+    className: 'function',
+    match: lookahead(/\bfunc\b/),
+    contains: [
+      FUNC_PLUS_TITLE,
+      GENERIC_PARAMETERS,
+      FUNCTION_PARAMETERS,
+      WHITESPACE
+    ],
+    illegal: [
+      /\[/,
+      /%/
+    ]
+  };
+
+  // https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID375
+  // https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID379
+  const INIT_SUBSCRIPT = {
+    className: 'function',
+    match: /\b(subscript|init[?!]?)\s*(?=[<(])/,
+    keywords: {
+      keyword: "subscript init init? init!",
+      $pattern: /\w+[?!]?/
+    },
+    contains: [
+      GENERIC_PARAMETERS,
+      FUNCTION_PARAMETERS,
+      WHITESPACE
+    ],
+    illegal: /\[|%/
+  };
+  // https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID380
+  const OPERATOR_DECLARATION = {
+    beginKeywords: 'operator',
+    end: hljs.MATCH_NOTHING_RE,
+    contains: [
+      {
+        className: 'title',
+        match: operator,
+        endsParent: true,
+        relevance: 0
+      }
+    ]
+  };
+
+  // https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID550
+  const PRECEDENCEGROUP = {
+    beginKeywords: 'precedencegroup',
+    end: hljs.MATCH_NOTHING_RE,
+    contains: [
+      {
+        className: 'title',
+        match: typeIdentifier,
+        relevance: 0
+      },
+      {
+        begin: /{/,
+        end: /}/,
+        relevance: 0,
+        endsParent: true,
+        keywords: [
+          ...precedencegroupKeywords,
+          ...literals
+        ],
+        contains: [ TYPE ]
+      }
+    ]
+  };
 
   // Add supported submodes to string interpolation.
   for (const variant of STRING.variants) {
@@ -657,42 +831,9 @@ function swift(hljs) {
     name: 'Swift',
     keywords: KEYWORDS,
     contains: [
-      hljs.C_LINE_COMMENT_MODE,
-      BLOCK_COMMENT,
-      {
-        className: 'function',
-        beginKeywords: 'func',
-        end: /\{/,
-        excludeEnd: true,
-        contains: [
-          hljs.inherit(hljs.TITLE_MODE, {
-            begin: /[A-Za-z$_][0-9A-Za-z$_]*/
-          }),
-          {
-            begin: /</,
-            end: />/
-          },
-          {
-            className: 'params',
-            begin: /\(/,
-            end: /\)/,
-            endsParent: true,
-            keywords: KEYWORDS,
-            contains: [
-              'self',
-              ...KEYWORD_MODES,
-              NUMBER,
-              STRING,
-              hljs.C_BLOCK_COMMENT_MODE,
-              { // relevance booster
-                begin: ':'
-              }
-            ],
-            illegal: /["']/
-          }
-        ],
-        illegal: /\[|%/
-      },
+      ...COMMENTS,
+      FUNCTION,
+      INIT_SUBSCRIPT,
       {
         className: 'class',
         beginKeywords: 'struct protocol class extension enum',
@@ -706,13 +847,12 @@ function swift(hljs) {
           ...KEYWORD_MODES
         ]
       },
+      OPERATOR_DECLARATION,
+      PRECEDENCEGROUP,
       {
         beginKeywords: 'import',
         end: /$/,
-        contains: [
-          hljs.C_LINE_COMMENT_MODE,
-          BLOCK_COMMENT
-        ],
+        contains: [ ...COMMENTS ],
         relevance: 0
       },
       ...KEYWORD_MODES,
@@ -722,7 +862,8 @@ function swift(hljs) {
       STRING,
       ...IDENTIFIERS,
       ...ATTRIBUTES,
-      TYPE
+      TYPE,
+      TUPLE
     ]
   };
 }

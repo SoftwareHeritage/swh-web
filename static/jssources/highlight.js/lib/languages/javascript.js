@@ -226,9 +226,9 @@ function javascript(hljs) {
   };
   const KEYWORDS$1 = {
     $pattern: IDENT_RE,
-    keyword: KEYWORDS.join(" "),
-    literal: LITERALS.join(" "),
-    built_in: BUILT_INS.join(" ")
+    keyword: KEYWORDS,
+    literal: LITERALS,
+    built_in: BUILT_INS
   };
 
   // https://tc39.es/ecma262/#sec-literals-numeric-literals

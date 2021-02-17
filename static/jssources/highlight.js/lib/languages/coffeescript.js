@@ -179,9 +179,9 @@ function coffeescript(hljs) {
   const excluding = (list) =>
     (kw) => !list.includes(kw);
   const KEYWORDS$1 = {
-    keyword: KEYWORDS.concat(COFFEE_KEYWORDS).filter(excluding(NOT_VALID_KEYWORDS)).join(" "),
-    literal: LITERALS.concat(COFFEE_LITERALS).join(" "),
-    built_in: BUILT_INS.concat(COFFEE_BUILT_INS).join(" ")
+    keyword: KEYWORDS.concat(COFFEE_KEYWORDS).filter(excluding(NOT_VALID_KEYWORDS)),
+    literal: LITERALS.concat(COFFEE_LITERALS),
+    built_in: BUILT_INS.concat(COFFEE_BUILT_INS)
   };
   const JS_IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
   const SUBST = {
