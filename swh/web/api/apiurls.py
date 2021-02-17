@@ -7,7 +7,6 @@ import functools
 from typing import Dict, List, Optional
 
 from django.http.response import HttpResponseBase
-from django.utils.cache import add_never_cache_headers
 from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
@@ -92,6 +91,8 @@ def api_route(
         @throttling.throttle_scope(throttle_scope)
         @functools.wraps(f)
         def api_view_f(request, **kwargs):
+            # never_cache will be handled in apiresponse module
+            request.never_cache = never_cache
             response = f(request, **kwargs)
             doc_data = None
             # check if response has been forwarded by api_doc decorator
@@ -105,9 +106,6 @@ def api_route(
                 )
             else:
                 api_response = response
-
-            if never_cache:
-                add_never_cache_headers(api_response)
 
             return api_response
 
