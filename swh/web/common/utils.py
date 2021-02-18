@@ -256,6 +256,7 @@ def context_processor(request):
         # To avoid django.template.base.VariableDoesNotExist errors
         # when rendering templates when standard Django user is logged in.
         request.user.backend = "django.contrib.auth.backends.ModelBackend"
+    site_base_url = request.build_absolute_uri("/")
     return {
         "swh_object_icons": swh_object_icons,
         "available_languages": None,
@@ -263,9 +264,15 @@ def context_processor(request):
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
-        "site_base_url": request.build_absolute_uri("/"),
+        "site_base_url": site_base_url,
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
         "status": config["status"],
+        "swh_web_staging": any(
+            [
+                server_name in site_base_url
+                for server_name in config["staging_server_names"]
+            ]
+        ),
     }
 
 
