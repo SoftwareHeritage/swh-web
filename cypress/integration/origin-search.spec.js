@@ -51,6 +51,14 @@ describe('Test origin-search', function() {
     cy.visit(url);
   });
 
+  it('should have focus on search form after page load', function() {
+    cy.get('#swh-origins-url-patterns')
+      .should('have.attr', 'autofocus');
+    // for some reason, autofocus is not honored when running cypress tests
+    // while it is in non controlled browsers
+    // .should('have.focus');
+  });
+
   it('should show in result when url is searched', function() {
     cy.get('#swh-origins-url-patterns')
       .type(origin.url);
