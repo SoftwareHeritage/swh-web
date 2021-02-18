@@ -11,7 +11,7 @@ let origin;
 let url;
 
 function doSearch(searchText) {
-  cy.get('#origins-url-patterns')
+  cy.get('#swh-origins-url-patterns')
     .type(searchText)
     .get('.swh-search-icon')
     .click();
@@ -52,7 +52,7 @@ describe('Test origin-search', function() {
   });
 
   it('should show in result when url is searched', function() {
-    cy.get('#origins-url-patterns')
+    cy.get('#swh-origins-url-patterns')
       .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
@@ -117,7 +117,7 @@ describe('Test origin-search', function() {
       url: `${this.Urls.api_1_origin_search(origin.url)}**`
     }).as('searchOrigin');
 
-    cy.get('#origins-url-patterns')
+    cy.get('#swh-origins-url-patterns')
       .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
@@ -388,7 +388,7 @@ describe('Test origin-search', function() {
         url: `${this.Urls.api_1_origin_search('').slice(0, -1)}**`
       }).as('searchOrigin');
 
-      cy.get('#origins-url-patterns')
+      cy.get('#swh-origins-url-patterns')
         .type(swhid);
       cy.get('.swh-search-icon')
         .click();

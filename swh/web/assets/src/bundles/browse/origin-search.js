@@ -152,7 +152,7 @@ function searchOrigins(searchUrl) {
 
 function doSearch() {
   $('#swh-no-result').hide();
-  let searchQueryText = $('#origins-url-patterns').val();
+  let searchQueryText = $('#swh-origins-url-patterns').val();
   inSearch = true;
   if (searchQueryText.startsWith('swh:')) {
     // searchQueryText may be a PID so sending search queries to PID resolve endpoint
@@ -188,7 +188,7 @@ export function initOriginSearch() {
   $(document).ready(() => {
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      let searchQueryText = $('#origins-url-patterns').val().trim();
+      let searchQueryText = $('#swh-origins-url-patterns').val().trim();
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
@@ -232,7 +232,7 @@ export function initOriginSearch() {
     let withContent = urlParams.has('with_content');
     let searchMetadata = urlParams.has('search_metadata');
     if (query) {
-      $('#origins-url-patterns').val(query);
+      $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
       $('#swh-filter-empty-visits').prop('checked', withContent);
       $('#swh-search-origin-metadata').prop('checked', searchMetadata);
