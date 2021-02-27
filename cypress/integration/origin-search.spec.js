@@ -163,6 +163,29 @@ describe('Test origin-search', function() {
       });
   });
 
+  it('should search in origin intrinsic metadata', function() {
+    cy.intercept('GET', '**/origin/metadata-search/**').as(
+      'originMetadataSearch'
+    );
+    cy.get('#swh-search-origins-with-visit')
+      .check({force: true})
+      .get('#swh-filter-empty-visits')
+      .check({force: true})
+      .get('#swh-search-origin-metadata')
+      .check({force: true})
+      .then(() => {
+        const searchText = 'plugin';
+        doSearch(searchText);
+        console.log(searchText);
+        cy.wait('@originMetadataSearch').then((req) => {
+          expect(req.response.body[0].metadata.metadata.description).to.equal(
+            'Line numbering plugin for Highlight.js'
+            // metadata is defined in _TEST_ORIGINS variable in swh/web/tests/data.py
+          );
+        });
+      });
+  });
+
   it('should not send request to the resolve endpoint', function() {
     cy.server();
 

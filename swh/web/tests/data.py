@@ -121,11 +121,15 @@ _TEST_ORIGINS = [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
+        "metadata": {"description": "Line numbering plugin for Highlight.js",},
     },
     {
         "type": "git",
         "url": "repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
+        "metadata": {
+            "description": "This is just a sample repository with submodules",
+        },
     },
 ]
 
@@ -229,7 +233,7 @@ def _init_tests_data():
     content_path = {}
 
     # Get all objects loaded into the test archive
-    metadata = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
+    common_metadata = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
     for origin in _TEST_ORIGINS:
         snp = snapshot_get_latest(storage, origin["url"])
         snapshots.add(hash_to_hex(snp.id))
@@ -239,6 +243,8 @@ def _init_tests_data():
                 revisions.add(branch_data.target)
                 if b"master" in branch_name:
                     # Add some origin intrinsic metadata for tests
+                    metadata = common_metadata
+                    metadata.update(origin.get("metadata", {}))
                     origin_metadata = OriginIntrinsicMetadataRow(
                         id=origin["url"],
                         from_revision=branch_data.target,
