@@ -11,7 +11,8 @@ from hypothesis import given
 
 from django.http.response import StreamingHttpResponse
 
-from swh.model.identifiers import ORIGIN, SNAPSHOT, swhid
+from swh.model.hashutil import hash_to_bytes
+from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
@@ -171,10 +172,16 @@ def test_graph_response_resolve_origins(
 ):
     hasher = hashlib.sha1()
     hasher.update(origin["url"].encode())
-    origin_sha1 = hasher.hexdigest()
-    origin_swhid = str(swhid(ORIGIN, origin_sha1))
+    origin_sha1 = hasher.digest()
+    origin_swhid = str(
+        ExtendedSWHID(object_type=ExtendedObjectType.ORIGIN, object_id=origin_sha1)
+    )
     snapshot = archive_data.snapshot_get_latest(origin["url"])["id"]
-    snapshot_swhid = str(swhid(SNAPSHOT, snapshot))
+    snapshot_swhid = str(
+        ExtendedSWHID(
+            object_type=ExtendedObjectType.SNAPSHOT, object_id=hash_to_bytes(snapshot)
+        )
+    )
 
     _authenticate_graph_user(api_client, mocker)
 
