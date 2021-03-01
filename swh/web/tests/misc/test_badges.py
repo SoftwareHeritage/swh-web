@@ -6,15 +6,8 @@
 from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
 
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    ORIGIN,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    swhid,
-)
+from swh.model.hashutil import hash_to_bytes
+from swh.model.identifiers import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
@@ -40,32 +33,32 @@ from swh.web.tests.utils import check_http_get_response
 
 @given(content())
 def test_content_badge(client, content):
-    _test_badge_endpoints(client, CONTENT, content["sha1_git"])
+    _test_badge_endpoints(client, "content", content["sha1_git"])
 
 
 @given(directory())
 def test_directory_badge(client, directory):
-    _test_badge_endpoints(client, DIRECTORY, directory)
+    _test_badge_endpoints(client, "directory", directory)
 
 
 @given(origin())
 def test_origin_badge(client, origin):
-    _test_badge_endpoints(client, ORIGIN, origin["url"])
+    _test_badge_endpoints(client, "origin", origin["url"])
 
 
 @given(release())
 def test_release_badge(client, release):
-    _test_badge_endpoints(client, RELEASE, release)
+    _test_badge_endpoints(client, "release", release)
 
 
 @given(revision())
 def test_revision_badge(client, revision):
-    _test_badge_endpoints(client, REVISION, revision)
+    _test_badge_endpoints(client, "revision", revision)
 
 
 @given(snapshot())
 def test_snapshot_badge(client, snapshot):
-    _test_badge_endpoints(client, SNAPSHOT, snapshot)
+    _test_badge_endpoints(client, "snapshot", snapshot)
 
 
 @given(
@@ -88,12 +81,12 @@ def test_badge_errors(
     invalid_sha1,
 ):
     for object_type, object_id in (
-        (CONTENT, unknown_content["sha1_git"]),
-        (DIRECTORY, unknown_directory),
-        (ORIGIN, new_origin.url),
-        (RELEASE, unknown_release),
-        (REVISION, unknown_revision),
-        (SNAPSHOT, unknown_snapshot),
+        ("content", unknown_content["sha1_git"]),
+        ("directory", unknown_directory),
+        ("origin", new_origin),
+        ("release", unknown_release),
+        ("revision", unknown_revision),
+        ("snapshot", unknown_snapshot),
     ):
         url_args = {"object_type": object_type, "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
@@ -102,22 +95,14 @@ def test_badge_errors(
         )
         _check_generated_badge(resp, **url_args, error="not found")
 
-        if object_type != ORIGIN:
-            object_swhid = swhid(object_type, object_id)
-            url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
-            resp = check_http_get_response(
-                client, url, status_code=200, content_type="image/svg+xml"
-            )
-            _check_generated_badge(resp, **url_args, error="not found")
-
     for object_type, object_id in (
-        (CONTENT, invalid_sha1),
-        (DIRECTORY, invalid_sha1),
-        (RELEASE, invalid_sha1),
-        (REVISION, invalid_sha1),
-        (SNAPSHOT, invalid_sha1),
+        (ObjectType.CONTENT, invalid_sha1),
+        (ObjectType.DIRECTORY, invalid_sha1),
+        (ObjectType.RELEASE, invalid_sha1),
+        (ObjectType.REVISION, invalid_sha1),
+        (ObjectType.SNAPSHOT, invalid_sha1),
     ):
-        url_args = {"object_type": object_type, "object_id": object_id}
+        url_args = {"object_type": object_type.name.lower(), "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
 
         resp = check_http_get_response(
@@ -125,7 +110,7 @@ def test_badge_errors(
         )
         _check_generated_badge(resp, **url_args, error="invalid id")
 
-        object_swhid = f"swh:1:{object_type[:3]}:{object_id}"
+        object_swhid = f"swh:1:{object_type.value}:{object_id}"
         url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
         resp = check_http_get_response(
             client, url, status_code=200, content_type="image/svg+xml"
@@ -136,7 +121,7 @@ def test_badge_errors(
 @given(origin(), release())
 def test_badge_endpoints_have_cors_header(client, origin, release):
     url = reverse(
-        "swh-badge", url_args={"object_type": ORIGIN, "object_id": origin["url"]}
+        "swh-badge", url_args={"object_type": "origin", "object_id": origin["url"]}
     )
 
     resp = check_http_get_response(
@@ -148,7 +133,9 @@ def test_badge_endpoints_have_cors_header(client, origin, release):
     )
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
-    release_swhid = swhid(RELEASE, release)
+    release_swhid = str(
+        QualifiedSWHID(object_type=ObjectType.RELEASE, object_id=hash_to_bytes(release))
+    )
     url = reverse("swh-badge-swhid", url_args={"object_swhid": release_swhid})
     resp = check_http_get_response(
         client,
@@ -160,15 +147,21 @@ def test_badge_endpoints_have_cors_header(client, origin, release):
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
 
-def _test_badge_endpoints(client, object_type, object_id):
+def _test_badge_endpoints(client, object_type: str, object_id: str):
     url_args = {"object_type": object_type, "object_id": object_id}
     url = reverse("swh-badge", url_args=url_args)
     resp = check_http_get_response(
         client, url, status_code=200, content_type="image/svg+xml"
     )
     _check_generated_badge(resp, **url_args)
-    if object_type != ORIGIN:
-        obj_swhid = swhid(object_type, object_id)
+
+    if object_type != "origin":
+        obj_swhid = str(
+            QualifiedSWHID(
+                object_type=ObjectType[object_type.upper()],
+                object_id=hash_to_bytes(object_id),
+            )
+        )
         url = reverse("swh-badge-swhid", url_args={"object_swhid": obj_swhid})
         resp = check_http_get_response(
             client, url, status_code=200, content_type="image/svg+xml"
@@ -183,13 +176,18 @@ def _check_generated_badge(response, object_type, object_id, error=None):
     if not object_type:
         object_type = "object"
 
-    if object_type == ORIGIN and error is None:
+    if object_type == "origin" and error is None:
         link = reverse("browse-origin", query_params={"origin_url": object_id})
         text = "repository"
     elif error is None:
-        text = swhid(object_type, object_id)
+        text = str(
+            QualifiedSWHID(
+                object_type=ObjectType[object_type.upper()],
+                object_id=hash_to_bytes(object_id),
+            )
+        )
         link = resolve_swhid(text)["browse_url"]
-        if object_type == RELEASE:
+        if object_type == "release":
             release = archive.lookup_release(object_id)
             text = release["name"]
     elif error == "invalid id":
