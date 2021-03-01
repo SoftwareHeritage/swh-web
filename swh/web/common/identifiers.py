@@ -11,18 +11,15 @@ from typing_extensions import TypedDict
 from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
-from swh.model.hashutil import hash_to_bytes
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.identifiers import (
     CONTENT,
     DIRECTORY,
-    ORIGIN,
     RELEASE,
     REVISION,
     SNAPSHOT,
-    SWHID,
     ObjectType,
     QualifiedSWHID,
-    parse_swhid,
 )
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
@@ -83,7 +80,7 @@ def gen_swhid(
 class ResolvedSWHID(TypedDict):
     """parsed SWHID with context"""
 
-    swhid_parsed: SWHID
+    swhid_parsed: QualifiedSWHID
     """URL to browse object according to SWHID context"""
     browse_url: Optional[str]
 
@@ -113,44 +110,44 @@ def resolve_swhid(
     url_args = {}
     query_dict = QueryDict("", mutable=True)
     fragment = ""
-    anchor_swhid_parsed = None
-    process_lines = object_type is CONTENT
+    process_lines = object_type == ObjectType.CONTENT
 
     if query_params and len(query_params) > 0:
         for k in sorted(query_params.keys()):
             query_dict[k] = query_params[k]
 
-    if "origin" in swhid_parsed.metadata:
-        origin_url = unquote(swhid_parsed.metadata["origin"])
+    if swhid_parsed.origin:
+        origin_url = unquote(swhid_parsed.origin)
         origin_url = archive.lookup_origin({"url": origin_url})["url"]
         query_dict["origin_url"] = origin_url
 
-    if "anchor" in swhid_parsed.metadata:
-        anchor_swhid_parsed = get_swhid(swhid_parsed.metadata["anchor"])
-
-    if "path" in swhid_parsed.metadata and swhid_parsed.metadata["path"] != "/":
-        query_dict["path"] = unquote(swhid_parsed.metadata["path"])
-        if anchor_swhid_parsed:
-            directory = ""
-            if anchor_swhid_parsed.object_type == DIRECTORY:
-                directory = anchor_swhid_parsed.object_id
-            elif anchor_swhid_parsed.object_type == REVISION:
-                revision = archive.lookup_revision(anchor_swhid_parsed.object_id)
+    if swhid_parsed.path and swhid_parsed.path != b"/":
+        query_dict["path"] = swhid_parsed.path.decode("utf8", errors="replace")
+        if swhid_parsed.anchor:
+            directory = b""
+            if swhid_parsed.anchor.object_type == ObjectType.DIRECTORY:
+                directory = swhid_parsed.anchor.object_id
+            elif swhid_parsed.anchor.object_type == ObjectType.REVISION:
+                revision = archive.lookup_revision(
+                    hash_to_hex(swhid_parsed.anchor.object_id)
+                )
                 directory = revision["directory"]
-            elif anchor_swhid_parsed.object_type == RELEASE:
-                release = archive.lookup_release(anchor_swhid_parsed.object_id)
+            elif swhid_parsed.anchor.object_type == ObjectType.RELEASE:
+                release = archive.lookup_release(
+                    hash_to_hex(swhid_parsed.anchor.object_id)
+                )
                 if release["target_type"] == REVISION:
                     revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
-            if object_type == CONTENT:
-                if "origin" not in swhid_parsed.metadata:
+            if object_type == ObjectType.CONTENT:
+                if not swhid_parsed.origin:
                     # when no origin context, content objects need to have their
                     # path prefixed by root directory id for proper breadcrumbs display
-                    query_dict["path"] = directory + query_dict["path"]
+                    query_dict["path"] = hash_to_hex(directory) + query_dict["path"]
                 else:
                     # remove leading slash from SWHID content path
                     query_dict["path"] = query_dict["path"][1:]
-            elif object_type == DIRECTORY:
+            elif object_type == ObjectType.DIRECTORY:
                 object_id = directory
                 # remove leading and trailing slashes from SWHID directory path
                 if query_dict["path"].endswith("/"):
@@ -159,74 +156,72 @@ def resolve_swhid(
                     query_dict["path"] = query_dict["path"][1:]
 
     # snapshot context
-    if "visit" in swhid_parsed.metadata:
-
-        snp_swhid_parsed = get_swhid(swhid_parsed.metadata["visit"])
-        if snp_swhid_parsed.object_type != SNAPSHOT:
+    if swhid_parsed.visit:
+        if swhid_parsed.visit.object_type != ObjectType.SNAPSHOT:
             raise BadInputExc("Visit must be a snapshot SWHID.")
-        query_dict["snapshot"] = snp_swhid_parsed.object_id
+        query_dict["snapshot"] = hash_to_hex(swhid_parsed.visit.object_id)
 
-        if anchor_swhid_parsed:
-            if anchor_swhid_parsed.object_type == REVISION:
+        if swhid_parsed.anchor:
+            if swhid_parsed.anchor.object_type == ObjectType.REVISION:
                 # check if the anchor revision is the tip of a branch
                 branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
-                    snp_swhid_parsed.object_id, anchor_swhid_parsed.object_id
+                    hash_to_hex(swhid_parsed.visit.object_id),
+                    hash_to_hex(swhid_parsed.anchor.object_id),
                 )
                 if branch_name:
                     query_dict["branch"] = branch_name
-                elif object_type != REVISION:
-                    query_dict["revision"] = anchor_swhid_parsed.object_id
+                elif object_type != ObjectType.REVISION:
+                    query_dict["revision"] = hash_to_hex(swhid_parsed.anchor.object_id)
 
-            elif anchor_swhid_parsed.object_type == RELEASE:
-                release = archive.lookup_release(anchor_swhid_parsed.object_id)
+            elif swhid_parsed.anchor.object_type == ObjectType.RELEASE:
+                release = archive.lookup_release(
+                    hash_to_hex(swhid_parsed.anchor.object_id)
+                )
                 if release:
                     query_dict["release"] = release["name"]
 
-        if object_type == REVISION and "release" not in query_dict:
+        if object_type == ObjectType.REVISION and "release" not in query_dict:
             branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
-                snp_swhid_parsed.object_id, object_id
+                hash_to_hex(swhid_parsed.visit.object_id), hash_to_hex(object_id)
             )
             if branch_name:
                 query_dict["branch"] = branch_name
 
     # browsing content or directory without snapshot context
-    elif object_type in (CONTENT, DIRECTORY) and anchor_swhid_parsed:
-        if anchor_swhid_parsed.object_type == REVISION:
+    elif (
+        object_type in (ObjectType.CONTENT, ObjectType.DIRECTORY)
+        and swhid_parsed.anchor
+    ):
+        if swhid_parsed.anchor.object_type == ObjectType.REVISION:
             # anchor revision, objects are browsed from its view
-            object_type = REVISION
-            object_id = anchor_swhid_parsed.object_id
-        elif object_type == DIRECTORY and anchor_swhid_parsed.object_type == DIRECTORY:
+            object_type = ObjectType.REVISION
+            object_id = swhid_parsed.anchor.object_id
+        elif (
+            object_type == ObjectType.DIRECTORY
+            and swhid_parsed.anchor.object_type == ObjectType.DIRECTORY
+        ):
             # a directory is browsed from its root
-            object_id = anchor_swhid_parsed.object_id
+            object_id = swhid_parsed.anchor.object_id
 
-    if object_type == CONTENT:
-        url_args["query_string"] = f"sha1_git:{object_id}"
-    elif object_type == DIRECTORY:
-        url_args["sha1_git"] = object_id
-    elif object_type == RELEASE:
-        url_args["sha1_git"] = object_id
-    elif object_type == REVISION:
-        url_args["sha1_git"] = object_id
-    elif object_type == SNAPSHOT:
-        url_args["snapshot_id"] = object_id
-    elif object_type == ORIGIN:
-        raise BadInputExc(
-            (
-                "Origin SWHIDs are not publicly resolvable because they are for "
-                "internal usage only"
-            )
-        )
+    if object_type == ObjectType.CONTENT:
+        url_args["query_string"] = f"sha1_git:{hash_to_hex(object_id)}"
+    elif object_type in (ObjectType.DIRECTORY, ObjectType.RELEASE, ObjectType.REVISION):
+        url_args["sha1_git"] = hash_to_hex(object_id)
+    elif object_type == ObjectType.SNAPSHOT:
+        url_args["snapshot_id"] = hash_to_hex(object_id)
 
-    if "lines" in swhid_parsed.metadata and process_lines:
-        lines = swhid_parsed.metadata["lines"].split("-")
-        fragment += "#L" + lines[0]
-        if len(lines) > 1:
-            fragment += "-L" + lines[1]
+    if swhid_parsed.lines and process_lines:
+        lines = swhid_parsed.lines
+        fragment += "#L" + str(lines[0])
+        if lines[1]:
+            fragment += "-L" + str(lines[1])
 
     if url_args:
         browse_url = (
             reverse(
-                f"browse-{object_type}", url_args=url_args, query_params=query_dict,
+                f"browse-{object_type.name.lower()}",
+                url_args=url_args,
+                query_params=query_dict,
             )
             + fragment
         )
@@ -234,7 +229,7 @@ def resolve_swhid(
     return ResolvedSWHID(swhid_parsed=swhid_parsed, browse_url=browse_url)
 
 
-def get_swhid(swhid: str) -> SWHID:
+def get_swhid(swhid: str) -> QualifiedSWHID:
     """Check if a SWHID is valid and return it parsed.
 
         Args:
@@ -247,14 +242,14 @@ def get_swhid(swhid: str) -> SWHID:
             A parsed SWHID.
     """
     try:
-        swhid_parsed = parse_swhid(swhid)
+        swhid_parsed = QualifiedSWHID.from_string(swhid)
     except ValidationError as ve:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
     else:
         return swhid_parsed
 
 
-def group_swhids(swhids: Iterable[SWHID],) -> Dict[str, List[bytes]]:
+def group_swhids(swhids: Iterable[QualifiedSWHID],) -> Dict[str, List[bytes]]:
     """
     Groups many SoftWare Heritage persistent IDentifiers into a
     dictionary depending on their type.
@@ -279,7 +274,7 @@ def group_swhids(swhids: Iterable[SWHID],) -> Dict[str, List[bytes]]:
     for obj_swhid in swhids:
         obj_id = obj_swhid.object_id
         obj_type = obj_swhid.object_type
-        swhids_by_type[obj_type].append(hash_to_bytes(obj_id))
+        swhids_by_type[obj_type.name.lower()].append(hash_to_bytes(obj_id))
 
     return swhids_by_type
 
