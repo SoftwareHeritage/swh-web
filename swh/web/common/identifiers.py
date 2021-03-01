@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, Iterable, List, Optional, cast
+from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import quote, unquote
 
 from typing_extensions import TypedDict
@@ -20,8 +20,9 @@ from swh.model.identifiers import (
     REVISION,
     SNAPSHOT,
     SWHID,
+    ObjectType,
+    QualifiedSWHID,
     parse_swhid,
-    swhid,
 )
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
@@ -63,13 +64,17 @@ def gen_swhid(
             generate a valid identifier
     """
     try:
-        obj_swhid = swhid(
-            object_type,
-            object_id,
-            scheme_version,
-            cast(Dict[str, Any], {k: v for k, v in metadata.items() if v is not None}),
+        decoded_object_type = ObjectType[object_type.upper()]
+        decoded_object_id = hash_to_bytes(object_id)
+        obj_swhid = str(
+            QualifiedSWHID(
+                object_type=decoded_object_type,
+                object_id=decoded_object_id,
+                scheme_version=scheme_version,
+                **metadata,
+            )
         )
-    except ValidationError as e:
+    except (ValidationError, KeyError, ValueError) as e:
         raise BadInputExc("Invalid object (%s) for SWHID. %s" % (object_id, e))
     else:
         return obj_swhid
