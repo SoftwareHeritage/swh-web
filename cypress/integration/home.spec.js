@@ -10,6 +10,17 @@ const $ = Cypress.$;
 const url = '/';
 
 describe('Home Page Tests', function() {
+
+  it('should have focus on search form after page load', function() {
+    cy.visit(url);
+
+    cy.get('#swh-origins-url-patterns')
+      .should('have.attr', 'autofocus');
+    // for some reason, autofocus is not honored when running cypress tests
+    // while it is in non controlled browsers
+    // .should('have.focus');
+  });
+
   it('should display positive stats for each category', function() {
 
     cy.server();
@@ -93,7 +104,7 @@ describe('Home Page Tests', function() {
 
   it('should redirect to search page when submitting search form', function() {
     const searchText = 'git';
-    cy.get('#origins-url-patterns')
+    cy.get('#swh-origins-url-patterns')
       .type(searchText)
       .get('.swh-search-icon')
       .click();

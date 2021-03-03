@@ -104,6 +104,7 @@ if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
     )
 else:
     ALLOWED_HOSTS += ["testserver", SWH_WEB_INTERNAL_SERVER_NAME]
+    ALLOWED_HOSTS += get_config()["staging_server_names"]
 
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore

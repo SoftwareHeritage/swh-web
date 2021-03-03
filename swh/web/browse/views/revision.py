@@ -12,7 +12,15 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
-from swh.model.identifiers import CONTENT, DIRECTORY, REVISION, SNAPSHOT, swhid
+from swh.model.hashutil import hash_to_bytes
+from swh.model.identifiers import (
+    CONTENT,
+    DIRECTORY,
+    REVISION,
+    SNAPSHOT,
+    CoreSWHID,
+    ObjectType,
+)
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -264,7 +272,9 @@ def revision_log_browse(request, sha1_git):
 
     revision_log_data = format_log_entries(revision_log, per_page)
 
-    swh_rev_id = swhid("revision", sha1_git)
+    swh_rev_id = str(
+        CoreSWHID(object_type=ObjectType.REVISION, object_id=hash_to_bytes(sha1_git))
+    )
 
     return render(
         request,

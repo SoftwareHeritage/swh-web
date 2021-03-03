@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import archive
@@ -53,13 +54,18 @@ def api_resolve_swhid(request, swhid):
     # object is present in the archive, NotFoundExc
     # will be raised otherwise
     swhid_parsed = swhid_resolved["swhid_parsed"]
-    object_type = swhid_parsed.object_type
-    object_id = swhid_parsed.object_id
+    object_type = swhid_parsed.object_type.name.lower()
+    object_id = hash_to_hex(swhid_parsed.object_id)
     archive.lookup_object(object_type, object_id)
     # id is well-formed and the pointed object exists
-    swhid_data = swhid_parsed.to_dict()
-    swhid_data["browse_url"] = request.build_absolute_uri(swhid_resolved["browse_url"])
-    return swhid_data
+    return {
+        "namespace": swhid_parsed.namespace,
+        "scheme_version": swhid_parsed.scheme_version,
+        "object_type": object_type,
+        "object_id": object_id,
+        "metadata": swhid_parsed.qualifiers(),
+        "browse_url": request.build_absolute_uri(swhid_resolved["browse_url"]),
+    }
 
 
 @api_route(r"/known/", "api-1-known", methods=["POST"])
@@ -103,7 +109,9 @@ def api_swhid_known(request):
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
     # search for hashes not present in the storage
-    missing_hashes = archive.lookup_missing_hashes(swhids_by_type)
+    missing_hashes = set(
+        map(hash_to_bytes, archive.lookup_missing_hashes(swhids_by_type))
+    )
 
     for swhid in swhids:
         if swhid.object_id not in missing_hashes:

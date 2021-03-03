@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -39,7 +39,7 @@ function populateOriginSearchResultsTable(origins) {
       let tableRow =
         `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow +=
-        `<td id="visit-type-origin-${i}" style="width: 120px;">` +
+        `<td id="visit-type-origin-${i}" class="swh-origin-visit-type" style="width: 120px;">` +
         '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
         'Checking</td>';
       tableRow +=
@@ -55,21 +55,29 @@ function populateOriginSearchResultsTable(origins) {
       let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url);
       latestSnapshotUrl += '?require_snapshot=true';
       fetch(latestSnapshotUrl)
-        .then(response => response.json())
+        .then(response => {
+          if (response.status === 404) {
+            throw new Error();
+          }
+          return response.json();
+        })
         .then(data => {
-          $(`#visit-type-origin-${i}`).html(data.type);
-          $(`#visit-status-origin-${i}`).children().remove();
-          if (data) {
+          if (data.type) {
+            $(`#visit-type-origin-${i}`).html(data.type);
             $(`#visit-status-origin-${i}`).html(
               '<i title="Software origin has been archived by Software Heritage" ' +
               'class="mdi mdi-check-bold mdi-fw"></i>Archived');
           } else {
-            $(`#visit-status-origin-${i}`).html(
-              '<i title="Software origin archival by Software Heritage is pending" ' +
-              'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
-            if ($('#swh-filter-empty-visits').prop('checked')) {
-              $(`#origin-${i}`).remove();
-            }
+            throw new Error();
+          }
+        })
+        .catch(() => {
+          $(`#visit-type-origin-${i}`).html('unknown');
+          $(`#visit-status-origin-${i}`).html(
+            '<i title="Software origin archival by Software Heritage is pending" ' +
+            'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
+          if ($('#swh-filter-empty-visits').prop('checked')) {
+            $(`#origin-${i}`).remove();
           }
         });
     }
@@ -111,6 +119,10 @@ function searchOriginsFirst(searchQueryText, limit) {
   let withVisit = $('#swh-search-origins-with-visit').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);
   baseSearchUrl.searchParams.append('with_visit', withVisit);
+  const visitType = $('#swh-search-visit-type').val();
+  if (visitType !== 'any') {
+    baseSearchUrl.searchParams.append('visit_type', visitType);
+  }
   let searchUrl = baseSearchUrl.toString();
   searchOrigins(searchUrl);
 }
@@ -152,7 +164,7 @@ function searchOrigins(searchUrl) {
 
 function doSearch() {
   $('#swh-no-result').hide();
-  let searchQueryText = $('#origins-url-patterns').val();
+  let searchQueryText = $('#swh-origins-url-patterns').val();
   inSearch = true;
   if (searchQueryText.startsWith('swh:')) {
     // searchQueryText may be a PID so sending search queries to PID resolve endpoint
@@ -188,10 +200,11 @@ export function initOriginSearch() {
   $(document).ready(() => {
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      let searchQueryText = $('#origins-url-patterns').val().trim();
+      let searchQueryText = $('#swh-origins-url-patterns').val().trim();
       let withVisit = $('#swh-search-origins-with-visit').prop('checked');
       let withContent = $('#swh-filter-empty-visits').prop('checked');
       let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+      const visitType = $('#swh-search-visit-type').val();
       let queryParameters = new URLSearchParams();
       queryParameters.append('q', searchQueryText);
       if (withVisit) {
@@ -202,6 +215,9 @@ export function initOriginSearch() {
       }
       if (searchMetadata) {
         queryParameters.append('search_metadata', searchMetadata);
+      }
+      if (visitType !== 'any') {
+        queryParameters.append('visit_type', visitType);
       }
       // Update the url, triggering page reload and effective search
       window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
@@ -231,11 +247,15 @@ export function initOriginSearch() {
     let withVisit = urlParams.has('with_visit');
     let withContent = urlParams.has('with_content');
     let searchMetadata = urlParams.has('search_metadata');
+    let visitType = urlParams.get('visit_type');
     if (query) {
-      $('#origins-url-patterns').val(query);
+      $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
       $('#swh-filter-empty-visits').prop('checked', withContent);
       $('#swh-search-origin-metadata').prop('checked', searchMetadata);
+      if (visitType) {
+        $('#swh-search-visit-type').val(visitType);
+      }
       doSearch();
     }
   });
