@@ -227,6 +227,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="content-wrapper">
       <section class="content">
         <div class="container" id="swh-web-content">
+          {% if swh_web_staging %}
+            <div class="swh-corner-ribbon">Staging</div>
+          {% endif %}
           {% block content %}{% endblock %}
         </div>
       </section>

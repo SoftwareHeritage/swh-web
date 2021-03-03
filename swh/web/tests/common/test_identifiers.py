@@ -16,8 +16,7 @@ from swh.model.identifiers import (
     RELEASE,
     REVISION,
     SNAPSHOT,
-    SWHID,
-    parse_swhid,
+    QualifiedSWHID,
 )
 from swh.model.model import Origin
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -98,11 +97,11 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
 
         resolved_swhid = resolve_swhid(swhid, query_params)
 
-        assert isinstance(resolved_swhid["swhid_parsed"], SWHID)
+        assert isinstance(resolved_swhid["swhid_parsed"], QualifiedSWHID)
         assert str(resolved_swhid["swhid_parsed"]) == swhid
         assert resolved_swhid["browse_url"] == browse_url
 
-    with pytest.raises(BadInputExc, match="Origin SWHIDs"):
+    with pytest.raises(BadInputExc, match="'ori' is not a valid ObjectType"):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
@@ -118,7 +117,7 @@ def test_get_swhid(content, directory, release, revision, snapshot):
         swhid = gen_swhid(obj_type, obj_id)
         swh_parsed_swhid = get_swhid(swhid)
 
-        assert isinstance(swh_parsed_swhid, SWHID)
+        assert isinstance(swh_parsed_swhid, QualifiedSWHID)
         assert str(swh_parsed_swhid) == swhid
 
     with pytest.raises(BadInputExc, match="Error when parsing identifier"):
@@ -196,7 +195,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
 
     anchor = gen_swhid(DIRECTORY, directory)
 
-    assert swhid_dir_parsed.metadata == {
+    assert swhid_dir_parsed.qualifiers() == {
         "anchor": anchor,
         "path": dir_subdir_path,
     }
@@ -204,7 +203,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
     if dir_subdir_files:
         swhid_cnt_parsed = get_swhid(swhids[1]["swhid_with_context"])
 
-        assert swhid_cnt_parsed.metadata == {
+        assert swhid_cnt_parsed.qualifiers() == {
             "anchor": anchor,
             "path": f'{dir_subdir_path}{dir_subdir_file["name"]}',
         }
@@ -240,13 +239,13 @@ def test_get_swhids_info_revision_context(archive_data, revision):
 
     anchor = gen_swhid(REVISION, revision)
 
-    assert swhid_dir_parsed.metadata == {
+    assert swhid_dir_parsed.qualifiers() == {
         "anchor": anchor,
     }
 
     if dir_entry["type"] == "file":
         swhid_cnt_parsed = get_swhid(swhids[2]["swhid_with_context"])
-        assert swhid_cnt_parsed.metadata == {
+        assert swhid_cnt_parsed.qualifiers() == {
             "anchor": anchor,
             "path": f'/{dir_entry["name"]}',
         }
@@ -405,13 +404,13 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
                 expected_rev_context["origin"] = origin["url"]
                 expected_snp_context["origin"] = origin["url"]
 
-            assert swhid_cnt_parsed.metadata == expected_cnt_context
-            assert swhid_dir_parsed.metadata == expected_dir_context
-            assert swhid_rev_parsed.metadata == expected_rev_context
-            assert swhid_snp_parsed.metadata == expected_snp_context
+            assert swhid_cnt_parsed.qualifiers() == expected_cnt_context
+            assert swhid_dir_parsed.qualifiers() == expected_dir_context
+            assert swhid_rev_parsed.qualifiers() == expected_rev_context
+            assert swhid_snp_parsed.qualifiers() == expected_snp_context
 
             if "release_name" in snp_ctx_params:
-                assert swhid_rel_parsed.metadata == expected_rev_context
+                assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
 @given(origin(), directory())
@@ -433,12 +432,14 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, origin, direc
     assert swhid_info["context"]["path"] == "/foo%3B/bar%25"
 
     # check special characters in SWHID URL have been escaped
-    parsed_url_swhid = parse_swhid(swhid_info["swhid_with_context_url"][1:-1])
+    parsed_url_swhid = QualifiedSWHID.from_string(
+        swhid_info["swhid_with_context_url"][1:-1]
+    )
     assert (
-        parsed_url_swhid.metadata["origin"]
+        parsed_url_swhid.qualifiers()["origin"]
         == "http://example.org/%3Fproject%253Dabc%253Bdef%2525"
     )
-    assert parsed_url_swhid.metadata["path"] == "/foo%253B/bar%2525"
+    assert parsed_url_swhid.qualifiers()["path"] == "/foo%253B/bar%2525"
 
 
 @given(origin_with_multiple_visits())
@@ -616,7 +617,7 @@ def test_resolve_swhid_with_escaped_chars(directory):
     origin_swhid_url_escaped = quote(origin, safe="/:@;")
     swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
     resolved_swhid = resolve_swhid(swhid)
-    assert resolved_swhid["swhid_parsed"].metadata["origin"] == origin_swhid_escaped
+    assert resolved_swhid["swhid_parsed"].origin == origin_swhid_escaped
     assert origin_swhid_url_escaped in resolved_swhid["browse_url"]
 
 

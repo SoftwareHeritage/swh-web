@@ -16,6 +16,26 @@ from swh.web import settings
 
 SWH_WEB_INTERNAL_SERVER_NAME = "archive.internal.softwareheritage.org"
 
+STAGING_SERVER_NAMES = [
+    "webapp.staging.swh.network",
+    "webapp.internal.staging.swh.network",
+]
+
+ORIGIN_VISIT_TYPES = [
+    "cran",
+    "deb",
+    "deposit",
+    "ftp",
+    "hg",
+    "git",
+    "nixguix",
+    "npm",
+    "pypi",
+    "svn",
+    "tar",
+]
+
+
 SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {
@@ -104,6 +124,7 @@ DEFAULT_CONFIG = {
         },
     ),
     "metadata_search_backend": ("string", "swh-indexer-storage"),  # or "swh-search"
+    "staging_server_names": ("list", STAGING_SERVER_NAMES),
 }
 
 swhweb_config = {}  # type: Dict[str, Any]

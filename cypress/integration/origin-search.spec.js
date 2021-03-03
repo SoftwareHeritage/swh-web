@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ let origin;
 let url;
 
 function doSearch(searchText) {
-  cy.get('#origins-url-patterns')
+  cy.get('#swh-origins-url-patterns')
     .type(searchText)
     .get('.swh-search-icon')
     .click();
@@ -30,14 +30,13 @@ function searchShouldShowNotFound(searchText, msg) {
     .and('contain', msg);
 }
 
-function stubOriginVisitLatestRequests() {
+function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}) {
   cy.server();
   cy.route({
     method: 'GET',
     url: '**/visit/latest/**',
-    response: {
-      type: 'tar'
-    }
+    response: response,
+    status: status
   }).as('originVisitLatest');
 }
 
@@ -51,8 +50,16 @@ describe('Test origin-search', function() {
     cy.visit(url);
   });
 
+  it('should have focus on search form after page load', function() {
+    cy.get('#swh-origins-url-patterns')
+      .should('have.attr', 'autofocus');
+    // for some reason, autofocus is not honored when running cypress tests
+    // while it is in non controlled browsers
+    // .should('have.focus');
+  });
+
   it('should show in result when url is searched', function() {
-    cy.get('#origins-url-patterns')
+    cy.get('#swh-origins-url-patterns')
       .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
@@ -70,6 +77,58 @@ describe('Test origin-search', function() {
     const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
     cy.get('tr a')
       .should('have.attr', 'href', browseOriginUrl);
+  });
+
+  it('should remove origin URL with no archived content', function() {
+    stubOriginVisitLatestRequests(404);
+
+    cy.get('#swh-origins-url-patterns')
+      .type(origin.url);
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.wait('@originVisitLatest');
+
+    cy.get('#origin-search-results')
+      .should('be.visible')
+      .find('tbody tr').should('have.length', 0);
+
+    stubOriginVisitLatestRequests(200, {});
+
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.wait('@originVisitLatest');
+
+    cy.get('#origin-search-results')
+      .should('be.visible')
+      .find('tbody tr').should('have.length', 0);
+
+  });
+
+  it('should filter origins by visit type', function() {
+    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+    cy.get('#swh-origins-url-patterns')
+      .type('http');
+
+    for (let visitType of ['git', 'tar']) {
+      cy.get('#swh-search-visit-type')
+        .select(visitType);
+
+      cy.get('.swh-search-icon')
+        .click();
+
+      cy.wait('@checkOriginVisits');
+
+      cy.get('#origin-search-results')
+        .should('be.visible');
+
+      cy.get('tbody tr td.swh-origin-visit-type').then(elts => {
+        for (let elt of elts) {
+          cy.get(elt).should('have.text', visitType);
+        }
+      });
+    }
   });
 
   it('should show not found message when no repo matches', function() {
@@ -117,7 +176,7 @@ describe('Test origin-search', function() {
       url: `${this.Urls.api_1_origin_search(origin.url)}**`
     }).as('searchOrigin');
 
-    cy.get('#origins-url-patterns')
+    cy.get('#swh-origins-url-patterns')
       .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
@@ -388,7 +447,7 @@ describe('Test origin-search', function() {
         url: `${this.Urls.api_1_origin_search('').slice(0, -1)}**`
       }).as('searchOrigin');
 
-      cy.get('#origins-url-patterns')
+      cy.get('#swh-origins-url-patterns')
         .type(swhid);
       cy.get('.swh-search-icon')
         .click();

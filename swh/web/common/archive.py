@@ -298,6 +298,7 @@ def search_origin(
     url_pattern: str,
     limit: int = 50,
     with_visit: bool = False,
+    visit_types: Optional[List[str]] = None,
     page_token: Optional[str] = None,
 ) -> Tuple[List[OriginInfo], Optional[str]]:
     """Search for origins whose urls contain a provided string pattern
@@ -306,6 +307,9 @@ def search_origin(
     Args:
         url_pattern: the string pattern to search for in origin urls
         limit: the maximum number of found origins to return
+        with_visit: Whether origins with no visit are to be filtered out
+        visit_types: Only origins having any of the provided visit types
+            (e.g. git, svn, pypi) will be returned
         page_token: opaque string used to get the next results of a search
 
     Returns:
@@ -320,6 +324,7 @@ def search_origin(
             url_pattern=url_pattern,
             page_token=page_token,
             with_visit=with_visit,
+            visit_types=visit_types,
             limit=limit,
         )
         origins = [converters.from_origin(ori_dict) for ori_dict in page_result.results]
@@ -339,6 +344,7 @@ def search_origin(
             page_token=page_token,
             with_visit=with_visit,
             limit=limit,
+            visit_types=visit_types,
             regexp=True,
         )
         origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]

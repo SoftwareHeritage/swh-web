@@ -13,7 +13,16 @@ from django.shortcuts import render
 from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT, swhid
+from swh.model.hashutil import hash_to_bytes
+from swh.model.identifiers import (
+    CONTENT,
+    DIRECTORY,
+    RELEASE,
+    REVISION,
+    SNAPSHOT,
+    CoreSWHID,
+    ObjectType,
+)
 from swh.model.model import Snapshot
 from swh.web.browse.utils import (
     content_display_max_size,
@@ -500,7 +509,9 @@ def get_snapshot_context(
 
     is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
 
-    swh_snp_id = swhid("snapshot", snapshot_id)
+    swh_snp_id = str(
+        CoreSWHID(object_type=ObjectType.SNAPSHOT, object_id=hash_to_bytes(snapshot_id))
+    )
 
     if visit_info:
         timestamp = format_utc_iso_date(visit_info["date"])
