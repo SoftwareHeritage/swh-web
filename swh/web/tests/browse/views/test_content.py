@@ -448,7 +448,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot),
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(REVISION, branch_info["revision"]),
             "path": f"/{directory_file['name']}",
         },
@@ -460,7 +460,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         directory,
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot),
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(REVISION, branch_info["revision"]),
         },
     )
@@ -469,11 +469,16 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
     rev_swhid = gen_swhid(
         REVISION,
         branch_info["revision"],
-        metadata={"origin": origin["url"], "visit": gen_swhid(SNAPSHOT, snapshot),},
+        metadata={
+            "origin": origin["url"],
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+        },
     )
     assert_contains(resp, rev_swhid)
 
-    snp_swhid = gen_swhid(SNAPSHOT, snapshot, metadata={"origin": origin["url"],},)
+    snp_swhid = gen_swhid(
+        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+    )
     assert_contains(resp, snp_swhid)
 
 
@@ -517,7 +522,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot),
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(RELEASE, release_info["id"]),
             "path": f"/{directory_file['name']}",
         },
@@ -529,7 +534,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         release_info["directory"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot),
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(RELEASE, release_info["id"]),
         },
     )
@@ -538,18 +543,26 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     rev_swhid = gen_swhid(
         REVISION,
         release_info["target"],
-        metadata={"origin": origin["url"], "visit": gen_swhid(SNAPSHOT, snapshot),},
+        metadata={
+            "origin": origin["url"],
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+        },
     )
     assert_contains(resp, rev_swhid)
 
     rel_swhid = gen_swhid(
         RELEASE,
         release_info["id"],
-        metadata={"origin": origin["url"], "visit": gen_swhid(SNAPSHOT, snapshot),},
+        metadata={
+            "origin": origin["url"],
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+        },
     )
     assert_contains(resp, rel_swhid)
 
-    snp_swhid = gen_swhid(SNAPSHOT, snapshot, metadata={"origin": origin["url"],},)
+    snp_swhid = gen_swhid(
+        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+    )
     assert_contains(resp, snp_swhid)
 
 

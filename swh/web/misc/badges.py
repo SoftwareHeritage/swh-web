@@ -13,16 +13,8 @@ from django.contrib.staticfiles import finders
 from django.http import HttpRequest, HttpResponse
 
 from swh.model.exceptions import ValidationError
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    ORIGIN,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    parse_swhid,
-    swhid,
-)
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.identifiers import RELEASE, CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.identifiers import resolve_swhid
@@ -35,12 +27,12 @@ _red = "#cd5741"
 _swh_logo_data = None
 
 _badge_config = {
-    CONTENT: {"color": _blue, "title": "Archived source file",},
-    DIRECTORY: {"color": _blue, "title": "Archived source tree",},
-    ORIGIN: {"color": _orange, "title": "Archived software repository",},
-    RELEASE: {"color": _blue, "title": "Archived software release",},
-    REVISION: {"color": _blue, "title": "Archived commit",},
-    SNAPSHOT: {"color": _blue, "title": "Archived software repository snapshot",},
+    "content": {"color": _blue, "title": "Archived source file",},
+    "directory": {"color": _blue, "title": "Archived source tree",},
+    "origin": {"color": _orange, "title": "Archived software repository",},
+    "release": {"color": _blue, "title": "Archived software release",},
+    "revision": {"color": _blue, "title": "Archived commit",},
+    "snapshot": {"color": _blue, "title": "Archived software repository snapshot",},
     "error": {"color": _red, "title": "An error occurred when generating the badge"},
 }
 
@@ -89,7 +81,7 @@ def _swh_badge(
     whole_link = None
 
     try:
-        if object_type == ORIGIN:
+        if object_type == "origin":
             archive.lookup_origin({"url": object_id})
             right_text = "repository"
             whole_link = reverse(
@@ -99,19 +91,27 @@ def _swh_badge(
             # when SWHID is provided, object type and id will be parsed
             # from it
             if object_swhid:
-                parsed_swhid = parse_swhid(object_swhid)
-                object_type = parsed_swhid.object_type
-                object_id = parsed_swhid.object_id
-            swh_object = archive.lookup_object(object_type, object_id)
-            if object_swhid:
-                right_text = object_swhid
+                parsed_swhid = QualifiedSWHID.from_string(object_swhid)
+                object_type = parsed_swhid.object_type.name.lower()
+                object_id = hash_to_hex(parsed_swhid.object_id)
+                swh_object = archive.lookup_object(object_type, object_id)
+                # remove SWHID qualified if any for badge text
+                right_text = str(
+                    CoreSWHID(
+                        object_type=parsed_swhid.object_type,
+                        object_id=parsed_swhid.object_id,
+                    )
+                )
             else:
-                right_text = swhid(object_type, object_id)
+                right_text = str(
+                    CoreSWHID(
+                        object_type=ObjectType[object_type.upper()],
+                        object_id=hash_to_bytes(object_id),
+                    )
+                )
+                swh_object = archive.lookup_object(object_type, object_id)
 
-            whole_link = resolve_swhid(right_text)["browse_url"]
-            # remove SWHID metadata if any for badge text
-            if object_swhid:
-                right_text = right_text.split(";")[0]
+            whole_link = resolve_swhid(str(right_text))["browse_url"]
             # use release name for badge text
             if object_type == RELEASE:
                 right_text = "release %s" % swh_object["name"]

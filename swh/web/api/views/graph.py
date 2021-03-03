@@ -14,7 +14,9 @@ from rest_framework.decorators import renderer_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from swh.model.identifiers import ORIGIN, parse_swhid
+from swh.model.hashutil import hash_to_hex
+from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID
+from swh.model.model import Sha1Git
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
@@ -24,17 +26,17 @@ from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
 API_GRAPH_PERM = "swh.web.api.graph"
 
 
-def _resolve_origin_swhid(swhid: str, origin_urls: Dict[str, str]) -> str:
+def _resolve_origin_swhid(swhid: str, origin_urls: Dict[Sha1Git, str]) -> str:
     """
     Resolve origin url from its swhid sha1 representation.
     """
-    parsed_swhid = parse_swhid(swhid)
-    if parsed_swhid.object_type == ORIGIN:
+    parsed_swhid = ExtendedSWHID.from_string(swhid)
+    if parsed_swhid.object_type == ExtendedObjectType.ORIGIN:
         if parsed_swhid.object_id in origin_urls:
             return origin_urls[parsed_swhid.object_id]
         else:
             origin_info = list(
-                archive.lookup_origins_by_sha1s([parsed_swhid.object_id])
+                archive.lookup_origins_by_sha1s([hash_to_hex(parsed_swhid.object_id)])
             )[0]
             assert origin_info is not None
             origin_urls[parsed_swhid.object_id] = origin_info["url"]
@@ -51,7 +53,7 @@ def _resolve_origin_swhids_in_graph_response(
     responses.
     """
     content_type = response.headers["Content-Type"]
-    origin_urls: Dict[str, str] = {}
+    origin_urls: Dict[Sha1Git, str] = {}
     if content_type == "application/x-ndjson":
         for line in response.iter_lines():
             swhids = json.loads(line.decode("utf-8"))

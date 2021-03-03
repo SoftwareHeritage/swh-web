@@ -1,5 +1,5 @@
 import { __assign, __extends } from "tslib";
-import { BaseClient } from '@sentry/core';
+import { BaseClient, SDK_VERSION } from '@sentry/core';
 import { getGlobalObject, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
 import { injectReportDialog } from './helpers';
@@ -19,7 +19,20 @@ var BrowserClient = /** @class */ (function (_super) {
      */
     function BrowserClient(options) {
         if (options === void 0) { options = {}; }
-        return _super.call(this, BrowserBackend, options) || this;
+        var _this = this;
+        options._metadata = options._metadata || {};
+        options._metadata.sdk = options._metadata.sdk || {
+            name: 'sentry.javascript.browser',
+            packages: [
+                {
+                    name: 'npm:@sentry/browser',
+                    version: SDK_VERSION,
+                },
+            ],
+            version: SDK_VERSION,
+        };
+        _this = _super.call(this, BrowserBackend, options) || this;
+        return _this;
     }
     /**
      * Show a report dialog to the user to send feedback to a specific event.

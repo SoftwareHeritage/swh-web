@@ -190,12 +190,14 @@ def api_origin_search(request, url_pattern):
     limit = min(int(request.query_params.get("limit", "70")), 1000)
     page_token = request.query_params.get("page_token")
     with_visit = request.query_params.get("with_visit", "false")
+    visit_type = request.query_params.get("visit_type")
 
     (results, page_token) = api_lookup(
         archive.search_origin,
         url_pattern,
         limit,
         bool(strtobool(with_visit)),
+        [visit_type] if visit_type else None,
         page_token,
         enrich_fn=enrich_origin_search_result,
         request=request,
@@ -205,6 +207,7 @@ def api_origin_search(request, url_pattern):
         query_params = {}
         query_params["limit"] = limit
         query_params["page_token"] = page_token
+        query_params["visit_type"] = visit_type
 
         result["headers"] = {
             "link-next": reverse(

@@ -182,7 +182,7 @@ def test_legacy_swhid_browse(archive_data, client, origin):
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot),
+            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(REVISION, revision),
         },
     )

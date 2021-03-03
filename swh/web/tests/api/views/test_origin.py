@@ -519,6 +519,34 @@ def test_api_origin_search_words(api_client, mocker, backend):
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
+def test_api_origin_search_visit_type(api_client, mocker, backend):
+    if backend != "swh-search":
+        # equivalent to not configuring search in the config
+        mocker.patch("swh.web.common.archive.search", None)
+
+    expected_origins = {
+        "https://github.com/wcoder/highlightjs-line-numbers.js",
+        "https://github.com/memononen/libtess2",
+    }
+
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": "github com",},
+        query_params={"visit_type": "git"},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    assert {origin["url"] for origin in rv.data} == expected_origins
+
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": "github com",},
+        query_params={"visit_type": "foo"},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    assert rv.data == []
+
+
+@pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
 @pytest.mark.parametrize("limit", [1, 2, 3, 10])
 def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backend):
 
