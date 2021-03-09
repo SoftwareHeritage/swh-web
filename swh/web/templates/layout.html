@@ -129,6 +129,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               {% else %}
                 <a href="{% url 'oidc-login' %}">login</a>
               {% endif %}
+            {% else %}
+              {% if request.path != logout_url %}
+                <a href="{% url 'login' %}?next={{ request.build_absolute_uri }}">login</a>
+              {% else %}
+                <a href="{% url 'login' %}">login</a>
+              {% endif %}
             {% endif %}
           </li>
         </ul>
