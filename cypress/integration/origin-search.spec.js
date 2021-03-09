@@ -31,12 +31,9 @@ function searchShouldShowNotFound(searchText, msg) {
 }
 
 function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}) {
-  cy.server();
-  cy.route({
-    method: 'GET',
-    url: '**/visit/latest/**',
-    response: response,
-    status: status
+  cy.intercept('**/visit/latest/**', {
+    body: response,
+    statusCode: status
   }).as('originVisitLatest');
 }
 
@@ -187,20 +184,15 @@ describe('Test origin-search', function() {
   });
 
   it('should not send request to the resolve endpoint', function() {
-    cy.server();
+    cy.intercept(`${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`)
+      .as('resolveSWHID');
 
-    cy.route({
-      method: 'GET',
-      url: `${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`
-    }).as('resolveSWHID');
-
-    cy.route({
-      method: 'GET',
-      url: `${this.Urls.api_1_origin_search(origin.url)}**`
-    }).as('searchOrigin');
+    cy.intercept(`${this.Urls.api_1_origin_search(origin.url)}**`)
+      .as('searchOrigin');
 
     cy.get('#swh-origins-url-patterns')
       .type(origin.url);
+
     cy.get('.swh-search-icon')
       .click();
 
@@ -457,21 +449,17 @@ describe('Test origin-search', function() {
     });
 
     it('should not send request to the search endpoint', function() {
-      cy.server();
       const swhid = `swh:1:rev:${origin.revisions[0]}`;
 
-      cy.route({
-        method: 'GET',
-        url: this.Urls.api_1_resolve_swhid(swhid)
-      }).as('resolveSWHID');
+      cy.intercept(this.Urls.api_1_resolve_swhid(swhid))
+        .as('resolveSWHID');
 
-      cy.route({
-        method: 'GET',
-        url: `${this.Urls.api_1_origin_search('').slice(0, -1)}**`
-      }).as('searchOrigin');
+      cy.intercept(`${this.Urls.api_1_origin_search('').slice(0, -1)}**`)
+        .as('searchOrigin');
 
       cy.get('#swh-origins-url-patterns')
         .type(swhid);
+
       cy.get('.swh-search-icon')
         .click();
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -162,13 +162,17 @@ describe('Test top-bar', function() {
       }
     ];
 
+    const responses = [];
     for (let std of statusTestData) {
-      cy.server();
-      cy.route({
-        url: `${statusUrl}/**`,
-        response: genStatusResponse(std.status, std.statusCode)
-      }).as('getSwhStatusData');
+      responses.push(genStatusResponse(std.status, std.statusCode));
+    }
+
+    for (let std of statusTestData) {
       cy.visit(url);
+      // trick to override the response of an intercepted request
+      // https://github.com/cypress-io/cypress/issues/9302
+      cy.intercept(`${statusUrl}/**`, req => req.reply(responses.shift()))
+        .as('getSwhStatusData');
       cy.wait('@getSwhStatusData');
       cy.get('.swh-current-status-indicator').should('have.class', std.color);
       cy.get('#swh-current-status-description').should('have.text', std.status);
@@ -176,10 +180,8 @@ describe('Test top-bar', function() {
   });
 
   it('should not display swh status widget when data are not available', function() {
-    cy.server();
-    cy.route({
-      url: `${statusUrl}/**`,
-      response: {}
+    cy.intercept(`${statusUrl}/**`, {
+      body: {}
     }).as('getSwhStatusData');
     cy.visit(url);
     cy.wait('@getSwhStatusData');
