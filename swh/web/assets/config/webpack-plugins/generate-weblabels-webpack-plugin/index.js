@@ -31,6 +31,7 @@ class GenerateWebLabelsPlugin {
     // source file extension handled by webpack and compiled to js
     this.srcExts = ['js', 'ts', 'coffee', 'lua'];
     this.srcExtsRegexp = new RegExp('^.*.(' + this.srcExts.join('|') + ')$');
+    this.chunkIdToName = {};
     this.chunkNameToJsAsset = {};
     this.chunkJsAssetToSrcFiles = {};
     this.srcIdsInChunkJsAsset = {};
@@ -61,6 +62,12 @@ class GenerateWebLabelsPlugin {
       // set output folder
       this.weblabelsOutputDir = path.join(stats.outputPath, this.weblabelsDirName);
       this.recursiveMkdir(this.weblabelsOutputDir);
+
+      stats.assets.forEach(asset => {
+        for (let i = 0; i < asset.chunks.length; ++i) {
+          this.chunkIdToName[asset.chunks[i]] = asset.chunkNames[i];
+        }
+      });
 
       // map each generated webpack chunk to its js asset
       Object.keys(stats.assetsByChunkName).forEach((chunkName, i) => {
@@ -108,8 +115,8 @@ class GenerateWebLabelsPlugin {
 
         // iterate on all chunks containing the module
         mod.chunks.forEach(chunk => {
-
-          let chunkJsAsset = stats.publicPath + this.chunkNameToJsAsset[chunk];
+          let chunkName = this.chunkIdToName[chunk];
+          let chunkJsAsset = stats.publicPath + this.chunkNameToJsAsset[chunkName];
 
           // init the chunk to source files mapping if needed
           if (!this.chunkJsAssetToSrcFiles.hasOwnProperty(chunkJsAsset)) {
