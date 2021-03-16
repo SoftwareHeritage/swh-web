@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import timedelta
+import json
 
 from hypothesis import given
 import pytest
@@ -615,14 +616,21 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
                     "configuration": INDEXER_TOOL["tool_configuration"],
                     "id": INDEXER_TOOL["id"],
                 },
-                "metadata": {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
                 "mappings": [],
             },
         }
         for origin_url, master_rev in ORIGIN_MASTER_REVISION.items()
     ]
 
-    assert rv.data == expected_data
+    for i in range(len(expected_data)):
+        expected = expected_data[i]
+        response = rv.data[i]
+        metadata = response["metadata"].pop("metadata")
+
+        assert any(
+            [ORIGIN_METADATA_VALUE in json.dumps(val) for val in metadata.values()]
+        )
+        assert response == expected
 
 
 def test_api_origin_metadata_search_limit(api_client, mocker):

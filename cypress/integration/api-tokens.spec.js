@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020  The Software Heritage developers
+ * Copyright (C) 2020-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -15,11 +15,8 @@ describe('Test API tokens UI', function() {
   });
 
   function initTokensPage(Urls, tokens) {
-    cy.server();
-    cy.route({
-      method: 'GET',
-      url: `${Urls.oidc_list_bearer_tokens()}/**`,
-      response: {
+    cy.intercept(`${Urls.oidc_list_bearer_tokens()}/**`, {
+      body: {
         'recordsTotal': tokens.length,
         'draw': 2,
         'recordsFiltered': tokens.length,
@@ -63,11 +60,9 @@ describe('Test API tokens UI', function() {
   });
 
   function displayToken(Urls, status, tokenValue = '') {
-    cy.route({
-      method: 'POST',
-      url: `${Urls.oidc_get_bearer_token()}/**`,
-      response: tokenValue,
-      status: status
+    cy.intercept('POST', `${Urls.oidc_get_bearer_token()}/**`, {
+      body: tokenValue,
+      statusCode: status
     }).as('getTokenRequest');
 
     cy.contains('Display token')
@@ -96,11 +91,9 @@ describe('Test API tokens UI', function() {
   });
 
   function revokeToken(Urls, status) {
-    cy.route({
-      method: 'POST',
-      url: `${Urls.oidc_revoke_bearer_tokens()}/**`,
-      response: '',
-      status: status
+    cy.intercept('POST', `${Urls.oidc_revoke_bearer_tokens()}/**`, {
+      body: '',
+      statusCode: status
     }).as('revokeTokenRequest');
 
     cy.contains('Revoke token')
