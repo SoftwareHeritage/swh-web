@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -23,12 +23,8 @@ describe('Home Page Tests', function() {
 
   it('should display positive stats for each category', function() {
 
-    cy.server();
-
-    cy.route({
-      method: 'GET',
-      url: this.Urls.stat_counters()
-    }).as('getStatCounters');
+    cy.intercept(this.Urls.stat_counters())
+      .as('getStatCounters');
 
     cy.visit(url)
       .wait('@getStatCounters')
@@ -45,12 +41,8 @@ describe('Home Page Tests', function() {
 
   it('should display null counters and hide history graphs when storage is empty', function() {
 
-    cy.server();
-
-    cy.route({
-      method: 'GET',
-      url: this.Urls.stat_counters(),
-      response: {
+    cy.intercept(this.Urls.stat_counters(), {
+      body: {
         'stat_counters': {},
         'stat_counters_history': {}
       }
@@ -73,12 +65,8 @@ describe('Home Page Tests', function() {
 
   it('should hide counters when data is missing', function() {
 
-    cy.server();
-
-    cy.route({
-      method: 'GET',
-      url: this.Urls.stat_counters(),
-      response: {
+    cy.intercept(this.Urls.stat_counters(), {
+      body: {
         'stat_counters': {
           'content': 150,
           'directory': 45,

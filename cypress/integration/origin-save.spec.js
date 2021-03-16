@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -60,12 +60,8 @@ function stubSaveRequest({
                                       saveTaskStatus: saveTaskStatus,
                                       visitDate: visitDate});
   }
-  cy.route({
-    method: 'POST',
-    status: responseStatus,
-    url: requestUrl,
-    response: response
-  }).as('saveRequest');
+  cy.intercept('POST', requestUrl, {body: response, statusCode: responseStatus})
+    .as('saveRequest');
 }
 
 // Mocks API response : /save/(:visit_type)/(:origin_url)
@@ -100,7 +96,6 @@ describe('Origin Save Tests', function() {
     cy.fixture('origin-save').as('originSaveJSON');
     cy.fixture('save-task-info').as('saveTaskInfoJSON');
     cy.visit(url);
-    cy.server();
   });
 
   it('should display accepted message when accepted', function() {
@@ -220,7 +215,7 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display origin save info in the requests table', function() {
-    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('tbody tr').then(rows => {
       let i = 0;
@@ -262,7 +257,7 @@ describe('Origin Save Tests', function() {
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };
-    cy.route('GET', '/save/requests/list/**', saveRequestsListData);
+    cy.intercept('/save/requests/list/**', {body: saveRequestsListData});
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('tbody tr').then(rows => {
       const firstRowCells = rows[0].cells;
@@ -273,8 +268,8 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display/close task info popover when clicking on the info button', function() {
-    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
-    cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
+    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
 
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('.swh-save-request-info')
@@ -293,8 +288,8 @@ describe('Origin Save Tests', function() {
   });
 
   it('should hide task info popover when clicking on the close button', function() {
-    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
-    cy.route('GET', '/save/task/info/**', '@saveTaskInfoJSON');
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
+    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
 
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('.swh-save-request-info')
@@ -312,7 +307,7 @@ describe('Origin Save Tests', function() {
   });
 
   it('should fill save request form when clicking on "Save again" button', function() {
-    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
 
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('.swh-save-origin-again')
@@ -332,7 +327,7 @@ describe('Origin Save Tests', function() {
     const originUrl = 'https://gitlab.inria.fr/solverstack/maphys/maphys/';
     const badVisitType = 'hg';
     const goodVisitType = 'git';
-    cy.route('GET', '/save/requests/list/**', '@originSaveJSON');
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
     stubSaveRequest({requestUrl: this.Urls.origin_save_request(badVisitType, originUrl),
                      visitType: badVisitType,
                      saveRequestStatus: 'accepted',

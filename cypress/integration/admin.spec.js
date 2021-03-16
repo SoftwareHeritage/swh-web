@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -71,11 +71,8 @@ describe('Test Admin Login/logout', function() {
   it('should redirect to correct page after login', function() {
     // mock calls to deposit list api to avoid possible errors
     // while running the test
-    cy.server();
-    cy.route({
-      method: 'GET',
-      url: `${this.Urls.admin_deposit_list()}**`,
-      response: {
+    cy.intercept(`${this.Urls.admin_deposit_list()}**`, {
+      body: {
         data: [],
         recordsTotal: 0,
         recordsFiltered: 0,

@@ -14,10 +14,9 @@ Cypress.Screenshot.defaults({
 });
 
 Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
-  expect(
-    cy.state('requests').filter(call => call.alias === alias),
-    `${alias} should have been called ${timesCalled} times`
-  ).to.have.length(timesCalled);
+  const testRoutes = cy.state('routes');
+  const aliasRoute = Cypress._.find(testRoutes, {alias});
+  expect(Object.keys(aliasRoute.requests || {})).to.have.length(timesCalled);
 });
 
 Cypress.Commands.add('adminLogin', () => {
@@ -143,10 +142,4 @@ before(function() {
 
     }
   });
-});
-
-// force the use of fetch polyfill wrapping XmlHttpRequest
-// in order for cypress to be able to intercept and stub them
-Cypress.on('window:before:load', win => {
-  win.fetch = null;
 });
