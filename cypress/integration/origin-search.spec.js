@@ -31,12 +31,9 @@ function searchShouldShowNotFound(searchText, msg) {
 }
 
 function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}) {
-  cy.server();
-  cy.route({
-    method: 'GET',
-    url: '**/visit/latest/**',
-    response: response,
-    status: status
+  cy.intercept('**/visit/latest/**', {
+    body: response,
+    statusCode: status
   }).as('originVisitLatest');
 }
 
@@ -163,21 +160,39 @@ describe('Test origin-search', function() {
       });
   });
 
+  it('should search in origin intrinsic metadata', function() {
+    cy.intercept('GET', '**/origin/metadata-search/**').as(
+      'originMetadataSearch'
+    );
+    cy.get('#swh-search-origins-with-visit')
+      .check({force: true})
+      .get('#swh-filter-empty-visits')
+      .check({force: true})
+      .get('#swh-search-origin-metadata')
+      .check({force: true})
+      .then(() => {
+        const searchText = 'plugin';
+        doSearch(searchText);
+        console.log(searchText);
+        cy.wait('@originMetadataSearch').then((req) => {
+          expect(req.response.body[0].metadata.metadata.description).to.equal(
+            'Line numbering plugin for Highlight.js'
+            // metadata is defined in _TEST_ORIGINS variable in swh/web/tests/data.py
+          );
+        });
+      });
+  });
+
   it('should not send request to the resolve endpoint', function() {
-    cy.server();
+    cy.intercept(`${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`)
+      .as('resolveSWHID');
 
-    cy.route({
-      method: 'GET',
-      url: `${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`
-    }).as('resolveSWHID');
-
-    cy.route({
-      method: 'GET',
-      url: `${this.Urls.api_1_origin_search(origin.url)}**`
-    }).as('searchOrigin');
+    cy.intercept(`${this.Urls.api_1_origin_search(origin.url)}**`)
+      .as('searchOrigin');
 
     cy.get('#swh-origins-url-patterns')
       .type(origin.url);
+
     cy.get('.swh-search-icon')
       .click();
 
@@ -434,21 +449,17 @@ describe('Test origin-search', function() {
     });
 
     it('should not send request to the search endpoint', function() {
-      cy.server();
       const swhid = `swh:1:rev:${origin.revisions[0]}`;
 
-      cy.route({
-        method: 'GET',
-        url: this.Urls.api_1_resolve_swhid(swhid)
-      }).as('resolveSWHID');
+      cy.intercept(this.Urls.api_1_resolve_swhid(swhid))
+        .as('resolveSWHID');
 
-      cy.route({
-        method: 'GET',
-        url: `${this.Urls.api_1_origin_search('').slice(0, -1)}**`
-      }).as('searchOrigin');
+      cy.intercept(`${this.Urls.api_1_origin_search('').slice(0, -1)}**`)
+        .as('searchOrigin');
 
       cy.get('#swh-origins-url-patterns')
         .type(swhid);
+
       cy.get('.swh-search-icon')
         .click();
 
