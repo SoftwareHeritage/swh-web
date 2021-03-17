@@ -1,8 +1,10 @@
-swh-web (0.0.285-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.286-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.286     - (tagged by Antoine Lambert
+    <antoine.lambert@inria.fr> on 2021-03-17 11:19:39 +0100)
+  * Upstream changes:     - version 0.0.286
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 16 Mar 2021 17:03:50 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 17 Mar 2021 10:39:49 +0000
 
 swh-web (0.0.285-1~swh1) unstable-swh; urgency=medium
 
