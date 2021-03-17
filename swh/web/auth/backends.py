@@ -71,7 +71,7 @@ def _oidc_user_from_profile(oidc_profile: Dict[str, Any]) -> OIDCUser:
     user = _oidc_user_from_decoded_token(decoded_token)
 
     # get authentication init datetime
-    auth_datetime = datetime.fromtimestamp(decoded_token["auth_time"])
+    auth_datetime = datetime.fromtimestamp(decoded_token["iat"])
     exp_datetime = datetime.fromtimestamp(decoded_token["exp"])
 
     # compute OIDC tokens expiration date
