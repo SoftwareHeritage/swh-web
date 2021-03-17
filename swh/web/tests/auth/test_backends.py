@@ -60,7 +60,7 @@ def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
     decoded_token = kc_oidc_mock.decode_token(user.access_token)
     _check_authenticated_user(user, decoded_token, kc_oidc_mock)
 
-    auth_datetime = datetime.fromtimestamp(decoded_token["auth_time"])
+    auth_datetime = datetime.fromtimestamp(decoded_token["iat"])
     exp_datetime = datetime.fromtimestamp(decoded_token["exp"])
     refresh_exp_datetime = auth_datetime + timedelta(
         seconds=oidc_profile["refresh_expires_in"]
