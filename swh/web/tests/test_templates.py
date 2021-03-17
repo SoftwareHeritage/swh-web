@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from copy import deepcopy
 import random
 
 from swh.web.common.utils import reverse
@@ -32,7 +33,7 @@ def test_layout_with_oidc_auth_enabled(client):
 
 
 def test_layout_without_oidc_auth_enabled(client, mocker):
-    config = get_config()
+    config = deepcopy(get_config())
     config["keycloak"]["server_url"] = ""
     mock_get_config = mocker.patch("swh.web.common.utils.get_config")
     mock_get_config.return_value = config
