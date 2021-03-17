@@ -90,13 +90,13 @@ class KeycloackOpenIDConnectMock(KeycloakOpenIDConnect):
             options["verify_exp"] = False
         decoded = super().decode_token(token, options)
         # tweak auth and exp time for tests
-        expire_in = decoded["exp"] - decoded["auth_time"]
+        expire_in = decoded["exp"] - decoded["iat"]
         if self.exp is not None:
             decoded["exp"] = self.exp
-            decoded["auth_time"] = self.exp - expire_in
+            decoded["iat"] = self.exp - expire_in
         else:
-            decoded["auth_time"] = int(timezone.now().timestamp())
-            decoded["exp"] = decoded["auth_time"] + expire_in
+            decoded["iat"] = int(timezone.now().timestamp())
+            decoded["exp"] = decoded["iat"] + expire_in
         decoded["groups"] = self.user_groups
         if self.user_permissions:
             decoded["resource_access"][self.client_id] = {
