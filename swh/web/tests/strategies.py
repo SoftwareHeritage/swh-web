@@ -298,6 +298,22 @@ def origin_with_releases():
     return sampled_from(ret)
 
 
+def origin_with_pull_request_branches():
+    """
+    Hypothesis strategy returning a random origin with pull request branches
+    ingested into the test archive.
+    """
+    ret = []
+    tests_data = get_tests_data()
+    storage = tests_data["storage"]
+    origins = storage.origin_list(limit=1000)
+    for origin in origins.results:
+        snapshot = snapshot_get_latest(storage, origin.url)
+        if any([b"refs/pull/" in b for b in snapshot.branches]):
+            ret.append(origin)
+    return sampled_from(ret)
+
+
 def new_origin():
     """
     Hypothesis strategy returning a random origin not ingested
