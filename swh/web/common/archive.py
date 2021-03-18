@@ -595,7 +595,10 @@ def lookup_revision_message(rev_sha1_git) -> Dict[str, bytes]:
 def _lookup_revision_id_by(origin, branch_name, timestamp):
     def _get_snapshot_branch(snapshot, branch_name):
         snapshot = lookup_snapshot(
-            visit["snapshot"], branches_from=branch_name, branches_count=10
+            visit["snapshot"],
+            branches_from=branch_name,
+            branches_count=10,
+            branch_name_exclude_prefix=None,
         )
         branch = None
         if branch_name in snapshot["branches"]:
@@ -1024,7 +1027,7 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
 
 
 def lookup_snapshot_sizes(
-    snapshot_id: str, branch_name_exclude_prefix: Optional[str] = None
+    snapshot_id: str, branch_name_exclude_prefix: Optional[str] = "refs/pull/"
 ) -> Dict[str, int]:
     """Count the number of branches in the snapshot with the given id
 
@@ -1054,7 +1057,7 @@ def lookup_snapshot(
     branches_count: int = 1000,
     target_types: Optional[List[str]] = None,
     branch_name_include_substring: Optional[str] = None,
-    branch_name_exclude_prefix: Optional[str] = None,
+    branch_name_exclude_prefix: Optional[str] = "refs/pull/",
 ) -> Dict[str, Any]:
     """Return information about a snapshot, aka the list of named
     branches found during a specific visit of an origin.
@@ -1141,6 +1144,7 @@ def lookup_snapshot_branch_name_from_tip_revision(
             target_types=[REVISION],
             branches_from=branches_from,
             branches_count=per_page + 1,
+            branch_name_exclude_prefix=None,
         )
 
         branches += [

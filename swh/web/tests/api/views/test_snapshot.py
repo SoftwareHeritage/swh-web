@@ -12,7 +12,11 @@ from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import new_snapshot, snapshot
+from swh.web.tests.strategies import (
+    new_snapshot,
+    origin_with_pull_request_branches,
+    snapshot,
+)
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
@@ -150,3 +154,15 @@ def test_api_snapshot_null_branch(api_client, archive_data, new_snapshot):
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snp_id})
     check_api_get_responses(api_client, url, status_code=200)
+
+
+@given(origin_with_pull_request_branches())
+def test_api_snapshot_no_pull_request_branches_filtering(
+    api_client, archive_data, origin
+):
+    """Pull request branches should not be filtered out when querying
+    a snapshot with the Web API."""
+    snapshot = archive_data.snapshot_get_latest(origin.url)
+    url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot["id"]})
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    assert any([b.startswith("refs/pull/") for b in resp.data["branches"]])

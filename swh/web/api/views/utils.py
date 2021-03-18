@@ -29,6 +29,7 @@ def api_lookup(
     notfound_msg: Optional[str] = "Object not found",
     enrich_fn: Optional[EnrichFunction] = None,
     request: Optional[HttpRequest] = None,
+    **kwargs: Any,
 ):
     r"""
     Capture a redundant behavior of:
@@ -64,7 +65,7 @@ def api_lookup(
 
     if enrich_fn is None:
         enrich_fn = _enrich_fn_noop
-    res = lookup_fn(*args)
+    res = lookup_fn(*args, **kwargs)
     if res is None:
         raise NotFoundExc(notfound_msg)
     if isinstance(res, (list, GeneratorType)) or type(res) == map:

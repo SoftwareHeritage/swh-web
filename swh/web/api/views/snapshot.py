@@ -81,6 +81,7 @@ def api_snapshot(request, snapshot_id):
         branches_from,
         branches_count,
         target_types,
+        branch_name_exclude_prefix=None,
         notfound_msg="Snapshot with id {} not found.".format(snapshot_id),
         enrich_fn=enrich_snapshot,
         request=request,
