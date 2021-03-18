@@ -37,6 +37,7 @@ from swh.web.tests.strategies import (
     new_snapshot,
     origin,
     origin_with_multiple_visits,
+    origin_with_pull_request_branches,
     origin_with_releases,
 )
 from swh.web.tests.strategies import release as existing_release
@@ -1280,3 +1281,20 @@ def _check_origin_link(resp, origin_url):
         "browse-origin", query_params={"origin_url": origin_url}
     )
     assert_contains(resp, f'href="{browse_origin_url}"')
+
+
+@given(origin_with_pull_request_branches())
+def test_pull_request_branches_filtering(client, origin):
+    # check no pull request branches are displayed in the Branches / Releases dropdown
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin.url})
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
+    assert_not_contains(resp, "refs/pull/")
+
+    # check no pull request branches are displayed in the branches view
+    url = reverse("browse-origin-branches", query_params={"origin_url": origin.url})
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/branches.html"
+    )
+    assert_not_contains(resp, "refs/pull/")
