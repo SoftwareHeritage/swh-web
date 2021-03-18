@@ -17,8 +17,15 @@ from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.storage import get_indexer_storage
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
-from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
-from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
+from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_hex
+from swh.model.model import (
+    Content,
+    Directory,
+    Origin,
+    OriginVisit,
+    OriginVisitStatus,
+    Snapshot,
+)
 from swh.search import get_search
 from swh.storage import get_storage
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -166,6 +173,27 @@ ORIGIN_METADATA_VALUE = "git"
 ORIGIN_MASTER_REVISION = {}
 
 
+def _add_origin(storage, search, origin_url, visit_type="git", snapshot_branches={}):
+    storage.origin_add([Origin(url=origin_url)])
+    search.origin_update(
+        [{"url": origin_url, "has_visits": True, "visit_types": [visit_type]}]
+    )
+    date = now()
+    visit = OriginVisit(origin=origin_url, date=date, type=visit_type)
+    visit = storage.origin_visit_add([visit])[0]
+    snapshot = Snapshot.from_dict({"branches": snapshot_branches})
+    storage.snapshot_add([snapshot])
+    visit_status = OriginVisitStatus(
+        origin=origin_url,
+        visit=visit.visit,
+        date=date + timedelta(minutes=1),
+        type=visit.type,
+        status="full",
+        snapshot=snapshot.id,
+    )
+    storage.origin_visit_status_add([visit_status])
+
+
 # Tests data initialization
 def _init_tests_data():
     # To hold reference to the memory storage
@@ -207,22 +235,9 @@ def _init_tests_data():
         )
 
     for i in range(250):
-        url = "https://many.origins/%d" % (i + 1)
-        # storage.origin_add([{'url': url}])
-        storage.origin_add([Origin(url=url)])
-        search.origin_update([{"url": url, "has_visits": True, "visit_types": ["tar"]}])
-        date = now()
-        visit = OriginVisit(origin=url, date=date, type="tar")
-        visit = storage.origin_visit_add([visit])[0]
-        visit_status = OriginVisitStatus(
-            origin=url,
-            visit=visit.visit,
-            date=date + timedelta(minutes=1),
-            type=visit.type,
-            status="full",
-            snapshot=hash_to_bytes("1a8893e6a86f444e8be8e7bda6cb34fb1735a00e"),
+        _add_origin(
+            storage, search, origin_url=f"https://many.origins/{i+1}", visit_type="tar"
         )
-        storage.origin_visit_status_add([visit_status])
 
     sha1s: Set[Sha1] = set()
     directories = set()
@@ -323,6 +338,26 @@ def _init_tests_data():
 
     # Add empty content to the test archive
     storage.content_add([Content.from_data(data=b"")])
+
+    # Add fake git origin with pull request branches
+    _add_origin(
+        storage,
+        search,
+        origin_url="https://git.example.org/project",
+        snapshot_branches={
+            b"refs/heads/master": {
+                "target_type": "revision",
+                "target": next(iter(revisions)),
+            },
+            **{
+                f"refs/pull/{i}".encode(): {
+                    "target_type": "revision",
+                    "target": next(iter(revisions)),
+                }
+                for i in range(300)
+            },
+        },
+    )
 
     # Return tests data
     return {
