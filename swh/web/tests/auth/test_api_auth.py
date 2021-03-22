@@ -11,19 +11,15 @@ from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
-from . import sample_data
-from .keycloak_mock import mock_keycloak
-
 
 @pytest.mark.django_db
-def test_drf_django_session_auth_success(mocker, client):
+def test_drf_django_session_auth_success(keycloak_mock, client):
     """
     Check user gets authenticated when querying the web api
     through a web browser.
     """
     url = reverse("api-1-stat-counters")
 
-    mock_keycloak(mocker)
     client.login(code="", code_verifier="", redirect_uri="")
 
     response = check_http_get_response(client, url, status_code=200)
@@ -38,16 +34,16 @@ def test_drf_django_session_auth_success(mocker, client):
 
 
 @pytest.mark.django_db
-def test_drf_oidc_bearer_token_auth_success(mocker, api_client):
+def test_drf_oidc_bearer_token_auth_success(keycloak_mock, api_client):
     """
     Check user gets authenticated when querying the web api
     through an HTTP client using bearer token authentication.
     """
     url = reverse("api-1-stat-counters")
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
 
-    mock_keycloak(mocker)
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     response = check_api_get_responses(api_client, url, status_code=200)
@@ -62,13 +58,14 @@ def test_drf_oidc_bearer_token_auth_success(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_drf_oidc_bearer_token_auth_failure(mocker, api_client):
+def test_drf_oidc_bearer_token_auth_failure(keycloak_mock, api_client):
     url = reverse("api-1-stat-counters")
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
 
     # check for failed authentication but with expected token format
-    mock_keycloak(mocker, auth_success=False)
+    keycloak_mock.set_auth_success(False)
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     response = check_api_get_responses(api_client, url, status_code=403)
@@ -85,10 +82,11 @@ def test_drf_oidc_bearer_token_auth_failure(mocker, api_client):
     assert isinstance(request.user, AnonymousUser)
 
 
-def test_drf_oidc_auth_invalid_or_missing_authorization_type(api_client):
+def test_drf_oidc_auth_invalid_or_missing_authorization_type(keycloak_mock, api_client):
     url = reverse("api-1-stat-counters")
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
 
     # missing authorization type
     api_client.credentials(HTTP_AUTHORIZATION=f"{refresh_token}")
