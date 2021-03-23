@@ -12,8 +12,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from rest_framework.exceptions import AuthenticationFailed
 
+from swh.auth.django.models import OIDCUser
 from swh.web.auth.backends import OIDCBearerTokenAuthentication
-from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
 
 

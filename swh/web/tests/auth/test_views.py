@@ -12,7 +12,8 @@ import pytest
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import QueryDict
 
-from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
+from swh.auth.django.models import OIDCUser
+from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID, decrypt_data
 from swh.web.common.utils import reverse
 from swh.web.config import get_config

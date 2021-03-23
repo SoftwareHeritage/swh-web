@@ -15,7 +15,7 @@ from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
-from swh.web.auth.models import OIDCUser
+from swh.auth.django.models import OIDCUser
 from swh.web.auth.utils import get_oidc_client
 
 

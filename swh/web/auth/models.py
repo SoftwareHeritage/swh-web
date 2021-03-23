@@ -5,23 +5,6 @@
 
 from django.db import models
 
-from swh.auth.django.models import OIDCUser as OIDCUserBase
-
-
-class OIDCUser(OIDCUserBase):
-    """
-    Custom User proxy model for remote users storing OpenID Connect
-    related data: profile containing authentication tokens.
-
-    The model is also not saved to database as all users are already stored
-    in the Keycloak one.
-    """
-
-    class Meta:
-        app_label = "swh_web_auth"
-        proxy = True
-        auto_created = True  # prevent model to be created in database by migrations
-
 
 class OIDCUserOfflineTokens(models.Model):
     """

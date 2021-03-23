@@ -7,7 +7,7 @@ import pytest
 
 from django.contrib.auth.models import AnonymousUser, User
 
-from swh.web.auth.models import OIDCUser
+from swh.auth.django.models import OIDCUser
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
