@@ -246,7 +246,12 @@ def _save_request_dict(
         else:
             save_task_status = save_request.loading_task_status
 
-    if save_request.loading_task_status != save_task_status:
+    if (
+        # avoid to override final loading task status when already found
+        # as visit status is no longer checked once a visit date has been found
+        save_request.loading_task_status not in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
+        and save_request.loading_task_status != save_task_status
+    ):
         save_request.loading_task_status = save_task_status
         must_save = True
 
@@ -259,7 +264,7 @@ def _save_request_dict(
         "origin_url": save_request.origin_url,
         "save_request_date": save_request.request_date.isoformat(),
         "save_request_status": save_request.status,
-        "save_task_status": save_task_status,
+        "save_task_status": save_request.loading_task_status,
         "visit_date": visit_date.isoformat() if visit_date else None,
     }
 
