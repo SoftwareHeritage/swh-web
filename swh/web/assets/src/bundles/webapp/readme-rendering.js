@@ -36,7 +36,7 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
           }
 
           if (lang && hljs.getLanguage(lang)) {
-            return left + hljs.highlight(lang, match).value + right;
+            return left + hljs.highlight(match, {language: lang}).value + right;
           } else {
             return left + match + right;
           }

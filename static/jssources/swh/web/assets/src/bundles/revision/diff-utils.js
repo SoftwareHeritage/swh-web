@@ -372,9 +372,9 @@ export function computeDiff(diffUrl, diffId) {
         $(`#${diffId}`).text(data.diff_str);
 
         // code highlighting for unified diff
-        $(`#${diffId}`).each((i, block) => {
-          hljs.highlightBlock(block);
-          hljs.lineNumbersBlockSync(block);
+        $(`#${diffId}`).each((i, elt) => {
+          hljs.highlightElement(elt);
+          hljs.lineNumbersElementSync(elt);
         });
 
         // process unified diff lines in order to generate side-by-side diffs text
@@ -458,9 +458,9 @@ export function computeDiff(diffUrl, diffId) {
         $(`#${diffId}-to`).text(diffToStr);
 
         // code highlighting for side-by-side diffs
-        $(`#${diffId}-from, #${diffId}-to`).each((i, block) => {
-          hljs.highlightBlock(block);
-          hljs.lineNumbersBlockSync(block);
+        $(`#${diffId}-from, #${diffId}-to`).each((i, elt) => {
+          hljs.highlightElement(elt);
+          hljs.lineNumbersElementSync(elt);
         });
 
         // diff highlighting for added/removed lines on top of code highlighting

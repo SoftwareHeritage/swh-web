@@ -16,8 +16,6 @@ from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
-from swh.web.tests.auth.keycloak_mock import mock_keycloak
-from swh.web.tests.auth.sample_data import oidc_profile
 from swh.web.tests.strategies import origin
 from swh.web.tests.utils import check_http_get_response
 
@@ -40,20 +38,21 @@ def test_graph_endpoint_needs_authentication(api_client):
     check_http_get_response(api_client, url, status_code=401)
 
 
-def _authenticate_graph_user(api_client, mocker):
-    mock_keycloak(mocker, user_permissions=[API_GRAPH_PERM])
+def _authenticate_graph_user(api_client, keycloak_mock):
+    keycloak_mock.user_permissions = [API_GRAPH_PERM]
+    oidc_profile = keycloak_mock.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
 
-def test_graph_endpoint_needs_permission(api_client, mocker, requests_mock):
+def test_graph_endpoint_needs_permission(api_client, keycloak_mock, requests_mock):
     graph_query = "stats"
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+    oidc_profile = keycloak_mock.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
-    mock_keycloak(mocker, user_permissions=[])
     check_http_get_response(api_client, url, status_code=403)
 
-    _authenticate_graph_user(api_client, mocker)
+    _authenticate_graph_user(api_client, keycloak_mock)
     requests_mock.get(
         get_config()["graph"]["server_url"] + graph_query,
         json={},
@@ -62,8 +61,8 @@ def test_graph_endpoint_needs_permission(api_client, mocker, requests_mock):
     check_http_get_response(api_client, url, status_code=200)
 
 
-def test_graph_text_plain_response(api_client, mocker, requests_mock):
-    _authenticate_graph_user(api_client, mocker)
+def test_graph_text_plain_response(api_client, keycloak_mock, requests_mock):
+    _authenticate_graph_user(api_client, keycloak_mock)
 
     graph_query = "leaves/swh:1:dir:432d1b21c1256f7408a07c577b6974bbdbcc1323"
 
@@ -115,8 +114,8 @@ _response_json = {
 }
 
 
-def test_graph_json_response(api_client, mocker, requests_mock):
-    _authenticate_graph_user(api_client, mocker)
+def test_graph_json_response(api_client, keycloak_mock, requests_mock):
+    _authenticate_graph_user(api_client, keycloak_mock)
 
     graph_query = "stats"
 
@@ -133,8 +132,8 @@ def test_graph_json_response(api_client, mocker, requests_mock):
     assert resp.content == json.dumps(_response_json).encode()
 
 
-def test_graph_ndjson_response(api_client, mocker, requests_mock):
-    _authenticate_graph_user(api_client, mocker)
+def test_graph_ndjson_response(api_client, keycloak_mock, requests_mock):
+    _authenticate_graph_user(api_client, keycloak_mock)
 
     graph_query = "visit/paths/swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb"
 
@@ -168,7 +167,7 @@ def test_graph_ndjson_response(api_client, mocker, requests_mock):
 
 @given(origin())
 def test_graph_response_resolve_origins(
-    archive_data, api_client, mocker, requests_mock, origin
+    archive_data, api_client, keycloak_mock, requests_mock, origin
 ):
     hasher = hashlib.sha1()
     hasher.update(origin["url"].encode())
@@ -183,7 +182,7 @@ def test_graph_response_resolve_origins(
         )
     )
 
-    _authenticate_graph_user(api_client, mocker)
+    _authenticate_graph_user(api_client, keycloak_mock)
 
     for graph_query, response_text, content_type in (
         (
@@ -239,9 +238,9 @@ def test_graph_response_resolve_origins(
 
 
 def test_graph_response_resolve_origins_nothing_to_do(
-    api_client, mocker, requests_mock
+    api_client, keycloak_mock, requests_mock
 ):
-    _authenticate_graph_user(api_client, mocker)
+    _authenticate_graph_user(api_client, keycloak_mock)
 
     graph_query = "stats"
 

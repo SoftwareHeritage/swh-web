@@ -106,7 +106,7 @@ export async function renderNotebook(nbJsonUrl, domElt) {
       text = unescapeHTML(text);
     }
     if (lang && hljs.getLanguage(lang)) {
-      return hljs.highlight(lang, text).value;
+      return hljs.highlight(text, {language: lang}).value;
     } else {
       return text;
     }

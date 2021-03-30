@@ -12,18 +12,16 @@ from django.test import modify_settings
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_html_get_response
 
-from .keycloak_mock import mock_keycloak
-
 
 @pytest.mark.django_db
 @modify_settings(
     MIDDLEWARE={"remove": ["swh.web.auth.middlewares.OIDCSessionExpiredMiddleware"]}
 )
-def test_oidc_session_expired_middleware_disabled(client, mocker):
+def test_oidc_session_expired_middleware_disabled(client, keycloak_mock):
     # authenticate user
-    kc_oidc_mock = mock_keycloak(mocker)
+
     client.login(code="", code_verifier="", redirect_uri="")
-    kc_oidc_mock.authorization_code.assert_called()
+    keycloak_mock.authorization_code.assert_called()
 
     url = reverse("swh-web-homepage")
 
@@ -38,11 +36,10 @@ def test_oidc_session_expired_middleware_disabled(client, mocker):
 
 
 @pytest.mark.django_db
-def test_oidc_session_expired_middleware_enabled(client, mocker):
+def test_oidc_session_expired_middleware_enabled(client, keycloak_mock):
     # authenticate user
-    kc_oidc_mock = mock_keycloak(mocker)
     client.login(code="", code_verifier="", redirect_uri="")
-    kc_oidc_mock.authorization_code.assert_called()
+    keycloak_mock.authorization_code.assert_called()
 
     url = reverse("swh-web-homepage")
 

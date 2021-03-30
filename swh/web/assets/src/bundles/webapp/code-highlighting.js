@@ -65,10 +65,10 @@ export async function highlightCode(showLineNumbers = true) {
 
   $(document).ready(() => {
     // highlight code and add line numbers
-    $('code').each((i, block) => {
-      hljs.highlightBlock(block);
+    $('code').each((i, elt) => {
+      hljs.highlightElement(elt);
       if (showLineNumbers) {
-        hljs.lineNumbersBlock(block, {singleLine: true});
+        hljs.lineNumbersElement(elt, {singleLine: true});
       }
     });
 
@@ -105,7 +105,7 @@ export async function highlightCode(showLineNumbers = true) {
     // update lines highlighting when the url fragment changes
     $(window).on('hashchange', () => parseUrlFragmentForLinesToHighlight());
 
-    // schedule lines highlighting if any as hljs.lineNumbersBlock() is async
+    // schedule lines highlighting if any as hljs.lineNumbersElement() is async
     setTimeout(() => {
       parseUrlFragmentForLinesToHighlight();
     });
