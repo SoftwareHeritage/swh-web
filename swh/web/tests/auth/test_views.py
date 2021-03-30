@@ -12,7 +12,8 @@ import pytest
 from django.contrib.auth.models import AnonymousUser, User
 from django.http import QueryDict
 
-from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
+from swh.auth.django.models import OIDCUser
+from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID, decrypt_data
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
@@ -23,9 +24,6 @@ from swh.web.tests.utils import (
     check_http_post_response,
 )
 from swh.web.urls import _default_view as homepage_view
-
-from . import sample_data
-from .keycloak_mock import mock_keycloak
 
 
 def _check_oidc_login_code_flow_data(
@@ -62,14 +60,11 @@ def _check_oidc_login_code_flow_data(
 
 
 @pytest.mark.django_db
-def test_oidc_login_views_success(client, mocker):
+def test_oidc_login_views_success(client, keycloak_mock):
     """
     Simulate a successful login authentication with OpenID Connect
     authorization code flow with PKCE.
     """
-    # mock Keycloak client
-    kc_oidc_mock = mock_keycloak(mocker)
-
     # user initiates login process
     login_url = reverse("oidc-login")
 
@@ -83,7 +78,7 @@ def test_oidc_login_views_success(client, mocker):
     login_data = _check_oidc_login_code_flow_data(
         request,
         response,
-        kc_oidc_mock,
+        keycloak_mock,
         redirect_uri=reverse("oidc-login-complete", request=request),
     )
 
@@ -120,15 +115,13 @@ def test_oidc_login_views_success(client, mocker):
 
 
 @pytest.mark.django_db
-def test_oidc_logout_view_success(client, mocker):
+def test_oidc_logout_view_success(client, keycloak_mock):
     """
     Simulate a successful logout operation with OpenID Connect.
     """
-    # mock Keycloak client
-    kc_oidc_mock = mock_keycloak(mocker)
     # login our test user
     client.login(code="", code_verifier="", redirect_uri="")
-    kc_oidc_mock.authorization_code.assert_called()
+    keycloak_mock.authorization_code.assert_called()
 
     # user initiates logout
     oidc_logout_url = reverse("oidc-logout")
@@ -141,19 +134,19 @@ def test_oidc_logout_view_success(client, mocker):
     assert response["location"] == request.build_absolute_uri(logout_url)
 
     # should have been logged out in Keycloak
-    kc_oidc_mock.logout.assert_called_with(sample_data.oidc_profile["refresh_token"])
+    oidc_profile = keycloak_mock.login()
+    keycloak_mock.logout.assert_called_with(oidc_profile["refresh_token"])
 
     # check effective logout in Django
     assert isinstance(request.user, AnonymousUser)
 
 
 @pytest.mark.django_db
-def test_oidc_login_view_failure(client, mocker):
+def test_oidc_login_view_failure(client, keycloak_mock):
     """
     Simulate a failed authentication with OpenID Connect.
     """
-    # mock Keycloak client
-    mock_keycloak(mocker, auth_success=False)
+    keycloak_mock.set_auth_success(False)
 
     # user initiates login process
     login_url = reverse("oidc-login")
@@ -209,10 +202,7 @@ def test_oidc_login_complete_view_missing_parameters(client, mocker):
     assert isinstance(request.user, AnonymousUser)
 
 
-def test_oidc_login_complete_wrong_csrf_token(client, mocker):
-    # mock Keycloak client
-    mock_keycloak(mocker)
-
+def test_oidc_login_complete_wrong_csrf_token(client, keycloak_mock):
     # simulate login process has been initialized
     session = client.session
     session["login_data"] = {
@@ -242,9 +232,8 @@ def test_oidc_login_complete_wrong_csrf_token(client, mocker):
 
 
 @pytest.mark.django_db
-def test_oidc_login_complete_wrong_code_verifier(client, mocker):
-    # mock Keycloak client
-    mock_keycloak(mocker, auth_success=False)
+def test_oidc_login_complete_wrong_code_verifier(client, keycloak_mock):
+    keycloak_mock.set_auth_success(False)
 
     # simulate login process has been initialized
     session = client.session
@@ -274,17 +263,15 @@ def test_oidc_login_complete_wrong_code_verifier(client, mocker):
 
 
 @pytest.mark.django_db
-def test_oidc_logout_view_failure(client, mocker):
+def test_oidc_logout_view_failure(client, keycloak_mock):
     """
     Simulate a failed logout operation with OpenID Connect.
     """
-    # mock Keycloak client
-    kc_oidc_mock = mock_keycloak(mocker)
     # login our test user
     client.login(code="", code_verifier="", redirect_uri="")
 
     err_msg = "Authentication server error"
-    kc_oidc_mock.logout.side_effect = Exception(err_msg)
+    keycloak_mock.logout.side_effect = Exception(err_msg)
 
     # user initiates logout process
     logout_url = reverse("oidc-logout")
@@ -373,13 +360,12 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
 
 
 @pytest.mark.django_db
-def test_oidc_generate_bearer_token_authenticated_user_success(client, mocker):
+def test_oidc_generate_bearer_token_authenticated_user_success(client, keycloak_mock):
     """
     Authenticated user should be able to generate a bearer token using OIDC
     Authorization Code Flow.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
-    _generate_and_test_bearer_token(client, kc_oidc_mock)
+    _generate_and_test_bearer_token(client, keycloak_mock)
 
 
 def test_oidc_list_bearer_tokens_anonymous_user(client):
@@ -393,15 +379,14 @@ def test_oidc_list_bearer_tokens_anonymous_user(client):
 
 
 @pytest.mark.django_db
-def test_oidc_list_bearer_tokens(client, mocker):
+def test_oidc_list_bearer_tokens(client, keycloak_mock):
     """
     User with correct credentials should be allowed to list his tokens.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
     nb_tokens = 3
 
     for _ in range(nb_tokens):
-        _generate_and_test_bearer_token(client, kc_oidc_mock)
+        _generate_and_test_bearer_token(client, keycloak_mock)
 
     url = reverse(
         "oidc-list-bearer-tokens", query_params={"draw": 1, "start": 0, "length": 10}
@@ -426,15 +411,14 @@ def test_oidc_get_bearer_token_anonymous_user(client):
 
 
 @pytest.mark.django_db
-def test_oidc_get_bearer_token(client, mocker):
+def test_oidc_get_bearer_token(client, keycloak_mock):
     """
     User with correct credentials should be allowed to display a token.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
     nb_tokens = 3
 
     for i in range(nb_tokens):
-        token = _generate_and_test_bearer_token(client, kc_oidc_mock)
+        token = _generate_and_test_bearer_token(client, keycloak_mock)
 
         url = reverse("oidc-get-bearer-token")
 
@@ -457,15 +441,14 @@ def test_oidc_revoke_bearer_tokens_anonymous_user(client):
 
 
 @pytest.mark.django_db
-def test_oidc_revoke_bearer_tokens(client, mocker):
+def test_oidc_revoke_bearer_tokens(client, keycloak_mock):
     """
     User with correct credentials should be allowed to revoke tokens.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
     nb_tokens = 3
 
     for _ in range(nb_tokens):
-        _generate_and_test_bearer_token(client, kc_oidc_mock)
+        _generate_and_test_bearer_token(client, keycloak_mock)
 
     url = reverse("oidc-revoke-bearer-tokens")
 
@@ -492,7 +475,7 @@ def test_oidc_profile_view_anonymous_user(client):
 
 
 @pytest.mark.django_db
-def test_oidc_profile_view(client, mocker):
+def test_oidc_profile_view(client, keycloak_mock):
     """
     Authenticated users should be able to request the profile page
     and link to Keycloak account UI should be present.
@@ -500,7 +483,7 @@ def test_oidc_profile_view(client, mocker):
     url = reverse("oidc-profile")
     kc_config = get_config()["keycloak"]
     user_permissions = ["perm1", "perm2"]
-    mock_keycloak(mocker, user_permissions=user_permissions)
+    keycloak_mock.user_permissions = user_permissions
     client.login(code="", code_verifier="", redirect_uri="")
     resp = check_html_get_response(
         client, url, status_code=200, template_used="auth/profile.html"

@@ -12,7 +12,10 @@ import 'highlightjs-line-numbers.js';
 import 'highlight.js/styles/github.css';
 import './highlightjs.css';
 
-// define a synchronous version of hljs.lineNumbersBlock
-hljs.lineNumbersBlockSync = function(block) {
-  block.innerHTML = hljs.lineNumbersValue(block.innerHTML);
+// add alias to match hljs 10.7 new naming
+hljs.lineNumbersElement = hljs.lineNumbersBlock;
+
+// define a synchronous version of hljs.lineNumbersElement
+hljs.lineNumbersElementSync = function(elt) {
+  elt.innerHTML = hljs.lineNumbersValue(elt.innerHTML);
 };

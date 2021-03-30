@@ -15,12 +15,8 @@ from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
-from swh.web.auth.keycloak import KeycloakOpenIDConnect
-from swh.web.auth.models import OIDCUser
+from swh.auth.django.models import OIDCUser
 from swh.web.auth.utils import get_oidc_client
-
-# OpenID Connect client to communicate with Keycloak server
-_oidc_client: KeycloakOpenIDConnect = get_oidc_client()
 
 
 def _oidc_user_from_decoded_token(decoded_token: Dict[str, Any]) -> OIDCUser:
@@ -45,7 +41,7 @@ def _oidc_user_from_decoded_token(decoded_token: Dict[str, Any]) -> OIDCUser:
 
     # extract user permissions if any
     resource_access = decoded_token.get("resource_access", {})
-    client_resource_access = resource_access.get(_oidc_client.client_id, {})
+    client_resource_access = resource_access.get(get_oidc_client().client_id, {})
     user.permissions = set(client_resource_access.get("roles", []))
 
     # add user sub to custom User proxy model
@@ -56,16 +52,18 @@ def _oidc_user_from_decoded_token(decoded_token: Dict[str, Any]) -> OIDCUser:
 
 def _oidc_user_from_profile(oidc_profile: Dict[str, Any]) -> OIDCUser:
 
+    oidc_client = get_oidc_client()
+
     # decode JWT token
     try:
         access_token = oidc_profile["access_token"]
-        decoded_token = _oidc_client.decode_token(access_token)
+        decoded_token = oidc_client.decode_token(access_token)
     # access token has expired or is invalid
     except Exception:
         # get a new access token from authentication provider
-        oidc_profile = _oidc_client.refresh_token(oidc_profile["refresh_token"])
+        oidc_profile = oidc_client.refresh_token(oidc_profile["refresh_token"])
         # decode access token
-        decoded_token = _oidc_client.decode_token(oidc_profile["access_token"])
+        decoded_token = oidc_client.decode_token(oidc_profile["access_token"])
 
     # create OIDCUser from decoded token
     user = _oidc_user_from_decoded_token(decoded_token)
@@ -106,7 +104,7 @@ class OIDCAuthorizationCodePKCEBackend:
         user = None
         try:
             # try to authenticate user with OIDC PKCE authorization code flow
-            oidc_profile = _oidc_client.authorization_code(
+            oidc_profile = get_oidc_client().authorization_code(
                 code, redirect_uri, code_verifier=code_verifier
             )
 
@@ -151,6 +149,8 @@ class OIDCBearerTokenAuthentication(BaseAuthentication):
             )
         try:
 
+            oidc_client = get_oidc_client()
+
             # compute a cache key from the token that does not exceed
             # memcached key size limit
             hasher = hashlib.sha1()
@@ -162,16 +162,16 @@ class OIDCBearerTokenAuthentication(BaseAuthentication):
 
             # attempt to decode access token
             try:
-                decoded_token = _oidc_client.decode_token(access_token)
+                decoded_token = oidc_client.decode_token(access_token)
             except Exception:
                 # access token is None or it has expired
                 decoded_token = None
 
             if access_token is None or decoded_token is None:
                 # get a new access token from authentication provider
-                access_token = _oidc_client.refresh_token(refresh_token)["access_token"]
+                access_token = oidc_client.refresh_token(refresh_token)["access_token"]
                 # decode access token
-                decoded_token = _oidc_client.decode_token(access_token)
+                decoded_token = oidc_client.decode_token(access_token)
                 # compute access token expiration
                 exp = datetime.fromtimestamp(decoded_token["exp"])
                 ttl = int(exp.timestamp() - timezone.now().timestamp())

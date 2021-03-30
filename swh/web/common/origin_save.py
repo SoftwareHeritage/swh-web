@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from itertools import product
 import json
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional, Tuple
 
 from prometheus_client import Gauge
 import requests
@@ -16,6 +16,7 @@ import sentry_sdk
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
+from django.db.models import QuerySet
 from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
@@ -37,6 +38,7 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.typing import OriginInfo
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 
 scheduler = config.scheduler()
@@ -44,7 +46,7 @@ scheduler = config.scheduler()
 logger = logging.getLogger(__name__)
 
 
-def get_origin_save_authorized_urls():
+def get_origin_save_authorized_urls() -> List[str]:
     """
     Get the list of origin url prefixes authorized to be
     immediately loaded into the archive (whitelist).
@@ -55,7 +57,7 @@ def get_origin_save_authorized_urls():
     return [origin.url for origin in SaveAuthorizedOrigin.objects.all()]
 
 
-def get_origin_save_unauthorized_urls():
+def get_origin_save_unauthorized_urls() -> List[str]:
     """
     Get the list of origin url prefixes forbidden to be
     loaded into the archive (blacklist).
@@ -66,7 +68,7 @@ def get_origin_save_unauthorized_urls():
     return [origin.url for origin in SaveUnauthorizedOrigin.objects.all()]
 
 
-def can_save_origin(origin_url):
+def can_save_origin(origin_url: str) -> str:
     """
     Check if a software origin can be saved into the archive.
 
@@ -122,11 +124,7 @@ _save_task_run_status = {
 }
 
 
-def get_savable_visit_types():
-    return sorted(list(_visit_type_task.keys()))
-
-
-def _check_visit_type_savable(visit_type):
+def get_savable_visit_types() -> List[str]:
     """
     Get the list of visit types that can be performed
     through a save request.
@@ -134,6 +132,10 @@ def _check_visit_type_savable(visit_type):
     Returns:
         list: the list of saveable visit types
     """
+    return sorted(list(_visit_type_task.keys()))
+
+
+def _check_visit_type_savable(visit_type: str) -> None:
     allowed_visit_types = ", ".join(get_savable_visit_types())
     if visit_type not in _visit_type_task:
         raise BadInputExc(
@@ -145,7 +147,7 @@ def _check_visit_type_savable(visit_type):
 _validate_url = URLValidator(schemes=["http", "https", "svn", "git"])
 
 
-def _check_origin_url_valid(origin_url):
+def _check_origin_url_valid(origin_url: str) -> None:
     try:
         _validate_url(origin_url)
     except ValidationError:
@@ -154,7 +156,9 @@ def _check_origin_url_valid(origin_url):
         )
 
 
-def _get_visit_info_for_save_request(save_request):
+def _get_visit_info_for_save_request(
+    save_request: SaveOriginRequest,
+) -> Tuple[Optional[datetime], Optional[str]]:
     visit_date = None
     visit_status = None
     time_now = datetime.now(tz=timezone.utc)
@@ -164,8 +168,7 @@ def _get_visit_info_for_save_request(save_request):
     # surely ended up with errors
     if time_delta.days <= 30:
         try:
-            origin = {"url": save_request.origin_url}
-            origin_info = archive.lookup_origin(origin)
+            origin_info = archive.lookup_origin(OriginInfo(url=save_request.origin_url))
             origin_visits = get_origin_visits(origin_info)
             visit_dates = [parse_iso8601_date_to_utc(v["date"]) for v in origin_visits]
             i = bisect_right(visit_dates, save_request.request_date)
@@ -179,7 +182,9 @@ def _get_visit_info_for_save_request(save_request):
     return visit_date, visit_status
 
 
-def _check_visit_update_status(save_request, save_task_status):
+def _check_visit_update_status(
+    save_request: SaveOriginRequest, save_task_status: str
+) -> Tuple[Optional[datetime], str]:
     visit_date, visit_status = _get_visit_info_for_save_request(save_request)
     save_request.visit_date = visit_date
     # visit has been performed, mark the saving task as succeed
@@ -199,7 +204,11 @@ def _check_visit_update_status(save_request, save_task_status):
     return visit_date, save_task_status
 
 
-def _save_request_dict(save_request, task=None, task_run=None):
+def _save_request_dict(
+    save_request: SaveOriginRequest,
+    task: Optional[Dict[str, Any]] = None,
+    task_run: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     must_save = False
     visit_date = save_request.visit_date
     # save task still in scheduler db
@@ -237,7 +246,12 @@ def _save_request_dict(save_request, task=None, task_run=None):
         else:
             save_task_status = save_request.loading_task_status
 
-    if save_request.loading_task_status != save_task_status:
+    if (
+        # avoid to override final loading task status when already found
+        # as visit status is no longer checked once a visit date has been found
+        save_request.loading_task_status not in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
+        and save_request.loading_task_status != save_task_status
+    ):
         save_request.loading_task_status = save_task_status
         must_save = True
 
@@ -250,12 +264,12 @@ def _save_request_dict(save_request, task=None, task_run=None):
         "origin_url": save_request.origin_url,
         "save_request_date": save_request.request_date.isoformat(),
         "save_request_status": save_request.status,
-        "save_task_status": save_task_status,
+        "save_task_status": save_request.loading_task_status,
         "visit_date": visit_date.isoformat() if visit_date else None,
     }
 
 
-def create_save_origin_request(visit_type, origin_url):
+def create_save_origin_request(visit_type: str, origin_url: str) -> Dict[str, Any]:
     """
     Create a loading task to save a software origin into the archive.
 
@@ -390,10 +404,13 @@ def create_save_origin_request(visit_type, origin_url):
             )
         )
 
+    assert sor is not None
     return _save_request_dict(sor, task)
 
 
-def get_save_origin_requests_from_queryset(requests_queryset):
+def get_save_origin_requests_from_queryset(
+    requests_queryset: QuerySet,
+) -> List[Dict[str, Any]]:
     """
     Get all save requests from a SaveOriginRequest queryset.
 
@@ -422,7 +439,7 @@ def get_save_origin_requests_from_queryset(requests_queryset):
     return save_requests
 
 
-def get_save_origin_requests(visit_type, origin_url):
+def get_save_origin_requests(visit_type: str, origin_url: str) -> List[Dict[str, Any]]:
     """
     Get all save requests for a given software origin.
 
@@ -605,7 +622,7 @@ _accepted_save_requests_gauge = Gauge(
 )
 
 
-def compute_save_requests_metrics():
+def compute_save_requests_metrics() -> None:
     """Compute a couple of Prometheus metrics related to
     origin save requests"""
 

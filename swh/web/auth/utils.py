@@ -6,14 +6,14 @@
 from base64 import urlsafe_b64encode
 import hashlib
 import secrets
-from typing import Tuple
+from typing import Dict, Tuple
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from swh.web.auth.keycloak import KeycloakOpenIDConnect, get_keycloak_oidc_client
+from swh.auth.keycloak import KeycloakOpenIDConnect
 from swh.web.config import get_config
 
 
@@ -103,6 +103,11 @@ def decrypt_data(data: bytes, password: bytes, salt: bytes) -> bytes:
     return _get_fernet(password, salt).decrypt(data)
 
 
+# stores instances of KeycloakOpenIDConnect class
+# dict keys are (realm_name, client_id) tuples
+_keycloak_oidc: Dict[str, KeycloakOpenIDConnect] = {}
+
+
 def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID) -> KeycloakOpenIDConnect:
     """
     Instantiate a KeycloakOpenIDConnect class for a given client in the
@@ -114,9 +119,10 @@ def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID) -> KeycloakOpenIDCo
     Returns:
         An object to ease the interaction with the Keycloak server
     """
-    swhweb_config = get_config()
-    return get_keycloak_oidc_client(
-        swhweb_config["keycloak"]["server_url"],
-        swhweb_config["keycloak"]["realm_name"],
-        client_id,
-    )
+    keycloak_config = get_config()["keycloak"]
+
+    if client_id not in _keycloak_oidc:
+        _keycloak_oidc[client_id] = KeycloakOpenIDConnect(
+            keycloak_config["server_url"], keycloak_config["realm_name"], client_id
+        )
+    return _keycloak_oidc[client_id]
