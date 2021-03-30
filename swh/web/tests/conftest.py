@@ -18,11 +18,14 @@ import pytest
 from django.core.cache import cache
 from rest_framework.test import APIClient, APIRequestFactory
 
+from swh.auth.pytest_plugin import keycloak_mock_factory
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
+from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common import converters
 from swh.web.common.typing import OriginVisitInfo
+from swh.web.config import get_config
 from swh.web.tests.data import get_tests_data, override_storages
 
 # Used to skip some tests
@@ -356,3 +359,24 @@ class _IndexerData:
         ctags = self.idx_storage.content_ctags_get([cnt_id_bytes])
         for ctag in ctags:
             yield converters.from_swh(ctag, hashess={"id"})
+
+
+_keycloak_config = get_config()["keycloak"]
+
+_keycloak_mock = keycloak_mock_factory(
+    server_url=_keycloak_config["server_url"],
+    realm_name=_keycloak_config["realm_name"],
+    client_id=OIDC_SWH_WEB_CLIENT_ID,
+)
+
+
+@pytest.fixture
+def keycloak_mock(_keycloak_mock, mocker):
+    for oidc_client_factory in (
+        "swh.web.auth.views.get_oidc_client",
+        "swh.web.auth.backends.get_oidc_client",
+    ):
+        mock_get_oidc_client = mocker.patch(oidc_client_factory)
+        mock_get_oidc_client.return_value = _keycloak_mock
+
+    return _keycloak_mock

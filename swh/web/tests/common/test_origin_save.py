@@ -289,3 +289,16 @@ def test_get_save_origin_requests_failed_when_not_found(mocker):
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
     assert sors[0]["visit_date"] is not None
+
+
+@pytest.mark.django_db
+def test_get_save_origin_requests_no_failed_status_override(mocker):
+    sors = _get_save_origin_requests(
+        mocker, load_status="uneventful", visit_status="not_found"
+    )
+    assert len(sors) == 1
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
+    assert sors[0]["visit_date"] is not None
+
+    sors = get_save_origin_requests(_visit_type, _origin_url)
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED

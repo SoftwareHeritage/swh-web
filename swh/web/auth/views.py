@@ -24,7 +24,8 @@ from django.http.response import (
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from swh.web.auth.models import OIDCUser, OIDCUserOfflineTokens
+from swh.auth.django.models import OIDCUser
+from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import (
     decrypt_data,
     encrypt_data,

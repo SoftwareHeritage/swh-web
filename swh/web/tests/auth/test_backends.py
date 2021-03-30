@@ -12,12 +12,9 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from rest_framework.exceptions import AuthenticationFailed
 
+from swh.auth.django.models import OIDCUser
 from swh.web.auth.backends import OIDCBearerTokenAuthentication
-from swh.web.auth.models import OIDCUser
 from swh.web.common.utils import reverse
-
-from . import sample_data
-from .keycloak_mock import mock_keycloak
 
 
 def _authenticate_user(request_factory):
@@ -48,17 +45,18 @@ def _check_authenticated_user(user, decoded_token, kc_oidc_mock):
 
 
 @pytest.mark.django_db
-def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
+def test_oidc_code_pkce_auth_backend_success(keycloak_mock, request_factory):
     """
     Checks successful login based on OpenID Connect with PKCE extension
     Django authentication backend (login from Web UI).
     """
-    kc_oidc_mock = mock_keycloak(mocker, user_groups=["/staff"])
-    oidc_profile = sample_data.oidc_profile
+    keycloak_mock.user_groups = ["/staff"]
+
+    oidc_profile = keycloak_mock.login()
     user = _authenticate_user(request_factory)
 
-    decoded_token = kc_oidc_mock.decode_token(user.access_token)
-    _check_authenticated_user(user, decoded_token, kc_oidc_mock)
+    decoded_token = keycloak_mock.decode_token(user.access_token)
+    _check_authenticated_user(user, decoded_token, keycloak_mock)
 
     auth_datetime = datetime.fromtimestamp(decoded_token["iat"])
     exp_datetime = datetime.fromtimestamp(decoded_token["exp"])
@@ -81,12 +79,12 @@ def test_oidc_code_pkce_auth_backend_success(mocker, request_factory):
 
 
 @pytest.mark.django_db
-def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
+def test_oidc_code_pkce_auth_backend_failure(keycloak_mock, request_factory):
     """
     Checks failed login based on OpenID Connect with PKCE extension Django
     authentication backend (login from Web UI).
     """
-    mock_keycloak(mocker, auth_success=False)
+    keycloak_mock.set_auth_success(False)
 
     user = _authenticate_user(request_factory)
 
@@ -94,18 +92,19 @@ def test_oidc_code_pkce_auth_backend_failure(mocker, request_factory):
 
 
 @pytest.mark.django_db
-def test_oidc_code_pkce_auth_backend_refresh_token_success(mocker, request_factory):
+def test_oidc_code_pkce_auth_backend_refresh_token_success(
+    keycloak_mock, request_factory
+):
     """
     Checks access token renewal success using refresh token.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
 
-    oidc_profile = sample_data.oidc_profile
-    decoded_token = kc_oidc_mock.decode_token(oidc_profile["access_token"])
+    oidc_profile = keycloak_mock.login()
+    decoded_token = keycloak_mock.decode_token(oidc_profile["access_token"])
     new_access_token = "new_access_token"
 
     def _refresh_token(refresh_token):
-        oidc_profile = dict(sample_data.oidc_profile)
+        oidc_profile = dict(keycloak_mock.login())
         oidc_profile["access_token"] = new_access_token
         return oidc_profile
 
@@ -115,25 +114,25 @@ def test_oidc_code_pkce_auth_backend_refresh_token_success(mocker, request_facto
         else:
             return decoded_token
 
-    kc_oidc_mock.decode_token = Mock()
-    kc_oidc_mock.decode_token.side_effect = _decode_token
-    kc_oidc_mock.refresh_token.side_effect = _refresh_token
+    keycloak_mock.decode_token = Mock()
+    keycloak_mock.decode_token.side_effect = _decode_token
+    keycloak_mock.refresh_token.side_effect = _refresh_token
 
     user = _authenticate_user(request_factory)
 
-    kc_oidc_mock.refresh_token.assert_called_with(
-        sample_data.oidc_profile["refresh_token"]
-    )
+    oidc_profile = keycloak_mock.login()
+    keycloak_mock.refresh_token.assert_called_with(oidc_profile["refresh_token"])
 
     assert user is not None
 
 
 @pytest.mark.django_db
-def test_oidc_code_pkce_auth_backend_refresh_token_failure(mocker, request_factory):
+def test_oidc_code_pkce_auth_backend_refresh_token_failure(
+    keycloak_mock, request_factory
+):
     """
     Checks access token renewal failure using refresh token.
     """
-    kc_oidc_mock = mock_keycloak(mocker)
 
     def _refresh_token(refresh_token):
         raise Exception("OIDC session has expired")
@@ -141,27 +140,26 @@ def test_oidc_code_pkce_auth_backend_refresh_token_failure(mocker, request_facto
     def _decode_token(access_token):
         raise Exception("access token token has expired")
 
-    kc_oidc_mock.decode_token = Mock()
-    kc_oidc_mock.decode_token.side_effect = _decode_token
-    kc_oidc_mock.refresh_token.side_effect = _refresh_token
+    keycloak_mock.decode_token = Mock()
+    keycloak_mock.decode_token.side_effect = _decode_token
+    keycloak_mock.refresh_token.side_effect = _refresh_token
 
     user = _authenticate_user(request_factory)
 
-    kc_oidc_mock.refresh_token.assert_called_with(
-        sample_data.oidc_profile["refresh_token"]
-    )
+    oidc_profile = keycloak_mock.login()
+    keycloak_mock.refresh_token.assert_called_with(oidc_profile["refresh_token"])
 
     assert user is None
 
 
 @pytest.mark.django_db
-def test_oidc_code_pkce_auth_backend_permissions(mocker, request_factory):
+def test_oidc_code_pkce_auth_backend_permissions(keycloak_mock, request_factory):
     """
     Checks that a permission defined with OpenID Connect is correctly mapped
     to a Django one when logging from Web UI.
     """
     permission = "webapp.some-permission"
-    mock_keycloak(mocker, user_permissions=[permission])
+    keycloak_mock.user_permissions = [permission]
     user = _authenticate_user(request_factory)
     assert user.has_perm(permission)
     assert user.get_all_permissions() == {permission}
@@ -171,7 +169,7 @@ def test_oidc_code_pkce_auth_backend_permissions(mocker, request_factory):
 
 
 @pytest.mark.django_db
-def test_drf_oidc_bearer_token_auth_backend_success(mocker, api_request_factory):
+def test_drf_oidc_bearer_token_auth_backend_success(keycloak_mock, api_request_factory):
     """
     Checks successful login based on OpenID Connect bearer token Django REST
     Framework authentication backend (Web API login).
@@ -179,23 +177,22 @@ def test_drf_oidc_bearer_token_auth_backend_success(mocker, api_request_factory)
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
-    kc_oidc_mock = mock_keycloak(mocker)
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
+    access_token = oidc_profile["access_token"]
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
-    access_token = sample_data.oidc_profile["access_token"]
-
-    decoded_token = kc_oidc_mock.decode_token(access_token)
+    decoded_token = keycloak_mock.decode_token(access_token)
 
     request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
     user, _ = drf_auth_backend.authenticate(request)
-    _check_authenticated_user(user, decoded_token, kc_oidc_mock)
+    _check_authenticated_user(user, decoded_token, keycloak_mock)
     # oidc_profile is not filled when authenticating through bearer token
     assert hasattr(user, "access_token") and user.access_token is None
 
 
 @pytest.mark.django_db
-def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory):
+def test_drf_oidc_bearer_token_auth_backend_failure(keycloak_mock, api_request_factory):
     """
     Checks failed login based on OpenID Connect bearer token Django REST
     Framework authentication backend (Web API login).
@@ -203,10 +200,12 @@ def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory)
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
-    # simulate a failed authentication with a bearer token in expected format
-    mock_keycloak(mocker, auth_success=False)
+    oidc_profile = keycloak_mock.login()
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    # simulate a failed authentication with a bearer token in expected format
+    keycloak_mock.set_auth_success(False)
+
+    refresh_token = oidc_profile["refresh_token"]
 
     request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
 
@@ -222,7 +221,7 @@ def test_drf_oidc_bearer_token_auth_backend_failure(mocker, api_request_factory)
         drf_auth_backend.authenticate(request)
 
 
-def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
+def test_drf_oidc_auth_invalid_or_missing_auth_type(keycloak_mock, api_request_factory):
     """
     Checks failed login based on OpenID Connect bearer token Django REST
     Framework authentication backend (Web API login) due to invalid
@@ -231,7 +230,8 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
     url = reverse("api-1-stat-counters")
     drf_auth_backend = OIDCBearerTokenAuthentication()
 
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
 
     # Invalid authorization type
     request = api_request_factory.get(url, HTTP_AUTHORIZATION="Foo token")
@@ -247,16 +247,19 @@ def test_drf_oidc_auth_invalid_or_missing_auth_type(api_request_factory):
 
 
 @pytest.mark.django_db
-def test_drf_oidc_bearer_token_auth_backend_permissions(mocker, api_request_factory):
+def test_drf_oidc_bearer_token_auth_backend_permissions(
+    keycloak_mock, api_request_factory
+):
     """
     Checks that a permission defined with OpenID Connect is correctly mapped
     to a Django one when using bearer token authentication.
     """
     permission = "webapp.some-permission"
-    mock_keycloak(mocker, user_permissions=[permission])
+    keycloak_mock.user_permissions = [permission]
 
     drf_auth_backend = OIDCBearerTokenAuthentication()
-    refresh_token = sample_data.oidc_profile["refresh_token"]
+    oidc_profile = keycloak_mock.login()
+    refresh_token = oidc_profile["refresh_token"]
     url = reverse("api-1-stat-counters")
     request = api_request_factory.get(url, HTTP_AUTHORIZATION=f"Bearer {refresh_token}")
     user, _ = drf_auth_backend.authenticate(request)
