@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -31,10 +31,17 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # We're going through seven (or, in that case, 2) proxies thanks to Varnish
 REST_FRAMEWORK["NUM_PROXIES"] = 2
 
+db_conf = swh_web_config["production_db"]
+
+# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": swh_web_config["production_db"],
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": db_conf.get("name"),
+        "HOST": db_conf.get("host"),
+        "PORT": db_conf.get("port"),
+        "USER": db_conf.get("user"),
+        "PASSWORD": db_conf.get("password"),
     }
 }
 

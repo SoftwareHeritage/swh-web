@@ -4,44 +4,11 @@
 # See top-level LICENSE file for more information
 
 from base64 import urlsafe_b64encode
-import hashlib
-import secrets
-from typing import Dict, Tuple
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from swh.auth.keycloak import KeycloakOpenIDConnect
-from swh.web.config import get_config
-
-
-def gen_oidc_pkce_codes() -> Tuple[str, str]:
-    """
-    Generates a code verifier and a code challenge to be used
-    with the OpenID Connect authorization code flow with PKCE
-    ("Proof Key for Code Exchange", see https://tools.ietf.org/html/rfc7636).
-
-    PKCE replaces the static secret used in the standard authorization
-    code flow with a temporary one-time challenge, making it feasible
-    to use in public clients.
-
-    The implementation is inspired from that blog post:
-    https://www.stefaanlippens.net/oauth-code-flow-pkce.html
-    """
-    # generate a code verifier which is a long enough random alphanumeric
-    # string, only to be used "client side"
-    code_verifier_str = secrets.token_urlsafe(60)
-
-    # create the PKCE code challenge by hashing the code verifier with SHA256
-    # and encoding the result in URL-safe base64 (without padding)
-    code_challenge = hashlib.sha256(code_verifier_str.encode("ascii")).digest()
-    code_challenge_str = urlsafe_b64encode(code_challenge).decode("ascii")
-    code_challenge_str = code_challenge_str.replace("=", "")
-
-    return code_verifier_str, code_challenge_str
-
 
 OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 
@@ -101,28 +68,3 @@ def decrypt_data(data: bytes, password: bytes, salt: bytes) -> bytes:
         The decrypted data
     """
     return _get_fernet(password, salt).decrypt(data)
-
-
-# stores instances of KeycloakOpenIDConnect class
-# dict keys are (realm_name, client_id) tuples
-_keycloak_oidc: Dict[str, KeycloakOpenIDConnect] = {}
-
-
-def get_oidc_client(client_id: str = OIDC_SWH_WEB_CLIENT_ID) -> KeycloakOpenIDConnect:
-    """
-    Instantiate a KeycloakOpenIDConnect class for a given client in the
-    SoftwareHeritage realm.
-
-    Args:
-        client_id: client identifier in the SoftwareHeritage realm
-
-    Returns:
-        An object to ease the interaction with the Keycloak server
-    """
-    keycloak_config = get_config()["keycloak"]
-
-    if client_id not in _keycloak_oidc:
-        _keycloak_oidc[client_id] = KeycloakOpenIDConnect(
-            keycloak_config["server_url"], keycloak_config["realm_name"], client_id
-        )
-    return _keycloak_oidc[client_id]
