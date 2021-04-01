@@ -162,16 +162,11 @@ def resolve_swhid(
         query_dict["snapshot"] = hash_to_hex(swhid_parsed.visit.object_id)
 
         if swhid_parsed.anchor:
-            if swhid_parsed.anchor.object_type == ObjectType.REVISION:
-                # check if the anchor revision is the tip of a branch
-                branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
-                    hash_to_hex(swhid_parsed.visit.object_id),
-                    hash_to_hex(swhid_parsed.anchor.object_id),
-                )
-                if branch_name:
-                    query_dict["branch"] = branch_name
-                elif object_type != ObjectType.REVISION:
-                    query_dict["revision"] = hash_to_hex(swhid_parsed.anchor.object_id)
+            if (
+                swhid_parsed.anchor.object_type == ObjectType.REVISION
+                and object_type != ObjectType.REVISION
+            ):
+                query_dict["revision"] = hash_to_hex(swhid_parsed.anchor.object_id)
 
             elif swhid_parsed.anchor.object_type == ObjectType.RELEASE:
                 release = archive.lookup_release(
@@ -179,13 +174,6 @@ def resolve_swhid(
                 )
                 if release:
                     query_dict["release"] = release["name"]
-
-        if object_type == ObjectType.REVISION and "release" not in query_dict:
-            branch_name = archive.lookup_snapshot_branch_name_from_tip_revision(
-                hash_to_hex(swhid_parsed.visit.object_id), hash_to_hex(object_id)
-            )
-            if branch_name:
-                query_dict["branch"] = branch_name
 
     # browsing content or directory without snapshot context
     elif (

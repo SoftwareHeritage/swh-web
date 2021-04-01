@@ -556,22 +556,7 @@ def _check_resolved_swhid_browse_url(
             query_params["release"] = snapshot_context["release"]
         else:
             obj_context["anchor"] = gen_swhid(REVISION, snapshot_context["revision_id"])
-            if (
-                snapshot_context["branch"]
-                and snapshot_context["branch"] != snapshot_context["revision_id"]
-            ):
-                branch = snapshot_context["branch"]
-                if branch == "HEAD":
-                    for b in snapshot_context["branches"]:
-                        if (
-                            b["revision"] == snapshot_context["revision_id"]
-                            and b["name"] != "HEAD"
-                        ):
-                            branch = b["name"]
-                            break
-
-                query_params["branch"] = branch
-            elif object_type != REVISION:
+            if object_type != REVISION:
                 query_params["revision"] = snapshot_context["revision_id"]
 
     if path:
