@@ -1405,8 +1405,6 @@ swh/web/assets/src/utils/showdown.css
 swh/web/assets/src/utils/showdown.js
 swh/web/auth/__init__.py
 swh/web/auth/apps.py
-swh/web/auth/backends.py
-swh/web/auth/middlewares.py
 swh/web/auth/models.py
 swh/web/auth/utils.py
 swh/web/auth/views.py
@@ -1539,9 +1537,6 @@ swh/web/tests/api/views/test_snapshot.py
 swh/web/tests/api/views/test_stat.py
 swh/web/tests/api/views/test_vault.py
 swh/web/tests/auth/__init__.py
-swh/web/tests/auth/test_api_auth.py
-swh/web/tests/auth/test_backends.py
-swh/web/tests/auth/test_middlewares.py
 swh/web/tests/auth/test_utils.py
 swh/web/tests/auth/test_views.py
 swh/web/tests/browse/__init__.py

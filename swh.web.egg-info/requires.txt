@@ -12,14 +12,14 @@ lxml
 prometheus-client
 pybadges
 pygments
-python-keycloak>=0.19.0
 python-magic>=0.4.0
 python-memcached
 pyyaml
 requests
 sentry-sdk
 typing-extensions
-swh.auth[django]>=0.3.7
+psycopg2
+swh.auth[django]>=0.5.0
 swh.core>=0.0.95
 swh.indexer>=0.4.1
 swh.model>=0.5.0
