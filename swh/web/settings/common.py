@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,6 +12,7 @@ import os
 import sys
 from typing import Any, Dict
 
+from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
 
 swh_web_config = get_config()
@@ -57,7 +58,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "swh.web.auth.middlewares.OIDCSessionExpiredMiddleware",
+    "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "swh.web.common.middlewares.ThrottlingHeadersMiddleware",
@@ -95,7 +96,7 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": swh_web_config["development_db"],
+        "NAME": swh_web_config.get("development_db", ""),
     }
 }
 
@@ -166,7 +167,7 @@ REST_FRAMEWORK: Dict[str, Any] = {
     "DEFAULT_THROTTLE_RATES": throttle_rates,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
-        "swh.web.auth.backends.OIDCBearerTokenAuthentication",
+        "swh.auth.django.backends.OIDCBearerTokenAuthentication",
     ],
     "EXCEPTION_HANDLER": "swh.web.api.apiresponse.error_response_handler",
 }
@@ -278,5 +279,10 @@ CORS_URLS_REGEX = r"^/(badge|api)/.*$"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "swh.web.auth.backends.OIDCAuthorizationCodePKCEBackend",
+    "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
 ]
+
+SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]
+SWH_AUTH_REALM_NAME = swh_web_config["keycloak"]["realm_name"]
+SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID
+SWH_AUTH_SESSION_EXPIRED_REDIRECT_VIEW = "logout"
