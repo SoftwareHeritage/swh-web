@@ -362,7 +362,7 @@ def _check_branch_release_revision_parameters(
     )
 
     expected_revision = dict(base_expected_context)
-    expected_revision["branch"] = revision["id"]
+    expected_revision["branch"] = None
     expected_revision["branch_alias"] = False
     expected_revision["branches"] = branches
     expected_revision["revision_id"] = revision["id"]

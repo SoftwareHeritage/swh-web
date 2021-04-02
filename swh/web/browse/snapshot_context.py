@@ -543,7 +543,6 @@ def get_snapshot_context(
                 url=None,
             )
         )
-        branch_name = revision_id
         query_params["revision"] = revision_id
     elif snapshot_total_size and release_name:
         release = _get_release(releases, release_name, snapshot_id)

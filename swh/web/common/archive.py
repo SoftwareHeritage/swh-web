@@ -1122,42 +1122,6 @@ def lookup_latest_origin_snapshot(
     return converters.from_snapshot(snp.to_dict()) if snp is not None else None
 
 
-def lookup_snapshot_branch_name_from_tip_revision(
-    snapshot_id: str, revision_id: str
-) -> Optional[str]:
-    """Check if a revision corresponds to the tip of a snapshot branch
-
-    Args:
-        snapshot_id: hexadecimal representation of a snapshot id
-        revision_id: hexadecimal representation of a revision id
-
-    Returns:
-        The name of the first found branch or None otherwise
-    """
-    per_page = 10000
-    branches_from = ""
-    snapshot: Dict[str, Any] = {"branches": {}}
-    branches = []
-    while not branches_from or len(snapshot["branches"]) == per_page + 1:
-        snapshot = lookup_snapshot(
-            snapshot_id,
-            target_types=[REVISION],
-            branches_from=branches_from,
-            branches_count=per_page + 1,
-            branch_name_exclude_prefix=None,
-        )
-
-        branches += [
-            {"name": k, "target": v["target"]} for k, v in snapshot["branches"].items()
-        ]
-        branches_from = branches[-1]["name"]
-
-    for branch in branches:
-        if branch["target"] == revision_id:
-            return branch["name"]
-    return None
-
-
 def lookup_snapshot_alias(
     snapshot_id: str, alias_name: str
 ) -> Optional[Dict[str, Any]]:
