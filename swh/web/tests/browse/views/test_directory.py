@@ -264,7 +264,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
 
 
 @given(origin_with_multiple_visits())
-def test_content_origin_snapshot_release_browse(client, archive_data, origin):
+def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
     visits = archive_data.origin_visit_get(origin["url"])
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
@@ -335,6 +335,38 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
     )
     assert_contains(resp, snp_swhid)
+
+
+@given(origin_with_multiple_visits())
+def test_directory_origin_snapshot_revision_browse(client, archive_data, origin):
+    visits = archive_data.origin_visit_get(origin["url"])
+    visit = random.choice(visits)
+    snapshot = archive_data.snapshot_get(visit["snapshot"])
+    branches, releases, _ = process_snapshot_branches(snapshot)
+    branch_info = random.choice(branches)
+
+    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory_content = archive_data.directory_ls(directory)
+    directory_subdir = random.choice(
+        [e for e in directory_content if e["type"] == "dir"]
+    )
+
+    url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory},
+        query_params={
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+            "revision": branch_info["revision"],
+            "path": directory_subdir["name"],
+        },
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
+
+    assert_contains(resp, f"Revision: <strong>{branch_info['revision']}</strong>")
 
 
 def _check_origin_snapshot_related_html(
