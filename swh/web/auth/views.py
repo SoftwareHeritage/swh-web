@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 import json
-from typing import Any, Dict, cast
+from typing import Any, Dict, Union, cast
 
 from cryptography.fernet import InvalidToken
 
@@ -90,6 +90,14 @@ def oidc_list_bearer_tokens(request: HttpRequest) -> HttpResponse:
     return JsonResponse(table_data)
 
 
+def _encrypted_token_bytes(token: Union[bytes, memoryview]) -> bytes:
+    # token has been retrieved from a PosgreSQL database
+    if isinstance(token, memoryview):
+        return token.tobytes()
+    else:
+        return token
+
+
 @require_http_methods(["POST"])
 def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated or not isinstance(request.user, OIDCUser):
@@ -100,7 +108,9 @@ def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
         token_data = OIDCUserOfflineTokens.objects.get(id=data["token_id"])
         secret = get_config()["secret_key"].encode()
         salt = user.sub.encode()
-        decrypted_token = decrypt_data(token_data.offline_token, secret, salt)
+        decrypted_token = decrypt_data(
+            _encrypted_token_bytes(token_data.offline_token), secret, salt
+        )
         return HttpResponse(decrypted_token.decode("ascii"), content_type="text/plain")
     except InvalidToken:
         return HttpResponse(status=401)
@@ -117,7 +127,9 @@ def oidc_revoke_bearer_tokens(request: HttpRequest) -> HttpResponse:
             token_data = OIDCUserOfflineTokens.objects.get(id=token_id)
             secret = get_config()["secret_key"].encode()
             salt = user.sub.encode()
-            decrypted_token = decrypt_data(token_data.offline_token, secret, salt)
+            decrypted_token = decrypt_data(
+                _encrypted_token_bytes(token_data.offline_token), secret, salt
+            )
             oidc_client = keycloak_oidc_client()
             oidc_client.logout(decrypted_token.decode("ascii"))
             token_data.delete()
