@@ -1208,6 +1208,7 @@ def _origin_releases_test_helper(
         assert_contains(resp, f"Releases ({snapshot_sizes['release']}")
 
     assert_contains(resp, '<tr class="swh-release-entry', count=nb_releases)
+    assert_contains(resp, 'title="The release', count=nb_releases)
 
     for release in origin_releases:
         browse_release_url = reverse(

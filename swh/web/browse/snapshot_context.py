@@ -1367,6 +1367,10 @@ def browse_snapshot_releases(
         )
 
         target_url = ""
+        tooltip = (
+            f"The release {release['name']} targets "
+            f"{release['target_type']} {release['target']}"
+        )
         if release["target_type"] == "revision":
             target_url = reverse(
                 "browse-revision",
@@ -1391,9 +1395,14 @@ def browse_snapshot_releases(
                 url_args={"sha1_git": release["target"]},
                 query_params=query_params_tgt,
             )
+            tooltip = (
+                f"The release {release['name']} "
+                f"is an alias for release {release['target']}"
+            )
 
         release["release_url"] = release_url
         release["target_url"] = target_url
+        release["tooltip"] = tooltip
 
     if origin_info:
         browse_view_name = "browse-origin-releases"
