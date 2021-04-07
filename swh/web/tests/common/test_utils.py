@@ -109,8 +109,6 @@ def test_rst_to_html():
         "Section\n"
         "=======\n\n"
         "**Some strong text**\n\n"
-        "Subsection\n"
-        "----------\n\n"
         "* This is a bulleted list.\n"
         "* It has two items, the second\n"
         "  item uses two lines.\n"
@@ -125,8 +123,6 @@ def test_rst_to_html():
     expected_html = (
         '<div class="swh-rst"><h1 class="title">Section</h1>\n'
         "<p><strong>Some strong text</strong></p>\n"
-        '<div class="section" id="subsection">\n'
-        "<h2>Subsection</h2>\n"
         '<ul class="simple">\n'
         "<li><p>This is a bulleted list.</p></li>\n"
         "<li><p>It has two items, the second\n"
@@ -138,7 +134,6 @@ def test_rst_to_html():
         "<li><p>This is a numbered list.</p></li>\n"
         "<li><p>It has two items too.</p></li>\n"
         "</ol>\n"
-        "</div>\n"
         "</div>"
     )
 
