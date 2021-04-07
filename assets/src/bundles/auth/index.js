@@ -49,8 +49,14 @@ function displayToken(tokenId) {
          <pre id="swh-bearer-token" class="mt-3">${token}</pre>`;
       swh.webapp.showModalHtml('Display bearer token', tokenHtml);
     })
-    .catch(() => {
-      swh.webapp.showModalHtml('Display bearer token', errorMessage('Internal server error.'));
+    .catch(response => {
+      response.text().then(responseText => {
+        let errorMsg = 'Internal server error.';
+        if (response.status === 400) {
+          errorMsg = responseText;
+        }
+        swh.webapp.showModalHtml('Display bearer token', errorMessage(errorMsg));
+      });
     });
 }
 

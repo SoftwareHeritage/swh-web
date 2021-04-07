@@ -59,9 +59,9 @@ describe('Test API tokens UI', function() {
       .should('contain', 'You are not allowed to generate bearer tokens');
   });
 
-  function displayToken(Urls, status, tokenValue = '') {
+  function displayToken(Urls, status, body = '') {
     cy.intercept('POST', `${Urls.oidc_get_bearer_token()}/**`, {
-      body: tokenValue,
+      body: body,
       statusCode: status
     }).as('getTokenRequest');
 
@@ -83,11 +83,20 @@ describe('Test API tokens UI', function() {
       .should('contain', tokenValue);
   });
 
-  it('should report errors when token display failed', function() {
+  it('should report error when token display failed', function() {
     initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
-    displayToken(this.Urls, 500);
+    const errorMessage = 'Internal server error';
+    displayToken(this.Urls, 500, errorMessage);
     cy.get('.modal-body')
-      .should('contain', 'Internal server error');
+      .should('contain', errorMessage);
+  });
+
+  it('should report error when token expired', function() {
+    initTokensPage(this.Urls, [{id: 1, creation_date: new Date().toISOString()}]);
+    const errorMessage = 'Bearer token has expired';
+    displayToken(this.Urls, 400, errorMessage);
+    cy.get('.modal-body')
+        .should('contain', errorMessage);
   });
 
   function revokeToken(Urls, status) {
