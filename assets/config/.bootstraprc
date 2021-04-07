@@ -44,7 +44,7 @@ preBootstrapCustomizations: ./bootstrap-pre-customize.scss
 # Usually this endpoint-file contains list of @imports of your application styles
 #
 # appStyles: ./path/to/your/app/styles/endpoint.scss
-appStyles: ../../../../node_modules/admin-lte/build/scss/_adminlte.raw.scss
+appStyles: ../../node_modules/admin-lte/build/scss/_adminlte.raw.scss
 
 ### Bootstrap styles
 styles:

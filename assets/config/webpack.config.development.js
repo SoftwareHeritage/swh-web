@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -32,7 +32,7 @@ const devServerPublicPath = 'http://localhost:' + devServerPort + '/static/';
 // our assets or not
 const publicPath = isDevServer ? devServerPublicPath : '/static/';
 
-const nodeModules = path.resolve(__dirname, '../../../../node_modules/');
+const nodeModules = path.resolve(__dirname, '../../node_modules/');
 
 // collect all bundles we want to produce with webpack
 var bundles = {};
@@ -73,7 +73,7 @@ let cssLoaders = [
                 'no-descending-specificity': null
               },
               'ignoreFiles': ['node_modules/**/*.css',
-                              'swh/web/assets/src/thirdparty/**/*.css']
+                              'assets/src/thirdparty/**/*.css']
             }
           }],
           // automatically add vendor prefixes to css rules
@@ -401,11 +401,11 @@ module.exports = {
       patterns: [
         {
           from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
-          to: path.resolve(__dirname, '../../../../static/js/')
+          to: path.resolve(__dirname, '../../static/js/')
         },
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
-          to: path.resolve(__dirname, '../../../../static/fonts/[name].[ext]')
+          to: path.resolve(__dirname, '../../static/fonts/[name].[ext]')
         }
       ]
     }),
@@ -420,9 +420,9 @@ module.exports = {
         './node_modules/admin-lte/dist/js/adminlte.js'
       },
       licenseOverride: {
-        './swh/web/assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
+        './assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
           'spdxLicenseExpression': 'GPL-3.0',
-          'licenseFilePath': './swh/web/assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
+          'licenseFilePath': './assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
         }
       },
       additionalScripts: Object.assign(

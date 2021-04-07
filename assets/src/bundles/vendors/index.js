@@ -16,7 +16,7 @@ import './elementsfrompoint-polyfill';
 
 // jquery and bootstrap
 import 'jquery';
-import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../swh/web/assets/config/.bootstraprc!bootstrap-loader/no-op.js';
+import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../assets/config/.bootstraprc!bootstrap-loader/no-op.js';
 
 // admin-lte scripts
 import 'admin-lte';
