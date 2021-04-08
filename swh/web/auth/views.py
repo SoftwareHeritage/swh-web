@@ -14,6 +14,7 @@ from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.http.response import (
     HttpResponse,
+    HttpResponseBadRequest,
     HttpResponseForbidden,
     HttpResponseRedirect,
     JsonResponse,
@@ -25,6 +26,7 @@ from swh.auth.django.models import OIDCUser
 from swh.auth.django.utils import keycloak_oidc_client
 from swh.auth.django.views import get_oidc_login_data, oidc_login_view
 from swh.auth.django.views import urlpatterns as auth_urlpatterns
+from swh.auth.keycloak import KeycloakError, keycloak_error_message
 from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import decrypt_data, encrypt_data
 from swh.web.common.exc import ForbiddenExc
@@ -111,9 +113,21 @@ def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
         decrypted_token = decrypt_data(
             _encrypted_token_bytes(token_data.offline_token), secret, salt
         )
-        return HttpResponse(decrypted_token.decode("ascii"), content_type="text/plain")
+        refresh_token = decrypted_token.decode("ascii")
+        # check token is still valid
+        oidc_client = keycloak_oidc_client()
+        oidc_client.refresh_token(refresh_token)
+        return HttpResponse(refresh_token, content_type="text/plain")
     except InvalidToken:
         return HttpResponse(status=401)
+    except KeycloakError as ke:
+        error_msg = keycloak_error_message(ke)
+        if error_msg in (
+            "invalid_grant: Offline session not active",
+            "invalid_grant: Offline user session not found",
+        ):
+            error_msg = "Bearer token has expired, please generate a new one."
+        return HttpResponseBadRequest(error_msg, content_type="text/plain")
 
 
 @require_http_methods(["POST"])
