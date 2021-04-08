@@ -11,6 +11,7 @@ import pytest
 
 from django.http import QueryDict
 
+from swh.auth.keycloak import KeycloakError
 from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID, decrypt_data
 from swh.web.common.utils import reverse
@@ -201,6 +202,39 @@ def test_oidc_get_bearer_token(client, keycloak_oidc):
             content_type="text/plain",
         )
         assert response.content == token
+
+
+@pytest.mark.django_db
+def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
+    """
+    User with correct credentials should be allowed to display a token.
+    """
+
+    _generate_and_test_bearer_token(client, keycloak_oidc)
+
+    for kc_err_msg in ("Offline session not active", "Offline user session not found"):
+
+        kc_error_dict = {
+            "error": "invalid_grant",
+            "error_description": kc_err_msg,
+        }
+
+        keycloak_oidc.refresh_token.side_effect = KeycloakError(
+            error_message=json.dumps(kc_error_dict).encode(), response_code=400
+        )
+
+        url = reverse("oidc-get-bearer-token")
+
+        response = check_http_post_response(
+            client,
+            url,
+            status_code=400,
+            data={"token_id": 1},
+            content_type="text/plain",
+        )
+        assert (
+            response.content == b"Bearer token has expired, please generate a new one."
+        )
 
 
 def test_oidc_revoke_bearer_tokens_anonymous_user(client):

@@ -1,6 +1,6 @@
 import { __extends } from "tslib";
 import { eventToSentryRequest, sessionToSentryRequest } from '@sentry/core';
-import { getGlobalObject, logger, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
+import { getGlobalObject, isNativeFetch, logger, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
 /**
  * A special usecase for incorrectly wrapped Fetch APIs in conjunction with ad-blockers.
@@ -41,10 +41,15 @@ import { BaseTransport } from './base';
  * Safari:  resource blocked by content blocker
  */
 function getNativeFetchImplementation() {
+    /* eslint-disable @typescript-eslint/unbound-method */
     var _a, _b;
-    // Make sure that the fetch we use is always the native one.
+    // Fast path to avoid DOM I/O
     var global = getGlobalObject();
+    if (isNativeFetch(global.fetch)) {
+        return global.fetch.bind(global);
+    }
     var document = global.document;
+    var fetchImpl = global.fetch;
     // eslint-disable-next-line deprecation/deprecation
     if (typeof ((_a = document) === null || _a === void 0 ? void 0 : _a.createElement) === "function") {
         try {
@@ -52,7 +57,7 @@ function getNativeFetchImplementation() {
             sandbox.hidden = true;
             document.head.appendChild(sandbox);
             if ((_b = sandbox.contentWindow) === null || _b === void 0 ? void 0 : _b.fetch) {
-                return sandbox.contentWindow.fetch.bind(global);
+                fetchImpl = sandbox.contentWindow.fetch;
             }
             document.head.removeChild(sandbox);
         }
@@ -60,7 +65,8 @@ function getNativeFetchImplementation() {
             logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
         }
     }
-    return global.fetch.bind(global);
+    return fetchImpl.bind(global);
+    /* eslint-enable @typescript-eslint/unbound-method */
 }
 /** `fetch` based transport */
 var FetchTransport = /** @class */ (function (_super) {
