@@ -38,9 +38,10 @@ def parse_requirements(name=None):
 
 # package generated static assets as module data files
 data_files = []
-for root, _, files in os.walk("static/"):
-    root_files = [os.path.join(root, i) for i in files]
-    data_files.append((os.path.join("share/swh/web", root), root_files))
+for folder in ("static/", "assets/"):
+    for root, _, files in os.walk(folder):
+        root_files = [os.path.join(root, i) for i in files]
+        data_files.append((os.path.join("share/swh/web", root), root_files))
 
 setup(
     name="swh.web",

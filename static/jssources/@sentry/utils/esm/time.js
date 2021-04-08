@@ -93,15 +93,26 @@ export var timestampWithMs = timestampInSeconds;
  */
 export var usingPerformanceAPI = platformPerformance !== undefined;
 /**
+ * Internal helper to store what is the source of browserPerformanceTimeOrigin below. For debugging only.
+ */
+export var _browserPerformanceTimeOriginMode;
+/**
  * The number of milliseconds since the UNIX epoch. This value is only usable in a browser, and only when the
  * performance API is available.
  */
 export var browserPerformanceTimeOrigin = (function () {
+    // Unfortunately browsers may report an inaccurate time origin data, through either performance.timeOrigin or
+    // performance.timing.navigationStart, which results in poor results in performance data. We only treat time origin
+    // data as reliable if they are within a reasonable threshold of the current time.
     var performance = getGlobalObject().performance;
     if (!performance) {
+        _browserPerformanceTimeOriginMode = 'none';
         return undefined;
     }
-    if (performance.timeOrigin) {
+    var threshold = 3600 * 1000;
+    var timeOriginIsReliable = performance.timeOrigin && Math.abs(performance.timeOrigin + performance.now() - Date.now()) < threshold;
+    if (timeOriginIsReliable) {
+        _browserPerformanceTimeOriginMode = 'timeOrigin';
         return performance.timeOrigin;
     }
     // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
@@ -110,6 +121,15 @@ export var browserPerformanceTimeOrigin = (function () {
     // a valid fallback. In the absence of an initial time provided by the browser, fallback to the current time from the
     // Date API.
     // eslint-disable-next-line deprecation/deprecation
-    return (performance.timing && performance.timing.navigationStart) || Date.now();
+    var navigationStart = performance.timing && performance.timing.navigationStart;
+    var hasNavigationStart = typeof navigationStart === 'number';
+    var navigationStartIsReliable = hasNavigationStart && Math.abs(navigationStart + performance.now() - Date.now()) < threshold;
+    if (navigationStartIsReliable) {
+        _browserPerformanceTimeOriginMode = 'navigationStart';
+        return navigationStart;
+    }
+    // Either both timeOrigin and navigationStart are skewed or neither is available, fallback to Date.
+    _browserPerformanceTimeOriginMode = 'dateNow';
+    return Date.now();
 })();
 //# sourceMappingURL=time.js.map

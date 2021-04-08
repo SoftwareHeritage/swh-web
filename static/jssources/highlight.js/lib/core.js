@@ -1228,7 +1228,7 @@ function expandOrCloneMode(mode) {
   return mode;
 }
 
-var version = "10.7.1";
+var version = "10.7.2";
 
 // @ts-nocheck
 
@@ -1461,6 +1461,11 @@ https://github.com/highlightjs/highlight.js/issues/2880#issuecomment-747275419
 */
 
 /**
+ * @type {Record<string, boolean>}
+ */
+const seenDeprecations = {};
+
+/**
  * @param {string} message
  */
 const error = (message) => {
@@ -1480,7 +1485,10 @@ const warn = (message, ...args) => {
  * @param {string} message
  */
 const deprecated = (version, message) => {
+  if (seenDeprecations[`${version}/${message}`]) return;
+
   console.log(`Deprecated as of ${version}. ${message}`);
+  seenDeprecations[`${version}/${message}`] = true;
 };
 
 /*

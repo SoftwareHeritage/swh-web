@@ -5,7 +5,7 @@ include tox.ini
 include version.txt
 recursive-include swh py.typed
 
-recursive-include swh/web/assets *
+recursive-include assets *
 recursive-include swh/web/templates *
 recursive-include swh/web/tests/resources *
 

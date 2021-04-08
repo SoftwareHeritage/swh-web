@@ -36,7 +36,7 @@ See top-level LICENSE file for more information
             </td>
             <td class="swh-release-target">
               <a href="{{ release.target_url }}">
-                <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true"></i>{{ release.target|slice:":7" }}
+                <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true" title="{{ release.tooltip }}"></i>{{ release.target|slice:":7" }}
               </a>
             </td>
             <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow" title="{{ release.message }}">

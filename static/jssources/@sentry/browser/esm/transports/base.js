@@ -2,6 +2,11 @@ import { __values } from "tslib";
 import { API } from '@sentry/core';
 import { Status, } from '@sentry/types';
 import { logger, parseRetryAfterHeader, PromiseBuffer, SentryError } from '@sentry/utils';
+var CATEGORY_MAPPING = {
+    event: 'error',
+    transaction: 'transaction',
+    session: 'session',
+};
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {
     function BaseTransport(options) {
@@ -48,14 +53,15 @@ var BaseTransport = /** @class */ (function () {
     /**
      * Gets the time that given category is disabled until for rate limiting
      */
-    BaseTransport.prototype._disabledUntil = function (category) {
+    BaseTransport.prototype._disabledUntil = function (requestType) {
+        var category = CATEGORY_MAPPING[requestType];
         return this._rateLimits[category] || this._rateLimits.all;
     };
     /**
      * Checks if a category is rate limited
      */
-    BaseTransport.prototype._isRateLimited = function (category) {
-        return this._disabledUntil(category) > new Date(Date.now());
+    BaseTransport.prototype._isRateLimited = function (requestType) {
+        return this._disabledUntil(requestType) > new Date(Date.now());
     };
     /**
      * Sets internal _rateLimits from incoming headers. Returns true if headers contains a non-empty rate limiting header.
