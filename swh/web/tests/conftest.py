@@ -10,9 +10,7 @@ from subprocess import PIPE, run
 import sys
 from typing import Any, Dict, List, Optional
 
-from hypothesis import HealthCheck
-from hypothesis import __version_info__ as hypothesis_version
-from hypothesis import settings
+from hypothesis import HealthCheck, settings
 import pytest
 
 from django.core.cache import cache
@@ -40,9 +38,18 @@ fossology_missing = shutil.which("nomossa") is None
 # Register some hypothesis profiles
 settings.register_profile("default", settings())
 
-suppress_health_check = [HealthCheck.too_slow, HealthCheck.filter_too_much]
-if hypothesis_version >= (5, 49):
-    suppress_health_check.append(HealthCheck.function_scoped_fixture)
+# we use getattr here to keep mypy happy regardless hypothesis version
+function_scoped_fixture_check = (
+    [getattr(HealthCheck, "function_scoped_fixture")]
+    if hasattr(HealthCheck, "function_scoped_fixture")
+    else []
+)
+
+suppress_health_check = [
+    HealthCheck.too_slow,
+    HealthCheck.filter_too_much,
+] + function_scoped_fixture_check
+
 
 settings.register_profile(
     "swh-web", settings(deadline=None, suppress_health_check=suppress_health_check,),
