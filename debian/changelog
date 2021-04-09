@@ -1,3 +1,14 @@
+swh-web (0.0.294-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.294     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-04-09 14:25:58
+    +0200)
+  * Upstream changes:     - v0.0.294     - Add metric to monitor "save
+    code now" efficiency     - tests/conftest: Keep mypy happy
+    regardless hypothesis version
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 09 Apr 2021 12:36:38 +0000
+
 swh-web (0.0.293-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.293     - (tagged by Antoine Lambert
