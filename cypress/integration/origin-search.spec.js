@@ -10,11 +10,21 @@ const nonExistentText = 'NoMatchExists';
 let origin;
 let url;
 
-function doSearch(searchText) {
-  cy.get('#swh-origins-url-patterns')
-    .type(searchText)
+function doSearch(searchText, searchInputElt = '#swh-origins-url-patterns') {
+  if (searchText.startsWith('swh:')) {
+    cy.intercept('**/api/1/resolve/**')
+      .as('swhidResolve');
+  }
+  cy.get(searchInputElt)
+    // to avoid sending too much SWHID validation requests
+    // as cypress insert character one by one when using type
+    .invoke('val', searchText.slice(0, -1))
+    .type(searchText.slice(-1))
     .get('.swh-search-icon')
     .click();
+  if (searchText.startsWith('swh:')) {
+    cy.wait('@swhidResolve');
+  }
 }
 
 function searchShouldRedirect(searchText, redirectUrl) {
@@ -25,9 +35,11 @@ function searchShouldRedirect(searchText, redirectUrl) {
 
 function searchShouldShowNotFound(searchText, msg) {
   doSearch(searchText);
-  cy.get('#swh-no-result')
-    .should('be.visible')
-    .and('contain', msg);
+  if (searchText.startsWith('swh:')) {
+    cy.get('.invalid-feedback')
+      .should('be.visible')
+      .and('contain', msg);
+  }
 }
 
 function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}, aliasSuffix = '') {
@@ -497,6 +509,28 @@ describe('Test origin-search', function() {
       const msg = `Content with sha1_git checksum equals to ${this.unarchivedRepo.content[0].sha1git} not found!`;
 
       searchShouldShowNotFound(swhid, msg);
+    });
+
+    function checkInvalidSWHIDReport(url, searchInputElt, repoData) {
+      const invalidSWHID = `swh:1:cnt:${repoData.content[0].sha1git};lines=45-60/`;
+      cy.visit(url);
+      doSearch(invalidSWHID, searchInputElt);
+      cy.get(searchInputElt)
+        .then($el => $el[0].checkValidity()).should('be.false');
+      cy.get(searchInputElt)
+        .invoke('prop', 'validationMessage')
+        .should('not.equal', '');
+
+    }
+
+    it('should report invalid SWHID in search page input', function() {
+      checkInvalidSWHIDReport(this.Urls.browse_search(), '#swh-origins-url-patterns', this.unarchivedRepo);
+      cy.get('.invalid-feedback')
+        .should('be.visible');
+    });
+
+    it('should report invalid SWHID in top right search input', function() {
+      checkInvalidSWHIDReport(this.Urls.browse_help(), '#swh-origins-search-top-input', this.unarchivedRepo);
     });
   });
 
