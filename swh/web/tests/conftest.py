@@ -25,8 +25,6 @@ from swh.web.common.typing import OriginVisitInfo
 from swh.web.config import get_config
 from swh.web.tests.data import get_tests_data, override_storages
 
-pytest_plugins = ["swh.auth.pytest_plugin"]
-
 # Used to skip some tests
 ctags_json_missing = (
     shutil.which("ctags") is None
