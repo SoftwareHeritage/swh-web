@@ -1,3 +1,9 @@
+swh-web (0.0.296-1~swh2~bpo10+1) buster-swh; urgency=medium
+
+  * Rebuild for buster-swh
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 14 Apr 2021 15:27:24 +0000
+
 swh-web (0.0.296-1~swh2) unstable-swh; urgency=medium
 
   * Add missing swh-counters dependency
