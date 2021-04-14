@@ -142,7 +142,9 @@ def tests_data():
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
     # instantiated in the tests.data module
-    override_storages(data["storage"], data["idx_storage"], data["search"])
+    override_storages(
+        data["storage"], data["idx_storage"], data["search"], data["counters"]
+    )
     return data
 
 

@@ -31,6 +31,7 @@ search = config.search()
 storage = config.storage()
 vault = config.vault()
 idx_storage = config.indexer_storage()
+counters = config.counters()
 
 
 MAX_LIMIT = 50  # Top limit the users can ask for
@@ -923,7 +924,14 @@ def stat_counters():
     Returns:
         A dict mapping textual labels to integer values.
     """
-    return storage.stat_counters()
+    res = {}
+    if counters and config.get_config()["counters_backend"] == "swh-counters":
+        res = counters.get_counts(
+            ["origin", "revision", "content", "directory", "release"]
+        )
+    else:
+        res = storage.stat_counters()
+    return res
 
 
 def _lookup_origin_visits(
