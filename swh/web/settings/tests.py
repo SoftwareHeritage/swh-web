@@ -100,7 +100,10 @@ if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
 
     test_data = get_tests_data()
     override_storages(
-        test_data["storage"], test_data["idx_storage"], test_data["search"]
+        test_data["storage"],
+        test_data["idx_storage"],
+        test_data["search"],
+        test_data["counters"],
     )
 else:
     ALLOWED_HOSTS += ["testserver", SWH_WEB_INTERNAL_SERVER_NAME]

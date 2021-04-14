@@ -11,6 +11,7 @@ import time
 from typing import Dict, List, Optional, Set
 
 from swh.core.config import merge_configs
+from swh.counters import get_counters
 from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
@@ -173,16 +174,21 @@ ORIGIN_METADATA_VALUE = "git"
 ORIGIN_MASTER_REVISION = {}
 
 
-def _add_origin(storage, search, origin_url, visit_type="git", snapshot_branches={}):
+def _add_origin(
+    storage, search, counters, origin_url, visit_type="git", snapshot_branches={}
+):
     storage.origin_add([Origin(url=origin_url)])
     search.origin_update(
         [{"url": origin_url, "has_visits": True, "visit_types": [visit_type]}]
     )
+    counters.add("origin", [origin_url])
     date = now()
     visit = OriginVisit(origin=origin_url, date=date, type=visit_type)
     visit = storage.origin_visit_add([visit])[0]
+    counters.add("origin_visit", [f"{visit.unique_key()}"])
     snapshot = Snapshot.from_dict({"branches": snapshot_branches})
     storage.snapshot_add([snapshot])
+    counters.add("snapshot", [snapshot.id])
     visit_status = OriginVisitStatus(
         origin=origin_url,
         visit=visit.visit,
@@ -192,6 +198,7 @@ def _add_origin(storage, search, origin_url, visit_type="git", snapshot_branches
         snapshot=snapshot.id,
     )
     storage.origin_visit_status_add([visit_status])
+    counters.add("origin_visit_status", [f"{visit_status.unique_key()}"])
 
 
 # Tests data initialization
@@ -203,6 +210,9 @@ def _init_tests_data():
     search = get_search("memory")
     search.initialize()
     search.origin_update({"url": origin["url"]} for origin in _TEST_ORIGINS)
+
+    # create the counters instance
+    counters = get_counters("memory")
 
     # Create indexer storage instance that will be shared by indexers
     idx_storage = get_indexer_storage("memory")
@@ -236,7 +246,11 @@ def _init_tests_data():
 
     for i in range(250):
         _add_origin(
-            storage, search, origin_url=f"https://many.origins/{i+1}", visit_type="tar"
+            storage,
+            search,
+            counters,
+            origin_url=f"https://many.origins/{i+1}",
+            visit_type="tar",
         )
 
     sha1s: Set[Sha1] = set()
@@ -343,6 +357,7 @@ def _init_tests_data():
     _add_origin(
         storage,
         search,
+        counters,
         origin_url="https://git.example.org/project",
         snapshot_branches={
             b"refs/heads/master": {
@@ -359,11 +374,17 @@ def _init_tests_data():
         },
     )
 
+    counters.add("revision", revisions)
+    counters.add("release", releases)
+    counters.add("directory", directories)
+    counters.add("content", [content["sha1"] for content in contents])
+
     # Return tests data
     return {
         "search": search,
         "storage": storage,
         "idx_storage": idx_storage,
+        "counters": counters,
         "origins": _TEST_ORIGINS,
         "contents": contents,
         "directories": list(directories),
@@ -424,16 +445,22 @@ def get_tests_data(reset=False):
     return _current_tests_data
 
 
-def override_storages(storage, idx_storage, search):
+def override_storages(storage, idx_storage, search, counters):
     """
     Helper function to replace the storages from which archive data
     are fetched.
     """
     swh_config = config.get_config()
     swh_config.update(
-        {"storage": storage, "indexer_storage": idx_storage, "search": search,}
+        {
+            "storage": storage,
+            "indexer_storage": idx_storage,
+            "search": search,
+            "counters": counters,
+        }
     )
 
     archive.storage = storage
     archive.idx_storage = idx_storage
     archive.search = search
+    archive.counters = counters
