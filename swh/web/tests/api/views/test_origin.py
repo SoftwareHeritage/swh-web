@@ -689,3 +689,18 @@ def test_api_origin_metadata_search_invalid(api_client, mocker):
     url = reverse("api-1-origin-metadata-search")
     check_api_get_responses(api_client, url, status_code=400)
     mock_idx_storage.assert_not_called()
+
+
+@pytest.mark.parametrize("backend", ["swh-counters", "swh-storage"])
+def test_api_stat_counters(api_client, mocker, backend):
+
+    mock_config = mocker.patch("swh.web.common.archive.config")
+    mock_config.get_config.return_value = {"counters_backend": backend}
+
+    url = reverse("api-1-stat-counters")
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    counts = json.loads(rv.content)
+
+    for obj in ["content", "origin", "release", "directory", "revision"]:
+        assert counts.get(obj, 0) > 0
