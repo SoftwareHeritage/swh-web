@@ -30,11 +30,11 @@ function searchShouldShowNotFound(searchText, msg) {
     .and('contain', msg);
 }
 
-function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}) {
-  cy.intercept('**/visit/latest/**', {
+function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}, aliasSuffix = '') {
+  cy.intercept({url: '**/visit/latest/**'}, {
     body: response,
     statusCode: status
-  }).as('originVisitLatest');
+  }).as(`originVisitLatest${aliasSuffix}`);
 }
 
 describe('Test origin-search', function() {
@@ -90,12 +90,12 @@ describe('Test origin-search', function() {
       .should('be.visible')
       .find('tbody tr').should('have.length', 0);
 
-    stubOriginVisitLatestRequests(200, {});
+    stubOriginVisitLatestRequests(200, {}, '2');
 
     cy.get('.swh-search-icon')
       .click();
 
-    cy.wait('@originVisitLatest');
+    cy.wait('@originVisitLatest2');
 
     cy.get('#origin-search-results')
       .should('be.visible')
