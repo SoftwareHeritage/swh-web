@@ -7,6 +7,7 @@ import os
 from typing import Any, Dict
 
 from swh.core import config
+from swh.counters import get_counters
 from swh.indexer.storage import get_indexer_storage
 from swh.scheduler import get_scheduler
 from swh.search import get_search
@@ -51,6 +52,10 @@ DEFAULT_CONFIG = {
     "indexer_storage": (
         "dict",
         {"cls": "remote", "url": "http://127.0.0.1:5007/", "timeout": 1,},
+    ),
+    "counters": (
+        "dict",
+        {"cls": "remote", "url": "http://127.0.0.1:5011/", "timeout": 1,},
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -124,6 +129,7 @@ DEFAULT_CONFIG = {
         },
     ),
     "metadata_search_backend": ("string", "swh-indexer-storage"),  # or "swh-search"
+    "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", STAGING_SERVER_NAMES),
 }
 
@@ -161,6 +167,7 @@ def get_config(config_file="web/web"):
             **swhweb_config["indexer_storage"]
         )
         swhweb_config["scheduler"] = get_scheduler(**swhweb_config["scheduler"])
+        swhweb_config["counters"] = get_counters(**swhweb_config["counters"])
     return swhweb_config
 
 
@@ -197,3 +204,10 @@ def scheduler():
 
     """
     return get_config()["scheduler"]
+
+
+def counters():
+    """Return the current application's counters.
+
+    """
+    return get_config()["counters"]
