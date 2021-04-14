@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -433,7 +433,7 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, origin, direc
 
     # check special characters in SWHID URL have been escaped
     parsed_url_swhid = QualifiedSWHID.from_string(
-        swhid_info["swhid_with_context_url"][1:-1]
+        swhid_info["swhid_with_context_url"][1:]
     )
     assert (
         parsed_url_swhid.qualifiers()["origin"]
