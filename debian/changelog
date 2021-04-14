@@ -1,3 +1,9 @@
+swh-web (0.0.296-1~swh2) unstable-swh; urgency=medium
+
+  * Add missing swh-counters dependency
+
+ -- Vincent SELLIER <vincent.sellier@softwareheritage.org>  Wed, 14 Apr 2021 17:14:34 +0200
+
 swh-web (0.0.296-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.296     - (tagged by Vincent SELLIER
