@@ -257,8 +257,10 @@ describe('Origin Save Tests', function() {
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };
-    cy.intercept('/save/requests/list/**', {body: saveRequestsListData});
+    cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
+      .as('saveRequestsList');
     cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.wait('@saveRequestsList');
     cy.get('tbody tr').then(rows => {
       const firstRowCells = rows[0].cells;
       const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(originUrl)}`;
