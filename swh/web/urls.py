@@ -47,16 +47,16 @@ urlpatterns = [
     url(r"^browse/", include("swh.web.browse.urls")),
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
-    url(
-        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)$",
-        swhid_browse,
-        name="browse-swhid",
-    ),
     # keep legacy SWHID resolving URL with trailing slash for backward compatibility
     url(
         r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
         swhid_browse,
         name="browse-swhid-legacy",
+    ),
+    url(
+        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)$",
+        swhid_browse,
+        name="browse-swhid",
     ),
     url(r"^", include("swh.web.misc.urls")),
     url(r"^", include("swh.web.auth.views")),
