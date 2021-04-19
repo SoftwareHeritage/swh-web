@@ -159,6 +159,15 @@ def _check_origin_url_valid(origin_url: str) -> None:
 def _get_visit_info_for_save_request(
     save_request: SaveOriginRequest,
 ) -> Tuple[Optional[datetime], Optional[str]]:
+    """Retrieve visit information out of a save request
+
+    Args:
+        save_request: Input save origin request to retrieve information for.
+
+    Returns:
+        Tuple of (visit date, optional visit status) for such save request origin
+
+    """
     visit_date = None
     visit_status = None
     time_now = datetime.now(tz=timezone.utc)
@@ -185,12 +194,23 @@ def _get_visit_info_for_save_request(
 def _check_visit_update_status(
     save_request: SaveOriginRequest, save_task_status: str
 ) -> Tuple[Optional[datetime], str]:
+    """Given a save request and a save task status, determine whether a save request was
+    successful or failed.
+
+    Args:
+        save_request: Input save origin request to retrieve information for.
+
+    Returns:
+        Tuple of (optional visit date, save task status) for such save request origin
+
+    """
     visit_date, visit_status = _get_visit_info_for_save_request(save_request)
     save_request.visit_date = visit_date
-    # visit has been performed, mark the saving task as succeed
     if visit_date and visit_status is not None:
+        # visit has been performed, mark the saving task as succeeded
         save_task_status = SAVE_TASK_SUCCEEDED
     elif visit_status in ("created", "ongoing"):
+        # visit is currently running
         save_task_status = SAVE_TASK_RUNNING
     elif visit_status in ("not_found", "failed"):
         save_task_status = SAVE_TASK_FAILED
@@ -209,12 +229,25 @@ def _save_request_dict(
     task: Optional[Dict[str, Any]] = None,
     task_run: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    """Update save request information out of task and task_run information.
+
+    Args:
+        save_request: Save request
+        task: Associated scheduler task information about the save request
+        task_run: Most recent run occurrence of the associated task
+
+    Returns:
+        Summary of the save request information updated.
+
+    """
     must_save = False
     visit_date = save_request.visit_date
+
     # save task still in scheduler db
     if task:
         save_task_status = _save_task_status[task["status"]]
         if task_run:
+
             save_task_status = _save_task_run_status[task_run["status"]]
         # Consider request from which a visit date has already been found
         # as succeeded to avoid retrieving it again

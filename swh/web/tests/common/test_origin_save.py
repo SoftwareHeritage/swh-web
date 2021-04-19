@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  The Software Heritage developers
+# Copyright (C) 2019-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,7 @@
 from datetime import datetime, timedelta, timezone
 from functools import partial
 import re
+from typing import Optional
 
 import pytest
 import requests
@@ -229,8 +230,12 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     mock_get_origin_visits.assert_called_once()
 
 
-def _get_save_origin_requests(mocker, load_status, visit_status):
-    # create a save request
+def _get_save_origin_requests(
+    mocker, load_status, visit_status, request_date: Optional[datetime] = None
+):
+    """Wrapper around the get_origin_save_origin_request call.
+
+    """
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -256,7 +261,7 @@ def _get_save_origin_requests(mocker, load_status, visit_status):
         formatted_date="",
         metadata={},
         origin=_origin_url,
-        snapshot=None,
+        snapshot="",  # make mypy happy
         status=visit_status,
         type=_visit_type,
         url="",
@@ -271,9 +276,13 @@ def _get_save_origin_requests(mocker, load_status, visit_status):
 
 
 @pytest.mark.django_db
-def test_get_save_origin_requests_no_visit_date_found(mocker):
+@pytest.mark.parametrize("visit_status", ["created", "ongoing",])
+def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
+    """Uneventful visits with failed visit status are marked as failed
+
+    """
     sors = _get_save_origin_requests(
-        mocker, load_status="scheduled", visit_status="created"
+        mocker, load_status="scheduled", visit_status=visit_status,
     )
     # check no visit date has been found
     assert len(sors) == 1
@@ -282,23 +291,57 @@ def test_get_save_origin_requests_no_visit_date_found(mocker):
 
 
 @pytest.mark.django_db
-def test_get_save_origin_requests_failed_when_not_found(mocker):
+@pytest.mark.parametrize("visit_status", ["not_found", "failed",])
+def test_get_save_origin_requests_no_failed_status_override(mocker, visit_status):
+    """Uneventful visits with failed statuses (failed, not found) are marked as failed
+
+    """
     sors = _get_save_origin_requests(
-        mocker, load_status="uneventful", visit_status="not_found"
+        mocker, load_status="uneventful", visit_status=visit_status
     )
     assert len(sors) == 1
+
     assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
-    assert sors[0]["visit_date"] is not None
+    visit_date = sors[0]["visit_date"]
+    if visit_status == "failed":
+        assert visit_date is None
+    else:
+        assert visit_date is not None
+
+    sors = get_save_origin_requests(_visit_type, _origin_url)
+    assert len(sors) == 1
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
 
 
 @pytest.mark.django_db
-def test_get_save_origin_requests_no_failed_status_override(mocker):
+@pytest.mark.parametrize(
+    "load_status,visit_status",
+    [("eventful", "full"), ("eventful", "partial"), ("uneventful", "partial"),],
+)
+def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_status):
+    """Nominal scenario, below 30 days, returns something"""
     sors = _get_save_origin_requests(
-        mocker, load_status="uneventful", visit_status="not_found"
+        mocker, load_status=load_status, visit_status=visit_status
     )
     assert len(sors) == 1
-    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
+
+    assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] is not None
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
-    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
+    assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("load_status", ["eventful", "uneventful",])
+def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
+    """Incomplete visit information, yet the task is considered ok
+
+    """
+    sors = _get_save_origin_requests(
+        mocker, load_status=load_status, visit_status=None,
+    )
+    assert len(sors) == 1
+
+    assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
+    assert sors[0]["visit_date"] is None
