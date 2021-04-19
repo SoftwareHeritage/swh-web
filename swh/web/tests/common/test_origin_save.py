@@ -239,6 +239,7 @@ def _get_save_origin_requests(
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
+        visit_status=visit_status,
         origin_url=_origin_url,
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
@@ -288,6 +289,7 @@ def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_RUNNING
     assert sors[0]["visit_date"] is None
+    assert sors[0]["visit_status"] == visit_status
 
 
 @pytest.mark.django_db
@@ -311,6 +313,7 @@ def test_get_save_origin_requests_no_failed_status_override(mocker, visit_status
     sors = get_save_origin_requests(_visit_type, _origin_url)
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
+    assert sors[0]["visit_status"] == visit_status
 
 
 @pytest.mark.django_db
@@ -327,9 +330,11 @@ def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_st
 
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] is not None
+    assert sors[0]["visit_status"] == visit_status
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
+    assert sors[0]["visit_status"] == visit_status
 
 
 @pytest.mark.django_db
@@ -345,3 +350,4 @@ def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
 
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] is None
+    assert sors[0]["visit_status"] is None

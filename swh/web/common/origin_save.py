@@ -294,6 +294,7 @@ def _save_request_dict(
     return {
         "id": save_request.id,
         "visit_type": save_request.visit_type,
+        "visit_status": save_request.visit_status,
         "origin_url": save_request.origin_url,
         "save_request_date": save_request.request_date.isoformat(),
         "save_request_status": save_request.status,
