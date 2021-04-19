@@ -189,6 +189,16 @@ def test_legacy_swhid_browse(archive_data, client, origin):
 
     assert_contains(resp, swhid)
 
+    # also check legacy SWHID URL with trailing slash
+    url = reverse("browse-swhid-legacy", url_args={"swhid": swhid})
+
+    resp = check_html_get_response(client, url, status_code=302)
+    resp = check_html_get_response(
+        client, resp["location"], status_code=200, template_used="browse/content.html"
+    )
+
+    assert_contains(resp, swhid)
+
 
 @given(directory())
 def test_browse_swhid_special_characters_escaping(client, archive_data, directory):
