@@ -249,7 +249,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.revisionUrl);
 
     // Stub response to the vault API indicating to simulate archive download
-    cy.intercept(this.vaultFetchRevisionUrl, {
+    cy.intercept({url: this.vaultFetchRevisionUrl}, {
       fixture: `${this.revision}.gitfast.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
@@ -369,7 +369,7 @@ describe('Vault Cooking User Interface Tests', function() {
     updateVaultItemList(this.Urls.browse_vault(), vaultItems);
 
     // Send 404 when fetching vault item
-    cy.intercept(this.vaultFetchRevisionUrl, {
+    cy.intercept({url: this.vaultFetchRevisionUrl}, {
       statusCode: 404,
       body: {
         'exception': 'NotFoundExc',
@@ -397,8 +397,7 @@ describe('Vault Cooking User Interface Tests', function() {
         .contains('button:visible', 'Ok')
         .click();
 
-      cy.wait('@createVaultCookingTask')
-        .wait('@checkVaultCookingTask')
+      cy.wait('@checkVaultCookingTask')
         .then(() => {
           testStatus(this.revision, progressbarColors['new'], 'new', 'new');
         });
@@ -425,7 +424,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.directoryUrl);
 
     // Stub response to the vault API to simulate archive download
-    cy.intercept(this.vaultFetchDirectoryUrl, {
+    cy.intercept({url: this.vaultFetchDirectoryUrl}, {
       fixture: `${this.directory}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
@@ -458,7 +457,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.revisionUrl);
 
     // Stub response to the vault API to simulate archive download
-    cy.intercept(this.vaultFetchRevisionUrl, {
+    cy.intercept({url: this.vaultFetchRevisionUrl}, {
       fixture: `${this.revision}.gitfast.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,

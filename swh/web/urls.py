@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -48,9 +48,15 @@ urlpatterns = [
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
     url(
-        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)$",
         swhid_browse,
         name="browse-swhid",
+    ),
+    # keep legacy SWHID resolving URL with trailing slash for backward compatibility
+    url(
+        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        swhid_browse,
+        name="browse-swhid-legacy",
     ),
     url(r"^", include("swh.web.misc.urls")),
     url(r"^", include("swh.web.auth.views")),

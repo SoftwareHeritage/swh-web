@@ -200,27 +200,32 @@ export function initOriginSearch() {
   $(document).ready(() => {
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
-      let searchQueryText = $('#swh-origins-url-patterns').val().trim();
-      let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-      let withContent = $('#swh-filter-empty-visits').prop('checked');
-      let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
-      const visitType = $('#swh-search-visit-type').val();
-      let queryParameters = new URLSearchParams();
-      queryParameters.append('q', searchQueryText);
-      if (withVisit) {
-        queryParameters.append('with_visit', withVisit);
+      if (event.target.checkValidity()) {
+        $(event.target).removeClass('was-validated');
+        let searchQueryText = $('#swh-origins-url-patterns').val().trim();
+        let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+        let withContent = $('#swh-filter-empty-visits').prop('checked');
+        let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+        const visitType = $('#swh-search-visit-type').val();
+        let queryParameters = new URLSearchParams();
+        queryParameters.append('q', searchQueryText);
+        if (withVisit) {
+          queryParameters.append('with_visit', withVisit);
+        }
+        if (withContent) {
+          queryParameters.append('with_content', withContent);
+        }
+        if (searchMetadata) {
+          queryParameters.append('search_metadata', searchMetadata);
+        }
+        if (visitType !== 'any') {
+          queryParameters.append('visit_type', visitType);
+        }
+        // Update the url, triggering page reload and effective search
+        window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
+      } else {
+        $(event.target).addClass('was-validated');
       }
-      if (withContent) {
-        queryParameters.append('with_content', withContent);
-      }
-      if (searchMetadata) {
-        queryParameters.append('search_metadata', searchMetadata);
-      }
-      if (visitType !== 'any') {
-        queryParameters.append('visit_type', visitType);
-      }
-      // Update the url, triggering page reload and effective search
-      window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
     });
 
     $('#origins-next-results-button').click(event => {
