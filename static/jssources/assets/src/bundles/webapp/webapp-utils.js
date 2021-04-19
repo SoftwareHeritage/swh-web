@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -168,14 +168,18 @@ $(document).ready(() => {
   // navbar search form submission callback
   $('#swh-origins-search-top').submit(event => {
     event.preventDefault();
-    let searchQueryText = $('#swh-origins-search-top-input').val().trim();
-    let queryParameters = new URLSearchParams();
-    queryParameters.append('q', searchQueryText);
-    queryParameters.append('with_visit', true);
-    queryParameters.append('with_content', true);
-    window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
+    if (event.target.checkValidity()) {
+      $(event.target).removeClass('was-validated');
+      let searchQueryText = $('#swh-origins-search-top-input').val().trim();
+      let queryParameters = new URLSearchParams();
+      queryParameters.append('q', searchQueryText);
+      queryParameters.append('with_visit', true);
+      queryParameters.append('with_content', true);
+      window.location = `${Urls.browse_search()}?${queryParameters.toString()}`;
+    } else {
+      $(event.target).addClass('was-validated');
+    }
   });
-
 });
 
 export function initPage(page) {
@@ -354,4 +358,19 @@ export function setContainerFullWidth() {
   if (previousFullWidthState !== null) {
     setFullWidth(previousFullWidthState);
   }
+}
+
+export async function validateSWHIDInput(swhidInputElt) {
+  const swhidInput = swhidInputElt.value.trim();
+  let customValidity = '';
+  if (swhidInput.startsWith('swh:')) {
+    const resolveSWHIDUrl = Urls.api_1_resolve_swhid(swhidInput);
+    const response = await fetch(resolveSWHIDUrl);
+    const responseData = await response.json();
+    if (responseData.hasOwnProperty('exception')) {
+      customValidity = responseData.reason;
+    }
+  }
+  swhidInputElt.setCustomValidity(customValidity);
+  $(swhidInputElt).siblings('.invalid-feedback').text(customValidity);
 }

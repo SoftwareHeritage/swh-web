@@ -8,6 +8,7 @@ MANIFEST.in
 Makefile
 Makefile.local
 README.md
+conftest.py
 cypress.json
 mypy.ini
 package.json
@@ -172,8 +173,8 @@ static/css/vault.722168a018a7b8fa9ede.css
 static/css/vault.722168a018a7b8fa9ede.css.map
 static/css/vendors.1c7ae9818e2ad15f9666.css
 static/css/vendors.1c7ae9818e2ad15f9666.css.map
-static/css/webapp.db759e51f7d80199b330.css
-static/css/webapp.db759e51f7d80199b330.css.map
+static/css/webapp.2e4d6a7bb0d4b513dd2f.css
+static/css/webapp.2e4d6a7bb0d4b513dd2f.css.map
 static/fonts/MathJax_AMS-Regular..woff
 static/fonts/MathJax_Calligraphic-Bold..woff
 static/fonts/MathJax_Calligraphic-Regular..woff
@@ -282,9 +283,9 @@ static/js/admin.f37326daaf3a49ba51ad.js
 static/js/admin.f37326daaf3a49ba51ad.js.map
 static/js/auth.e860afa6166407d8b6c5.js
 static/js/auth.e860afa6166407d8b6c5.js.map
-static/js/browse.8302c84166006fcc8a08.js
-static/js/browse.8302c84166006fcc8a08.js.LICENSE.txt
-static/js/browse.8302c84166006fcc8a08.js.map
+static/js/browse.d2b27b10a64ac3fd2345.js
+static/js/browse.d2b27b10a64ac3fd2345.js.LICENSE.txt
+static/js/browse.d2b27b10a64ac3fd2345.js.map
 static/js/d3.8fe568ac544f491fc1d6.js
 static/js/d3.8fe568ac544f491fc1d6.js.map
 static/js/highlightjs.20b210fb4e503f75c059.js
@@ -312,9 +313,9 @@ static/js/vault.20d925d31882c1536bd4.js.map
 static/js/vendors.beac8b54a21ee94ca7b5.js
 static/js/vendors.beac8b54a21ee94ca7b5.js.LICENSE.txt
 static/js/vendors.beac8b54a21ee94ca7b5.js.map
-static/js/webapp.fc42f8faf73342c6614c.js
-static/js/webapp.fc42f8faf73342c6614c.js.LICENSE.txt
-static/js/webapp.fc42f8faf73342c6614c.js.map
+static/js/webapp.85370f5670c0b8d4b004.js
+static/js/webapp.85370f5670c0b8d4b004.js.LICENSE.txt
+static/js/webapp.85370f5670c0b8d4b004.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
