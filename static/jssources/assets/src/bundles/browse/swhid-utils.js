@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -30,7 +30,7 @@ export function swhIdContextOptionToggled(event) {
     if (pos !== -1) {
       currentSwhId = currentSwhId.slice(0, pos);
     }
-    swhIdElt.attr('href', '/' + currentSwhId + '/');
+    swhIdElt.attr('href', '/' + currentSwhId);
   }
   swhIdElt.text(currentSwhId);
 
@@ -62,7 +62,7 @@ function addLinesInfo() {
     }
 
     swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
-    swhIdElt.attr('href', '/' + currentSwhId + '/');
+    swhIdElt.attr('href', '/' + currentSwhId);
   }
 }
 

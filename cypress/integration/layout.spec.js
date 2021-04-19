@@ -167,15 +167,17 @@ describe('Test top-bar', function() {
       responses.push(genStatusResponse(std.status, std.statusCode));
     }
 
+    let i = 0;
     for (let std of statusTestData) {
       cy.visit(url);
       // trick to override the response of an intercepted request
       // https://github.com/cypress-io/cypress/issues/9302
       cy.intercept(`${statusUrl}/**`, req => req.reply(responses.shift()))
-        .as('getSwhStatusData');
-      cy.wait('@getSwhStatusData');
+        .as(`getSwhStatusData${i}`);
+      cy.wait(`@getSwhStatusData${i}`);
       cy.get('.swh-current-status-indicator').should('have.class', std.color);
       cy.get('#swh-current-status-description').should('have.text', std.status);
+      ++i;
     }
   });
 

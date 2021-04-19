@@ -1,18 +1,20 @@
 {% comment %}
-Copyright (C) 2020  The Software Heritage developers
+Copyright (C) 2020-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<form class="form-horizontal" id="swh-search-origins">
+<form class="form-horizontal needs-validation" id="swh-search-origins" novalidate>
   <div class="input-group">
     <input class="form-control"
            placeholder="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
-           type="text" id="swh-origins-url-patterns" autofocus>
+           type="text" id="swh-origins-url-patterns"
+           oninput="swh.webapp.validateSWHIDInput(this)" autofocus required>
     <div class="input-group-append">
       <button class="btn btn-primary" type="submit"><i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i></button>
     </div>
+    <div class="invalid-feedback"></div>
   </div>
   <div class="row mt-1 mb-1 float-right position-relative" style="z-index: 1000">
     <div class="form-group form-inline">
