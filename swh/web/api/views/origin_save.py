@@ -69,11 +69,17 @@ def api_save_origin(request, visit_type, origin_url):
         :>json string save_task_status: the status of the origin saving task,
             either **not created**, **not yet scheduled**, **scheduled**,
             **succeeded** or **failed**
+        :>json string visit_date: the date (in iso format) of the visit if a visit
+            occurred, null otherwise.
+        :>json string visit_status: the status of the visit, either **full**,
+            **partial**, **not_found** or **failed** if a visit occurred, null
+            otherwise.
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
         :statuscode 403: the provided origin url is blacklisted
         :statuscode 404: no save requests have been found for a given origin
+
     """
 
     if request.method == "POST":

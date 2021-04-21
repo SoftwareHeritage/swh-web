@@ -184,7 +184,7 @@ def _get_visit_info_for_save_request(
             if i != len(visit_dates):
                 visit_date = visit_dates[i]
                 visit_status = origin_visits[i]["status"]
-                if origin_visits[i]["status"] not in ("full", "partial", "not_found"):
+                if visit_status not in ("full", "partial", "not_found"):
                     visit_date = None
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
@@ -206,7 +206,8 @@ def _check_visit_update_status(
     """
     visit_date, visit_status = _get_visit_info_for_save_request(save_request)
     save_request.visit_date = visit_date
-    if visit_date and visit_status is not None:
+    save_request.visit_status = visit_status
+    if visit_date and visit_status in ("full", "partial"):
         # visit has been performed, mark the saving task as succeeded
         save_task_status = SAVE_TASK_SUCCEEDED
     elif visit_status in ("created", "ongoing"):
@@ -247,8 +248,8 @@ def _save_request_dict(
     if task:
         save_task_status = _save_task_status[task["status"]]
         if task_run:
-
             save_task_status = _save_task_run_status[task_run["status"]]
+
         # Consider request from which a visit date has already been found
         # as succeeded to avoid retrieving it again
         if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
@@ -259,6 +260,7 @@ def _save_request_dict(
         ):
             visit_date, visit_status = _get_visit_info_for_save_request(save_request)
             save_request.visit_date = visit_date
+            save_request.visit_status = visit_status
             if visit_status in ("failed", "not_found"):
                 save_task_status = SAVE_TASK_FAILED
             must_save = True
