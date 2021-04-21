@@ -392,17 +392,17 @@ export function displaySaveRequestInfo(event, saveRequestId) {
       } else {
         let saveRequestInfo = [];
         const taskData = {
-          'Task Type': ['raw', 'type'],
-          'Task Visit status': ['raw', 'visit_status'],
-          'Task Arguments': ['json', 'arguments'],
-          'Task Id': ['raw', 'id'],
-          'Task Backend id': ['raw', 'backend_id'],
-          'Task Scheduling date': ['date', 'scheduled'],
-          'Task Start date': ['date', 'started'],
-          'Task Termination date': ['date', 'ended'],
-          'Task Duration': ['duration', 'duration'],
-          'Task Executor': ['raw', 'worker'],
-          'Task Log': ['raw', 'message']
+          'Type': ['raw', 'type'],
+          'Visit status': ['raw', 'visit_status'],
+          'Arguments': ['json', 'arguments'],
+          'Id': ['raw', 'id'],
+          'Backend id': ['raw', 'backend_id'],
+          'Scheduling date': ['date', 'scheduled'],
+          'Start date': ['date', 'started'],
+          'Termination date': ['date', 'ended'],
+          'Duration': ['duration', 'duration'],
+          'Executor': ['raw', 'worker'],
+          'Log': ['raw', 'message']
         };
         for (const [title, [type, property]] of Object.entries(taskData)) {
           if (saveRequestTaskInfo.hasOwnProperty(property)) {
