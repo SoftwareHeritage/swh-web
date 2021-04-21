@@ -132,6 +132,7 @@ def _get_save_origin_task_info_test(
             "started": task_run["started"],
             "ended": task_run["ended"],
             "status": task_run["status"],
+            "visit_status": sor.visit_status,
         }
         if not task_archived
         else {}

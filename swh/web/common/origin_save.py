@@ -529,6 +529,7 @@ def get_save_origin_task_info(
             - **scheduled**: loading task scheduling date
             - **ended**: loading task termination date
             - **status**: loading task execution status
+            - **visit_status**: Actual visit status
 
         Depending on the availability of the task logs in the elasticsearch
         cluster of Software Heritage, the returned dictionary may also
@@ -558,6 +559,8 @@ def get_save_origin_task_info(
     task_run["id"] = task_run["task"]
     del task_run["task"]
     del task_run["metadata"]
+    # Enrich the task run with the loading visit status
+    task_run["visit_status"] = save_request.visit_status
 
     es_workers_index_url = config.get_config()["es_workers_index_url"]
     if not es_workers_index_url:

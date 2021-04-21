@@ -45,7 +45,8 @@ function stubSaveRequest({
   responseStatus = 200,
   errorMessage = '',
   saveRequestDate = new Date(),
-  visitDate = new Date()
+  visitDate = new Date(),
+  visitStatus = null
 } = {}) {
   let response;
   if (responseStatus !== 200 && errorMessage) {
@@ -58,7 +59,9 @@ function stubSaveRequest({
                                       originUrl: originUrl,
                                       saveRequestDate: saveRequestDate,
                                       saveTaskStatus: saveTaskStatus,
-                                      visitDate: visitDate});
+                                      visitDate: visitDate,
+                                      visitStatus: visitStatus
+    });
   }
   cy.intercept('POST', requestUrl, {body: response, statusCode: responseStatus})
     .as('saveRequest');
@@ -72,7 +75,8 @@ function genOriginSaveResponse({
   originUrl,
   saveRequestDate = new Date(),
   saveTaskStatus,
-  visitDate = new Date()
+  visitDate = new Date(),
+  visitStatus
 } = {}) {
   return {
     'visit_type': visitType,
@@ -81,7 +85,8 @@ function genOriginSaveResponse({
     'id': 1,
     'save_request_date': saveRequestDate ? saveRequestDate.toISOString() : null,
     'save_task_status': saveTaskStatus,
-    'visit_date': visitDate ? visitDate.toISOString() : null
+    'visit_date': visitDate ? visitDate.toISOString() : null,
+    'visit_status': visitStatus
   };
 };
 
@@ -249,7 +254,8 @@ describe('Origin Save Tests', function() {
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
       saveTaskStatus: 'succeeded',
-      visitDate: null
+      visitDate: null,
+      visitStatus: 'full'
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
@@ -335,6 +341,7 @@ describe('Origin Save Tests', function() {
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
                      saveTaskStatus: 'failed',
+                     visitStatus: 'failed',
                      responseStatus: 200,
                      errorMessage: saveCodeMsg['accepted']});
 

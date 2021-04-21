@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -336,6 +336,18 @@ export function initTakeNewSnapshot() {
   });
 }
 
+export function formatValuePerType(type, value) {
+  // Given some typed value, format and return accordingly formatted value
+  const mapFormatPerTypeFn = {
+    'json': (v) => JSON.stringify(v, null, 2),
+    'date': (v) => new Date(v).toLocaleString(),
+    'raw': (v) => v,
+    'duration': (v) => v + ' seconds'
+  };
+
+  return mapFormatPerTypeFn[type](value);
+}
+
 export function displaySaveRequestInfo(event, saveRequestId) {
   event.stopPropagation();
   const saveRequestTaskInfoUrl = Urls.origin_save_task_info(saveRequestId);
@@ -379,65 +391,26 @@ export function displaySaveRequestInfo(event, saveRequestId) {
         content = 'Not available';
       } else {
         let saveRequestInfo = [];
-        if (saveRequestTaskInfo.type) {
-          saveRequestInfo.push({
-            key: 'Task type',
-            value: saveRequestTaskInfo.type
-          });
-        }
-        if (saveRequestTaskInfo.arguments) {
-          saveRequestInfo.push({
-            key: 'Task arguments',
-            value: JSON.stringify(saveRequestTaskInfo.arguments, null, 2)
-          });
-        }
-        if (saveRequestTaskInfo.id) {
-          saveRequestInfo.push({
-            key: 'Task id',
-            value: saveRequestTaskInfo.id
-          });
-        }
-        if (saveRequestTaskInfo.backend_id) {
-          saveRequestInfo.push({
-            key: 'Task backend id',
-            value: saveRequestTaskInfo.backend_id
-          });
-        }
-        if (saveRequestTaskInfo.scheduled) {
-          saveRequestInfo.push({
-            key: 'Task scheduling date',
-            value: new Date(saveRequestTaskInfo.scheduled).toLocaleString()
-          });
-        }
-        if (saveRequestTaskInfo.started) {
-          saveRequestInfo.push({
-            key: 'Task start date',
-            value: new Date(saveRequestTaskInfo.started).toLocaleString()
-          });
-        }
-        if (saveRequestTaskInfo.ended) {
-          saveRequestInfo.push({
-            key: 'Task termination date',
-            value: new Date(saveRequestTaskInfo.ended).toLocaleString()
-          });
-        }
-        if (saveRequestTaskInfo.duration) {
-          saveRequestInfo.push({
-            key: 'Task duration',
-            value: saveRequestTaskInfo.duration + ' seconds'
-          });
-        }
-        if (saveRequestTaskInfo.worker) {
-          saveRequestInfo.push({
-            key: 'Task executor',
-            value: saveRequestTaskInfo.worker
-          });
-        }
-        if (saveRequestTaskInfo.message) {
-          saveRequestInfo.push({
-            key: 'Task log',
-            value: saveRequestTaskInfo.message
-          });
+        const taskData = {
+          'Task Type': ['raw', 'type'],
+          'Task Visit status': ['raw', 'visit_status'],
+          'Task Arguments': ['json', 'arguments'],
+          'Task Id': ['raw', 'id'],
+          'Task Backend id': ['raw', 'backend_id'],
+          'Task Scheduling date': ['date', 'scheduled'],
+          'Task Start date': ['date', 'started'],
+          'Task Termination date': ['date', 'ended'],
+          'Task Duration': ['duration', 'duration'],
+          'Task Executor': ['raw', 'worker'],
+          'Task Log': ['raw', 'message']
+        };
+        for (const [title, [type, property]] of Object.entries(taskData)) {
+          if (saveRequestTaskInfo.hasOwnProperty(property)) {
+            saveRequestInfo.push({
+              key: title,
+              value: formatValuePerType(type, saveRequestTaskInfo[property])
+            });
+          }
         }
         content = '<table class="table"><tbody>';
         for (let info of saveRequestInfo) {
