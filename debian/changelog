@@ -1,3 +1,17 @@
+swh-web (0.0.299-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.299     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-04-22 09:12:22
+    +0200)
+  * Upstream changes:     - v0.0.299     - Drop redundant `Task` prefix
+    in row title in save code now detail view     - Display visit status
+    information in the save request information detail view     - docs:
+    Remove doc_config module and its use     - tests: Turn some global
+    js variables into functions     - tests: Add docstring and some test
+    scenarios to the save code now code
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 22 Apr 2021 07:24:54 +0000
+
 swh-web (0.0.298-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.298     - (tagged by Antoine Lambert
