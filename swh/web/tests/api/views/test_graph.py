@@ -39,7 +39,7 @@ def test_graph_endpoint_needs_authentication(api_client):
 
 
 def _authenticate_graph_user(api_client, keycloak_oidc):
-    keycloak_oidc.user_permissions = [API_GRAPH_PERM]
+    keycloak_oidc.client_permissions = [API_GRAPH_PERM]
     oidc_profile = keycloak_oidc.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
