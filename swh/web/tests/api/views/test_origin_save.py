@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,6 +18,8 @@ from swh.web.common.models import (
     SAVE_TASK_NOT_YET_SCHEDULED,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
+    VISIT_STATUS_FAILED,
+    VISIT_STATUS_FULL,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
@@ -130,6 +132,7 @@ def check_save_request_status(
     scheduler_task_status="next_run_not_scheduled",
     scheduler_task_run_status=None,
     visit_date=None,
+    visit_status=None,
 ):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
     mock_scheduler.get_tasks.return_value = [
@@ -166,12 +169,13 @@ def check_save_request_status(
     mock_visit_date = mocker.patch(
         ("swh.web.common.origin_save." "_get_visit_info_for_save_request")
     )
-    mock_visit_date.return_value = (visit_date, None)
+    mock_visit_date.return_value = (visit_date, visit_status)
     response = check_api_get_responses(api_client, url, status_code=200)
     save_request_data = response.data[0]
 
     assert save_request_data["save_request_status"] == expected_request_status
     assert save_request_data["save_task_status"] == expected_task_status
+    assert save_request_data["visit_status"] == visit_status
 
     # Check that save task status is still available when
     # the scheduler task has been archived
@@ -179,6 +183,7 @@ def check_save_request_status(
     response = check_api_get_responses(api_client, url, status_code=200)
     save_request_data = response.data[0]
     assert save_request_data["save_task_status"] == expected_task_status
+    assert save_request_data["visit_status"] == visit_status
 
 
 def test_save_request_rejected(api_client, mocker):
@@ -251,6 +256,7 @@ def test_save_request_succeed(api_client, mocker):
         scheduler_task_status="completed",
         scheduler_task_run_status="eventful",
         visit_date=visit_date,
+        visit_status=VISIT_STATUS_FULL,
     )
 
 
@@ -280,6 +286,7 @@ def test_save_request_failed(api_client, mocker):
         expected_task_status=SAVE_TASK_FAILED,
         scheduler_task_status="disabled",
         scheduler_task_run_status="failed",
+        visit_status=VISIT_STATUS_FAILED,
     )
 
 
