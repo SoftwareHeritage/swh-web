@@ -20,6 +20,7 @@ from swh.web.common.models import (
     SAVE_TASK_SUCCEEDED,
     VISIT_STATUS_FAILED,
     VISIT_STATUS_FULL,
+    SaveAuthorizedOrigin,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
@@ -31,6 +32,8 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(autouse=True)
 def populated_db():
+    SaveAuthorizedOrigin.objects.create(url="https://github.com/"),
+    SaveAuthorizedOrigin.objects.create(url="https://gitlab.com/"),
     SaveUnauthorizedOrigin.objects.create(url="https://github.com/user/illegal_repo")
     SaveUnauthorizedOrigin.objects.create(url="https://gitlab.com/user_to_exclude")
 
