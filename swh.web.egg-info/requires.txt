@@ -33,6 +33,7 @@ swh.vault>=0.0.33
 decorator
 djangorestframework-stubs
 django-stubs
+django-test-migrations
 hypothesis
 pytest
 pytest-django

@@ -1,6 +1,7 @@
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
 django-stubs
+django-test-migrations
 hypothesis
 pytest
 pytest-django

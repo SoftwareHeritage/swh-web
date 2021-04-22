@@ -12,25 +12,35 @@ import sentry_sdk
 
 from django.contrib.staticfiles.finders import find
 
-with open(str(find("json/highlightjs-languages.json")), "r") as _hljs_languages_file:
-    _hljs_languages_data = json.load(_hljs_languages_file)
+
+@functools.lru_cache()
+def _hljs_languages_data():
+    with open(str(find("json/highlightjs-languages.json")), "r") as hljs_languages_file:
+        return json.load(hljs_languages_file)
+
 
 # set of languages ids that can be highlighted by highlight.js library
-_hljs_languages = set(_hljs_languages_data["languages"])
+@functools.lru_cache()
+def _hljs_languages():
+    return set(_hljs_languages_data()["languages"])
+
 
 # languages aliases defined in highlight.js
-_hljs_languages_aliases = {
-    **_hljs_languages_data["languages_aliases"],
-    "ml": "ocaml",
-    "bsl": "1c",
-    "ep": "mojolicious",
-    "lc": "livecode",
-    "p": "parser3",
-    "pde": "processing",
-    "rsc": "routeros",
-    "s": "armasm",
-    "sl": "rsl",
-}
+@functools.lru_cache()
+def _hljs_languages_aliases():
+    return {
+        **_hljs_languages_data()["languages_aliases"],
+        "ml": "ocaml",
+        "bsl": "1c",
+        "ep": "mojolicious",
+        "lc": "livecode",
+        "p": "parser3",
+        "pde": "processing",
+        "rsc": "routeros",
+        "s": "armasm",
+        "sl": "rsl",
+    }
+
 
 # dictionary mapping pygment lexers to hljs languages
 _pygments_lexer_to_hljs_language = {}  # type: Dict[str, str]
@@ -68,7 +78,7 @@ def _init_pygments_to_hljs_map():
             lang_mime_types = lexer[3]
             lang = None
             for lang_alias in lang_aliases:
-                if lang_alias in _hljs_languages:
+                if lang_alias in _hljs_languages():
                     lang = lang_alias
                     _pygments_lexer_to_hljs_language[lexer_name] = lang_alias
                     break
@@ -94,16 +104,16 @@ def get_hljs_language_from_filename(filename):
         filename_lower = filename.lower()
         if filename_lower in _filename_to_hljs_language:
             return _filename_to_hljs_language[filename_lower]
-        if filename_lower in _hljs_languages:
+        if filename_lower in _hljs_languages():
             return filename_lower
         exts = filename_lower.split(".")
         # check if file extension matches an hljs language
         # also handle .ext.in cases
         for ext in reversed(exts[-2:]):
-            if ext in _hljs_languages:
+            if ext in _hljs_languages():
                 return ext
-            if ext in _hljs_languages_aliases:
-                return _hljs_languages_aliases[ext]
+            if ext in _hljs_languages_aliases():
+                return _hljs_languages_aliases()[ext]
 
         # otherwise use Pygments language database
         lexer = None
@@ -121,8 +131,8 @@ def get_hljs_language_from_filename(filename):
         if lexer:
             exts = [ext.replace("*.", "") for ext in lexer.filenames]
             for ext in exts:
-                if ext in _hljs_languages_aliases:
-                    return _hljs_languages_aliases[ext]
+                if ext in _hljs_languages_aliases():
+                    return _hljs_languages_aliases()[ext]
     return None
 
 
@@ -151,4 +161,4 @@ def get_supported_languages():
     Returns:
         List[str]: the list of supported languages
     """
-    return sorted(list(_hljs_languages))
+    return sorted(list(_hljs_languages()))

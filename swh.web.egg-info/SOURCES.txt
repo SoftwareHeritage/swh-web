@@ -303,8 +303,8 @@ static/js/pdfjs.a10c5eaf6b34d3e0c3c6.js.map
 static/js/revision.25ab4c3df55e3cf7eca4.js
 static/js/revision.25ab4c3df55e3cf7eca4.js.LICENSE.txt
 static/js/revision.25ab4c3df55e3cf7eca4.js.map
-static/js/save.d59ccda4639c6cc6d27f.js
-static/js/save.d59ccda4639c6cc6d27f.js.map
+static/js/save.6e39e731d72a0d0d5a17.js
+static/js/save.6e39e731d72a0d0d5a17.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
@@ -1370,7 +1370,6 @@ swh.web.egg-info/requires.txt
 swh.web.egg-info/top_level.txt
 swh/web/__init__.py
 swh/web/config.py
-swh/web/doc_config.py
 swh/web/gunicorn_config.py
 swh/web/manage.py
 swh/web/py.typed
@@ -1448,6 +1447,7 @@ swh/web/common/migrations/0005_remove_duplicated_authorized_origins.py
 swh/web/common/migrations/0006_rename_origin_type.py
 swh/web/common/migrations/0007_save_request_task_status_fix_typo.py
 swh/web/common/migrations/0008_save-code-now_indexes_20210106_1327.py
+swh/web/common/migrations/0009_saveoriginrequest_visit_status.py
 swh/web/common/migrations/__init__.py
 swh/web/misc/__init__.py
 swh/web/misc/badges.py
@@ -1510,6 +1510,7 @@ swh/web/tests/data.py
 swh/web/tests/django_asserts.py
 swh/web/tests/strategies.py
 swh/web/tests/test_gunicorn_config.py
+swh/web/tests/test_migrations.py
 swh/web/tests/test_templates.py
 swh/web/tests/utils.py
 swh/web/tests/views.py
