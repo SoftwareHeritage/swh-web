@@ -1,3 +1,9 @@
+swh-web (0.0.299-1~swh2) unstable-swh; urgency=medium
+
+  * Bump new release
+
+ -- Antoine R. Dumont (@ardumont) <ardumont@softwareheritage.org>  Thu, 22 Apr 2021 09:43:59 +0200
+
 swh-web (0.0.299-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.299     - (tagged by Antoine R. Dumont
