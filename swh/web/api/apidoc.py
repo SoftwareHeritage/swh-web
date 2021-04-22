@@ -387,7 +387,7 @@ def get_doc_data(f, route, noargs):
     # else parse the sphinx httpdomain docstring with docutils
     # (except when building the swh-web documentation through autodoc
     # sphinx extension, not needed and raise errors with sphinx >= 1.7)
-    elif "SWH_WEB_DOC_BUILD" not in os.environ:
+    elif "SWH_DOC_BUILD" not in os.environ:
         _parse_httpdomain_doc(f.__doc__, data)
         # process input/returned object info for nicer html display
         inputs_list = ""

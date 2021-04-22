@@ -65,6 +65,22 @@ SAVE_TASK_STATUS = [
     (SAVE_TASK_RUNNING, SAVE_TASK_RUNNING),
 ]
 
+VISIT_STATUS_CREATED = "created"
+VISIT_STATUS_ONGOING = "ongoing"
+VISIT_STATUS_FULL = "full"
+VISIT_STATUS_PARTIAL = "partial"
+VISIT_STATUS_NOT_FOUND = "not_found"
+VISIT_STATUS_FAILED = "failed"
+
+VISIT_STATUSES = [
+    (VISIT_STATUS_CREATED, VISIT_STATUS_CREATED),
+    (VISIT_STATUS_ONGOING, VISIT_STATUS_ONGOING),
+    (VISIT_STATUS_FULL, VISIT_STATUS_FULL),
+    (VISIT_STATUS_PARTIAL, VISIT_STATUS_PARTIAL),
+    (VISIT_STATUS_NOT_FOUND, VISIT_STATUS_NOT_FOUND),
+    (VISIT_STATUS_FAILED, VISIT_STATUS_FAILED),
+]
+
 
 class SaveOriginRequest(models.Model):
     """
@@ -74,6 +90,7 @@ class SaveOriginRequest(models.Model):
     id = models.BigAutoField(primary_key=True)
     request_date = models.DateTimeField(auto_now_add=True)
     visit_type = models.CharField(max_length=200, null=False)
+    visit_status = models.TextField(choices=VISIT_STATUSES, null=True)
     origin_url = models.CharField(max_length=200, null=False)
     status = models.TextField(choices=SAVE_REQUEST_STATUS, default=SAVE_REQUEST_PENDING)
     loading_task_id = models.IntegerField(default=-1)
@@ -94,6 +111,7 @@ class SaveOriginRequest(models.Model):
                 "id": self.id,
                 "request_date": self.request_date,
                 "visit_type": self.visit_type,
+                "visit_status": self.visit_status,
                 "origin_url": self.origin_url,
                 "status": self.status,
                 "loading_task_id": self.loading_task_id,
