@@ -1,3 +1,12 @@
+swh-web (0.0.301-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.301     - (tagged by Vincent SELLIER
+    <vincent.sellier@softwareheritage.org> on 2021-04-23 12:31:50 +0200)
+  * Upstream changes:     - v0.0.301     - reactivate the author counter
+    on the homepage
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 23 Apr 2021 10:47:55 +0000
+
 swh-web (0.0.300-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.300     - (tagged by Antoine Lambert
