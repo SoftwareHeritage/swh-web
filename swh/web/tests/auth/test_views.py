@@ -287,8 +287,8 @@ def test_oidc_profile_view(client, keycloak_oidc):
     """
     url = reverse("oidc-profile")
     kc_config = get_config()["keycloak"]
-    user_permissions = ["perm1", "perm2"]
-    keycloak_oidc.user_permissions = user_permissions
+    client_permissions = ["perm1", "perm2"]
+    keycloak_oidc.client_permissions = client_permissions
     client.login(code="", code_verifier="", redirect_uri="")
     resp = check_html_get_response(
         client, url, status_code=200, template_used="auth/profile.html"
@@ -302,5 +302,5 @@ def test_oidc_profile_view(client, keycloak_oidc):
     assert_contains(resp, user.first_name)
     assert_contains(resp, user.last_name)
     assert_contains(resp, user.email)
-    for perm in user_permissions:
+    for perm in client_permissions:
         assert_contains(resp, perm)

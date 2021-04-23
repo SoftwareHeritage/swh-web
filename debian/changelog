@@ -1,8 +1,11 @@
-swh-web (0.0.300-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.301-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.301     - (tagged by Vincent SELLIER
+    <vincent.sellier@softwareheritage.org> on 2021-04-23 12:31:50 +0200)
+  * Upstream changes:     - v0.0.301     - reactivate the author counter
+    on the homepage
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 22 Apr 2021 14:07:16 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 23 Apr 2021 10:47:55 +0000
 
 swh-web (0.0.300-1~swh1) unstable-swh; urgency=medium
 
