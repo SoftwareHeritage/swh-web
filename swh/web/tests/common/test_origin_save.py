@@ -16,14 +16,17 @@ from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_TASK_FAILED,
     SAVE_TASK_RUNNING,
+    SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
+    VISIT_STATUS_FULL,
     SaveOriginRequest,
 )
 from swh.web.common.origin_save import (
     get_save_origin_requests,
     get_save_origin_task_info,
+    refresh_save_origin_request_statuses,
 )
-from swh.web.common.typing import OriginVisitInfo
+from swh.web.common.typing import OriginVisitInfo, SaveOriginRequestInfo
 from swh.web.config import get_config
 
 _es_url = "http://esnode1.internal.softwareheritage.org:9200"
@@ -277,6 +280,38 @@ def _get_save_origin_requests(
     return sors
 
 
+@pytest.mark.parametrize("visit_date", [None, "some-date"])
+def test_from_save_origin_request_to_save_request_info_dict(visit_date):
+    """Ensure save request to json serializable dict is fine
+
+    """
+    request_date = datetime.now(tz=timezone.utc)
+    _visit_date = request_date + timedelta(minutes=5) if visit_date else None
+    request_date = datetime.now(tz=timezone.utc)
+    sor = SaveOriginRequest(
+        request_date=request_date,
+        visit_type=_visit_type,
+        visit_status=VISIT_STATUS_FULL,
+        origin_url=_origin_url,
+        status=SAVE_REQUEST_ACCEPTED,
+        loading_task_status=None,
+        visit_date=_visit_date,
+        loading_task_id=1,
+    )
+
+    assert sor.to_dict() == SaveOriginRequestInfo(
+        id=sor.id,
+        origin_url=sor.origin_url,
+        visit_type=sor.visit_type,
+        save_request_date=sor.request_date.isoformat(),
+        save_request_status=sor.status,
+        save_task_status=sor.loading_task_status,
+        visit_status=sor.visit_status,
+        visit_date=_visit_date.isoformat() if _visit_date else None,
+        loading_task_id=sor.loading_task_id,
+    )
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("visit_status", ["created", "ongoing",])
 def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
@@ -352,3 +387,38 @@ def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] is None
     assert sors[0]["visit_status"] is None
+
+    # nothing to refresh so nothing to return
+    assert len(refresh_save_origin_request_statuses()) == 0
+
+
+@pytest.mark.django_db
+def test_refresh_save_request_statuses(mocker, api_client):
+    """Refresh filters non-terminal save origins requests and update if changes
+
+    """
+    sors = _get_save_origin_requests(
+        mocker, load_status=SAVE_TASK_SCHEDULED, visit_status=None,
+    )
+    assert len(sors) == 1
+
+    # no changes so refresh does detect the entry but does nothing
+    sors = refresh_save_origin_request_statuses()
+
+    assert len(sors) == 1
+    for sor in sors:
+        # as it turns out, in this test, this won't update anything as no new status got
+        # returned by the scheduler
+        assert sor["save_task_status"] == SAVE_TASK_SCHEDULED
+
+    # make the scheduler return eventful for that task
+    _mock_scheduler(mocker)
+
+    # Detected entry, this time it should be updated
+    sors = refresh_save_origin_request_statuses()
+
+    assert len(sors) == 1
+    for sor in sors:
+        # as it turns out, in this test, this won't update anything as no new status got
+        # returned by the scheduler
+        assert sor["save_task_status"] == SAVE_TASK_SUCCEEDED
