@@ -927,7 +927,7 @@ def stat_counters():
     res = {}
     if counters and config.get_config()["counters_backend"] == "swh-counters":
         res = counters.get_counts(
-            ["origin", "revision", "content", "directory", "release"]
+            ["origin", "revision", "content", "directory", "release", "person"]
         )
     else:
         res = storage.stat_counters()
