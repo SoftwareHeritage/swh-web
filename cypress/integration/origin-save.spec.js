@@ -103,6 +103,27 @@ describe('Origin Save Tests', function() {
     cy.visit(url);
   });
 
+  it('should format appropriately values depending on their type', function() {
+    let inputValues = [ // null values stay null
+      {type: 'json', value: null, expectedValue: null},
+      {type: 'date', value: null, expectedValue: null},
+      {type: 'raw', value: null, expectedValue: null},
+      {type: 'duration', value: null, expectedValue: null},
+      // non null values formatted depending on their type
+      {type: 'json', value: '{}', expectedValue: '"{}"'},
+      {type: 'date', value: '04/04/2021 01:00:00', expectedValue: '4/4/2021, 1:00:00 AM'},
+      {type: 'raw', value: 'value-for-identity', expectedValue: 'value-for-identity'},
+      {type: 'duration', value: '10', expectedValue: '10 seconds'},
+      {type: 'duration', value: 100, expectedValue: '100 seconds'}
+    ];
+    cy.window().then(win => {
+      inputValues.forEach(function(input, index, array) {
+        let actualValue = win.swh.save.formatValuePerType(input.type, input.value);
+        assert.equal(actualValue, input.expectedValue);
+      });
+    });
+  });
+
   it('should display accepted message when accepted', function() {
     stubSaveRequest({requestUrl: this.originSaveUrl,
                      saveRequestStatus: 'accepted',

@@ -345,7 +345,7 @@ export function formatValuePerType(type, value) {
     'duration': (v) => v + ' seconds'
   };
 
-  return mapFormatPerTypeFn[type](value);
+  return value === null ? null : mapFormatPerTypeFn[type](value);
 }
 
 export function displaySaveRequestInfo(event, saveRequestId) {
