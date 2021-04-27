@@ -89,7 +89,7 @@ def api_graph(request: Request) -> None:
         <https://docs.softwareheritage.org/devel/swh-model/data-model.html#data-structure>`_
         of the Software Heritage archive.
 
-        For more details please refer to the `Graph REST API documentation
+        For more details please refer to the `Graph RPC API documentation
         <https://docs.softwareheritage.org/devel/swh-graph/api.html>`_.
 
         .. warning::
