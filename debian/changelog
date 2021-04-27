@@ -1,3 +1,15 @@
+swh-web (0.0.302-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.302     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-04-27 11:29:03
+    +0200)
+  * Upstream changes:     - v0.0.302     - Save code now: Improve save
+    request task information title     - Separate save code now status
+    refresh routine from the listing ui     - common/identifiers: Fix
+    content SWHID with anchor revision browse URL
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 27 Apr 2021 09:50:38 +0000
+
 swh-web (0.0.301-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.301     - (tagged by Vincent SELLIER
