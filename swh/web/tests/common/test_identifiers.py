@@ -34,6 +34,7 @@ from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
     content,
     directory,
+    directory_with_files,
     directory_with_subdirs,
     origin,
     origin_with_multiple_visits,
@@ -635,3 +636,91 @@ def test_resolve_swhid_with_malformed_origin_url(archive_data, directory):
     swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": malformed_origin_url})
     resolved_swhid = resolve_swhid(swhid)
     assert origin_url in resolved_swhid["browse_url"]
+
+
+@given(revision())
+def test_resolve_dir_entry_swhid_with_anchor_revision(archive_data, revision):
+    revision_data = archive_data.revision_get(revision)
+    directory = revision_data["directory"]
+    dir_content = archive_data.directory_ls(directory)
+    dir_entry = random.choice(dir_content)
+
+    rev_swhid = gen_swhid(REVISION, revision)
+
+    if dir_entry["type"] == "rev":
+        return
+
+    if dir_entry["type"] == "file":
+        swhid = gen_swhid(
+            CONTENT,
+            dir_entry["checksums"]["sha1_git"],
+            metadata={"anchor": rev_swhid, "path": f"/{dir_entry['name']}"},
+        )
+
+    else:
+        swhid = gen_swhid(
+            DIRECTORY,
+            dir_entry["target"],
+            metadata={"anchor": rev_swhid, "path": f"/{dir_entry['name']}/"},
+        )
+
+    browse_url = reverse(
+        "browse-revision",
+        url_args={"sha1_git": revision},
+        query_params={"path": dir_entry["name"]},
+    )
+
+    resolved_swhid = resolve_swhid(swhid)
+
+    assert resolved_swhid["browse_url"] == browse_url
+
+
+@given(directory_with_subdirs())
+def test_resolve_dir_entry_swhid_with_anchor_directory(archive_data, directory):
+    dir_content = archive_data.directory_ls(directory)
+    dir_entry = random.choice(
+        [entry for entry in dir_content if entry["type"] == "dir"]
+    )
+
+    dir_swhid = gen_swhid(DIRECTORY, directory)
+
+    swhid = gen_swhid(
+        DIRECTORY,
+        dir_entry["target"],
+        metadata={"anchor": dir_swhid, "path": f"/{dir_entry['name']}/"},
+    )
+    browse_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory},
+        query_params={"path": f"{dir_entry['name']}"},
+    )
+
+    resolved_swhid = resolve_swhid(swhid)
+
+    assert resolved_swhid["browse_url"] == browse_url
+
+
+@given(directory_with_files())
+def test_resolve_file_entry_swhid_with_anchor_directory(archive_data, directory):
+    dir_content = archive_data.directory_ls(directory)
+    file_entry = random.choice(
+        [entry for entry in dir_content if entry["type"] == "file"]
+    )
+
+    dir_swhid = gen_swhid(DIRECTORY, directory)
+
+    sha1_git = file_entry["checksums"]["sha1_git"]
+    swhid = gen_swhid(
+        CONTENT,
+        sha1_git,
+        metadata={"anchor": dir_swhid, "path": f"/{file_entry['name']}"},
+    )
+    browse_url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{sha1_git}"},
+        query_params={"path": f"{directory}/{file_entry['name']}"},
+    )
+
+    resolved_swhid = resolve_swhid(swhid)
+
+    assert resolved_swhid["browse_url"] == browse_url

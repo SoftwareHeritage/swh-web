@@ -399,9 +399,9 @@ export function displaySaveRequestInfo(event, saveRequestId) {
           'Backend id': ['raw', 'backend_id'],
           'Scheduling date': ['date', 'scheduled'],
           'Start date': ['date', 'started'],
-          'Termination date': ['date', 'ended'],
+          'Completion date': ['date', 'ended'],
           'Duration': ['duration', 'duration'],
-          'Executor': ['raw', 'worker'],
+          'Runner': ['raw', 'worker'],
           'Log': ['raw', 'message']
         };
         for (const [title, [type, property]] of Object.entries(taskData)) {

@@ -114,7 +114,7 @@ def check_created_save_request_status(
     )
 
     mock_visit_date = mocker.patch(
-        ("swh.web.common.origin_save." "_get_visit_info_for_save_request")
+        ("swh.web.common.origin_save._get_visit_info_for_save_request")
     )
     mock_visit_date.return_value = (visit_date, None)
 
@@ -170,7 +170,7 @@ def check_save_request_status(
     )
 
     mock_visit_date = mocker.patch(
-        ("swh.web.common.origin_save." "_get_visit_info_for_save_request")
+        ("swh.web.common.origin_save._get_visit_info_for_save_request")
     )
     mock_visit_date.return_value = (visit_date, visit_status)
     response = check_api_get_responses(api_client, url, status_code=200)
@@ -370,7 +370,7 @@ def test_get_save_requests_unknown_origin(api_client):
     assert response.data == {
         "exception": "NotFoundExc",
         "reason": (
-            "No save requests found for visit of type " "git on origin with url %s."
+            "No save requests found for visit of type git on origin with url %s."
         )
         % unknown_origin_url,
     }

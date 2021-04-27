@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -16,7 +16,6 @@ from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
     create_save_origin_request,
     get_savable_visit_types,
-    get_save_origin_requests_from_queryset,
     get_save_origin_task_info,
 )
 from swh.web.common.utils import EnforceCSRFAuthentication
@@ -87,9 +86,7 @@ def _origin_save_requests_list(request, status):
 
     table_data["recordsFiltered"] = save_requests.count()
     paginator = Paginator(save_requests, length)
-    table_data["data"] = get_save_origin_requests_from_queryset(
-        paginator.page(page).object_list
-    )
+    table_data["data"] = [sor.to_dict() for sor in paginator.page(page).object_list]
     return JsonResponse(table_data)
 
 
