@@ -140,9 +140,12 @@ def resolve_swhid(
                     revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
             if object_type == ObjectType.CONTENT:
-                if not swhid_parsed.origin:
-                    # when no origin context, content objects need to have their
-                    # path prefixed by root directory id for proper breadcrumbs display
+                if (
+                    not swhid_parsed.origin
+                    and swhid_parsed.anchor.object_type != ObjectType.REVISION
+                ):
+                    # when no origin or revision context, content objects need to have
+                    # their path prefixed by root directory id for breadcrumbs display
                     query_dict["path"] = hash_to_hex(directory) + query_dict["path"]
                 else:
                     # remove leading slash from SWHID content path
