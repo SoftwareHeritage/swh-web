@@ -223,21 +223,33 @@ def directory():
     return _known_swh_object("directories")
 
 
-def directory_with_subdirs():
-    """
-    Hypothesis strategy returning a random directory containing
-    sub directories ingested into the test archive.
-    """
+def _directory_with_entry_type(type_):
     return directory().filter(
         lambda d: any(
             [
-                e["type"] == "dir"
+                e["type"] == type_
                 for e in list(
                     get_tests_data()["storage"].directory_ls(hash_to_bytes(d))
                 )
             ]
         )
     )
+
+
+def directory_with_subdirs():
+    """
+    Hypothesis strategy returning a random directory containing
+    sub directories ingested into the test archive.
+    """
+    return _directory_with_entry_type("dir")
+
+
+def directory_with_files():
+    """
+    Hypothesis strategy returning a random directory containing
+    at least one regular file
+    """
+    return _directory_with_entry_type("file")
 
 
 def empty_directory():

@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -224,3 +224,24 @@ TResult = TypeVar("TResult")
 
 
 PagedResult = CorePagedResult[TResult, str]
+
+
+class SaveOriginRequestInfo(TypedDict):
+    id: int
+    """Unique key"""
+    save_request_date: str
+    """Date of the creation request"""
+    visit_type: str
+    """Type of the visit"""
+    visit_status: Optional[str]
+    """Status of the visit"""
+    origin_url: str
+    """Origin to ingest"""
+    save_request_status: str
+    """Status of the request"""
+    loading_task_id: Optional[int]
+    """Identifier of the loading task in the scheduler if scheduled"""
+    visit_date: Optional[str]
+    """End of the visit if terminated"""
+    save_task_status: str
+    """Status of the scheduled task"""

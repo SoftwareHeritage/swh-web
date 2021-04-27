@@ -1,9 +1,11 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from django.db import models
+
+from swh.web.common.typing import SaveOriginRequestInfo
 
 
 class SaveAuthorizedOrigin(models.Model):
@@ -105,16 +107,25 @@ class SaveOriginRequest(models.Model):
         ordering = ["-id"]
         indexes = [models.Index(fields=["origin_url", "status"])]
 
-    def __str__(self):
-        return str(
-            {
-                "id": self.id,
-                "request_date": self.request_date,
-                "visit_type": self.visit_type,
-                "visit_status": self.visit_status,
-                "origin_url": self.origin_url,
-                "status": self.status,
-                "loading_task_id": self.loading_task_id,
-                "visit_date": self.visit_date,
-            }
+    def to_dict(self) -> SaveOriginRequestInfo:
+        """Map the request save model object to a json serializable dict.
+
+        Returns:
+            The corresponding SaveOriginRequetsInfo json serializable dict.
+
+        """
+        visit_date = self.visit_date
+        return SaveOriginRequestInfo(
+            id=self.id,
+            origin_url=self.origin_url,
+            visit_type=self.visit_type,
+            save_request_date=self.request_date.isoformat(),
+            save_request_status=self.status,
+            save_task_status=self.loading_task_status,
+            visit_status=self.visit_status,
+            visit_date=visit_date.isoformat() if visit_date else None,
+            loading_task_id=self.loading_task_id,
         )
+
+    def __str__(self) -> str:
+        return str(self.to_dict())

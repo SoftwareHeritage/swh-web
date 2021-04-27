@@ -38,7 +38,7 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.typing import OriginInfo
+from swh.web.common.typing import OriginInfo, SaveOriginRequestInfo
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 
 scheduler = config.scheduler()
@@ -225,11 +225,11 @@ def _check_visit_update_status(
     return visit_date, save_task_status
 
 
-def _save_request_dict(
+def _update_save_request_info(
     save_request: SaveOriginRequest,
     task: Optional[Dict[str, Any]] = None,
     task_run: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+) -> SaveOriginRequestInfo:
     """Update save request information out of task and task_run information.
 
     Args:
@@ -293,19 +293,12 @@ def _save_request_dict(
     if must_save:
         save_request.save()
 
-    return {
-        "id": save_request.id,
-        "visit_type": save_request.visit_type,
-        "visit_status": save_request.visit_status,
-        "origin_url": save_request.origin_url,
-        "save_request_date": save_request.request_date.isoformat(),
-        "save_request_status": save_request.status,
-        "save_task_status": save_request.loading_task_status,
-        "visit_date": visit_date.isoformat() if visit_date else None,
-    }
+    return save_request.to_dict()
 
 
-def create_save_origin_request(visit_type: str, origin_url: str) -> Dict[str, Any]:
+def create_save_origin_request(
+    visit_type: str, origin_url: str
+) -> SaveOriginRequestInfo:
     """
     Create a loading task to save a software origin into the archive.
 
@@ -382,8 +375,8 @@ def create_save_origin_request(visit_type: str, origin_url: str) -> Dict[str, An
                 task = tasks[0] if tasks else None
                 task_runs = scheduler.get_task_runs([sor.loading_task_id])
                 task_run = task_runs[0] if task_runs else None
-                save_request = _save_request_dict(sor, task, task_run)
-                task_status = save_request["save_task_status"]
+                save_request_info = _update_save_request_info(sor, task, task_run)
+                task_status = save_request_info["save_task_status"]
                 # create a new scheduler task only if the previous one has been
                 # already executed
                 if (
@@ -441,22 +434,22 @@ def create_save_origin_request(visit_type: str, origin_url: str) -> Dict[str, An
         )
 
     assert sor is not None
-    return _save_request_dict(sor, task)
+    return _update_save_request_info(sor, task)
 
 
-def get_save_origin_requests_from_queryset(
+def update_save_origin_requests_from_queryset(
     requests_queryset: QuerySet,
-) -> List[Dict[str, Any]]:
-    """
-    Get all save requests from a SaveOriginRequest queryset.
+) -> List[SaveOriginRequestInfo]:
+    """Update all save requests from a SaveOriginRequest queryset, update their status in db
+    and return the list of impacted save_requests.
 
     Args:
-        requests_queryset (django.db.models.QuerySet): input
-            SaveOriginRequest queryset
+        requests_queryset: input SaveOriginRequest queryset
 
     Returns:
-        list: A list of save origin requests dict as described in
+        list: A list of save origin request info dicts as described in
         :func:`swh.web.common.origin_save.create_save_origin_request`
+
     """
     task_ids = []
     for sor in requests_queryset:
@@ -468,14 +461,45 @@ def get_save_origin_requests_from_queryset(
         task_runs = scheduler.get_task_runs(tasks)
         task_runs = {task_run["task"]: task_run for task_run in task_runs}
         for sor in requests_queryset:
-            sr_dict = _save_request_dict(
-                sor, tasks.get(sor.loading_task_id), task_runs.get(sor.loading_task_id)
+            sr_dict = _update_save_request_info(
+                sor, tasks.get(sor.loading_task_id), task_runs.get(sor.loading_task_id),
             )
             save_requests.append(sr_dict)
     return save_requests
 
 
-def get_save_origin_requests(visit_type: str, origin_url: str) -> List[Dict[str, Any]]:
+def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
+    """Refresh non-terminal save origin requests (SOR) in the backend.
+
+    Non-terminal SOR are requests whose status is **accepted** and their task status are
+    either **created**, **not yet scheduled**, **scheduled** or **running**.
+
+    This shall compute this list of SOR, checks their status in the scheduler and
+    optionally elasticsearch for their current status. Then update those in db.
+
+    Finally, this returns the refreshed information on those SOR.
+
+    """
+    non_terminal_statuses = (
+        SAVE_TASK_NOT_CREATED,
+        SAVE_TASK_NOT_YET_SCHEDULED,
+        SAVE_TASK_RUNNING,
+        SAVE_TASK_SCHEDULED,
+    )
+    save_requests = SaveOriginRequest.objects.filter(
+        status=SAVE_REQUEST_ACCEPTED, loading_task_status__in=non_terminal_statuses
+    )
+    # update save request statuses
+    return (
+        update_save_origin_requests_from_queryset(save_requests)
+        if save_requests.count() > 0
+        else []
+    )
+
+
+def get_save_origin_requests(
+    visit_type: str, origin_url: str
+) -> List[SaveOriginRequestInfo]:
     """
     Get all save requests for a given software origin.
 
@@ -502,7 +526,7 @@ def get_save_origin_requests(visit_type: str, origin_url: str) -> List[Dict[str,
             ("No save requests found for visit of type " "%s on origin with url %s.")
             % (visit_type, origin_url)
         )
-    return get_save_origin_requests_from_queryset(sors)
+    return update_save_origin_requests_from_queryset(sors)
 
 
 def get_save_origin_task_info(
@@ -720,7 +744,7 @@ def compute_save_requests_metrics() -> None:
     for sor in SaveOriginRequest.objects.all():
         if sor.status == SAVE_REQUEST_ACCEPTED:
             _accepted_save_requests_gauge.labels(
-                load_task_status=sor.loading_task_status, visit_type=sor.visit_type
+                load_task_status=sor.loading_task_status, visit_type=sor.visit_type,
             ).inc()
 
         _submitted_save_requests_gauge.labels(
@@ -734,5 +758,5 @@ def compute_save_requests_metrics() -> None:
         ):
             delay = sor.visit_date.timestamp() - sor.request_date.timestamp()
             _accepted_save_requests_delay_gauge.labels(
-                load_task_status=sor.loading_task_status, visit_type=sor.visit_type
+                load_task_status=sor.loading_task_status, visit_type=sor.visit_type,
             ).inc(delay)
