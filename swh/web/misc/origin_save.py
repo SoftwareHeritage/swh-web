@@ -8,17 +8,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
-from rest_framework.decorators import api_view, authentication_classes
 
-from swh.web.api.throttling import throttle_scope
-from swh.web.common.exc import ForbiddenExc
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
-    create_save_origin_request,
     get_savable_visit_types,
     get_save_origin_task_info,
 )
-from swh.web.common.utils import EnforceCSRFAuthentication
 
 
 def _origin_save_view(request):
@@ -27,24 +22,6 @@ def _origin_save_view(request):
         "misc/origin-save.html",
         {"heading": ("Request the saving of a software origin into " "the archive")},
     )
-
-
-@api_view(["POST"])
-@authentication_classes((EnforceCSRFAuthentication,))
-@throttle_scope("swh_save_origin")
-def _origin_save_request(request, visit_type, origin_url):
-    """
-    This view is called through AJAX from the save code now form of swh-web.
-    We use DRF here as we want to rate limit the number of submitted requests
-    per user to avoid being possibly flooded by bots.
-    """
-    try:
-        response = create_save_origin_request(visit_type, origin_url)
-        return JsonResponse(response)
-    except ForbiddenExc as exc:
-        return JsonResponse({"detail": str(exc)}, status=403)
-    except Exception as exc:
-        return JsonResponse({"detail": str(exc)}, status=500)
 
 
 def _visit_save_types_list(request):
@@ -102,11 +79,6 @@ def _save_origin_task_info(request, save_request_id):
 
 urlpatterns = [
     url(r"^save/$", _origin_save_view, name="origin-save"),
-    url(
-        r"^save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/$",
-        _origin_save_request,
-        name="origin-save-request",
-    ),
     url(r"^save/types/list/$", _visit_save_types_list, name="origin-save-types-list"),
     url(
         r"^save/requests/list/(?P<status>.+)/$",

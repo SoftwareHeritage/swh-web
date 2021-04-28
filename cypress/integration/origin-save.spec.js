@@ -94,7 +94,7 @@ describe('Origin Save Tests', function() {
   before(function() {
     url = this.Urls.origin_save();
     origin = this.origin[0];
-    this.originSaveUrl = this.Urls.origin_save_request(origin.type, origin.url);
+    this.originSaveUrl = this.Urls.api_1_save_origin(origin.type, origin.url);
   });
 
   beforeEach(function() {
@@ -139,7 +139,7 @@ describe('Origin Save Tests', function() {
 
   it('should validate gitlab subproject url', function() {
     const gitlabSubProjectUrl = 'https://gitlab.com/user/project/sub/';
-    const originSaveUrl = this.Urls.origin_save_request('git', gitlabSubProjectUrl);
+    const originSaveUrl = this.Urls.api_1_save_origin('git', gitlabSubProjectUrl);
 
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
@@ -155,7 +155,7 @@ describe('Origin Save Tests', function() {
 
   it('should validate project url with _ in username', function() {
     const gitlabSubProjectUrl = 'https://gitlab.com/user_name/project.git';
-    const originSaveUrl = this.Urls.origin_save_request('git', gitlabSubProjectUrl);
+    const originSaveUrl = this.Urls.api_1_save_origin('git', gitlabSubProjectUrl);
 
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
@@ -357,7 +357,7 @@ describe('Origin Save Tests', function() {
     const badVisitType = 'hg';
     const goodVisitType = 'git';
     cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
-    stubSaveRequest({requestUrl: this.Urls.origin_save_request(badVisitType, originUrl),
+    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin(badVisitType, originUrl),
                      visitType: badVisitType,
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,

@@ -5,20 +5,16 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
+import {handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 
 let saveRequestsTable;
 
 function originSaveRequest(originType, originUrl,
                            acceptedCallback, pendingCallback, errorCallback) {
-  let addSaveOriginRequestUrl = Urls.origin_save_request(originType, originUrl);
-  let headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  };
+  let addSaveOriginRequestUrl = Urls.api_1_save_origin(originType, originUrl);
   $('.swh-processing-save-request').css('display', 'block');
-  csrfPost(addSaveOriginRequestUrl, headers)
+  fetch(addSaveOriginRequestUrl, {method: 'POST'})
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
