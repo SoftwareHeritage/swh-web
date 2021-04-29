@@ -233,6 +233,12 @@ def get_swhid(swhid: str) -> QualifiedSWHID:
             A parsed SWHID.
     """
     try:
+        # ensure core part of SWHID is in lower case to avoid parsing error
+        qualifiers_pos = swhid.find(";")
+        if qualifiers_pos == -1:
+            swhid = swhid.lower()
+        else:
+            swhid = swhid[:qualifiers_pos].lower() + swhid[qualifiers_pos:]
         swhid_parsed = QualifiedSWHID.from_string(swhid)
     except ValidationError as ve:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
