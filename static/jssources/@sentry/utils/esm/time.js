@@ -110,11 +110,13 @@ export var browserPerformanceTimeOrigin = (function () {
         return undefined;
     }
     var threshold = 3600 * 1000;
-    var timeOriginIsReliable = performance.timeOrigin && Math.abs(performance.timeOrigin + performance.now() - Date.now()) < threshold;
-    if (timeOriginIsReliable) {
-        _browserPerformanceTimeOriginMode = 'timeOrigin';
-        return performance.timeOrigin;
-    }
+    var performanceNow = performance.now();
+    var dateNow = Date.now();
+    // if timeOrigin isn't available set delta to threshold so it isn't used
+    var timeOriginDelta = performance.timeOrigin
+        ? Math.abs(performance.timeOrigin + performanceNow - dateNow)
+        : threshold;
+    var timeOriginIsReliable = timeOriginDelta < threshold;
     // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
     // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
     // Also as of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always
@@ -123,13 +125,22 @@ export var browserPerformanceTimeOrigin = (function () {
     // eslint-disable-next-line deprecation/deprecation
     var navigationStart = performance.timing && performance.timing.navigationStart;
     var hasNavigationStart = typeof navigationStart === 'number';
-    var navigationStartIsReliable = hasNavigationStart && Math.abs(navigationStart + performance.now() - Date.now()) < threshold;
-    if (navigationStartIsReliable) {
-        _browserPerformanceTimeOriginMode = 'navigationStart';
-        return navigationStart;
+    // if navigationStart isn't available set delta to threshold so it isn't used
+    var navigationStartDelta = hasNavigationStart ? Math.abs(navigationStart + performanceNow - dateNow) : threshold;
+    var navigationStartIsReliable = navigationStartDelta < threshold;
+    if (timeOriginIsReliable || navigationStartIsReliable) {
+        // Use the more reliable time origin
+        if (timeOriginDelta <= navigationStartDelta) {
+            _browserPerformanceTimeOriginMode = 'timeOrigin';
+            return performance.timeOrigin;
+        }
+        else {
+            _browserPerformanceTimeOriginMode = 'navigationStart';
+            return navigationStart;
+        }
     }
     // Either both timeOrigin and navigationStart are skewed or neither is available, fallback to Date.
     _browserPerformanceTimeOriginMode = 'dateNow';
-    return Date.now();
+    return dateNow;
 })();
 //# sourceMappingURL=time.js.map

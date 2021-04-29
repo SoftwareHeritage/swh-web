@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,7 +18,6 @@ from prometheus_client.registry import CollectorRegistry
 
 from django.http import HttpRequest, QueryDict
 from django.urls import reverse as django_reverse
-from rest_framework.authentication import SessionAuthentication
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
@@ -275,18 +274,6 @@ def context_processor(request):
         ),
         "visit_types": ORIGIN_VISIT_TYPES,
     }
-
-
-class EnforceCSRFAuthentication(SessionAuthentication):
-    """
-    Helper class to enforce CSRF validation on a DRF view
-    when a user is not authenticated.
-    """
-
-    def authenticate(self, request):
-        user = getattr(request._request, "user", None)
-        self.enforce_csrf(request)
-        return (user, None)
 
 
 def resolve_branch_alias(
