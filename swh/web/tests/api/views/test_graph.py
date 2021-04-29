@@ -6,6 +6,7 @@
 import hashlib
 import json
 import textwrap
+from urllib.parse import quote
 
 from hypothesis import given
 
@@ -86,11 +87,14 @@ def test_graph_text_plain_response(api_client, keycloak_oidc, requests_mock):
         """
     )
 
-    requests_mock.get(
-        get_config()["graph"]["server_url"] + graph_query,
-        text=response_text,
-        headers={"Content-Type": "text/plain", "Transfer-Encoding": "chunked"},
-    )
+    # ensure compatibility with all requests-mock versions
+    # https://github.com/jamielennox/requests-mock/commit/f072845
+    for path in (graph_query, quote(graph_query)):
+        requests_mock.get(
+            get_config()["graph"]["server_url"] + path,
+            text=response_text,
+            headers={"Content-Type": "text/plain", "Transfer-Encoding": "chunked"},
+        )
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
@@ -148,14 +152,17 @@ def test_graph_ndjson_response(api_client, keycloak_oidc, requests_mock):
         """
     )
 
-    requests_mock.get(
-        get_config()["graph"]["server_url"] + graph_query,
-        text=response_ndjson,
-        headers={
-            "Content-Type": "application/x-ndjson",
-            "Transfer-Encoding": "chunked",
-        },
-    )
+    # ensure compatibility with all requests-mock versions
+    # https://github.com/jamielennox/requests-mock/commit/f072845
+    for path in (graph_query, quote(graph_query)):
+        requests_mock.get(
+            get_config()["graph"]["server_url"] + path,
+            text=response_ndjson,
+            headers={
+                "Content-Type": "application/x-ndjson",
+                "Transfer-Encoding": "chunked",
+            },
+        )
 
     url = reverse("api-1-graph", url_args={"graph_query": graph_query})
 
@@ -205,11 +212,14 @@ def test_graph_response_resolve_origins(
         # set two lines response to check resolved origins cache
         response_text = response_text + response_text
 
-        requests_mock.get(
-            get_config()["graph"]["server_url"] + graph_query,
-            text=response_text,
-            headers={"Content-Type": content_type, "Transfer-Encoding": "chunked"},
-        )
+        # ensure compatibility with all requests-mock versions
+        # https://github.com/jamielennox/requests-mock/commit/f072845
+        for path in (graph_query, quote(graph_query)):
+            requests_mock.get(
+                get_config()["graph"]["server_url"] + path,
+                text=response_text,
+                headers={"Content-Type": content_type, "Transfer-Encoding": "chunked"},
+            )
 
         url = reverse(
             "api-1-graph",
