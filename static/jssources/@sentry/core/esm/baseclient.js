@@ -1,4 +1,4 @@
-import { __assign, __values } from "tslib";
+import { __assign, __read, __spread, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
 import { SessionStatus, } from '@sentry/types';
@@ -99,12 +99,12 @@ var BaseClient = /** @class */ (function () {
      * @inheritDoc
      */
     BaseClient.prototype.captureSession = function (session) {
-        if (!session.release) {
-            logger.warn('Discarded session because of missing release');
+        if (!(typeof session.release === 'string')) {
+            logger.warn('Discarded session because of missing or non-string release');
         }
         else {
             this._sendSession(session);
-            // After sending, we set init false to inidcate it's not the first occurence
+            // After sending, we set init false to indicate it's not the first occurrence
             session.update({ init: false });
         }
     };
@@ -350,10 +350,10 @@ var BaseClient = /** @class */ (function () {
      * @param event The event that will be filled with all integrations.
      */
     BaseClient.prototype._applyIntegrationsMetadata = function (event) {
-        var sdkInfo = event.sdk;
         var integrationsArray = Object.keys(this._integrations);
-        if (sdkInfo && integrationsArray.length > 0) {
-            sdkInfo.integrations = integrationsArray;
+        if (integrationsArray.length > 0) {
+            event.sdk = event.sdk || {};
+            event.sdk.integrations = __spread((event.sdk.integrations || []), integrationsArray);
         }
     };
     /**

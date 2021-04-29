@@ -25,7 +25,12 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
+from swh.web.settings.tests import save_origin_rate_post
+from swh.web.tests.utils import (
+    check_api_get_responses,
+    check_api_post_response,
+    check_api_post_responses,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -374,3 +379,51 @@ def test_get_save_requests_unknown_origin(api_client):
         )
         % unknown_origin_url,
     }
+
+
+_visit_type = "git"
+_origin_url = "https://github.com/python/cpython"
+
+
+def test_save_requests_rate_limit(api_client, mocker):
+    create_save_origin_request = mocker.patch(
+        "swh.web.api.views.origin_save.create_save_origin_request"
+    )
+
+    def _save_request_dict(*args, **kwargs):
+        return {
+            "id": 1,
+            "visit_type": _visit_type,
+            "origin_url": _origin_url,
+            "save_request_date": datetime.now().isoformat(),
+            "save_request_status": SAVE_REQUEST_ACCEPTED,
+            "save_task_status": SAVE_TASK_NOT_YET_SCHEDULED,
+            "visit_date": None,
+            "visit_status": None,
+        }
+
+    create_save_origin_request.side_effect = _save_request_dict
+
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": _visit_type, "origin_url": _origin_url},
+    )
+
+    for _ in range(save_origin_rate_post):
+        check_api_post_response(api_client, url, status_code=200)
+
+    check_api_post_response(api_client, url, status_code=429)
+
+
+def test_save_request_form_server_error(api_client, mocker):
+    create_save_origin_request = mocker.patch(
+        "swh.web.api.views.origin_save.create_save_origin_request"
+    )
+    create_save_origin_request.side_effect = Exception("Server error")
+
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": _visit_type, "origin_url": _origin_url},
+    )
+
+    check_api_post_responses(api_client, url, status_code=500)

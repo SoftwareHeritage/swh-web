@@ -288,7 +288,15 @@ function instrumentHistory() {
             to: to,
         });
         if (oldOnPopState) {
-            return oldOnPopState.apply(this, args);
+            // Apparently this can throw in Firefox when incorrectly implemented plugin is installed.
+            // https://github.com/getsentry/sentry-javascript/issues/3344
+            // https://github.com/bugsnag/bugsnag-js/issues/469
+            try {
+                return oldOnPopState.apply(this, args);
+            }
+            catch (_oO) {
+                // no-empty
+            }
         }
     };
     /** @hidden */

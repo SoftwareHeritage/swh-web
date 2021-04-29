@@ -15,17 +15,14 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
     if (!sdkInfo) {
         return event;
     }
-    event.sdk = event.sdk || {
-        name: sdkInfo.name,
-        version: sdkInfo.version,
-    };
+    event.sdk = event.sdk || {};
     event.sdk.name = event.sdk.name || sdkInfo.name;
     event.sdk.version = event.sdk.version || sdkInfo.version;
     event.sdk.integrations = __spread((event.sdk.integrations || []), (sdkInfo.integrations || []));
     event.sdk.packages = __spread((event.sdk.packages || []), (sdkInfo.packages || []));
     return event;
 }
-/** Creates a SentryRequest from an event. */
+/** Creates a SentryRequest from a Session. */
 export function sessionToSentryRequest(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var envelopeHeaders = JSON.stringify(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })));
