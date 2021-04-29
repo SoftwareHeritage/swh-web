@@ -38,7 +38,11 @@ from swh.web.common.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.typing import OriginInfo, SaveOriginRequestInfo
+from swh.web.common.typing import (
+    OriginExistenceCheckInfo,
+    OriginInfo,
+    SaveOriginRequestInfo,
+)
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 
 scheduler = config.scheduler()
@@ -153,6 +157,37 @@ def _check_origin_url_valid(origin_url: str) -> None:
     except ValidationError:
         raise BadInputExc(
             "The provided origin url (%s) is not valid!" % escape(origin_url)
+        )
+
+
+def origin_exists(origin_url: str) -> OriginExistenceCheckInfo:
+    """Check the origin url for existence. If it exists, extract some more useful
+    information on the origin.
+
+    """
+    resp = requests.head(origin_url)
+    exists = resp.ok
+    content_length: Optional[int] = None
+    last_modified: Optional[str] = None
+    if exists:
+        size_ = resp.headers.get("Content-Length")
+        content_length = int(size_) if size_ else None
+        last_modified = resp.headers.get("Last-Modified")
+
+    return OriginExistenceCheckInfo(
+        origin_url=origin_url,
+        exists=exists,
+        last_modified=last_modified,
+        content_length=content_length,
+    )
+
+
+def _check_origin_exists(origin_url: str) -> None:
+    """Ensure the origin exists, if not raise an explicit message."""
+    check = origin_exists(origin_url)
+    if not check["exists"]:
+        raise BadInputExc(
+            f"The provided origin url ({escape(origin_url)}) does not exist!"
         )
 
 
@@ -314,12 +349,11 @@ def create_save_origin_request(
     database to keep track of them.
 
     Args:
-        visit_type (str): the type of visit to perform (currently only
-            ``git`` but ``svn`` and ``hg`` will soon be available)
-        origin_url (str): the url of the origin to save
+        visit_type: the type of visit to perform (e.g git, hg, svn, ...)
+        origin_url: the url of the origin to save
 
     Raises:
-        BadInputExc: the visit type or origin url is invalid
+        BadInputExc: the visit type or origin url is invalid or inexistent
         ForbiddenExc: the provided origin url is blacklisted
 
     Returns:
@@ -338,6 +372,8 @@ def create_save_origin_request(
     """
     _check_visit_type_savable(visit_type)
     _check_origin_url_valid(origin_url)
+    _check_origin_exists(origin_url)
+    # if all checks passed so far, we can try and save the origin
     save_request_status = can_save_origin(origin_url)
     task = None
 

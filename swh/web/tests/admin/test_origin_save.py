@@ -122,6 +122,7 @@ def test_remove_unauthorized_origin_url(client):
 
 def test_accept_pending_save_request(client, mocker):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
+    mock_origin_exists = mocker.patch("swh.web.common.origin_save._check_origin_exists")
     visit_type = "git"
     origin_url = "https://v2.pikacode.com/bthate/botlib.git"
     save_request_url = reverse(
@@ -130,6 +131,7 @@ def test_accept_pending_save_request(client, mocker):
     )
     response = check_http_post_response(client, save_request_url, status_code=200)
     assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
+    assert mock_origin_exists.called
 
     accept_request_url = reverse(
         "admin-origin-save-request-accept",
