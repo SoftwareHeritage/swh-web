@@ -162,10 +162,16 @@ def test_accept_pending_save_request(client, mocker):
     assert response.data[0]["save_task_status"] == SAVE_TASK_NOT_YET_SCHEDULED
 
 
-def test_reject_pending_save_request(client, mocker):
+def test_reject_pending_save_request(client, mocker, requests_mock):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
     visit_type = "git"
     origin_url = "https://wikipedia.com"
+
+    # see swh.web.common.origin_save.origin_exists
+    requests_mock.head(
+        origin_url, status_code=200,
+    )
+
     save_request_url = reverse(
         "api-1-save-origin",
         url_args={"visit_type": visit_type, "origin_url": origin_url},
