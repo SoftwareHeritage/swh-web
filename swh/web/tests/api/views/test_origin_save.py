@@ -7,8 +7,10 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
+from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -433,3 +435,54 @@ def test_save_request_form_server_error(api_client, mocker):
     )
 
     check_api_post_responses(api_client, url, status_code=500)
+
+
+@pytest.fixture
+def origin_to_review():
+    return "https://git.example.org/user/project"
+
+
+def test_create_save_request_pending_review_anonymous_user(
+    api_client, origin_to_review, requests_mock
+):
+
+    # see swh.web.common.origin_save.origin_exists
+    requests_mock.head(
+        origin_to_review, status_code=200,
+    )
+
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_to_review},
+    )
+
+    response = check_api_post_responses(api_client, url, status_code=200)
+
+    assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
+
+    with pytest.raises(ObjectDoesNotExist):
+        SaveAuthorizedOrigin.objects.get(url=origin_to_review)
+
+
+def test_create_save_request_accepted_ambassador_user(
+    api_client, origin_to_review, requests_mock, keycloak_oidc, mocker
+):
+
+    keycloak_oidc.realm_permissions += [SWH_AMBASSADOR_PERMISSION]
+    oidc_profile = keycloak_oidc.login()
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
+
+    # see swh.web.common.origin_save.origin_exists
+    requests_mock.head(
+        origin_to_review, status_code=200,
+    )
+
+    check_created_save_request_status(
+        api_client,
+        mocker,
+        origin_to_review,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
+
+    assert SaveAuthorizedOrigin.objects.get(url=origin_to_review)

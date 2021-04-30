@@ -72,7 +72,7 @@ def get_origin_save_unauthorized_urls() -> List[str]:
     return [origin.url for origin in SaveUnauthorizedOrigin.objects.all()]
 
 
-def can_save_origin(origin_url: str) -> str:
+def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str:
     """
     Check if a software origin can be saved into the archive.
 
@@ -99,8 +99,14 @@ def can_save_origin(origin_url: str) -> str:
         if origin_url.startswith(url_prefix):
             return SAVE_REQUEST_ACCEPTED
 
-    # otherwise, the origin url needs to be manually verified
-    return SAVE_REQUEST_PENDING
+    # otherwise, the origin url needs to be manually verified if the user
+    # that submitted it does not have special permission
+    if bypass_pending_review:
+        # mark the origin URL as trusted in that case
+        SaveAuthorizedOrigin.objects.get_or_create(url=origin_url)
+        return SAVE_REQUEST_ACCEPTED
+    else:
+        return SAVE_REQUEST_PENDING
 
 
 # map visit type to scheduler task
@@ -332,7 +338,7 @@ def _update_save_request_info(
 
 
 def create_save_origin_request(
-    visit_type: str, origin_url: str
+    visit_type: str, origin_url: str, bypass_pending_review: bool = False
 ) -> SaveOriginRequestInfo:
     """
     Create a loading task to save a software origin into the archive.
@@ -374,7 +380,7 @@ def create_save_origin_request(
     _check_origin_url_valid(origin_url)
     _check_origin_exists(origin_url)
     # if all checks passed so far, we can try and save the origin
-    save_request_status = can_save_origin(origin_url)
+    save_request_status = can_save_origin(origin_url, bypass_pending_review)
     task = None
 
     # if the origin save request is accepted, create a scheduler
