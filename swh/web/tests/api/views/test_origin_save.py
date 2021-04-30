@@ -24,6 +24,7 @@ from swh.web.common.models import (
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
+from swh.web.common.typing import OriginExistenceCheckInfo
 from swh.web.common.utils import reverse
 from swh.web.settings.tests import save_origin_rate_post
 from swh.web.tests.utils import (
@@ -73,6 +74,11 @@ def check_created_save_request_status(
 ):
 
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
+    mock_origin_exists = mocker.patch("swh.web.common.origin_save.origin_exists")
+    mock_origin_exists.return_value = OriginExistenceCheckInfo(
+        origin_url=origin_url, exists=True, last_modified=None, content_length=None
+    )
+
     if scheduler_task_status is None:
         mock_scheduler.get_tasks.return_value = []
     else:

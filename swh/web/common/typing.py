@@ -245,3 +245,14 @@ class SaveOriginRequestInfo(TypedDict):
     """End of the visit if terminated"""
     save_task_status: str
     """Status of the scheduled task"""
+
+
+class OriginExistenceCheckInfo(TypedDict):
+    origin_url: str
+    """Origin to check"""
+    exists: bool
+    """Does the url exist?"""
+    content_length: Optional[int]
+    """content length of the artifact"""
+    last_modified: Optional[str]
+    """Last modification time reported by the server"""

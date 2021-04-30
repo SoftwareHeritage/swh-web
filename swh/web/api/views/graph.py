@@ -6,7 +6,6 @@
 from distutils.util import strtobool
 import json
 from typing import Dict, Iterator, Union
-from urllib.parse import quote
 
 import requests
 
@@ -136,7 +135,7 @@ def api_graph_proxy(
                 "You do not have permission to perform this action.", status=403
             )
     graph_query_url = get_config()["graph"]["server_url"]
-    graph_query_url += quote(graph_query)
+    graph_query_url += graph_query
     if request.GET:
         graph_query_url += "?" + request.GET.urlencode(safe="/;:")
     response = requests.get(graph_query_url, stream=True)
