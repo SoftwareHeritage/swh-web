@@ -303,8 +303,8 @@ static/js/pdfjs.a10c5eaf6b34d3e0c3c6.js.map
 static/js/revision.6298752558170be283db.js
 static/js/revision.6298752558170be283db.js.LICENSE.txt
 static/js/revision.6298752558170be283db.js.map
-static/js/save.2db2ad5d1acc2e02c62c.js
-static/js/save.2db2ad5d1acc2e02c62c.js.map
+static/js/save.722f70af460dc9dffb13.js
+static/js/save.722f70af460dc9dffb13.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
@@ -313,9 +313,9 @@ static/js/vault.20d925d31882c1536bd4.js.map
 static/js/vendors.3cd10eb3cada58c41c63.js
 static/js/vendors.3cd10eb3cada58c41c63.js.LICENSE.txt
 static/js/vendors.3cd10eb3cada58c41c63.js.map
-static/js/webapp.09fc89c9c976617ca8de.js
-static/js/webapp.09fc89c9c976617ca8de.js.LICENSE.txt
-static/js/webapp.09fc89c9c976617ca8de.js.map
+static/js/webapp.bd94cab694bc53d5794f.js
+static/js/webapp.bd94cab694bc53d5794f.js.LICENSE.txt
+static/js/webapp.bd94cab694bc53d5794f.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json

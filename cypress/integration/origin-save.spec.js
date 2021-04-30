@@ -14,6 +14,7 @@ const saveCodeMsg = {
   'warning': 'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
   'rejected': 'The "save code now" request has been rejected because the provided origin url is blacklisted.',
   'rateLimit': 'The rate limit for "save code now" requests has been reached. Please try again later.',
+  'not-found': 'The provided url does not exist',
   'unknownError': 'An unexpected error happened when submitting the "save code now request',
   'csrfError': 'CSRF Failed: Referrer checking failed - no Referrer.'
 };
@@ -43,6 +44,7 @@ function stubSaveRequest({
   originUrl,
   saveTaskStatus,
   responseStatus = 200,
+  // For error code with the error message in the 'reason' key response
   errorMessage = '',
   saveRequestDate = new Date(),
   visitDate = new Date(),
@@ -51,7 +53,7 @@ function stubSaveRequest({
   let response;
   if (responseStatus !== 200 && errorMessage) {
     response = {
-      'detail': errorMessage
+      'reason': errorMessage
     };
   } else {
     response = genOriginSaveResponse({visitType: visitType,
@@ -68,7 +70,7 @@ function stubSaveRequest({
 }
 
 // Mocks API response : /save/(:visit_type)/(:origin_url)
-// visit_type : {'git', 'hg', 'svn'}
+// visit_type : {'git', 'hg', 'svn', ...}
 function genOriginSaveResponse({
   visitType = 'git',
   saveRequestStatus,
@@ -179,6 +181,19 @@ describe('Origin Save Tests', function() {
 
     cy.wait('@saveRequest').then(() => {
       checkAlertVisible('warning', saveCodeMsg['warning']);
+    });
+  });
+
+  it('should show error when the origin does not exist (status: 400)', function() {
+    stubSaveRequest({requestUrl: this.originSaveUrl,
+                     originUrl: origin.url,
+                     responseStatus: 400,
+                     errorMessage: saveCodeMsg['not-found']});
+
+    makeOriginSaveRequest(origin.type, origin.url);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('danger', saveCodeMsg['not-found']);
     });
   });
 

@@ -511,27 +511,46 @@ describe('Test origin-search', function() {
       searchShouldShowNotFound(swhid, msg);
     });
 
-    function checkInvalidSWHIDReport(url, searchInputElt, repoData) {
-      const invalidSWHID = `swh:1:cnt:${repoData.content[0].sha1git};lines=45-60/`;
+    function checkInvalidSWHIDReport(url, searchInputElt, swhidInput, validationMessagePattern = '') {
       cy.visit(url);
-      doSearch(invalidSWHID, searchInputElt);
+      doSearch(swhidInput, searchInputElt);
       cy.get(searchInputElt)
         .then($el => $el[0].checkValidity()).should('be.false');
       cy.get(searchInputElt)
         .invoke('prop', 'validationMessage')
-        .should('not.equal', '');
-
+        .should('not.equal', '')
+        .should('contain', validationMessagePattern);
     }
 
     it('should report invalid SWHID in search page input', function() {
-      checkInvalidSWHIDReport(this.Urls.browse_search(), '#swh-origins-url-patterns', this.unarchivedRepo);
+      const swhidInput =
+        `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git};lines=45-60/`;
+      checkInvalidSWHIDReport(this.Urls.browse_search(), '#swh-origins-url-patterns', swhidInput);
       cy.get('.invalid-feedback')
         .should('be.visible');
     });
 
     it('should report invalid SWHID in top right search input', function() {
-      checkInvalidSWHIDReport(this.Urls.browse_help(), '#swh-origins-search-top-input', this.unarchivedRepo);
+      const swhidInput =
+        `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git};lines=45-60/`;
+      checkInvalidSWHIDReport(this.Urls.browse_help(), '#swh-origins-search-top-input', swhidInput);
     });
+
+    it('should report SWHID with uppercase chars in search page input', function() {
+      const swhidInput =
+        `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git}`.toUpperCase();
+      checkInvalidSWHIDReport(this.Urls.browse_search(), '#swh-origins-url-patterns', swhidInput, swhidInput.toLowerCase());
+      cy.get('.invalid-feedback')
+        .should('be.visible');
+    });
+
+    it('should report SWHID with uppercase chars in top right search input', function() {
+      let swhidInput =
+        `swh:1:cnt:${this.unarchivedRepo.content[0].sha1git}`.toUpperCase();
+      swhidInput += ';lines=45-60/';
+      checkInvalidSWHIDReport(this.Urls.browse_help(), '#swh-origins-search-top-input', swhidInput.toLowerCase());
+    });
+
   });
 
 });

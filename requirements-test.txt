@@ -6,7 +6,7 @@ hypothesis
 pytest
 pytest-django
 pytest-mock
-requests-mock
+requests-mock != 1.9.0, != 1.9.1
 swh.core[http] >= 0.0.95
 swh.loader.git >= 0.8.0
 swh.storage >= 0.1.1

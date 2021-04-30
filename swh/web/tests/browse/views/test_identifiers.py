@@ -28,91 +28,117 @@ from swh.web.tests.utils import check_html_get_response
 def test_content_id_browse(client, content):
     cnt_sha1_git = content["sha1_git"]
     swhid = gen_swhid(CONTENT, cnt_sha1_git)
-    url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    query_string = "sha1_git:" + cnt_sha1_git
-    content_browse_url = reverse(
-        "browse-content", url_args={"query_string": query_string}
-    )
+    for swhid_ in (swhid, swhid.upper()):
+        url = reverse("browse-swhid", url_args={"swhid": swhid_})
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == content_browse_url
+        query_string = "sha1_git:" + cnt_sha1_git
+        content_browse_url = reverse(
+            "browse-content", url_args={"query_string": query_string}
+        )
+
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == content_browse_url
 
 
 @given(directory())
 def test_directory_id_browse(client, directory):
     swhid = gen_swhid(DIRECTORY, directory)
-    url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    directory_browse_url = reverse("browse-directory", url_args={"sha1_git": directory})
+    for swhid_ in (swhid, swhid.upper()):
+        url = reverse("browse-swhid", url_args={"swhid": swhid_})
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == directory_browse_url
+        directory_browse_url = reverse(
+            "browse-directory", url_args={"sha1_git": directory}
+        )
+
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == directory_browse_url
 
 
 @given(revision())
 def test_revision_id_browse(client, revision):
     swhid = gen_swhid(REVISION, revision)
-    url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    revision_browse_url = reverse("browse-revision", url_args={"sha1_git": revision})
+    for swhid_ in (swhid, swhid.upper()):
+        url = reverse("browse-swhid", url_args={"swhid": swhid_})
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == revision_browse_url
+        revision_browse_url = reverse(
+            "browse-revision", url_args={"sha1_git": revision}
+        )
 
-    query_params = {"origin_url": "https://github.com/user/repo"}
-    url = reverse("browse-swhid", url_args={"swhid": swhid}, query_params=query_params)
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == revision_browse_url
 
-    revision_browse_url = reverse(
-        "browse-revision", url_args={"sha1_git": revision}, query_params=query_params
-    )
+        query_params = {"origin_url": "https://github.com/user/repo"}
+        url = reverse(
+            "browse-swhid", url_args={"swhid": swhid_}, query_params=query_params
+        )
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == revision_browse_url
+        revision_browse_url = reverse(
+            "browse-revision",
+            url_args={"sha1_git": revision},
+            query_params=query_params,
+        )
+
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == revision_browse_url
 
 
 @given(release())
 def test_release_id_browse(client, release):
     swhid = gen_swhid(RELEASE, release)
-    url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    release_browse_url = reverse("browse-release", url_args={"sha1_git": release})
+    for swhid_ in (swhid, swhid.upper()):
+        url = reverse("browse-swhid", url_args={"swhid": swhid_})
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == release_browse_url
+        release_browse_url = reverse("browse-release", url_args={"sha1_git": release})
 
-    query_params = {"origin_url": "https://github.com/user/repo"}
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == release_browse_url
 
-    url = reverse("browse-swhid", url_args={"swhid": swhid}, query_params=query_params)
+        query_params = {"origin_url": "https://github.com/user/repo"}
 
-    release_browse_url = reverse(
-        "browse-release", url_args={"sha1_git": release}, query_params=query_params
-    )
+        url = reverse(
+            "browse-swhid", url_args={"swhid": swhid_}, query_params=query_params
+        )
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == release_browse_url
+        release_browse_url = reverse(
+            "browse-release", url_args={"sha1_git": release}, query_params=query_params
+        )
+
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == release_browse_url
 
 
 @given(snapshot())
 def test_snapshot_id_browse(client, snapshot):
     swhid = gen_swhid(SNAPSHOT, snapshot)
-    url = reverse("browse-swhid", url_args={"swhid": swhid})
 
-    snapshot_browse_url = reverse("browse-snapshot", url_args={"snapshot_id": snapshot})
+    for swhid_ in (swhid, swhid.upper()):
+        url = reverse("browse-swhid", url_args={"swhid": swhid_})
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == snapshot_browse_url
+        snapshot_browse_url = reverse(
+            "browse-snapshot", url_args={"snapshot_id": snapshot}
+        )
 
-    query_params = {"origin_url": "https://github.com/user/repo"}
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == snapshot_browse_url
 
-    url = reverse("browse-swhid", url_args={"swhid": swhid}, query_params=query_params)
+        query_params = {"origin_url": "https://github.com/user/repo"}
 
-    release_browse_url = reverse(
-        "browse-snapshot", url_args={"snapshot_id": snapshot}, query_params=query_params
-    )
+        url = reverse(
+            "browse-swhid", url_args={"swhid": swhid_}, query_params=query_params
+        )
 
-    resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == release_browse_url
+        release_browse_url = reverse(
+            "browse-snapshot",
+            url_args={"snapshot_id": snapshot},
+            query_params=query_params,
+        )
+
+        resp = check_html_get_response(client, url, status_code=302)
+        assert resp["location"] == release_browse_url
 
 
 @given(release())

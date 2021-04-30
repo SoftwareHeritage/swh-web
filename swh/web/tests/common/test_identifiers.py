@@ -96,11 +96,12 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
             f"browse-{obj_type}", url_args=url_args, query_params=query_params
         )
 
-        resolved_swhid = resolve_swhid(swhid, query_params)
+        for swhid_ in (swhid, swhid.upper()):
+            resolved_swhid = resolve_swhid(swhid_, query_params)
 
-        assert isinstance(resolved_swhid["swhid_parsed"], QualifiedSWHID)
-        assert str(resolved_swhid["swhid_parsed"]) == swhid
-        assert resolved_swhid["browse_url"] == browse_url
+            assert isinstance(resolved_swhid["swhid_parsed"], QualifiedSWHID)
+            assert str(resolved_swhid["swhid_parsed"]) == swhid
+            assert resolved_swhid["browse_url"] == browse_url
 
     with pytest.raises(BadInputExc, match="'ori' is not a valid ObjectType"):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
@@ -116,10 +117,10 @@ def test_get_swhid(content, directory, release, revision, snapshot):
         (SNAPSHOT, snapshot),
     ):
         swhid = gen_swhid(obj_type, obj_id)
-        swh_parsed_swhid = get_swhid(swhid)
-
-        assert isinstance(swh_parsed_swhid, QualifiedSWHID)
-        assert str(swh_parsed_swhid) == swhid
+        for swhid_ in (swhid, swhid.upper()):
+            swh_parsed_swhid = get_swhid(swhid_)
+            assert isinstance(swh_parsed_swhid, QualifiedSWHID)
+            assert str(swh_parsed_swhid) == swhid.lower()
 
     with pytest.raises(BadInputExc, match="Error when parsing identifier"):
         get_swhid("foo")
@@ -192,14 +193,18 @@ def test_get_swhids_info_directory_context(archive_data, directory):
         swh_objects_info, snapshot_context=None, extra_context=extra_context,
     )
 
-    swhid_dir_parsed = get_swhid(swhids[0]["swhid_with_context"])
+    swhid_lower = swhids[0]["swhid_with_context"]
+    swhid_upper = swhid_lower.replace(swhids[0]["swhid"], swhids[0]["swhid"].upper())
 
-    anchor = gen_swhid(DIRECTORY, directory)
+    for swhid in (swhid_lower, swhid_upper):
+        swhid_dir_parsed = get_swhid(swhid)
 
-    assert swhid_dir_parsed.qualifiers() == {
-        "anchor": anchor,
-        "path": dir_subdir_path,
-    }
+        anchor = gen_swhid(DIRECTORY, directory)
+
+        assert swhid_dir_parsed.qualifiers() == {
+            "anchor": anchor,
+            "path": dir_subdir_path,
+        }
 
     if dir_subdir_files:
         swhid_cnt_parsed = get_swhid(swhids[1]["swhid_with_context"])
@@ -236,13 +241,18 @@ def test_get_swhids_info_revision_context(archive_data, revision):
     )
 
     assert swhids[0]["context"] == {}
-    swhid_dir_parsed = get_swhid(swhids[1]["swhid_with_context"])
 
-    anchor = gen_swhid(REVISION, revision)
+    swhid_lower = swhids[1]["swhid_with_context"]
+    swhid_upper = swhid_lower.replace(swhids[1]["swhid"], swhids[1]["swhid"].upper())
 
-    assert swhid_dir_parsed.qualifiers() == {
-        "anchor": anchor,
-    }
+    for swhid in (swhid_lower, swhid_upper):
+        swhid_dir_parsed = get_swhid(swhid)
+
+        anchor = gen_swhid(REVISION, revision)
+
+        assert swhid_dir_parsed.qualifiers() == {
+            "anchor": anchor,
+        }
 
     if dir_entry["type"] == "file":
         swhid_cnt_parsed = get_swhid(swhids[2]["swhid_with_context"])
@@ -574,26 +584,29 @@ def _check_resolved_swhid_browse_url(
     if lines:
         obj_context["lines"] = lines
 
-    obj_swhid = gen_swhid(object_type, object_id, metadata=obj_context)
+    obj_core_swhid = gen_swhid(object_type, object_id)
+    obj_swhid_lower = gen_swhid(object_type, object_id, metadata=obj_context)
+    obj_swhid_upper = obj_swhid_lower.replace(obj_core_swhid, obj_core_swhid.upper(), 1)
 
-    obj_swhid_resolved = resolve_swhid(obj_swhid)
+    for obj_swhid in (obj_swhid_lower, obj_swhid_upper):
+        obj_swhid_resolved = resolve_swhid(obj_swhid)
 
-    url_args = {"sha1_git": object_id}
-    if object_type == CONTENT:
-        url_args = {"query_string": f"sha1_git:{object_id}"}
-    elif object_type == SNAPSHOT:
-        url_args = {"snapshot_id": object_id}
+        url_args = {"sha1_git": object_id}
+        if object_type == CONTENT:
+            url_args = {"query_string": f"sha1_git:{object_id}"}
+        elif object_type == SNAPSHOT:
+            url_args = {"snapshot_id": object_id}
 
-    expected_url = reverse(
-        f"browse-{object_type}", url_args=url_args, query_params=query_params,
-    )
-    if lines:
-        lines_number = lines.split("-")
-        expected_url += f"#L{lines_number[0]}"
-        if len(lines_number) > 1:
-            expected_url += f"-L{lines_number[1]}"
+        expected_url = reverse(
+            f"browse-{object_type}", url_args=url_args, query_params=query_params,
+        )
+        if lines:
+            lines_number = lines.split("-")
+            expected_url += f"#L{lines_number[0]}"
+            if len(lines_number) > 1:
+                expected_url += f"-L{lines_number[1]}"
 
-    assert obj_swhid_resolved["browse_url"] == expected_url
+        assert obj_swhid_resolved["browse_url"] == expected_url
 
 
 @given(directory())
