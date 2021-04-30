@@ -195,10 +195,13 @@ export function initOriginSave() {
                           (statusCode, errorData) => {
                             $('#swh-origin-save-request-status').css('color', 'red');
                             if (statusCode === 403) {
-                              const errorAlert = htmlAlert('danger', `Error: ${errorData['detail']}`);
+                              const errorAlert = htmlAlert('danger', `Error: ${errorData['reason']}`);
                               $('#swh-origin-save-request-status').html(errorAlert);
                             } else if (statusCode === 429) {
                               $('#swh-origin-save-request-status').html(saveRequestRateLimitedAlert);
+                            } else if (statusCode === 400) {
+                              const errorAlert = htmlAlert('danger', errorData['reason']);
+                              $('#swh-origin-save-request-status').html(errorAlert);
                             } else {
                               $('#swh-origin-save-request-status').html(saveRequestUnknownErrorAlert);
                             }

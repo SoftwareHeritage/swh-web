@@ -12,6 +12,7 @@ import pytest
 import requests
 
 from swh.core.pytest_plugin import get_response_cb
+from swh.web.common.exc import BadInputExc
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_TASK_FAILED,
@@ -22,11 +23,17 @@ from swh.web.common.models import (
     SaveOriginRequest,
 )
 from swh.web.common.origin_save import (
+    _check_origin_exists,
     get_save_origin_requests,
     get_save_origin_task_info,
+    origin_exists,
     refresh_save_origin_request_statuses,
 )
-from swh.web.common.typing import OriginVisitInfo, SaveOriginRequestInfo
+from swh.web.common.typing import (
+    OriginExistenceCheckInfo,
+    OriginVisitInfo,
+    SaveOriginRequestInfo,
+)
 from swh.web.config import get_config
 
 _es_url = "http://esnode1.internal.softwareheritage.org:9200"
@@ -310,6 +317,60 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         visit_date=_visit_date.isoformat() if _visit_date else None,
         loading_task_id=sor.loading_task_id,
     )
+
+
+def test_origin_exists_404(requests_mock):
+    """Origin which does not exist should be reported as inexistent"""
+    url_ko = "https://example.org/some-inexistant-url"
+    requests_mock.head(url_ko, status_code=404)
+
+    actual_result = origin_exists(url_ko)
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url_ko, exists=False, last_modified=None, content_length=None,
+    )
+
+    with pytest.raises(BadInputExc, match="not exist"):
+        _check_origin_exists(url_ko)
+
+
+def test_origin_exists_200_no_data(requests_mock):
+    """Existing origin should be reported as such (no extra information)"""
+    url = "http://example.org/real-url"
+    requests_mock.head(
+        url, status_code=200,
+    )
+
+    actual_result = origin_exists(url)
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url, exists=True, last_modified=None, content_length=None,
+    )
+
+    # passes the check
+    _check_origin_exists(url)
+
+
+def test_origin_exists_200_with_data(requests_mock):
+    """Existing origin should be reported as such (+ extra information)"""
+    url = "http://example.org/real-url"
+    requests_mock.head(
+        url,
+        status_code=200,
+        headers={
+            "content-length": "10",
+            "last-modified": "Sun, 21 Aug 2011 16:26:32 GMT",
+        },
+    )
+
+    actual_result = origin_exists(url)
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url,
+        exists=True,
+        content_length=10,
+        last_modified="Sun, 21 Aug 2011 16:26:32 GMT",
+    )
+
+    # passes the check
+    _check_origin_exists(url)
 
 
 @pytest.mark.django_db

@@ -360,15 +360,36 @@ export function setContainerFullWidth() {
   }
 }
 
+function coreSWHIDIsLowerCase(swhid) {
+  const qualifiersPos = swhid.indexOf(';');
+  let coreSWHID = swhid;
+  if (qualifiersPos !== -1) {
+    coreSWHID = swhid.slice(0, qualifiersPos);
+  }
+  return coreSWHID.toLowerCase() === coreSWHID;
+}
+
 export async function validateSWHIDInput(swhidInputElt) {
   const swhidInput = swhidInputElt.value.trim();
   let customValidity = '';
-  if (swhidInput.startsWith('swh:')) {
-    const resolveSWHIDUrl = Urls.api_1_resolve_swhid(swhidInput);
-    const response = await fetch(resolveSWHIDUrl);
-    const responseData = await response.json();
-    if (responseData.hasOwnProperty('exception')) {
-      customValidity = responseData.reason;
+  if (swhidInput.toLowerCase().startsWith('swh:')) {
+    if (coreSWHIDIsLowerCase(swhidInput)) {
+      const resolveSWHIDUrl = Urls.api_1_resolve_swhid(swhidInput);
+      const response = await fetch(resolveSWHIDUrl);
+      const responseData = await response.json();
+      if (responseData.hasOwnProperty('exception')) {
+        customValidity = responseData.reason;
+      }
+    } else {
+      const qualifiersPos = swhidInput.indexOf(';');
+      if (qualifiersPos === -1) {
+        customValidity = 'Invalid SWHID: all characters must be in lowercase. ';
+        customValidity += `Valid SWHID is ${swhidInput.toLowerCase()}`;
+      } else {
+        customValidity = 'Invalid SWHID: the core part must be in lowercase. ';
+        const coreSWHID = swhidInput.slice(0, qualifiersPos);
+        customValidity += `Valid SWHID is ${swhidInput.replace(coreSWHID, coreSWHID.toLowerCase())}`;
+      }
     }
   }
   swhidInputElt.setCustomValidity(customValidity);

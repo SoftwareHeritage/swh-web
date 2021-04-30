@@ -49,12 +49,12 @@ urlpatterns = [
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
     # keep legacy SWHID resolving URL with trailing slash for backward compatibility
     url(
-        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)/$",
         swhid_browse,
         name="browse-swhid-legacy",
     ),
     url(
-        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)$",
+        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)$",
         swhid_browse,
         name="browse-swhid",
     ),
