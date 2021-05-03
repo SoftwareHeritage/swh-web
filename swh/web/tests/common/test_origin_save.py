@@ -319,6 +319,22 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
     )
 
 
+def test__check_origin_exists_404(requests_mock):
+    url_ko = "https://example.org/some-inexistant-url"
+    requests_mock.head(url_ko, status_code=404)
+
+    with pytest.raises(BadInputExc, match="not exist"):
+        _check_origin_exists(url_ko)
+
+
+def test__check_origin_exists_200(requests_mock):
+    url = "https://example.org/url"
+    requests_mock.head(url, status_code=200)
+
+    # passes the check
+    _check_origin_exists(url)
+
+
 def test_origin_exists_404(requests_mock):
     """Origin which does not exist should be reported as inexistent"""
     url_ko = "https://example.org/some-inexistant-url"
@@ -328,9 +344,6 @@ def test_origin_exists_404(requests_mock):
     assert actual_result == OriginExistenceCheckInfo(
         origin_url=url_ko, exists=False, last_modified=None, content_length=None,
     )
-
-    with pytest.raises(BadInputExc, match="not exist"):
-        _check_origin_exists(url_ko)
 
 
 def test_origin_exists_200_no_data(requests_mock):
@@ -344,9 +357,6 @@ def test_origin_exists_200_no_data(requests_mock):
     assert actual_result == OriginExistenceCheckInfo(
         origin_url=url, exists=True, last_modified=None, content_length=None,
     )
-
-    # passes the check
-    _check_origin_exists(url)
 
 
 def test_origin_exists_200_with_data(requests_mock):
@@ -368,9 +378,6 @@ def test_origin_exists_200_with_data(requests_mock):
         content_length=10,
         last_modified="Sun, 21 Aug 2011 16:26:32 GMT",
     )
-
-    # passes the check
-    _check_origin_exists(url)
 
 
 @pytest.mark.django_db
