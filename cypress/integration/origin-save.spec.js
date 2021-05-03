@@ -399,4 +399,20 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should create save request for authenticated user', function() {
+    cy.adminLogin();
+    cy.visit(url);
+    const originUrl = 'https://git.example.org/account/repo';
+    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+                     saveRequestStatus: 'accepted',
+                     originUrl: origin.url,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+  });
+
 });

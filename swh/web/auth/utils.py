@@ -12,6 +12,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 
+SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
+
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:
     """

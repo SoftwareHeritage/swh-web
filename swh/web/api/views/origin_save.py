@@ -1,10 +1,11 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION
 from swh.web.common.origin_save import (
     create_save_origin_request,
     get_save_origin_requests,
@@ -83,7 +84,10 @@ def api_save_origin(request, visit_type, origin_url):
     """
 
     if request.method == "POST":
-        sor = create_save_origin_request(visit_type, origin_url)
+        bypass_pending_review = request.user.is_authenticated and request.user.has_perm(
+            SWH_AMBASSADOR_PERMISSION
+        )
+        sor = create_save_origin_request(visit_type, origin_url, bypass_pending_review)
         del sor["id"]
     else:
         sor = get_save_origin_requests(visit_type, origin_url)
