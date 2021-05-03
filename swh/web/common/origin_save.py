@@ -378,7 +378,6 @@ def create_save_origin_request(
     """
     _check_visit_type_savable(visit_type)
     _check_origin_url_valid(origin_url)
-    _check_origin_exists(origin_url)
     # if all checks passed so far, we can try and save the origin
     save_request_status = can_save_origin(origin_url, bypass_pending_review)
     task = None
