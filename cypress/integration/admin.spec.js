@@ -59,6 +59,22 @@ describe('Test Admin Login/logout', function() {
     logout();
   });
 
+  it('should get info about a user logged in from javascript', function() {
+    cy.window().then(win => {
+      expect(win.swh.webapp.isUserLoggedIn()).to.be.false;
+    });
+    cy.adminLogin();
+    cy.visit(url);
+    cy.window().then(win => {
+      expect(win.swh.webapp.isUserLoggedIn()).to.be.true;
+    });
+    logout();
+    cy.visit(url);
+    cy.window().then(win => {
+      expect(win.swh.webapp.isUserLoggedIn()).to.be.false;
+    });
+  });
+
   it('should prevent unauthorized access after logout', function() {
     cy.visit(this.Urls.admin_origin_save())
       .location('pathname')
