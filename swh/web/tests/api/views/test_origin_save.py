@@ -443,7 +443,7 @@ def origin_to_review():
 
 
 def test_create_save_request_pending_review_anonymous_user(
-    api_client, origin_to_review, requests_mock
+    api_client, origin_to_review
 ):
 
     url = reverse(
@@ -460,10 +460,10 @@ def test_create_save_request_pending_review_anonymous_user(
 
 
 def test_create_save_request_accepted_ambassador_user(
-    api_client, origin_to_review, requests_mock, keycloak_oidc, mocker
+    api_client, origin_to_review, keycloak_oidc, mocker
 ):
 
-    keycloak_oidc.realm_permissions += [SWH_AMBASSADOR_PERMISSION]
+    keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
     oidc_profile = keycloak_oidc.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
@@ -476,3 +476,36 @@ def test_create_save_request_accepted_ambassador_user(
     )
 
     assert SaveAuthorizedOrigin.objects.get(url=origin_to_review)
+
+
+def test_create_save_request_anonymous_user_no_user_id(api_client):
+    origin_url = "https://some.git.hosters/user/repo"
+    url = reverse(
+        "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+
+    check_api_post_responses(api_client, url, status_code=200)
+
+    sor = SaveOriginRequest.objects.get(origin_url=origin_url)
+
+    assert sor.user_id is None
+
+
+def test_create_save_request_authenticated_user_id(
+    api_client, origin_to_review, keycloak_oidc, mocker
+):
+    oidc_profile = keycloak_oidc.login()
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
+
+    origin_url = "https://some.git.hosters/user/repo2"
+    url = reverse(
+        "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+
+    response = check_api_post_response(api_client, url, status_code=200)
+
+    assert response.wsgi_request.user.id is not None
+
+    user_id = str(response.wsgi_request.user.id)
+    sor = SaveOriginRequest.objects.get(user_id=user_id)
+    assert sor.user_id == user_id
