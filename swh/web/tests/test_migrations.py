@@ -8,6 +8,7 @@ APP_NAME = "swh_web_common"
 MIGRATION_0008 = "0008_save-code-now_indexes_20210106_1327"
 MIGRATION_0009 = "0009_saveoriginrequest_visit_status"
 MIGRATION_0010 = "0010_saveoriginrequest_user_id"
+MIGRATION_0011 = "0011_saveoriginrequest_user_ids"
 
 
 def test_migrations_09_add_visit_status_to_sor_model(migrator):
@@ -36,3 +37,17 @@ def test_migrations_10_add_user_id_to_sor_model(migrator):
     new_model = new_state.apps.get_model(APP_NAME, "SaveOriginRequest")
 
     assert hasattr(new_model, "user_id") is True
+
+
+def test_migrations_11_add_user_ids_to_sor_model(migrator):
+    """Ensures the migration adds the user_id field to SaveOriginRequest table"""
+
+    old_state = migrator.apply_initial_migration((APP_NAME, MIGRATION_0010),)
+    old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+
+    assert hasattr(old_model, "user_ids") is False
+
+    new_state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0011))
+    new_model = new_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+
+    assert hasattr(new_model, "user_ids") is True

@@ -19,7 +19,7 @@ Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
   expect(Object.keys(aliasRoute.requests || {})).to.have.length(timesCalled);
 });
 
-Cypress.Commands.add('adminLogin', () => {
+function loginUser(username, password) {
   const url = '/admin/login/';
   return cy.request({
     url: url,
@@ -33,8 +33,8 @@ Cypress.Commands.add('adminLogin', () => {
         form: true,
         followRedirect: false,
         body: {
-          username: 'admin',
-          password: 'admin',
+          username: username,
+          password: password,
           csrfmiddlewaretoken: token
         }
       }).then(() => {
@@ -43,6 +43,14 @@ Cypress.Commands.add('adminLogin', () => {
       });
     });
   });
+}
+
+Cypress.Commands.add('adminLogin', () => {
+  return loginUser('admin', 'admin');
+});
+
+Cypress.Commands.add('userLogin', () => {
+  return loginUser('user', 'user');
 });
 
 before(function() {

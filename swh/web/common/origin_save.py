@@ -448,7 +448,7 @@ def create_save_origin_request(
                     origin_url=origin_url,
                     status=save_request_status,
                     loading_task_id=task["id"],
-                    user_id=str(user_id) if user_id else None,
+                    user_ids=f'"{user_id}"' if user_id else None,
                 )
     # save request must be manually reviewed for acceptation
     elif save_request_status == SAVE_REQUEST_PENDING:
@@ -458,13 +458,19 @@ def create_save_origin_request(
             sor = SaveOriginRequest.objects.get(
                 visit_type=visit_type, origin_url=origin_url, status=save_request_status
             )
+            user_ids = sor.user_ids if sor.user_ids is not None else ""
+            if user_id is not None and f'"{user_id}"' not in user_ids:
+                # update user ids list
+                sor.user_ids = f'{sor.user_ids},"{user_id}"'
+                sor.save()
+
         # if not add it to the database
         except ObjectDoesNotExist:
             sor = SaveOriginRequest.objects.create(
                 visit_type=visit_type,
                 origin_url=origin_url,
                 status=save_request_status,
-                user_id=str(user_id) if user_id else None,
+                user_ids=f'"{user_id}"' if user_id else None,
             )
     # origin can not be saved as its url is blacklisted,
     # log the request to the database anyway
@@ -473,7 +479,7 @@ def create_save_origin_request(
             visit_type=visit_type,
             origin_url=origin_url,
             status=save_request_status,
-            user_id=str(user_id) if user_id else None,
+            user_ids=f'"{user_id}"' if user_id else None,
         )
 
     if save_request_status == SAVE_REQUEST_REJECTED:
