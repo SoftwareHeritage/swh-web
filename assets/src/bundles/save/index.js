@@ -10,11 +10,23 @@ import {swhSpinnerSrc} from 'utils/constants';
 
 let saveRequestsTable;
 
-function originSaveRequest(originType, originUrl,
-                           acceptedCallback, pendingCallback, errorCallback) {
+function originSaveRequest(
+  originType, originUrl, extraData,
+  acceptedCallback, pendingCallback, errorCallback
+) {
+  // Actually trigger the origin save request
   let addSaveOriginRequestUrl = Urls.api_1_save_origin(originType, originUrl);
   $('.swh-processing-save-request').css('display', 'block');
-  csrfPost(addSaveOriginRequestUrl)
+  let headers = {};
+  let body = null;
+  if (extraData !== {}) {
+    body = JSON.stringify(extraData);
+    headers = {
+      'Content-Type': 'application/json'
+    };
+  };
+
+  csrfPost(addSaveOriginRequestUrl, headers, body)
     .then(handleFetchError)
     .then(response => response.json())
     .then(data => {
@@ -31,6 +43,14 @@ function originSaveRequest(originType, originUrl,
         errorCallback(response.status, errorData);
       });
     });
+}
+
+export function maybeDisplayExtraInputs() {
+  // Read the actual selected value and depending on the origin type, display some extra
+  // inputs or hide them.
+  const originType = $('#swh-input-visit-type').val();
+  const display = originType === 'bundle' ? 'flex' : 'none';
+  $('#optional-origin-forms').css('display', display);
 }
 
 const userRequestsFilterCheckbox = `
@@ -55,6 +75,8 @@ export function initOriginSave() {
         for (let originType of data) {
           $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
         }
+        // set git as the default value as before
+        $('#swh-input-visit-type').val('git');
       });
 
     saveRequestsTable = $('#swh-origin-save-requests')
@@ -220,7 +242,14 @@ export function initOriginSave() {
         let originType = $('#swh-input-visit-type').val();
         let originUrl = $('#swh-input-origin-url').val();
 
-        originSaveRequest(originType, originUrl,
+        // read the extra inputs for the bundle type
+        let extraData = originType !== 'bundle' ? {} : {
+          'artifact_url': $('#swh-input-artifact-url').val(),
+          'artifact_filename': $('#swh-input-artifact-filename').val(),
+          'artifact_version': $('#swh-input-artifact-version').val()
+        };
+
+        originSaveRequest(originType, originUrl, extraData,
                           () => $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert),
                           () => $('#swh-origin-save-request-status').html(saveRequestPendingAlert),
                           (statusCode, errorData) => {
@@ -347,8 +376,9 @@ export function initTakeNewSnapshot() {
 
       let originType = $('#swh-input-visit-type').val();
       let originUrl = $('#swh-input-origin-url').val();
+      let extraData = {};
 
-      originSaveRequest(originType, originUrl,
+      originSaveRequest(originType, originUrl, extraData,
                         () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestAcceptedAlert),
                         () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestPendingAlert),
                         (statusCode, errorData) => {

@@ -359,12 +359,21 @@ def test__check_origin_exists_404(requests_mock):
         _check_origin_exists(url_ko)
 
 
+@pytest.mark.parametrize("invalid_origin", [None, ""])
+def test__check_origin_invalid_input(invalid_origin):
+    with pytest.raises(BadInputExc, match="must be set"):
+        _check_origin_exists(invalid_origin)
+
+
 def test__check_origin_exists_200(requests_mock):
     url = "https://example.org/url"
     requests_mock.head(url, status_code=200)
 
     # passes the check
-    _check_origin_exists(url)
+    actual_metadata = _check_origin_exists(url)
+
+    # and we actually may have retrieved some metadata on the origin
+    assert actual_metadata == origin_exists(url)
 
 
 def test_origin_exists_404(requests_mock):
@@ -408,7 +417,23 @@ def test_origin_exists_200_with_data(requests_mock):
         origin_url=url,
         exists=True,
         content_length=10,
-        last_modified="Sun, 21 Aug 2011 16:26:32 GMT",
+        last_modified="2011-08-21T16:26:32",
+    )
+
+
+def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
+    """Existing origin should be ok, unexpected last modif time result in no time"""
+    url = "http://example.org/real-url2"
+    # this is parsable but not as expected
+    unexpected_format_date = "Sun, 21 Aug 2021 16:26:32"
+    requests_mock.head(
+        url, status_code=200, headers={"last-modified": unexpected_format_date,},
+    )
+
+    actual_result = origin_exists(url)
+    # so the resulting date is None
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url, exists=True, content_length=None, last_modified=None,
     )
 
 

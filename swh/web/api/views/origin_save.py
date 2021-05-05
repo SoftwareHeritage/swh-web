@@ -83,11 +83,15 @@ def api_save_origin(request, visit_type, origin_url):
 
     """
 
+    data = request.data or {}
     if request.method == "POST":
         sor = create_save_origin_request(
-            visit_type, origin_url, privileged_user(request), user_id=request.user.id
+            visit_type,
+            origin_url,
+            privileged_user(request),
+            user_id=request.user.id,
+            **data,
         )
-
         del sor["id"]
     else:
         sor = get_save_origin_requests(visit_type, origin_url)

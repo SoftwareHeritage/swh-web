@@ -138,8 +138,27 @@ _save_task_run_status = {
 }
 
 
+def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
+    """Returned the supported task types the user has access to.
+
+    Args:
+        privileged_user: Flag to determine if all visit types should be returned or not.
+          Default to False to only list unprivileged visit types.
+
+    Returns:
+        the dict of supported visit types for the user
+
+    """
+    if privileged_user:
+        task_types = {**_visit_type_task, **_visit_type_task_privileged}
+    else:
+        task_types = _visit_type_task
+
+    return task_types
+
+
 def get_savable_visit_types(privileged_user: bool = False) -> List[str]:
-    """Get the list of visit types that can be performed through a save request.
+    """Return the list of visit types the user can perform save requests on.
 
     Args:
         privileged_user: Flag to determine if all visit types should be returned or not.
@@ -149,11 +168,8 @@ def get_savable_visit_types(privileged_user: bool = False) -> List[str]:
         the list of saveable visit types
 
     """
-    task_types = list(_visit_type_task.keys())
-    if privileged_user:
-        task_types += _visit_type_task_privileged.keys()
 
-    return sorted(task_types)
+    return sorted(list(get_savable_visit_types_dict(privileged_user).keys()))
 
 
 def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) -> None:
@@ -190,7 +206,13 @@ def origin_exists(origin_url: str) -> OriginExistenceCheckInfo:
     if exists:
         size_ = resp.headers.get("Content-Length")
         content_length = int(size_) if size_ else None
-        last_modified = resp.headers.get("Last-Modified")
+        try:
+            date_str = resp.headers["Last-Modified"]
+            date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z")
+            last_modified = date.isoformat()
+        except (KeyError, ValueError):
+            # if not provided or not parsable as per the expected format, keep it None
+            pass
 
     return OriginExistenceCheckInfo(
         origin_url=origin_url,
@@ -200,13 +222,17 @@ def origin_exists(origin_url: str) -> OriginExistenceCheckInfo:
     )
 
 
-def _check_origin_exists(origin_url: str) -> None:
+def _check_origin_exists(origin_url: Optional[str]) -> OriginExistenceCheckInfo:
     """Ensure the origin exists, if not raise an explicit message."""
-    check = origin_exists(origin_url)
-    if not check["exists"]:
+    if not origin_url:
+        raise BadInputExc("The origin url provided must be set!")
+    metadata = origin_exists(origin_url)
+    if not metadata["exists"]:
         raise BadInputExc(
             f"The provided origin url ({escape(origin_url)}) does not exist!"
         )
+
+    return metadata
 
 
 def _get_visit_info_for_save_request(
@@ -354,26 +380,29 @@ def create_save_origin_request(
     origin_url: str,
     privileged_user: bool = False,
     user_id: Optional[int] = None,
+    **kwargs,
 ) -> SaveOriginRequestInfo:
     """Create a loading task to save a software origin into the archive.
 
-    This function aims to create a software origin loading task
-    trough the use of the swh-scheduler component.
+    This function aims to create a software origin loading task trough the use of the
+    swh-scheduler component.
 
-    First, some checks are performed to see if the visit type and origin
-    url are valid but also if the the save request can be accepted.
-    If those checks passed, the loading task is then created.
-    Otherwise, the save request is put in pending or rejected state.
+    First, some checks are performed to see if the visit type and origin url are valid
+    but also if the the save request can be accepted. For the 'bundle' visit type, this
+    also ensures the artifacts actually exists. If those checks passed, the loading task
+    is then created. Otherwise, the save request is put in pending or rejected state.
 
-    All the submitted save requests are logged into the swh-web
-    database to keep track of them.
+    All the submitted save requests are logged into the swh-web database to keep track
+    of them.
 
     Args:
-        visit_type: the type of visit to perform (e.g git, hg, svn, ...)
+        visit_type: the type of visit to perform (e.g. git, hg, svn, bundle, ...)
         origin_url: the url of the origin to save
-        privileged_user: Whether the user has privileged_user access to extra
-          functionality (e.g. bypass save code now review, access to extra visit type)
+        privileged: Whether the user has some more privilege than other (bypass
+          review, access to privileged other visit types)
         user_id: User identifier (provided when authenticated)
+        kwargs: Optional parameters (e.g. artifact_url, artifact_filename,
+          artifact_version)
 
     Raises:
         BadInputExc: the visit type or origin url is invalid or inexistent
@@ -392,8 +421,14 @@ def create_save_origin_request(
               **succeed** or **failed**
 
     """
+    visit_type_tasks = get_savable_visit_types_dict(privileged_user)
     _check_visit_type_savable(visit_type, privileged_user)
     _check_origin_url_valid(origin_url)
+
+    artifact_url = kwargs.get("artifact_url")
+    if visit_type == "bundle":
+        metadata = _check_origin_exists(artifact_url)
+
     # if all checks passed so far, we can try and save the origin
     save_request_status = can_save_origin(origin_url, privileged_user)
     task = None
@@ -402,10 +437,25 @@ def create_save_origin_request(
     # task to load it into the archive
     if save_request_status == SAVE_REQUEST_ACCEPTED:
         # create a task with high priority
-        kwargs = {
+        task_kwargs: Dict[str, Any] = {
             "priority": "high",
             "url": origin_url,
         }
+        if visit_type == "bundle":
+            # extra arguments for that type are required
+            assert metadata is not None
+            task_kwargs = dict(
+                **task_kwargs,
+                artifacts=[
+                    {
+                        "url": artifact_url,
+                        "filename": kwargs["artifact_filename"],
+                        "version": kwargs["artifact_version"],
+                        "time": metadata["last_modified"],
+                        "length": metadata["content_length"],
+                    }
+                ],
+            )
         sor = None
         # get list of previously sumitted save requests
         current_sors = list(
@@ -447,7 +497,10 @@ def create_save_origin_request(
 
         if can_create_task:
             # effectively create the scheduler task
-            task_dict = create_oneshot_task_dict(_visit_type_task[visit_type], **kwargs)
+            task_dict = create_oneshot_task_dict(
+                visit_type_tasks[visit_type], **task_kwargs
+            )
+
             task = scheduler.create_tasks([task_dict])[0]
 
             # pending save request has been accepted
@@ -463,6 +516,7 @@ def create_save_origin_request(
                     loading_task_id=task["id"],
                     user_ids=f'"{user_id}"' if user_id else None,
                 )
+
     # save request must be manually reviewed for acceptation
     elif save_request_status == SAVE_REQUEST_PENDING:
         # check if there is already such a save request already submitted,
