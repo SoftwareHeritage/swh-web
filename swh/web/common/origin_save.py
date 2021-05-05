@@ -555,8 +555,8 @@ def get_save_origin_requests(
     Get all save requests for a given software origin.
 
     Args:
-        visit_type (str): the type of visit
-        origin_url (str): the url of the origin
+        visit_type: the type of visit
+        origin_url: the url of the origin
 
     Raises:
         BadInputExc: the visit type or origin url is invalid
@@ -574,8 +574,8 @@ def get_save_origin_requests(
     )
     if sors.count() == 0:
         raise NotFoundExc(
-            ("No save requests found for visit of type " "%s on origin with url %s.")
-            % (visit_type, origin_url)
+            f"No save requests found for visit of type {visit_type} "
+            f"on origin with url {origin_url}."
         )
     return update_save_origin_requests_from_queryset(sors)
 

@@ -20,7 +20,7 @@ def _origin_save_view(request):
     return render(
         request,
         "misc/origin-save.html",
-        {"heading": ("Request the saving of a software origin into " "the archive")},
+        {"heading": ("Request the saving of a software origin into the archive")},
     )
 
 
