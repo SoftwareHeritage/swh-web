@@ -24,6 +24,10 @@ from swh.web.common.models import (
 )
 from swh.web.common.origin_save import (
     _check_origin_exists,
+    _check_visit_type_savable,
+    _visit_type_task,
+    _visit_type_task_privileged,
+    get_savable_visit_types,
     get_save_origin_requests,
     get_save_origin_task_info,
     origin_exists,
@@ -103,6 +107,34 @@ def _mock_scheduler(
         dict(task_run) if not task_archived else None
     ]
     return task, task_run
+
+
+@pytest.mark.parametrize(
+    "wrong_type,privileged_user",
+    [
+        ("dummy", True),
+        ("dumb", False),
+        ("bundle", False),  # when no privilege, this is rejected
+    ],
+)
+def test__check_visit_type_savable(wrong_type, privileged_user):
+
+    with pytest.raises(BadInputExc, match="Allowed types"):
+        _check_visit_type_savable(wrong_type, privileged_user)
+
+    # when privileged_user, the following is accepted though
+    _check_visit_type_savable("bundle", True)
+
+
+def test_get_savable_visit_types():
+    default_list = list(_visit_type_task.keys())
+
+    assert set(get_savable_visit_types()) == set(default_list)
+
+    privileged_list = default_list.copy()
+    privileged_list += list(_visit_type_task_privileged.keys())
+
+    assert set(get_savable_visit_types(privileged_user=True)) == set(privileged_list)
 
 
 def _get_save_origin_task_info_test(

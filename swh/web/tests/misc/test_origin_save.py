@@ -9,10 +9,14 @@ import json
 import pytest
 
 from swh.auth.django.utils import oidc_user_from_profile
+from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDED
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_http_get_response
+
+VISIT_TYPES = ("git", "svn", "hg")
+PRIVILEGED_VISIT_TYPES = tuple(list(VISIT_TYPES) + ["bundle"])
 
 
 def test_old_save_url_redirection(client):
@@ -23,11 +27,36 @@ def test_old_save_url_redirection(client):
     assert resp["location"] == redirect_url
 
 
+def test_save_types_list_default(client):
+    """Unprivileged listing should display default list of visit types.
+
+    """
+    url = reverse("origin-save-types-list")
+    resp = check_http_get_response(client, url, status_code=200)
+
+    actual_response = resp.json()
+    assert set(actual_response) == set(VISIT_TYPES)
+
+
 @pytest.mark.django_db
-def test_save_origin_requests_list(client, mocker, keycloak_oidc):
-    visit_types = ("git", "svn", "hg")
+def test_save_types_list_privileged(client, keycloak_oidc):
+    """Privileged listing should display all visit types.
+
+    """
+    keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
+    client.login(code="", code_verifier="", redirect_uri="")
+
+    url = reverse("origin-save-types-list")
+    resp = check_http_get_response(client, url, status_code=200)
+
+    actual_response = resp.json()
+    assert set(actual_response) == set(PRIVILEGED_VISIT_TYPES)
+
+
+@pytest.mark.django_db
+def test_save_origin_requests_list(client, mocker):
     nb_origins_per_type = 10
-    for visit_type in visit_types:
+    for visit_type in VISIT_TYPES:
         for i in range(nb_origins_per_type):
             SaveOriginRequest.objects.create(
                 request_date=datetime.now(tz=timezone.utc),
@@ -45,7 +74,7 @@ def test_save_origin_requests_list(client, mocker, keycloak_oidc):
 
     # retrieve all save requests in 3 pages, sorted in descending order
     # of request creation
-    for i, visit_type in enumerate(reversed(visit_types)):
+    for i, visit_type in enumerate(reversed(VISIT_TYPES)):
         url = reverse(
             "origin-save-requests-list",
             url_args={"status": "all"},
@@ -65,13 +94,13 @@ def test_save_origin_requests_list(client, mocker, keycloak_oidc):
         )
         sors = json.loads(resp.content.decode("utf-8"))
         assert sors["draw"] == i + 1
-        assert sors["recordsFiltered"] == len(visit_types) * nb_origins_per_type
-        assert sors["recordsTotal"] == len(visit_types) * nb_origins_per_type
+        assert sors["recordsFiltered"] == len(VISIT_TYPES) * nb_origins_per_type
+        assert sors["recordsTotal"] == len(VISIT_TYPES) * nb_origins_per_type
         assert len(sors["data"]) == nb_origins_per_type
         assert all(d["visit_type"] == visit_type for d in sors["data"])
 
     # retrieve save requests filtered by visit type in a single page
-    for i, visit_type in enumerate(reversed(visit_types)):
+    for i, visit_type in enumerate(reversed(VISIT_TYPES)):
         url = reverse(
             "origin-save-requests-list",
             url_args={"status": "all"},
@@ -92,7 +121,7 @@ def test_save_origin_requests_list(client, mocker, keycloak_oidc):
         sors = json.loads(resp.content.decode("utf-8"))
         assert sors["draw"] == i + 1
         assert sors["recordsFiltered"] == nb_origins_per_type
-        assert sors["recordsTotal"] == len(visit_types) * nb_origins_per_type
+        assert sors["recordsTotal"] == len(VISIT_TYPES) * nb_origins_per_type
         assert len(sors["data"]) == nb_origins_per_type
         assert all(d["visit_type"] == visit_type for d in sors["data"])
 

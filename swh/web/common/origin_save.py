@@ -113,6 +113,10 @@ def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str
 # TODO: do not hardcode the task name here (T1157)
 _visit_type_task = {"git": "load-git", "hg": "load-hg", "svn": "load-svn"}
 
+_visit_type_task_privileged = {
+    "bundle": "load-archive-files",
+}
+
 
 # map scheduler task status to origin save status
 _save_task_status = {
@@ -134,23 +138,31 @@ _save_task_run_status = {
 }
 
 
-def get_savable_visit_types() -> List[str]:
-    """
-    Get the list of visit types that can be performed
-    through a save request.
+def get_savable_visit_types(privileged_user: bool = False) -> List[str]:
+    """Get the list of visit types that can be performed through a save request.
+
+    Args:
+        privileged_user: Flag to determine if all visit types should be returned or not.
+          Default to False to only list unprivileged visit types.
 
     Returns:
-        list: the list of saveable visit types
+        the list of saveable visit types
+
     """
-    return sorted(list(_visit_type_task.keys()))
+    task_types = list(_visit_type_task.keys())
+    if privileged_user:
+        task_types += _visit_type_task_privileged.keys()
+
+    return sorted(task_types)
 
 
-def _check_visit_type_savable(visit_type: str) -> None:
-    allowed_visit_types = ", ".join(get_savable_visit_types())
-    if visit_type not in _visit_type_task:
+def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) -> None:
+    visit_type_tasks = get_savable_visit_types(privileged_user)
+    if visit_type not in visit_type_tasks:
+        allowed_visit_types = ", ".join(visit_type_tasks)
         raise BadInputExc(
-            "Visit of type %s can not be saved! "
-            "Allowed types are the following: %s" % (visit_type, allowed_visit_types)
+            f"Visit of type {visit_type} can not be saved! "
+            f"Allowed types are the following: {allowed_visit_types}"
         )
 
 
@@ -340,11 +352,10 @@ def _update_save_request_info(
 def create_save_origin_request(
     visit_type: str,
     origin_url: str,
-    bypass_pending_review: bool = False,
+    privileged_user: bool = False,
     user_id: Optional[int] = None,
 ) -> SaveOriginRequestInfo:
-    """
-    Create a loading task to save a software origin into the archive.
+    """Create a loading task to save a software origin into the archive.
 
     This function aims to create a software origin loading task
     trough the use of the swh-scheduler component.
@@ -360,6 +371,9 @@ def create_save_origin_request(
     Args:
         visit_type: the type of visit to perform (e.g git, hg, svn, ...)
         origin_url: the url of the origin to save
+        privileged_user: Whether the user has privileged_user access to extra
+          functionality (e.g. bypass save code now review, access to extra visit type)
+        user_id: User identifier (provided when authenticated)
 
     Raises:
         BadInputExc: the visit type or origin url is invalid or inexistent
@@ -377,12 +391,11 @@ def create_save_origin_request(
               **not created**, **not yet scheduled**, **scheduled**,
               **succeed** or **failed**
 
-
     """
-    _check_visit_type_savable(visit_type)
+    _check_visit_type_savable(visit_type, privileged_user)
     _check_origin_url_valid(origin_url)
     # if all checks passed so far, we can try and save the origin
-    save_request_status = can_save_origin(origin_url, bypass_pending_review)
+    save_request_status = can_save_origin(origin_url, privileged_user)
     task = None
 
     # if the origin save request is accepted, create a scheduler
@@ -778,7 +791,8 @@ def compute_save_requests_metrics() -> None:
         SAVE_TASK_RUNNING,
     )
 
-    visit_types = get_savable_visit_types()
+    # for metrics, we want access to all visit types
+    visit_types = get_savable_visit_types(privileged_user=True)
 
     labels_set = product(request_statuses, visit_types)
 

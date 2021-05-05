@@ -70,3 +70,14 @@ def decrypt_data(data: bytes, password: bytes, salt: bytes) -> bytes:
         The decrypted data
     """
     return _get_fernet(password, salt).decrypt(data)
+
+
+def privileged_user(request) -> bool:
+    """Determine whether a user is authenticated and is a privileged one (e.g ambassador).
+    This allows such user to have access to some more actions (e.g. bypass save code now
+    review, access to 'bundle' type...)
+
+    """
+    return request.user.is_authenticated and request.user.has_perm(
+        SWH_AMBASSADOR_PERMISSION
+    )
