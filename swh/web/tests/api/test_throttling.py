@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,8 +6,7 @@
 import pytest
 
 from django.conf.urls import url
-from django.contrib.auth.models import Permission, User
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 from django.test.utils import override_settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -27,6 +26,7 @@ from swh.web.settings.tests import (
     scope3_limiter_rate,
     scope3_limiter_rate_post,
 )
+from swh.web.tests.utils import create_django_permission
 from swh.web.urls import urlpatterns
 
 
@@ -217,14 +217,7 @@ def test_non_staff_users_are_rate_limited(api_client):
 @pytest.mark.django_db
 def test_users_with_throttling_exempted_perm_are_not_rate_limited(api_client):
     user = User.objects.create_user(username="johndoe", password="")
-    perm_splitted = API_THROTTLING_EXEMPTED_PERM.split(".")
-    app_label = ".".join(perm_splitted[:-1])
-    perm_name = perm_splitted[-1]
-    content_type = ContentType.objects.create(app_label=app_label, model="dummy")
-    permission = Permission.objects.create(
-        codename=perm_name, name=perm_name, content_type=content_type,
-    )
-    user.user_permissions.add(permission)
+    user.user_permissions.add(create_django_permission(API_THROTTLING_EXEMPTED_PERM))
 
     assert user.has_perm(API_THROTTLING_EXEMPTED_PERM)
 
