@@ -56,6 +56,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});
     </script>
 
+    {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
+
     {% block header %}{% endblock %}
 
     <link rel="icon" href="{% static 'img/icons/swh-logo-32x32.png' %}" sizes="32x32" />

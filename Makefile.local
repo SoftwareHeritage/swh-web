@@ -35,6 +35,7 @@ run-migrations-test:
 	rm -f swh/web/settings/testdb.sqlite3
 	django-admin migrate --settings=swh.web.settings.tests -v0 2>/dev/null
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=swh.web.settings.tests
+	cat swh/web/tests/create_test_users.py | django-admin shell --settings=swh.web.settings.tests
 
 .PHONY: clear-memcached
 clear-memcached:
