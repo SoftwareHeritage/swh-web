@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 from swh.web.api.throttling import (
     API_THROTTLING_EXEMPTED_PERM,
     SwhWebRateThrottle,
+    SwhWebUserRateThrottle,
     throttle_scope,
 )
 from swh.web.settings.tests import (
@@ -177,25 +178,39 @@ def test_staff_users_are_not_rate_limited(api_client):
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
 def test_non_staff_users_are_rate_limited(api_client):
+
     user = User.objects.create_user(username="johndoe", password="", is_staff=False)
 
     api_client.force_login(user)
 
-    for i in range(scope2_limiter_rate):
+    scope2_limiter_rate_user = (
+        scope2_limiter_rate * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR
+    )
+
+    for i in range(scope2_limiter_rate_user):
         response = api_client.get("/scope2_func")
-        check_response(response, 200, scope2_limiter_rate, scope2_limiter_rate - i - 1)
+        check_response(
+            response, 200, scope2_limiter_rate_user, scope2_limiter_rate_user - i - 1
+        )
 
     response = api_client.get("/scope2_func")
-    check_response(response, 429, scope2_limiter_rate, 0)
+    check_response(response, 429, scope2_limiter_rate_user, 0)
 
-    for i in range(scope2_limiter_rate_post):
+    scope2_limiter_rate_post_user = (
+        scope2_limiter_rate_post * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR
+    )
+
+    for i in range(scope2_limiter_rate_post_user):
         response = api_client.post("/scope2_func")
         check_response(
-            response, 200, scope2_limiter_rate_post, scope2_limiter_rate_post - i - 1
+            response,
+            200,
+            scope2_limiter_rate_post_user,
+            scope2_limiter_rate_post_user - i - 1,
         )
 
     response = api_client.post("/scope2_func")
-    check_response(response, 429, scope2_limiter_rate_post, 0)
+    check_response(response, 429, scope2_limiter_rate_post_user, 0)
 
 
 @override_settings(ROOT_URLCONF=__name__)

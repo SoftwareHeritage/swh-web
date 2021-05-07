@@ -33,6 +33,16 @@ function originSaveRequest(originType, originUrl,
     });
 }
 
+const userRequestsFilterCheckbox = `
+<div class="custom-control custom-checkbox swhid-option">
+  <input class="custom-control-input" value="option-user-requests-filter" type="checkbox"
+         id="swh-save-requests-user-filter">
+  <label class="custom-control-label font-weight-normal" for="swh-save-requests-user-filter">
+    show only your own requests
+  </label>
+</div>
+`;
+
 export function initOriginSave() {
 
   $(document).ready(() => {
@@ -58,8 +68,29 @@ export function initOriginSave() {
         language: {
           processing: `<img src="${swhSpinnerSrc}"></img>`
         },
-        ajax: Urls.origin_save_requests_list('all'),
+        ajax: {
+          url: Urls.origin_save_requests_list('all'),
+          data: (d) => {
+            if (swh.webapp.isUserLoggedIn() && $('#swh-save-requests-user-filter').prop('checked')) {
+              d.user_requests_only = '1';
+            }
+          }
+        },
         searchDelay: 1000,
+        // see https://datatables.net/examples/advanced_init/dom_toolbar.html and the comments section
+        // this option customizes datatables UI components by adding an extra checkbox above the table
+        // while keeping bootstrap layout
+        dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
+             '<"row"<"col-sm-12"tr>>' +
+             '<"row"<"col-sm-5"i><"col-sm-7"p>>',
+        fnInitComplete: function() {
+          if (swh.webapp.isUserLoggedIn()) {
+            $('div.user-requests-filter').html(userRequestsFilterCheckbox);
+            $('#swh-save-requests-user-filter').on('change', () => {
+              saveRequestsTable.draw();
+            });
+          }
+        },
         columns: [
           {
             data: 'save_request_date',

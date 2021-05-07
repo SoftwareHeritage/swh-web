@@ -21,8 +21,7 @@ API_THROTTLING_EXEMPTED_PERM = "swh.web.api.throttling_exempted"
 
 
 class SwhWebRateThrottle(ScopedRateThrottle):
-    """Custom request rate limiter for DRF enabling to exempt
-    specific networks specified in swh-web configuration.
+    """Custom DRF request rate limiter for anonymous users
 
     Requests are grouped into scopes. It enables to apply different
     requests rate limiting based on the scope name but also the
@@ -64,6 +63,13 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         self.num_requests = 0
         self.duration = 0
 
+    def get_cache_key(self, request, view):
+        # do not handle throttling if user is authenticated
+        if request.user.is_authenticated:
+            return None
+        else:
+            return super().get_cache_key(request, view)
+
     def get_exempted_networks(
         self, scope_name: str
     ) -> List[Union[IPv4Network, IPv6Network]]:
@@ -79,11 +85,6 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         return self.exempted_networks
 
     def allow_request(self, request: Request, view: APIView) -> bool:
-        # no throttling for staff users
-        if request.user.is_authenticated and (
-            request.user.is_staff or request.user.has_perm(API_THROTTLING_EXEMPTED_PERM)
-        ):
-            return True
         # class based view case
         if not self.scope:
 
@@ -148,6 +149,35 @@ class SwhWebRateThrottle(ScopedRateThrottle):
         return request_allowed
 
 
+class SwhWebUserRateThrottle(SwhWebRateThrottle):
+    """Custom DRF request rate limiter for authenticated users
+
+    It has the same behavior than :class:`swh.web.api.throttling.SwhWebRateThrottle`
+    except the number of allowed requests for each throttle scope is increased by a
+    1Ox factor.
+    """
+
+    NUM_REQUESTS_FACTOR = 10
+
+    def get_cache_key(self, request, view):
+        # do not handle throttling if user is not authenticated
+        if request.user.is_authenticated:
+            return super(SwhWebRateThrottle, self).get_cache_key(request, view)
+        else:
+            return None
+
+    def parse_rate(self, rate):
+        # increase number of allowed requests
+        num_requests, duration = super().parse_rate(rate)
+        return (num_requests * self.NUM_REQUESTS_FACTOR, duration)
+
+    def allow_request(self, request: Request, view: APIView) -> bool:
+        # no throttling for staff users or users with adequate permission
+        if request.user.is_staff or request.user.has_perm(API_THROTTLING_EXEMPTED_PERM):
+            return True
+        return super().allow_request(request, view)
+
+
 def throttle_scope(scope: str) -> Callable[..., APIView]:
     """Decorator that allows the throttle scope of a DRF
     function based view to be set::
@@ -161,9 +191,12 @@ def throttle_scope(scope: str) -> Callable[..., APIView]:
 
     def decorator(func: APIView) -> APIView:
         SwhScopeRateThrottle = type(
-            "CustomScopeRateThrottle", (SwhWebRateThrottle,), {"scope": scope}
+            "SwhWebScopeRateThrottle", (SwhWebRateThrottle,), {"scope": scope}
         )
-        func.throttle_classes = (SwhScopeRateThrottle,)
+        SwhScopeUserRateThrottle = type(
+            "SwhWebScopeUserRateThrottle", (SwhWebUserRateThrottle,), {"scope": scope},
+        )
+        func.throttle_classes = (SwhScopeRateThrottle, SwhScopeUserRateThrottle)
         return func
 
     return decorator
