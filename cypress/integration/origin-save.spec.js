@@ -400,7 +400,7 @@ describe('Origin Save Tests', function() {
   });
 
   it('should create save request for authenticated user', function() {
-    cy.adminLogin();
+    cy.userLogin();
     cy.visit(url);
     const originUrl = 'https://git.example.org/account/repo';
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
@@ -413,6 +413,63 @@ describe('Origin Save Tests', function() {
     cy.wait('@saveRequest').then(() => {
       checkAlertVisible('success', saveCodeMsg['success']);
     });
+  });
+
+  it('should not show user requests filter checkbox for anonymous users', function() {
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('#swh-save-requests-user-filter').should('not.exist');
+  });
+
+  it('should show user requests filter checkbox for authenticated users', function() {
+    cy.userLogin();
+    cy.visit(url);
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('#swh-save-requests-user-filter').should('exist');
+  });
+
+  it('should show only user requests when filter is activated', function() {
+    cy.intercept('POST', '/api/1/origin/save/**')
+      .as('saveRequest');
+
+    const originAnonymousUser = 'https://some.git.server/project/';
+    const originAuthUser = 'https://other.git.server/project/';
+
+    // anonymous user creates a save request
+    makeOriginSaveRequest('git', originAnonymousUser);
+    cy.wait('@saveRequest');
+
+    // authenticated user creates another save request
+    cy.userLogin();
+    cy.visit(url);
+    makeOriginSaveRequest('git', originAuthUser);
+    cy.wait('@saveRequest');
+
+    // user requests filter checkbox should be in the DOM
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.get('#swh-save-requests-user-filter').should('exist');
+
+    // check unfiltered user requests
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(2);
+      expect($(rows[0].cells[2]).text()).to.contain(originAuthUser);
+      expect($(rows[1].cells[2]).text()).to.contain(originAnonymousUser);
+    });
+
+    // activate filter and check filtered user requests
+    cy.get('#swh-save-requests-user-filter')
+      .click({force: true});
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(1);
+      expect($(rows[0].cells[2]).text()).to.contain(originAuthUser);
+    });
+
+    // deactivate filter and check unfiltered user requests
+    cy.get('#swh-save-requests-user-filter')
+      .click({force: true});
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(2);
+    });
+
   });
 
 });

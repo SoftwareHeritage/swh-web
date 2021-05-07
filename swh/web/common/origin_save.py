@@ -338,7 +338,10 @@ def _update_save_request_info(
 
 
 def create_save_origin_request(
-    visit_type: str, origin_url: str, bypass_pending_review: bool = False
+    visit_type: str,
+    origin_url: str,
+    bypass_pending_review: bool = False,
+    user_id: Optional[int] = None,
 ) -> SaveOriginRequestInfo:
     """
     Create a loading task to save a software origin into the archive.
@@ -445,6 +448,7 @@ def create_save_origin_request(
                     origin_url=origin_url,
                     status=save_request_status,
                     loading_task_id=task["id"],
+                    user_ids=f'"{user_id}"' if user_id else None,
                 )
     # save request must be manually reviewed for acceptation
     elif save_request_status == SAVE_REQUEST_PENDING:
@@ -454,16 +458,28 @@ def create_save_origin_request(
             sor = SaveOriginRequest.objects.get(
                 visit_type=visit_type, origin_url=origin_url, status=save_request_status
             )
+            user_ids = sor.user_ids if sor.user_ids is not None else ""
+            if user_id is not None and f'"{user_id}"' not in user_ids:
+                # update user ids list
+                sor.user_ids = f'{sor.user_ids},"{user_id}"'
+                sor.save()
+
         # if not add it to the database
         except ObjectDoesNotExist:
             sor = SaveOriginRequest.objects.create(
-                visit_type=visit_type, origin_url=origin_url, status=save_request_status
+                visit_type=visit_type,
+                origin_url=origin_url,
+                status=save_request_status,
+                user_ids=f'"{user_id}"' if user_id else None,
             )
     # origin can not be saved as its url is blacklisted,
     # log the request to the database anyway
     else:
         sor = SaveOriginRequest.objects.create(
-            visit_type=visit_type, origin_url=origin_url, status=save_request_status
+            visit_type=visit_type,
+            origin_url=origin_url,
+            status=save_request_status,
+            user_ids=f'"{user_id}"' if user_id else None,
         )
 
     if save_request_status == SAVE_REQUEST_REJECTED:
@@ -545,8 +561,8 @@ def get_save_origin_requests(
     Get all save requests for a given software origin.
 
     Args:
-        visit_type (str): the type of visit
-        origin_url (str): the url of the origin
+        visit_type: the type of visit
+        origin_url: the url of the origin
 
     Raises:
         BadInputExc: the visit type or origin url is invalid
@@ -564,8 +580,8 @@ def get_save_origin_requests(
     )
     if sors.count() == 0:
         raise NotFoundExc(
-            ("No save requests found for visit of type " "%s on origin with url %s.")
-            % (visit_type, origin_url)
+            f"No save requests found for visit of type {visit_type} "
+            f"on origin with url {origin_url}."
         )
     return update_save_origin_requests_from_queryset(sors)
 

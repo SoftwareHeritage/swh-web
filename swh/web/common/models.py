@@ -100,6 +100,8 @@ class SaveOriginRequest(models.Model):
     loading_task_status = models.TextField(
         choices=SAVE_TASK_STATUS, default=SAVE_TASK_NOT_CREATED
     )
+    # store ids of users that submitted the request as string list
+    user_ids = models.TextField(null=True)
 
     class Meta:
         app_label = "swh_web_common"

@@ -395,3 +395,7 @@ export async function validateSWHIDInput(swhidInputElt) {
   swhidInputElt.setCustomValidity(customValidity);
   $(swhidInputElt).siblings('.invalid-feedback').text(customValidity);
 }
+
+export function isUserLoggedIn() {
+  return JSON.parse($('#swh_user_logged_in').text());
+}

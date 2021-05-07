@@ -20,7 +20,7 @@ def _origin_save_view(request):
     return render(
         request,
         "misc/origin-save.html",
-        {"heading": ("Request the saving of a software origin into " "the archive")},
+        {"heading": ("Request the saving of a software origin into the archive")},
     )
 
 
@@ -60,6 +60,12 @@ def _origin_save_requests_list(request, status):
             | Q(visit_type__icontains=search_value)
             | Q(origin_url__icontains=search_value)
         )
+
+    if (
+        int(request.GET.get("user_requests_only", "0"))
+        and request.user.is_authenticated
+    ):
+        save_requests = save_requests.filter(user_ids__contains=f'"{request.user.id}"')
 
     table_data["recordsFiltered"] = save_requests.count()
     paginator = Paginator(save_requests, length)

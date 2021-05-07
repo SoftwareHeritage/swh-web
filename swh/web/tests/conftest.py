@@ -123,13 +123,13 @@ def request_factory(rf):
 
 
 # Fixture to get test client from Django REST Framework
-@pytest.fixture(scope="module")
+@pytest.fixture
 def api_client():
     return APIClient()
 
 
 # Fixture to get API request factory from Django REST Framework
-@pytest.fixture(scope="module")
+@pytest.fixture
 def api_request_factory():
     return APIRequestFactory()
 
