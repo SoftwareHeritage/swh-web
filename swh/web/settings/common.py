@@ -163,7 +163,10 @@ REST_FRAMEWORK: Dict[str, Any] = {
         "swh.web.api.renderers.YAMLRenderer",
         "rest_framework.renderers.TemplateHTMLRenderer",
     ),
-    "DEFAULT_THROTTLE_CLASSES": ("swh.web.api.throttling.SwhWebRateThrottle",),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "swh.web.api.throttling.SwhWebRateThrottle",
+        "swh.web.api.throttling.SwhWebUserRateThrottle",
+    ),
     "DEFAULT_THROTTLE_RATES": throttle_rates,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
