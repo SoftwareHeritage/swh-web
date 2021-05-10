@@ -49,7 +49,7 @@ export function maybeDisplayExtraInputs() {
   // Read the actual selected value and depending on the origin type, display some extra
   // inputs or hide them.
   const originType = $('#swh-input-visit-type').val();
-  const display = originType === 'bundle' ? 'flex' : 'none';
+  const display = originType === 'archives' ? 'flex' : 'none';
   $('#optional-origin-forms').css('display', display);
 }
 
@@ -242,8 +242,8 @@ export function initOriginSave() {
         let originType = $('#swh-input-visit-type').val();
         let originUrl = $('#swh-input-origin-url').val();
 
-        // read the extra inputs for the bundle type
-        let extraData = originType !== 'bundle' ? {} : {
+        // read the extra inputs for the 'archives' type
+        let extraData = originType !== 'archives' ? {} : {
           'artifact_url': $('#swh-input-artifact-url').val(),
           'artifact_filename': $('#swh-input-artifact-filename').val(),
           'artifact_version': $('#swh-input-artifact-version').val()

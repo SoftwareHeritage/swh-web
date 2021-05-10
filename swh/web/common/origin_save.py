@@ -114,7 +114,7 @@ def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str
 _visit_type_task = {"git": "load-git", "hg": "load-hg", "svn": "load-svn"}
 
 _visit_type_task_privileged = {
-    "bundle": "load-archive-files",
+    "archives": "load-archive-files",
 }
 
 
@@ -388,15 +388,16 @@ def create_save_origin_request(
     swh-scheduler component.
 
     First, some checks are performed to see if the visit type and origin url are valid
-    but also if the the save request can be accepted. For the 'bundle' visit type, this
-    also ensures the artifacts actually exists. If those checks passed, the loading task
-    is then created. Otherwise, the save request is put in pending or rejected state.
+    but also if the the save request can be accepted. For the 'archives' visit type,
+    this also ensures the artifacts actually exists. If those checks passed, the loading
+    task is then created. Otherwise, the save request is put in pending or rejected
+    state.
 
     All the submitted save requests are logged into the swh-web database to keep track
     of them.
 
     Args:
-        visit_type: the type of visit to perform (e.g. git, hg, svn, bundle, ...)
+        visit_type: the type of visit to perform (e.g. git, hg, svn, archives, ...)
         origin_url: the url of the origin to save
         privileged: Whether the user has some more privilege than other (bypass
           review, access to privileged other visit types)
@@ -426,7 +427,7 @@ def create_save_origin_request(
     _check_origin_url_valid(origin_url)
 
     artifact_url = kwargs.get("artifact_url")
-    if visit_type == "bundle":
+    if visit_type == "archives":
         metadata = _check_origin_exists(artifact_url)
 
     # if all checks passed so far, we can try and save the origin
@@ -441,7 +442,7 @@ def create_save_origin_request(
             "priority": "high",
             "url": origin_url,
         }
-        if visit_type == "bundle":
+        if visit_type == "archives":
             # extra arguments for that type are required
             assert metadata is not None
             task_kwargs = dict(

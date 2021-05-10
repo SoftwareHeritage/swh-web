@@ -460,7 +460,7 @@ def test_create_save_request_pending_review_anonymous_user(
         SaveAuthorizedOrigin.objects.get(url=origin_to_review)
 
 
-def test_create_save_request_bundle_with_ambassador_user(
+def test_create_save_request_archives_with_ambassador_user(
     api_client, origin_to_review, keycloak_oidc, mocker, requests_mock,
 ):
 
@@ -511,7 +511,7 @@ def test_create_save_request_bundle_with_ambassador_user(
     # then
     url = reverse(
         "api-1-save-origin",
-        url_args={"visit_type": "bundle", "origin_url": originUrl,},
+        url_args={"visit_type": "archives", "origin_url": originUrl,},
     )
 
     response = check_api_post_response(
@@ -530,7 +530,7 @@ def test_create_save_request_bundle_with_ambassador_user(
     assert SaveAuthorizedOrigin.objects.get(url=originUrl)
 
 
-def test_create_save_request_bundle_accepted_ambassador_user(
+def test_create_save_request_archives_accepted_ambassador_user(
     api_client, origin_to_review, keycloak_oidc, mocker
 ):
 

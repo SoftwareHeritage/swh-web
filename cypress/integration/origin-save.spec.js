@@ -20,7 +20,7 @@ const saveCodeMsg = {
 };
 
 const anonymousVisitTypes = ['git', 'hg', 'svn'];
-const allVisitTypes = ['bundle', 'git', 'hg', 'svn'];
+const allVisitTypes = ['archives', 'git', 'hg', 'svn'];
 
 function makeOriginSaveRequest(originType, originUrl) {
   cy.get('#swh-input-origin-url')
@@ -501,7 +501,7 @@ describe('Origin Save Tests', function() {
     });
   });
 
-  it('should display extra inputs when dealing with bundle visit type', function() {
+  it('should display extra inputs when dealing with \'archives\' visit type', function() {
     cy.ambassadorLogin();
     cy.visit(url);
 
@@ -510,19 +510,19 @@ describe('Origin Save Tests', function() {
       cy.get('#optional-origin-forms').should('not.be.visible');
     }
 
-    // bundle should display more inputs with the bundle type
-    cy.get('#swh-input-visit-type').select('bundle');
+    // this should display more inputs with the 'archives' type
+    cy.get('#swh-input-visit-type').select('archives');
     cy.get('#optional-origin-forms').should('be.visible');
 
   });
 
-  it('should be allowed to submit bundle save request when connected as ambassador', function() {
+  it('should be allowed to submit \'archives\' save request when connected as ambassador', function() {
     let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
     let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
     let artifactFilename = '3DLDF-1.1.4.tar.gz';
     let artifactVersion = '1.1.4';
     stubSaveRequest({
-      requestUrl: this.Urls.api_1_save_origin('bundle', originUrl),
+      requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
       saveTaskStatus: 'not yet scheduled'
@@ -531,11 +531,11 @@ describe('Origin Save Tests', function() {
     cy.ambassadorLogin();
     cy.visit(url);
 
-    // input new bundle information and submit
+    // input new 'archives' information and submit
     cy.get('#swh-input-origin-url')
       .type(originUrl)
       .get('#swh-input-visit-type')
-      .select('bundle')
+      .select('archives')
       .get('#swh-input-artifact-url')
       .type(artifactUrl)
       .get('#swh-input-artifact-filename')

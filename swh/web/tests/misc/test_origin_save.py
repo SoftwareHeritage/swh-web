@@ -16,7 +16,7 @@ from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_http_get_response
 
 VISIT_TYPES = ("git", "svn", "hg")
-PRIVILEGED_VISIT_TYPES = tuple(list(VISIT_TYPES) + ["bundle"])
+PRIVILEGED_VISIT_TYPES = tuple(list(VISIT_TYPES) + ["archives"])
 
 
 def test_old_save_url_redirection(client):

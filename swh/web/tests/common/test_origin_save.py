@@ -114,7 +114,7 @@ def _mock_scheduler(
     [
         ("dummy", True),
         ("dumb", False),
-        ("bundle", False),  # when no privilege, this is rejected
+        ("archives", False),  # when no privilege, this is rejected
     ],
 )
 def test__check_visit_type_savable(wrong_type, privileged_user):
@@ -123,7 +123,7 @@ def test__check_visit_type_savable(wrong_type, privileged_user):
         _check_visit_type_savable(wrong_type, privileged_user)
 
     # when privileged_user, the following is accepted though
-    _check_visit_type_savable("bundle", True)
+    _check_visit_type_savable("archives", True)
 
 
 def test_get_savable_visit_types():
