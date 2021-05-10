@@ -22,7 +22,6 @@ user URLs:
     * :http:get:`/browse/content/[(algo_hash):](hash)/`: Display a content
     * :http:get:`/browse/content/[(algo_hash):](hash)/raw/`: Get / Download content raw data
     * :http:get:`/browse/directory/(sha1_git)/`: Browse the content of a directory
-    * :http:get:`/browse/person/(person_id)/`: Information on a person
     * :http:get:`/browse/revision/(sha1_git)/`: Browse a revision
     * :http:get:`/browse/revision/(sha1_git)/log/`: Browse history log heading to a revision
 
@@ -82,8 +81,6 @@ swh-web Browse Urls
 .. include:: uri-scheme-browse-directory.rst
 
 .. include:: uri-scheme-browse-origin.rst
-
-.. include:: uri-scheme-browse-person.rst
 
 .. include:: uri-scheme-browse-release.rst
 
