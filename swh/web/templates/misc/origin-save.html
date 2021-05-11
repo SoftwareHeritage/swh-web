@@ -33,7 +33,7 @@ See top-level LICENSE file for more information
     <div class="col-md-1"></div>
     <div class="form-group col-md-2">
       <label for="swh-input-visit-type">Origin type</label>
-      <select id="swh-input-visit-type" class="form-control" required onchange="swh.save.maybeDisplayExtraInputs();">
+      <select id="swh-input-visit-type" class="form-control" required onchange="swh.save.maybeRequireExtraInputs();">
         {% comment %} <option selected value="">Choose...</option> {% endcomment %}
       </select>
       <div class="invalid-feedback">The origin type must be specified</div>
@@ -55,15 +55,13 @@ See top-level LICENSE file for more information
     <div class="col-md-1">Artifact information:</div>
     <div class="form-group col-md-6">
       <label for="swh-input-artifact-url">Url</label>
-      <input type="text" class="form-control" id="swh-input-artifact-url">
-    </div>
-    <div class="form-group col-md-3">
-      <label for="swh-input-artifact-filename">Filename</label>
-      <input type="text" class="form-control" id="swh-input-artifact-filename">
+      <input type="text" class="form-control" id="swh-input-artifact-url" required disabled>
+      <div class="invalid-feedback">The artifact url is mandatory</div>
     </div>
     <div class="form-group col-md-1">
       <label for="swh-input-artifact-version">Version</label>
-      <input type="text" class="form-control" id="swh-input-artifact-version">
+      <input type="text" class="form-control" id="swh-input-artifact-version" required disabled>
+      <div class="invalid-feedback">The artifact version is mandatory</div>
     </div>
   </div>
 </form>

@@ -450,7 +450,6 @@ def create_save_origin_request(
                 artifacts=[
                     {
                         "url": artifact_url,
-                        "filename": kwargs["artifact_filename"],
                         "version": kwargs["artifact_version"],
                         "time": metadata["last_modified"],
                         "length": metadata["content_length"],

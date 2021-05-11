@@ -519,7 +519,6 @@ describe('Origin Save Tests', function() {
   it('should be allowed to submit \'archives\' save request when connected as ambassador', function() {
     let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
     let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
-    let artifactFilename = '3DLDF-1.1.4.tar.gz';
     let artifactVersion = '1.1.4';
     stubSaveRequest({
       requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
@@ -538,8 +537,6 @@ describe('Origin Save Tests', function() {
       .select('archives')
       .get('#swh-input-artifact-url')
       .type(artifactUrl)
-      .get('#swh-input-artifact-filename')
-      .type(artifactFilename)
       .get('#swh-input-artifact-version')
       .type(artifactVersion)
       .get('#swh-save-origin-form')

@@ -45,12 +45,23 @@ function originSaveRequest(
     });
 }
 
-export function maybeDisplayExtraInputs() {
+export function maybeRequireExtraInputs() {
   // Read the actual selected value and depending on the origin type, display some extra
-  // inputs or hide them.
+  // inputs or hide them. This makes the extra inputs disabled when not displayed.
   const originType = $('#swh-input-visit-type').val();
-  const display = originType === 'archives' ? 'flex' : 'none';
-  $('#optional-origin-forms').css('display', display);
+  let cssDisplay;
+  let disabled;
+
+  if (originType === 'archives') {
+    disabled = false;
+    cssDisplay = 'flex';
+  } else {
+    cssDisplay = 'none';
+    disabled = true;
+  }
+  $('#optional-origin-forms').css('display', cssDisplay);
+  $('#swh-input-artifact-url').prop('disabled', disabled);
+  $('#swh-input-artifact-version').prop('disabled', disabled);
 }
 
 const userRequestsFilterCheckbox = `
@@ -245,7 +256,6 @@ export function initOriginSave() {
         // read the extra inputs for the 'archives' type
         let extraData = originType !== 'archives' ? {} : {
           'artifact_url': $('#swh-input-artifact-url').val(),
-          'artifact_filename': $('#swh-input-artifact-filename').val(),
           'artifact_version': $('#swh-input-artifact-version').val()
         };
 

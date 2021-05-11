@@ -497,7 +497,6 @@ def test_create_save_request_archives_with_ambassador_user(
                     "artifacts": [
                         {
                             "url": artifact_url,
-                            "filename": artifact_filename,
                             "version": artifact_version,
                             "time": last_modified,
                             "length": content_length,
@@ -518,11 +517,7 @@ def test_create_save_request_archives_with_ambassador_user(
         api_client,
         url,
         status_code=200,
-        data={
-            "artifact_url": artifact_url,
-            "artifact_filename": artifact_filename,
-            "artifact_version": artifact_version,
-        },
+        data={"artifact_url": artifact_url, "artifact_version": artifact_version,},
     )
 
     assert response.data["save_request_status"] == SAVE_REQUEST_ACCEPTED
