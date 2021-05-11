@@ -25,8 +25,8 @@ build-webpack-dev-no-verbose: yarn-install
 build-webpack-prod: yarn-install
 	$(YARN) build
 
-.PHONY: run-migrations
-run-migrations:
+.PHONY: run-migrations-dev
+run-migrations-dev:
 	python3 swh/web/manage.py migrate --settings=$(SETTINGS_DEV) -v0 2>/dev/null
 
 .PHONY: run-migrations-prod
@@ -38,15 +38,15 @@ run-migrations-test:
 	rm -f swh/web/settings/testdb.sqlite3
 	django-admin migrate --settings=$(SETTINGS_TEST) -v0 2>/dev/null
 
-add-users-test:
+add-users-test: run-migrations-test
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_TEST)
 	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_TEST)
 
-add-users-dev:
+add-users-dev: run-migrations-dev
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_DEV)
 	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_DEV)
 
-add-users-prod:
+add-users-prod: run-migrations-prod
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_PROD)
 	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_PROD)
 
@@ -54,35 +54,35 @@ add-users-prod:
 clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
-run-django-webpack-devserver: run-migrations add-users-dev yarn-install
+run-django-webpack-devserver: add-users-dev yarn-install
 	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV)"
 
-run-django-webpack-dev: build-webpack-dev run-migrations add-users-dev
+run-django-webpack-dev: build-webpack-dev add-users-dev
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
 
-run-django-webpack-prod: build-webpack-prod run-migrations-prod add-users-prod clear-memcached
+run-django-webpack-prod: build-webpack-prod add-users-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_PROD)
 
-run-django-server-dev: run-migrations add-users-dev
+run-django-server-dev: add-users-dev
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
 
-run-django-server-prod: run-migrations-prod add-users-prod clear-memcached
+run-django-server-prod: add-users-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_PROD)
 
-run-gunicorn-server: run-migrations-prod add-users-prod clear-memcached
+run-gunicorn-server: add-users-prod clear-memcached
 	DJANGO_SETTINGS_MODULE=$(SETTINGS_PROD) \
 	gunicorn --bind 127.0.0.1:5004 \
 	--threads 2 \
 	--workers 2 'django.core.wsgi:get_wsgi_application()'
 
-run-django-webpack-memory-storages: build-webpack-dev run-migrations add-users-test
+run-django-webpack-memory-storages: build-webpack-dev add-users-test
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST)
 
 test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
 .PHONY: test-frontend-cmd
-test-frontend-cmd: build-webpack-test run-migrations-test add-users-test
+test-frontend-cmd: build-webpack-test add-users-test
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 ; pkill -P $$! ; $(YARN) run mochawesome
 
 test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
@@ -92,7 +92,7 @@ test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
 test-frontend-full: test-frontend-cmd
 
 .PHONY: test-frontend-ui-cmd
-test-frontend-ui-cmd: build-webpack-test run-migrations-test add-users-test
+test-frontend-ui-cmd: build-webpack-test add-users-test
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & sleep 10 && $(YARN) run cypress open"
 
 test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
