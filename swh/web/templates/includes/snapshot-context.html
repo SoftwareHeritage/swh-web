@@ -9,27 +9,27 @@ See top-level LICENSE file for more information
 
 <h5>
 {% if snapshot_context.origin_info %}
-  <i class="{{ swh_object_icons.origin }} mdi-fw" aria-hidden="true" title="Origin"></i>
-    <a class="swh-heading-color" href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
+  <a id="swh-origin-url" class="swh-heading-color" href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
+    <i class="{{ swh_object_icons.origin }} mdi-fw" aria-hidden="true" title="Origin"></i>
     {{ snapshot_context.origin_info.url }}
   </a>
   {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-    <a href="{{ snapshot_context.origin_info.url }}"
+    <a id="swh-go-to-origin" href="{{ snapshot_context.origin_info.url }}"
       target="_blank" rel="noopener noreferrer" title="Go to origin">
       <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
     </a>
   {% endif %}
 {% else %}
-  <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot"></i>
   <a class="swh-heading-color" href="{% url 'browse-swhid' snapshot_context.snapshot_swhid %}">
+    <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot"></i>
     {{ snapshot_context.snapshot_swhid }}
   </a>
 {% endif %}
 </h5>
 {% if snapshot_context.visit_info %}
   <div class="mb-1 pl-1">
-    <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot date"></i>
-    <a href="{{ snapshot_context.visit_info.url }}">
+    <a id="swh-origin-visit" href="{{ snapshot_context.visit_info.url }}">
+      <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot date"></i>
       {{ snapshot_context.visit_info.formatted_date }}
     </a>
   </div>
