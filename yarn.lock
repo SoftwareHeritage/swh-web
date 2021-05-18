@@ -2142,7 +2142,7 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
-"@types/lodash.foreach@^4.4.6":
+"@types/lodash.foreach@^4.5.6":
   version "4.5.6"
   resolved "https://registry.yarnpkg.com/@types/lodash.foreach/-/lodash.foreach-4.5.6.tgz#24735299139a739e436ab4fb8a6a31ca3d54bbb3"
   integrity sha512-A8+157A+27zwJSstmW/eWPc9lHLJNEer4jiMlsyxWieBxEx0arwB9vgQm+iai6DEDYYQuufHrzVhQOiapCalQQ==
@@ -8774,7 +8774,7 @@ lodash.flattendeep@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.flattendeep/-/lodash.flattendeep-4.4.0.tgz#fb030917f86a3134e5bc9bec0d69e0013ddfedb2"
   integrity sha1-+wMJF/hqMTTlvJvsDWngAT3f7bI=
 
-lodash.foreach@^4.2.0:
+lodash.foreach@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.foreach/-/lodash.foreach-4.5.0.tgz#1a6a35eace401280c7f06dddec35165ab27e3e53"
   integrity sha1-Gmo16s5AEoDH8G3d7DUWWrJ+PlM=
@@ -13512,16 +13512,16 @@ webidl-conversions@^6.1.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
 
-webpack-bundle-tracker@^1.0.0-alpha.1:
-  version "1.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/webpack-bundle-tracker/-/webpack-bundle-tracker-1.0.0-alpha.1.tgz#17b4f41df147d53989f3542b035bcde8c7c2dc00"
-  integrity sha512-kyLrwD0ZeINe76pevIsAQY49lRrSfw01iCM6kbMi/Fb9m2LYJBv3up3ALcqf3ugiydy4vbaZ8NYTi4F2MxojVw==
+webpack-bundle-tracker@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/webpack-bundle-tracker/-/webpack-bundle-tracker-1.0.0.tgz#46428b91d106c3729b7211474cd888b62c8ca4ba"
+  integrity sha512-uO787xNxxq2+D+P4FPsnX7D+yDY4qmjopenkxxq2kT6e4QjMe2uPJ6R03mv9KT74YkWKKt/gBC+x+ZFGjb2URQ==
   dependencies:
-    "@types/lodash.foreach" "^4.4.6"
+    "@types/lodash.foreach" "^4.5.6"
     "@types/lodash.get" "^4.4.6"
     lodash.assign "^4.2.0"
     lodash.defaults "^4.2.0"
-    lodash.foreach "^4.2.0"
+    lodash.foreach "^4.5.0"
     lodash.get "^4.4.2"
     strip-ansi "^6.0.0"
 
