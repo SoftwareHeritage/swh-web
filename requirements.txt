@@ -14,7 +14,7 @@ htmlmin
 iso8601
 lxml
 prometheus-client
-pybadges
+pybadges >= 2.2.1
 pygments
 python-magic >= 0.4.0
 python-memcached
