@@ -38,8 +38,8 @@ footer {
     position: absolute;
     bottom: 0;
     width: 100%;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 footer a,
@@ -682,7 +682,6 @@ div.d3-tooltip {
     color: #e20026;
     position: absolute;
     text-align: center;
-    line-height: 50px;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
     top: 55px;
@@ -694,7 +693,6 @@ div.d3-tooltip {
 
 @media screen and (max-width: 600px) {
     .swh-corner-ribbon {
-        line-height: 30px;
         top: 53px;
         right: -65px;
     }

@@ -14,6 +14,7 @@ import docutils.parsers.rst
 import docutils.utils
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
+from pkg_resources import get_distribution
 from prometheus_client.registry import CollectorRegistry
 
 from django.http import HttpRequest, QueryDict
@@ -266,12 +267,14 @@ def context_processor(request):
         "site_base_url": site_base_url,
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
         "status": config["status"],
+        "swh_web_dev": "localhost" in site_base_url,
         "swh_web_staging": any(
             [
                 server_name in site_base_url
                 for server_name in config["staging_server_names"]
             ]
         ),
+        "swh_web_version": get_distribution("swh.web").version,
         "visit_types": ORIGIN_VISIT_TYPES,
     }
 
