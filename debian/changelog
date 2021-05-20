@@ -1,3 +1,9 @@
+swh-web (0.0.308-2~swh1~bpo10+1) buster-swh; urgency=medium
+
+  * Rebuild for buster-swh
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 20 May 2021 12:29:50 +0000
+
 swh-web (0.0.308-2~swh1) unstable-swh; urgency=medium
 
   * Rebuild after fixing tests execution
