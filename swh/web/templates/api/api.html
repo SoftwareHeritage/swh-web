@@ -247,7 +247,8 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
     Due to limited resource availability on the back end side, API usage is currently rate limited.
     API users can be either anonymous or authenticated. For rate-limiting purposes, anonymous users
     are identified by their origin IP address; authenticated users identify themselves via user-specific
-    credentials, like <a href="#authentication">authentication tokens</a>.
+    credentials, like <a href="#authentication">authentication tokens</a>.<br/>
+    A higher rate-limit quota is available by default for authenticated users.
   </p>
 
   <p>
@@ -257,6 +258,7 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
   <ul>
     <li>
       <code>X-RateLimit-Limit</code>: maximum number of permitted requests per hour
+      (<b>120</b> for anonymous users, <b>1200</b> for authenticated users)
     </li>
     <li>
       <code>X-RateLimit-Remaining</code>: number of permitted requests remaining before the next
@@ -271,9 +273,9 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
   </ul>
   <p>Example:</p>
   <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 54
-X-RateLimit-Reset: 1485794532</code></pre>
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 119
+X-RateLimit-Reset: 1620639052</code></pre>
 
   <h4 id="authentication">Authentication</h4>
   <p>

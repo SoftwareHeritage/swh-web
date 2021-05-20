@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -125,15 +125,16 @@ def key_value(dict, key):
 
 
 @register.filter
-def visit_type_savable(visit_type):
+def visit_type_savable(visit_type: str) -> bool:
     """Django template filter to check if a save request can be
     created for a given visit type.
 
         Args:
-            visit_type (str): the type of visit
+            visit_type: the type of visit
 
         Returns:
             If the visit type is saveable or not
+
     """
     return visit_type in get_savable_visit_types()
 

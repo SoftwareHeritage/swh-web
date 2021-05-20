@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 
+from swh.web.auth.utils import privileged_user
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
     get_savable_visit_types,
@@ -24,8 +25,11 @@ def _origin_save_view(request):
     )
 
 
-def _visit_save_types_list(request):
-    visit_types = get_savable_visit_types()
+def _visit_save_types_list(request) -> JsonResponse:
+    """Return the list of supported visit types as json response
+
+    """
+    visit_types = get_savable_visit_types(privileged_user(request))
     return JsonResponse(visit_types, safe=False)
 
 

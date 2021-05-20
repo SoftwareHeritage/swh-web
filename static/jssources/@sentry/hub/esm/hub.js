@@ -12,7 +12,7 @@ import { Session } from './session';
  *
  * @hidden
  */
-export var API_VERSION = 3;
+export var API_VERSION = 4;
 /**
  * Default maximum number of breadcrumbs added to an event. Can be overwritten
  * with {@link Options.maxBreadcrumbs}.
@@ -395,7 +395,13 @@ var Hub = /** @class */ (function () {
     return Hub;
 }());
 export { Hub };
-/** Returns the global shim registry. */
+/**
+ * Returns the global shim registry.
+ *
+ * FIXME: This function is problematic, because despite always returning a valid Carrier,
+ * it has an optional `__SENTRY__` property, which then in turn requires us to always perform an unnecessary check
+ * at the call-site. We always access the carrier through this function, so we can guarantee that `__SENTRY__` is there.
+ **/
 export function getMainCarrier() {
     var carrier = getGlobalObject();
     carrier.__SENTRY__ = carrier.__SENTRY__ || {

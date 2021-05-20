@@ -26,12 +26,14 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
 export function sessionToSentryRequest(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var envelopeHeaders = JSON.stringify(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })));
+    // I know this is hacky but we don't want to add `session` to request type since it's never rate limited
+    var type = 'aggregates' in session ? 'sessions' : 'session';
     var itemHeaders = JSON.stringify({
-        type: 'session',
+        type: type,
     });
     return {
         body: envelopeHeaders + "\n" + itemHeaders + "\n" + JSON.stringify(session),
-        type: 'session',
+        type: type,
         url: api.getEnvelopeEndpointWithUrlEncodedAuth(),
     };
 }

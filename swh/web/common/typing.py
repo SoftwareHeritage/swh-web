@@ -255,4 +255,4 @@ class OriginExistenceCheckInfo(TypedDict):
     content_length: Optional[int]
     """content length of the artifact"""
     last_modified: Optional[str]
-    """Last modification time reported by the server"""
+    """Last modification time reported by the server (as iso8601 string)"""
