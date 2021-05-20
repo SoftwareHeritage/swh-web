@@ -41,6 +41,7 @@ var Scope = /** @class */ (function () {
             newScope._transactionName = scope._transactionName;
             newScope._fingerprint = scope._fingerprint;
             newScope._eventProcessors = __spread(scope._eventProcessors);
+            newScope._requestSession = scope._requestSession;
         }
         return newScope;
     };
@@ -74,6 +75,19 @@ var Scope = /** @class */ (function () {
      */
     Scope.prototype.getUser = function () {
         return this._user;
+    };
+    /**
+     * @inheritDoc
+     */
+    Scope.prototype.getRequestSession = function () {
+        return this._requestSession;
+    };
+    /**
+     * @inheritDoc
+     */
+    Scope.prototype.setRequestSession = function (requestSession) {
+        this._requestSession = requestSession;
+        return this;
     };
     /**
      * @inheritDoc
@@ -230,6 +244,9 @@ var Scope = /** @class */ (function () {
             if (captureContext._fingerprint) {
                 this._fingerprint = captureContext._fingerprint;
             }
+            if (captureContext._requestSession) {
+                this._requestSession = captureContext._requestSession;
+            }
         }
         else if (isPlainObject(captureContext)) {
             // eslint-disable-next-line no-param-reassign
@@ -246,6 +263,9 @@ var Scope = /** @class */ (function () {
             if (captureContext.fingerprint) {
                 this._fingerprint = captureContext.fingerprint;
             }
+            if (captureContext.requestSession) {
+                this._requestSession = captureContext.requestSession;
+            }
         }
         return this;
     };
@@ -261,6 +281,7 @@ var Scope = /** @class */ (function () {
         this._level = undefined;
         this._transactionName = undefined;
         this._fingerprint = undefined;
+        this._requestSession = undefined;
         this._span = undefined;
         this._session = undefined;
         this._notifyScopeListeners();

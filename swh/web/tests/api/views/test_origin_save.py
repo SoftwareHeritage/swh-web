@@ -460,7 +460,72 @@ def test_create_save_request_pending_review_anonymous_user(
         SaveAuthorizedOrigin.objects.get(url=origin_to_review)
 
 
-def test_create_save_request_accepted_ambassador_user(
+def test_create_save_request_archives_with_ambassador_user(
+    api_client, origin_to_review, keycloak_oidc, mocker, requests_mock,
+):
+
+    keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
+    oidc_profile = keycloak_oidc.login()
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
+
+    originUrl = "https://somewhere.org/simple"
+    artifact_version = "1.2.3"
+    artifact_filename = f"tarball-{artifact_version}.tar.gz"
+    artifact_url = f"{originUrl}/{artifact_filename}"
+    content_length = "100"
+    last_modified = "Sun, 21 Aug 2011 16:26:32 GMT"
+
+    requests_mock.head(
+        artifact_url,
+        status_code=200,
+        headers={"content-length": content_length, "last-modified": last_modified,},
+    )
+
+    mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
+    mock_scheduler.get_task_runs.return_value = []
+    mock_scheduler.create_tasks.return_value = [
+        {
+            "id": 10,
+            "priority": "high",
+            "policy": "oneshot",
+            "status": "next_run_not_scheduled",
+            "type": "load-archive-files",
+            "arguments": {
+                "args": [],
+                "kwargs": {
+                    "url": originUrl,
+                    "artifacts": [
+                        {
+                            "url": artifact_url,
+                            "version": artifact_version,
+                            "time": last_modified,
+                            "length": content_length,
+                        }
+                    ],
+                },
+            },
+        },
+    ]
+
+    # then
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "archives", "origin_url": originUrl,},
+    )
+
+    response = check_api_post_response(
+        api_client,
+        url,
+        status_code=200,
+        data={"artifact_url": artifact_url, "artifact_version": artifact_version,},
+    )
+
+    assert response.data["save_request_status"] == SAVE_REQUEST_ACCEPTED
+
+    assert SaveAuthorizedOrigin.objects.get(url=originUrl)
+
+
+def test_create_save_request_archives_accepted_ambassador_user(
     api_client, origin_to_review, keycloak_oidc, mocker
 ):
 

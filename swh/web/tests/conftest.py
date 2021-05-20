@@ -95,16 +95,19 @@ def pytest_configure(config):
 
     _, bundles, _ = next(os.walk(bundles_dir))
 
-    mock_webpack_stats = {"status": "done", "publicPath": "/static", "chunks": {}}
+    mock_webpack_stats = {
+        "status": "done",
+        "publicPath": "/static",
+        "chunks": {},
+        "assets": {},
+    }
     for bundle in bundles:
-        asset = "js/%s.js" % bundle
-        mock_webpack_stats["chunks"][bundle] = [
-            {
-                "name": asset,
-                "publicPath": "/static/%s" % asset,
-                "path": os.path.join(static_dir, asset),
-            }
-        ]
+        asset = f"js/{bundle}.js"
+        mock_webpack_stats["chunks"][bundle] = [asset]
+        mock_webpack_stats["assets"][asset] = {
+            "name": asset,
+            "publicPath": f"/static/{asset}",
+        }
 
     with open(webpack_stats, "w") as outfile:
         json.dump(mock_webpack_stats, outfile)

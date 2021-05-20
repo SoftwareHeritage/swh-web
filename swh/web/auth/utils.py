@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -70,3 +70,14 @@ def decrypt_data(data: bytes, password: bytes, salt: bytes) -> bytes:
         The decrypted data
     """
     return _get_fernet(password, salt).decrypt(data)
+
+
+def privileged_user(request) -> bool:
+    """Determine whether a user is authenticated and is a privileged one (e.g ambassador).
+    This allows such user to have access to some more actions (e.g. bypass save code now
+    review, access to 'archives' type...)
+
+    """
+    return request.user.is_authenticated and request.user.has_perm(
+        SWH_AMBASSADOR_PERMISSION
+    )
