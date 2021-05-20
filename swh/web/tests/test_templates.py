@@ -6,13 +6,17 @@
 from copy import deepcopy
 import random
 
+from pkg_resources import get_distribution
+
 from swh.web.common.utils import reverse
 from swh.web.config import STAGING_SERVER_NAMES, get_config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.utils import check_http_get_response
 
+swh_web_version = get_distribution("swh.web").version
 
-def test_layout_without_staging_ribbon(client):
+
+def test_layout_without_ribbon(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_not_contains(resp, "swh-corner-ribbon")
@@ -24,6 +28,16 @@ def test_layout_with_staging_ribbon(client):
         client, url, status_code=200, server_name=random.choice(STAGING_SERVER_NAMES),
     )
     assert_contains(resp, "swh-corner-ribbon")
+    assert_contains(resp, f"Staging<br/>v{swh_web_version}")
+
+
+def test_layout_with_development_ribbon(client):
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(
+        client, url, status_code=200, server_name="localhost",
+    )
+    assert_contains(resp, "swh-corner-ribbon")
+    assert_contains(resp, f"Development<br/>v{swh_web_version.split('+')[0]}")
 
 
 def test_layout_with_oidc_auth_enabled(client):
@@ -41,3 +55,9 @@ def test_layout_without_oidc_auth_enabled(client, mocker):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_contains(resp, reverse("login"))
+
+
+def test_layout_swh_web_version_number_display(client):
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, f"swh-web v{swh_web_version}")

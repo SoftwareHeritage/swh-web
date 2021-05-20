@@ -21,7 +21,7 @@ function doSearch(searchText, searchInputElt = '#swh-origins-url-patterns') {
     .invoke('val', searchText.slice(0, -1))
     .type(searchText.slice(-1))
     .get('.swh-search-icon')
-    .click();
+    .click({force: true});
   if (searchText.startsWith('swh:')) {
     cy.wait('@swhidResolve');
   }

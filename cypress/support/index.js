@@ -53,6 +53,10 @@ Cypress.Commands.add('userLogin', () => {
   return loginUser('user', 'user');
 });
 
+Cypress.Commands.add('ambassadorLogin', () => {
+  return loginUser('ambassador', 'ambassador');
+});
+
 before(function() {
   this.unarchivedRepo = {
     url: 'https://github.com/SoftwareHeritage/swh-web',

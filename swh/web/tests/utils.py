@@ -1,10 +1,12 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from typing import Any, Dict, Optional, cast
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, StreamingHttpResponse
 from django.test.client import Client
 from rest_framework.response import Response
@@ -207,3 +209,23 @@ def check_html_get_response(
     if template_used is not None:
         assert_template_used(response, template_used)
     return response
+
+
+def create_django_permission(perm_name: str) -> Permission:
+    """Create permission out of a permission name string
+
+    Args:
+        perm_name: Permission name (e.g. swh.web.api.throttling_exempted,
+          swh.ambassador, ...)
+
+    Returns:
+        The persisted permission
+
+    """
+    perm_splitted = perm_name.split(".")
+    app_label = ".".join(perm_splitted[:-1])
+    perm_name = perm_splitted[-1]
+    content_type = ContentType.objects.create(app_label=app_label, model="dummy")
+    return Permission.objects.create(
+        codename=perm_name, name=perm_name, content_type=content_type,
+    )

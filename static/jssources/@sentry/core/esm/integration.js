@@ -2,36 +2,31 @@ import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
 import { logger } from '@sentry/utils';
 export var installedIntegrations = [];
+/**
+ * @private
+ */
+function filterDuplicates(integrations) {
+    return integrations.reduce(function (acc, integrations) {
+        if (acc.every(function (accIntegration) { return integrations.name !== accIntegration.name; })) {
+            acc.push(integrations);
+        }
+        return acc;
+    }, []);
+}
 /** Gets integration to install */
 export function getIntegrationsToSetup(options) {
     var defaultIntegrations = (options.defaultIntegrations && __spread(options.defaultIntegrations)) || [];
     var userIntegrations = options.integrations;
-    var integrations = [];
+    var integrations = __spread(filterDuplicates(defaultIntegrations));
     if (Array.isArray(userIntegrations)) {
-        var userIntegrationsNames_1 = userIntegrations.map(function (i) { return i.name; });
-        var pickedIntegrationsNames_1 = [];
-        // Leave only unique default integrations, that were not overridden with provided user integrations
-        defaultIntegrations.forEach(function (defaultIntegration) {
-            if (userIntegrationsNames_1.indexOf(defaultIntegration.name) === -1 &&
-                pickedIntegrationsNames_1.indexOf(defaultIntegration.name) === -1) {
-                integrations.push(defaultIntegration);
-                pickedIntegrationsNames_1.push(defaultIntegration.name);
-            }
-        });
-        // Don't add same user integration twice
-        userIntegrations.forEach(function (userIntegration) {
-            if (pickedIntegrationsNames_1.indexOf(userIntegration.name) === -1) {
-                integrations.push(userIntegration);
-                pickedIntegrationsNames_1.push(userIntegration.name);
-            }
-        });
+        // Filter out integrations that are also included in user options
+        integrations = __spread(integrations.filter(function (integrations) {
+            return userIntegrations.every(function (userIntegration) { return userIntegration.name !== integrations.name; });
+        }), filterDuplicates(userIntegrations));
     }
     else if (typeof userIntegrations === 'function') {
-        integrations = userIntegrations(defaultIntegrations);
+        integrations = userIntegrations(integrations);
         integrations = Array.isArray(integrations) ? integrations : [integrations];
-    }
-    else {
-        integrations = __spread(defaultIntegrations);
     }
     // Make sure that if present, `Debug` integration will always run last
     var integrationsNames = integrations.map(function (i) { return i.name; });

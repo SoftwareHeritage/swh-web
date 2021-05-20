@@ -24,6 +24,10 @@ from swh.web.common.models import (
 )
 from swh.web.common.origin_save import (
     _check_origin_exists,
+    _check_visit_type_savable,
+    _visit_type_task,
+    _visit_type_task_privileged,
+    get_savable_visit_types,
     get_save_origin_requests,
     get_save_origin_task_info,
     origin_exists,
@@ -103,6 +107,34 @@ def _mock_scheduler(
         dict(task_run) if not task_archived else None
     ]
     return task, task_run
+
+
+@pytest.mark.parametrize(
+    "wrong_type,privileged_user",
+    [
+        ("dummy", True),
+        ("dumb", False),
+        ("archives", False),  # when no privilege, this is rejected
+    ],
+)
+def test__check_visit_type_savable(wrong_type, privileged_user):
+
+    with pytest.raises(BadInputExc, match="Allowed types"):
+        _check_visit_type_savable(wrong_type, privileged_user)
+
+    # when privileged_user, the following is accepted though
+    _check_visit_type_savable("archives", True)
+
+
+def test_get_savable_visit_types():
+    default_list = list(_visit_type_task.keys())
+
+    assert set(get_savable_visit_types()) == set(default_list)
+
+    privileged_list = default_list.copy()
+    privileged_list += list(_visit_type_task_privileged.keys())
+
+    assert set(get_savable_visit_types(privileged_user=True)) == set(privileged_list)
 
 
 def _get_save_origin_task_info_test(
@@ -327,12 +359,21 @@ def test__check_origin_exists_404(requests_mock):
         _check_origin_exists(url_ko)
 
 
+@pytest.mark.parametrize("invalid_origin", [None, ""])
+def test__check_origin_invalid_input(invalid_origin):
+    with pytest.raises(BadInputExc, match="must be set"):
+        _check_origin_exists(invalid_origin)
+
+
 def test__check_origin_exists_200(requests_mock):
     url = "https://example.org/url"
     requests_mock.head(url, status_code=200)
 
     # passes the check
-    _check_origin_exists(url)
+    actual_metadata = _check_origin_exists(url)
+
+    # and we actually may have retrieved some metadata on the origin
+    assert actual_metadata == origin_exists(url)
 
 
 def test_origin_exists_404(requests_mock):
@@ -376,7 +417,23 @@ def test_origin_exists_200_with_data(requests_mock):
         origin_url=url,
         exists=True,
         content_length=10,
-        last_modified="Sun, 21 Aug 2011 16:26:32 GMT",
+        last_modified="2011-08-21T16:26:32",
+    )
+
+
+def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
+    """Existing origin should be ok, unexpected last modif time result in no time"""
+    url = "http://example.org/real-url2"
+    # this is parsable but not as expected
+    unexpected_format_date = "Sun, 21 Aug 2021 16:26:32"
+    requests_mock.head(
+        url, status_code=200, headers={"last-modified": unexpected_format_date,},
+    )
+
+    actual_result = origin_exists(url)
+    # so the resulting date is None
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url, exists=True, content_length=None, last_modified=None,
     )
 
 
