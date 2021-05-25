@@ -225,15 +225,11 @@ def origin_exists(origin_url: str) -> OriginExistenceCheckInfo:
     )
 
 
-def _check_origin_exists(origin_url: Optional[str]) -> OriginExistenceCheckInfo:
-    """Ensure the origin exists, if not raise an explicit message."""
-    if not origin_url:
-        raise BadInputExc("The origin url provided must be set!")
-    metadata = origin_exists(origin_url)
+def _check_origin_exists(url: str) -> OriginExistenceCheckInfo:
+    """Ensure an URL exists, if not raise an explicit message."""
+    metadata = origin_exists(url)
     if not metadata["exists"]:
-        raise BadInputExc(
-            f"The provided origin url ({escape(origin_url)}) does not exist!"
-        )
+        raise BadInputExc(f"The provided url ({escape(url)}) does not exist!")
 
     return metadata
 
@@ -429,10 +425,6 @@ def create_save_origin_request(
     _check_visit_type_savable(visit_type, privileged_user)
     _check_origin_url_valid(origin_url)
 
-    artifact_url = kwargs.get("artifact_url")
-    if visit_type == "archives":
-        metadata = _check_origin_exists(artifact_url)
-
     # if all checks passed so far, we can try and save the origin
     save_request_status = can_save_origin(origin_url, privileged_user)
     task = None
@@ -447,18 +439,27 @@ def create_save_origin_request(
         }
         if visit_type == "archives":
             # extra arguments for that type are required
-            assert metadata is not None
-            task_kwargs = dict(
-                **task_kwargs,
-                artifacts=[
+            archives_data = kwargs.get("archives_data", [])
+            if not archives_data:
+                raise BadInputExc(
+                    "Artifacts data are missing for the archives visit type."
+                )
+            artifacts = []
+            for artifact in archives_data:
+                artifact_url = artifact.get("artifact_url")
+                artifact_version = artifact.get("artifact_version")
+                if not artifact_url or not artifact_version:
+                    raise BadInputExc("Missing url or version for an artifact to load.")
+                metadata = _check_origin_exists(artifact_url)
+                artifacts.append(
                     {
                         "url": artifact_url,
-                        "version": kwargs["artifact_version"],
+                        "version": artifact_version,
                         "time": metadata["last_modified"],
                         "length": metadata["content_length"],
                     }
-                ],
-            )
+                )
+            task_kwargs = dict(**task_kwargs, artifacts=artifacts, snapshot_append=True)
         sor = None
         # get list of previously sumitted save requests
         current_sors = list(

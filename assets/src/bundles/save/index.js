@@ -7,6 +7,7 @@
 
 import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
+import artifactFormRowTemplate from './artifact-form-row.ejs';
 
 let saveRequestsTable;
 
@@ -49,19 +50,38 @@ export function maybeRequireExtraInputs() {
   // Read the actual selected value and depending on the origin type, display some extra
   // inputs or hide them. This makes the extra inputs disabled when not displayed.
   const originType = $('#swh-input-visit-type').val();
-  let cssDisplay;
-  let disabled;
+  let display = 'none';
+  let disabled = true;
 
   if (originType === 'archives') {
+    display = 'flex';
     disabled = false;
-    cssDisplay = 'flex';
-  } else {
-    cssDisplay = 'none';
-    disabled = true;
   }
-  $('#optional-origin-forms').css('display', cssDisplay);
-  $('#swh-input-artifact-url').prop('disabled', disabled);
-  $('#swh-input-artifact-version').prop('disabled', disabled);
+  $('.swh-save-origin-archives-form').css('display', display);
+  if (!disabled) {
+    // help paragraph must have block display for proper rendering
+    $('#swh-save-origin-archives-help').css('display', 'block');
+  }
+  $('.swh-save-origin-archives-form .form-control').prop('disabled', disabled);
+
+  if (originType === 'archives' && $('.swh-save-origin-archives-form').length === 1) {
+    // insert first artifact row when the archives visit type is selected for the first time
+    $('.swh-save-origin-archives-form').last().after(
+      artifactFormRowTemplate({deletableRow: false, formId: 0}));
+  }
+}
+
+export function addArtifactFormRow() {
+  $('.swh-save-origin-artifact-form').last().after(
+    artifactFormRowTemplate({
+      deletableRow: true,
+      formId: $('.swh-save-origin-artifact-form').length
+    })
+  );
+}
+
+export function deleteArtifactFormRow(event) {
+  $(event.target).closest('.swh-save-origin-artifact-form').remove();
 }
 
 const userRequestsFilterCheckbox = `
@@ -254,10 +274,16 @@ export function initOriginSave() {
         let originUrl = $('#swh-input-origin-url').val();
 
         // read the extra inputs for the 'archives' type
-        let extraData = originType !== 'archives' ? {} : {
-          'artifact_url': $('#swh-input-artifact-url').val(),
-          'artifact_version': $('#swh-input-artifact-version').val()
-        };
+        let extraData = {};
+        if (originType === 'archives') {
+          extraData['archives_data'] = [];
+          for (let i = 0; i < $('.swh-save-origin-artifact-form').length; ++i) {
+            extraData['archives_data'].push({
+              'artifact_url': $(`#swh-input-artifact-url-${i}`).val(),
+              'artifact_version': $(`#swh-input-artifact-version-${i}`).val()
+            });
+          }
+        }
 
         originSaveRequest(originType, originUrl, extraData,
                           () => $('#swh-origin-save-request-status').html(saveRequestAcceptedAlert),

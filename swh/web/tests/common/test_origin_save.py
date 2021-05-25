@@ -360,12 +360,6 @@ def test__check_origin_exists_404(requests_mock):
         _check_origin_exists(url_ko)
 
 
-@pytest.mark.parametrize("invalid_origin", [None, ""])
-def test__check_origin_invalid_input(invalid_origin):
-    with pytest.raises(BadInputExc, match="must be set"):
-        _check_origin_exists(invalid_origin)
-
-
 def test__check_origin_exists_200(requests_mock):
     url = "https://example.org/url"
     requests_mock.head(url, status_code=200)
