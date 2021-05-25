@@ -55,9 +55,11 @@ clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
 run-django-webpack-devserver: add-users-dev yarn-install
-	bash -c "trap 'trap - SIGINT SIGTERM ERR && kill %1' SIGINT SIGTERM ERR; \
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
+	# ensure all child processes will be killed by PGID when exiting \
+	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
 	$(YARN) start-dev & sleep 10 && cd swh/web && \
-	python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV)"
+	python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV) || exit 1"
 
 run-django-webpack-dev: build-webpack-dev add-users-dev
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
