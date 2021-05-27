@@ -4733,6 +4733,11 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
+cypress-hmr-restarter@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/cypress-hmr-restarter/-/cypress-hmr-restarter-2.0.1.tgz#1981dd5fbfaecb7df3372f974ec7d2a2c86de3da"
+  integrity sha512-uBZw6mjrV7FIXSf4Y7PzwUUqfpYMfIFAmMWZ7yTQPzZHAuC9AvDxJ2bbZvXomK1/EabARpCeox6Ip3i7YITLfg==
+
 cypress-multi-reporters@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/cypress-multi-reporters/-/cypress-multi-reporters-1.5.0.tgz#fff2758c082b49e8b91fed39f9650c70bc06de0d"

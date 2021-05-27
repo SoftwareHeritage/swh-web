@@ -22,5 +22,10 @@
   },
   "env": {
     "SKIP_SLOW_TESTS": 1
-  }
+  },
+  "retries": {
+    "runMode": 4
+  },
+  "hmrUrl": "ws://localhost:3000/sockjs-node",
+  "hmrRestartDelay": 3000
 }

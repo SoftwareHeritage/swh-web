@@ -49,6 +49,9 @@ scheduler = config.scheduler()
 
 logger = logging.getLogger(__name__)
 
+# Number of days in the past to lookup for information
+MAX_THRESHOLD_DAYS = 30
+
 
 def get_origin_save_authorized_urls() -> List[str]:
     """
@@ -254,7 +257,7 @@ def _get_visit_info_for_save_request(
     # stop trying to find a visit date one month after save request submission
     # as those requests to storage are expensive and associated loading task
     # surely ended up with errors
-    if time_delta.days <= 30:
+    if time_delta.days <= MAX_THRESHOLD_DAYS:
         try:
             origin_info = archive.lookup_origin(OriginInfo(url=save_request.origin_url))
             origin_visits = get_origin_visits(origin_info)
@@ -299,7 +302,7 @@ def _check_visit_update_status(
         time_delta = time_now - save_request.request_date
         # consider the task as failed if it is still in scheduled state
         # 30 days after its submission
-        if time_delta.days > 30:
+        if time_delta.days > MAX_THRESHOLD_DAYS:
             save_task_status = SAVE_TASK_FAILED
     return visit_date, save_task_status
 
@@ -604,16 +607,16 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
     Finally, this returns the refreshed information on those SOR.
 
     """
-    non_terminal_statuses = (
-        SAVE_TASK_NOT_CREATED,
-        SAVE_TASK_NOT_YET_SCHEDULED,
-        SAVE_TASK_RUNNING,
-        SAVE_TASK_SCHEDULED,
-    )
+    pivot_date = datetime.now(tz=timezone.utc) - timedelta(days=MAX_THRESHOLD_DAYS)
     save_requests = SaveOriginRequest.objects.filter(
-        status=SAVE_REQUEST_ACCEPTED, loading_task_status__in=non_terminal_statuses
+        # Retrieve accepted request statuses (all statuses)
+        status=SAVE_REQUEST_ACCEPTED,
+        # those without the required information we need to update
+        visit_date__isnull=True,
+        visit_status__isnull=True,
+        # limit results to recent ones (that is roughly 30 days old at best)
+        request_date__gte=pivot_date,
     )
-    # update save request statuses
     return (
         update_save_origin_requests_from_queryset(save_requests)
         if save_requests.count() > 0
@@ -720,7 +723,7 @@ def get_save_origin_task_info(
         max_ts = min_ts + timedelta(days=7)
     else:
         min_ts = save_request.request_date
-        max_ts = min_ts + timedelta(days=30)
+        max_ts = min_ts + timedelta(days=MAX_THRESHOLD_DAYS)
     min_ts_unix = int(min_ts.timestamp()) * 1000
     max_ts_unix = int(max_ts.timestamp()) * 1000
 

@@ -55,7 +55,11 @@ clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
 run-django-webpack-devserver: add-users-dev yarn-install
-	bash -c "trap 'trap - SIGINT SIGTERM ERR; kill %1' SIGINT SIGTERM ERR; $(YARN) start-dev & sleep 10 && cd swh/web && python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV)"
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
+	# ensure all child processes will be killed by PGID when exiting \
+	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
+	$(YARN) start-dev & sleep 10 && cd swh/web && \
+	python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV) || exit 1"
 
 run-django-webpack-dev: build-webpack-dev add-users-dev
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
@@ -83,7 +87,10 @@ test-full:
 
 .PHONY: test-frontend-cmd
 test-frontend-cmd: build-webpack-test add-users-test
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 ; pkill -P $$! ; $(YARN) run mochawesome
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
+	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
+	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & \
+	sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 && $(YARN) run mochawesome"
 
 test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
 test-frontend: test-frontend-cmd
@@ -92,8 +99,15 @@ test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
 test-frontend-full: test-frontend-cmd
 
 .PHONY: test-frontend-ui-cmd
-test-frontend-ui-cmd: build-webpack-test add-users-test
-	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT; jobs -p | head -1 | xargs pkill -P' SIGINT SIGTERM ERR EXIT; python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & sleep 10 && $(YARN) run cypress open"
+test-frontend-ui-cmd: add-users-test yarn-install
+	# ensure all child processes will be killed when hitting Ctrl-C in terminal
+	# or manually closing the Cypress UI window, killing by PGID seems the only
+	# reliable way to do it in that case
+	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
+	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
+	$(YARN) start-dev & \
+	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & \
+	sleep 10 && $(YARN) run cypress open"
 
 test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
 test-frontend-ui: test-frontend-ui-cmd
