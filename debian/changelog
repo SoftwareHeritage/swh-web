@@ -1,3 +1,16 @@
+swh-web (0.0.309-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.309     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-05-27 15:03:12
+    +0200)
+  * Upstream changes:     - v0.0.309     - common/origin_save: Update
+    missing information when available     - Makefile.local: Ensure to
+    kill child processes at devserver target exit     - cypress: Use
+    webpack-dev-server to serve static assets     - Makefile.local: Wrap
+    long lines     - cypress.json: Activate test retries in run mode
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 27 May 2021 13:21:25 +0000
+
 swh-web (0.0.308-2~swh1) unstable-swh; urgency=medium
 
   * Rebuild after fixing tests execution
