@@ -8,6 +8,7 @@ from functools import partial
 import re
 from typing import Optional
 
+import iso8601
 import pytest
 import requests
 
@@ -501,7 +502,7 @@ def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_st
 @pytest.mark.django_db
 @pytest.mark.parametrize("load_status", ["eventful", "uneventful",])
 def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
-    """Incomplete visit information, yet the task is considered ok
+    """Incomplete visit information, yet the task is updated partially
 
     """
     sors = _get_save_origin_requests(
@@ -510,18 +511,27 @@ def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
     assert len(sors) == 1
 
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
+    # As the entry is missing the following information though
     assert sors[0]["visit_date"] is None
     assert sors[0]["visit_status"] is None
 
-    # nothing to refresh so nothing to return
-    assert len(refresh_save_origin_request_statuses()) == 0
+    # It's still detected as to be updated by the refresh routine
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 1
+
+    assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
+    assert sors[0]["visit_date"] is None
+    assert sors[0]["visit_status"] is None
 
 
 @pytest.mark.django_db
-def test_refresh_save_request_statuses(mocker, api_client):
-    """Refresh filters non-terminal save origins requests and update if changes
+def test_refresh_save_request_statuses(mocker, api_client, archive_data):
+    """Refresh filters save origins requests and update if changes
 
     """
+    date_now = datetime.now(tz=timezone.utc)
+    date_pivot = date_now - timedelta(days=30)
+    # returned visit status
     sors = _get_save_origin_requests(
         mocker, load_status=SAVE_TASK_SCHEDULED, visit_status=None,
     )
@@ -529,21 +539,62 @@ def test_refresh_save_request_statuses(mocker, api_client):
 
     # no changes so refresh does detect the entry but does nothing
     sors = refresh_save_origin_request_statuses()
-
     assert len(sors) == 1
+
     for sor in sors:
+        assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
         # as it turns out, in this test, this won't update anything as no new status got
         # returned by the scheduler
         assert sor["save_task_status"] == SAVE_TASK_SCHEDULED
+        # Information is empty
+        assert sor["visit_date"] is None
+        assert sor["visit_status"] is None
 
-    # make the scheduler return eventful for that task
+    # make the scheduler return eventful event for that origin
     _mock_scheduler(mocker)
+    # updates will be detected, entry should be updated but we are still missing info
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 1
+
+    for sor in sors:
+        assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
+        # The status is updated
+        assert sor["save_task_status"] == SAVE_TASK_SUCCEEDED
+        # but the following entries are missing so it's not updated
+        assert sor["visit_date"] is None
+        assert sor["visit_status"] is None
+
+    # This time around, the origin returned will have all information updated
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_save.get_origin_visits"
+    )
+    # create a visit for the save request with status created
+    visit_date = datetime.now(tz=timezone.utc).isoformat()
+    visit_info = OriginVisitInfo(
+        date=visit_date,
+        formatted_date="",
+        metadata={},
+        origin=_origin_url,
+        snapshot="",  # make mypy happy
+        status="full",
+        type=_visit_type,
+        url="",
+        visit=34,
+    )
+    mock_get_origin_visits.return_value = [visit_info]
 
     # Detected entry, this time it should be updated
     sors = refresh_save_origin_request_statuses()
-
     assert len(sors) == 1
+
     for sor in sors:
+        assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
         # as it turns out, in this test, this won't update anything as no new status got
         # returned by the scheduler
         assert sor["save_task_status"] == SAVE_TASK_SUCCEEDED
+        assert sor["visit_date"] == visit_date
+        assert sor["visit_status"] == "full"
+
+    # This time, nothing left to update
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 0

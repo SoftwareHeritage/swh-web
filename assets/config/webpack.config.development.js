@@ -122,7 +122,8 @@ module.exports = {
       errors: true
     },
     // workaround for https://github.com/webpack/webpack-dev-server/issues/2692
-    injectClient: false
+    injectClient: false,
+    transportMode: 'ws'
   },
   // set entries to the bundles we want to produce
   entry: bundles,

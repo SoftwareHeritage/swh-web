@@ -5,6 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
+import 'cypress-hmr-restarter';
 import '@cypress/code-coverage/support';
 
 import {httpGetJson} from '../utils';
