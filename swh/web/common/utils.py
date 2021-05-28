@@ -279,6 +279,7 @@ def context_processor(request):
         ),
         "swh_web_version": get_distribution("swh.web").version,
         "visit_types": ORIGIN_VISIT_TYPES,
+        "iframe_mode": False,
     }
 
 
