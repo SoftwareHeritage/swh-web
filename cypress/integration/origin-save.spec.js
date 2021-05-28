@@ -538,6 +538,7 @@ describe('Origin Save Tests', function() {
       .get('#swh-input-artifact-url-0')
       .type(artifactUrl)
       .get('#swh-input-artifact-version-0')
+      .clear()
       .type(artifactVersion)
       .get('#swh-save-origin-form')
       .submit();
@@ -567,6 +568,7 @@ describe('Origin Save Tests', function() {
     cy.get('#swh-input-artifact-url-0')
       .type(artifactUrl)
       .get('#swh-input-artifact-version-0')
+      .clear()
       .type(artifactVersion);
 
     // add new artifact form row
@@ -593,6 +595,7 @@ describe('Origin Save Tests', function() {
     cy.get('#swh-input-artifact-url-1')
       .type(artifact2Url)
       .get('#swh-input-artifact-version-1')
+      .clear()
       .type(artifact2Version);
 
     // setup request interceptor to check POST data and stub response
@@ -623,6 +626,42 @@ describe('Origin Save Tests', function() {
       checkAlertVisible('success', saveCodeMsg['success']);
     });
 
+  });
+
+  it('should autofill artifact version when pasting artifact url', function() {
+    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    let artifactVersion = '3DLDF-1.1.4';
+    let artifact2Url = 'https://example.org/artifact/test/1.3.0.zip';
+    let artifact2Version = '1.3.0';
+
+    cy.ambassadorLogin();
+    cy.visit(url);
+
+    cy.get('#swh-input-origin-url')
+      .type(originUrl)
+      .get('#swh-input-visit-type')
+      .select('archives');
+
+    // fill first artifact info
+    cy.get('#swh-input-artifact-url-0')
+      .type(artifactUrl);
+
+    // check autofilled version
+    cy.get('#swh-input-artifact-version-0')
+      .should('have.value', artifactVersion);
+
+    // add new artifact form row
+    cy.get('#swh-add-archive-artifact')
+      .click();
+
+    // fill second artifact info
+    cy.get('#swh-input-artifact-url-1')
+      .type(artifact2Url);
+
+    // check autofilled version
+    cy.get('#swh-input-artifact-version-1')
+      .should('have.value', artifact2Version);
   });
 
 });

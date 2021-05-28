@@ -46,6 +46,23 @@ function originSaveRequest(
     });
 }
 
+function addArtifactVersionAutofillHandler(formId) {
+  // autofill artifact version input with the filename from
+  // the artifact url without extensions
+  $(`#swh-input-artifact-url-${formId}`).on('input', function(event) {
+    const artifactUrl = $(this).val().trim();
+    let filename = artifactUrl.split('/').slice(-1)[0];
+    if (filename !== artifactUrl) {
+      filename = filename.replace(/tar.*$/, 'tar');
+      const filenameNoExt = filename.split('.').slice(0, -1).join('.');
+      const artifactVersion = $(`#swh-input-artifact-version-${formId}`);
+      if (filenameNoExt !== filename) {
+        artifactVersion.val(filenameNoExt);
+      }
+    }
+  });
+}
+
 export function maybeRequireExtraInputs() {
   // Read the actual selected value and depending on the origin type, display some extra
   // inputs or hide them. This makes the extra inputs disabled when not displayed.
@@ -68,16 +85,19 @@ export function maybeRequireExtraInputs() {
     // insert first artifact row when the archives visit type is selected for the first time
     $('.swh-save-origin-archives-form').last().after(
       artifactFormRowTemplate({deletableRow: false, formId: 0}));
+    addArtifactVersionAutofillHandler(0);
   }
 }
 
 export function addArtifactFormRow() {
+  const formId = $('.swh-save-origin-artifact-form').length;
   $('.swh-save-origin-artifact-form').last().after(
     artifactFormRowTemplate({
       deletableRow: true,
-      formId: $('.swh-save-origin-artifact-form').length
+      formId: formId
     })
   );
+  addArtifactVersionAutofillHandler(formId);
 }
 
 export function deleteArtifactFormRow(event) {
