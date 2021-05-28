@@ -78,6 +78,7 @@ def privileged_user(request) -> bool:
     review, access to 'archives' type...)
 
     """
-    return request.user.is_authenticated and request.user.has_perm(
-        SWH_AMBASSADOR_PERMISSION
+    user = request.user
+    return user.is_authenticated and (
+        user.is_staff or user.has_perm(SWH_AMBASSADOR_PERMISSION)
     )
