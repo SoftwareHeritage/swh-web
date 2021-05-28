@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -12,12 +12,14 @@ See top-level LICENSE file for more information
 {% if snapshot_context and snapshot_context.is_empty %}
   {% include "includes/empty-snapshot.html" %}
 {% else %}
-  <div class="card">
-    {% if filename %}
-      <div class="swh-content-filename card-header bg-gray-light swh-heading-color">
-        {{ filename }}
-      </div>
-    {% endif %}
+  {% if not iframe_mode %}
+    <div class="card">
+      {% if filename %}
+        <div class="swh-content-filename card-header bg-gray-light swh-heading-color">
+          {{ filename }}
+        </div>
+      {% endif %}
+  {% endif %}
     <div class="swh-content">
       {% if content_size > max_content_size %}
         Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
@@ -47,7 +49,9 @@ See top-level LICENSE file for more information
         {% include "includes/http-error.html" %}
       {% endif %}
     </div>
-  </div>
+  {% if not iframe_mode %}
+    </div>
+  {% endif %}
 
   {% if content %}
     <script>
@@ -59,7 +63,7 @@ See top-level LICENSE file for more information
         let codeContainer = $('code');
         let content = codeContainer.text();
 
-        swh.webapp.highlightCode();
+        swh.webapp.highlightCode(true, 'code', !{{ iframe_mode|jsonify }});
 
         function updateLanguage(language) {
           codeContainer.text(content);
@@ -72,7 +76,7 @@ See top-level LICENSE file for more information
           const newUrl = window.location.pathname + '?' + urlParams.toString() + window.location.hash;
           window.history.replaceState('', document.title, newUrl);
 
-          swh.webapp.highlightCode();
+          swh.webapp.highlightCode(true, 'code', !{{ iframe_mode|jsonify }});
         }
 
       {% endif %}

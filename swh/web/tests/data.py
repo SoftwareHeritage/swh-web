@@ -20,6 +20,7 @@ from swh.indexer.storage import get_indexer_storage
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_hex
+from swh.model.identifiers import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.model.model import (
     Content,
     Directory,
@@ -277,18 +278,35 @@ def _init_tests_data():
     revisions = set()
     releases = set()
     snapshots = set()
+    swhids = []
 
     content_path = {}
 
     # Get all objects loaded into the test archive
     common_metadata = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
     for origin in _TEST_ORIGINS:
+        origin_revisions = set()
         snp = snapshot_get_latest(storage, origin["url"])
+        swhids.append(
+            QualifiedSWHID(
+                object_type=ObjectType.SNAPSHOT, object_id=snp.id, origin=origin["url"]
+            )
+        )
         snapshots.add(hash_to_hex(snp.id))
         for branch_name, branch_data in snp.branches.items():
             target_type = branch_data.target_type.value
             if target_type == "revision":
-                revisions.add(branch_data.target)
+                origin_revisions.add(branch_data.target)
+                swhids.append(
+                    QualifiedSWHID(
+                        object_type=ObjectType.REVISION,
+                        object_id=branch_data.target,
+                        origin=origin["url"],
+                        visit=CoreSWHID(
+                            object_type=ObjectType.SNAPSHOT, object_id=snp.id
+                        ),
+                    )
+                )
                 if b"master" in branch_name:
                     # Add some origin intrinsic metadata for tests
                     metadata = common_metadata
@@ -310,14 +328,24 @@ def _init_tests_data():
                     )
             elif target_type == "release":
                 release = storage.release_get([branch_data.target])[0]
-                revisions.add(release.target)
+                origin_revisions.add(release.target)
                 releases.add(hash_to_hex(branch_data.target))
+                swhids.append(
+                    QualifiedSWHID(
+                        object_type=ObjectType.RELEASE,
+                        object_id=branch_data.target,
+                        origin=origin["url"],
+                        visit=CoreSWHID(
+                            object_type=ObjectType.SNAPSHOT, object_id=snp.id
+                        ),
+                    )
+                )
 
-        for rev_log in storage.revision_shortlog(set(revisions)):
+        for rev_log in storage.revision_shortlog(origin_revisions):
             rev_id = rev_log[0]
             revisions.add(rev_id)
 
-        for rev in storage.revision_get(revisions):
+        for rev in storage.revision_get(origin_revisions):
             if rev is None:
                 continue
             dir_id = rev.directory
@@ -328,8 +356,36 @@ def _init_tests_data():
                     content_path[entry["sha1"]] = "/".join(
                         [hash_to_hex(dir_id), entry["path"].decode("utf-8")]
                     )
+                    swhids.append(
+                        QualifiedSWHID(
+                            object_type=ObjectType.CONTENT,
+                            object_id=entry["sha1_git"],
+                            origin=origin["url"],
+                            visit=CoreSWHID(
+                                object_type=ObjectType.SNAPSHOT, object_id=snp.id
+                            ),
+                            anchor=CoreSWHID(
+                                object_type=ObjectType.REVISION, object_id=rev.id
+                            ),
+                            path=b"/" + entry["path"],
+                        )
+                    )
                 elif entry["type"] == "dir":
                     directories.add(hash_to_hex(entry["target"]))
+                    swhids.append(
+                        QualifiedSWHID(
+                            object_type=ObjectType.DIRECTORY,
+                            object_id=entry["target"],
+                            origin=origin["url"],
+                            visit=CoreSWHID(
+                                object_type=ObjectType.SNAPSHOT, object_id=snp.id
+                            ),
+                            anchor=CoreSWHID(
+                                object_type=ObjectType.REVISION, object_id=rev.id
+                            ),
+                            path=b"/" + entry["path"] + b"/",
+                        )
+                    )
 
     _add_extra_contents(storage, sha1s)
 
@@ -413,7 +469,7 @@ def _init_tests_data():
         "releases": list(releases),
         "revisions": list(map(hash_to_hex, revisions)),
         "snapshots": list(snapshots),
-        "generated_checksums": set(),
+        "swhids": swhids,
     }
 
 

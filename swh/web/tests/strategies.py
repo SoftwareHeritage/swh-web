@@ -23,6 +23,7 @@ from hypothesis.strategies import (
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
+from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Content,
     Directory,
@@ -646,3 +647,51 @@ def revision_with_submodules():
             "rev_dir_rev_path": "libtess2",
         }
     )
+
+
+def swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for any object
+    ingested into the test archive.
+    """
+    return _known_swh_object("swhids")
+
+
+def content_swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for a content object
+    ingested into the test archive.
+    """
+    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.CONTENT)
+
+
+def directory_swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for a directory object
+    ingested into the test archive.
+    """
+    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.DIRECTORY)
+
+
+def release_swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for a release object
+    ingested into the test archive.
+    """
+    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.RELEASE)
+
+
+def revision_swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for a revision object
+    ingested into the test archive.
+    """
+    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.REVISION)
+
+
+def snapshot_swhid():
+    """
+    Hypothesis strategy returning a qualified SWHID for a snapshot object
+    ingested into the test archive.
+    """
+    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.SNAPSHOT)
