@@ -16,7 +16,7 @@ import sentry_sdk
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
@@ -611,12 +611,11 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
     pivot_date = datetime.now(tz=timezone.utc) - timedelta(days=MAX_THRESHOLD_DAYS)
     save_requests = SaveOriginRequest.objects.filter(
         # Retrieve accepted request statuses (all statuses)
-        status=SAVE_REQUEST_ACCEPTED,
+        Q(status=SAVE_REQUEST_ACCEPTED),
         # those without the required information we need to update
-        visit_date__isnull=True,
-        visit_status__isnull=True,
+        Q(visit_date__isnull=True) | Q(visit_status__isnull=True),
         # limit results to recent ones (that is roughly 30 days old at best)
-        request_date__gte=pivot_date,
+        Q(request_date__gte=pivot_date),
     )
     return (
         update_save_origin_requests_from_queryset(save_requests)
