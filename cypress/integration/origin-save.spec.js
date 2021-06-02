@@ -507,12 +507,12 @@ describe('Origin Save Tests', function() {
 
     for (let visitType of anonymousVisitTypes) {
       cy.get('#swh-input-visit-type').select(visitType);
-      cy.get('#optional-origin-forms').should('not.be.visible');
+      cy.get('.swh-save-origin-archives-form').should('not.be.visible');
     }
 
     // this should display more inputs with the 'archives' type
     cy.get('#swh-input-visit-type').select('archives');
-    cy.get('#optional-origin-forms').should('be.visible');
+    cy.get('.swh-save-origin-archives-form').should('be.visible');
 
   });
 
@@ -535,9 +535,10 @@ describe('Origin Save Tests', function() {
       .type(originUrl)
       .get('#swh-input-visit-type')
       .select('archives')
-      .get('#swh-input-artifact-url')
+      .get('#swh-input-artifact-url-0')
       .type(artifactUrl)
-      .get('#swh-input-artifact-version')
+      .get('#swh-input-artifact-version-0')
+      .clear()
       .type(artifactVersion)
       .get('#swh-save-origin-form')
       .submit();
@@ -546,6 +547,121 @@ describe('Origin Save Tests', function() {
       checkAlertVisible('success', saveCodeMsg['success']);
     });
 
+  });
+
+  it('should submit multiple artifacts for the archives visit type', function() {
+    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    let artifactVersion = '1.1.4';
+    let artifact2Url = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.5.tar.gz';
+    let artifact2Version = '1.1.5';
+
+    cy.ambassadorLogin();
+    cy.visit(url);
+
+    cy.get('#swh-input-origin-url')
+      .type(originUrl)
+      .get('#swh-input-visit-type')
+      .select('archives');
+
+    // fill first artifact info
+    cy.get('#swh-input-artifact-url-0')
+      .type(artifactUrl)
+      .get('#swh-input-artifact-version-0')
+      .clear()
+      .type(artifactVersion);
+
+    // add new artifact form row
+    cy.get('#swh-add-archive-artifact')
+      .click();
+
+    // check new row is displayed
+    cy.get('#swh-input-artifact-url-1')
+        .should('exist');
+
+    // request removal of newly added row
+    cy.get('#swh-remove-archive-artifact-1')
+      .click();
+
+    // check row has been removed
+    cy.get('#swh-input-artifact-url-1')
+      .should('not.exist');
+
+    // add new artifact form row
+    cy.get('#swh-add-archive-artifact')
+      .click();
+
+    // fill second artifact info
+    cy.get('#swh-input-artifact-url-1')
+      .type(artifact2Url)
+      .get('#swh-input-artifact-version-1')
+      .clear()
+      .type(artifact2Version);
+
+    // setup request interceptor to check POST data and stub response
+    cy.intercept('POST', this.Urls.api_1_save_origin('archives', originUrl), (req) => {
+      expect(req.body).to.deep.equal({
+        archives_data: [
+          {artifact_url: artifactUrl, artifact_version: artifactVersion},
+          {artifact_url: artifact2Url, artifact_version: artifact2Version}
+        ]
+      });
+      req.reply(genOriginSaveResponse({
+        visitType: 'archives',
+        saveRequestStatus: 'accepted',
+        originUrl: originUrl,
+        saveRequestDate: new Date(),
+        saveTaskStatus: 'not yet scheduled',
+        visitDate: null,
+        visitStatus: null
+      }));
+    }).as('saveRequest');
+
+    // submit form
+    cy.get('#swh-save-origin-form')
+      .submit();
+
+    // submission should be successful
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+
+  });
+
+  it('should autofill artifact version when pasting artifact url', function() {
+    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    let artifactVersion = '3DLDF-1.1.4';
+    let artifact2Url = 'https://example.org/artifact/test/1.3.0.zip';
+    let artifact2Version = '1.3.0';
+
+    cy.ambassadorLogin();
+    cy.visit(url);
+
+    cy.get('#swh-input-origin-url')
+      .type(originUrl)
+      .get('#swh-input-visit-type')
+      .select('archives');
+
+    // fill first artifact info
+    cy.get('#swh-input-artifact-url-0')
+      .type(artifactUrl);
+
+    // check autofilled version
+    cy.get('#swh-input-artifact-version-0')
+      .should('have.value', artifactVersion);
+
+    // add new artifact form row
+    cy.get('#swh-add-archive-artifact')
+      .click();
+
+    // fill second artifact info
+    cy.get('#swh-input-artifact-url-1')
+      .type(artifact2Url);
+
+    // check autofilled version
+    cy.get('#swh-input-artifact-version-1')
+      .should('have.value', artifact2Version);
   });
 
 });
