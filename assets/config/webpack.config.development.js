@@ -103,6 +103,7 @@ module.exports = {
   // webpack-dev-server configuration
   devServer: {
     clientLogLevel: 'warning',
+    host: '0.0.0.0',
     port: devServerPort,
     publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
