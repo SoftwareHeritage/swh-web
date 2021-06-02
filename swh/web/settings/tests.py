@@ -22,10 +22,12 @@ save_origin_rate_post = 10
 
 swh_web_config = get_config()
 
+_pytest = "pytest" in sys.argv[0] or "PYTEST_XDIST_WORKER" in os.environ
+
 swh_web_config.update(
     {
-        # disable django debug mode when running cypress tests
-        "debug": "pytest" in sys.argv[0] or "PYTEST_XDIST_WORKER" in os.environ,
+        # enable django debug mode only when running pytest
+        "debug": _pytest,
         "secret_key": "test",
         "history_counters_url": "",
         "throttling": {
@@ -75,7 +77,8 @@ swh_web_config.update(
             },
         },
         "keycloak": {
-            "server_url": "http://localhost:8080/auth/",
+            # disable keycloak use when not running pytest
+            "server_url": "http://localhost:8080/auth/" if _pytest else "",
             "realm_name": "SoftwareHeritage",
         },
     }

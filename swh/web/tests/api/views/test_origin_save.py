@@ -507,7 +507,6 @@ def test_create_save_request_archives_with_ambassador_user(
         },
     ]
 
-    # then
     url = reverse(
         "api-1-save-origin",
         url_args={"visit_type": "archives", "origin_url": originUrl,},
@@ -517,12 +516,43 @@ def test_create_save_request_archives_with_ambassador_user(
         api_client,
         url,
         status_code=200,
-        data={"artifact_url": artifact_url, "artifact_version": artifact_version,},
+        data={
+            "archives_data": [
+                {"artifact_url": artifact_url, "artifact_version": artifact_version,}
+            ]
+        },
     )
 
     assert response.data["save_request_status"] == SAVE_REQUEST_ACCEPTED
 
     assert SaveAuthorizedOrigin.objects.get(url=originUrl)
+
+
+def test_create_save_request_archives_missing_artifacts_data(
+    api_client, origin_to_review, keycloak_oidc, mocker, requests_mock,
+):
+
+    keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
+    oidc_profile = keycloak_oidc.login()
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
+
+    originUrl = "https://somewhere.org/simple"
+
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "archives", "origin_url": originUrl,},
+    )
+
+    response = check_api_post_response(api_client, url, status_code=400, data={},)
+    assert "Artifacts data are missing" in response.data["reason"]
+
+    response = check_api_post_response(
+        api_client,
+        url,
+        status_code=400,
+        data={"archives_data": [{"artifact_url": "", "arttifact_version": "1.0"}]},
+    )
+    assert "Missing url or version for an artifact to load" in response.data["reason"]
 
 
 def test_create_save_request_archives_accepted_ambassador_user(

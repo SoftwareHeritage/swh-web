@@ -58,6 +58,7 @@ assets/src/bundles/revision/diff-utils.js
 assets/src/bundles/revision/index.js
 assets/src/bundles/revision/log-utils.js
 assets/src/bundles/revision/revision.css
+assets/src/bundles/save/artifact-form-row.ejs
 assets/src/bundles/save/index.js
 assets/src/bundles/vault/index.js
 assets/src/bundles/vault/vault-create-tasks.js
@@ -301,8 +302,8 @@ static/js/pdfjs.a10c5eaf6b34d3e0c3c6.js.map
 static/js/revision.866b69d39201cbe697ce.js
 static/js/revision.866b69d39201cbe697ce.js.LICENSE.txt
 static/js/revision.866b69d39201cbe697ce.js.map
-static/js/save.0fa58a12a523579cc226.js
-static/js/save.0fa58a12a523579cc226.js.map
+static/js/save.f3a09f110229e3317133.js
+static/js/save.f3a09f110229e3317133.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
@@ -398,6 +399,7 @@ static/jssources/assets/src/bundles/revision/diff-panel.ejs
 static/jssources/assets/src/bundles/revision/diff-utils.js
 static/jssources/assets/src/bundles/revision/index.js
 static/jssources/assets/src/bundles/revision/log-utils.js
+static/jssources/assets/src/bundles/save/artifact-form-row.ejs
 static/jssources/assets/src/bundles/save/index.js
 static/jssources/assets/src/bundles/vault/index.js
 static/jssources/assets/src/bundles/vault/vault-create-tasks.js

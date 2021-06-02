@@ -78,7 +78,11 @@ def test_get_save_origin_task_info_without_es(mocker):
 
 
 def _mock_scheduler(
-    mocker, task_status="completed", task_run_status="eventful", task_archived=False
+    mocker,
+    task_status="completed",
+    task_run_status="eventful",
+    task_archived=False,
+    visit_started_date=None,
 ):
     mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
     task = {
@@ -100,7 +104,7 @@ def _mock_scheduler(
         "id": 654270631,
         "metadata": {},
         "scheduled": datetime.now(tz=timezone.utc),
-        "started": None,
+        "started": visit_started_date,
         "status": task_run_status,
         "task": _task_id,
     }
@@ -360,12 +364,6 @@ def test__check_origin_exists_404(requests_mock):
         _check_origin_exists(url_ko)
 
 
-@pytest.mark.parametrize("invalid_origin", [None, ""])
-def test__check_origin_invalid_input(invalid_origin):
-    with pytest.raises(BadInputExc, match="must be set"):
-        _check_origin_exists(invalid_origin)
-
-
 def test__check_origin_exists_200(requests_mock):
     url = "https://example.org/url"
     requests_mock.head(url, status_code=200)
@@ -522,6 +520,85 @@ def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] is None
     assert sors[0]["visit_status"] is None
+
+
+@pytest.mark.django_db
+def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_data):
+    """Refresh a pending save origins requests and update if the status changes
+    """
+    date_now = datetime.now(tz=timezone.utc)
+    date_pivot = date_now - timedelta(days=30)
+    visit_started_date = date_now - timedelta(minutes=1)
+
+    # returned visit status
+    sors = _get_save_origin_requests(
+        mocker, load_status=SAVE_TASK_SCHEDULED, visit_status="created",
+    )
+    assert len(sors) == 1
+
+    # make the scheduler return a running event
+    _mock_scheduler(
+        mocker,
+        task_status="next_run_scheduled",
+        task_run_status="started",
+        visit_started_date=visit_started_date,
+    )
+
+    # The visit is detected but still running
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 1
+
+    for sor in sors:
+        assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
+        # The status is updated
+        assert sor["save_task_status"] == SAVE_TASK_RUNNING
+        # but the following entries are missing so it's not updated
+        assert sor["visit_date"] is None
+        assert sor["visit_status"] == "created"
+
+    # make the visit status completed
+    # make the scheduler return a running event
+    _mock_scheduler(
+        mocker,
+        task_status="completed",
+        task_run_status="eventful",
+        visit_started_date=visit_started_date,
+    )
+
+    # This time around, the origin returned will have all information updated
+    mock_get_origin_visits = mocker.patch(
+        "swh.web.common.origin_save.get_origin_visits"
+    )
+    # create a visit for the save request with status created
+    visit_date = datetime.now(tz=timezone.utc).isoformat()
+    visit_info = OriginVisitInfo(
+        date=visit_date,
+        formatted_date="",
+        metadata={},
+        origin=_origin_url,
+        snapshot="",  # make mypy happy
+        status="full",
+        type=_visit_type,
+        url="",
+        visit=34,
+    )
+    mock_get_origin_visits.return_value = [visit_info]
+
+    # Detected entry, this time it should be updated
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 1
+
+    for sor in sors:
+        assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
+        # as it turns out, in this test, this won't update anything as no new status got
+        # returned by the scheduler
+        assert sor["save_task_status"] == SAVE_TASK_SUCCEEDED
+        assert sor["visit_date"] == visit_date
+        assert sor["visit_status"] == "full"
+
+    # Once in final state, a sor should not be updated anymore
+    sors = refresh_save_origin_request_statuses()
+    assert len(sors) == 0
 
 
 @pytest.mark.django_db
