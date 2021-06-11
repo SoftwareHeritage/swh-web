@@ -202,18 +202,24 @@ def origin_exists(origin_url: str) -> OriginExistenceCheckInfo:
     information on the origin.
 
     """
-    resp = requests.head(origin_url)
+    resp = requests.head(origin_url, allow_redirects=True)
     exists = resp.ok
     content_length: Optional[int] = None
     last_modified: Optional[str] = None
     if exists:
-        size_ = resp.headers.get("Content-Length")
+        # Also process X-Archive-Orig-* headers in case the URL targets the
+        # Internet Archive.
+        size_ = resp.headers.get(
+            "Content-Length", resp.headers.get("X-Archive-Orig-Content-Length")
+        )
         content_length = int(size_) if size_ else None
         try:
-            date_str = resp.headers["Last-Modified"]
+            date_str = resp.headers.get(
+                "Last-Modified", resp.headers.get("X-Archive-Orig-Last-Modified", "")
+            )
             date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z")
             last_modified = date.isoformat()
-        except (KeyError, ValueError):
+        except ValueError:
             # if not provided or not parsable as per the expected format, keep it None
             pass
 

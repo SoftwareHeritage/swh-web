@@ -36,7 +36,7 @@ var SyncPromise = /** @class */ (function () {
                 return;
             }
             if (isThenable(value)) {
-                value.then(_this._resolve, _this._reject);
+                void value.then(_this._resolve, _this._reject);
                 return;
             }
             _this._state = state;
@@ -107,7 +107,7 @@ var SyncPromise = /** @class */ (function () {
             var counter = collection.length;
             var resolvedCollection = [];
             collection.forEach(function (item, index) {
-                SyncPromise.resolve(item)
+                void SyncPromise.resolve(item)
                     .then(function (value) {
                     resolvedCollection[index] = value;
                     counter -= 1;

@@ -420,6 +420,38 @@ def test_origin_exists_200_with_data(requests_mock):
     )
 
 
+def test_origin_exists_internet_archive(requests_mock):
+    """Edge case where an artifact URL to check existence is hosted on the
+    Internet Archive"""
+    url = (
+        "https://web.archive.org/web/20100705043309/"
+        "http://www.cs.unm.edu/~mccune/old-ftp/eqp-09e.tar.gz"
+    )
+    redirect_url = (
+        "https://web.archive.org/web/20100610004108/"
+        "http://www.cs.unm.edu/~mccune/old-ftp/eqp-09e.tar.gz"
+    )
+    requests_mock.head(
+        url, status_code=302, headers={"Location": redirect_url,},
+    )
+    requests_mock.head(
+        redirect_url,
+        status_code=200,
+        headers={
+            "X-Archive-Orig-Last-Modified": "Tue, 12 May 2009 22:09:43 GMT",
+            "X-Archive-Orig-Content-Length": "121421",
+        },
+    )
+
+    actual_result = origin_exists(url)
+    assert actual_result == OriginExistenceCheckInfo(
+        origin_url=url,
+        exists=True,
+        content_length=121421,
+        last_modified="2009-05-12T22:09:43",
+    )
+
+
 def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
     """Existing origin should be ok, unexpected last modif time result in no time"""
     url = "http://example.org/real-url2"

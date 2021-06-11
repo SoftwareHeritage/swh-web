@@ -1,4 +1,4 @@
 from pkgutil import extend_path
-from typing import Iterable
+from typing import List
 
-__path__ = extend_path(__path__, __name__)  # type: Iterable[str]
+__path__: List[str] = extend_path(__path__, __name__)
