@@ -119,7 +119,7 @@ var FetchTransport = /** @class */ (function (_super) {
             options.headers = this.options.headers;
         }
         return this._buffer.add(new SyncPromise(function (resolve, reject) {
-            _this._fetch(sentryRequest.url, options)
+            void _this._fetch(sentryRequest.url, options)
                 .then(function (response) {
                 var headers = {
                     'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),

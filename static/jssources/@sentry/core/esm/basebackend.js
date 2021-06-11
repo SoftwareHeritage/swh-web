@@ -30,7 +30,7 @@ var BaseBackend = /** @class */ (function () {
      * @inheritDoc
      */
     BaseBackend.prototype.sendEvent = function (event) {
-        this._transport.sendEvent(event).then(null, function (reason) {
+        void this._transport.sendEvent(event).then(null, function (reason) {
             logger.error("Error while sending event: " + reason);
         });
     };
@@ -42,7 +42,7 @@ var BaseBackend = /** @class */ (function () {
             logger.warn("Dropping session because custom transport doesn't implement sendSession");
             return;
         }
-        this._transport.sendSession(session).then(null, function (reason) {
+        void this._transport.sendSession(session).then(null, function (reason) {
             logger.error("Error while sending session: " + reason);
         });
     };

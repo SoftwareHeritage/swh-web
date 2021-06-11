@@ -1,5 +1,5 @@
 import { RequestSessionStatus, SessionStatus, } from '@sentry/types';
-import { dropUndefinedKeys, logger, uuid4 } from '@sentry/utils';
+import { dropUndefinedKeys, logger, timestampInSeconds, uuid4 } from '@sentry/utils';
 import { getCurrentHub } from './hub';
 /**
  * @inheritdoc
@@ -8,11 +8,14 @@ var Session = /** @class */ (function () {
     function Session(context) {
         this.errors = 0;
         this.sid = uuid4();
-        this.timestamp = Date.now();
-        this.started = Date.now();
         this.duration = 0;
         this.status = SessionStatus.Ok;
         this.init = true;
+        this.ignoreDuration = false;
+        // Both timestamp and started are in seconds since the UNIX epoch.
+        var startingTime = timestampInSeconds();
+        this.timestamp = startingTime;
+        this.started = startingTime;
         if (context) {
             this.update(context);
         }
@@ -29,7 +32,10 @@ var Session = /** @class */ (function () {
                 this.did = context.user.id || context.user.email || context.user.username;
             }
         }
-        this.timestamp = context.timestamp || Date.now();
+        this.timestamp = context.timestamp || timestampInSeconds();
+        if (context.ignoreDuration) {
+            this.ignoreDuration = context.ignoreDuration;
+        }
         if (context.sid) {
             // Good enough uuid validation. — Kamil
             this.sid = context.sid.length === 32 ? context.sid : uuid4();
@@ -43,11 +49,15 @@ var Session = /** @class */ (function () {
         if (typeof context.started === 'number') {
             this.started = context.started;
         }
-        if (typeof context.duration === 'number') {
+        if (this.ignoreDuration) {
+            this.duration = undefined;
+        }
+        else if (typeof context.duration === 'number') {
             this.duration = context.duration;
         }
         else {
-            this.duration = this.timestamp - this.started;
+            var duration = this.timestamp - this.started;
+            this.duration = duration >= 0 ? duration : 0;
         }
         if (context.release) {
             this.release = context.release;
@@ -85,8 +95,9 @@ var Session = /** @class */ (function () {
         return dropUndefinedKeys({
             sid: "" + this.sid,
             init: this.init,
-            started: new Date(this.started).toISOString(),
-            timestamp: new Date(this.timestamp).toISOString(),
+            // Make sure that sec is converted to ms for date constructor
+            started: new Date(this.started * 1000).toISOString(),
+            timestamp: new Date(this.timestamp * 1000).toISOString(),
             status: this.status,
             errors: this.errors,
             did: typeof this.did === 'number' || typeof this.did === 'string' ? "" + this.did : undefined,

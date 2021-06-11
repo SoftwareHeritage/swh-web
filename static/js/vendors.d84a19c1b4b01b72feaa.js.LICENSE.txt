@@ -115,7 +115,7 @@
  * ©2011-2017 SpryMedia Ltd - datatables.net/license
  */
 
-/*! Responsive 2.2.7
+/*! Responsive 2.2.8
  * 2014-2021 SpryMedia Ltd - datatables.net/license
  */
 
