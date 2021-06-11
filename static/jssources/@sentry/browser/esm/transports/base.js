@@ -6,6 +6,7 @@ var CATEGORY_MAPPING = {
     event: 'error',
     transaction: 'transaction',
     session: 'session',
+    attachment: 'attachment',
 };
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {

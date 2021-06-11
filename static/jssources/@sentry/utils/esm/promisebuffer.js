@@ -27,7 +27,7 @@ var PromiseBuffer = /** @class */ (function () {
         if (this._buffer.indexOf(task) === -1) {
             this._buffer.push(task);
         }
-        task
+        void task
             .then(function () { return _this.remove(task); })
             .then(null, function () {
             return _this.remove(task).then(null, function () {
@@ -67,7 +67,7 @@ var PromiseBuffer = /** @class */ (function () {
                     resolve(false);
                 }
             }, timeout);
-            SyncPromise.all(_this._buffer)
+            void SyncPromise.all(_this._buffer)
                 .then(function () {
                 clearTimeout(capturedSetTimeout);
                 resolve(true);

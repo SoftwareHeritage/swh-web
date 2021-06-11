@@ -183,12 +183,21 @@ function startSessionTracking() {
     if (typeof hub.startSession !== 'function' || typeof hub.captureSession !== 'function') {
         return;
     }
-    hub.startSession();
+    // The session duration for browser sessions does not track a meaningful
+    // concept that can be used as a metric.
+    // Automatically captured sessions are akin to page views, and thus we
+    // discard their duration.
+    hub.startSession({ ignoreDuration: true });
     hub.captureSession();
     // We want to create a session for every navigation as well
     addInstrumentationHandler({
-        callback: function () {
-            hub.startSession();
+        callback: function (_a) {
+            var from = _a.from, to = _a.to;
+            // Don't create an additional session for the initial route or if the location did not change
+            if (from === undefined || from === to) {
+                return;
+            }
+            hub.startSession({ ignoreDuration: true });
             hub.captureSession();
         },
         type: 'history',

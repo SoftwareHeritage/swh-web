@@ -454,7 +454,7 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype._process = function (promise) {
         var _this = this;
         this._processing += 1;
-        promise.then(function (value) {
+        void promise.then(function (value) {
             _this._processing -= 1;
             return value;
         }, function (reason) {
