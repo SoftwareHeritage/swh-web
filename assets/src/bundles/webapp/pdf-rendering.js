@@ -20,34 +20,33 @@ export async function renderPdf(pdfUrl) {
   let ctx = canvas.getContext('2d');
 
   // Get page info from document, resize canvas accordingly, and render page.
-  function renderPage(num) {
+  async function renderPage(num) {
     pageRendering = true;
     // Using promise to fetch the page
-    pdfDoc.getPage(num).then(page => {
-      let divWidth = $('.swh-content').width();
-      let scale = Math.min(defaultScale, divWidth / page.getViewport({scale: 1.0}).width);
+    const page = await pdfDoc.getPage(num);
 
-      let viewport = page.getViewport({scale: scale});
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+    let divWidth = $('.swh-content').width();
+    let scale = Math.min(defaultScale, divWidth / page.getViewport({scale: 1.0}).width);
 
-      // Render PDF page into canvas context
-      let renderContext = {
-        canvasContext: ctx,
-        viewport: viewport
-      };
-      let renderTask = page.render(renderContext);
+    let viewport = page.getViewport({scale: scale});
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
 
-      // Wait for rendering to finish
-      renderTask.promise.then(() => {
-        pageRendering = false;
-        if (pageNumPending !== null) {
-          // New page rendering is pending
-          renderPage(pageNumPending);
-          pageNumPending = null;
-        }
-      });
-    });
+    // Render PDF page into canvas context
+    const renderContext = {
+      canvasContext: ctx,
+      viewport: viewport
+    };
+
+    // Wait for rendering to finish
+    await page.render(renderContext);
+
+    pageRendering = false;
+    if (pageNumPending !== null) {
+      // New page rendering is pending
+      renderPage(pageNumPending);
+      pageNumPending = null;
+    }
 
     // Update page counters
     $('#pdf-page-num').text(num);
@@ -85,19 +84,19 @@ export async function renderPdf(pdfUrl) {
 
   pdfjs.GlobalWorkerOptions.workerSrc = staticAsset('js/pdf.worker.min.js');
 
-  $(document).ready(() => {
+  $(document).ready(async() => {
     $('#pdf-prev').click(onPrevPage);
     $('#pdf-next').click(onNextPage);
-    let loadingTask = pdfjs.getDocument(pdfUrl);
-    loadingTask.promise.then(pdf => {
+    try {
+      const pdf = await pdfjs.getDocument(pdfUrl).promise;
       pdfDoc = pdf;
       $('#pdf-page-count').text(pdfDoc.numPages);
       // Initial/first page rendering
       renderPage(pageNum);
-    }, function(reason) {
+    } catch (reason) {
       // PDF loading error
       console.error(reason);
-    });
+    }
 
     // Render PDF on resize
     $(window).on('resize', function() {

@@ -36,45 +36,42 @@ function generateToken() {
   window.location = Urls.oidc_generate_bearer_token();
 }
 
-function displayToken(tokenId) {
+async function displayToken(tokenId) {
   const postData = {
     token_id: tokenId
   };
-  csrfPost(Urls.oidc_get_bearer_token(), {}, JSON.stringify(postData))
-    .then(handleFetchError)
-    .then(response => response.text())
-    .then(token => {
-      const tokenHtml =
-        `<p>Below is your token.</p>
-         <pre id="swh-bearer-token" class="mt-3">${token}</pre>`;
-      swh.webapp.showModalHtml('Display bearer token', tokenHtml);
-    })
-    .catch(response => {
-      response.text().then(responseText => {
-        let errorMsg = 'Internal server error.';
-        if (response.status === 400) {
-          errorMsg = responseText;
-        }
-        swh.webapp.showModalHtml('Display bearer token', errorMessage(errorMsg));
-      });
-    });
+  try {
+    const response = await csrfPost(Urls.oidc_get_bearer_token(), {}, JSON.stringify(postData));
+    handleFetchError(response);
+    const token = await response.text();
+    const tokenHtml =
+      `<p>Below is your token.</p>
+      <pre id="swh-bearer-token" class="mt-3">${token}</pre>`;
+    swh.webapp.showModalHtml('Display bearer token', tokenHtml);
+  } catch (response) {
+    const responseText = await response.text();
+    let errorMsg = 'Internal server error.';
+    if (response.status === 400) {
+      errorMsg = responseText;
+    }
+    swh.webapp.showModalHtml('Display bearer token', errorMessage(errorMsg));
+  }
 }
 
-function revokeTokens(tokenIds) {
+async function revokeTokens(tokenIds) {
   const postData = {
     token_ids: tokenIds
   };
-  csrfPost(Urls.oidc_revoke_bearer_tokens(), {}, JSON.stringify(postData))
-    .then(handleFetchError)
-    .then(() => {
-      disableSubmitButton();
-      $('#swh-token-form-message').html(
-        successMessage(`Bearer token${tokenIds.length > 1 ? 's' : ''} successfully revoked.`));
-      apiTokensTable.draw();
-    })
-    .catch(() => {
-      $('#swh-token-form-message').html(errorMessage('Internal server error.'));
-    });
+  try {
+    const response = await csrfPost(Urls.oidc_revoke_bearer_tokens(), {}, JSON.stringify(postData));
+    handleFetchError(response);
+    disableSubmitButton();
+    $('#swh-token-form-message').html(
+      successMessage(`Bearer token${tokenIds.length > 1 ? 's' : ''} successfully revoked.`));
+    apiTokensTable.draw();
+  } catch (_) {
+    $('#swh-token-form-message').html(errorMessage('Internal server error.'));
+  }
 }
 
 function revokeToken(tokenId) {

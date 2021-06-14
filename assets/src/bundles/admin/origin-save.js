@@ -222,7 +222,7 @@ export function initOriginSaveAdmin() {
 
     $('body').on('click', e => {
       if ($(e.target).parents('.popover').length > 0) {
-        event.stopPropagation();
+        e.stopPropagation();
       } else if ($(e.target).parents('.swh-save-request-info').length === 0) {
         $('.swh-save-request-info').popover('dispose');
       }
@@ -231,78 +231,72 @@ export function initOriginSaveAdmin() {
   });
 }
 
-export function addAuthorizedOriginUrl() {
-  let originUrl = $('#swh-authorized-url-prefix').val();
-  let addOriginUrl = Urls.admin_origin_save_add_authorized_url(originUrl);
-  csrfPost(addOriginUrl)
-    .then(handleFetchError)
-    .then(() => {
-      authorizedOriginTable.row.add({'url': originUrl}).draw();
-      $('.swh-add-authorized-origin-status').html(
-        htmlAlert('success', 'The origin url prefix has been successfully added in the authorized list.', true)
-      );
-    })
-    .catch(response => {
-      $('.swh-add-authorized-origin-status').html(
-        htmlAlert('warning', 'The provided origin url prefix is already registered in the authorized list.', true)
-      );
-    });
-}
-
-export function removeAuthorizedOriginUrl() {
-  let originUrl = $('#swh-authorized-origin-urls tr.selected').text();
-  if (originUrl) {
-    let removeOriginUrl = Urls.admin_origin_save_remove_authorized_url(originUrl);
-    csrfPost(removeOriginUrl)
-      .then(handleFetchError)
-      .then(() => {
-        authorizedOriginTable.row('.selected').remove().draw();
-      })
-      .catch(() => {});
+export async function addAuthorizedOriginUrl() {
+  const originUrl = $('#swh-authorized-url-prefix').val();
+  const addOriginUrl = Urls.admin_origin_save_add_authorized_url(originUrl);
+  try {
+    const response = await csrfPost(addOriginUrl);
+    handleFetchError(response);
+    authorizedOriginTable.row.add({'url': originUrl}).draw();
+    $('.swh-add-authorized-origin-status').html(
+      htmlAlert('success', 'The origin url prefix has been successfully added in the authorized list.', true)
+    );
+  } catch (_) {
+    $('.swh-add-authorized-origin-status').html(
+      htmlAlert('warning', 'The provided origin url prefix is already registered in the authorized list.', true)
+    );
   }
 }
 
-export function addUnauthorizedOriginUrl() {
-  let originUrl = $('#swh-unauthorized-url-prefix').val();
-  let addOriginUrl = Urls.admin_origin_save_add_unauthorized_url(originUrl);
-  csrfPost(addOriginUrl)
-    .then(handleFetchError)
-    .then(() => {
-      unauthorizedOriginTable.row.add({'url': originUrl}).draw();
-      $('.swh-add-unauthorized-origin-status').html(
-        htmlAlert('success', 'The origin url prefix has been successfully added in the unauthorized list.', true)
-      );
-    })
-    .catch(() => {
-      $('.swh-add-unauthorized-origin-status').html(
-        htmlAlert('warning', 'The provided origin url prefix is already registered in the unauthorized list.', true)
-      );
-    });
+export async function removeAuthorizedOriginUrl() {
+  const originUrl = $('#swh-authorized-origin-urls tr.selected').text();
+  if (originUrl) {
+    const removeOriginUrl = Urls.admin_origin_save_remove_authorized_url(originUrl);
+    try {
+      const response = await csrfPost(removeOriginUrl);
+      handleFetchError(response);
+      authorizedOriginTable.row('.selected').remove().draw();
+    } catch (_) {}
+  }
 }
 
-export function removeUnauthorizedOriginUrl() {
-  let originUrl = $('#swh-unauthorized-origin-urls tr.selected').text();
+export async function addUnauthorizedOriginUrl() {
+  const originUrl = $('#swh-unauthorized-url-prefix').val();
+  const addOriginUrl = Urls.admin_origin_save_add_unauthorized_url(originUrl);
+  try {
+    const response = await csrfPost(addOriginUrl);
+    handleFetchError(response);
+    unauthorizedOriginTable.row.add({'url': originUrl}).draw();
+    $('.swh-add-unauthorized-origin-status').html(
+      htmlAlert('success', 'The origin url prefix has been successfully added in the unauthorized list.', true)
+    );
+  } catch (_) {
+    $('.swh-add-unauthorized-origin-status').html(
+      htmlAlert('warning', 'The provided origin url prefix is already registered in the unauthorized list.', true)
+    );
+  }
+}
+
+export async function removeUnauthorizedOriginUrl() {
+  const originUrl = $('#swh-unauthorized-origin-urls tr.selected').text();
   if (originUrl) {
-    let removeOriginUrl = Urls.admin_origin_save_remove_unauthorized_url(originUrl);
-    csrfPost(removeOriginUrl)
-      .then(handleFetchError)
-      .then(() => {
-        unauthorizedOriginTable.row('.selected').remove().draw();
-      })
-      .catch(() => {});
+    const removeOriginUrl = Urls.admin_origin_save_remove_unauthorized_url(originUrl);
+    try {
+      const response = await csrfPost(removeOriginUrl);
+      handleFetchError(response);
+      unauthorizedOriginTable.row('.selected').remove().draw();
+    } catch (_) {};
   }
 }
 
 export function acceptOriginSaveRequest() {
-  let selectedRow = pendingSaveRequestsTable.row('.selected');
+  const selectedRow = pendingSaveRequestsTable.row('.selected');
   if (selectedRow.length) {
-    let acceptOriginSaveRequestCallback = () => {
-      let rowData = selectedRow.data();
-      let acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['visit_type'], rowData['origin_url']);
-      csrfPost(acceptSaveRequestUrl)
-        .then(() => {
-          pendingSaveRequestsTable.ajax.reload(null, false);
-        });
+    const acceptOriginSaveRequestCallback = async() => {
+      const rowData = selectedRow.data();
+      const acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['visit_type'], rowData['origin_url']);
+      await csrfPost(acceptSaveRequestUrl);
+      pendingSaveRequestsTable.ajax.reload(null, false);
     };
 
     swh.webapp.showModalConfirm(
@@ -313,15 +307,13 @@ export function acceptOriginSaveRequest() {
 }
 
 export function rejectOriginSaveRequest() {
-  let selectedRow = pendingSaveRequestsTable.row('.selected');
+  const selectedRow = pendingSaveRequestsTable.row('.selected');
   if (selectedRow.length) {
-    let rejectOriginSaveRequestCallback = () => {
-      let rowData = selectedRow.data();
-      let rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['visit_type'], rowData['origin_url']);
-      csrfPost(rejectSaveRequestUrl)
-        .then(() => {
-          pendingSaveRequestsTable.ajax.reload(null, false);
-        });
+    let rejectOriginSaveRequestCallback = async() => {
+      const rowData = selectedRow.data();
+      const rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['visit_type'], rowData['origin_url']);
+      await csrfPost(rejectSaveRequestUrl);
+      pendingSaveRequestsTable.ajax.reload(null, false);
     };
 
     swh.webapp.showModalConfirm(
@@ -335,12 +327,10 @@ function removeOriginSaveRequest(requestTable) {
   let selectedRow = requestTable.row('.selected');
   if (selectedRow.length) {
     let requestId = selectedRow.data()['id'];
-    let removeOriginSaveRequestCallback = () => {
-      let removeSaveRequestUrl = Urls.admin_origin_save_request_remove(requestId);
-      csrfPost(removeSaveRequestUrl)
-        .then(() => {
-          requestTable.ajax.reload(null, false);
-        });
+    let removeOriginSaveRequestCallback = async() => {
+      const removeSaveRequestUrl = Urls.admin_origin_save_request_remove(requestId);
+      await csrfPost(removeSaveRequestUrl);
+      requestTable.ajax.reload(null, false);
     };
 
     swh.webapp.showModalConfirm(
