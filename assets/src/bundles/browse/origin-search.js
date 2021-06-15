@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError} from 'utils/functions';
+import {handleFetchError, isArchivedOrigin} from 'utils/functions';
 
 const limit = 100;
 let linksPrev = [];
@@ -162,7 +162,7 @@ function searchOrigins(searchUrl) {
     });
 }
 
-function doSearch() {
+async function doSearch() {
   $('#swh-no-result').hide();
   let searchQueryText = $('#swh-origins-url-patterns').val();
   inSearch = true;
@@ -186,10 +186,13 @@ function doSearch() {
           $('#swh-no-result').text(data.reason);
           $('#swh-no-result').show();
         });
-
       });
+  } else if (await isArchivedOrigin(searchQueryText)) {
+    // redirect to the browse origin
+    window.location.href =
+      `${Urls.browse_origin()}?origin_url=${encodeURIComponent(searchQueryText)}`;
   } else {
-    // otherwise, proceed with origins search
+    // otherwise, proceed with origins search irrespective of the error
     $('#swh-origin-search-results').show();
     $('.swh-search-pagination').show();
     searchOriginsFirst(searchQueryText, limit);
