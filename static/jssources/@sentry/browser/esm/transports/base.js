@@ -16,7 +16,7 @@ var BaseTransport = /** @class */ (function () {
         this._buffer = new PromiseBuffer(30);
         /** Locks transport after receiving rate limits in a response */
         this._rateLimits = {};
-        this._api = new API(options.dsn, options._metadata);
+        this._api = new API(options.dsn, options._metadata, options.tunnel);
         // eslint-disable-next-line deprecation/deprecation
         this.url = this._api.getStoreEndpointWithUrlEncodedAuth();
     }

@@ -78,3 +78,22 @@ export function htmlAlert(type, message, closable = false) {
   }
   return `<div class="alert alert-${type} ${extraClasses}" role="alert">${message}${closeButton}</div>`;
 }
+
+export function isValidURL(string) {
+  try {
+    new URL(string);
+  } catch (_) {
+    return false;
+  }
+  return true;
+}
+
+export async function isArchivedOrigin(originPath) {
+  if (!isValidURL(originPath)) {
+    // Not a valid URL, return immediately
+    return false;
+  } else {
+    const response = await fetch(Urls.api_1_origin(originPath));
+    return response.ok && response.status === 200; // Success response represents an archived origin
+  }
+}

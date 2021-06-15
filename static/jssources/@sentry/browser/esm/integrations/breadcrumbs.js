@@ -141,11 +141,12 @@ var Breadcrumbs = /** @class */ (function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Breadcrumbs.prototype._domBreadcrumb = function (handlerData) {
         var target;
+        var keyAttr = typeof this._options.dom === 'object' ? this._options.dom.serializeAttribute : undefined;
         // Accessing event.target can throw (see getsentry/raven-js#838, #768)
         try {
             target = handlerData.event.target
-                ? htmlTreeAsString(handlerData.event.target)
-                : htmlTreeAsString(handlerData.event);
+                ? htmlTreeAsString(handlerData.event.target, keyAttr)
+                : htmlTreeAsString(handlerData.event, keyAttr);
         }
         catch (e) {
             target = '<unknown>';

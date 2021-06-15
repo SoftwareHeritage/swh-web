@@ -5,7 +5,7 @@ import { isString } from './is';
  * e.g. [HTMLElement] => body > div > input#foo.btn[name=baz]
  * @returns generated DOM path
  */
-export function htmlTreeAsString(elem) {
+export function htmlTreeAsString(elem, keyAttr) {
     // try/catch both:
     // - accessing event.target (see getsentry/raven-js#838, #768)
     // - `htmlTreeAsString` because it's complex, and just accessing the DOM incorrectly
@@ -22,7 +22,7 @@ export function htmlTreeAsString(elem) {
         var nextStr = void 0;
         // eslint-disable-next-line no-plusplus
         while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
-            nextStr = _htmlElementAsString(currentElem);
+            nextStr = _htmlElementAsString(currentElem, keyAttr);
             // bail out if
             // - nextStr is the 'html' element
             // - the length of the string that would be created exceeds MAX_OUTPUT_LEN
@@ -45,7 +45,7 @@ export function htmlTreeAsString(elem) {
  * e.g. [HTMLElement] => input#foo.btn[name=baz]
  * @returns generated DOM path
  */
-function _htmlElementAsString(el) {
+function _htmlElementAsString(el, keyAttr) {
     var elem = el;
     var out = [];
     var className;
@@ -57,15 +57,21 @@ function _htmlElementAsString(el) {
         return '';
     }
     out.push(elem.tagName.toLowerCase());
-    if (elem.id) {
-        out.push("#" + elem.id);
+    var keyAttrValue = keyAttr ? elem.getAttribute(keyAttr) : null;
+    if (keyAttrValue) {
+        out.push("[" + keyAttr + "=\"" + keyAttrValue + "\"]");
     }
-    // eslint-disable-next-line prefer-const
-    className = elem.className;
-    if (className && isString(className)) {
-        classes = className.split(/\s+/);
-        for (i = 0; i < classes.length; i++) {
-            out.push("." + classes[i]);
+    else {
+        if (elem.id) {
+            out.push("#" + elem.id);
+        }
+        // eslint-disable-next-line prefer-const
+        className = elem.className;
+        if (className && isString(className)) {
+            classes = className.split(/\s+/);
+            for (i = 0; i < classes.length; i++) {
+                out.push("." + classes[i]);
+            }
         }
     }
     var allowedAttrs = ['type', 'name', 'title', 'alt'];

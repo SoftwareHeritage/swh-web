@@ -105,7 +105,7 @@ export var browserPerformanceTimeOrigin = (function () {
     // performance.timing.navigationStart, which results in poor results in performance data. We only treat time origin
     // data as reliable if they are within a reasonable threshold of the current time.
     var performance = getGlobalObject().performance;
-    if (!performance) {
+    if (!performance || !performance.now) {
         _browserPerformanceTimeOriginMode = 'none';
         return undefined;
     }
