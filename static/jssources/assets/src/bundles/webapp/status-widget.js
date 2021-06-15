@@ -17,34 +17,34 @@ const statusCodeColor = {
 };
 
 export function initStatusWidget(statusDataURL) {
-  $('.swh-current-status-indicator').ready(() => {
+  $('.swh-current-status-indicator').ready(async() => {
     let maxStatusCode = '';
     let maxStatusDescription = '';
     let sc = '';
     let sd = '';
-    fetch(statusDataURL)
-      .then(resp => resp.json())
-      .then(data => {
-        for (let s of data.result.status) {
-          sc = s.status_code;
-          sd = s.status;
-          if (maxStatusCode < sc) {
-            maxStatusCode = sc;
-            maxStatusDescription = sd;
-          }
-        }
-        if (maxStatusCode === '') {
-          $('.swh-current-status').remove();
-          return;
-        }
-        $('.swh-current-status-indicator').removeClass('green');
-        $('.swh-current-status-indicator').addClass(statusCodeColor[maxStatusCode]);
-        $('#swh-current-status-description').text(maxStatusDescription);
-      })
-      .catch(e => {
-        console.log(e);
-        $('.swh-current-status').remove();
-      });
+    try {
+      const response = await fetch(statusDataURL);
+      const data = await response.json();
 
+      for (let s of data.result.status) {
+        sc = s.status_code;
+        sd = s.status;
+        if (maxStatusCode < sc) {
+          maxStatusCode = sc;
+          maxStatusDescription = sd;
+        }
+      }
+      if (maxStatusCode === '') {
+        $('.swh-current-status').remove();
+        return;
+      }
+      $('.swh-current-status-indicator').removeClass('green');
+      $('.swh-current-status-indicator').addClass(statusCodeColor[maxStatusCode]);
+      $('#swh-current-status-description').text(maxStatusDescription);
+
+    } catch (e) {
+      console.log(e);
+      $('.swh-current-status').remove();
+    }
   });
 }

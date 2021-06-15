@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -47,21 +47,21 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
     }];
   }
 
-  $(document).ready(() => {
+  $(document).ready(async() => {
     let converter = new showdown.Converter({
       tables: true,
       extensions: [showdownHighlight]
     });
-    fetch(markdownDocUrl)
-      .then(handleFetchError)
-      .then(response => response.text())
-      .then(data => {
-        $(domElt).addClass('swh-showdown');
-        $(domElt).html(swh.webapp.filterXSS(converter.makeHtml(data)));
-      })
-      .catch(() => {
-        $(domElt).text('Readme bytes are not available');
-      });
+
+    try {
+      const response = await fetch(markdownDocUrl);
+      handleFetchError(response);
+      const data = await response.text();
+      $(domElt).addClass('swh-showdown');
+      $(domElt).html(swh.webapp.filterXSS(converter.makeHtml(data)));
+    } catch (_) {
+      $(domElt).text('Readme bytes are not available');
+    }
   });
 
 }
@@ -83,41 +83,36 @@ export async function renderOrgData(domElt, orgDocData) {
 }
 
 export function renderOrg(domElt, orgDocUrl) {
-
-  $(document).ready(() => {
-    fetch(orgDocUrl)
-      .then(handleFetchError)
-      .then(response => response.text())
-      .then(data => {
-        renderOrgData(domElt, data);
-      })
-      .catch(() => {
-        $(domElt).text('Readme bytes are not available');
-      });
+  $(document).ready(async() => {
+    try {
+      const response = await fetch(orgDocUrl);
+      handleFetchError(response);
+      const data = await response.text();
+      renderOrgData(domElt, data);
+    } catch (_) {
+      $(domElt).text('Readme bytes are not available');
+    }
   });
-
 }
 
 export function renderTxt(domElt, txtDocUrl) {
+  $(document).ready(async() => {
+    try {
+      const response = await fetch(txtDocUrl);
+      handleFetchError(response);
+      const data = await response.text();
 
-  $(document).ready(() => {
-    fetch(txtDocUrl)
-      .then(handleFetchError)
-      .then(response => response.text())
-      .then(data => {
-        let orgMode = '-*- mode: org -*-';
-        if (data.indexOf(orgMode) !== -1) {
-          renderOrgData(domElt, data.replace(orgMode, ''));
-        } else {
-          $(domElt).addClass('swh-readme-txt');
-          $(domElt)
+      let orgMode = '-*- mode: org -*-';
+      if (data.indexOf(orgMode) !== -1) {
+        renderOrgData(domElt, data.replace(orgMode, ''));
+      } else {
+        $(domElt).addClass('swh-readme-txt');
+        $(domElt)
             .html('')
             .append($('<pre></pre>').text(data));
-        }
-      })
-      .catch(() => {
-        $(domElt).text('Readme bytes are not available');
-      });
+      }
+    } catch (_) {
+      $(domElt).text('Readme bytes are not available');
+    }
   });
-
 }

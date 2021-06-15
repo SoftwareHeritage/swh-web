@@ -41,33 +41,32 @@ function updateProgressBar(progressBar, cookingTask) {
 let recookTask;
 
 // called when the user wants to download a cooked archive
-export function fetchCookedObject(fetchUrl) {
+export async function fetchCookedObject(fetchUrl) {
   recookTask = null;
   // first, check if the link is still available from the vault
-  fetch(fetchUrl)
-    .then(response => {
-      // link is still alive, proceed to download
-      if (response.ok) {
-        $('#vault-fetch-iframe').attr('src', fetchUrl);
-      // link is dead
-      } else {
-        // get the associated cooking task
-        let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
-        for (let i = 0; i < vaultCookingTasks.length; ++i) {
-          if (vaultCookingTasks[i].fetch_url === fetchUrl) {
-            recookTask = vaultCookingTasks[i];
-            break;
-          }
-        }
-        // display a modal asking the user if he wants to recook the archive
-        $('#vault-recook-object-modal').modal('show');
+  const response = await fetch(fetchUrl);
+
+  // link is still alive, proceed to download
+  if (response.ok) {
+    $('#vault-fetch-iframe').attr('src', fetchUrl);
+    // link is dead
+  } else {
+    // get the associated cooking task
+    let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+    for (let i = 0; i < vaultCookingTasks.length; ++i) {
+      if (vaultCookingTasks[i].fetch_url === fetchUrl) {
+        recookTask = vaultCookingTasks[i];
+        break;
       }
-    });
+    }
+    // display a modal asking the user if he wants to recook the archive
+    $('#vault-recook-object-modal').modal('show');
+  }
 }
 
 // called when the user wants to recook an archive
 // for which the download link is not available anymore
-export function recookObject() {
+export async function recookObject() {
   if (recookTask) {
     // stop cooking tasks status polling
     clearTimeout(checkVaultId);
@@ -81,35 +80,35 @@ export function recookObject() {
     if (recookTask.email) {
       cookingUrl += '?email=' + recookTask.email;
     }
+    try {
     // request archive cooking
-    csrfPost(cookingUrl)
-      .then(handleFetchError)
-      .then(() => {
-        // update task status
-        recookTask.status = 'new';
-        let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
-        for (let i = 0; i < vaultCookingTasks.length; ++i) {
-          if (vaultCookingTasks[i].object_id === recookTask.object_id) {
-            vaultCookingTasks[i] = recookTask;
-            break;
-          }
+      const response = await csrfPost(cookingUrl);
+      handleFetchError(response);
+
+      // update task status
+      recookTask.status = 'new';
+      let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+      for (let i = 0; i < vaultCookingTasks.length; ++i) {
+        if (vaultCookingTasks[i].object_id === recookTask.object_id) {
+          vaultCookingTasks[i] = recookTask;
+          break;
         }
-        // save updated tasks to local storage
-        localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
-        // restart cooking tasks status polling
-        checkVaultCookingTasks();
-        // hide recook archive modal
-        $('#vault-recook-object-modal').modal('hide');
-      })
+      }
+      // save updated tasks to local storage
+      localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+      // restart cooking tasks status polling
+      checkVaultCookingTasks();
+      // hide recook archive modal
+      $('#vault-recook-object-modal').modal('hide');
+    } catch (_) {
       // something went wrong
-      .catch(() => {
-        checkVaultCookingTasks();
-        $('#vault-recook-object-modal').modal('hide');
-      });
+      checkVaultCookingTasks();
+      $('#vault-recook-object-modal').modal('hide');
+    }
   }
 }
 
-function checkVaultCookingTasks() {
+async function checkVaultCookingTasks() {
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
   if (!vaultCookingTasks || vaultCookingTasks.length === 0) {
     $('.swh-vault-table tbody tr').remove();
@@ -140,62 +139,63 @@ function checkVaultCookingTasks() {
       $(row).remove();
     }
   });
-  Promise.all(cookingTaskRequests)
-    .then(handleFetchErrors)
-    .then(responses => Promise.all(responses.map(r => r.json())))
-    .then(cookingTasks => {
-      let table = $('#vault-cooking-tasks tbody');
-      for (let i = 0; i < cookingTasks.length; ++i) {
-        let cookingTask = tasks[cookingTasks[i].obj_id];
-        cookingTask.status = cookingTasks[i].status;
-        cookingTask.fetch_url = cookingTasks[i].fetch_url;
-        cookingTask.progress_message = cookingTasks[i].progress_message;
-      }
-      for (let i = 0; i < vaultCookingTasks.length; ++i) {
-        let cookingTask = vaultCookingTasks[i];
-        let rowTask = $(`#vault-task-${cookingTask.object_id}`);
+  try {
+    const responses = await Promise.all(cookingTaskRequests);
+    handleFetchErrors(responses);
+    const cookingTasks = await Promise.all(responses.map(r => r.json()));
 
-        if (!rowTask.length) {
+    let table = $('#vault-cooking-tasks tbody');
+    for (let i = 0; i < cookingTasks.length; ++i) {
+      let cookingTask = tasks[cookingTasks[i].obj_id];
+      cookingTask.status = cookingTasks[i].status;
+      cookingTask.fetch_url = cookingTasks[i].fetch_url;
+      cookingTask.progress_message = cookingTasks[i].progress_message;
+    }
+    for (let i = 0; i < vaultCookingTasks.length; ++i) {
+      let cookingTask = vaultCookingTasks[i];
+      let rowTask = $(`#vault-task-${cookingTask.object_id}`);
 
-          let browseUrl = cookingTask.browse_url;
-          if (!browseUrl) {
-            if (cookingTask.object_type === 'directory') {
-              browseUrl = Urls.browse_directory(cookingTask.object_id);
-            } else {
-              browseUrl = Urls.browse_revision(cookingTask.object_id);
-            }
+      if (!rowTask.length) {
+
+        let browseUrl = cookingTask.browse_url;
+        if (!browseUrl) {
+          if (cookingTask.object_type === 'directory') {
+            browseUrl = Urls.browse_directory(cookingTask.object_id);
+          } else {
+            browseUrl = Urls.browse_revision(cookingTask.object_id);
           }
+        }
 
-          let progressBar = $.parseHTML(progress)[0];
-          let progressBarContent = $(progressBar).find('.progress-bar');
-          updateProgressBar(progressBarContent, cookingTask);
-          table.prepend(vaultTableRowTemplate({
-            browseUrl: browseUrl,
-            cookingTask: cookingTask,
-            progressBar: progressBar,
-            Urls: Urls,
-            swh: swh
-          }));
-        } else {
-          let progressBar = rowTask.find('.progress-bar');
-          updateProgressBar(progressBar, cookingTask);
-          let downloadLink = rowTask.find('.vault-dl-link');
-          if (cookingTask.status === 'done') {
-            downloadLink[0].innerHTML =
+        let progressBar = $.parseHTML(progress)[0];
+        let progressBarContent = $(progressBar).find('.progress-bar');
+        updateProgressBar(progressBarContent, cookingTask);
+        table.prepend(vaultTableRowTemplate({
+          browseUrl: browseUrl,
+          cookingTask: cookingTask,
+          progressBar: progressBar,
+          Urls: Urls,
+          swh: swh
+        }));
+      } else {
+        let progressBar = rowTask.find('.progress-bar');
+        updateProgressBar(progressBar, cookingTask);
+        let downloadLink = rowTask.find('.vault-dl-link');
+        if (cookingTask.status === 'done') {
+          downloadLink[0].innerHTML =
               '<button class="btn btn-default btn-sm" ' +
               `onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')">` +
               '<i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
-          } else {
-            downloadLink[0].innerHTML = '';
-          }
+        } else {
+          downloadLink[0].innerHTML = '';
         }
       }
-      localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
-      checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
-    })
-    .catch(error => {
-      console.log('Error when fetching vault cooking tasks:', error);
-    });
+    }
+    localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+    checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
+
+  } catch (error) {
+    console.log('Error when fetching vault cooking tasks:', error);
+  }
 }
 
 export function removeCookingTaskInfo(tasksToRemove) {

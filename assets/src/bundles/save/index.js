@@ -11,7 +11,7 @@ import artifactFormRowTemplate from './artifact-form-row.ejs';
 
 let saveRequestsTable;
 
-function originSaveRequest(
+async function originSaveRequest(
   originType, originUrl, extraData,
   acceptedCallback, pendingCallback, errorCallback
 ) {
@@ -27,23 +27,21 @@ function originSaveRequest(
     };
   };
 
-  csrfPost(addSaveOriginRequestUrl, headers, body)
-    .then(handleFetchError)
-    .then(response => response.json())
-    .then(data => {
-      $('.swh-processing-save-request').css('display', 'none');
-      if (data.save_request_status === 'accepted') {
-        acceptedCallback();
-      } else {
-        pendingCallback();
-      }
-    })
-    .catch(response => {
-      $('.swh-processing-save-request').css('display', 'none');
-      response.json().then(errorData => {
-        errorCallback(response.status, errorData);
-      });
-    });
+  try {
+    const response = await csrfPost(addSaveOriginRequestUrl, headers, body);
+    handleFetchError(response);
+    const data = await response.json();
+    $('.swh-processing-save-request').css('display', 'none');
+    if (data.save_request_status === 'accepted') {
+      acceptedCallback();
+    } else {
+      pendingCallback();
+    }
+  } catch (response) {
+    $('.swh-processing-save-request').css('display', 'none');
+    const errorData = await response.json();
+    errorCallback(response.status, errorData);
+  };
 }
 
 function addArtifactVersionAutofillHandler(formId) {
@@ -116,19 +114,18 @@ const userRequestsFilterCheckbox = `
 
 export function initOriginSave() {
 
-  $(document).ready(() => {
+  $(document).ready(async() => {
 
     $.fn.dataTable.ext.errMode = 'none';
 
-    fetch(Urls.origin_save_types_list())
-      .then(response => response.json())
-      .then(data => {
-        for (let originType of data) {
-          $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
-        }
-        // set git as the default value as before
-        $('#swh-input-visit-type').val('git');
-      });
+    const response = await fetch(Urls.origin_save_types_list());
+    const data = await response.json();
+
+    for (let originType of data) {
+      $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
+    }
+    // set git as the default value as before
+    $('#swh-input-visit-type').val('git');
 
     saveRequestsTable = $('#swh-origin-save-requests')
       .on('error.dt', (e, settings, techNote, message) => {
@@ -464,7 +461,7 @@ export function formatValuePerType(type, value) {
   return value === null ? null : mapFormatPerTypeFn[type](value);
 }
 
-export function displaySaveRequestInfo(event, saveRequestId) {
+export async function displaySaveRequestInfo(event, saveRequestId) {
   event.stopPropagation();
   const saveRequestTaskInfoUrl = Urls.origin_save_task_info(saveRequestId);
   // close popover when clicking again on the info icon
@@ -499,50 +496,49 @@ export function displaySaveRequestInfo(event, saveRequestId) {
   });
 
   $(event.target).popover('show');
-  fetch(saveRequestTaskInfoUrl)
-    .then(response => response.json())
-    .then(saveRequestTaskInfo => {
-      let content;
-      if ($.isEmptyObject(saveRequestTaskInfo)) {
-        content = 'Not available';
-      } else {
-        let saveRequestInfo = [];
-        const taskData = {
-          'Type': ['raw', 'type'],
-          'Visit status': ['raw', 'visit_status'],
-          'Arguments': ['json', 'arguments'],
-          'Id': ['raw', 'id'],
-          'Backend id': ['raw', 'backend_id'],
-          'Scheduling date': ['date', 'scheduled'],
-          'Start date': ['date', 'started'],
-          'Completion date': ['date', 'ended'],
-          'Duration': ['duration', 'duration'],
-          'Runner': ['raw', 'worker'],
-          'Log': ['raw', 'message']
-        };
-        for (const [title, [type, property]] of Object.entries(taskData)) {
-          if (saveRequestTaskInfo.hasOwnProperty(property)) {
-            saveRequestInfo.push({
-              key: title,
-              value: formatValuePerType(type, saveRequestTaskInfo[property])
-            });
-          }
-        }
-        content = '<table class="table"><tbody>';
-        for (let info of saveRequestInfo) {
-          content +=
+  const response = await fetch(saveRequestTaskInfoUrl);
+  const saveRequestTaskInfo = await response.json();
+
+  let content;
+  if ($.isEmptyObject(saveRequestTaskInfo)) {
+    content = 'Not available';
+  } else {
+    let saveRequestInfo = [];
+    const taskData = {
+      'Type': ['raw', 'type'],
+      'Visit status': ['raw', 'visit_status'],
+      'Arguments': ['json', 'arguments'],
+      'Id': ['raw', 'id'],
+      'Backend id': ['raw', 'backend_id'],
+      'Scheduling date': ['date', 'scheduled'],
+      'Start date': ['date', 'started'],
+      'Completion date': ['date', 'ended'],
+      'Duration': ['duration', 'duration'],
+      'Runner': ['raw', 'worker'],
+      'Log': ['raw', 'message']
+    };
+    for (const [title, [type, property]] of Object.entries(taskData)) {
+      if (saveRequestTaskInfo.hasOwnProperty(property)) {
+        saveRequestInfo.push({
+          key: title,
+          value: formatValuePerType(type, saveRequestTaskInfo[property])
+        });
+      }
+    }
+    content = '<table class="table"><tbody>';
+    for (let info of saveRequestInfo) {
+      content +=
             `<tr>
               <th class="swh-metadata-table-row swh-metadata-table-key">${info.key}</th>
               <td class="swh-metadata-table-row swh-metadata-table-value">
                 <pre>${info.value}</pre>
               </td>
             </tr>`;
-        }
-        content += '</tbody></table>';
-      }
-      $('.swh-popover').html(content);
-      $(event.target).popover('update');
-    });
+    }
+    content += '</tbody></table>';
+  }
+  $('.swh-popover').html(content);
+  $(event.target).popover('update');
 }
 
 export function fillSaveRequestFormAndScroll(visitType, originUrl) {

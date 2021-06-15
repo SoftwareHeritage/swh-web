@@ -41,7 +41,7 @@ export function sessionToSentryRequest(session, api) {
 export function eventToSentryRequest(event, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var eventType = event.type || 'event';
-    var useEnvelope = eventType === 'transaction';
+    var useEnvelope = eventType === 'transaction' || api.forceEnvelope();
     var _a = event.debug_meta || {}, transactionSampling = _a.transactionSampling, metadata = __rest(_a, ["transactionSampling"]);
     var _b = transactionSampling || {}, samplingMethod = _b.method, sampleRate = _b.rate;
     if (Object.keys(metadata).length === 0) {
@@ -61,7 +61,7 @@ export function eventToSentryRequest(event, api) {
     // deserialization. Instead, we only implement a minimal subset of the spec to
     // serialize events inline here.
     if (useEnvelope) {
-        var envelopeHeaders = JSON.stringify(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })));
+        var envelopeHeaders = JSON.stringify(__assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (api.forceEnvelope() && { dsn: api.getDsn().toString() })));
         var itemHeaders = JSON.stringify({
             type: event.type,
             // TODO: Right now, sampleRate may or may not be defined (it won't be in the cases of inheritance and
