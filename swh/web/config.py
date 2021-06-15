@@ -131,9 +131,10 @@ DEFAULT_CONFIG = {
     "metadata_search_backend": ("string", "swh-indexer-storage"),  # or "swh-search"
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", STAGING_SERVER_NAMES),
+    "instance_name": ("str", "archive-test.softwareheritage.org"),
 }
 
-swhweb_config = {}  # type: Dict[str, Any]
+swhweb_config: Dict[str, Any] = {}
 
 
 def get_config(config_file="web/web"):
