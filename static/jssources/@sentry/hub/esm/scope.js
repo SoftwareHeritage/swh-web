@@ -364,12 +364,12 @@ var Scope = /** @class */ (function () {
             else {
                 var result = processor(__assign({}, event), hint);
                 if (isThenable(result)) {
-                    result
+                    void result
                         .then(function (final) { return _this._notifyEventProcessors(processors, final, hint, index + 1).then(resolve); })
                         .then(null, reject);
                 }
                 else {
-                    _this._notifyEventProcessors(processors, result, hint, index + 1)
+                    void _this._notifyEventProcessors(processors, result, hint, index + 1)
                         .then(resolve)
                         .then(null, reject);
                 }

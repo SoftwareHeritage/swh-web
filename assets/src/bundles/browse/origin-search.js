@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError} from 'utils/functions';
+import {handleFetchError, isArchivedOrigin} from 'utils/functions';
 
 const limit = 100;
 let linksPrev = [];
@@ -28,12 +28,13 @@ function clearOriginSearchResultsTable() {
   $('#origin-search-results tbody tr').remove();
 }
 
-function populateOriginSearchResultsTable(origins) {
+async function populateOriginSearchResultsTable(origins) {
   if (origins.length > 0) {
     $('#swh-origin-search-results').show();
     $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
     let table = $('#origin-search-results tbody');
+    let promises = [];
     for (let [i, origin] of origins.entries()) {
       let browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
       let tableRow =
@@ -54,32 +55,27 @@ function populateOriginSearchResultsTable(origins) {
       // get async latest visit snapshot and update visit status icon
       let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url);
       latestSnapshotUrl += '?require_snapshot=true';
-      fetch(latestSnapshotUrl)
-        .then(response => {
-          if (response.status === 404) {
-            throw new Error();
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.type) {
-            $(`#visit-type-origin-${i}`).html(data.type);
-            $(`#visit-status-origin-${i}`).html(
-              '<i title="Software origin has been archived by Software Heritage" ' +
-              'class="mdi mdi-check-bold mdi-fw"></i>Archived');
-          } else {
-            throw new Error();
-          }
-        })
-        .catch(() => {
-          $(`#visit-type-origin-${i}`).html('unknown');
-          $(`#visit-status-origin-${i}`).html(
-            '<i title="Software origin archival by Software Heritage is pending" ' +
-            'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
-          if ($('#swh-filter-empty-visits').prop('checked')) {
-            $(`#origin-${i}`).remove();
-          }
-        });
+      promises.push(fetch(latestSnapshotUrl));
+    }
+    const responses = await Promise.all(promises);
+    const responsesData = await Promise.all(responses.map(r => r.json()));
+    for (let i = 0; i < responses.length; ++i) {
+      const response = responses[i];
+      const data = responsesData[i];
+      if (response.status !== 404 && data.type) {
+        $(`#visit-type-origin-${i}`).html(data.type);
+        $(`#visit-status-origin-${i}`).html(
+          '<i title="Software origin has been archived by Software Heritage" ' +
+          'class="mdi mdi-check-bold mdi-fw"></i>Archived');
+      } else {
+        $(`#visit-type-origin-${i}`).html('unknown');
+        $(`#visit-status-origin-${i}`).html(
+          '<i title="Software origin archival by Software Heritage is pending" ' +
+          'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
+        if ($('#swh-filter-empty-visits').prop('checked')) {
+          $(`#origin-${i}`).remove();
+        }
+      }
     }
     fixTableRowsStyle();
   } else {
@@ -127,69 +123,66 @@ function searchOriginsFirst(searchQueryText, limit) {
   searchOrigins(searchUrl);
 }
 
-function searchOrigins(searchUrl) {
+async function searchOrigins(searchUrl) {
   clearOriginSearchResultsTable();
   $('.swh-loading').addClass('show');
-  let response = fetch(searchUrl)
-    .then(handleFetchError)
-    .then(resp => {
-      response = resp;
-      return response.json();
-    })
-    .then(data => {
-      // Save link to the current results page
-      linkCurrent = searchUrl;
-      // Save link to the next results page.
-      linkNext = null;
-      if (response.headers.has('Link')) {
-        let parsedLink = parseLinkHeader(response.headers.get('Link'));
-        if (parsedLink !== undefined) {
-          linkNext = parsedLink;
-        }
+  try {
+    const response = await fetch(searchUrl);
+    handleFetchError(response);
+    const data = await response.json();
+    // Save link to the current results page
+    linkCurrent = searchUrl;
+    // Save link to the next results page.
+    linkNext = null;
+    if (response.headers.has('Link')) {
+      let parsedLink = parseLinkHeader(response.headers.get('Link'));
+      if (parsedLink !== undefined) {
+        linkNext = parsedLink;
       }
-      // prevLinks is updated by the caller, which is the one to know if
-      // we're going forward or backward in the pages.
+    }
+    // prevLinks is updated by the caller, which is the one to know if
+    // we're going forward or backward in the pages.
 
-      $('.swh-loading').removeClass('show');
-      populateOriginSearchResultsTable(data);
-    })
-    .catch(response => {
-      $('.swh-loading').removeClass('show');
-      inSearch = false;
-      $('#swh-origin-search-results').hide();
-      $('#swh-no-result').text(`Error ${response.status}: ${response.statusText}`);
-      $('#swh-no-result').show();
-    });
+    $('.swh-loading').removeClass('show');
+    populateOriginSearchResultsTable(data);
+  } catch (response) {
+    $('.swh-loading').removeClass('show');
+    inSearch = false;
+    $('#swh-origin-search-results').hide();
+    $('#swh-no-result').text(`Error ${response.status}: ${response.statusText}`);
+    $('#swh-no-result').show();
+  }
 }
 
-function doSearch() {
+async function doSearch() {
   $('#swh-no-result').hide();
-  let searchQueryText = $('#swh-origins-url-patterns').val();
+  const searchQueryText = $('#swh-origins-url-patterns').val();
   inSearch = true;
   if (searchQueryText.startsWith('swh:')) {
-    // searchQueryText may be a PID so sending search queries to PID resolve endpoint
-    let resolveSWHIDUrl = Urls.api_1_resolve_swhid(searchQueryText);
-    fetch(resolveSWHIDUrl)
-      .then(handleFetchError)
-      .then(response => response.json())
-      .then(data => {
-        // SWHID has been successfully resolved,
-        // so redirect to browse page
-        window.location = data.browse_url;
-      })
-      .catch(response => {
-        // display a useful error message if the input
-        // looks like a SWHID
-        response.json().then(data => {
-          $('#swh-origin-search-results').hide();
-          $('.swh-search-pagination').hide();
-          $('#swh-no-result').text(data.reason);
-          $('#swh-no-result').show();
-        });
-
-      });
+    try {
+      // searchQueryText may be a PID so sending search queries to PID resolve endpoint
+      const resolveSWHIDUrl = Urls.api_1_resolve_swhid(searchQueryText);
+      const response = await fetch(resolveSWHIDUrl);
+      handleFetchError(response);
+      const data = await response.json();
+      // SWHID has been successfully resolved,
+      // so redirect to browse page
+      window.location = data.browse_url;
+    } catch (response) {
+      // display a useful error message if the input
+      // looks like a SWHID
+      const data = await response.json();
+      $('#swh-origin-search-results').hide();
+      $('.swh-search-pagination').hide();
+      $('#swh-no-result').text(data.reason);
+      $('#swh-no-result').show();
+    }
+  } else if (await isArchivedOrigin(searchQueryText)) {
+    // redirect to the browse origin
+    window.location.href =
+      `${Urls.browse_origin()}?origin_url=${encodeURIComponent(searchQueryText)}`;
   } else {
-    // otherwise, proceed with origins search
+    // otherwise, proceed with origins search irrespective of the error
     $('#swh-origin-search-results').show();
     $('.swh-search-pagination').show();
     searchOriginsFirst(searchQueryText, limit);

@@ -67,32 +67,45 @@ describe('Test origin-search', function() {
     // .should('have.focus');
   });
 
-  it('should show in result when url is searched', function() {
+  it('should redirect to browse when archived URL is searched', function() {
     cy.get('#swh-origins-url-patterns')
       .type(origin.url);
     cy.get('.swh-search-icon')
       .click();
 
-    cy.get('#origin-search-results')
-      .should('be.visible');
-    cy.contains('tr', origin.url)
-      .should('be.visible')
-      .find('.swh-visit-status')
-      .find('i')
-      .should('have.class', 'mdi-check-bold')
-      .and('have.attr', 'title',
-           'Software origin has been archived by Software Heritage');
+    cy.location('pathname')
+      .should('eq', this.Urls.browse_origin_directory());
+    cy.location('search')
+      .should('eq', `?origin_url=${origin.url}`);
+  });
 
-    const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
-    cy.get('tr a')
-      .should('have.attr', 'href', browseOriginUrl);
+  it('should not redirect for non valid URL', function() {
+    cy.get('#swh-origins-url-patterns')
+      .type('www.example'); // Invalid URL
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.location('pathname')
+      .should('eq', this.Urls.browse_search()); // Stay in the current page
+  });
+
+  it('should not redirect for valid non archived URL', function() {
+    cy.get('#swh-origins-url-patterns')
+      .type('http://eaxmple.com/test/'); // Valid URL, but not archived
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.location('pathname')
+      .should('eq', this.Urls.browse_search()); // Stay in the current page
   });
 
   it('should remove origin URL with no archived content', function() {
     stubOriginVisitLatestRequests(404);
 
+    // Using a non full origin URL here
+    // This is because T3354 redirects to the origin in case of a valid, archived URL
     cy.get('#swh-origins-url-patterns')
-      .type(origin.url);
+      .type(origin.url.slice(0, -1));
     cy.get('.swh-search-icon')
       .click();
 
@@ -199,11 +212,11 @@ describe('Test origin-search', function() {
     cy.intercept(`${this.Urls.api_1_resolve_swhid('').slice(0, -1)}**`)
       .as('resolveSWHID');
 
-    cy.intercept(`${this.Urls.api_1_origin_search(origin.url)}**`)
+    cy.intercept(`${this.Urls.api_1_origin_search(origin.url.slice(0, -1))}**`)
       .as('searchOrigin');
 
     cy.get('#swh-origins-url-patterns')
-      .type(origin.url);
+      .type(origin.url.slice(0, -1));
 
     cy.get('.swh-search-icon')
       .click();

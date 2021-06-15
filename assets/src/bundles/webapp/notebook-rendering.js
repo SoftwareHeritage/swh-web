@@ -120,18 +120,17 @@ export async function renderNotebook(nbJsonUrl, domElt) {
   nb.highlighter = highlightCode;
   nb.ansi = renderAnsi;
 
-  fetch(nbJsonUrl)
-    .then(response => response.json())
-    .then(nbJson => {
-      // parse the notebook
-      let notebook = nb.parse(nbJson);
-      // render it to HTML and apply XSS filtering
-      let rendered = swh.webapp.filterXSS(notebook.render());
-      // insert rendered notebook in the DOM
-      $(domElt).append(rendered);
-      // set light red background color for stderr output cells
-      $('pre.nb-stderr').parent().css('background', '#fdd');
-      // load MathJax library for math typesetting
-      swh.webapp.typesetMath();
-    });
+  const response = await fetch(nbJsonUrl);
+  const nbJson = await response.json();
+
+  // parse the notebook
+  let notebook = nb.parse(nbJson);
+  // render it to HTML and apply XSS filtering
+  let rendered = swh.webapp.filterXSS(notebook.render());
+  // insert rendered notebook in the DOM
+  $(domElt).append(rendered);
+  // set light red background color for stderr output cells
+  $('pre.nb-stderr').parent().css('background', '#fdd');
+  // load MathJax library for math typesetting
+  swh.webapp.typesetMath();
 }

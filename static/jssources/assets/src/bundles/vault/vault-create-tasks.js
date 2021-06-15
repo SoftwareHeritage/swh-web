@@ -14,7 +14,7 @@ const alertStyle = {
   'z-index': '100000'
 };
 
-export function vaultRequest(objectType, objectId) {
+export async function vaultRequest(objectType, objectId) {
   let vaultUrl;
   if (objectType === 'directory') {
     vaultUrl = Urls.api_1_vault_cook_directory(objectId);
@@ -22,32 +22,31 @@ export function vaultRequest(objectType, objectId) {
     vaultUrl = Urls.api_1_vault_cook_revision_gitfast(objectId);
   }
   // check if object has already been cooked
-  fetch(vaultUrl)
-    .then(response => response.json())
-    .then(data => {
-      // object needs to be cooked
-      if (data.exception === 'NotFoundExc' || data.status === 'failed') {
-        // if last cooking has failed, remove previous task info from localStorage
-        // in order to force the recooking of the object
-        swh.vault.removeCookingTaskInfo([objectId]);
-        $(`#vault-cook-${objectType}-modal`).modal('show');
-      // object has been cooked and should be in the vault cache,
-      // it will be asked to cook it again if it is not
-      } else if (data.status === 'done') {
-        $(`#vault-fetch-${objectType}-modal`).modal('show');
-      } else {
-        const cookingServiceDownAlert =
+  const response = await fetch(vaultUrl);
+  const data = await response.json();
+
+  // object needs to be cooked
+  if (data.exception === 'NotFoundExc' || data.status === 'failed') {
+    // if last cooking has failed, remove previous task info from localStorage
+    // in order to force the recooking of the object
+    swh.vault.removeCookingTaskInfo([objectId]);
+    $(`#vault-cook-${objectType}-modal`).modal('show');
+    // object has been cooked and should be in the vault cache,
+    // it will be asked to cook it again if it is not
+  } else if (data.status === 'done') {
+    $(`#vault-fetch-${objectType}-modal`).modal('show');
+  } else {
+    const cookingServiceDownAlert =
           $(htmlAlert('danger',
                       'Archive cooking service is currently experiencing issues.<br/>' +
                       'Please try again later.',
                       true));
-        cookingServiceDownAlert.css(alertStyle);
-        $('body').append(cookingServiceDownAlert);
-      }
-    });
+    cookingServiceDownAlert.css(alertStyle);
+    $('body').append(cookingServiceDownAlert);
+  }
 }
 
-function addVaultCookingTask(cookingTask) {
+async function addVaultCookingTask(cookingTask) {
 
   const swhidsContext = swh.webapp.getSwhIdsContext();
   cookingTask.origin = swhidsContext[cookingTask.object_type].context.origin;
@@ -75,32 +74,31 @@ function addVaultCookingTask(cookingTask) {
       cookingUrl += '?email=' + cookingTask.email;
     }
 
-    csrfPost(cookingUrl)
-      .then(handleFetchError)
-      .then(() => {
-        vaultCookingTasks.push(cookingTask);
-        localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
-        $('#vault-cook-directory-modal').modal('hide');
-        $('#vault-cook-revision-modal').modal('hide');
-        const cookingTaskCreatedAlert =
+    try {
+      const response = await csrfPost(cookingUrl);
+      handleFetchError(response);
+      vaultCookingTasks.push(cookingTask);
+      localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
+      $('#vault-cook-directory-modal').modal('hide');
+      $('#vault-cook-revision-modal').modal('hide');
+      const cookingTaskCreatedAlert =
           $(htmlAlert('success',
                       'Archive cooking request successfully submitted.<br/>' +
                       `Go to the <a href="${Urls.browse_vault()}">Downloads</a> page ` +
                       'to get the download link once it is ready.',
                       true));
-        cookingTaskCreatedAlert.css(alertStyle);
-        $('body').append(cookingTaskCreatedAlert);
-      })
-      .catch(() => {
-        $('#vault-cook-directory-modal').modal('hide');
-        $('#vault-cook-revision-modal').modal('hide');
-        const cookingTaskFailedAlert =
+      cookingTaskCreatedAlert.css(alertStyle);
+      $('body').append(cookingTaskCreatedAlert);
+    } catch (_) {
+      $('#vault-cook-directory-modal').modal('hide');
+      $('#vault-cook-revision-modal').modal('hide');
+      const cookingTaskFailedAlert =
           $(htmlAlert('danger',
                       'Archive cooking request submission failed.',
                       true));
-        cookingTaskFailedAlert.css(alertStyle);
-        $('body').append(cookingTaskFailedAlert);
-      });
+      cookingTaskFailedAlert.css(alertStyle);
+      $('body').append(cookingTaskFailedAlert);
+    }
   }
 }
 
@@ -125,14 +123,12 @@ export function cookDirectoryArchive(directoryId) {
   }
 }
 
-export function fetchDirectoryArchive(directoryId) {
+export async function fetchDirectoryArchive(directoryId) {
   $('#vault-fetch-directory-modal').modal('hide');
   const vaultUrl = Urls.api_1_vault_cook_directory(directoryId);
-  fetch(vaultUrl)
-    .then(response => response.json())
-    .then(data => {
-      swh.vault.fetchCookedObject(data.fetch_url);
-    });
+  const response = await fetch(vaultUrl);
+  const data = await response.json();
+  swh.vault.fetchCookedObject(data.fetch_url);
 }
 
 export function cookRevisionArchive(revisionId) {
@@ -150,12 +146,10 @@ export function cookRevisionArchive(revisionId) {
   }
 }
 
-export function fetchRevisionArchive(revisionId) {
+export async function fetchRevisionArchive(revisionId) {
   $('#vault-fetch-directory-modal').modal('hide');
   const vaultUrl = Urls.api_1_vault_cook_revision_gitfast(revisionId);
-  fetch(vaultUrl)
-    .then(response => response.json())
-    .then(data => {
-      swh.vault.fetchCookedObject(data.fetch_url);
-    });
+  const response = await fetch(vaultUrl);
+  const data = await response.json();
+  swh.vault.fetchCookedObject(data.fetch_url);
 }

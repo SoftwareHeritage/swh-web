@@ -200,37 +200,36 @@ export function initPage(page) {
 }
 
 export function initHomePage() {
-  $(document).ready(() => {
+  $(document).ready(async() => {
     $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
-    fetch(Urls.stat_counters())
-      .then(response => response.json())
-      .then(data => {
-        if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
-          for (let objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
-            const count = data.stat_counters[objectType];
-            if (count !== undefined) {
-              $(`#swh-${objectType}-count`).html(count.toLocaleString());
-            } else {
-              $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
-            }
-          }
-        } else {
-          $('.swh-counter').html('0');
-        }
-        if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
-          for (let objectType of ['content', 'revision', 'origin']) {
-            const history = data.stat_counters_history[objectType];
-            if (history) {
-              swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
-            } else {
-              $(`#swh-${objectType}-count-history`).hide();
-            }
+    const response = await fetch(Urls.stat_counters());
+    const data = await response.json();
 
-          }
+    if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
+      for (let objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
+        const count = data.stat_counters[objectType];
+        if (count !== undefined) {
+          $(`#swh-${objectType}-count`).html(count.toLocaleString());
         } else {
-          $('.swh-counter-history').hide();
+          $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
         }
-      });
+      }
+    } else {
+      $('.swh-counter').html('0');
+    }
+    if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
+      for (let objectType of ['content', 'revision', 'origin']) {
+        const history = data.stat_counters_history[objectType];
+        if (history) {
+          swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
+        } else {
+          $(`#swh-${objectType}-count-history`).hide();
+        }
+
+      }
+    } else {
+      $('.swh-counter-history').hide();
+    }
   });
   initPage('home');
 }
