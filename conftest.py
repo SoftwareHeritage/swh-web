@@ -1,1 +1,1 @@
-pytest_plugins = ["swh.auth.pytest_plugin"]
+pytest_plugins = ["swh.auth.pytest_plugin", "swh.scheduler.pytest_plugin"]
