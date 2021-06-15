@@ -8,6 +8,7 @@ import swh.web.api.views.content  # noqa
 import swh.web.api.views.directory  # noqa
 import swh.web.api.views.graph  # noqa
 import swh.web.api.views.identifiers  # noqa
+import swh.web.api.views.metadata  # noqa
 import swh.web.api.views.origin  # noqa
 import swh.web.api.views.origin_save  # noqa
 import swh.web.api.views.ping  # noqa

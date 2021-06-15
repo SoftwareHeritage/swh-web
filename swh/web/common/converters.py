@@ -9,7 +9,7 @@ from typing import Any, Dict, Union
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
-from swh.model.model import Release, Revision
+from swh.model.model import RawExtrinsicMetadata, Release, Revision
 from swh.storage.interface import PartialBranches
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 
@@ -246,11 +246,11 @@ class SWHMetadataEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def convert_revision_metadata(metadata):
+def convert_metadata(metadata):
     """Convert json specific dict to a json serializable one.
 
     """
-    if not metadata:
+    if metadata is None:
         return {}
 
     return json.loads(json.dumps(metadata, cls=SWHMetadataEncoder))
@@ -281,7 +281,7 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
         hashess={"id", "directory", "parents", "children"},
         bytess={"name", "fullname", "email", "extra_headers", "message"},
         convert={"metadata"},
-        convert_fn=convert_revision_metadata,
+        convert_fn=convert_metadata,
         dates={"date", "committer_date"},
     )
 
@@ -290,6 +290,18 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
             revision_d["merge"] = len(revision_d["parents"]) > 1
 
     return revision_d
+
+
+def from_raw_extrinsic_metadata(
+    metadata: Union[Dict[str, Any], RawExtrinsicMetadata]
+) -> Dict[str, Any]:
+    """Convert RawExtrinsicMetadata model object to a json serializable dictionary.
+    """
+    return from_swh(
+        metadata.to_dict() if isinstance(metadata, RawExtrinsicMetadata) else metadata,
+        blacklist={"id", "metadata"},
+        dates={"discovery_date"},
+    )
 
 
 def from_content(content):
