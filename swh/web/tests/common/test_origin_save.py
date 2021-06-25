@@ -22,6 +22,8 @@ from swh.web.common.models import (
     SAVE_TASK_SUCCEEDED,
     VISIT_STATUS_CREATED,
     VISIT_STATUS_FULL,
+    VISIT_STATUS_ONGOING,
+    VISIT_STATUS_PARTIAL,
     SaveOriginRequest,
 )
 from swh.web.common.origin_save import (
@@ -239,7 +241,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
         metadata={},
         origin=_origin_url,
         snapshot="",
-        status="full",
+        status=VISIT_STATUS_FULL,
         type=_visit_type,
         url="",
         visit=34,
@@ -470,7 +472,7 @@ def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("visit_status", ["created", "ongoing",])
+@pytest.mark.parametrize("visit_status", [VISIT_STATUS_CREATED, VISIT_STATUS_ONGOING,])
 def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
     """Uneventful visits with failed visit status are marked as failed
 
@@ -509,7 +511,11 @@ def test_get_save_origin_requests_no_failed_status_override(mocker, visit_status
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "load_status,visit_status",
-    [("eventful", "full"), ("eventful", "partial"), ("uneventful", "partial"),],
+    [
+        ("eventful", VISIT_STATUS_FULL),
+        ("eventful", VISIT_STATUS_PARTIAL),
+        ("uneventful", VISIT_STATUS_PARTIAL),
+    ],
 )
 def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_status):
     """Nominal scenario, below 30 days, returns something"""
@@ -746,7 +752,7 @@ def test_refresh_save_request_statuses(mocker, api_client, archive_data):
         # returned by the scheduler
         assert sor["save_task_status"] == SAVE_TASK_SUCCEEDED
         assert sor["visit_date"] == visit_date
-        assert sor["visit_status"] == "full"
+        assert sor["visit_status"] == VISIT_STATUS_FULL
 
     # This time, nothing left to update
     sors = refresh_save_origin_request_statuses()
