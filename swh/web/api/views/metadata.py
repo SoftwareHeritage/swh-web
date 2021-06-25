@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import base64
+import re
 
 import iso8601
 
@@ -135,6 +136,7 @@ def api_raw_extrinsic_metadata_swhid(request, target):
         result["metadata_url"] = reverse(
             "api-1-raw-extrinsic-metadata-get",
             url_args={"id": hashutil.hash_to_hex(metadata.id)},
+            query_params={"filename": f"{target}_metadata"},
             request=request,
         )
 
@@ -174,4 +176,16 @@ def api_raw_extrinsic_metadata_get(request, id):
             "Metadata not found. Use /raw-extrinsic-metadata/swhid/ to access metadata."
         )
 
-    return HttpResponse(metadata[0].metadata, content_type="application/octet-stream")
+    response = HttpResponse(
+        metadata[0].metadata, content_type="application/octet-stream"
+    )
+
+    filename = request.query_params.get("filename")
+    if filename and re.match("[a-zA-Z0-9:._-]+", filename):
+        response["Content-disposition"] = f'attachment; filename="{filename}"'
+    else:
+        # It should always be not-None and match the regexp if the URL was created by
+        # /raw-extrinsic-metadata/swhid/, but we're better safe than sorry.
+        response["Content-disposition"] = "attachment"
+
+    return response

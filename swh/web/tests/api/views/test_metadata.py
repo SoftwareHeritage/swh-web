@@ -39,6 +39,10 @@ def test_api_raw_extrinsic_metadata(api_client, archive_data, metadata):
 
     rv = check_http_get_response(api_client, metadata_url, status_code=200)
     assert rv["Content-Type"] == "application/octet-stream"
+    assert (
+        rv["Content-Disposition"]
+        == f'attachment; filename="{metadata.target}_metadata"'
+    )
     assert rv.content == metadata.metadata
 
 
