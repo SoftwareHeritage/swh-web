@@ -664,4 +664,48 @@ describe('Origin Save Tests', function() {
       .should('have.value', artifact2Version);
   });
 
+  it('should use canonical URL for github repository to save', function() {
+    const ownerRepo = 'BIC-MNI/mni_autoreg';
+    const canonicalOriginUrl = 'https://github.com/BIC-MNI/mni_autoreg';
+
+    // stub call to github Web API fetching canonical repo URL
+    cy.intercept(`https://api.github.com/repos/${ownerRepo.toLowerCase()}`, (req) => {
+      req.reply({html_url: canonicalOriginUrl});
+    }).as('ghWebApiRequest');
+
+    // stub save request creation with canonical URL of github repo
+    cy.intercept('POST', this.Urls.api_1_save_origin('git', canonicalOriginUrl), (req) => {
+      req.reply(genOriginSaveResponse({
+        visitType: 'git',
+        saveRequestStatus: 'accepted',
+        originUrl: canonicalOriginUrl,
+        saveRequestDate: new Date(),
+        saveTaskStatus: 'not yet scheduled',
+        visitDate: null,
+        visitStatus: null
+      }));
+    }).as('saveRequest');
+
+    for (let originUrl of ['https://github.com/BiC-MnI/MnI_AuToReG',
+                           'https://github.com/BiC-MnI/MnI_AuToReG.git',
+                           'https://github.com/BiC-MnI/MnI_AuToReG/']) {
+
+      // enter non canonical URL of github repo
+      cy.get('#swh-input-origin-url')
+        .clear()
+        .type(originUrl);
+
+      // submit form
+      cy.get('#swh-save-origin-form')
+        .submit();
+
+      // submission should be successful
+      cy.wait('@ghWebApiRequest')
+        .wait('@saveRequest').then(() => {
+          checkAlertVisible('success', saveCodeMsg['success']);
+        });
+    }
+
+  });
+
 });

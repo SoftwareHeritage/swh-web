@@ -302,8 +302,8 @@ static/js/pdfjs.bd2f077bd992fa751c80.js.map
 static/js/revision.403ed7ca978e654f777f.js
 static/js/revision.403ed7ca978e654f777f.js.LICENSE.txt
 static/js/revision.403ed7ca978e654f777f.js.map
-static/js/save.1c76b900bdcc9ce8c8ff.js
-static/js/save.1c76b900bdcc9ce8c8ff.js.map
+static/js/save.98372fdae0bd438ec2ec.js
+static/js/save.98372fdae0bd438ec2ec.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
@@ -1418,6 +1418,7 @@ swh/web/api/views/content.py
 swh/web/api/views/directory.py
 swh/web/api/views/graph.py
 swh/web/api/views/identifiers.py
+swh/web/api/views/metadata.py
 swh/web/api/views/origin.py
 swh/web/api/views/origin_save.py
 swh/web/api/views/ping.py
@@ -1561,6 +1562,7 @@ swh/web/tests/api/views/test_content.py
 swh/web/tests/api/views/test_directory.py
 swh/web/tests/api/views/test_graph.py
 swh/web/tests/api/views/test_identifiers.py
+swh/web/tests/api/views/test_metadata.py
 swh/web/tests/api/views/test_origin.py
 swh/web/tests/api/views/test_origin_save.py
 swh/web/tests/api/views/test_ping.py
@@ -1569,6 +1571,7 @@ swh/web/tests/api/views/test_revision.py
 swh/web/tests/api/views/test_snapshot.py
 swh/web/tests/api/views/test_stat.py
 swh/web/tests/api/views/test_vault.py
+swh/web/tests/api/views/utils.py
 swh/web/tests/auth/__init__.py
 swh/web/tests/auth/test_utils.py
 swh/web/tests/auth/test_views.py

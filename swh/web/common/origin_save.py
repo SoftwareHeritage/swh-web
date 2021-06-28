@@ -33,6 +33,8 @@ from swh.web.common.models import (
     SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
+    VISIT_STATUS_CREATED,
+    VISIT_STATUS_ONGOING,
     SaveAuthorizedOrigin,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
@@ -51,6 +53,12 @@ logger = logging.getLogger(__name__)
 
 # Number of days in the past to lookup for information
 MAX_THRESHOLD_DAYS = 30
+
+# Non terminal visit statuses which needs updates
+NON_TERMINAL_STATUSES = [
+    VISIT_STATUS_CREATED,
+    VISIT_STATUS_ONGOING,
+]
 
 
 def get_origin_save_authorized_urls() -> List[str]:
@@ -268,45 +276,55 @@ def _get_visit_info_for_save_request(
             if i != len(visit_dates):
                 visit_date = visit_dates[i]
                 visit_status = origin_visits[i]["status"]
-                if visit_status not in ("full", "partial", "not_found"):
-                    visit_date = None
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
     return visit_date, visit_status
 
 
 def _check_visit_update_status(
-    save_request: SaveOriginRequest, save_task_status: str
-) -> Tuple[Optional[datetime], str]:
-    """Given a save request and a save task status, determine whether a save request was
-    successful or failed.
+    save_request: SaveOriginRequest,
+) -> Tuple[Optional[datetime], Optional[str], Optional[str]]:
+    """Given a save request, determine whether a save request was successful or failed.
 
     Args:
         save_request: Input save origin request to retrieve information for.
 
     Returns:
-        Tuple of (optional visit date, save task status) for such save request origin
+        Tuple of (optional visit date, optional visit status, optional save task status)
+        for such save request origin
 
     """
     visit_date, visit_status = _get_visit_info_for_save_request(save_request)
-    save_request.visit_date = visit_date
-    save_request.visit_status = visit_status
+    loading_task_status = None
     if visit_date and visit_status in ("full", "partial"):
         # visit has been performed, mark the saving task as succeeded
-        save_task_status = SAVE_TASK_SUCCEEDED
+        loading_task_status = SAVE_TASK_SUCCEEDED
     elif visit_status in ("created", "ongoing"):
         # visit is currently running
-        save_task_status = SAVE_TASK_RUNNING
+        loading_task_status = SAVE_TASK_RUNNING
     elif visit_status in ("not_found", "failed"):
-        save_task_status = SAVE_TASK_FAILED
+        loading_task_status = SAVE_TASK_FAILED
     else:
         time_now = datetime.now(tz=timezone.utc)
         time_delta = time_now - save_request.request_date
         # consider the task as failed if it is still in scheduled state
         # 30 days after its submission
         if time_delta.days > MAX_THRESHOLD_DAYS:
-            save_task_status = SAVE_TASK_FAILED
-    return visit_date, save_task_status
+            loading_task_status = SAVE_TASK_FAILED
+    return visit_date, visit_status, loading_task_status
+
+
+def _compute_task_loading_status(
+    task: Optional[Dict[str, Any]] = None, task_run: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    loading_task_status: Optional[str] = None
+    # First determine the loading task status out of task information
+    if task:
+        loading_task_status = _save_task_status[task["status"]]
+        if task_run:
+            loading_task_status = _save_task_run_status[task_run["status"]]
+
+    return loading_task_status
 
 
 def _update_save_request_info(
@@ -314,7 +332,8 @@ def _update_save_request_info(
     task: Optional[Dict[str, Any]] = None,
     task_run: Optional[Dict[str, Any]] = None,
 ) -> SaveOriginRequestInfo:
-    """Update save request information out of task and task_run information.
+    """Update save request information out of the visit status and fallback to the task and
+    task_run information if the visit status is missing.
 
     Args:
         save_request: Save request
@@ -326,53 +345,36 @@ def _update_save_request_info(
 
     """
     must_save = False
-    visit_date = save_request.visit_date
 
-    # save task still in scheduler db
-    if task:
-        save_task_status = _save_task_status[task["status"]]
-        if task_run:
-            save_task_status = _save_task_run_status[task_run["status"]]
-
-        # Consider request from which a visit date has already been found
-        # as succeeded to avoid retrieving it again
-        if save_task_status == SAVE_TASK_SCHEDULED and visit_date:
-            save_task_status = SAVE_TASK_SUCCEEDED
-        if (
-            save_task_status in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
-            and not visit_date
-        ):
-            visit_date, visit_status = _get_visit_info_for_save_request(save_request)
-            save_request.visit_date = visit_date
-            save_request.visit_status = visit_status
-            if visit_status in ("failed", "not_found"):
-                save_task_status = SAVE_TASK_FAILED
-            must_save = True
-        # Check tasks still marked as scheduled / not yet scheduled
-        if save_task_status in (SAVE_TASK_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED):
-            visit_date, save_task_status = _check_visit_update_status(
-                save_request, save_task_status
-            )
-
-    # save task may have been archived
-    else:
-        save_task_status = save_request.loading_task_status
-        if save_task_status in (SAVE_TASK_SCHEDULED, SAVE_TASK_NOT_YET_SCHEDULED):
-            visit_date, save_task_status = _check_visit_update_status(
-                save_request, save_task_status
-            )
-
-        else:
-            save_task_status = save_request.loading_task_status
-
+    # To determine the save code now request's final status, the visit date must be set
+    # and the visit status must be a final one. Once they do, the save code now is
+    # definitely done.
     if (
-        # avoid to override final loading task status when already found
-        # as visit status is no longer checked once a visit date has been found
-        save_request.loading_task_status not in (SAVE_TASK_FAILED, SAVE_TASK_SUCCEEDED)
-        and save_request.loading_task_status != save_task_status
+        not save_request.visit_date
+        or not save_request.visit_status
+        or save_request.visit_status in NON_TERMINAL_STATUSES
     ):
-        save_request.loading_task_status = save_task_status
-        must_save = True
+        visit_date, visit_status, loading_task_status = _check_visit_update_status(
+            save_request
+        )
+
+        if not loading_task_status:  # fallback when not provided
+            loading_task_status = _compute_task_loading_status(task, task_run)
+
+        if visit_date != save_request.visit_date:
+            must_save = True
+            save_request.visit_date = visit_date
+
+        if visit_status != save_request.visit_status:
+            must_save = True
+            save_request.visit_status = visit_status
+
+        if (
+            loading_task_status is not None
+            and loading_task_status != save_request.loading_task_status
+        ):
+            must_save = True
+            save_request.loading_task_status = loading_task_status
 
     if must_save:
         save_request.save()
@@ -467,11 +469,11 @@ def create_save_origin_request(
                 )
             task_kwargs = dict(**task_kwargs, artifacts=artifacts, snapshot_append=True)
         sor = None
-        # get list of previously sumitted save requests
+        # get list of previously submitted save requests (most recent first)
         current_sors = list(
             SaveOriginRequest.objects.filter(
                 visit_type=visit_type, origin_url=origin_url
-            )
+            ).order_by("-request_date")
         )
 
         can_create_task = False
@@ -619,10 +621,13 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
         # Retrieve accepted request statuses (all statuses)
         Q(status=SAVE_REQUEST_ACCEPTED),
         # those without the required information we need to update
-        Q(visit_date__isnull=True) | Q(visit_status__isnull=True),
+        Q(visit_date__isnull=True)
+        | Q(visit_status__isnull=True)
+        | Q(visit_status__in=NON_TERMINAL_STATUSES),
         # limit results to recent ones (that is roughly 30 days old at best)
         Q(request_date__gte=pivot_date),
     )
+
     return (
         update_save_origin_requests_from_queryset(save_requests)
         if save_requests.count() > 0

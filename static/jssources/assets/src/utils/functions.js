@@ -97,3 +97,28 @@ export async function isArchivedOrigin(originPath) {
     return response.ok && response.status === 200; // Success response represents an archived origin
   }
 }
+
+export async function getCanonicalOriginURL(originUrl) {
+  let originUrlLower = originUrl.toLowerCase();
+  // github.com URL processing
+  const ghUrlRegex = /^http[s]*:\/\/github.com\//;
+  if (originUrlLower.match(ghUrlRegex)) {
+    // remove trailing .git
+    if (originUrlLower.endsWith('.git')) {
+      originUrlLower = originUrlLower.slice(0, -4);
+    }
+    // remove trailing slash
+    if (originUrlLower.endsWith('/')) {
+      originUrlLower = originUrlLower.slice(0, -1);
+    }
+    // extract {owner}/{repo}
+    const ownerRepo = originUrlLower.replace(ghUrlRegex, '');
+    // fetch canonical URL from github Web API
+    const ghApiResponse = await fetch(`https://api.github.com/repos/${ownerRepo}`);
+    if (ghApiResponse.ok && ghApiResponse.status === 200) {
+      const ghApiResponseData = await ghApiResponse.json();
+      return ghApiResponseData.html_url;
+    }
+  }
+  return originUrl;
+}
