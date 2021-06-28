@@ -1214,7 +1214,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
 
 def browse_snapshot_branches(
-    request, snapshot_id=None, origin_url=None, timestamp=None
+    request, snapshot_id=None, origin_url=None, timestamp=None, branch_name_include=None
 ):
     """
     Django view implementation for browsing a list of branches in a snapshot
@@ -1247,9 +1247,11 @@ def browse_snapshot_branches(
         branches_from,
         PER_PAGE + 1,
         target_types=["revision", "alias"],
+        branch_name_include_substring=branch_name_include,
     )
-
-    displayed_branches, _, _ = process_snapshot_branches(snapshot)
+    displayed_branches = []
+    if snapshot:
+        displayed_branches, _, _ = process_snapshot_branches(snapshot)
 
     for branch in displayed_branches:
         rev_query_params = {}
@@ -1290,7 +1292,7 @@ def browse_snapshot_branches(
             browse_view_name, url_args=url_args, query_params=query_params
         )
 
-    if snapshot["next_branch"] is not None:
+    if snapshot and snapshot["next_branch"] is not None:
         query_params_next = dict(query_params)
         next_branch = displayed_branches[-1]["name"]
         del displayed_branches[-1]
@@ -1318,6 +1320,7 @@ def browse_snapshot_branches(
             "prev_branches_url": prev_branches_url,
             "next_branches_url": next_branches_url,
             "snapshot_context": snapshot_context,
+            "search_string": branch_name_include or "",
         },
     )
 
@@ -1352,7 +1355,6 @@ def browse_snapshot_releases(
         PER_PAGE + 1,
         target_types=["release", "alias"],
     )
-
     _, displayed_releases, _ = process_snapshot_branches(snapshot)
 
     for release in displayed_releases:

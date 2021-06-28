@@ -63,6 +63,14 @@ $(document).ready(() => {
     $('.swh-popover-toggler').popover('hide');
   });
 
+  $('#swh-branch-search-form').submit(function(e) {
+    var searchParams = new URLSearchParams(window.location.search);
+    const searchString = $('#swh-branch-search-string').val().trim();
+    searchParams.set('branch_name_include', searchString);
+    window.location.search = searchParams.toString();
+    e.preventDefault();
+  });
+
   $('body').on('click', e => {
     if ($(e.target).parents('.swh-popover').length) {
       e.stopPropagation();

@@ -161,6 +161,7 @@ def origin_branches_browse(request):
         origin_url=request.GET.get("origin_url"),
         snapshot_id=request.GET.get("snapshot"),
         timestamp=request.GET.get("timestamp"),
+        branch_name_include=request.GET.get("branch_name_include"),
     )
 
 

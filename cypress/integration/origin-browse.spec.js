@@ -83,5 +83,45 @@ describe('Test origin browse', function() {
     cy.get('#swh-browse-snapshot-releases-nav-link')
       .should('have.class', 'disabled');
   });
+});
 
+describe('Test browse branches', function() {
+  beforeEach(function() {
+    const url = `${this.Urls.browse_origin_branches()}?origin_url=${this.origin[1].url}`;
+    cy.visit(url);
+  });
+
+  it('should have the master branch in the list', function() {
+    cy.get('table').contains('td', 'master').should('be.visible');
+  });
+
+  it('should search inside the branches', function() {
+    cy.get('#swh-branch-search-string').type('mas');
+    cy.get('#swh-branch-serach-button').click();
+
+    cy.location('search')
+      .should('include', 'branch_name_include=mas');
+
+    cy.get('table').contains('td', 'master').should('be.visible');
+
+    cy.get('#swh-branch-search-string').should('have.value', 'mas');
+  });
+
+  it('should empty search show all branches', function() {
+    cy.get('#swh-branch-search-string').clear();
+    cy.get('#swh-branch-serach-button').click();
+
+    cy.location('search')
+      .should('include', 'branch_name_include=');
+
+    cy.get('table').contains('td', 'master').should('be.visible');
+
+    cy.get('#swh-branch-search-string').should('have.value', '');
+  });
+
+  it('should show no branch exists message on failed search', function() {
+    cy.get('#swh-branch-search-string').type('random{enter}');
+
+    cy.get('table').contains('td', 'No branch names containing random have been found!').should('be.visible');
+  });
 });
