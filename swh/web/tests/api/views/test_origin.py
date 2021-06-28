@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,6 @@ import json
 
 from hypothesis import given
 import pytest
-from requests.utils import parse_header_links
 
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.model.hashutil import hash_to_bytes
@@ -19,6 +18,7 @@ from swh.web.api.utils import enrich_origin, enrich_origin_visit
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import reverse
+from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.data import (
     INDEXER_TOOL,
     ORIGIN_MASTER_REVISION,
@@ -27,31 +27,6 @@ from swh.web.tests.data import (
 )
 from swh.web.tests.strategies import new_origin, new_snapshots, origin, visit_dates
 from swh.web.tests.utils import check_api_get_responses
-
-
-def _scroll_results(api_client, url):
-    """Iterates through pages of results, and returns them all."""
-    results = []
-
-    while True:
-        rv = check_api_get_responses(api_client, url, status_code=200)
-
-        results.extend(rv.data)
-
-        if "Link" in rv:
-            for link in parse_header_links(rv["Link"]):
-                if link["rel"] == "next":
-                    # Found link to next page of results
-                    url = link["url"]
-                    break
-            else:
-                # No link with 'rel=next'
-                break
-        else:
-            # No Link header
-            break
-
-    return results
 
 
 def test_api_lookup_origin_visits_raise_error(api_client, mocker):
@@ -389,7 +364,7 @@ def test_api_origins_scroll(api_client, archive_data, origin_count):
 
     url = reverse("api-1-origins", query_params={"origin_count": origin_count})
 
-    results = _scroll_results(api_client, url)
+    results = scroll_results(api_client, url)
 
     assert len(results) == len(origins)
     assert {origin["url"] for origin in results} == origin_urls
@@ -566,7 +541,7 @@ def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backe
         query_params={"limit": limit},
     )
 
-    results = _scroll_results(api_client, url)
+    results = scroll_results(api_client, url)
 
     assert {origin["url"] for origin in results} == expected_origins
 

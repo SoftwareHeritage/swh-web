@@ -97,7 +97,7 @@ def test_from_swh():
         empty_dict={"u"},
         empty_list={"v"},
         convert={"p", "q", "w"},
-        convert_fn=converters.convert_revision_metadata,
+        convert_fn=converters.convert_metadata,
     )
 
     assert expected_output == actual_output
