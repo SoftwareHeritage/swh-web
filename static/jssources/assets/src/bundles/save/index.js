@@ -5,7 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment} from 'utils/functions';
+import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment,
+        getCanonicalOriginURL} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
 
@@ -281,7 +282,7 @@ export function initOriginSave() {
       true
     );
 
-    $('#swh-save-origin-form').submit(event => {
+    $('#swh-save-origin-form').submit(async event => {
       event.preventDefault();
       event.stopPropagation();
       $('.alert').alert('close');
@@ -289,6 +290,8 @@ export function initOriginSave() {
         $(event.target).removeClass('was-validated');
         let originType = $('#swh-input-visit-type').val();
         let originUrl = $('#swh-input-origin-url').val();
+
+        originUrl = await getCanonicalOriginURL(originUrl);
 
         // read the extra inputs for the 'archives' type
         let extraData = {};
