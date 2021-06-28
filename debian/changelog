@@ -1,3 +1,15 @@
+swh-web (0.0.314-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.314     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-06-28 11:47:06
+    +0200)
+  * Upstream changes:     - v0.0.314     - Add an endpoint to list and
+    access raw extrinsic metadata.     - assets/save: Ensure to use
+    canonical github repo URL as origin URL     - Simplify save code now
+    request status updates using visit statuses
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 28 Jun 2021 10:04:26 +0000
+
 swh-web (0.0.313-1~swh1.1) unstable-swh; urgency=medium
 
   * Bump new release
