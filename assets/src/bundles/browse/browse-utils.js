@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -65,8 +65,8 @@ $(document).ready(() => {
 
   $('#swh-branch-search-form').submit(function(e) {
     var searchParams = new URLSearchParams(window.location.search);
-    const searchString = $('#swh-branch-search-string').val().trim();
-    searchParams.set('branch_name_include', searchString);
+    searchParams.set('name_include',
+                     $('#swh-branch-search-string').val().trim());
     window.location.search = searchParams.toString();
     e.preventDefault();
   });

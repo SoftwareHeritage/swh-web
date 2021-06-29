@@ -13,15 +13,7 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
   <div class="table-responsive mt-3 mb-3">
     <div class="form-group row float-right">
-      <form class="form-horizontal d-none d-md-flex input-group" id="swh-branch-search-form">
-        <input class="form-control" placeholder="Search in branch names"
-          id="swh-branch-search-string" value="{{search_string}}" type="text" />
-        <div class="input-group-append">
-          <button class="btn btn-primary" type="submit" id="swh-branch-serach-button">
-            <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
-          </button>
-        </div>
-      </form>
+      {% include "includes/branch-search.html" %}
     </div>
     <table class="table swh-table swh-table-striped">
       <thead>

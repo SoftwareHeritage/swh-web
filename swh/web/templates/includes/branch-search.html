@@ -1,0 +1,16 @@
+{% comment %}
+Copyright (C) 2021  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<form class="form-horizontal d-none d-md-flex input-group" id="swh-branch-search-form">
+  <input class="form-control" placeholder="Search in names"
+    id="swh-branch-search-string" value="{{search_string}}" type="text" />
+  <div class="input-group-append">
+    <button class="btn btn-primary" type="submit" id="swh-branch-serach-button">
+      <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+    </button>
+  </div>
+</form>
