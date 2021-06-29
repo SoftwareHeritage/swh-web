@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -1214,7 +1214,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
 
 def browse_snapshot_branches(
-    request, snapshot_id=None, origin_url=None, timestamp=None
+    request, snapshot_id=None, origin_url=None, timestamp=None, branch_name_include=None
 ):
     """
     Django view implementation for browsing a list of branches in a snapshot
@@ -1247,9 +1247,11 @@ def browse_snapshot_branches(
         branches_from,
         PER_PAGE + 1,
         target_types=["revision", "alias"],
+        branch_name_include_substring=branch_name_include,
     )
-
-    displayed_branches, _, _ = process_snapshot_branches(snapshot)
+    displayed_branches = []
+    if snapshot:
+        displayed_branches, _, _ = process_snapshot_branches(snapshot)
 
     for branch in displayed_branches:
         rev_query_params = {}
@@ -1290,7 +1292,7 @@ def browse_snapshot_branches(
             browse_view_name, url_args=url_args, query_params=query_params
         )
 
-    if snapshot["next_branch"] is not None:
+    if snapshot and snapshot["next_branch"] is not None:
         query_params_next = dict(query_params)
         next_branch = displayed_branches[-1]["name"]
         del displayed_branches[-1]
@@ -1318,12 +1320,17 @@ def browse_snapshot_branches(
             "prev_branches_url": prev_branches_url,
             "next_branches_url": next_branches_url,
             "snapshot_context": snapshot_context,
+            "search_string": branch_name_include or "",
         },
     )
 
 
 def browse_snapshot_releases(
-    request, snapshot_id=None, origin_url=None, timestamp=None
+    request,
+    snapshot_id=None,
+    origin_url=None,
+    timestamp=None,
+    release_name_include=None,
 ):
     """
     Django view implementation for browsing a list of releases in a snapshot
@@ -1351,9 +1358,11 @@ def browse_snapshot_releases(
         rel_from,
         PER_PAGE + 1,
         target_types=["release", "alias"],
+        branch_name_include_substring=release_name_include,
     )
-
-    _, displayed_releases, _ = process_snapshot_branches(snapshot)
+    displayed_releases = []
+    if snapshot:
+        _, displayed_releases, _ = process_snapshot_branches(snapshot)
 
     for release in displayed_releases:
         query_params_tgt = {"snapshot": snapshot_id}
@@ -1424,7 +1433,7 @@ def browse_snapshot_releases(
             browse_view_name, url_args=url_args, query_params=query_params
         )
 
-    if snapshot["next_branch"] is not None:
+    if snapshot and snapshot["next_branch"] is not None:
         query_params_next = dict(query_params)
         next_rel = displayed_releases[-1]["branch_name"]
         del displayed_releases[-1]
@@ -1456,5 +1465,6 @@ def browse_snapshot_releases(
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions": False,
+            "search_string": release_name_include or "",
         },
     )

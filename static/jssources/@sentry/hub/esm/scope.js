@@ -1,6 +1,11 @@
 import { __assign, __read, __spread } from "tslib";
 import { dateTimestampInSeconds, getGlobalObject, isPlainObject, isThenable, SyncPromise } from '@sentry/utils';
 /**
+ * Absolute maximum number of breadcrumbs added to an event.
+ * The `maxBreadcrumbs` option cannot be higher than this value.
+ */
+var MAX_BREADCRUMBS = 100;
+/**
  * Holds additional event information. {@link Scope.applyToEvent} will be
  * called by the client before an event will be sent.
  */
@@ -291,11 +296,13 @@ var Scope = /** @class */ (function () {
      * @inheritDoc
      */
     Scope.prototype.addBreadcrumb = function (breadcrumb, maxBreadcrumbs) {
+        var maxCrumbs = typeof maxBreadcrumbs === 'number' ? Math.min(maxBreadcrumbs, MAX_BREADCRUMBS) : MAX_BREADCRUMBS;
+        // No data has been changed, so don't notify scope listeners
+        if (maxCrumbs <= 0) {
+            return this;
+        }
         var mergedBreadcrumb = __assign({ timestamp: dateTimestampInSeconds() }, breadcrumb);
-        this._breadcrumbs =
-            maxBreadcrumbs !== undefined && maxBreadcrumbs >= 0
-                ? __spread(this._breadcrumbs, [mergedBreadcrumb]).slice(-maxBreadcrumbs)
-                : __spread(this._breadcrumbs, [mergedBreadcrumb]);
+        this._breadcrumbs = __spread(this._breadcrumbs, [mergedBreadcrumb]).slice(-maxCrumbs);
         this._notifyScopeListeners();
         return this;
     };

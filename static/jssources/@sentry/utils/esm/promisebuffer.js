@@ -16,14 +16,16 @@ var PromiseBuffer = /** @class */ (function () {
     /**
      * Add a promise to the queue.
      *
-     * @param task Can be any PromiseLike<T>
+     * @param taskProducer A function producing any PromiseLike<T>; In previous versions this used to be `task: PromiseLike<T>`,
+     *        however, Promises were instantly created on the call-site, making them fall through the buffer limit.
      * @returns The original promise.
      */
-    PromiseBuffer.prototype.add = function (task) {
+    PromiseBuffer.prototype.add = function (taskProducer) {
         var _this = this;
         if (!this.isReady()) {
             return SyncPromise.reject(new SentryError('Not adding Promise due to buffer limit reached.'));
         }
+        var task = taskProducer();
         if (this._buffer.indexOf(task) === -1) {
             this._buffer.push(task);
         }

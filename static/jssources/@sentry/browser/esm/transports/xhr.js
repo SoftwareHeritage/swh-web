@@ -30,29 +30,31 @@ var XHRTransport = /** @class */ (function (_super) {
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
-                reason: "Transport locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
+                reason: "Transport for " + sentryRequest.type + " requests locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
                 status: 429,
             });
         }
-        return this._buffer.add(new SyncPromise(function (resolve, reject) {
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState === 4) {
-                    var headers = {
-                        'x-sentry-rate-limits': request.getResponseHeader('X-Sentry-Rate-Limits'),
-                        'retry-after': request.getResponseHeader('Retry-After'),
-                    };
-                    _this._handleResponse({ requestType: sentryRequest.type, response: request, headers: headers, resolve: resolve, reject: reject });
+        return this._buffer.add(function () {
+            return new SyncPromise(function (resolve, reject) {
+                var request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (request.readyState === 4) {
+                        var headers = {
+                            'x-sentry-rate-limits': request.getResponseHeader('X-Sentry-Rate-Limits'),
+                            'retry-after': request.getResponseHeader('Retry-After'),
+                        };
+                        _this._handleResponse({ requestType: sentryRequest.type, response: request, headers: headers, resolve: resolve, reject: reject });
+                    }
+                };
+                request.open('POST', sentryRequest.url);
+                for (var header in _this.options.headers) {
+                    if (_this.options.headers.hasOwnProperty(header)) {
+                        request.setRequestHeader(header, _this.options.headers[header]);
+                    }
                 }
-            };
-            request.open('POST', sentryRequest.url);
-            for (var header in _this.options.headers) {
-                if (_this.options.headers.hasOwnProperty(header)) {
-                    request.setRequestHeader(header, _this.options.headers[header]);
-                }
-            }
-            request.send(sentryRequest.body);
-        }));
+                request.send(sentryRequest.body);
+            });
+        });
     };
     return XHRTransport;
 }(BaseTransport));
