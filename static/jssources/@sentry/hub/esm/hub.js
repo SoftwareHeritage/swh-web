@@ -19,11 +19,6 @@ export var API_VERSION = 4;
  */
 var DEFAULT_BREADCRUMBS = 100;
 /**
- * Absolute maximum number of breadcrumbs added to an event. The
- * `maxBreadcrumbs` option cannot be higher than this value.
- */
-var MAX_BREADCRUMBS = 100;
-/**
  * @inheritDoc
  */
 var Hub = /** @class */ (function () {
@@ -195,7 +190,7 @@ var Hub = /** @class */ (function () {
             : mergedBreadcrumb;
         if (finalBreadcrumb === null)
             return;
-        scope.addBreadcrumb(finalBreadcrumb, Math.min(maxBreadcrumbs, MAX_BREADCRUMBS));
+        scope.addBreadcrumb(finalBreadcrumb, maxBreadcrumbs);
     };
     /**
      * @inheritDoc
@@ -328,8 +323,11 @@ var Hub = /** @class */ (function () {
     Hub.prototype.startSession = function (context) {
         var _a = this.getStackTop(), scope = _a.scope, client = _a.client;
         var _b = (client && client.getOptions()) || {}, release = _b.release, environment = _b.environment;
-        var session = new Session(__assign(__assign({ release: release,
-            environment: environment }, (scope && { user: scope.getUser() })), context));
+        // Will fetch userAgent if called from browser sdk
+        var global = getGlobalObject();
+        var userAgent = (global.navigator || {}).userAgent;
+        var session = new Session(__assign(__assign(__assign({ release: release,
+            environment: environment }, (scope && { user: scope.getUser() })), (userAgent && { userAgent: userAgent })), context));
         if (scope) {
             // End existing session if there's one
             var currentSession = scope.getSession && scope.getSession();

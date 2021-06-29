@@ -44,7 +44,7 @@ var BaseTransport = /** @class */ (function () {
          */
         var limited = this._handleRateLimit(headers);
         if (limited)
-            logger.warn("Too many requests, backing off until: " + this._disabledUntil(requestType));
+            logger.warn("Too many " + requestType + " requests, backing off until: " + this._disabledUntil(requestType));
         if (status === Status.Success) {
             resolve({ status: status });
             return;

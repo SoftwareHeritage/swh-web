@@ -2,7 +2,7 @@ import { __assign, __read, __spread, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
 import { SessionStatus, } from '@sentry/types';
-import { dateTimestampInSeconds, Dsn, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
+import { dateTimestampInSeconds, Dsn, isPlainObject, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -99,6 +99,10 @@ var BaseClient = /** @class */ (function () {
      * @inheritDoc
      */
     BaseClient.prototype.captureSession = function (session) {
+        if (!this._isEnabled()) {
+            logger.warn('SDK not enabled, will not capture session.');
+            return;
+        }
         if (!(typeof session.release === 'string')) {
             logger.warn('Discarded session because of missing or non-string release');
         }
@@ -167,7 +171,6 @@ var BaseClient = /** @class */ (function () {
         var e_1, _a;
         var crashed = false;
         var errored = false;
-        var userAgent;
         var exceptions = event.exception && event.exception.values;
         if (exceptions) {
             errored = true;
@@ -189,19 +192,15 @@ var BaseClient = /** @class */ (function () {
                 finally { if (e_1) throw e_1.error; }
             }
         }
-        var user = event.user;
-        if (!session.userAgent) {
-            var headers = event.request ? event.request.headers : {};
-            for (var key in headers) {
-                if (key.toLowerCase() === 'user-agent') {
-                    userAgent = headers[key];
-                    break;
-                }
-            }
+        // A session is updated and that session update is sent in only one of the two following scenarios:
+        // 1. Session with non terminal status and 0 errors + an error occurred -> Will set error count to 1 and send update
+        // 2. Session with non terminal status and 1 error + a crash occurred -> Will set status crashed and send update
+        var sessionNonTerminal = session.status === SessionStatus.Ok;
+        var shouldUpdateAndSend = (sessionNonTerminal && session.errors === 0) || (sessionNonTerminal && crashed);
+        if (shouldUpdateAndSend) {
+            session.update(__assign(__assign({}, (crashed && { status: SessionStatus.Crashed })), { errors: session.errors || Number(errored || crashed) }));
+            this.captureSession(session);
         }
-        session.update(__assign(__assign({}, (crashed && { status: SessionStatus.Crashed })), { user: user,
-            userAgent: userAgent, errors: session.errors + Number(errored || crashed) }));
-        this.captureSession(session);
     };
     /** Deliver captured session to Sentry */
     BaseClient.prototype._sendSession = function (session) {
@@ -395,7 +394,7 @@ var BaseClient = /** @class */ (function () {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         var _a = this.getOptions(), beforeSend = _a.beforeSend, sampleRate = _a.sampleRate;
         if (!this._isEnabled()) {
-            return SyncPromise.reject(new SentryError('SDK not enabled, will not send event.'));
+            return SyncPromise.reject(new SentryError('SDK not enabled, will not capture event.'));
         }
         var isTransaction = event.type === 'transaction';
         // 1.0 === 100% events are sent
@@ -414,15 +413,7 @@ var BaseClient = /** @class */ (function () {
                 return prepared;
             }
             var beforeSendResult = beforeSend(prepared, hint);
-            if (typeof beforeSendResult === 'undefined') {
-                throw new SentryError('`beforeSend` method has to return `null` or a valid event.');
-            }
-            else if (isThenable(beforeSendResult)) {
-                return beforeSendResult.then(function (event) { return event; }, function (e) {
-                    throw new SentryError("beforeSend rejected with " + e);
-                });
-            }
-            return beforeSendResult;
+            return _this._ensureBeforeSendRv(beforeSendResult);
         })
             .then(function (processedEvent) {
             if (processedEvent === null) {
@@ -461,6 +452,26 @@ var BaseClient = /** @class */ (function () {
             _this._processing -= 1;
             return reason;
         });
+    };
+    /**
+     * Verifies that return value of configured `beforeSend` is of expected type.
+     */
+    BaseClient.prototype._ensureBeforeSendRv = function (rv) {
+        var nullErr = '`beforeSend` method has to return `null` or a valid event.';
+        if (isThenable(rv)) {
+            return rv.then(function (event) {
+                if (!(isPlainObject(event) || event === null)) {
+                    throw new SentryError(nullErr);
+                }
+                return event;
+            }, function (e) {
+                throw new SentryError("beforeSend rejected with " + e);
+            });
+        }
+        else if (!(isPlainObject(rv) || rv === null)) {
+            throw new SentryError(nullErr);
+        }
+        return rv;
     };
     return BaseClient;
 }());

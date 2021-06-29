@@ -1085,11 +1085,16 @@ def lookup_snapshot(
         branch_name_exclude_prefix: if provided, do not return branches whose name
             starts with given pattern
 
+    Raises:
+        NotFoundExc if the given snapshot_id is missing
 
     Returns:
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
+    if storage.snapshot_missing([snapshot_id_bin]):
+        raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
+
     partial_branches = storage.snapshot_get_branches(
         snapshot_id_bin,
         branches_from.encode(),
@@ -1100,10 +1105,9 @@ def lookup_snapshot(
         else None,
         branch_name_exclude_prefix.encode() if branch_name_exclude_prefix else None,
     )
-    if not partial_branches:
-        raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
-
-    return converters.from_partial_branches(partial_branches)
+    return (
+        converters.from_partial_branches(partial_branches) if partial_branches else None
+    )
 
 
 def lookup_latest_origin_snapshot(
