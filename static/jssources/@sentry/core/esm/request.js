@@ -25,7 +25,7 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
 /** Creates a SentryRequest from a Session. */
 export function sessionToSentryRequest(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
-    var envelopeHeaders = JSON.stringify(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })));
+    var envelopeHeaders = JSON.stringify(__assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (api.forceEnvelope() && { dsn: api.getDsn().toString() })));
     // I know this is hacky but we don't want to add `session` to request type since it's never rate limited
     var type = 'aggregates' in session ? 'sessions' : 'session';
     var itemHeaders = JSON.stringify({
@@ -63,7 +63,7 @@ export function eventToSentryRequest(event, api) {
     if (useEnvelope) {
         var envelopeHeaders = JSON.stringify(__assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (api.forceEnvelope() && { dsn: api.getDsn().toString() })));
         var itemHeaders = JSON.stringify({
-            type: event.type,
+            type: eventType,
             // TODO: Right now, sampleRate may or may not be defined (it won't be in the cases of inheritance and
             // explicitly-set sampling decisions). Are we good with that?
             sample_rates: [{ id: samplingMethod, rate: sampleRate }],

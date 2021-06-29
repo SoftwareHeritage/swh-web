@@ -99,7 +99,7 @@ var FetchTransport = /** @class */ (function (_super) {
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
-                reason: "Transport locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
+                reason: "Transport for " + sentryRequest.type + " requests locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
                 status: 429,
             });
         }
@@ -118,23 +118,25 @@ var FetchTransport = /** @class */ (function (_super) {
         if (this.options.headers !== undefined) {
             options.headers = this.options.headers;
         }
-        return this._buffer.add(new SyncPromise(function (resolve, reject) {
-            void _this._fetch(sentryRequest.url, options)
-                .then(function (response) {
-                var headers = {
-                    'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
-                    'retry-after': response.headers.get('Retry-After'),
-                };
-                _this._handleResponse({
-                    requestType: sentryRequest.type,
-                    response: response,
-                    headers: headers,
-                    resolve: resolve,
-                    reject: reject,
-                });
-            })
-                .catch(reject);
-        }));
+        return this._buffer.add(function () {
+            return new SyncPromise(function (resolve, reject) {
+                void _this._fetch(sentryRequest.url, options)
+                    .then(function (response) {
+                    var headers = {
+                        'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
+                        'retry-after': response.headers.get('Retry-After'),
+                    };
+                    _this._handleResponse({
+                        requestType: sentryRequest.type,
+                        response: response,
+                        headers: headers,
+                        resolve: resolve,
+                        reject: reject,
+                    });
+                })
+                    .catch(reject);
+            });
+        });
     };
     return FetchTransport;
 }(BaseTransport));

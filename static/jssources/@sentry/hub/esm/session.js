@@ -24,10 +24,10 @@ var Session = /** @class */ (function () {
     Session.prototype.update = function (context) {
         if (context === void 0) { context = {}; }
         if (context.user) {
-            if (context.user.ip_address) {
+            if (!this.ipAddress && context.user.ip_address) {
                 this.ipAddress = context.user.ip_address;
             }
-            if (!context.did) {
+            if (!this.did && !context.did) {
                 this.did = context.user.id || context.user.email || context.user.username;
             }
         }
@@ -42,7 +42,7 @@ var Session = /** @class */ (function () {
         if (context.init !== undefined) {
             this.init = context.init;
         }
-        if (context.did) {
+        if (!this.did && context.did) {
             this.did = "" + context.did;
         }
         if (typeof context.started === 'number') {
@@ -64,10 +64,10 @@ var Session = /** @class */ (function () {
         if (context.environment) {
             this.environment = context.environment;
         }
-        if (context.ipAddress) {
+        if (!this.ipAddress && context.ipAddress) {
             this.ipAddress = context.ipAddress;
         }
-        if (context.userAgent) {
+        if (!this.userAgent && context.userAgent) {
             this.userAgent = context.userAgent;
         }
         if (typeof context.errors === 'number') {

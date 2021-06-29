@@ -5,7 +5,7 @@ import { isString } from './is';
  * e.g. [HTMLElement] => body > div > input#foo.btn[name=baz]
  * @returns generated DOM path
  */
-export function htmlTreeAsString(elem, keyAttr) {
+export function htmlTreeAsString(elem, keyAttrs) {
     // try/catch both:
     // - accessing event.target (see getsentry/raven-js#838, #768)
     // - `htmlTreeAsString` because it's complex, and just accessing the DOM incorrectly
@@ -22,7 +22,7 @@ export function htmlTreeAsString(elem, keyAttr) {
         var nextStr = void 0;
         // eslint-disable-next-line no-plusplus
         while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
-            nextStr = _htmlElementAsString(currentElem, keyAttr);
+            nextStr = _htmlElementAsString(currentElem, keyAttrs);
             // bail out if
             // - nextStr is the 'html' element
             // - the length of the string that would be created exceeds MAX_OUTPUT_LEN
@@ -45,7 +45,8 @@ export function htmlTreeAsString(elem, keyAttr) {
  * e.g. [HTMLElement] => input#foo.btn[name=baz]
  * @returns generated DOM path
  */
-function _htmlElementAsString(el, keyAttr) {
+function _htmlElementAsString(el, keyAttrs) {
+    var _a, _b;
     var elem = el;
     var out = [];
     var className;
@@ -57,9 +58,13 @@ function _htmlElementAsString(el, keyAttr) {
         return '';
     }
     out.push(elem.tagName.toLowerCase());
-    var keyAttrValue = keyAttr ? elem.getAttribute(keyAttr) : null;
-    if (keyAttrValue) {
-        out.push("[" + keyAttr + "=\"" + keyAttrValue + "\"]");
+    // Pairs of attribute keys defined in `serializeAttribute` and their values on element.
+    var keyAttrPairs = ((_a = keyAttrs) === null || _a === void 0 ? void 0 : _a.length) ? keyAttrs.filter(function (keyAttr) { return elem.getAttribute(keyAttr); }).map(function (keyAttr) { return [keyAttr, elem.getAttribute(keyAttr)]; })
+        : null;
+    if ((_b = keyAttrPairs) === null || _b === void 0 ? void 0 : _b.length) {
+        keyAttrPairs.forEach(function (keyAttrPair) {
+            out.push("[" + keyAttrPair[0] + "=\"" + keyAttrPair[1] + "\"]");
+        });
     }
     else {
         if (elem.id) {

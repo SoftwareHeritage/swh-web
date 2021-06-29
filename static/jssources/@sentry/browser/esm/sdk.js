@@ -2,7 +2,7 @@ import { getCurrentHub, initAndBind, Integrations as CoreIntegrations } from '@s
 import { addInstrumentationHandler, getGlobalObject, logger, SyncPromise } from '@sentry/utils';
 import { BrowserClient } from './client';
 import { wrap as internalWrap } from './helpers';
-import { Breadcrumbs, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
+import { Breadcrumbs, Dedupe, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
 export var defaultIntegrations = [
     new CoreIntegrations.InboundFilters(),
     new CoreIntegrations.FunctionToString(),
@@ -10,6 +10,7 @@ export var defaultIntegrations = [
     new Breadcrumbs(),
     new GlobalHandlers(),
     new LinkedErrors(),
+    new Dedupe(),
     new UserAgent(),
 ];
 /**

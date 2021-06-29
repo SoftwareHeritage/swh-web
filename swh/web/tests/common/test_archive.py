@@ -1070,6 +1070,34 @@ def test_lookup_snapshot_alias(snapshot):
 
 
 @given(revision())
+def test_lookup_snapshot_missing(revision):
+    with pytest.raises(NotFoundExc):
+        archive.lookup_snapshot(revision)
+
+
+@given(revision())
+def test_lookup_snapshot_empty_branch_list(archive_data, revision):
+    rev_id = hash_to_bytes(revision)
+    snapshot = Snapshot(
+        branches={
+            b"refs/heads/master": SnapshotBranch(
+                target=rev_id, target_type=TargetType.REVISION,
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    # FIXME; This test will change once the inconsistency in storage is fixed
+    # postgres backend returns None in case of a missing branch whereas the
+    # in-memory implementation (used in tests) returns a data structure;
+    # hence the inconsistency
+    branches = archive.lookup_snapshot(
+        hash_to_hex(snapshot.id), branch_name_include_substring="non-existing",
+    )["branches"]
+    assert not branches
+
+
+@given(revision())
 def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(

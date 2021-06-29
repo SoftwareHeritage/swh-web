@@ -50,9 +50,9 @@ var GlobalHandlers = /** @class */ (function () {
                     return;
                 }
                 var client = currentHub.getClient();
-                var event = isPrimitive(error)
+                var event = error === undefined && isString(data.msg)
                     ? _this._eventFromIncompleteOnError(data.msg, data.url, data.line, data.column)
-                    : _this._enhanceEventWithInitialFrame(eventFromUnknownInput(error, undefined, {
+                    : _this._enhanceEventWithInitialFrame(eventFromUnknownInput(error || data.msg, undefined, {
                         attachStacktrace: client && client.getOptions().attachStacktrace,
                         rejection: false,
                     }), data.url, data.line, data.column);
@@ -133,12 +133,10 @@ var GlobalHandlers = /** @class */ (function () {
         // If 'message' is ErrorEvent, get real message from inside
         var message = isErrorEvent(msg) ? msg.message : msg;
         var name;
-        if (isString(message)) {
-            var groups = message.match(ERROR_TYPES_RE);
-            if (groups) {
-                name = groups[1];
-                message = groups[2];
-            }
+        var groups = message.match(ERROR_TYPES_RE);
+        if (groups) {
+            name = groups[1];
+            message = groups[2];
         }
         var event = {
             exception: {
