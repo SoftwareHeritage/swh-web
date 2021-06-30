@@ -121,7 +121,7 @@ before(function() {
   cy.visit('/').window().then(async win => {
     this.Urls = win.Urls;
 
-    for (let origin of this.origin) {
+    for (const origin of this.origin) {
 
       const metadata = await getMetadataForOrigin(origin.url);
       const directoryApiUrl = this.Urls.api_1_directory(metadata.directory);
@@ -130,7 +130,7 @@ before(function() {
       origin.revisions.push(metadata.revision);
       origin.snapshot = metadata.snapshot;
 
-      for (let content of origin.content) {
+      for (const content of origin.content) {
 
         const contentPathApiUrl = this.Urls.api_1_directory(origin.rootDirectory, content.path);
         const contentMetaData = await httpGetJson(contentPathApiUrl);

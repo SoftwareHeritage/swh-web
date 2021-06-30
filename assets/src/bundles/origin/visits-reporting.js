@@ -18,7 +18,7 @@ let currentYear;
 
 // function to gather full visits
 function filterFullVisits(differentSnapshots) {
-  let filteredVisits = [];
+  const filteredVisits = [];
   for (let i = 0; i < allVisits.length; ++i) {
     if (allVisits[i].status !== 'full') continue;
     if (!differentSnapshots) {
@@ -26,7 +26,7 @@ function filterFullVisits(differentSnapshots) {
     } else if (filteredVisits.length === 0) {
       filteredVisits.push(allVisits[i]);
     } else {
-      let lastVisit = filteredVisits[filteredVisits.length - 1];
+      const lastVisit = filteredVisits[filteredVisits.length - 1];
       if (allVisits[i].snapshot !== lastVisit.snapshot) {
         filteredVisits.push(allVisits[i]);
       }
@@ -38,14 +38,14 @@ function filterFullVisits(differentSnapshots) {
 // function to update the visits list view based on the selected year
 function updateVisitsList(year) {
   $('#swh-visits-list').children().remove();
-  let visitsByYear = [];
+  const visitsByYear = [];
   for (let i = 0; i < filteredVisits.length; ++i) {
     if (filteredVisits[i].date.getUTCFullYear() === year) {
       visitsByYear.push(filteredVisits[i]);
     }
   }
   let visitsCpt = 0;
-  let nbVisitsByRow = 4;
+  const nbVisitsByRow = 4;
   let visitsListHtml = '<div class="swh-visits-list-row">';
   for (let i = 0; i < visitsByYear.length; ++i) {
     if (visitsCpt > 0 && visitsCpt % nbVisitsByRow === 0) {
@@ -114,7 +114,7 @@ export function initVisitsReporting(visits) {
     allVisits.forEach((v, i) => {
       // Turn Unix epoch into Javascript Date object
       v.date = new Date(Math.floor(v.date * 1000));
-      let visitLink = '<a class="swh-visit-icon swh-visit-' + v.status + '" href="' + v.url + '">' + v.formatted_date + '</a>';
+      const visitLink = '<a class="swh-visit-icon swh-visit-' + v.status + '" href="' + v.url + '">' + v.formatted_date + '</a>';
       if (v.status === 'full') {
         if (!firstFullVisit) {
           firstFullVisit = v;

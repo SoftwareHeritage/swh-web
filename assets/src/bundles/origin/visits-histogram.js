@@ -23,17 +23,17 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   // histogram size and margins
   let width = 1000;
   let height = 200;
-  let margin = {top: 20, right: 80, bottom: 30, left: 50};
+  const margin = {top: 20, right: 80, bottom: 30, left: 50};
 
   // create responsive svg
-  let svg = d3.select(container)
+  const svg = d3.select(container)
     .attr('style',
           'padding-bottom: ' + Math.ceil(height * 100 / width) + '%')
     .append('svg')
     .attr('viewBox', '0 0 ' + width + ' ' + height);
 
   // create tooltip div
-  let tooltip = d3.select('body')
+  const tooltip = d3.select('body')
     .append('div')
     .attr('class', 'd3-tooltip')
     .style('opacity', 0);
@@ -43,53 +43,53 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   height = height - margin.top - margin.bottom;
 
   // create main svg group element
-  let g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+  const g = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // create x scale
-  let x = d3.scaleTime().rangeRound([0, width]);
+  const x = d3.scaleTime().rangeRound([0, width]);
 
   // create y scale
-  let y = d3.scaleLinear().range([height, 0]);
+  const y = d3.scaleLinear().range([height, 0]);
 
   // create ordinal colorscale mapping visit status
-  let colors = d3.scaleOrdinal()
+  const colors = d3.scaleOrdinal()
     .domain(['full', 'partial', 'failed', 'ongoing'])
     .range(['#008000', '#edc344', '#ff0000', '#0000ff']);
 
   // first swh crawls were made in 2015
-  let startYear = 2015;
+  const startYear = 2015;
   // set latest display year as the current one
-  let now = new Date();
-  let endYear = now.getUTCFullYear() + 1;
-  let monthExtent = [new Date(Date.UTC(startYear, 0, 1)), new Date(Date.UTC(endYear, 0, 1))];
+  const now = new Date();
+  const endYear = now.getUTCFullYear() + 1;
+  const monthExtent = [new Date(Date.UTC(startYear, 0, 1)), new Date(Date.UTC(endYear, 0, 1))];
 
   // create months bins based on setup extent
-  let monthBins = d3.timeMonths(d3.timeMonth.offset(monthExtent[0], -1), monthExtent[1]);
+  const monthBins = d3.timeMonths(d3.timeMonth.offset(monthExtent[0], -1), monthExtent[1]);
   // create years bins based on setup extent
-  let yearBins = d3.timeYears(monthExtent[0], monthExtent[1]);
+  const yearBins = d3.timeYears(monthExtent[0], monthExtent[1]);
 
   // set x scale domain
   x.domain(d3.extent(monthBins));
 
   // use D3 histogram layout to create a function that will bin the visits by month
-  let binByMonth = d3.histogram()
+  const binByMonth = d3.histogram()
     .value(d => d.date)
     .domain(x.domain())
     .thresholds(monthBins);
 
   // use D3 nest function to group the visits by status
-  let visitsByStatus = d3.groups(visitsData, d => d['status'])
+  const visitsByStatus = d3.groups(visitsData, d => d['status'])
     .sort((a, b) => d3.ascending(a[0], b[0]));
 
   // prepare data in order to be able to stack visit statuses by month
-  let statuses = [];
-  let histData = [];
+  const statuses = [];
+  const histData = [];
   for (let i = 0; i < monthBins.length; ++i) {
     histData[i] = {};
   }
   visitsByStatus.forEach(entry => {
     statuses.push(entry[0]);
-    let monthsData = binByMonth(entry[1]);
+    const monthsData = binByMonth(entry[1]);
     for (let i = 0; i < monthsData.length; ++i) {
       histData[i]['x0'] = monthsData[i]['x0'];
       histData[i]['x1'] = monthsData[i]['x1'];
@@ -98,12 +98,12 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   });
 
   // create function to stack visits statuses by month
-  let stacked = d3.stack()
+  const stacked = d3.stack()
     .keys(statuses)
     .value((d, key) => d[key].length);
 
   // compute the maximum amount of visits by month
-  let yMax = d3.max(histData, d => {
+  const yMax = d3.max(histData, d => {
     let total = 0;
     for (let i = 0; i < statuses.length; ++i) {
       total += d[statuses[i]].length;
@@ -115,8 +115,8 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   y.domain([0, yMax]);
 
   // compute ticks values for the y axis
-  let step = 5;
-  let yTickValues = [];
+  const step = 5;
+  const yTickValues = [];
   for (let i = 0; i <= yMax / step; ++i) {
     yTickValues.push(i * step);
   }
@@ -149,14 +149,14 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('fill-opacity', d => d.getUTCFullYear() === currentYear ? 0.3 : 0)
     .attr('stroke', 'none')
     .attr('x', d => {
-      let date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return x(date);
     })
     .attr('y', 0)
     .attr('height', height)
     .attr('width', d => {
-      let date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-      let yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
+      const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
       return yearWidth;
     })
     // mouse event callbacks used to show rectangle years
@@ -209,11 +209,11 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
       tooltip.transition()
         .duration(200)
         .style('opacity', 1);
-      let ds = d.data.x1.toISOString().substr(0, 7).split('-');
+      const ds = d.data.x1.toISOString().substr(0, 7).split('-');
       let tooltipText = '<b>' + ds[1] + ' / ' + ds[0] + ':</b><br/>';
       for (let i = 0; i < statuses.length; ++i) {
-        let visitStatus = statuses[i];
-        let nbVisits = d.data[visitStatus].length;
+        const visitStatus = statuses[i];
+        const nbVisits = d.data[visitStatus].length;
         if (nbVisits === 0) continue;
         tooltipText += nbVisits + ' ' + visitStatus + ' visits';
         if (i !== statuses.length - 1) tooltipText += '<br/>';
@@ -260,19 +260,19 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('fill', 'none')
     .attr('stroke', d => d.getUTCFullYear() === currentYear ? 'black' : 'none')
     .attr('x', d => {
-      let date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return x(date);
     })
     .attr('y', 0)
     .attr('height', height)
     .attr('width', d => {
-      let date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-      let yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
+      const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
       return yearWidth;
     });
 
   // add x axis with a tick for every 1st day of each year
-  let xAxis = g.append('g')
+  const xAxis = g.append('g')
     .attr('class', 'axis')
     .attr('transform', 'translate(0,' + height + ')')
     .call(
@@ -285,9 +285,9 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   // of each year range
   xAxis.selectAll('text')
     .attr('transform', d => {
-      let year = d.getUTCFullYear();
-      let date = new Date(Date.UTC(year, 0, 1));
-      let yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
+      const year = d.getUTCFullYear();
+      const date = new Date(Date.UTC(year, 0, 1));
+      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
       return 'translate(' + -yearWidth / 2 + ', 0)';
     });
 
@@ -297,7 +297,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .call(d3.axisLeft(y).tickValues(yTickValues));
 
   // add legend for visit statuses
-  let legendGroup = g.append('g')
+  const legendGroup = g.append('g')
     .attr('font-family', 'sans-serif')
     .attr('font-size', 10)
     .attr('text-anchor', 'end');
@@ -308,7 +308,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('dy', '0.32em')
     .text('visit status:');
 
-  let legend = legendGroup.selectAll('g')
+  const legend = legendGroup.selectAll('g')
     .data(statuses.slice().reverse())
     .enter().append('g')
     .attr('transform', (d, i) => 'translate(0,' + (i + 1) * 20 + ')');

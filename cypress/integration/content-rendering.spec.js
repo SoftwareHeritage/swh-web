@@ -64,10 +64,10 @@ describe('PDF rendering test', function() {
       cy.get('.swh-content canvas')
         .wait(2000)
         .then(canvas => {
-          let width = canvas[0].width;
-          let height = canvas[0].height;
-          let context = canvas[0].getContext('2d');
-          let imgData = context.getImageData(0, 0, width, height);
+          const width = canvas[0].width;
+          const height = canvas[0].height;
+          const context = canvas[0].getContext('2d');
+          const imgData = context.getImageData(0, 0, width, height);
           assert.notEqual(imgData.data.reduce(sum), 0);
         });
     });

@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-let vaultItems = [];
+const vaultItems = [];
 
 const progressbarColors = {
   'new': 'rgba(128, 128, 128, 0.5)',

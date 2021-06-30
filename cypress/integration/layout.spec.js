@@ -163,12 +163,12 @@ describe('Test top-bar', function() {
     ];
 
     const responses = [];
-    for (let std of statusTestData) {
+    for (const std of statusTestData) {
       responses.push(genStatusResponse(std.status, std.statusCode));
     }
 
     let i = 0;
-    for (let std of statusTestData) {
+    for (const std of statusTestData) {
       cy.visit(url);
       // trick to override the response of an intercepted request
       // https://github.com/cypress-io/cypress/issues/9302

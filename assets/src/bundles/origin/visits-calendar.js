@@ -8,8 +8,8 @@
 import Calendar from 'js-year-calendar';
 import 'js-year-calendar/dist/js-year-calendar.css';
 
-let minSize = 15;
-let maxSize = 28;
+const minSize = 15;
+const maxSize = 28;
 let currentPopover = null;
 let visitsByDate = {};
 
@@ -28,9 +28,9 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
   for (let i = 0; i < filteredVisits.length; ++i) {
     filteredVisits[i]['startDate'] = filteredVisits[i]['date'];
     filteredVisits[i]['endDate'] = filteredVisits[i]['startDate'];
-    let date = new Date(filteredVisits[i]['date']);
+    const date = new Date(filteredVisits[i]['date']);
     date.setHours(0, 0, 0, 0);
-    let dateStr = date.toDateString();
+    const dateStr = date.toDateString();
     if (!visitsByDate.hasOwnProperty(dateStr)) {
       visitsByDate[dateStr] = [filteredVisits[i]];
     } else {
@@ -59,24 +59,24 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
     startYear: year,
     renderEnd: e => yearClickedCallback(e.currentYear),
     customDataSourceRenderer: (element, date, events) => {
-      let dateStr = date.toDateString();
-      let nbVisits = visitsByDate[dateStr].length;
+      const dateStr = date.toDateString();
+      const nbVisits = visitsByDate[dateStr].length;
       let t = nbVisits / maxNbVisitsByDate;
       if (maxNbVisitsByDate === 1) {
         t = 0;
       }
-      let size = minSize + t * (maxSize - minSize);
-      let offsetX = (maxSize - size) / 2 - parseInt($(element).css('padding-left'));
-      let offsetY = (maxSize - size) / 2 - parseInt($(element).css('padding-top')) + 1;
-      let cellWrapper = $('<div></div>');
+      const size = minSize + t * (maxSize - minSize);
+      const offsetX = (maxSize - size) / 2 - parseInt($(element).css('padding-left'));
+      const offsetY = (maxSize - size) / 2 - parseInt($(element).css('padding-top')) + 1;
+      const cellWrapper = $('<div></div>');
       cellWrapper.css('position', 'relative');
-      let dayNumber = $('<div></div>');
+      const dayNumber = $('<div></div>');
       dayNumber.text($(element).text());
-      let circle = $('<div></div>');
+      const circle = $('<div></div>');
       let r = 0;
       let g = 0;
       for (let i = 0; i < nbVisits; ++i) {
-        let visit = visitsByDate[dateStr][i];
+        const visit = visitsByDate[dateStr][i];
         if (visit.status === 'full') {
           g += 255;
         } else if (visit.status === 'partial') {
@@ -103,14 +103,14 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
       if (currentPopover !== e.element) {
         closePopover();
       }
-      let dateStr = e.date.toDateString();
+      const dateStr = e.date.toDateString();
       if (visitsByDate.hasOwnProperty(dateStr)) {
 
-        let visits = visitsByDate[dateStr];
+        const visits = visitsByDate[dateStr];
         let content = '<div><h6>' + e.date.toDateString() + '</h6></div>';
         content += '<ul class="swh-list-unstyled">';
         for (let i = 0; i < visits.length; ++i) {
-          let visitTime = visits[i].formatted_date.substr(visits[i].formatted_date.indexOf(',') + 2);
+          const visitTime = visits[i].formatted_date.substr(visits[i].formatted_date.indexOf(',') + 2);
           content += '<li><a class="swh-visit-icon swh-visit-' + visits[i].status + '" title="' + visits[i].status +
                      ' visit" href="' + visits[i].url + '">' + visitTime + '</a></li>';
         }

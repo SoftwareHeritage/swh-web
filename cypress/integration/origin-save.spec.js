@@ -109,7 +109,7 @@ describe('Origin Save Tests', function() {
   });
 
   it('should format appropriately values depending on their type', function() {
-    let inputValues = [ // null values stay null
+    const inputValues = [ // null values stay null
       {type: 'json', value: null, expectedValue: null},
       {type: 'date', value: null, expectedValue: null},
       {type: 'raw', value: null, expectedValue: null},
@@ -123,7 +123,7 @@ describe('Origin Save Tests', function() {
     ];
     cy.window().then(win => {
       inputValues.forEach(function(input, index, array) {
-        let actualValue = win.swh.save.formatValuePerType(input.type, input.value);
+        const actualValue = win.swh.save.formatValuePerType(input.type, input.value);
         assert.equal(actualValue, input.expectedValue);
       });
     });
@@ -263,7 +263,7 @@ describe('Origin Save Tests', function() {
     cy.get('#swh-origin-save-requests-list-tab').click();
     cy.get('tbody tr').then(rows => {
       let i = 0;
-      for (let row of rows) {
+      for (const row of rows) {
         const cells = row.cells;
         const requestDateStr = new Date(this.originSaveJSON.data[i].save_request_date).toLocaleString();
         const saveStatus = this.originSaveJSON.data[i].save_task_status;
@@ -505,7 +505,7 @@ describe('Origin Save Tests', function() {
     cy.ambassadorLogin();
     cy.visit(url);
 
-    for (let visitType of anonymousVisitTypes) {
+    for (const visitType of anonymousVisitTypes) {
       cy.get('#swh-input-visit-type').select(visitType);
       cy.get('.swh-save-origin-archives-form').should('not.be.visible');
     }
@@ -517,9 +517,9 @@ describe('Origin Save Tests', function() {
   });
 
   it('should be allowed to submit \'archives\' save request when connected as ambassador', function() {
-    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
-    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
-    let artifactVersion = '1.1.4';
+    const originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    const artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    const artifactVersion = '1.1.4';
     stubSaveRequest({
       requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
       saveRequestStatus: 'accepted',
@@ -550,11 +550,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should submit multiple artifacts for the archives visit type', function() {
-    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
-    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
-    let artifactVersion = '1.1.4';
-    let artifact2Url = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.5.tar.gz';
-    let artifact2Version = '1.1.5';
+    const originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    const artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    const artifactVersion = '1.1.4';
+    const artifact2Url = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.5.tar.gz';
+    const artifact2Version = '1.1.5';
 
     cy.ambassadorLogin();
     cy.visit(url);
@@ -629,11 +629,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should autofill artifact version when pasting artifact url', function() {
-    let originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
-    let artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
-    let artifactVersion = '3DLDF-1.1.4';
-    let artifact2Url = 'https://example.org/artifact/test/1.3.0.zip';
-    let artifact2Version = '1.3.0';
+    const originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
+    const artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
+    const artifactVersion = '3DLDF-1.1.4';
+    const artifact2Url = 'https://example.org/artifact/test/1.3.0.zip';
+    const artifact2Version = '1.3.0';
 
     cy.ambassadorLogin();
     cy.visit(url);
@@ -686,9 +686,9 @@ describe('Origin Save Tests', function() {
       }));
     }).as('saveRequest');
 
-    for (let originUrl of ['https://github.com/BiC-MnI/MnI_AuToReG',
-                           'https://github.com/BiC-MnI/MnI_AuToReG.git',
-                           'https://github.com/BiC-MnI/MnI_AuToReG/']) {
+    for (const originUrl of ['https://github.com/BiC-MnI/MnI_AuToReG',
+                             'https://github.com/BiC-MnI/MnI_AuToReG.git',
+                             'https://github.com/BiC-MnI/MnI_AuToReG/']) {
 
       // enter non canonical URL of github repo
       cy.get('#swh-input-origin-url')

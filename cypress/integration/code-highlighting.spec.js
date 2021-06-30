@@ -32,7 +32,7 @@ describe('Code highlighting tests', function() {
   it('should emphasize source code lines based on url fragment', function() {
     cy.visit(`${url}/#L${lineStart}-L${lineEnd}`);
     cy.get('.hljs-ln-line').then(lines => {
-      for (let line of lines) {
+      for (const line of lines) {
         const lineElt = $(line);
         const lineNumber = parseInt(lineElt.data('line-number'));
         if (lineNumber >= lineStart && lineNumber <= lineEnd) {
@@ -68,7 +68,7 @@ describe('Code highlighting tests', function() {
       .click({shiftKey: true})
       .get('.hljs-ln-line')
       .then(lines => {
-        for (let line of lines) {
+        for (const line of lines) {
           const lineElt = $(line);
           const lineNumber = parseInt(lineElt.data('line-number'));
           if (lineNumber >= lineStart && lineNumber <= lineEnd) {

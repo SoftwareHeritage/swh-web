@@ -54,7 +54,7 @@ export function initOriginSaveAdmin() {
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
 
-    let columnsData = [
+    const columnsData = [
       {
         data: 'id',
         name: 'id',
@@ -66,7 +66,7 @@ export function initOriginSaveAdmin() {
         name: 'request_date',
         render: (data, type, row) => {
           if (type === 'display') {
-            let date = new Date(data);
+            const date = new Date(data);
             return date.toLocaleString();
           }
           return data;
@@ -309,7 +309,7 @@ export function acceptOriginSaveRequest() {
 export function rejectOriginSaveRequest() {
   const selectedRow = pendingSaveRequestsTable.row('.selected');
   if (selectedRow.length) {
-    let rejectOriginSaveRequestCallback = async() => {
+    const rejectOriginSaveRequestCallback = async() => {
       const rowData = selectedRow.data();
       const rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['visit_type'], rowData['origin_url']);
       await csrfPost(rejectSaveRequestUrl);
@@ -324,10 +324,10 @@ export function rejectOriginSaveRequest() {
 }
 
 function removeOriginSaveRequest(requestTable) {
-  let selectedRow = requestTable.row('.selected');
+  const selectedRow = requestTable.row('.selected');
   if (selectedRow.length) {
-    let requestId = selectedRow.data()['id'];
-    let removeOriginSaveRequestCallback = async() => {
+    const requestId = selectedRow.data()['id'];
+    const removeOriginSaveRequestCallback = async() => {
       const removeSaveRequestUrl = Urls.admin_origin_save_request_remove(requestId);
       await csrfPost(removeSaveRequestUrl);
       requestTable.ajax.reload(null, false);

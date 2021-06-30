@@ -133,7 +133,7 @@ describe('Test origin-search', function() {
     cy.get('#swh-origins-url-patterns')
       .type('http');
 
-    for (let visitType of ['git', 'tar']) {
+    for (const visitType of ['git', 'tar']) {
       cy.get('#swh-search-visit-type')
         .select(visitType);
 
@@ -146,7 +146,7 @@ describe('Test origin-search', function() {
         .should('be.visible');
 
       cy.get('tbody tr td.swh-origin-visit-type').then(elts => {
-        for (let elt of elts) {
+        for (const elt of elts) {
           cy.get(elt).should('have.text', visitType);
         }
       });

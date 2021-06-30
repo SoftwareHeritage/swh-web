@@ -10,8 +10,8 @@ const $ = Cypress.$;
 let origin;
 
 let url;
-let dirs = [];
-let files = [];
+const dirs = [];
+const files = [];
 
 describe('Directory Tests', function() {
   before(function() {
@@ -19,7 +19,7 @@ describe('Directory Tests', function() {
 
     url = `${this.Urls.browse_origin_directory()}?origin_url=${origin.url}`;
 
-    for (let entry of origin.dirContent) {
+    for (const entry of origin.dirContent) {
       if (entry.type === 'file') {
         files.push(entry);
       } else {
@@ -45,8 +45,8 @@ describe('Directory Tests', function() {
     cy.get('.swh-content')
       .parent('tr')
       .then((rows) => {
-        for (let row of rows) {
-          let text = $(row).children('td').eq(2).text();
+        for (const row of rows) {
+          const text = $(row).children('td').eq(2).text();
           expect(text.trim()).to.not.be.empty;
         }
       });

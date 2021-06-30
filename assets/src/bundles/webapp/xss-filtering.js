@@ -21,7 +21,7 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
     }
 
     // get currently browsed swh object metadata
-    let swhObjectMetadata = swh.webapp.getBrowsedSwhObjectMetadata();
+    const swhObjectMetadata = swh.webapp.getBrowsedSwhObjectMetadata();
 
     // the swh object is provided without any useful context
     // to get the image checksums from the web api

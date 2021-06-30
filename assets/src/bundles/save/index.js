@@ -17,7 +17,7 @@ async function originSaveRequest(
   acceptedCallback, pendingCallback, errorCallback
 ) {
   // Actually trigger the origin save request
-  let addSaveOriginRequestUrl = Urls.api_1_save_origin(originType, originUrl);
+  const addSaveOriginRequestUrl = Urls.api_1_save_origin(originType, originUrl);
   $('.swh-processing-save-request').css('display', 'block');
   let headers = {};
   let body = null;
@@ -122,7 +122,7 @@ export function initOriginSave() {
     const response = await fetch(Urls.origin_save_types_list());
     const data = await response.json();
 
-    for (let originType of data) {
+    for (const originType of data) {
       $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
     }
     // set git as the default value as before
@@ -168,7 +168,7 @@ export function initOriginSave() {
             name: 'request_date',
             render: (data, type, row) => {
               if (type === 'display') {
-                let date = new Date(data);
+                const date = new Date(data);
                 return date.toLocaleString();
               }
               return data;
@@ -258,25 +258,25 @@ export function initOriginSave() {
       $('.swh-save-request-info').popover('dispose');
     });
 
-    let saveRequestAcceptedAlert = htmlAlert(
+    const saveRequestAcceptedAlert = htmlAlert(
       'success',
       'The "save code now" request has been accepted and will be processed as soon as possible.',
       true
     );
 
-    let saveRequestPendingAlert = htmlAlert(
+    const saveRequestPendingAlert = htmlAlert(
       'warning',
       'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
       true
     );
 
-    let saveRequestRateLimitedAlert = htmlAlert(
+    const saveRequestRateLimitedAlert = htmlAlert(
       'danger',
       'The rate limit for "save code now" requests has been reached. Please try again later.',
       true
     );
 
-    let saveRequestUnknownErrorAlert = htmlAlert(
+    const saveRequestUnknownErrorAlert = htmlAlert(
       'danger',
       'An unexpected error happened when submitting the "save code now request".',
       true
@@ -288,13 +288,13 @@ export function initOriginSave() {
       $('.alert').alert('close');
       if (event.target.checkValidity()) {
         $(event.target).removeClass('was-validated');
-        let originType = $('#swh-input-visit-type').val();
+        const originType = $('#swh-input-visit-type').val();
         let originUrl = $('#swh-input-origin-url').val();
 
         originUrl = await getCanonicalOriginURL(originUrl);
 
         // read the extra inputs for the 'archives' type
-        let extraData = {};
+        const extraData = {};
         if (originType === 'archives') {
           extraData['archives_data'] = [];
           for (let i = 0; i < $('.swh-save-origin-artifact-form').length; ++i) {
@@ -333,10 +333,10 @@ export function initOriginSave() {
     });
 
     $('#swh-input-origin-url').on('input', function(event) {
-      let originUrl = $(this).val().trim();
+      const originUrl = $(this).val().trim();
       $(this).val(originUrl);
       $('#swh-input-visit-type option').each(function() {
-        let val = $(this).val();
+        const val = $(this).val();
         if (val && originUrl.includes(val)) {
           $(this).prop('selected', true);
         }
@@ -352,7 +352,7 @@ export function initOriginSave() {
 }
 
 export function validateSaveOriginUrl(input) {
-  let originType = $('#swh-input-visit-type').val();
+  const originType = $('#swh-input-visit-type').val();
   let originUrl = null;
   let validUrl = true;
 
@@ -363,7 +363,7 @@ export function validateSaveOriginUrl(input) {
   }
 
   if (validUrl) {
-    let allowedProtocols = ['http:', 'https:', 'svn:', 'git:'];
+    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:'];
     validUrl = (
       allowedProtocols.find(protocol => protocol === originUrl.protocol) !== undefined
     );
@@ -401,25 +401,25 @@ export function validateSaveOriginUrl(input) {
 
 export function initTakeNewSnapshot() {
 
-  let newSnapshotRequestAcceptedAlert = htmlAlert(
+  const newSnapshotRequestAcceptedAlert = htmlAlert(
     'success',
     'The "take new snapshot" request has been accepted and will be processed as soon as possible.',
     true
   );
 
-  let newSnapshotRequestPendingAlert = htmlAlert(
+  const newSnapshotRequestPendingAlert = htmlAlert(
     'warning',
     'The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.',
     true
   );
 
-  let newSnapshotRequestRateLimitAlert = htmlAlert(
+  const newSnapshotRequestRateLimitAlert = htmlAlert(
     'danger',
     'The rate limit for "take new snapshot" requests has been reached. Please try again later.',
     true
   );
 
-  let newSnapshotRequestUnknownErrorAlert = htmlAlert(
+  const newSnapshotRequestUnknownErrorAlert = htmlAlert(
     'danger',
     'An unexpected error happened when submitting the "save code now request".',
     true
@@ -430,9 +430,9 @@ export function initTakeNewSnapshot() {
       event.preventDefault();
       event.stopPropagation();
 
-      let originType = $('#swh-input-visit-type').val();
-      let originUrl = $('#swh-input-origin-url').val();
-      let extraData = {};
+      const originType = $('#swh-input-visit-type').val();
+      const originUrl = $('#swh-input-origin-url').val();
+      const extraData = {};
 
       originSaveRequest(originType, originUrl, extraData,
                         () => $('#swh-take-new-snapshot-request-status').html(newSnapshotRequestAcceptedAlert),
@@ -506,7 +506,7 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
   if ($.isEmptyObject(saveRequestTaskInfo)) {
     content = 'Not available';
   } else {
-    let saveRequestInfo = [];
+    const saveRequestInfo = [];
     const taskData = {
       'Type': ['raw', 'type'],
       'Visit status': ['raw', 'visit_status'],
@@ -529,7 +529,7 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
       }
     }
     content = '<table class="table"><tbody>';
-    for (let info of saveRequestInfo) {
+    for (const info of saveRequestInfo) {
       content +=
             `<tr>
               <th class="swh-metadata-table-row swh-metadata-table-key">${info.key}</th>
@@ -548,7 +548,7 @@ export function fillSaveRequestFormAndScroll(visitType, originUrl) {
   $('#swh-input-origin-url').val(originUrl);
   let originTypeFound = false;
   $('#swh-input-visit-type option').each(function() {
-    let val = $(this).val();
+    const val = $(this).val();
     if (val && originUrl.includes(val)) {
       $(this).prop('selected', true);
       originTypeFound = true;
@@ -556,7 +556,7 @@ export function fillSaveRequestFormAndScroll(visitType, originUrl) {
   });
   if (!originTypeFound) {
     $('#swh-input-visit-type option').each(function() {
-      let val = $(this).val();
+      const val = $(this).val();
       if (val === visitType) {
         $(this).prop('selected', true);
       }
