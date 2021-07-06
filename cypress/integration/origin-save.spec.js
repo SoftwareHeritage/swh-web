@@ -277,7 +277,7 @@ describe('Origin Save Tests', function() {
         } else {
           html += this.originSaveJSON.data[i].origin_url;
         }
-        html += `&nbsp;<a href="${this.originSaveJSON.data[i].origin_url}">`;
+        html += `&nbsp;<a href="${this.originSaveJSON.data[i].origin_url}" target="_blank" rel="noopener noreferrer">`;
         html += '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
         assert.equal($(cells[2]).html(), html);
         assert.equal($(cells[3]).text(), this.originSaveJSON.data[i].save_request_status);

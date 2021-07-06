@@ -92,7 +92,8 @@ export function initOriginSaveAdmin() {
             } else {
               html += sanitizedURL;
             }
-            html += `&nbsp;<a href="${sanitizedURL}"><i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>`;
+            html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
+              '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
             return html;
           }
           return data;
