@@ -61,7 +61,7 @@ _httpdomain_doc = """
     :statuscode 400: an invalid **sha1_git** value has been provided
     :statuscode 404: requested revision can not be found in the archive
 
-    **Request:**
+    **Example:**
 
     .. parsed-literal::
 
@@ -402,7 +402,7 @@ def test_apidoc_input_output_doc(client):
             "       <strong>\n"
             "        &lt;swhid&gt; (object)\n"
             "       </strong>\n"
-            "       : an object whose keys are input SWHIDs"
+            "       :           an object whose keys are input SWHIDs"
             " and values objects with the following keys:\n"
             "      </p>\n"
             "      <blockquote>\n"

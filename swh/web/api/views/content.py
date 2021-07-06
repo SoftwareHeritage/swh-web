@@ -32,7 +32,7 @@ def api_content_filetype(request, q):
         :param string hash_type: optional parameter specifying which hashing algorithm
             has been used to compute the content checksum. It can be either ``sha1``,
             ``sha1_git``, ``sha256`` or ``blake2s256``. If that parameter is not
-            provided, it is assumed that the hashing algorithm used is `sha1`.
+            provided, it is assumed that the hashing algorithm used is ``sha1``.
         :param string hash: hexadecimal representation of the checksum value computed
             with the specified hashing algorithm.
 

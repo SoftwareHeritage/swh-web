@@ -63,7 +63,7 @@ def api_origins(request):
 
         .. warning::
 
-            This endpoint used to provide an `origin_from` query parameter,
+            This endpoint used to provide an ``origin_from`` query parameter,
             and guarantee an order on results. This is no longer true,
             and only the Link header should be used for paginating through
             results.
@@ -162,7 +162,7 @@ def api_origin_search(request, url_pattern):
 
         .. warning::
 
-            This endpoint used to provide an `offset` query parameter,
+            This endpoint used to provide an ``offset`` query parameter,
             and guarantee an order on results. This is no longer true,
             and only the Link header should be used for paginating through
             results.

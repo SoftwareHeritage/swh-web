@@ -24,10 +24,11 @@ from swh.web.common.utils import parse_rst
 
 class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     """
-    docutils visitor for walking on a parsed rst document containing sphinx
+    docutils visitor for walking on a parsed docutils document containing sphinx
     httpdomain roles. Its purpose is to extract relevant info regarding swh
     api endpoints (for instance url arguments) from their docstring written
-    using sphinx httpdomain.
+    using sphinx httpdomain; and produce the main description back into a ReST
+    string
     """
 
     # httpdomain roles we want to parse (based on sphinxcontrib.httpdomain 1.6)
@@ -62,44 +63,35 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         self.field_list_visited = False
         self.current_json_obj = None
 
-    def process_paragraph(self, par):
-        """
-        Process extracted paragraph text before display.
-        Cleanup document model markups and transform the
-        paragraph into a valid raw rst string (as the apidoc
-        documentation transform rst to html when rendering).
-        """
-        par = par.replace("\n", " ")
-        # keep emphasized, strong and literal text
-        par = par.replace("<emphasis>", "*")
-        par = par.replace("</emphasis>", "*")
-        par = par.replace("<strong>", "**")
-        par = par.replace("</strong>", "**")
-        par = par.replace("<literal>", "``")
-        par = par.replace("</literal>", "``")
-        # keep links to web pages
-        if "<reference" in par:
-            par = re.sub(
-                r'<reference name="(.*)" refuri="(.*)".*</reference>',
-                r"`\1 <\2>`_",
-                par,
-            )
-        # remove parsed document markups but keep rst links
-        par = re.sub(r"<[^<]+?>(?!`_)", "", par)
-        # api urls cleanup to generate valid links afterwards
-        subs_made = 1
-        while subs_made:
-            (par, subs_made) = re.subn(r"(:http:.*)(\(\w+\))", r"\1", par)
-        subs_made = 1
-        while subs_made:
-            (par, subs_made) = re.subn(r"(:http:.*)(\[.*\])", r"\1", par)
-        par = re.sub(r"([^:])//", r"\1/", par)
-        # transform references to api endpoints doc into valid rst links
-        par = re.sub(":http:get:`([^,`]*)`", r"`\1 <\1doc/>`_", par)
-        # transform references to some elements into bold text
-        par = re.sub(":http:header:`(.*)`", r"**\1**", par)
-        par = re.sub(":func:`(.*)`", r"**\1**", par)
-        return par
+    def _default_visit(self, node: docutils.nodes.Element) -> str:
+        """Simply visits a text node, drops its start and end tags, visits
+        the children, and concatenates their results."""
+        return "".join(map(self.dispatch_visit, node.children))
+
+    def visit_emphasis(self, node: docutils.nodes.emphasis) -> str:
+        return f"*{self._default_visit(node)}*"
+
+    def visit_strong(self, node: docutils.nodes.emphasis) -> str:
+        return f"**{self._default_visit(node)}**"
+
+    def visit_reference(self, node: docutils.nodes.reference) -> str:
+        text = self._default_visit(node)
+        refuri = node.attributes.get("refuri")
+        if refuri is not None:
+            return f"`{text} <{refuri}>`__"
+        else:
+            return f"`{text}`_"
+
+    def visit_target(self, node: docutils.nodes.reference) -> str:
+        parts = ["\n"]
+        parts.extend(
+            f".. _{name}: {node.attributes['refuri']}"
+            for name in node.attributes["names"]
+        )
+        return "\n".join(parts)
+
+    def visit_literal(self, node: docutils.nodes.literal) -> str:
+        return f"``{self._default_visit(node)}``"
 
     def visit_field_list(self, node):
         """
@@ -108,12 +100,17 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         """
         self.field_list_visited = True
         for child in node.traverse():
+            # TODO: instead of traversing recursively, we should inspect the children
+            # directly (they can be <field_name> and <field_body> directly, or
+            # a <field> node containing both)
+
             # get the parsed field name
             if isinstance(child, docutils.nodes.field_name):
                 field_name = child.astext()
             # parse field text
-            elif isinstance(child, docutils.nodes.paragraph):
-                text = self.process_paragraph(str(child))
+            elif isinstance(child, docutils.nodes.field_body):
+                text = self._default_visit(child).strip()
+                assert text, str(child)
                 field_data = field_name.split(" ")
                 # Parameters
                 if field_data[0] in self.parameter_roles:
@@ -191,57 +188,99 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
                         ):
                             self.data["return_type"] = "octet stream"
 
-    def visit_paragraph(self, node):
+        # Don't return anything in the description; these nodes only add text
+        # to other fields
+        return ""
+
+    # visit_field_list collects and handles these with a more global view:
+    visit_field = visit_field_name = visit_field_body = _default_visit
+
+    def visit_paragraph(self, node: docutils.nodes.paragraph) -> str:
         """
         Visit relevant paragraphs to parse
         """
         # only parsed top level paragraphs
-        if isinstance(node.parent, docutils.nodes.block_quote):
-            text = self.process_paragraph(str(node))
-            # endpoint description
-            if not text.startswith("**") and text not in self.data["description"]:
-                self.data["description"] += "\n\n" if self.data["description"] else ""
-                self.data["description"] += text
+        text = self._default_visit(node)
 
-    def visit_literal_block(self, node):
+        return "\n\n" + text
+
+    def visit_literal_block(self, node: docutils.nodes.literal_block) -> str:
         """
         Visit literal blocks
         """
         text = node.astext()
-        # literal block in endpoint description
-        if not self.field_list_visited:
-            self.data["description"] += ":\n\n%s\n" % textwrap.indent(text, "\t")
+
+        return f"\n\n::\n\n{textwrap.indent(text, '   ')}\n"
+
+    def visit_bullet_list(self, node: docutils.nodes.bullet_list) -> str:
+        parts = ["\n\n"]
+        for child in node.traverse():
+            # process list item
+            if isinstance(child, docutils.nodes.paragraph):
+                line_text = self.dispatch_visit(child)
+                parts.append("\t* %s\n" % textwrap.indent(line_text, "\t  ").strip())
+        return "".join(parts)
+
+    # visit_bullet_list collects and handles this with a more global view:
+    visit_list_item = _default_visit
+
+    def visit_warning(self, node: docutils.nodes.warning) -> str:
+        text = self._default_visit(node)
+        return "\n\n.. warning::\n%s\n" % textwrap.indent(text, "\t")
+
+    def visit_Text(self, node: docutils.nodes.Text) -> str:
+        """Leaf node"""
+        return str(node).replace("\n", " ")  # Prettier in generated HTML
+
+    def visit_problematic(self, node: docutils.nodes.problematic) -> str:
+        # api urls cleanup to generate valid links afterwards
+        text = self._default_visit(node)
+        subs_made = 1
+        while subs_made:
+            (text, subs_made) = re.subn(r"(:http:.*)(\(\w+\))", r"\1", text)
+        subs_made = 1
+        while subs_made:
+            (text, subs_made) = re.subn(r"(:http:.*)(\[.*\])", r"\1", text)
+        text = re.sub(r"([^:])//", r"\1/", text)
+        # transform references to api endpoints doc into valid rst links
+        text = re.sub(":http:get:`([^,`]*)`", r"`\1 <\1doc/>`_", text)
+        # transform references to some elements into bold text
+        text = re.sub(":http:header:`(.*)`", r"**\1**", text)
+        text = re.sub(":func:`(.*)`", r"**\1**", text)
+
         # extract example urls
         if ":swh_web_api:" in text:
-            examples_str = re.sub(".*`(.+)`.*", r"/api/1/\1", text)
+            # Extract examples to their own section
+            examples_str = re.sub(":swh_web_api:`(.+)`.*", r"/api/1/\1", text)
             self.data["examples"] += examples_str.split("\n")
+        return text
 
-    def visit_bullet_list(self, node):
-        # bullet list in endpoint description
-        if not self.field_list_visited:
-            self.data["description"] += "\n\n"
-            for child in node.traverse():
-                # process list item
-                if isinstance(child, docutils.nodes.paragraph):
-                    line_text = self.process_paragraph(str(child))
-                    self.data["description"] += "\t* %s\n" % line_text
-        elif self.current_json_obj:
-            self.current_json_obj["doc"] += "\n\n"
-            for child in node.traverse():
-                # process list item
-                if isinstance(child, docutils.nodes.paragraph):
-                    line_text = self.process_paragraph(str(child))
-                    self.current_json_obj["doc"] += "\t\t* %s\n" % line_text
-            self.current_json_obj = None
+    def visit_block_quote(self, node: docutils.nodes.block_quote) -> str:
+        return self._default_visit(node)
+        return (
+            f".. code-block::\n"
+            f"{textwrap.indent(self._default_visit(node), '   ')}\n"
+        )
 
-    def visit_warning(self, node):
-        text = self.process_paragraph(str(node))
-        rst_warning = "\n\n.. warning::\n%s\n" % textwrap.indent(text, "\t")
-        if rst_warning not in self.data["description"]:
-            self.data["description"] += rst_warning
+    def visit_title_reference(self, node: docutils.nodes.title_reference) -> str:
+        text = self._default_visit(node)
+        raise Exception(
+            f"Unexpected title reference. "
+            f"Possible cause: you used `{text}` instead of ``{text}``"
+        )
 
-    def unknown_visit(self, node):
-        pass
+    def visit_document(self, node: docutils.nodes.document) -> None:
+        text = self._default_visit(node)
+
+        # Strip examples; they are displayed separately
+        text = re.split("\n\\*\\*Examples?:\\*\\*\n", text)[0]
+
+        self.data["description"] = text.strip()
+
+    def unknown_visit(self, node) -> str:
+        raise NotImplementedError(
+            f"Unknown node type: {node.__class__.__name__}. Value: {node}"
+        )
 
     def unknown_departure(self, node):
         pass
@@ -316,10 +355,9 @@ def api_doc(
         if "hidden" not in tags_set:
             doc_data = get_doc_data(f, route, noargs)
             doc_desc = doc_data["description"]
-            first_dot_pos = doc_desc.find(".")
             APIUrls.add_doc_route(
                 route,
-                doc_desc[: first_dot_pos + 1],
+                re.split(r"\.\s", doc_desc)[0],
                 noargs=noargs,
                 api_version=api_version,
                 tags=tags_set,
@@ -399,7 +437,7 @@ def get_doc_data(f, route, noargs):
                 inputs_list += "\t* **%s (%s)**: %s\n" % (
                     inp["name"],
                     inp["type"],
-                    inp["doc"],
+                    textwrap.indent(inp["doc"], "\t  "),
                 )
         for ret in data["returns"]:
             # special case for array of non object type, for instance
@@ -408,7 +446,7 @@ def get_doc_data(f, route, noargs):
                 returns_list += "\t* **%s (%s)**: %s\n" % (
                     ret["name"],
                     ret["type"],
-                    ret["doc"],
+                    textwrap.indent(ret["doc"], "\t  "),
                 )
         data["inputs_list"] = inputs_list
         data["returns_list"] = returns_list
