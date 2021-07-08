@@ -167,18 +167,24 @@ describe('Test top-bar', function() {
       responses.push(genStatusResponse(std.status, std.statusCode));
     }
 
-    let i = 0;
-    for (const std of statusTestData) {
+    const checkStatusDisplay = (i) => {
       cy.visit(url);
       // trick to override the response of an intercepted request
       // https://github.com/cypress-io/cypress/issues/9302
       cy.intercept(`${statusUrl}/**`, req => req.reply(responses.shift()))
         .as(`getSwhStatusData${i}`);
       cy.wait(`@getSwhStatusData${i}`);
-      cy.get('.swh-current-status-indicator').should('have.class', std.color);
-      cy.get('#swh-current-status-description').should('have.text', std.status);
-      ++i;
-    }
+      cy.get('.swh-current-status-indicator').should('have.class', statusTestData[i].color);
+      cy.get('#swh-current-status-description').should('have.text', statusTestData[i].status);
+    };
+
+    checkStatusDisplay(0); // Operationnal
+    checkStatusDisplay(1); // Scheduled Maintenance
+    checkStatusDisplay(2); // Degraded Performance
+    checkStatusDisplay(3); // Partial Service Disruption
+    checkStatusDisplay(4); // Service Disruption
+    checkStatusDisplay(5); // Security Event
+
   });
 
   it('should not display swh status widget when data are not available', function() {
