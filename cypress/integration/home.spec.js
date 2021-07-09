@@ -31,8 +31,8 @@ describe('Home Page Tests', function() {
       .wait(500)
       .get('.swh-counter:visible')
       .then((counters) => {
-        for (let counter of counters) {
-          let innerText = $(counter).text();
+        for (const counter of counters) {
+          const innerText = $(counter).text();
           const value = parseInt(innerText.replace(/,/g, ''));
           assert.isAbove(value, 0);
         }
@@ -53,7 +53,7 @@ describe('Home Page Tests', function() {
       .wait(500)
       .get('.swh-counter:visible')
       .then((counters) => {
-        for (let counter of counters) {
+        for (const counter of counters) {
           const value = parseInt($(counter).text());
           assert.equal(value, 0);
         }

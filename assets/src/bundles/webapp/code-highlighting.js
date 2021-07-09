@@ -14,11 +14,11 @@ export async function highlightCode(showLineNumbers = true) {
   // keep track of the first highlighted line
   let firstHighlightedLine = null;
   // highlighting color
-  let lineHighlightColor = 'rgb(193, 255, 193)';
+  const lineHighlightColor = 'rgb(193, 255, 193)';
 
   // function to highlight a line
   function highlightLine(i) {
-    let lineTd = $(`.hljs-ln-line[data-line-number="${i}"]`);
+    const lineTd = $(`.hljs-ln-line[data-line-number="${i}"]`);
     lineTd.css('background-color', lineHighlightColor);
     return lineTd;
   }
@@ -40,8 +40,8 @@ export async function highlightCode(showLineNumbers = true) {
   // function to highlight lines based on a url fragment
   // in the form '#Lx' or '#Lx-Ly'
   function parseUrlFragmentForLinesToHighlight() {
-    let lines = [];
-    let linesRegexp = new RegExp(/L(\d+)/g);
+    const lines = [];
+    const linesRegexp = new RegExp(/L(\d+)/g);
     let line = linesRegexp.exec(window.location.hash);
     if (line === null) {
       return;
@@ -81,9 +81,9 @@ export async function highlightCode(showLineNumbers = true) {
     // can also be highlighted while holding the shift key)
     $('.swh-content').click(evt => {
       if (evt.target.classList.contains('hljs-ln-n')) {
-        let line = parseInt($(evt.target).data('line-number'));
+        const line = parseInt($(evt.target).data('line-number'));
         if (evt.shiftKey && firstHighlightedLine && line > firstHighlightedLine) {
-          let firstLine = firstHighlightedLine;
+          const firstLine = firstHighlightedLine;
           resetHighlightedLines();
           for (let i = firstLine; i <= line; ++i) {
             highlightLine(i);

@@ -19,7 +19,7 @@ function source(re) {
  * @returns {string}
  */
 function anyNumberOfTimes(re) {
-  return concat('(', re, ')*');
+  return concat('(?:', re, ')*');
 }
 
 /**
@@ -140,7 +140,7 @@ function gams(hljs) {
         returnBegin: true,
         contains: [
           {
-            className: 'meta-keyword',
+            className: 'keyword',
             begin: '^\\$[a-z0-9]+'
           }
         ]

@@ -1,11 +1,45 @@
+/**
+ * @param {string} value
+ * @returns {RegExp}
+ * */
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function source(re) {
+  if (!re) return null;
+  if (typeof re === "string") return re;
+
+  return re.source;
+}
+
+/**
+ * @param {RegExp | string } re
+ * @returns {string}
+ */
+function lookahead(re) {
+  return concat('(?=', re, ')');
+}
+
+/**
+ * @param {...(RegExp | string) } args
+ * @returns {string}
+ */
+function concat(...args) {
+  const joined = args.map((x) => source(x)).join("");
+  return joined;
+}
+
 /*
 Language: Nginx config
 Author: Peter Leonov <gojpeg@yandex.ru>
 Contributors: Ivan Sagalaev <maniac@softwaremaniacs.org>
-Category: common, config
+Category: config, web
 Website: https://www.nginx.com
 */
 
+/** @type LanguageFn */
 function nginx(hljs) {
   const VAR = {
     className: 'variable',
@@ -14,21 +48,44 @@ function nginx(hljs) {
         begin: /\$\d+/
       },
       {
-        begin: /\$\{/,
-        end: /\}/
+        begin: /\$\{\w+\}/
       },
       {
-        begin: /[$@]/ + hljs.UNDERSCORE_IDENT_RE
+        begin: concat(/[$@]/, hljs.UNDERSCORE_IDENT_RE)
       }
     ]
   };
+  const LITERALS = [
+    "on",
+    "off",
+    "yes",
+    "no",
+    "true",
+    "false",
+    "none",
+    "blocked",
+    "debug",
+    "info",
+    "notice",
+    "warn",
+    "error",
+    "crit",
+    "select",
+    "break",
+    "last",
+    "permanent",
+    "redirect",
+    "kqueue",
+    "rtsig",
+    "epoll",
+    "poll",
+    "/dev/poll"
+  ];
   const DEFAULT = {
     endsWithParent: true,
     keywords: {
-      $pattern: '[a-z/_]+',
-      literal:
-        'on off yes no true false none blocked debug info notice warn error crit ' +
-        'select break last permanent redirect kqueue rtsig epoll poll /dev/poll'
+      $pattern: /[a-z_]{2,}|\/dev\/poll/,
+      literal: LITERALS
     },
     relevance: 0,
     illegal: '=>',
@@ -95,7 +152,7 @@ function nginx(hljs) {
       // units
       {
         className: 'number',
-        begin: '\\b\\d+[kKmMgGdshdwy]*\\b',
+        begin: '\\b\\d+[kKmMgGdshdwy]?\\b',
         relevance: 0
       },
       VAR
@@ -108,21 +165,21 @@ function nginx(hljs) {
     contains: [
       hljs.HASH_COMMENT_MODE,
       {
-        begin: hljs.UNDERSCORE_IDENT_RE + '\\s+\\{',
-        returnBegin: true,
-        end: /\{/,
-        contains: [
-          {
-            className: 'section',
-            begin: hljs.UNDERSCORE_IDENT_RE
-          }
-        ],
+        beginKeywords: "upstream location",
+        end: /;|\{/,
+        contains: DEFAULT.contains,
+        keywords: {
+          section: "upstream location"
+        }
+      },
+      {
+        className: 'section',
+        begin: concat(hljs.UNDERSCORE_IDENT_RE + lookahead(/\s+\{/)),
         relevance: 0
       },
       {
-        begin: hljs.UNDERSCORE_IDENT_RE + '\\s',
+        begin: lookahead(hljs.UNDERSCORE_IDENT_RE + '\\s'),
         end: ';|\\{',
-        returnBegin: true,
         contains: [
           {
             className: 'attribute',
@@ -133,7 +190,7 @@ function nginx(hljs) {
         relevance: 0
       }
     ],
-    illegal: '[^\\s\\}]'
+    illegal: '[^\\s\\}\\{]'
   };
 }
 

@@ -1,15 +1,15 @@
 const MODES = (hljs) => {
   return {
     IMPORTANT: {
-      className: 'meta',
+      scope: 'meta',
       begin: '!important'
     },
     HEXCOLOR: {
-      className: 'number',
+      scope: 'number',
       begin: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})'
     },
     ATTRIBUTE_SELECTOR_MODE: {
-      className: 'selector-attr',
+      scope: 'selector-attr',
       begin: /\[/,
       end: /\]/,
       illegal: '$',
@@ -17,6 +17,23 @@ const MODES = (hljs) => {
         hljs.APOS_STRING_MODE,
         hljs.QUOTE_STRING_MODE
       ]
+    },
+    CSS_NUMBER_MODE: {
+      scope: 'number',
+      begin: hljs.NUMBER_RE + '(' +
+        '%|em|ex|ch|rem' +
+        '|vw|vh|vmin|vmax' +
+        '|cm|mm|in|pt|pc|px' +
+        '|deg|grad|rad|turn' +
+        '|s|ms' +
+        '|Hz|kHz' +
+        '|dpi|dpcm|dppx' +
+        ')?',
+      relevance: 0
+    },
+    CSS_VARIABLE: {
+      className: "attr",
+      begin: /--[A-Za-z][A-Za-z0-9_-]*/
     }
   };
 };
@@ -431,7 +448,7 @@ Language: SCSS
 Description: Scss is an extension of the syntax of CSS.
 Author: Kurt Emch <kurt@kurtemch.com>
 Website: https://sass-lang.com
-Category: common, css
+Category: common, css, web
 */
 
 /** @type LanguageFn */
@@ -484,8 +501,9 @@ function scss(hljs) {
       { // pseudo-selector params
         begin: /\(/,
         end: /\)/,
-        contains: [ hljs.CSS_NUMBER_MODE ]
+        contains: [ modes.CSS_NUMBER_MODE ]
       },
+      modes.CSS_VARIABLE,
       {
         className: 'attribute',
         begin: '\\b(' + ATTRIBUTES.join('|') + ')\\b'
@@ -499,7 +517,7 @@ function scss(hljs) {
         contains: [
           VARIABLE,
           modes.HEXCOLOR,
-          hljs.CSS_NUMBER_MODE,
+          modes.CSS_NUMBER_MODE,
           hljs.QUOTE_STRING_MODE,
           hljs.APOS_STRING_MODE,
           modes.IMPORTANT
@@ -510,8 +528,10 @@ function scss(hljs) {
       // which is what we want for page and font-face
       {
         begin: '@(page|font-face)',
-        lexemes: AT_IDENTIFIER,
-        keywords: '@page @font-face'
+        keywords: {
+          $pattern: AT_IDENTIFIER,
+          keyword: '@page @font-face'
+        }
       },
       {
         begin: '@',
@@ -535,7 +555,7 @@ function scss(hljs) {
           hljs.QUOTE_STRING_MODE,
           hljs.APOS_STRING_MODE,
           modes.HEXCOLOR,
-          hljs.CSS_NUMBER_MODE
+          modes.CSS_NUMBER_MODE
         ]
       }
     ]

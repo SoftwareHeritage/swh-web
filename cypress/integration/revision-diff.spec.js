@@ -81,12 +81,12 @@ describe('Test Diffs View', function() {
   });
 
   it('should list all files with changes', function() {
-    let files = new Set([]);
-    for (let change of diffData.changes) {
+    const files = new Set([]);
+    for (const change of diffData.changes) {
       files.add(change.from_path);
       files.add(change.to_path);
     }
-    for (let file of files) {
+    for (const file of files) {
       cy.get('#swh-revision-changes-list a')
         .contains(file)
         .should('be.visible');
@@ -115,7 +115,7 @@ describe('Test Diffs View', function() {
   });
 
   it('should have correct links in diff file names', function() {
-    for (let change of diffData.changes) {
+    for (const change of diffData.changes) {
       cy.get(`#swh-revision-changes-list a[href="#diff_${change.id}"`)
         .should('be.visible');
     }
@@ -124,7 +124,7 @@ describe('Test Diffs View', function() {
   it('should load unified diff by default', function() {
     cy.get('#swh-compute-all-diffs')
       .click();
-    for (let change of diffData.changes) {
+    for (const change of diffData.changes) {
       cy.get(`#${change.id}-unified-diff`)
         .should('be.visible');
       cy.get(`#${change.id}-split-diff`)
@@ -148,7 +148,7 @@ describe('Test Diffs View', function() {
     cy.get(`#${diffId} .hljs-ln-line`)
       .then(lines => {
         let inHighlightedRange = false;
-        for (let line of lines) {
+        for (const line of lines) {
           const lnNumber = $(line).data('line-number');
           if (lnNumber === start || lnNumber === end) {
             inHighlightedRange = true;
@@ -183,8 +183,8 @@ describe('Test Diffs View', function() {
         let endLinesStr = swh.revision.formatDiffLineNumbers(diffId, endLines[0], endLines[1]);
 
         // highlight a range of lines
-        let startElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${startLinesStr}"]`;
-        let endElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${endLinesStr}"]`;
+        const startElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${startLinesStr}"]`;
+        const endElt = `#${diffId}-unified-diff .hljs-ln-numbers[data-line-number="${endLinesStr}"]`;
         cy.get(startElt).click();
         cy.get(endElt).click({shiftKey: true});
 
@@ -215,8 +215,8 @@ describe('Test Diffs View', function() {
 
     const diffHighlightingData = diffsHighlightingData['unified'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     unifiedDiffHighlightingTest(diffId, startLines, endLines);
 
@@ -226,8 +226,8 @@ describe('Test Diffs View', function() {
 
     const diffHighlightingData = diffsHighlightingData['unified'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     unifiedDiffHighlightingTest(diffId, endLines, startLines);
 
@@ -256,8 +256,8 @@ describe('Test Diffs View', function() {
       // before testing diff highlighting
       .then(() => {
         // highlight a range of lines
-        let startElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${startLine}"]`;
-        let endElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${endLine}"]`;
+        const startElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${startLine}"]`;
+        const endElt = `#${singleDiffId} .hljs-ln-numbers[data-line-number="${endLine}"]`;
         cy.get(startElt).click();
         cy.get(endElt).click({shiftKey: true});
 
@@ -288,8 +288,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from lines when selecting them from top to bottom', function() {
     const diffHighlightingData = diffsHighlightingData['split-from'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     singleSpitDiffHighlightingTest(diffId, startLines, endLines, false);
   });
@@ -297,8 +297,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from lines when selecting them from bottom to top', function() {
     const diffHighlightingData = diffsHighlightingData['split-from'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     singleSpitDiffHighlightingTest(diffId, endLines, startLines, false);
   });
@@ -306,8 +306,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff to lines when selecting them from top to bottom', function() {
     const diffHighlightingData = diffsHighlightingData['split-to'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     singleSpitDiffHighlightingTest(diffId, startLines, endLines, true);
   });
@@ -316,8 +316,8 @@ describe('Test Diffs View', function() {
 
     const diffHighlightingData = diffsHighlightingData['split-to'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     singleSpitDiffHighlightingTest(diffId, endLines, startLines, true);
   });
@@ -441,8 +441,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from and to lines when selecting them from top-left to bottom-right', function() {
     const diffHighlightingData = diffsHighlightingData['split-from-top-to-bottom'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     splitDiffHighlightingTest(diffId, startLines, endLines);
   });
@@ -450,8 +450,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from and to lines when selecting them from bottom-right to top-left', function() {
     const diffHighlightingData = diffsHighlightingData['split-from-top-to-bottom'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     splitDiffHighlightingTest(diffId, endLines, startLines);
   });
@@ -459,8 +459,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from and to lines when selecting them from top-right to bottom-left', function() {
     const diffHighlightingData = diffsHighlightingData['split-to-top-from-bottom'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     splitDiffHighlightingTest(diffId, startLines, endLines);
   });
@@ -468,8 +468,8 @@ describe('Test Diffs View', function() {
   it('should highlight split diff from and to lines when selecting them from bottom-left to top-right', function() {
     const diffHighlightingData = diffsHighlightingData['split-to-top-from-bottom'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     splitDiffHighlightingTest(diffId, endLines, startLines);
   });
@@ -482,8 +482,8 @@ describe('Test Diffs View', function() {
       .click();
     const diffHighlightingData = diffsHighlightingData['unified'];
     const diffId = diffHighlightingData.diffId;
-    let startLines = diffHighlightingData.startLines;
-    let endLines = diffHighlightingData.endLines;
+    const startLines = diffHighlightingData.startLines;
+    const endLines = diffHighlightingData.endLines;
 
     unifiedDiffHighlightingTest(diffId, startLines, endLines);
 

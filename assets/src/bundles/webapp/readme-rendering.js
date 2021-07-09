@@ -11,7 +11,7 @@ import {decode} from 'html-encoder-decoder';
 
 export async function renderMarkdown(domElt, markdownDocUrl) {
 
-  let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
+  const showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
   // Adapted from https://github.com/Bloggify/showdown-highlight
@@ -20,16 +20,16 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
     return [{
       type: 'output',
       filter: function(text, converter, options) {
-        let left = '<pre><code\\b[^>]*>';
-        let right = '</code></pre>';
-        let flags = 'g';
-        let classAttr = 'class="';
-        let replacement = (wholeMatch, match, left, right) => {
+        const left = '<pre><code\\b[^>]*>';
+        const right = '</code></pre>';
+        const flags = 'g';
+        const classAttr = 'class="';
+        const replacement = (wholeMatch, match, left, right) => {
           match = decode(match);
-          let lang = (left.match(/class="([^ "]+)/) || [])[1];
+          const lang = (left.match(/class="([^ "]+)/) || [])[1];
 
           if (left.includes(classAttr)) {
-            let attrIndex = left.indexOf(classAttr) + classAttr.length;
+            const attrIndex = left.indexOf(classAttr) + classAttr.length;
             left = left.slice(0, attrIndex) + 'hljs ' + left.slice(attrIndex);
           } else {
             left = left.slice(0, -1) + ' class="hljs">';
@@ -48,7 +48,7 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
   }
 
   $(document).ready(async() => {
-    let converter = new showdown.Converter({
+    const converter = new showdown.Converter({
       tables: true,
       extensions: [showdownHighlight]
     });
@@ -68,11 +68,11 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
 
 export async function renderOrgData(domElt, orgDocData) {
 
-  let org = await import(/* webpackChunkName: "org" */ 'utils/org');
+  const org = await import(/* webpackChunkName: "org" */ 'utils/org');
 
-  let parser = new org.Parser();
-  let orgDocument = parser.parse(orgDocData, {toc: false});
-  let orgHTMLDocument = orgDocument.convert(org.ConverterHTML, {});
+  const parser = new org.Parser();
+  const orgDocument = parser.parse(orgDocData, {toc: false});
+  const orgHTMLDocument = orgDocument.convert(org.ConverterHTML, {});
   $(domElt).addClass('swh-org');
   $(domElt).html(swh.webapp.filterXSS(orgHTMLDocument.toString()));
   // remove toc and section numbers to get consistent
@@ -102,7 +102,7 @@ export function renderTxt(domElt, txtDocUrl) {
       handleFetchError(response);
       const data = await response.text();
 
-      let orgMode = '-*- mode: org -*-';
+      const orgMode = '-*- mode: org -*-';
       if (data.indexOf(orgMode) !== -1) {
         renderOrgData(domElt, data.replace(orgMode, ''));
       } else {

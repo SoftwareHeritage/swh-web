@@ -155,13 +155,15 @@ function ruby(hljs) {
       {
         begin: /\B\?\\?\S/
       },
-      { // heredocs
-        begin: /<<[-~]?'?(\w+)\n(?:[^\n]*\n)*?\s*\1\b/,
-        returnBegin: true,
+      // heredocs
+      {
+        // this guard makes sure that we have an entire heredoc and not a false
+        // positive (auto-detect, etc.)
+        begin: concat(
+          /<<[-~]?'?/,
+          lookahead(/(\w+)(?=\W)[^\n]*\n(?:[^\n]*\n)*?\s*\1\b/)
+        ),
         contains: [
-          {
-            begin: /<<[-~]?'?/
-          },
           hljs.END_SAME_AS_BEGIN({
             begin: /(\w+)/,
             end: /(\w+)/,
@@ -281,7 +283,7 @@ function ruby(hljs) {
     },
     NUMBER,
     {
-      // negative-look forward attemps to prevent false matches like:
+      // negative-look forward attempts to prevent false matches like:
       // @ident@ or $ident$ that might indicate this is not ruby at all
       className: "variable",
       begin: '(\\$\\W)|((\\$|@@?)(\\w+))(?=[^@$?])' + `(?![A-Za-z])(?![@$?'])`

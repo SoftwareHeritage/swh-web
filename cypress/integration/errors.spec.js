@@ -126,7 +126,7 @@ describe('Test Errors', function() {
     it(`should display 400 for invalid checksum for
         directory, snapshot, revision, content`, function() {
       const types = ['directory', 'snapshot', 'revision', 'content'];
-      for (let type of types) {
+      for (const type of types) {
         const url = this.Urls[`browse_${type}`](invalidChecksum);
         urlShouldShowError(url, {
           code: '400',

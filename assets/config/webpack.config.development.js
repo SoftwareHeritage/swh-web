@@ -45,7 +45,7 @@ fs.readdirSync(bundlesDir).forEach(file => {
 });
 
 // common loaders for css related assets (css, sass)
-let cssLoaders = [
+const cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
     loader: 'cache-loader'

@@ -29,7 +29,7 @@ function autoit(hljs) {
     "Tidy_On",
     "Tidy_Parameters"
   ];
-  
+
   const LITERAL = 'True False And Null Not Or Default';
 
   const BUILT_IN
@@ -83,7 +83,7 @@ function autoit(hljs) {
     begin: '#',
     end: '$',
     keywords: {
-      'meta-keyword': DIRECTIVES
+      keyword: DIRECTIVES
     },
     contains: [
       {
@@ -93,13 +93,13 @@ function autoit(hljs) {
       {
         beginKeywords: 'include',
         keywords: {
-          'meta-keyword': 'include'
+          keyword: 'include'
         },
         end: '$',
         contains: [
           STRING,
           {
-            className: 'meta-string',
+            className: 'string',
             variants: [
               {
                 begin: '<',
@@ -140,12 +140,11 @@ function autoit(hljs) {
   };
 
   const FUNCTION = {
-    className: 'function',
     beginKeywords: 'Func',
     end: '$',
     illegal: '\\$|\\[|%',
     contains: [
-      hljs.UNDERSCORE_TITLE_MODE,
+      hljs.inherit(hljs.UNDERSCORE_TITLE_MODE, { className: "title.function" }),
       {
         className: 'params',
         begin: '\\(',

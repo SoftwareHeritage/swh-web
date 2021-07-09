@@ -90,6 +90,7 @@ function reasonml(hljs) {
       className: 'module',
       begin: "\\b" + RE_MODULE_IDENT,
       returnBegin: true,
+      relevance: 0,
       end: "\.",
       contains: [
         {
@@ -233,6 +234,7 @@ function reasonml(hljs) {
           {
             begin: '\\(',
             end: '\\)',
+            relevance: 0,
             skip: true
           }
         ].concat(MODULE_ACCESS_CONTENTS)
@@ -309,6 +311,7 @@ function reasonml(hljs) {
           {
             begin: /\{/,
             end: /\}/,
+            relevance: 0,
             skip: true
           }
         ].concat(MODULE_ACCESS_CONTENTS)

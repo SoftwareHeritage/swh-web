@@ -8,7 +8,7 @@
 import {handleFetchError, handleFetchErrors, csrfPost} from 'utils/functions';
 import vaultTableRowTemplate from './vault-table-row.ejs';
 
-let progress =
+const progress =
   `<div class="progress">
     <div class="progress-bar progress-bar-success progress-bar-striped"
           role="progressbar" aria-valuenow="100" aria-valuemin="0"
@@ -16,7 +16,7 @@ let progress =
     </div>
   </div>;`;
 
-let pollingInterval = 5000;
+const pollingInterval = 5000;
 let checkVaultId;
 
 function updateProgressBar(progressBar, cookingTask) {
@@ -52,7 +52,7 @@ export async function fetchCookedObject(fetchUrl) {
     // link is dead
   } else {
     // get the associated cooking task
-    let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+    const vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
     for (let i = 0; i < vaultCookingTasks.length; ++i) {
       if (vaultCookingTasks[i].fetch_url === fetchUrl) {
         recookTask = vaultCookingTasks[i];
@@ -87,7 +87,7 @@ export async function recookObject() {
 
       // update task status
       recookTask.status = 'new';
-      let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+      const vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
       for (let i = 0; i < vaultCookingTasks.length; ++i) {
         if (vaultCookingTasks[i].object_id === recookTask.object_id) {
           vaultCookingTasks[i] = recookTask;
@@ -109,18 +109,18 @@ export async function recookObject() {
 }
 
 async function checkVaultCookingTasks() {
-  let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
+  const vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
   if (!vaultCookingTasks || vaultCookingTasks.length === 0) {
     $('.swh-vault-table tbody tr').remove();
     checkVaultId = setTimeout(checkVaultCookingTasks, pollingInterval);
     return;
   }
-  let cookingTaskRequests = [];
-  let tasks = {};
-  let currentObjectIds = [];
+  const cookingTaskRequests = [];
+  const tasks = {};
+  const currentObjectIds = [];
 
   for (let i = 0; i < vaultCookingTasks.length; ++i) {
-    let cookingTask = vaultCookingTasks[i];
+    const cookingTask = vaultCookingTasks[i];
     currentObjectIds.push(cookingTask.object_id);
     tasks[cookingTask.object_id] = cookingTask;
     let cookingUrl;
@@ -134,7 +134,7 @@ async function checkVaultCookingTasks() {
     }
   }
   $('.swh-vault-table tbody tr').each((i, row) => {
-    let objectId = $(row).find('.vault-object-info').data('object-id');
+    const objectId = $(row).find('.vault-object-info').data('object-id');
     if ($.inArray(objectId, currentObjectIds) === -1) {
       $(row).remove();
     }
@@ -144,16 +144,16 @@ async function checkVaultCookingTasks() {
     handleFetchErrors(responses);
     const cookingTasks = await Promise.all(responses.map(r => r.json()));
 
-    let table = $('#vault-cooking-tasks tbody');
+    const table = $('#vault-cooking-tasks tbody');
     for (let i = 0; i < cookingTasks.length; ++i) {
-      let cookingTask = tasks[cookingTasks[i].obj_id];
+      const cookingTask = tasks[cookingTasks[i].obj_id];
       cookingTask.status = cookingTasks[i].status;
       cookingTask.fetch_url = cookingTasks[i].fetch_url;
       cookingTask.progress_message = cookingTasks[i].progress_message;
     }
     for (let i = 0; i < vaultCookingTasks.length; ++i) {
-      let cookingTask = vaultCookingTasks[i];
-      let rowTask = $(`#vault-task-${cookingTask.object_id}`);
+      const cookingTask = vaultCookingTasks[i];
+      const rowTask = $(`#vault-task-${cookingTask.object_id}`);
 
       if (!rowTask.length) {
 
@@ -166,8 +166,8 @@ async function checkVaultCookingTasks() {
           }
         }
 
-        let progressBar = $.parseHTML(progress)[0];
-        let progressBarContent = $(progressBar).find('.progress-bar');
+        const progressBar = $.parseHTML(progress)[0];
+        const progressBarContent = $(progressBar).find('.progress-bar');
         updateProgressBar(progressBarContent, cookingTask);
         table.prepend(vaultTableRowTemplate({
           browseUrl: browseUrl,
@@ -177,9 +177,9 @@ async function checkVaultCookingTasks() {
           swh: swh
         }));
       } else {
-        let progressBar = rowTask.find('.progress-bar');
+        const progressBar = rowTask.find('.progress-bar');
         updateProgressBar(progressBar, cookingTask);
-        let downloadLink = rowTask.find('.vault-dl-link');
+        const downloadLink = rowTask.find('.vault-dl-link');
         if (cookingTask.status === 'done') {
           downloadLink[0].innerHTML =
               '<button class="btn btn-default btn-sm" ' +
@@ -217,11 +217,11 @@ export function initUi() {
 
   $('#vault-remove-tasks').click(() => {
     clearTimeout(checkVaultId);
-    let tasksToRemove = [];
+    const tasksToRemove = [];
     $('.swh-vault-table tbody tr').each((i, row) => {
-      let taskSelected = $(row).find('.vault-task-toggle-selection').prop('checked');
+      const taskSelected = $(row).find('.vault-task-toggle-selection').prop('checked');
       if (taskSelected) {
-        let objectId = $(row).find('.vault-object-info').data('object-id');
+        const objectId = $(row).find('.vault-object-info').data('object-id');
         tasksToRemove.push(objectId);
         $(row).remove();
       }

@@ -18,21 +18,20 @@ let nbChangedFiles = 0;
 // to track the number of already computed files diffs
 let nbDiffsComputed = 0;
 
-// the no newline at end of file marker from Github
-let noNewLineMarker = '<span class="no-nl-marker" title="No newline at end of file">' +
-                        '<svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16">' +
-                          '<path fill-rule="evenodd" d="M16 5v3c0 .55-.45 1-1 1h-3v2L9 8l3-3v2h2V5h2zM8 8c0 2.2-1.8 4-4 4s-4-1.8-4-4 1.8-4 4-4 4 1.8 4 4zM1.5 9.66L5.66 5.5C5.18 5.19 4.61 5 4 5 2.34 5 1 6.34 1 8c0 .61.19 1.17.5 1.66zM7 8c0-.61-.19-1.17-.5-1.66L2.34 10.5c.48.31 1.05.5 1.66.5 1.66 0 3-1.34 3-3z"></path>' +
-                        '</svg>' +
-                      '</span>';
+const noNewLineMarker =
+  '<span class="no-nl-marker" style="color: red;" title="No newline at end of file">' +
+    '<i class="mdi mdi-rotate-90 mdi-cancel" aria-hidden="true">' +
+    '<i class="mdi mdi-keyboard-return" aria-hidden="true">' +
+  '</span>';
 
 // to track the total number of added lines in files diffs
 let nbAdditions = 0;
 // to track the total number of deleted lines in files diffs
 let nbDeletions = 0;
 // to track the already computed diffs by id
-let computedDiffs = {};
+const computedDiffs = {};
 // map a diff id to its computation url
-let diffsUrls = {};
+const diffsUrls = {};
 // to keep track of diff lines to highlight
 let startLines = null;
 let endLines = null;
@@ -51,11 +50,11 @@ let currentTabName = 'Files';
 
 // to check if a DOM element is in the viewport
 function isInViewport(elt) {
-  let elementTop = $(elt).offset().top;
-  let elementBottom = elementTop + $(elt).outerHeight();
+  const elementTop = $(elt).offset().top;
+  const elementBottom = elementTop + $(elt).outerHeight();
 
-  let viewportTop = $(window).scrollTop();
-  let viewportBottom = viewportTop + $(window).height();
+  const viewportTop = $(window).scrollTop();
+  const viewportBottom = viewportTop + $(window).height();
 
   return elementBottom > viewportTop && elementTop < viewportBottom;
 }
@@ -81,14 +80,14 @@ export function formatDiffLineNumbers(diffId, fromLine, toLine) {
 function parseDiffHunkRangeIfAny(lineText) {
   let baseFromLine, baseToLine;
   if (lineText.startsWith('@@')) {
-    let linesInfoRegExp = new RegExp(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/gm);
-    let linesInfoRegExp2 = new RegExp(/^@@ -(\d+) \+(\d+),(\d+) @@$/gm);
-    let linesInfoRegExp3 = new RegExp(/^@@ -(\d+),(\d+) \+(\d+) @@$/gm);
-    let linesInfoRegExp4 = new RegExp(/^@@ -(\d+) \+(\d+) @@$/gm);
-    let linesInfo = linesInfoRegExp.exec(lineText);
-    let linesInfo2 = linesInfoRegExp2.exec(lineText);
-    let linesInfo3 = linesInfoRegExp3.exec(lineText);
-    let linesInfo4 = linesInfoRegExp4.exec(lineText);
+    const linesInfoRegExp = new RegExp(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/gm);
+    const linesInfoRegExp2 = new RegExp(/^@@ -(\d+) \+(\d+),(\d+) @@$/gm);
+    const linesInfoRegExp3 = new RegExp(/^@@ -(\d+),(\d+) \+(\d+) @@$/gm);
+    const linesInfoRegExp4 = new RegExp(/^@@ -(\d+) \+(\d+) @@$/gm);
+    const linesInfo = linesInfoRegExp.exec(lineText);
+    const linesInfo2 = linesInfoRegExp2.exec(lineText);
+    const linesInfo3 = linesInfoRegExp3.exec(lineText);
+    const linesInfo4 = linesInfoRegExp4.exec(lineText);
     if (linesInfo) {
       baseFromLine = parseInt(linesInfo[1]) - 1;
       baseToLine = parseInt(linesInfo[3]) - 1;
@@ -128,7 +127,7 @@ export function parseDiffLineNumbers(lineNumbersStr, from, to) {
     }
     lines = lines.map(x => toLnInt(x));
   } else {
-    let lineNumber = toLnInt(lineNumbersStr.trim());
+    const lineNumber = toLnInt(lineNumbersStr.trim());
     if (from) {
       lines = [lineNumber, 0];
     } else if (to) {
@@ -170,8 +169,8 @@ export function fragmentToSelectedDiffLines(fragment) {
 
 // function to highlight a single diff line
 function highlightDiffLine(diffId, i) {
-  let line = $(`#${diffId} .hljs-ln-line[data-line-number="${i}"]`);
-  let lineNumbers = $(`#${diffId} .hljs-ln-numbers[data-line-number="${i}"]`);
+  const line = $(`#${diffId} .hljs-ln-line[data-line-number="${i}"]`);
+  const lineNumbers = $(`#${diffId} .hljs-ln-numbers[data-line-number="${i}"]`);
   lineNumbers.css('color', 'black');
   lineNumbers.css('font-weight', 'bold');
   line.css('background-color', lineHighlightColor);
@@ -297,7 +296,7 @@ function highlightDiffLines(diffId, startLines, endLines, unified) {
     }
   }
 
-  let selectedLinesFragment = selectedDiffLinesToFragment(startLines, endLines, unified);
+  const selectedLinesFragment = selectedDiffLinesToFragment(startLines, endLines, unified);
   window.location.hash = `diff_${diffId}+${selectedLinesFragment}`;
   return firstHighlightedLine;
 }
@@ -318,7 +317,7 @@ export function showSplitDiff(diffId) {
 export async function computeDiff(diffUrl, diffId) {
 
   // force diff computation ?
-  let force = diffUrl.indexOf('force=true') !== -1;
+  const force = diffUrl.indexOf('force=true') !== -1;
 
   // it no forced computation and diff already computed, do nothing
   if (!force && computedDiffs.hasOwnProperty(diffId)) {
@@ -381,17 +380,17 @@ export async function computeDiff(diffUrl, diffId) {
     // but also compute line numbers for unified and side-by-side diffs
     let baseFromLine = '';
     let baseToLine = '';
-    let fromToLines = [];
-    let fromLines = [];
-    let toLines = [];
+    const fromToLines = [];
+    const fromLines = [];
+    const toLines = [];
     let maxNumberChars = 0;
     let diffFromStr = '';
     let diffToStr = '';
     let linesOffset = 0;
 
     $(`#${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-      let lnText = lnElt.nextSibling.innerText;
-      let linesInfo = parseDiffHunkRangeIfAny(lnText);
+      const lnText = lnElt.nextSibling.innerText;
+      const linesInfo = parseDiffHunkRangeIfAny(lnText);
       let fromLine = '';
       let toLine = '';
       // parsed lines info from the diff output
@@ -465,10 +464,10 @@ export async function computeDiff(diffUrl, diffId) {
 
     // diff highlighting for added/removed lines on top of code highlighting
     $(`.${diffId} .hljs-ln-numbers`).each((i, lnElt) => {
-      let lnText = lnElt.nextSibling.innerText;
+      const lnText = lnElt.nextSibling.innerText;
       if (lnText.startsWith('@@')) {
         $(lnElt).parent().addClass('swh-diff-lines-info');
-        let linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
+        const linesInfoText = $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text();
         $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').children().remove();
         $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').text('');
         $(lnElt).parent().find('.hljs-ln-code .hljs-ln-line').append(`<span class="hljs-meta">${linesInfoText}</span>`);
@@ -502,17 +501,17 @@ export async function computeDiff(diffUrl, diffId) {
     $(`.${diffId} .hljs-ln-code`).each((i, lnElt) => {
       if (lnElt.firstChild) {
         if (lnElt.firstChild.nodeName !== '#text') {
-          let lineText = lnElt.firstChild.innerHTML;
+          const lineText = lnElt.firstChild.innerHTML;
           if (lineText[0] === '-' || lineText[0] === '+') {
             lnElt.firstChild.innerHTML = lineText.substr(1);
-            let newTextNode = document.createTextNode(lineText[0]);
+            const newTextNode = document.createTextNode(lineText[0]);
             $(lnElt).prepend(newTextNode);
           }
         }
         $(lnElt).contents().filter((i, elt) => {
           return elt.nodeType === 3; // Node.TEXT_NODE
         }).each((i, textNode) => {
-          let swhNoNewLineMarker = '[swh-no-nl-marker]';
+          const swhNoNewLineMarker = '[swh-no-nl-marker]';
           if (textNode.textContent.indexOf(swhNoNewLineMarker) !== -1) {
             textNode.textContent = textNode.textContent.replace(swhNoNewLineMarker, '');
             $(lnElt).append($(noNewLineMarker));
@@ -570,7 +569,7 @@ function setDiffVisible(diffId) {
 function computeVisibleDiffs() {
   $('.swh-file-diff-panel').each((i, elt) => {
     if (isInViewport(elt)) {
-      let diffId = elt.id.replace('diff_', '');
+      const diffId = elt.id.replace('diff_', '');
       computeDiff(diffsUrls[diffId], diffId);
     }
   });
@@ -591,14 +590,14 @@ function genDiffPanel(diffData) {
 // setup waypoints to request diffs computation on the fly while scrolling
 function setupWaypoints() {
   for (let i = 0; i < changes.length; ++i) {
-    let diffData = changes[i];
+    const diffData = changes[i];
 
     // create a waypoint that will trigger diff computation when
     // the top of the diff panel hits the bottom of the viewport
     $(`#diff_${diffData.id}`).waypoint({
       handler: function() {
         if (isInViewport(this.element)) {
-          let diffId = this.element.id.replace('diff_', '');
+          const diffId = this.element.id.replace('diff_', '');
           computeDiff(diffsUrls[diffId], diffId);
           this.destroy();
         }
@@ -611,7 +610,7 @@ function setupWaypoints() {
     $(`#diff_${diffData.id}`).waypoint({
       handler: function() {
         if (isInViewport(this.element)) {
-          let diffId = this.element.id.replace('diff_', '');
+          const diffId = this.element.id.replace('diff_', '');
           computeDiff(diffsUrls[diffId], diffId);
           this.destroy();
         }
@@ -651,7 +650,7 @@ function scrollToDiffPanel(diffPanelId, setHash = true) {
 // callback when the user clicks on the 'Compute all diffs' button
 export function computeAllDiffs(event) {
   $(event.currentTarget).addClass('active');
-  for (let diffId in diffsUrls) {
+  for (const diffId in diffsUrls) {
     if (diffsUrls.hasOwnProperty(diffId)) {
       computeDiff(diffsUrls[diffId], diffId);
     }
@@ -701,7 +700,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
       }
 
       for (let i = 0; i < changes.length; ++i) {
-        let diffData = changes[i];
+        const diffData = changes[i];
         diffsUrls[diffData.id] = diffData.diff_url;
         $('#swh-revision-diffs').append(genDiffPanel(diffData));
       }
@@ -729,7 +728,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
 
     // callback when the user requests to scroll on a specific diff or back to top
     $('#swh-revision-changes-list a[href^="#"], #back-to-top a[href^="#"]').click(e => {
-      let href = $.attr(e.currentTarget, 'href');
+      const href = $.attr(e.currentTarget, 'href');
       scrollToDiffPanel(href);
       return false;
     });

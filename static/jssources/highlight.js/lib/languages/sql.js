@@ -23,6 +23,17 @@ function concat(...args) {
   return joined;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -31,7 +42,10 @@ function concat(...args) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 
@@ -463,7 +477,7 @@ function sql(hljs) {
     "unique",
     "unknown",
     "unnest",
-    "update   ",
+    "update",
     "upper",
     "user",
     "using",
@@ -637,6 +651,7 @@ function sql(hljs) {
 
   const FUNCTION_CALL = {
     begin: concat(/\b/, either(...FUNCTIONS), /\s*\(/),
+    relevance: 0,
     keywords: {
       built_in: FUNCTIONS
     }
@@ -673,6 +688,7 @@ function sql(hljs) {
     contains: [
       {
         begin: either(...COMBOS),
+        relevance: 0,
         keywords: {
           $pattern: /[\w\.]+/,
           keyword: KEYWORDS.concat(COMBOS),
