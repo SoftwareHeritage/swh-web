@@ -115,7 +115,7 @@ function verilog(hljs) {
         begin: '`',
         end: '$',
         keywords: {
-          'meta-keyword':
+          keyword:
             'define __FILE__ ' +
             '__LINE__ begin_keywords celldefine default_nettype define ' +
             'else elsif end_keywords endcelldefine endif ifdef ifndef ' +

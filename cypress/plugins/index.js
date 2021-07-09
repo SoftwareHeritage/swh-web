@@ -13,8 +13,8 @@ module.exports = (on, config) => {
   // produce JSON files prior launching browser in order to dynamically generate tests
   on('before:browser:launch', function(browser, launchOptions) {
     return new Promise((resolve) => {
-      let p1 = axios.get(`${config.baseUrl}/tests/data/content/code/extensions/`);
-      let p2 = axios.get(`${config.baseUrl}/tests/data/content/code/filenames/`);
+      const p1 = axios.get(`${config.baseUrl}/tests/data/content/code/extensions/`);
+      const p2 = axios.get(`${config.baseUrl}/tests/data/content/code/filenames/`);
       Promise.all([p1, p2])
         .then(function(responses) {
           fs.writeFileSync('cypress/fixtures/source-file-extensions.json', JSON.stringify(responses[0].data));

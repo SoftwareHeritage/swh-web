@@ -15,9 +15,9 @@ export async function renderPdf(pdfUrl) {
   let pageNum = 1;
   let pageRendering = false;
   let pageNumPending = null;
-  let defaultScale = 1.5;
-  let canvas = $('#pdf-canvas')[0];
-  let ctx = canvas.getContext('2d');
+  const defaultScale = 1.5;
+  const canvas = $('#pdf-canvas')[0];
+  const ctx = canvas.getContext('2d');
 
   // Get page info from document, resize canvas accordingly, and render page.
   async function renderPage(num) {
@@ -25,10 +25,10 @@ export async function renderPdf(pdfUrl) {
     // Using promise to fetch the page
     const page = await pdfDoc.getPage(num);
 
-    let divWidth = $('.swh-content').width();
-    let scale = Math.min(defaultScale, divWidth / page.getViewport({scale: 1.0}).width);
+    const divWidth = $('.swh-content').width();
+    const scale = Math.min(defaultScale, divWidth / page.getViewport({scale: 1.0}).width);
 
-    let viewport = page.getViewport({scale: scale});
+    const viewport = page.getViewport({scale: scale});
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
@@ -80,7 +80,7 @@ export async function renderPdf(pdfUrl) {
     queueRenderPage(pageNum);
   }
 
-  let pdfjs = await import(/* webpackChunkName: "pdfjs" */ 'pdfjs-dist');
+  const pdfjs = await import(/* webpackChunkName: "pdfjs" */ 'pdfjs-dist');
 
   pdfjs.GlobalWorkerOptions.workerSrc = staticAsset('js/pdf.worker.min.js');
 

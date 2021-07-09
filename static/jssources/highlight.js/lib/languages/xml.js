@@ -27,7 +27,7 @@ function lookahead(re) {
  * @returns {string}
  */
 function optional(re) {
-  return concat('(', re, ')?');
+  return concat('(?:', re, ')?');
 }
 
 /**
@@ -39,6 +39,17 @@ function concat(...args) {
   return joined;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -47,14 +58,17 @@ function concat(...args) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 
 /*
 Language: HTML, XML
 Website: https://www.w3.org/XML/
-Category: common
+Category: common, web
 Audit: 2020
 */
 
@@ -71,7 +85,7 @@ function xml(hljs) {
     begin: /\s/,
     contains: [
       {
-        className: 'meta-keyword',
+        className: 'keyword',
         begin: /#?[a-z_][a-z1-9_-]+/,
         illegal: /\n/
       }
@@ -82,10 +96,10 @@ function xml(hljs) {
     end: /\)/
   });
   const APOS_META_STRING_MODE = hljs.inherit(hljs.APOS_STRING_MODE, {
-    className: 'meta-string'
+    className: 'string'
   });
   const QUOTE_META_STRING_MODE = hljs.inherit(hljs.QUOTE_STRING_MODE, {
-    className: 'meta-string'
+    className: 'string'
   });
   const TAG_INTERNALS = {
     endsWithParent: true,
@@ -193,8 +207,7 @@ function xml(hljs) {
         /*
         The lookahead pattern (?=...) ensures that 'begin' only matches
         '<style' as a single word, followed by a whitespace or an
-        ending braket. The '$' is needed for the lexeme to be recognized
-        by hljs.subMode() that tests lexemes outside the stream.
+        ending bracket.
         */
         begin: /<style(?=\s|>)/,
         end: />/,

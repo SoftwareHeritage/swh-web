@@ -1,15 +1,15 @@
 const MODES = (hljs) => {
   return {
     IMPORTANT: {
-      className: 'meta',
+      scope: 'meta',
       begin: '!important'
     },
     HEXCOLOR: {
-      className: 'number',
+      scope: 'number',
       begin: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})'
     },
     ATTRIBUTE_SELECTOR_MODE: {
-      className: 'selector-attr',
+      scope: 'selector-attr',
       begin: /\[/,
       end: /\]/,
       illegal: '$',
@@ -17,6 +17,23 @@ const MODES = (hljs) => {
         hljs.APOS_STRING_MODE,
         hljs.QUOTE_STRING_MODE
       ]
+    },
+    CSS_NUMBER_MODE: {
+      scope: 'number',
+      begin: hljs.NUMBER_RE + '(' +
+        '%|em|ex|ch|rem' +
+        '|vw|vh|vmin|vmax' +
+        '|cm|mm|in|pt|pc|px' +
+        '|deg|grad|rad|turn' +
+        '|s|ms' +
+        '|Hz|kHz' +
+        '|dpi|dpcm|dppx' +
+        ')?',
+      relevance: 0
+    },
+    CSS_VARIABLE: {
+      className: "attr",
+      begin: /--[A-Za-z][A-Za-z0-9_-]*/
     }
   };
 };
@@ -461,7 +478,7 @@ function concat(...args) {
 
 /*
 Language: CSS
-Category: common, css
+Category: common, css, web
 Website: https://developer.mozilla.org/en-US/docs/Web/CSS
 */
 
@@ -500,7 +517,7 @@ function css(hljs) {
       VENDOR_PREFIX,
       // to recognize keyframe 40% etc which are outside the scope of our
       // attribute value mode
-      hljs.CSS_NUMBER_MODE,
+      modes.CSS_NUMBER_MODE,
       {
         className: 'selector-id',
         begin: /#[A-Za-z0-9_-]+/,
@@ -529,6 +546,7 @@ function css(hljs) {
       //   end: /\)/,
       //   contains: [ hljs.CSS_NUMBER_MODE ]
       // },
+      modes.CSS_VARIABLE,
       {
         className: 'attribute',
         begin: '\\b(' + ATTRIBUTES.join('|') + ')\\b'
@@ -540,7 +558,7 @@ function css(hljs) {
         contains: [
           modes.HEXCOLOR,
           modes.IMPORTANT,
-          hljs.CSS_NUMBER_MODE,
+          modes.CSS_NUMBER_MODE,
           ...STRINGS,
           // needed to highlight these as strings and to avoid issues with
           // illegal characters that might be inside urls that would tigger the
@@ -592,7 +610,7 @@ function css(hljs) {
                 className: "attribute"
               },
               ...STRINGS,
-              hljs.CSS_NUMBER_MODE
+              modes.CSS_NUMBER_MODE
             ]
           }
         ]

@@ -93,6 +93,7 @@ assets/src/utils/d3.js
 assets/src/utils/functions.js
 assets/src/utils/highlightjs.css
 assets/src/utils/highlightjs.js
+assets/src/utils/hljs-swh-theme.css
 assets/src/utils/mathjax.js
 assets/src/utils/org.css
 assets/src/utils/org.js
@@ -158,8 +159,8 @@ static/css/auth.0336a94c2c02b4b2a4f4.css
 static/css/auth.0336a94c2c02b4b2a4f4.css.map
 static/css/browse.6315ef52ed73df532bed.css
 static/css/browse.6315ef52ed73df532bed.css.map
-static/css/highlightjs.bcd8fe185c46496f58e9.css
-static/css/highlightjs.bcd8fe185c46496f58e9.css.map
+static/css/highlightjs.ae43064ab38a65a04d81.css
+static/css/highlightjs.ae43064ab38a65a04d81.css.map
 static/css/org.fdb2f5350b5554094ca4.css
 static/css/org.fdb2f5350b5554094ca4.css.map
 static/css/origin.c135f5ec1d6362c79072.css
@@ -278,8 +279,8 @@ static/img/logos/npm.png
 static/img/logos/pypi.svg
 static/img/thirdParty/chosen-sprite.png
 static/img/thirdParty/chosen-sprite@2x.png
-static/js/admin.8113605147b49fe00feb.js
-static/js/admin.8113605147b49fe00feb.js.map
+static/js/admin.a03f59a7bf097dc0faa2.js
+static/js/admin.a03f59a7bf097dc0faa2.js.map
 static/js/auth.84a43bdafbd6e25ab35f.js
 static/js/auth.84a43bdafbd6e25ab35f.js.map
 static/js/browse.689bb7130d5975bba0e2.js
@@ -287,8 +288,8 @@ static/js/browse.689bb7130d5975bba0e2.js.LICENSE.txt
 static/js/browse.689bb7130d5975bba0e2.js.map
 static/js/d3.7143b32998469aa63c71.js
 static/js/d3.7143b32998469aa63c71.js.map
-static/js/highlightjs.20b210fb4e503f75c059.js
-static/js/highlightjs.20b210fb4e503f75c059.js.map
+static/js/highlightjs.f08af5f59a0929ede3f6.js
+static/js/highlightjs.f08af5f59a0929ede3f6.js.map
 static/js/mathjax.5b863a88bcd7fc73f3b0.js
 static/js/mathjax.5b863a88bcd7fc73f3b0.js.map
 static/js/org.b02f46435f38cc2d8ead.js
@@ -299,11 +300,11 @@ static/js/pdf.worker.min.js
 static/js/pdf.worker.min.js.LICENSE.txt
 static/js/pdfjs.bd2f077bd992fa751c80.js
 static/js/pdfjs.bd2f077bd992fa751c80.js.map
-static/js/revision.403ed7ca978e654f777f.js
-static/js/revision.403ed7ca978e654f777f.js.LICENSE.txt
-static/js/revision.403ed7ca978e654f777f.js.map
-static/js/save.98372fdae0bd438ec2ec.js
-static/js/save.98372fdae0bd438ec2ec.js.map
+static/js/revision.439a17cca3c59f6109c0.js
+static/js/revision.439a17cca3c59f6109c0.js.LICENSE.txt
+static/js/revision.439a17cca3c59f6109c0.js.map
+static/js/save.5ec5c0c6196225f90faa.js
+static/js/save.5ec5c0c6196225f90faa.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
@@ -312,9 +313,9 @@ static/js/vault.9be65f6b604c3c7b81ea.js.map
 static/js/vendors.231fa04dd7b1fa6e9c78.js
 static/js/vendors.231fa04dd7b1fa6e9c78.js.LICENSE.txt
 static/js/vendors.231fa04dd7b1fa6e9c78.js.map
-static/js/webapp.28372dc941ded9c02bc0.js
-static/js/webapp.28372dc941ded9c02bc0.js.LICENSE.txt
-static/js/webapp.28372dc941ded9c02bc0.js.map
+static/js/webapp.2714f088f34ed2ef7863.js
+static/js/webapp.2714f088f34ed2ef7863.js.LICENSE.txt
+static/js/webapp.2714f088f34ed2ef7863.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
@@ -1153,6 +1154,7 @@ static/jssources/expose-loader/dist/runtime/getGlobalThis.js
 static/jssources/he/LICENSE-MIT.txt.txt
 static/jssources/he/he.js
 static/jssources/highlight.js/LICENSE.txt
+static/jssources/highlight.js/es/index.js
 static/jssources/highlight.js/lib/core.js
 static/jssources/highlight.js/lib/index.js
 static/jssources/highlight.js/lib/languages/1c.js
@@ -1177,7 +1179,6 @@ static/jssources/highlight.js/lib/languages/bash.js
 static/jssources/highlight.js/lib/languages/basic.js
 static/jssources/highlight.js/lib/languages/bnf.js
 static/jssources/highlight.js/lib/languages/brainfuck.js
-static/jssources/highlight.js/lib/languages/c-like.js
 static/jssources/highlight.js/lib/languages/c.js
 static/jssources/highlight.js/lib/languages/cal.js
 static/jssources/highlight.js/lib/languages/capnproto.js
@@ -1232,7 +1233,6 @@ static/jssources/highlight.js/lib/languages/handlebars.js
 static/jssources/highlight.js/lib/languages/haskell.js
 static/jssources/highlight.js/lib/languages/haxe.js
 static/jssources/highlight.js/lib/languages/hsp.js
-static/jssources/highlight.js/lib/languages/htmlbars.js
 static/jssources/highlight.js/lib/languages/http.js
 static/jssources/highlight.js/lib/languages/hy.js
 static/jssources/highlight.js/lib/languages/inform7.js
@@ -1270,6 +1270,7 @@ static/jssources/highlight.js/lib/languages/mojolicious.js
 static/jssources/highlight.js/lib/languages/monkey.js
 static/jssources/highlight.js/lib/languages/moonscript.js
 static/jssources/highlight.js/lib/languages/n1ql.js
+static/jssources/highlight.js/lib/languages/nestedtext.js
 static/jssources/highlight.js/lib/languages/nginx.js
 static/jssources/highlight.js/lib/languages/nim.js
 static/jssources/highlight.js/lib/languages/nix.js
@@ -1319,7 +1320,6 @@ static/jssources/highlight.js/lib/languages/smalltalk.js
 static/jssources/highlight.js/lib/languages/sml.js
 static/jssources/highlight.js/lib/languages/sqf.js
 static/jssources/highlight.js/lib/languages/sql.js
-static/jssources/highlight.js/lib/languages/sql_more.js
 static/jssources/highlight.js/lib/languages/stan.js
 static/jssources/highlight.js/lib/languages/stata.js
 static/jssources/highlight.js/lib/languages/step21.js
@@ -1340,6 +1340,8 @@ static/jssources/highlight.js/lib/languages/vbscript.js
 static/jssources/highlight.js/lib/languages/verilog.js
 static/jssources/highlight.js/lib/languages/vhdl.js
 static/jssources/highlight.js/lib/languages/vim.js
+static/jssources/highlight.js/lib/languages/wasm.js
+static/jssources/highlight.js/lib/languages/wren.js
 static/jssources/highlight.js/lib/languages/x86asm.js
 static/jssources/highlight.js/lib/languages/xl.js
 static/jssources/highlight.js/lib/languages/xml.js

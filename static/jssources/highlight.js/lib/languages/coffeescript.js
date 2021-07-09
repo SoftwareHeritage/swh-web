@@ -119,21 +119,8 @@ const BUILT_IN_GLOBALS = [
   "unescape"
 ];
 
-const BUILT_IN_VARIABLES = [
-  "arguments",
-  "this",
-  "super",
-  "console",
-  "window",
-  "document",
-  "localStorage",
-  "module",
-  "global" // Node.js
-];
-
 const BUILT_INS = [].concat(
   BUILT_IN_GLOBALS,
-  BUILT_IN_VARIABLES,
   TYPES,
   ERROR_TYPES
 );
@@ -143,7 +130,7 @@ Language: CoffeeScript
 Author: Dmytrii Nagirniak <dnagir@gmail.com>
 Contributors: Oleg Efimov <efimovov@gmail.com>, Cédric Néhémie <cedric.nehemie@gmail.com>
 Description: CoffeeScript is a programming language that transcompiles to JavaScript. For info about language see http://coffeescript.org/
-Category: common, scripting
+Category: scripting
 Website: https://coffeescript.org
 */
 
@@ -302,7 +289,8 @@ function coffeescript(hljs) {
     ],
     keywords: KEYWORDS$1,
     illegal: /\/\*/,
-    contains: EXPRESSIONS.concat([
+    contains: [
+      ...EXPRESSIONS,
       hljs.COMMENT('###', '###'),
       hljs.HASH_COMMENT_MODE,
       {
@@ -349,7 +337,7 @@ function coffeescript(hljs) {
         returnEnd: true,
         relevance: 0
       }
-    ])
+    ]
   };
 }
 

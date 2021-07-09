@@ -6646,7 +6646,7 @@ function source(re) {
  * @returns {string}
  */
 function optional(re) {
-  return concat('(', re, ')?');
+  return concat('(?:', re, ')?');
 }
 
 /**
@@ -6658,6 +6658,17 @@ function concat(...args) {
   return joined;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -6666,7 +6677,10 @@ function concat(...args) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 

@@ -20,17 +20,15 @@ function haml(hljs) {
       // FIXME these comments should be allowed to span indented lines
       hljs.COMMENT(
         '^\\s*(!=#|=#|-#|/).*$',
-        false,
-        {
-          relevance: 0
-        }
+        null,
+        { relevance: 0 }
       ),
       {
         begin: '^\\s*(-|=|!=)(?!#)',
-        starts: {
-          end: '\\n',
-          subLanguage: 'ruby'
-        }
+        end: /$/,
+        subLanguage: 'ruby',
+        excludeBegin: true,
+        excludeEnd: true
       },
       {
         className: 'tag',
@@ -105,10 +103,10 @@ function haml(hljs) {
       },
       {
         begin: /#\{/,
-        starts: {
-          end: /\}/,
-          subLanguage: 'ruby'
-        }
+        end: /\}/,
+        subLanguage: 'ruby',
+        excludeBegin: true,
+        excludeEnd: true
       }
     ]
   };

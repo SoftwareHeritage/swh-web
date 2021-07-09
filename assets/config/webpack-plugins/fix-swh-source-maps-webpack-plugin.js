@@ -32,10 +32,10 @@ class FixSwhSourceMapsPlugin {
           }).forEach(key => {
             let bundleName = key.replace(/^js\//, '');
             bundleName = bundleName.replace(/^css\//, '');
-            let pos = bundleName.indexOf('.');
+            const pos = bundleName.indexOf('.');
             bundleName = bundleName.slice(0, pos);
-            let asset = compilation.assets[key];
-            let source = asset.source().replace(/swh.\[name\]/g, 'swh.' + bundleName);
+            const asset = compilation.assets[key];
+            const source = asset.source().replace(/swh.\[name\]/g, 'swh.' + bundleName);
             compilation.updateAsset(key, new sources.RawSource(source));
           });
         }

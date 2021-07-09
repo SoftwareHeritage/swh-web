@@ -579,23 +579,27 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
+    rv.data = sorted(rv.data, key=lambda d: d["url"])
 
-    expected_data = [
-        {
-            "url": origin_url,
-            "metadata": {
-                "from_revision": master_rev,
-                "tool": {
-                    "name": INDEXER_TOOL["tool_name"],
-                    "version": INDEXER_TOOL["tool_version"],
-                    "configuration": INDEXER_TOOL["tool_configuration"],
-                    "id": INDEXER_TOOL["id"],
+    expected_data = sorted(
+        [
+            {
+                "url": origin_url,
+                "metadata": {
+                    "from_revision": ORIGIN_MASTER_REVISION[origin_url],
+                    "tool": {
+                        "name": INDEXER_TOOL["tool_name"],
+                        "version": INDEXER_TOOL["tool_version"],
+                        "configuration": INDEXER_TOOL["tool_configuration"],
+                        "id": INDEXER_TOOL["id"],
+                    },
+                    "mappings": [],
                 },
-                "mappings": [],
-            },
-        }
-        for origin_url, master_rev in ORIGIN_MASTER_REVISION.items()
-    ]
+            }
+            for origin_url in sorted(ORIGIN_MASTER_REVISION.keys())
+        ],
+        key=lambda d: d["url"],
+    )
 
     for i in range(len(expected_data)):
         expected = expected_data[i]
@@ -605,6 +609,7 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         assert any(
             [ORIGIN_METADATA_VALUE in json.dumps(val) for val in metadata.values()]
         )
+
         assert response == expected
 
 
@@ -655,8 +660,8 @@ def test_api_origin_intrinsic_metadata(api_client, origin):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    expected_data = {ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE}
-    assert rv.data == expected_data
+    assert ORIGIN_METADATA_KEY in rv.data
+    assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
 
 
 def test_api_origin_metadata_search_invalid(api_client, mocker):

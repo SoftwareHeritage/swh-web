@@ -56,7 +56,7 @@ class GenerateWebLabelsPlugin {
     compiler.hooks.done.tap(pluginName, statsObj => {
 
       // get the stats object in JSON format
-      let stats = statsObj.toJson();
+      const stats = statsObj.toJson();
       this.stats = stats;
 
       // set output folder
@@ -72,7 +72,7 @@ class GenerateWebLabelsPlugin {
       // map each generated webpack chunk to its js asset
       Object.keys(stats.assetsByChunkName).forEach((chunkName, i) => {
         if (Array.isArray(stats.assetsByChunkName[chunkName])) {
-          for (let asset of stats.assetsByChunkName[chunkName]) {
+          for (const asset of stats.assetsByChunkName[chunkName]) {
             if (asset.endsWith('.js')) {
               this.chunkNameToJsAsset[chunkName] = asset;
               this.chunkNameToJsAsset[i] = asset;
@@ -101,22 +101,22 @@ class GenerateWebLabelsPlugin {
         }
 
         // do not process modules in the exclusion list
-        for (let toExclude of this.exclude) {
+        for (const toExclude of this.exclude) {
           if (srcFilePath.startsWith(toExclude)) {
             return;
           }
         }
 
         // remove webpack loader call if any
-        let loaderEndPos = srcFilePath.indexOf('!');
+        const loaderEndPos = srcFilePath.indexOf('!');
         if (loaderEndPos !== -1) {
           srcFilePath = srcFilePath.slice(loaderEndPos + 1);
         }
 
         // iterate on all chunks containing the module
         mod.chunks.forEach(chunk => {
-          let chunkName = this.chunkIdToName[chunk];
-          let chunkJsAsset = stats.publicPath + this.chunkNameToJsAsset[chunkName];
+          const chunkName = this.chunkIdToName[chunk];
+          const chunkJsAsset = stats.publicPath + this.chunkNameToJsAsset[chunkName];
 
           // init the chunk to source files mapping if needed
           if (!this.chunkJsAssetToSrcFiles.hasOwnProperty(chunkJsAsset)) {
@@ -129,31 +129,31 @@ class GenerateWebLabelsPlugin {
           }
 
           // init source file metadata
-          let srcFileData = {'id': this.cleanupPath(srcFilePath)};
+          const srcFileData = {'id': this.cleanupPath(srcFilePath)};
 
           // find and parse the corresponding package.json file
           let packageJsonPath;
-          let nodeModule = srcFilePath.startsWith('./node_modules/');
+          const nodeModule = srcFilePath.startsWith('./node_modules/');
           if (nodeModule) {
             packageJsonPath = this.findPackageJsonPath(srcFilePath);
           } else {
             packageJsonPath = './package.json';
           }
-          let packageJson = this.parsePackageJson(packageJsonPath);
+          const packageJson = this.parsePackageJson(packageJsonPath);
 
           // extract license information, overriding it if needed
           let licenseOverridden = false;
           let licenseFilePath;
           if (this.options['licenseOverride']) {
-            for (let srcFilePrefixKey of Object.keys(this.options['licenseOverride'])) {
+            for (const srcFilePrefixKey of Object.keys(this.options['licenseOverride'])) {
               let srcFilePrefix = srcFilePrefixKey;
               if (!srcFilePrefixKey.startsWith('.')) {
                 srcFilePrefix = './' + path.join('node_modules', srcFilePrefixKey);
               }
               if (srcFilePath.startsWith(srcFilePrefix)) {
-                let spdxLicenseExpression = this.options['licenseOverride'][srcFilePrefixKey]['spdxLicenseExpression'];
+                const spdxLicenseExpression = this.options['licenseOverride'][srcFilePrefixKey]['spdxLicenseExpression'];
                 licenseFilePath = this.options['licenseOverride'][srcFilePrefixKey]['licenseFilePath'];
-                let parsedSpdxLicenses = this.parseSpdxLicenseExpression(spdxLicenseExpression, `file ${srcFilePath}`);
+                const parsedSpdxLicenses = this.parseSpdxLicenseExpression(spdxLicenseExpression, `file ${srcFilePath}`);
                 srcFileData['licenses'] = this.spdxToWebLabelsLicenses(parsedSpdxLicenses);
                 licenseOverridden = true;
                 break;
@@ -163,12 +163,12 @@ class GenerateWebLabelsPlugin {
 
           if (!licenseOverridden) {
             srcFileData['licenses'] = this.extractLicenseInformation(packageJson);
-            let licenseDir = path.join(...packageJsonPath.split('/').slice(0, -1));
+            const licenseDir = path.join(...packageJsonPath.split('/').slice(0, -1));
             licenseFilePath = this.findLicenseFile(licenseDir);
           }
 
           // copy original license file and get its url
-          let licenseCopyUrl = this.copyLicenseFile(licenseFilePath);
+          const licenseCopyUrl = this.copyLicenseFile(licenseFilePath);
           srcFileData['licenses'].forEach(license => {
             license['copy_url'] = licenseCopyUrl;
           });
@@ -186,20 +186,20 @@ class GenerateWebLabelsPlugin {
       // process additional scripts if needed
       if (this.options['additionalScripts']) {
         for (let script of Object.keys(this.options['additionalScripts'])) {
-          let scriptFilesData = this.options['additionalScripts'][script];
+          const scriptFilesData = this.options['additionalScripts'][script];
           if (script.indexOf('://') === -1 && !script.startsWith('/')) {
             script = stats.publicPath + script;
           }
           this.chunkJsAssetToSrcFiles[script] = [];
           this.srcIdsInChunkJsAsset[script] = new Set();
-          for (let scriptSrc of scriptFilesData) {
-            let scriptSrcData = {'id': scriptSrc['id']};
-            let licenceFilePath = scriptSrc['licenseFilePath'];
-            let parsedSpdxLicenses = this.parseSpdxLicenseExpression(scriptSrc['spdxLicenseExpression'],
-                                                                     `file ${scriptSrc['path']}`);
+          for (const scriptSrc of scriptFilesData) {
+            const scriptSrcData = {'id': scriptSrc['id']};
+            const licenceFilePath = scriptSrc['licenseFilePath'];
+            const parsedSpdxLicenses = this.parseSpdxLicenseExpression(scriptSrc['spdxLicenseExpression'],
+                                                                       `file ${scriptSrc['path']}`);
             scriptSrcData['licenses'] = this.spdxToWebLabelsLicenses(parsedSpdxLicenses);
             if (licenceFilePath.indexOf('://') === -1 && !licenceFilePath.startsWith('/')) {
-              let licenseCopyUrl = this.copyLicenseFile(licenceFilePath);
+              const licenseCopyUrl = this.copyLicenseFile(licenceFilePath);
               scriptSrcData['licenses'].forEach(license => {
                 license['copy_url'] = licenseCopyUrl;
               });
@@ -219,18 +219,18 @@ class GenerateWebLabelsPlugin {
         }
       }
 
-      for (let srcFiles of Object.values(this.chunkJsAssetToSrcFiles)) {
+      for (const srcFiles of Object.values(this.chunkJsAssetToSrcFiles)) {
         srcFiles.sort((a, b) => a.id.localeCompare(b.id));
       }
 
       if (this.outputType === 'json') {
         // generate the jslicenses.json file
-        let weblabelsData = JSON.stringify(this.chunkJsAssetToSrcFiles);
-        let weblabelsJsonFile = path.join(this.weblabelsOutputDir, 'jslicenses.json');
+        const weblabelsData = JSON.stringify(this.chunkJsAssetToSrcFiles);
+        const weblabelsJsonFile = path.join(this.weblabelsOutputDir, 'jslicenses.json');
         fs.writeFileSync(weblabelsJsonFile, weblabelsData);
       } else {
         // generate the jslicenses.html file
-        let weblabelsPageFile = path.join(this.weblabelsOutputDir, 'jslicenses.html');
+        const weblabelsPageFile = path.join(this.weblabelsOutputDir, 'jslicenses.html');
         ejs.renderFile(path.join(__dirname, 'jslicenses.ejs'),
                        {'jslicenses_data': this.chunkJsAssetToSrcFiles},
                        {'rmWhitespace': true},
@@ -253,7 +253,7 @@ class GenerateWebLabelsPlugin {
   }
 
   findPackageJsonPath(srcFilePath) {
-    let pathSplit = srcFilePath.split('/');
+    const pathSplit = srcFilePath.split('/');
     let packageJsonPath;
     for (let i = 3; i < pathSplit.length; ++i) {
       packageJsonPath = path.join(...pathSplit.slice(0, i), 'package.json');
@@ -298,7 +298,7 @@ class GenerateWebLabelsPlugin {
 
   parsePackageJson(packageJsonPath) {
     if (!this.packageJsonCache.hasOwnProperty(packageJsonPath)) {
-      let packageJsonStr = fs.readFileSync(packageJsonPath).toString('utf8');
+      const packageJsonStr = fs.readFileSync(packageJsonPath).toString('utf8');
       this.packageJsonCache[packageJsonPath] = JSON.parse(packageJsonStr);
     }
     return this.packageJsonCache[packageJsonPath];
@@ -324,7 +324,7 @@ class GenerateWebLabelsPlugin {
   spdxToWebLabelsLicense(spdxLicenceId) {
     for (let i = 0; i < spdxLicensesMapping.length; ++i) {
       if (spdxLicensesMapping[i]['spdx_ids'].indexOf(spdxLicenceId) !== -1) {
-        let licenseData = Object.assign({}, spdxLicensesMapping[i]);
+        const licenseData = Object.assign({}, spdxLicensesMapping[i]);
         delete licenseData['spdx_ids'];
         delete licenseData['magnet_link'];
         licenseData['copy_url'] = '';
@@ -349,7 +349,7 @@ class GenerateWebLabelsPlugin {
       ret.push(this.spdxToWebLabelsLicense(spdxLicenses['license']));
     } else if (spdxLicenses.hasOwnProperty('left')) {
       if (spdxLicenses['left'].hasOwnProperty('license')) {
-        let licenseData = this.spdxToWebLabelsLicense(spdxLicenses['left']['license']);
+        const licenseData = this.spdxToWebLabelsLicense(spdxLicenses['left']['license']);
         ret.push(licenseData);
       } else {
         ret = ret.concat(this.spdxToWebLabelsLicenses(spdxLicenses['left']));
@@ -365,9 +365,9 @@ class GenerateWebLabelsPlugin {
       spdxLicenseExpression = packageJson['license'];
     } else if (packageJson.hasOwnProperty('licenses')) {
       // for node packages using deprecated licenses property
-      let licenses = packageJson['licenses'];
+      const licenses = packageJson['licenses'];
       if (Array.isArray(licenses)) {
-        let l = [];
+        const l = [];
         licenses.forEach(license => {
           l.push(license['type']);
         });
@@ -376,8 +376,8 @@ class GenerateWebLabelsPlugin {
         spdxLicenseExpression = licenses['type'];
       }
     }
-    let parsedSpdxLicenses = this.parseSpdxLicenseExpression(spdxLicenseExpression,
-                                                             `module ${packageJson['name']}`);
+    const parsedSpdxLicenses = this.parseSpdxLicenseExpression(spdxLicenseExpression,
+                                                               `module ${packageJson['name']}`);
     return this.spdxToWebLabelsLicenses(parsedSpdxLicenses);
   }
 
@@ -387,7 +387,7 @@ class GenerateWebLabelsPlugin {
       return;
     }
     let destPath = this.cleanupPath(srcFilePath);
-    let destDir = path.join(this.weblabelsOutputDir, ...destPath.split('/').slice(0, -1));
+    const destDir = path.join(this.weblabelsOutputDir, ...destPath.split('/').slice(0, -1));
     this.recursiveMkdir(destDir);
     destPath = path.join(this.weblabelsOutputDir, destPath + ext);
     fs.copyFileSync(srcFilePath, destPath);
@@ -395,9 +395,9 @@ class GenerateWebLabelsPlugin {
   }
 
   recursiveMkdir(destPath) {
-    let destPathSplit = destPath.split('/');
+    const destPathSplit = destPath.split('/');
     for (let i = 1; i < destPathSplit.length; ++i) {
-      let currentPath = path.join('/', ...destPathSplit.slice(0, i + 1));
+      const currentPath = path.join('/', ...destPathSplit.slice(0, i + 1));
       if (!fs.existsSync(currentPath)) {
         fs.mkdirSync(currentPath);
       }

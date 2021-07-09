@@ -26,12 +26,12 @@ class DumpHighlightjsLanguagesDataPlugin {
       const languages = hljs.listLanguages();
       const hljsLanguagesData = {'languages': languages};
       const languageAliases = {};
-      for (let language of languages) {
+      for (const language of languages) {
         const languageData = hljs.getLanguage(language);
         if (!languageData.hasOwnProperty('aliases')) {
           continue;
         }
-        for (let alias of languageData.aliases) {
+        for (const alias of languageData.aliases) {
           languageAliases[alias] = language;
           languageAliases[alias.toLowerCase()] = language;
         }

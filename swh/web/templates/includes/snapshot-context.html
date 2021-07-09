@@ -14,7 +14,8 @@ See top-level LICENSE file for more information
     {{ snapshot_context.origin_info.url }}
   </a>
   {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-    <a href="{{ snapshot_context.origin_info.url }}" title="Go to origin">
+    <a href="{{ snapshot_context.origin_info.url }}"
+      target="_blank" rel="noopener noreferrer" title="Go to origin">
       <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
     </a>
   {% endif %}

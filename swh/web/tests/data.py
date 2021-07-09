@@ -121,6 +121,12 @@ _TEST_ORIGINS = [
         "type": "git",
         "url": "https://github.com/memononen/libtess2",
         "archives": ["libtess2.zip"],
+        "metadata": {
+            "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+            "description": (
+                "Game and tools oriented refactored version of GLU tessellator."
+            ),
+        },
     },
     {
         "type": "git",
@@ -129,13 +135,17 @@ _TEST_ORIGINS = [
             "highlightjs-line-numbers.js.zip",
             "highlightjs-line-numbers.js_visit2.zip",
         ],
-        "metadata": {"description": "Line numbering plugin for Highlight.js",},
+        "metadata": {
+            "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+            "description": "Line numbering plugin for Highlight.js",
+        },
     },
     {
         "type": "git",
         "url": "repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
         "metadata": {
+            "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
             "description": "This is just a sample repository with submodules",
         },
     },
@@ -168,7 +178,7 @@ INDEXER_TOOL = {
     "tool_configuration": {},
 }
 
-ORIGIN_METADATA_KEY = "vcs"
+ORIGIN_METADATA_KEY = "keywords"
 ORIGIN_METADATA_VALUE = "git"
 
 ORIGIN_MASTER_REVISION = {}

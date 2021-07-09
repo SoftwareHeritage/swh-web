@@ -31,13 +31,11 @@ def api_raw_extrinsic_metadata_swhid(request, target):
     """
     .. http:get:: /api/1/raw-extrinsic-metadata/swhid/(target)
 
-        Returns raw `extrinsic metadata`_ collected on a given object.
-
-        .. _extrinsic metadata: https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata
+        Returns raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on a given object.
 
         :param string target: The SWHID of the object whose metadata should be returned
         :query string authority: A metadata authority identifier, formatted as
-            `<type> <IRI>`. Required.
+            ``<type> <IRI>``. Required.
         :query string after: An ISO representation of the minimum timestamp of metadata
             to fetch. Defaults to allowing all metadata.
         :query int limit: Maximum number of metadata objects to return.
@@ -189,3 +187,63 @@ def api_raw_extrinsic_metadata_get(request, id):
         response["Content-disposition"] = "attachment"
 
     return response
+
+
+@api_route(
+    f"/raw-extrinsic-metadata/swhid/(?P<target>{SWHID_RE})/authorities/",
+    "api-1-raw-extrinsic-metadata-swhid-authorities",
+)
+@api_doc("/raw-extrinsic-metadata/swhid/authorities/")
+@format_docstring()
+def api_raw_extrinsic_metadata_swhid_authorities(request, target):
+    """
+    .. http:get:: /api/1/raw-extrinsic-metadata/swhid/(target)/authorities/
+
+        Returns a list of metadata authorities that provided metadata on
+        the given target.
+        They can then be used to get the raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on
+        that object from each of the authorities.
+
+        :param string target: The SWHID of the object whose metadata-providing
+          authorities should be returned
+
+        {common_headers}
+
+        :>jsonarr string type: Type of authority (deposit_client, forge, registry)
+        :>jsonarr string url: Unique IRI identifying the authority
+        :>jsonarr object metadata_list_url: URL to get the list of metadata objects
+          on the given object from this authority
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`raw-extrinsic-metadata/swhid/swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307/authorities/`
+    """  # noqa
+    target_str = target
+
+    try:
+        target = identifiers.CoreSWHID.from_string(target_str).to_extended()
+    except identifiers.ValidationError as e:
+        raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
+
+    authorities = archive.storage.raw_extrinsic_metadata_get_authorities(target=target)
+    results = [
+        {
+            **authority.to_dict(),
+            "metadata_list_url": reverse(
+                "api-1-raw-extrinsic-metadata-swhid",
+                url_args={"target": target_str},
+                query_params={"authority": f"{authority.type.value} {authority.url}"},
+                request=request,
+            ),
+        }
+        for authority in authorities
+    ]
+
+    return {
+        "results": results,
+        "headers": {},
+    }

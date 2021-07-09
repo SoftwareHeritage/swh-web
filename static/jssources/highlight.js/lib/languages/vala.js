@@ -52,7 +52,6 @@ function vala(hljs) {
         className: 'meta',
         begin: '^#',
         end: '$',
-        relevance: 2
       }
     ]
   };

@@ -38,7 +38,7 @@ export function initSnapshotNavigation(snapshotContext, branch) {
     // taking icons into account, in order to make the whole names readable
     $('#swh-branches-releases-dd').on('show.bs.dropdown', () => {
       if (dropdownResized) return;
-      let dropdownWidth = $('.swh-branches-releases').width();
+      const dropdownWidth = $('.swh-branches-releases').width();
       $('.swh-branches-releases').width(dropdownWidth + 25);
       dropdownResized = true;
     });

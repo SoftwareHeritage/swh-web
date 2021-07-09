@@ -68,7 +68,7 @@ function monkey(hljs) {
         begin: '\\s*#',
         end: '$',
         keywords: {
-          'meta-keyword': 'if else elseif endif end then'
+          keyword: 'if else elseif endif end then'
         }
       },
       {

@@ -1,15 +1,15 @@
 const MODES = (hljs) => {
   return {
     IMPORTANT: {
-      className: 'meta',
+      scope: 'meta',
       begin: '!important'
     },
     HEXCOLOR: {
-      className: 'number',
+      scope: 'number',
       begin: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})'
     },
     ATTRIBUTE_SELECTOR_MODE: {
-      className: 'selector-attr',
+      scope: 'selector-attr',
       begin: /\[/,
       end: /\]/,
       illegal: '$',
@@ -17,6 +17,23 @@ const MODES = (hljs) => {
         hljs.APOS_STRING_MODE,
         hljs.QUOTE_STRING_MODE
       ]
+    },
+    CSS_NUMBER_MODE: {
+      scope: 'number',
+      begin: hljs.NUMBER_RE + '(' +
+        '%|em|ex|ch|rem' +
+        '|vw|vh|vmin|vmax' +
+        '|cm|mm|in|pt|pc|px' +
+        '|deg|grad|rad|turn' +
+        '|s|ms' +
+        '|Hz|kHz' +
+        '|dpi|dpcm|dppx' +
+        ')?',
+      relevance: 0
+    },
+    CSS_VARIABLE: {
+      className: "attr",
+      begin: /--[A-Za-z][A-Za-z0-9_-]*/
     }
   };
 };
@@ -431,7 +448,7 @@ Language: Stylus
 Author: Bryant Williams <b.n.williams@gmail.com>
 Description: Stylus is an expressive, robust, feature-rich CSS language built for nodejs.
 Website: https://github.com/stylus/stylus
-Category: css
+Category: css, web
 */
 
 /** @type LanguageFn */
@@ -537,7 +554,7 @@ function stylus(hljs) {
             keyword: AT_MODIFIERS,
             attribute: MEDIA_FEATURES.join(" ")
           },
-          contains: [ hljs.CSS_NUMBER_MODE ]
+          contains: [ modes.CSS_NUMBER_MODE ]
         }
       },
 
@@ -551,7 +568,7 @@ function stylus(hljs) {
       VARIABLE,
 
       // dimension
-      hljs.CSS_NUMBER_MODE,
+      modes.CSS_NUMBER_MODE,
 
       // functions
       //  - only from beginning of line + whitespace
@@ -573,12 +590,15 @@ function stylus(hljs) {
               modes.HEXCOLOR,
               VARIABLE,
               hljs.APOS_STRING_MODE,
-              hljs.CSS_NUMBER_MODE,
+              modes.CSS_NUMBER_MODE,
               hljs.QUOTE_STRING_MODE
             ]
           }
         ]
       },
+
+      // css variables
+      modes.CSS_VARIABLE,
 
       // attributes
       //  - only from beginning of line + whitespace
@@ -594,7 +614,7 @@ function stylus(hljs) {
             VARIABLE,
             hljs.APOS_STRING_MODE,
             hljs.QUOTE_STRING_MODE,
-            hljs.CSS_NUMBER_MODE,
+            modes.CSS_NUMBER_MODE,
             hljs.C_BLOCK_COMMENT_MODE,
             modes.IMPORTANT
           ],

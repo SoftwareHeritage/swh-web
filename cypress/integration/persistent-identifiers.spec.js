@@ -109,7 +109,7 @@ describe('Persistent Identifiers Tests', function() {
     cy.get('.ui-slideouttab-handle')
       .click();
 
-    for (let td of testsData) {
+    for (const td of testsData) {
       cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
@@ -128,7 +128,7 @@ describe('Persistent Identifiers Tests', function() {
     cy.get('.ui-slideouttab-handle')
       .click();
 
-    for (let td of testsData) {
+    for (const td of testsData) {
 
       cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
@@ -160,7 +160,7 @@ describe('Persistent Identifiers Tests', function() {
 
     const originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
 
-    for (let td of testsData) {
+    for (const td of testsData) {
       cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
@@ -179,7 +179,7 @@ describe('Persistent Identifiers Tests', function() {
     cy.get('.ui-slideouttab-handle')
       .click();
 
-    for (let td of testsData) {
+    for (const td of testsData) {
       cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
         .click();
 
@@ -187,7 +187,7 @@ describe('Persistent Identifiers Tests', function() {
         .click()
         .wait(500);
 
-      for (let badgeType of ['html', 'md', 'rst']) {
+      for (const badgeType of ['html', 'md', 'rst']) {
         cy.get(`.modal .swh-badge-${badgeType}`)
           .contains(`${urlPrefix}${originBrowseUrl}`)
           .contains(`${urlPrefix}${originBadgeUrl}`);
@@ -201,7 +201,7 @@ describe('Persistent Identifiers Tests', function() {
         .click()
         .wait(500);
 
-      for (let badgeType of ['html', 'md', 'rst']) {
+      for (const badgeType of ['html', 'md', 'rst']) {
         cy.get(`.modal .swh-badge-${badgeType}`)
           .contains(`${urlPrefix}${td.browseUrl}`)
           .contains(`${urlPrefix}${td.badgeSWHIDUrl}`);
@@ -217,7 +217,7 @@ describe('Persistent Identifiers Tests', function() {
   it('should be possible to retrieve SWHIDs context from JavaScript', function() {
     cy.window().then(win => {
       const swhIdsContext = win.swh.webapp.getSwhIdsContext();
-      for (let testData of testsData) {
+      for (const testData of testsData) {
         assert.isTrue(swhIdsContext.hasOwnProperty(testData.objectType));
         assert.equal(swhIdsContext[testData.objectType].swhid,
                      testData.objectSWHIDs.slice(-1)[0]);

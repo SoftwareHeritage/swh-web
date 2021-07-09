@@ -236,7 +236,7 @@ function powershell(hljs) {
       },
       {
         className: 'literal',
-        begin: /(-)[\w\d]+/,
+        begin: /(-){1,2}[\w\d-]+/,
         relevance: 0
       }
     ]
@@ -313,6 +313,7 @@ function powershell(hljs) {
   return {
     name: 'PowerShell',
     aliases: [
+      "pwsh",
       "ps",
       "ps1"
     ],

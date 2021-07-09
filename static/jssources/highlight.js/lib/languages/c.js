@@ -19,7 +19,7 @@ function source(re) {
  * @returns {string}
  */
 function optional(re) {
-  return concat('(', re, ')?');
+  return concat('(?:', re, ')?');
 }
 
 /**
@@ -57,9 +57,15 @@ function c(hljs) {
     optional(NAMESPACE_RE) +
     '[a-zA-Z_]\\w*' + optional(TEMPLATE_ARGUMENT_RE) +
   ')';
-  const CPP_PRIMITIVE_TYPES = {
-    className: 'keyword',
-    begin: '\\b[a-z\\d_]*_t\\b'
+
+
+  const TYPES = {
+    className: 'type',
+    variants: [
+      { begin: '\\b[a-z\\d_]*_t\\b' },
+      { match: /\batomic_[a-z]{3,6}\b/}
+    ]
+
   };
 
   // https://en.cppreference.com/w/cpp/language/escape
@@ -107,7 +113,7 @@ function c(hljs) {
     begin: /#\s*[a-z]+\b/,
     end: /$/,
     keywords: {
-      'meta-keyword':
+      keyword:
         'if else elif endif define undef warning error line ' +
         'pragma _Pragma ifdef ifndef include'
     },
@@ -117,10 +123,10 @@ function c(hljs) {
         relevance: 0
       },
       hljs.inherit(STRINGS, {
-        className: 'meta-string'
+        className: 'string'
       }),
       {
-        className: 'meta-string',
+        className: 'string',
         begin: /<.*?>/
       },
       C_LINE_COMMENT_MODE,
@@ -136,19 +142,78 @@ function c(hljs) {
 
   const FUNCTION_TITLE = optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
 
-  const CPP_KEYWORDS = {
-    keyword: 'int float while private char char8_t char16_t char32_t catch import module export virtual operator sizeof ' +
-      'dynamic_cast|10 typedef const_cast|10 const for static_cast|10 union namespace ' +
-      'unsigned long volatile static protected bool template mutable if public friend ' +
-      'do goto auto void enum else break extern using asm case typeid wchar_t ' +
-      'short reinterpret_cast|10 default double register explicit signed typename try this ' +
-      'switch continue inline delete alignas alignof constexpr consteval constinit decltype ' +
-      'concept co_await co_return co_yield requires ' +
-      'noexcept static_assert thread_local restrict final override ' +
-      'atomic_bool atomic_char atomic_schar ' +
-      'atomic_uchar atomic_short atomic_ushort atomic_int atomic_uint atomic_long atomic_ulong atomic_llong ' +
-      'atomic_ullong new throw return ' +
-      'and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq',
+  const C_KEYWORDS = [
+    "asm",
+    "auto",
+    "break",
+    "case",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "else",
+    "enum",
+    "extern",
+    "for",
+    "fortran",
+    "goto",
+    "if",
+    "inline",
+    "register",
+    "restrict",
+    "return",
+    "sizeof",
+    "static",
+    "struct",
+    "switch",
+    "typedef",
+    "union",
+    "volatile",
+    "while",
+    "_Alignas",
+    "_Alignof",
+    "_Atomic",
+    "_Generic",
+    "_Noreturn",
+    "_Static_assert",
+    "_Thread_local",
+    // aliases
+    "alignas",
+    "alignof",
+    "noreturn",
+    "static_assert",
+    "thread_local",
+    // not a C keyword but is, for all intents and purposes, treated exactly like one.
+    "_Pragma"
+  ];
+
+  const C_TYPES = [
+    "float",
+    "double",
+    "signed",
+    "unsigned",
+    "int",
+    "short",
+    "long",
+    "char",
+    "void",
+    "_Bool",
+    "_Complex",
+    "_Imaginary",
+    "_Decimal32",
+    "_Decimal64",
+    "_Decimal128",
+    // aliases
+    "complex",
+    "bool",
+    "imaginary"
+  ];
+
+  const KEYWORDS = {
+    keyword: C_KEYWORDS,
+    type: C_TYPES,
+    literal: 'true false NULL',
+    // TODO: apply hinting work similar to what was done in cpp.js
     built_in: 'std string wstring cin cout cerr clog stdin stdout stderr stringstream istringstream ostringstream ' +
       'auto_ptr deque list queue stack vector map set pair bitset multiset multimap unordered_set ' +
       'unordered_map unordered_multiset unordered_multimap priority_queue make_pair array shared_ptr abort terminate abs acos ' +
@@ -157,13 +222,12 @@ function c(hljs) {
       'isxdigit tolower toupper labs ldexp log10 log malloc realloc memchr memcmp memcpy memset modf pow ' +
       'printf putchar puts scanf sinh sin snprintf sprintf sqrt sscanf strcat strchr strcmp ' +
       'strcpy strcspn strlen strncat strncmp strncpy strpbrk strrchr strspn strstr tanh tan ' +
-      'vfprintf vprintf vsprintf endl initializer_list unique_ptr _Bool complex _Complex imaginary _Imaginary',
-    literal: 'true false nullptr NULL'
+      'vfprintf vprintf vsprintf endl initializer_list unique_ptr',
   };
 
   const EXPRESSION_CONTAINS = [
     PREPROCESSOR,
-    CPP_PRIMITIVE_TYPES,
+    TYPES,
     C_LINE_COMMENT_MODE,
     hljs.C_BLOCK_COMMENT_MODE,
     NUMBERS,
@@ -188,12 +252,12 @@ function c(hljs) {
         end: /;/
       }
     ],
-    keywords: CPP_KEYWORDS,
+    keywords: KEYWORDS,
     contains: EXPRESSION_CONTAINS.concat([
       {
         begin: /\(/,
         end: /\)/,
-        keywords: CPP_KEYWORDS,
+        keywords: KEYWORDS,
         contains: EXPRESSION_CONTAINS.concat([ 'self' ]),
         relevance: 0
       }
@@ -202,42 +266,49 @@ function c(hljs) {
   };
 
   const FUNCTION_DECLARATION = {
-    className: 'function',
     begin: '(' + FUNCTION_TYPE_RE + '[\\*&\\s]+)+' + FUNCTION_TITLE,
     returnBegin: true,
     end: /[{;=]/,
     excludeEnd: true,
-    keywords: CPP_KEYWORDS,
+    keywords: KEYWORDS,
     illegal: /[^\w\s\*&:<>.]/,
     contains: [
       { // to prevent it from being confused as the function title
         begin: DECLTYPE_AUTO_RE,
-        keywords: CPP_KEYWORDS,
+        keywords: KEYWORDS,
         relevance: 0
       },
       {
         begin: FUNCTION_TITLE,
         returnBegin: true,
-        contains: [ TITLE_MODE ],
+        contains: [
+          hljs.inherit(TITLE_MODE, { className: "title.function" })
+        ],
         relevance: 0
+      },
+      // allow for multiple declarations, e.g.:
+      // extern void f(int), g(char);
+      {
+        relevance: 0,
+        match: /,/
       },
       {
         className: 'params',
         begin: /\(/,
         end: /\)/,
-        keywords: CPP_KEYWORDS,
+        keywords: KEYWORDS,
         relevance: 0,
         contains: [
           C_LINE_COMMENT_MODE,
           hljs.C_BLOCK_COMMENT_MODE,
           STRINGS,
           NUMBERS,
-          CPP_PRIMITIVE_TYPES,
+          TYPES,
           // Count matching parentheses.
           {
             begin: /\(/,
             end: /\)/,
-            keywords: CPP_KEYWORDS,
+            keywords: KEYWORDS,
             relevance: 0,
             contains: [
               'self',
@@ -245,12 +316,12 @@ function c(hljs) {
               hljs.C_BLOCK_COMMENT_MODE,
               STRINGS,
               NUMBERS,
-              CPP_PRIMITIVE_TYPES
+              TYPES
             ]
           }
         ]
       },
-      CPP_PRIMITIVE_TYPES,
+      TYPES,
       C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE,
       PREPROCESSOR
@@ -262,7 +333,7 @@ function c(hljs) {
     aliases: [
       'h'
     ],
-    keywords: CPP_KEYWORDS,
+    keywords: KEYWORDS,
     // Until differentiations are added between `c` and `cpp`, `c` will
     // not be auto-detected to avoid auto-detect conflicts between C and C++
     disableAutodetect: true,
@@ -273,18 +344,9 @@ function c(hljs) {
       EXPRESSION_CONTAINS,
       [
         PREPROCESSOR,
-        { // containers: ie, `vector <int> rooms (9);`
-          begin: '\\b(deque|list|queue|priority_queue|pair|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<',
-          end: '>',
-          keywords: CPP_KEYWORDS,
-          contains: [
-            'self',
-            CPP_PRIMITIVE_TYPES
-          ]
-        },
         {
           begin: hljs.IDENT_RE + '::',
-          keywords: CPP_KEYWORDS
+          keywords: KEYWORDS
         },
         {
           className: 'class',
@@ -301,7 +363,7 @@ function c(hljs) {
     exports: {
       preprocessor: PREPROCESSOR,
       strings: STRINGS,
-      keywords: CPP_KEYWORDS
+      keywords: KEYWORDS
     }
   };
 }

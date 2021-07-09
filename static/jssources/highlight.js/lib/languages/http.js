@@ -27,7 +27,7 @@ function concat(...args) {
 Language: HTTP
 Description: HTTP request and response headers with automatic body highlighting
 Author: Ivan Sagalaev <maniac@softwaremaniacs.org>
-Category: common, protocols
+Category: protocols, web
 Website: https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview
 */
 

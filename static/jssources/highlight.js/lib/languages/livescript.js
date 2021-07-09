@@ -119,21 +119,8 @@ const BUILT_IN_GLOBALS = [
   "unescape"
 ];
 
-const BUILT_IN_VARIABLES = [
-  "arguments",
-  "this",
-  "super",
-  "console",
-  "window",
-  "document",
-  "localStorage",
-  "module",
-  "global" // Node.js
-];
-
 const BUILT_INS = [].concat(
   BUILT_IN_GLOBALS,
-  BUILT_IN_VARIABLES,
   TYPES,
   ERROR_TYPES
 );

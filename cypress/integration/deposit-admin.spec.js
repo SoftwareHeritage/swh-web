@@ -53,7 +53,7 @@ describe('Test admin deposit page', function() {
     cy.adminLogin();
     cy.visit(this.Urls.admin_deposit());
 
-    let testDeposits = responseDeposits;
+    const testDeposits = responseDeposits;
 
     cy.intercept(`${this.Urls.admin_deposit_list()}**`, {
       body: {
@@ -74,7 +74,7 @@ describe('Test admin deposit page', function() {
     cy.wait('@listDeposits').then((xhr) => {
       cy.log('response:', xhr.response);
       cy.log(xhr.response.body);
-      let deposits = xhr.response.body.data;
+      const deposits = xhr.response.body.data;
       cy.log('Deposits: ', deposits);
       expect(deposits.length).to.equal(testDeposits.length);
 
@@ -82,8 +82,8 @@ describe('Test admin deposit page', function() {
 
       // only 2 entries
       cy.get('@rows').each((row, idx, collection) => {
-        let deposit = deposits[idx];
-        let responseDeposit = testDeposits[idx];
+        const deposit = deposits[idx];
+        const responseDeposit = testDeposits[idx];
         assert.isNotNull(deposit);
         assert.isNotNull(responseDeposit);
         expect(deposit.id).to.be.equal(responseDeposit['id']);
@@ -93,7 +93,7 @@ describe('Test admin deposit page', function() {
         expect(deposit.swhid).to.be.equal(responseDeposit['swhid']);
         expect(deposit.swhid_context).to.be.equal(responseDeposit['swhid_context']);
 
-        let expectedOrigin = expectedOrigins[deposit.id];
+        const expectedOrigin = expectedOrigins[deposit.id];
         // ensure it's in the dom
         cy.contains(deposit.id).should('be.visible');
         if (deposit.status !== 'rejected') {
@@ -119,8 +119,8 @@ describe('Test admin deposit page', function() {
         cy.get('#swh-admin-deposit-list').find('tbody > tr').as('rows');
 
         cy.get('@rows').each((row, idx, collection) => {
-          let deposit = deposits[idx];
-          let expectedOrigin = expectedOrigins[deposit.id];
+          const deposit = deposits[idx];
+          const expectedOrigin = expectedOrigins[deposit.id];
 
           // ensure it's in the dom
           cy.contains(deposit.id).should('not.exist');

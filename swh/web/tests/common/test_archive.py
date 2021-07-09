@@ -995,12 +995,12 @@ def test_lookup_origin_single_slash_after_protocol(archive_data):
 @given(origin(), new_origin())
 def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
     hasher = hashlib.sha1()
-    hasher.update(origin["url"].encode("ascii"))
+    hasher.update(origin["url"].encode("utf-8"))
     origin_info = OriginInfo(url=origin["url"])
     origin_sha1 = hasher.hexdigest()
 
     hasher = hashlib.sha1()
-    hasher.update(unknown_origin.url.encode("ascii"))
+    hasher.update(unknown_origin.url.encode("utf-8"))
     unknown_origin_sha1 = hasher.hexdigest()
 
     origins = list(archive.lookup_origins_by_sha1s([origin_sha1]))
