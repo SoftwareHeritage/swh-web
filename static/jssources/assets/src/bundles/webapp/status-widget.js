@@ -26,7 +26,7 @@ export function initStatusWidget(statusDataURL) {
       const response = await fetch(statusDataURL);
       const data = await response.json();
 
-      for (let s of data.result.status) {
+      for (const s of data.result.status) {
         sc = s.status_code;
         sd = s.status;
         if (maxStatusCode < sc) {

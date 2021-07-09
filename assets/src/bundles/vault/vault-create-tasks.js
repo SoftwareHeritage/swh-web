@@ -103,14 +103,14 @@ async function addVaultCookingTask(cookingTask) {
 }
 
 function validateEmail(email) {
-  let re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
 
 export function cookDirectoryArchive(directoryId) {
-  let email = $('#swh-vault-directory-email').val().trim();
+  const email = $('#swh-vault-directory-email').val().trim();
   if (!email || validateEmail(email)) {
-    let cookingTask = {
+    const cookingTask = {
       'object_type': 'directory',
       'object_id': directoryId,
       'email': email,
@@ -132,9 +132,9 @@ export async function fetchDirectoryArchive(directoryId) {
 }
 
 export function cookRevisionArchive(revisionId) {
-  let email = $('#swh-vault-revision-email').val().trim();
+  const email = $('#swh-vault-revision-email').val().trim();
   if (!email || validateEmail(email)) {
-    let cookingTask = {
+    const cookingTask = {
       'object_type': 'revision',
       'object_id': revisionId,
       'email': email,

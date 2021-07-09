@@ -150,7 +150,7 @@ export function initProfilePage() {
             name: 'creation_date',
             render: (data, type, row) => {
               if (type === 'display') {
-                let date = new Date(data);
+                const date = new Date(data);
                 return date.toLocaleString();
               }
               return data;

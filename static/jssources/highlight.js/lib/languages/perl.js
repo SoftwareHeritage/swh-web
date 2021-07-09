@@ -23,6 +23,17 @@ function concat(...args) {
   return joined;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -31,7 +42,10 @@ function concat(...args) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 
@@ -444,7 +458,7 @@ function perl(hljs) {
           className: 'regexp',
           variants: [
             // allow matching common delimiters
-            { begin: PAIRED_DOUBLE_RE("s|tr|y", either(...REGEX_DELIMS)) },
+            { begin: PAIRED_DOUBLE_RE("s|tr|y", either(...REGEX_DELIMS, { capture: true })) },
             // and then paired delmis
             { begin: PAIRED_DOUBLE_RE("s|tr|y", "\\(", "\\)") },
             { begin: PAIRED_DOUBLE_RE("s|tr|y", "\\[", "\\]") },
@@ -464,7 +478,7 @@ function perl(hljs) {
             // prefix is optional with /regex/
             { begin: PAIRED_RE("(?:m|qr)?", /\//, /\//)},
             // allow matching common delimiters
-            { begin: PAIRED_RE("m|qr", either(...REGEX_DELIMS), /\1/)},
+            { begin: PAIRED_RE("m|qr", either(...REGEX_DELIMS, { capture: true }), /\1/)},
             // allow common paired delmins
             { begin: PAIRED_RE("m|qr", /\(/, /\)/)},
             { begin: PAIRED_RE("m|qr", /\[/, /\]/)},

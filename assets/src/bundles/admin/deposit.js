@@ -56,12 +56,12 @@ export function initDepositAdmin() {
             name: 'swhid_context',
             render: (data, type, row) => {
               if (data && type === 'display') {
-                let originPattern = ';origin=';
-                let originPatternIdx = data.indexOf(originPattern);
+                const originPattern = ';origin=';
+                const originPatternIdx = data.indexOf(originPattern);
                 if (originPatternIdx !== -1) {
                   let originUrl = data.slice(originPatternIdx + originPattern.length);
-                  let nextSepPattern = ';';
-                  let nextSepPatternIdx = originUrl.indexOf(nextSepPattern);
+                  const nextSepPattern = ';';
+                  const nextSepPatternIdx = originUrl.indexOf(nextSepPattern);
                   if (nextSepPatternIdx !== -1) { /* Remove extra context */
                     originUrl = originUrl.slice(0, nextSepPatternIdx);
                   }
@@ -76,7 +76,7 @@ export function initDepositAdmin() {
             name: 'reception_date',
             render: (data, type, row) => {
               if (type === 'display') {
-                let date = new Date(data);
+                const date = new Date(data);
                 return date.toLocaleString();
               }
               return data;

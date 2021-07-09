@@ -293,6 +293,7 @@ function pgsql(hljs) {
       'postgres',
       'postgresql'
     ],
+    supersetOf: "sql",
     case_insensitive: true,
     keywords: {
       keyword:

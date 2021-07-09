@@ -55,7 +55,7 @@ function makefile(hljs) {
     end: /$/,
     keywords: {
       $pattern: /[\.\w]+/,
-      'meta-keyword': '.PHONY'
+      keyword: '.PHONY'
     }
   };
   /* Targets */

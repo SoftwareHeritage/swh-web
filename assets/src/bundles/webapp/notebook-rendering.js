@@ -26,11 +26,11 @@ function unescapeHTML(text) {
 
 function escapeLaTeX(text) {
 
-  let blockMath = /\$\$(.+?)\$\$|\\\\\[(.+?)\\\\\]/msg;
-  let inlineMath = /\$(.+?)\$|\\\\\((.+?)\\\\\)/g;
-  let latexEnvironment = /\\begin\{([a-z]*\*?)\}(.+?)\\end\{\1\}/msg;
+  const blockMath = /\$\$(.+?)\$\$|\\\\\[(.+?)\\\\\]/msg;
+  const inlineMath = /\$(.+?)\$|\\\\\((.+?)\\\\\)/g;
+  const latexEnvironment = /\\begin\{([a-z]*\*?)\}(.+?)\\end\{\1\}/msg;
 
-  let mathTextFound = [];
+  const mathTextFound = [];
   let bm;
   while ((bm = blockMath.exec(text)) !== null) {
     mathTextFound.push(bm[1]);
@@ -46,13 +46,13 @@ function escapeLaTeX(text) {
     mathTextFound.push(le[1]);
   }
 
-  for (let mathText of mathTextFound) {
+  for (const mathText of mathTextFound) {
     // showdown will remove line breaks in LaTex array and
     // some escaping sequences when converting md to html.
     // So we use the following escaping hacks to keep them in the html
     // output and avoid MathJax typesetting errors.
     let escapedText = mathText.replace('\\\\', '\\\\\\\\');
-    for (let specialLaTexChar of ['{', '}', '#', '%', '&', '_']) {
+    for (const specialLaTexChar of ['{', '}', '#', '%', '&', '_']) {
       escapedText = escapedText.replace(new RegExp(`\\\\${specialLaTexChar}`, 'g'),
                                         `\\\\${specialLaTexChar}`);
     }
@@ -76,12 +76,12 @@ function escapeLaTeX(text) {
 
 export async function renderNotebook(nbJsonUrl, domElt) {
 
-  let showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
+  const showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
   function renderMarkdown(text) {
-    let converter = new showdown.Converter({
+    const converter = new showdown.Converter({
       tables: true,
       simplifiedAutoLink: true,
       rawHeaderId: true,
@@ -124,9 +124,9 @@ export async function renderNotebook(nbJsonUrl, domElt) {
   const nbJson = await response.json();
 
   // parse the notebook
-  let notebook = nb.parse(nbJson);
+  const notebook = nb.parse(nbJson);
   // render it to HTML and apply XSS filtering
-  let rendered = swh.webapp.filterXSS(notebook.render());
+  const rendered = swh.webapp.filterXSS(notebook.render());
   // insert rendered notebook in the DOM
   $(domElt).append(rendered);
   // set light red background color for stderr output cells

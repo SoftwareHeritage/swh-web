@@ -59,6 +59,7 @@ function csharp(hljs) {
     'base',
     'break',
     'case',
+    'catch',
     'class',
     'const',
     'continue',
@@ -329,7 +330,7 @@ function csharp(hljs) {
         begin: '#',
         end: '$',
         keywords: {
-          'meta-keyword': 'if else elif endif define undef warning error line region endregion pragma checksum'
+          keyword: 'if else elif endif define undef warning error line region endregion pragma checksum'
         }
       },
       STRING,
@@ -375,13 +376,13 @@ function csharp(hljs) {
       {
         // [Attributes("")]
         className: 'meta',
-        begin: '^\\s*\\[',
+        begin: '^\\s*\\[(?=[\\w])',
         excludeBegin: true,
         end: '\\]',
         excludeEnd: true,
         contains: [
           {
-            className: 'meta-string',
+            className: 'string',
             begin: /"/,
             end: /"/
           }

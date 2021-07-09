@@ -8,13 +8,13 @@
 import {handleFetchError, isArchivedOrigin} from 'utils/functions';
 
 const limit = 100;
-let linksPrev = [];
+const linksPrev = [];
 let linkNext = null;
 let linkCurrent = null;
 let inSearch = false;
 
 function parseLinkHeader(s) {
-  let re = /<(.+)>; rel="next"/;
+  const re = /<(.+)>; rel="next"/;
   return s.match(re)[1];
 }
 
@@ -33,10 +33,10 @@ async function populateOriginSearchResultsTable(origins) {
     $('#swh-origin-search-results').show();
     $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
-    let table = $('#origin-search-results tbody');
-    let promises = [];
-    for (let [i, origin] of origins.entries()) {
-      let browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
+    const table = $('#origin-search-results tbody');
+    const promises = [];
+    for (const [i, origin] of origins.entries()) {
+      const browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
       let tableRow =
         `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
       tableRow +=
@@ -104,7 +104,7 @@ async function populateOriginSearchResultsTable(origins) {
 
 function searchOriginsFirst(searchQueryText, limit) {
   let baseSearchUrl;
-  let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+  const searchMetadata = $('#swh-search-origin-metadata').prop('checked');
   if (searchMetadata) {
     baseSearchUrl = new URL(Urls.api_1_origin_metadata_search(), window.location);
     baseSearchUrl.searchParams.append('fulltext', searchQueryText);
@@ -112,14 +112,14 @@ function searchOriginsFirst(searchQueryText, limit) {
     baseSearchUrl = new URL(Urls.api_1_origin_search(searchQueryText), window.location);
   }
 
-  let withVisit = $('#swh-search-origins-with-visit').prop('checked');
+  const withVisit = $('#swh-search-origins-with-visit').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);
   baseSearchUrl.searchParams.append('with_visit', withVisit);
   const visitType = $('#swh-search-visit-type').val();
   if (visitType !== 'any') {
     baseSearchUrl.searchParams.append('visit_type', visitType);
   }
-  let searchUrl = baseSearchUrl.toString();
+  const searchUrl = baseSearchUrl.toString();
   searchOrigins(searchUrl);
 }
 
@@ -135,7 +135,7 @@ async function searchOrigins(searchUrl) {
     // Save link to the next results page.
     linkNext = null;
     if (response.headers.has('Link')) {
-      let parsedLink = parseLinkHeader(response.headers.get('Link'));
+      const parsedLink = parseLinkHeader(response.headers.get('Link'));
       if (parsedLink !== undefined) {
         linkNext = parsedLink;
       }
@@ -195,12 +195,12 @@ export function initOriginSearch() {
       event.preventDefault();
       if (event.target.checkValidity()) {
         $(event.target).removeClass('was-validated');
-        let searchQueryText = $('#swh-origins-url-patterns').val().trim();
-        let withVisit = $('#swh-search-origins-with-visit').prop('checked');
-        let withContent = $('#swh-filter-empty-visits').prop('checked');
-        let searchMetadata = $('#swh-search-origin-metadata').prop('checked');
+        const searchQueryText = $('#swh-origins-url-patterns').val().trim();
+        const withVisit = $('#swh-search-origins-with-visit').prop('checked');
+        const withContent = $('#swh-filter-empty-visits').prop('checked');
+        const searchMetadata = $('#swh-search-origin-metadata').prop('checked');
         const visitType = $('#swh-search-visit-type').val();
-        let queryParameters = new URLSearchParams();
+        const queryParameters = new URLSearchParams();
         queryParameters.append('q', searchQueryText);
         if (withVisit) {
           queryParameters.append('with_visit', withVisit);
@@ -240,12 +240,12 @@ export function initOriginSearch() {
       event.preventDefault();
     });
 
-    let urlParams = new URLSearchParams(window.location.search);
-    let query = urlParams.get('q');
-    let withVisit = urlParams.has('with_visit');
-    let withContent = urlParams.has('with_content');
-    let searchMetadata = urlParams.has('search_metadata');
-    let visitType = urlParams.get('visit_type');
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('q');
+    const withVisit = urlParams.has('with_visit');
+    const withContent = urlParams.has('with_content');
+    const searchMetadata = urlParams.has('search_metadata');
+    const visitType = urlParams.get('visit_type');
     if (query) {
       $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);

@@ -10,7 +10,7 @@ import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
 
 let collapseSidebar = false;
-let previousSidebarState = localStorage.getItem('remember.lte.pushmenu');
+const previousSidebarState = localStorage.getItem('remember.lte.pushmenu');
 if (previousSidebarState !== undefined) {
   collapseSidebar = previousSidebarState === 'sidebar-collapse';
 }
@@ -25,8 +25,8 @@ $(document).on('DOMContentLoaded', () => {
   if (collapseSidebar) {
     // hack to avoid animated transition for collapsing sidebar
     // when loading a page
-    let sidebarTransition = $('.main-sidebar, .main-sidebar:before').css('transition');
-    let sidebarEltsTransition = $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition');
+    const sidebarTransition = $('.main-sidebar, .main-sidebar:before').css('transition');
+    const sidebarEltsTransition = $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition');
     $('.main-sidebar, .main-sidebar:before').css('transition', 'none');
     $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition', 'none');
     $('body').addClass('sidebar-collapse');
@@ -57,7 +57,7 @@ $(document).ready(() => {
   // redirect to last browse page if any when clicking on the 'Browse' entry
   // in the sidebar
   $(`.swh-browse-link`).click(event => {
-    let lastBrowsePage = sessionStorage.getItem('last-browse-page');
+    const lastBrowsePage = sessionStorage.getItem('last-browse-page');
     if (lastBrowsePage) {
       event.preventDefault();
       window.location = lastBrowsePage;
@@ -113,8 +113,8 @@ $(document).ready(() => {
   let selectedCode = null;
 
   function getCodeOrPreEltUnderPointer(e) {
-    let elts = document.elementsFromPoint(e.clientX, e.clientY);
-    for (let elt of elts) {
+    const elts = document.elementsFromPoint(e.clientX, e.clientY);
+    for (const elt of elts) {
       if (elt.nodeName === 'CODE' || elt.nodeName === 'PRE') {
         return elt;
       }
@@ -129,7 +129,7 @@ $(document).ready(() => {
 
   function selectCode(event, selectedCode) {
     if (selectedCode) {
-      let hljsLnCodeElts = $(selectedCode).find('.hljs-ln-code');
+      const hljsLnCodeElts = $(selectedCode).find('.hljs-ln-code');
       if (hljsLnCodeElts.length) {
         selectText(hljsLnCodeElts[0], hljsLnCodeElts[hljsLnCodeElts.length - 1]);
       } else {
@@ -170,8 +170,8 @@ $(document).ready(() => {
     event.preventDefault();
     if (event.target.checkValidity()) {
       $(event.target).removeClass('was-validated');
-      let searchQueryText = $('#swh-origins-search-top-input').val().trim();
-      let queryParameters = new URLSearchParams();
+      const searchQueryText = $('#swh-origins-search-top-input').val().trim();
+      const queryParameters = new URLSearchParams();
       queryParameters.append('q', searchQueryText);
       queryParameters.append('with_visit', true);
       queryParameters.append('with_content', true);
@@ -206,7 +206,7 @@ export function initHomePage() {
     const data = await response.json();
 
     if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
-      for (let objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
+      for (const objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
         const count = data.stat_counters[objectType];
         if (count !== undefined) {
           $(`#swh-${objectType}-count`).html(count.toLocaleString());
@@ -218,7 +218,7 @@ export function initHomePage() {
       $('.swh-counter').html('0');
     }
     if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
-      for (let objectType of ['content', 'revision', 'origin']) {
+      for (const objectType of ['content', 'revision', 'origin']) {
         const history = data.stat_counters_history[objectType];
         if (history) {
           swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
@@ -327,7 +327,7 @@ let swhidsContext_ = {};
 
 export function setSwhIdsContext(swhidsContext) {
   swhidsContext_ = {};
-  for (let swhidContext of swhidsContext) {
+  for (const swhidContext of swhidsContext) {
     swhidsContext_[swhidContext.object_type] = swhidContext;
   }
 }
@@ -353,7 +353,7 @@ export function fullWidthToggled(event) {
 }
 
 export function setContainerFullWidth() {
-  let previousFullWidthState = JSON.parse(localStorage.getItem('swh-web-full-width'));
+  const previousFullWidthState = JSON.parse(localStorage.getItem('swh-web-full-width'));
   if (previousFullWidthState !== null) {
     setFullWidth(previousFullWidthState);
   }

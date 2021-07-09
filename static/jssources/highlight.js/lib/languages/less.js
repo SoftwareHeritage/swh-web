@@ -1,15 +1,15 @@
 const MODES = (hljs) => {
   return {
     IMPORTANT: {
-      className: 'meta',
+      scope: 'meta',
       begin: '!important'
     },
     HEXCOLOR: {
-      className: 'number',
+      scope: 'number',
       begin: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})'
     },
     ATTRIBUTE_SELECTOR_MODE: {
-      className: 'selector-attr',
+      scope: 'selector-attr',
       begin: /\[/,
       end: /\]/,
       illegal: '$',
@@ -17,6 +17,23 @@ const MODES = (hljs) => {
         hljs.APOS_STRING_MODE,
         hljs.QUOTE_STRING_MODE
       ]
+    },
+    CSS_NUMBER_MODE: {
+      scope: 'number',
+      begin: hljs.NUMBER_RE + '(' +
+        '%|em|ex|ch|rem' +
+        '|vw|vh|vmin|vmax' +
+        '|cm|mm|in|pt|pc|px' +
+        '|deg|grad|rad|turn' +
+        '|s|ms' +
+        '|Hz|kHz' +
+        '|dpi|dpcm|dppx' +
+        ')?',
+      relevance: 0
+    },
+    CSS_VARIABLE: {
+      className: "attr",
+      begin: /--[A-Za-z][A-Za-z0-9_-]*/
     }
   };
 };
@@ -434,7 +451,7 @@ Language: Less
 Description: It's CSS, with just a little more.
 Author:   Max Mikhailov <seven.phases.max@gmail.com>
 Website: http://lesscss.org
-Category: common, css
+Category: common, css, web
 */
 
 /** @type LanguageFn */
@@ -487,7 +504,7 @@ function less(hljs) {
     hljs.C_BLOCK_COMMENT_MODE,
     STRING_MODE("'"),
     STRING_MODE('"'),
-    hljs.CSS_NUMBER_MODE, // fixme: it does not include dot for numbers like .5em :(
+    modes.CSS_NUMBER_MODE, // fixme: it does not include dot for numbers like .5em :(
     {
       begin: '(url|data-uri)\\(',
       starts: {
@@ -538,6 +555,7 @@ function less(hljs) {
       {
         begin: /-(webkit|moz|ms|o)-/
       },
+      modes.CSS_VARIABLE,
       {
         className: 'attribute',
         begin: '\\b(' + ATTRIBUTES.join('|') + ')\\b',
@@ -629,8 +647,9 @@ function less(hljs) {
         begin: '::(' + PSEUDO_ELEMENTS.join('|') + ')'
       },
       {
-        begin: '\\(',
-        end: '\\)',
+        begin: /\(/,
+        end: /\)/,
+        relevance: 0,
         contains: VALUE_WITH_RULESETS
       }, // argument list of parametric mixins
       {

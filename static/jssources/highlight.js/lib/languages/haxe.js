@@ -56,7 +56,7 @@ function haxe(hljs) {
         begin: '#',
         end: '$',
         keywords: {
-          'meta-keyword': 'if else elseif end error'
+          keyword: 'if else elseif end error'
         }
       },
       {

@@ -13,7 +13,7 @@ function clojure(hljs) {
   const globals = 'def defonce defprotocol defstruct defmulti defmethod defn- defn defmacro deftype defrecord';
   const keywords = {
     $pattern: SYMBOL_RE,
-    'builtin-name':
+    built_in:
       // Clojure keywords
       globals + ' ' +
       'cond apply if-not if-let if not not= =|0 <|0 >|0 <=|0 >=|0 ==|0 +|0 /|0 *|0 -|0 rem ' +
@@ -72,7 +72,8 @@ function clojure(hljs) {
   };
   const COLLECTION = {
     begin: '[\\[\\{]',
-    end: '[\\]\\}]'
+    end: '[\\]\\}]',
+    relevance: 0
   };
   const HINT = {
     className: 'comment',
@@ -113,7 +114,10 @@ function clojure(hljs) {
 
   const GLOBAL = {
     beginKeywords: globals,
-    lexemes: SYMBOL_RE,
+    keywords: {
+      $pattern: SYMBOL_RE,
+      keyword: globals
+    },
     end: '(\\[|#|\\d|"|:|\\{|\\)|\\(|$)',
     contains: [
       {
@@ -139,7 +143,7 @@ function clojure(hljs) {
 
   return {
     name: 'Clojure',
-    aliases: [ 'clj' ],
+    aliases: [ 'clj', 'edn' ],
     illegal: /\S/,
     contains: [
       LIST,

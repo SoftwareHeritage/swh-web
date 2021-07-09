@@ -38,14 +38,14 @@ export function csrfPost(url, headers = {}, body = null) {
 }
 
 export function isGitRepoUrl(url, pathPrefix = '/') {
-  let allowedProtocols = ['http:', 'https:', 'git:'];
+  const allowedProtocols = ['http:', 'https:', 'git:'];
   if (allowedProtocols.find(protocol => protocol === url.protocol) === undefined) {
     return false;
   }
   if (!url.pathname.startsWith(pathPrefix)) {
     return false;
   }
-  let re = new RegExp('[\\w\\.-]+\\/?(?!=.git)(?:\\.git\\/?)?$');
+  const re = new RegExp('[\\w\\.-]+\\/?(?!=.git)(?:\\.git\\/?)?$');
   return re.test(url.pathname.slice(pathPrefix.length));
 };
 
@@ -54,9 +54,9 @@ export function removeUrlFragment() {
 }
 
 export function selectText(startNode, endNode) {
-  let selection = window.getSelection();
+  const selection = window.getSelection();
   selection.removeAllRanges();
-  let range = document.createRange();
+  const range = document.createRange();
   range.setStart(startNode, 0);
   if (endNode.nodeName !== '#text') {
     range.setEnd(endNode, endNode.childNodes.length);

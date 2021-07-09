@@ -33,16 +33,88 @@ Audit: 2020
 
 /** @type LanguageFn */
 function aspectj(hljs) {
-  const KEYWORDS =
-    'false synchronized int abstract float private char boolean static null if const ' +
-    'for true while long throw strictfp finally protected import native final return void ' +
-    'enum else extends implements break transient new catch instanceof byte super volatile case ' +
-    'assert short package default double public try this switch continue throws privileged ' +
-    'aspectOf adviceexecution proceed cflowbelow cflow initialization preinitialization ' +
-    'staticinitialization withincode target within execution getWithinTypeName handler ' +
-    'thisJoinPoint thisJoinPointStaticPart thisEnclosingJoinPointStaticPart declare parents ' +
-    'warning error soft precedence thisAspectInstance';
-  const SHORTKEYS = 'get set args call';
+  const KEYWORDS = [
+    "false",
+    "synchronized",
+    "int",
+    "abstract",
+    "float",
+    "private",
+    "char",
+    "boolean",
+    "static",
+    "null",
+    "if",
+    "const",
+    "for",
+    "true",
+    "while",
+    "long",
+    "throw",
+    "strictfp",
+    "finally",
+    "protected",
+    "import",
+    "native",
+    "final",
+    "return",
+    "void",
+    "enum",
+    "else",
+    "extends",
+    "implements",
+    "break",
+    "transient",
+    "new",
+    "catch",
+    "instanceof",
+    "byte",
+    "super",
+    "volatile",
+    "case",
+    "assert",
+    "short",
+    "package",
+    "default",
+    "double",
+    "public",
+    "try",
+    "this",
+    "switch",
+    "continue",
+    "throws",
+    "privileged",
+    "aspectOf",
+    "adviceexecution",
+    "proceed",
+    "cflowbelow",
+    "cflow",
+    "initialization",
+    "preinitialization",
+    "staticinitialization",
+    "withincode",
+    "target",
+    "within",
+    "execution",
+    "getWithinTypeName",
+    "handler",
+    "thisJoinPoint",
+    "thisJoinPointStaticPart",
+    "thisEnclosingJoinPointStaticPart",
+    "declare",
+    "parents",
+    "warning",
+    "error",
+    "soft",
+    "precedence",
+    "thisAspectInstance"
+  ];
+  const SHORTKEYS = [
+    "get",
+    "set",
+    "args",
+    "call"
+  ];
 
   return {
     name: 'AspectJ',
@@ -85,7 +157,7 @@ function aspectj(hljs) {
           {
             begin: /\([^\)]*/,
             end: /[)]+/,
-            keywords: KEYWORDS + ' ' + SHORTKEYS,
+            keywords: KEYWORDS.concat(SHORTKEYS),
             excludeEnd: false
           }
         ]
@@ -130,7 +202,7 @@ function aspectj(hljs) {
         contains: [
           {
             begin: concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
-            keywords: KEYWORDS + ' ' + SHORTKEYS,
+            keywords: KEYWORDS.concat(SHORTKEYS),
             relevance: 0
           },
           hljs.QUOTE_STRING_MODE

@@ -247,6 +247,10 @@
             "classes": "never"
         }],
         "prefer-promise-reject-errors": "error",
+        "prefer-const": ["error", {
+            "destructuring": "any",
+            "ignoreReadBeforeAssign": false
+        }],
         "quotes": ["error", "single", {
             "avoidEscape": true,
             "allowTemplateLiterals": true

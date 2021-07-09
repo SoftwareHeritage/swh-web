@@ -23,6 +23,17 @@ function concat(...args) {
   return joined;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -31,7 +42,10 @@ function concat(...args) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 
@@ -148,7 +162,7 @@ function vbnet(hljs) {
         begin: /'/
       },
       {
-        // TODO: Use `beforeMatch:` for leading spaces
+        // TODO: Use multi-class for leading spaces
         begin: /([\t ]|^)REM(?=\s)/
       }
     ]
@@ -156,11 +170,11 @@ function vbnet(hljs) {
 
   const DIRECTIVES = {
     className: 'meta',
-    // TODO: Use `beforeMatch:` for indentation once available
+    // TODO: Use multi-class for indentation once available
     begin: /[\t ]*#(const|disable|else|elseif|enable|end|externalsource|if|region)\b/,
     end: /$/,
     keywords: {
-      'meta-keyword':
+      keyword:
         'const disable else elseif enable end externalsource if region then'
     },
     contains: [ COMMENT ]

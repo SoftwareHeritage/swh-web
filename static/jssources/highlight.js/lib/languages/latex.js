@@ -14,6 +14,17 @@ function source(re) {
   return re.source;
 }
 
+function stripOptionsFromArgs(args) {
+  const opts = args[args.length - 1];
+
+  if (typeof opts === 'object' && opts.constructor === Object) {
+    args.splice(args.length - 1, 1);
+    return opts;
+  } else {
+    return {};
+  }
+}
+
 /**
  * Any of the passed expresssions may match
  *
@@ -22,7 +33,10 @@ function source(re) {
  * @returns {string}
  */
 function either(...args) {
-  const joined = '(' + args.map((x) => source(x)).join("|") + ")";
+  const opts = stripOptionsFromArgs(args);
+  const joined = '(' +
+    (opts.capture ? "" : "?:") +
+    args.map((x) => source(x)).join("|") + ")";
   return joined;
 }
 
@@ -131,7 +145,7 @@ function latex(hljs) {
   };
   const MAGIC_COMMENT = {
     className: 'meta',
-    begin: '% !TeX',
+    begin: /% ?!(T[eE]X|tex|BIB|bib)/,
     end: '$',
     relevance: 10
   };

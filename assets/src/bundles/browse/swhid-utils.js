@@ -18,9 +18,9 @@ export function swhIdObjectTypeToggled(event) {
 
 export function swhIdContextOptionToggled(event) {
   event.stopPropagation();
-  let swhIdElt = $(event.target).closest('.swhid-ui').find('.swhid');
-  let swhIdWithContext = $(event.target).data('swhid-with-context');
-  let swhIdWithContextUrl = $(event.target).data('swhid-with-context-url');
+  const swhIdElt = $(event.target).closest('.swhid-ui').find('.swhid');
+  const swhIdWithContext = $(event.target).data('swhid-with-context');
+  const swhIdWithContextUrl = $(event.target).data('swhid-with-context-url');
   let currentSwhId = swhIdElt.text();
   if ($(event.target).prop('checked')) {
     swhIdElt.attr('href', swhIdWithContextUrl);
@@ -38,11 +38,11 @@ export function swhIdContextOptionToggled(event) {
 }
 
 function addLinesInfo() {
-  let swhIdElt = $('#swhid-tab-content').find('.swhid');
+  const swhIdElt = $('#swhid-tab-content').find('.swhid');
   let currentSwhId = swhIdElt.text().replace(/;\n/g, ';');
-  let lines = [];
+  const lines = [];
   let linesPart = ';lines=';
-  let linesRegexp = new RegExp(/L(\d+)/g);
+  const linesRegexp = new RegExp(/L(\d+)/g);
   let line = linesRegexp.exec(window.location.hash);
   while (line) {
     lines.push(parseInt(line[1]));
@@ -69,14 +69,14 @@ function addLinesInfo() {
 $(document).ready(() => {
   new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
-      let swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
+      const swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
       return swhId.replace(/;\n/g, ';');
     }
   });
 
   new ClipboardJS('.btn-swhid-url-copy', {
     text: trigger => {
-      let swhIdUrl = $(trigger).closest('.swhid-ui').find('.swhid').attr('href');
+      const swhIdUrl = $(trigger).closest('.swhid-ui').find('.swhid').attr('href');
       return window.location.origin + swhIdUrl;
     }
   });
@@ -85,7 +85,7 @@ $(document).ready(() => {
     $('#swh-identifiers').css('width', '1000px');
   }
 
-  let tabSlideOptions = {
+  const tabSlideOptions = {
     tabLocation: 'right',
     clickScreenToCloseFilters: ['.ui-slideouttab-panel', '.modal'],
     offset: function() {
