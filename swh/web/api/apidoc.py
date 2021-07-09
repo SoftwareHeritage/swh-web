@@ -60,8 +60,8 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         self.status_codes_set = set()
         self.reqheaders_set = set()
         self.resheaders_set = set()
-        self.field_list_visited = False
         self.current_json_obj = None
+        self.current_field_name = None
 
     def _default_visit(self, node: docutils.nodes.Element) -> str:
         """Simply visits a text node, drops its start and end tags, visits
@@ -93,107 +93,93 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     def visit_literal(self, node: docutils.nodes.literal) -> str:
         return f"``{self._default_visit(node)}``"
 
-    def visit_field_list(self, node):
-        """
-        Visit parsed rst field lists to extract relevant info
-        regarding api endpoint.
-        """
-        self.field_list_visited = True
-        for child in node.traverse():
-            # TODO: instead of traversing recursively, we should inspect the children
-            # directly (they can be <field_name> and <field_body> directly, or
-            # a <field> node containing both)
+    def visit_field_name(self, node: docutils.nodes.field_name) -> str:
+        self.current_field_name = node.astext()
+        return ""
 
-            # get the parsed field name
-            if isinstance(child, docutils.nodes.field_name):
-                field_name = child.astext()
-            # parse field text
-            elif isinstance(child, docutils.nodes.field_body):
-                text = self._default_visit(child).strip()
-                assert text, str(child)
-                field_data = field_name.split(" ")
-                # Parameters
-                if field_data[0] in self.parameter_roles:
-                    if field_data[2] not in self.args_set:
-                        self.data["args"].append(
-                            {"name": field_data[2], "type": field_data[1], "doc": text}
-                        )
-                        self.args_set.add(field_data[2])
-                # Query Parameters
-                if field_data[0] in self.query_parameter_roles:
-                    if field_data[2] not in self.params_set:
-                        self.data["params"].append(
-                            {"name": field_data[2], "type": field_data[1], "doc": text}
-                        )
-                        self.params_set.add(field_data[2])
-                # Request data type
+    def visit_field_body(self, node: docutils.nodes.field_body) -> str:
+        text = self._default_visit(node).strip()
+        assert text, str(node)
+        field_data = self.current_field_name.split(" ")
+        # Parameters
+        if field_data[0] in self.parameter_roles:
+            if field_data[2] not in self.args_set:
+                self.data["args"].append(
+                    {"name": field_data[2], "type": field_data[1], "doc": text}
+                )
+                self.args_set.add(field_data[2])
+        # Query Parameters
+        if field_data[0] in self.query_parameter_roles:
+            if field_data[2] not in self.params_set:
+                self.data["params"].append(
+                    {"name": field_data[2], "type": field_data[1], "doc": text}
+                )
+                self.params_set.add(field_data[2])
+        # Request data type
+        if (
+            field_data[0] in self.request_json_array_roles
+            or field_data[0] in self.request_json_object_roles
+        ):
+            # array
+            if field_data[0] in self.request_json_array_roles:
+                self.data["input_type"] = "array"
+            # object
+            else:
+                self.data["input_type"] = "object"
+            # input object field
+            if field_data[2] not in self.inputs_set:
+                self.data["inputs"].append(
+                    {"name": field_data[2], "type": field_data[1], "doc": text}
+                )
+                self.inputs_set.add(field_data[2])
+                self.current_json_obj = self.data["inputs"][-1]
+        # Response type
+        if (
+            field_data[0] in self.response_json_array_roles
+            or field_data[0] in self.response_json_object_roles
+        ):
+            # array
+            if field_data[0] in self.response_json_array_roles:
+                self.data["return_type"] = "array"
+            # object
+            else:
+                self.data["return_type"] = "object"
+            # returned object field
+            if field_data[2] not in self.returns_set:
+                self.data["returns"].append(
+                    {"name": field_data[2], "type": field_data[1], "doc": text}
+                )
+                self.returns_set.add(field_data[2])
+                self.current_json_obj = self.data["returns"][-1]
+        # Status Codes
+        if field_data[0] in self.status_code_roles:
+            if field_data[1] not in self.status_codes_set:
+                self.data["status_codes"].append({"code": field_data[1], "doc": text})
+                self.status_codes_set.add(field_data[1])
+        # Request Headers
+        if field_data[0] in self.request_header_roles:
+            if field_data[1] not in self.reqheaders_set:
+                self.data["reqheaders"].append({"name": field_data[1], "doc": text})
+                self.reqheaders_set.add(field_data[1])
+        # Response Headers
+        if field_data[0] in self.response_header_roles:
+            if field_data[1] not in self.resheaders_set:
+                resheader = {"name": field_data[1], "doc": text}
+                self.data["resheaders"].append(resheader)
+                self.resheaders_set.add(field_data[1])
                 if (
-                    field_data[0] in self.request_json_array_roles
-                    or field_data[0] in self.request_json_object_roles
+                    resheader["name"] == "Content-Type"
+                    and resheader["doc"] == "application/octet-stream"
                 ):
-                    # array
-                    if field_data[0] in self.request_json_array_roles:
-                        self.data["input_type"] = "array"
-                    # object
-                    else:
-                        self.data["input_type"] = "object"
-                    # input object field
-                    if field_data[2] not in self.inputs_set:
-                        self.data["inputs"].append(
-                            {"name": field_data[2], "type": field_data[1], "doc": text}
-                        )
-                        self.inputs_set.add(field_data[2])
-                        self.current_json_obj = self.data["inputs"][-1]
-                # Response type
-                if (
-                    field_data[0] in self.response_json_array_roles
-                    or field_data[0] in self.response_json_object_roles
-                ):
-                    # array
-                    if field_data[0] in self.response_json_array_roles:
-                        self.data["return_type"] = "array"
-                    # object
-                    else:
-                        self.data["return_type"] = "object"
-                    # returned object field
-                    if field_data[2] not in self.returns_set:
-                        self.data["returns"].append(
-                            {"name": field_data[2], "type": field_data[1], "doc": text}
-                        )
-                        self.returns_set.add(field_data[2])
-                        self.current_json_obj = self.data["returns"][-1]
-                # Status Codes
-                if field_data[0] in self.status_code_roles:
-                    if field_data[1] not in self.status_codes_set:
-                        self.data["status_codes"].append(
-                            {"code": field_data[1], "doc": text}
-                        )
-                        self.status_codes_set.add(field_data[1])
-                # Request Headers
-                if field_data[0] in self.request_header_roles:
-                    if field_data[1] not in self.reqheaders_set:
-                        self.data["reqheaders"].append(
-                            {"name": field_data[1], "doc": text}
-                        )
-                        self.reqheaders_set.add(field_data[1])
-                # Response Headers
-                if field_data[0] in self.response_header_roles:
-                    if field_data[1] not in self.resheaders_set:
-                        resheader = {"name": field_data[1], "doc": text}
-                        self.data["resheaders"].append(resheader)
-                        self.resheaders_set.add(field_data[1])
-                        if (
-                            resheader["name"] == "Content-Type"
-                            and resheader["doc"] == "application/octet-stream"
-                        ):
-                            self.data["return_type"] = "octet stream"
+                    self.data["return_type"] = "octet stream"
 
         # Don't return anything in the description; these nodes only add text
         # to other fields
         return ""
 
-    # visit_field_list collects and handles these with a more global view:
-    visit_field = visit_field_name = visit_field_body = _default_visit
+    # We ignore these nodes and handle their subtrees directly in
+    # visit_field_name and visit_field_body
+    visit_field = visit_field_list = _default_visit
 
     def visit_paragraph(self, node: docutils.nodes.paragraph) -> str:
         """
