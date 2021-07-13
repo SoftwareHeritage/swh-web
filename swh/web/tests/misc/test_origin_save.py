@@ -14,7 +14,7 @@ from swh.web.common.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDE
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_http_get_response
 
-VISIT_TYPES = ("git", "svn", "hg")
+VISIT_TYPES = ("git", "svn", "hg", "cvs")
 PRIVILEGED_VISIT_TYPES = tuple(list(VISIT_TYPES) + ["archives"])
 
 
