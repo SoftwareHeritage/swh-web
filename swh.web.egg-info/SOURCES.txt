@@ -48,6 +48,9 @@ assets/src/bundles/browse/origin-search.js
 assets/src/bundles/browse/snapshot-navigation.css
 assets/src/bundles/browse/snapshot-navigation.js
 assets/src/bundles/browse/swhid-utils.js
+assets/src/bundles/guided_tour/guided-tour-steps.yaml
+assets/src/bundles/guided_tour/index.js
+assets/src/bundles/guided_tour/swh-introjs.css
 assets/src/bundles/origin/index.js
 assets/src/bundles/origin/visits-calendar.js
 assets/src/bundles/origin/visits-histogram.js
@@ -97,6 +100,7 @@ assets/src/utils/hljs-swh-theme.css
 assets/src/utils/mathjax.js
 assets/src/utils/org.css
 assets/src/utils/org.js
+assets/src/utils/scrolling.js
 assets/src/utils/showdown.css
 assets/src/utils/showdown.js
 cypress/fixtures/1c480a4573d2a003fc2630c21c2b25829de49972.gitfast.gz
@@ -113,6 +117,7 @@ cypress/integration/content-rendering.spec.js
 cypress/integration/deposit-admin.spec.js
 cypress/integration/directory.spec.js
 cypress/integration/errors.spec.js
+cypress/integration/guided-tour.spec.js
 cypress/integration/home.spec.js
 cypress/integration/language-select.spec.js
 cypress/integration/layout.spec.js
@@ -159,6 +164,8 @@ static/css/auth.0336a94c2c02b4b2a4f4.css
 static/css/auth.0336a94c2c02b4b2a4f4.css.map
 static/css/browse.6315ef52ed73df532bed.css
 static/css/browse.6315ef52ed73df532bed.css.map
+static/css/guided_tour.616ea5a04fb07f119387.css
+static/css/guided_tour.616ea5a04fb07f119387.css.map
 static/css/highlightjs.ae43064ab38a65a04d81.css
 static/css/highlightjs.ae43064ab38a65a04d81.css.map
 static/css/org.fdb2f5350b5554094ca4.css
@@ -283,11 +290,14 @@ static/js/admin.a03f59a7bf097dc0faa2.js
 static/js/admin.a03f59a7bf097dc0faa2.js.map
 static/js/auth.84a43bdafbd6e25ab35f.js
 static/js/auth.84a43bdafbd6e25ab35f.js.map
-static/js/browse.689bb7130d5975bba0e2.js
-static/js/browse.689bb7130d5975bba0e2.js.LICENSE.txt
-static/js/browse.689bb7130d5975bba0e2.js.map
+static/js/browse.33bb4d7793fca689dca9.js
+static/js/browse.33bb4d7793fca689dca9.js.LICENSE.txt
+static/js/browse.33bb4d7793fca689dca9.js.map
 static/js/d3.7143b32998469aa63c71.js
 static/js/d3.7143b32998469aa63c71.js.map
+static/js/guided_tour.8f2e99d2c2b785544bfa.js
+static/js/guided_tour.8f2e99d2c2b785544bfa.js.LICENSE.txt
+static/js/guided_tour.8f2e99d2c2b785544bfa.js.map
 static/js/highlightjs.f08af5f59a0929ede3f6.js
 static/js/highlightjs.f08af5f59a0929ede3f6.js.map
 static/js/mathjax.5b863a88bcd7fc73f3b0.js
@@ -313,9 +323,9 @@ static/js/vault.9be65f6b604c3c7b81ea.js.map
 static/js/vendors.231fa04dd7b1fa6e9c78.js
 static/js/vendors.231fa04dd7b1fa6e9c78.js.LICENSE.txt
 static/js/vendors.231fa04dd7b1fa6e9c78.js.map
-static/js/webapp.2714f088f34ed2ef7863.js
-static/js/webapp.2714f088f34ed2ef7863.js.LICENSE.txt
-static/js/webapp.2714f088f34ed2ef7863.js.map
+static/js/webapp.b9783bf4f19b1cd10e3c.js
+static/js/webapp.b9783bf4f19b1cd10e3c.js.LICENSE.txt
+static/js/webapp.b9783bf4f19b1cd10e3c.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
@@ -393,6 +403,7 @@ static/jssources/assets/src/bundles/browse/index.js
 static/jssources/assets/src/bundles/browse/origin-search.js
 static/jssources/assets/src/bundles/browse/snapshot-navigation.js
 static/jssources/assets/src/bundles/browse/swhid-utils.js
+static/jssources/assets/src/bundles/guided_tour/index.js
 static/jssources/assets/src/bundles/origin/index.js
 static/jssources/assets/src/bundles/origin/visits-calendar.js
 static/jssources/assets/src/bundles/origin/visits-histogram.js
@@ -429,6 +440,7 @@ static/jssources/assets/src/utils/functions.js
 static/jssources/assets/src/utils/highlightjs.js
 static/jssources/assets/src/utils/mathjax.js
 static/jssources/assets/src/utils/org.js
+static/jssources/assets/src/utils/scrolling.js
 static/jssources/assets/src/utils/showdown.js
 static/jssources/bootstrap/LICENSE.txt
 static/jssources/bootstrap/js/dist/alert.js
@@ -1359,6 +1371,8 @@ static/jssources/iframe-resizer/js/iframeResizer.js
 static/jssources/iframe-resizer/js/index.js
 static/jssources/internmap/LICENSE.txt
 static/jssources/internmap/src/index.js
+static/jssources/intro.js/intro.js
+static/jssources/intro.js/license.md
 static/jssources/iterate-object/LICENSE.txt
 static/jssources/iterate-object/lib/index.js
 static/jssources/jquery/LICENSE.txt

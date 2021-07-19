@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,9 +11,9 @@ See top-level LICENSE file for more information
 
   <div id="swh-identifiers" style="display: none;">
     {% if swhids_info|length > 1 %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks</a>
+      <a id="swhids-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks</a>
     {% else %}
-      <a id="right-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink</a>
+      <a id="swhids-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink</a>
     {% endif %}
     <div id="swh-identifiers-content">
       <p>
@@ -28,7 +28,7 @@ See top-level LICENSE file for more information
         Select below a type of object currently browsed in order to display its associated SWHID and permalink.
       </p>
 
-      <ul class="nav nav-pills ml-auto p-2">
+      <ul id="swhid-object-types" class="nav nav-pills ml-auto p-2">
         {% for swhid_info in swhids_info %}
           {% if forloop.first %}
             <li class="nav-item">
@@ -55,16 +55,22 @@ See top-level LICENSE file for more information
           {% endif %}
             <div class="card">
               <div class="card-body swhid-ui">
-                {% if snapshot_context and snapshot_context.origin_info %}
-                  <img class="swh-badge swh-badge-origin" src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
-                       onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
-                       title="Click to display badge integration info">
-                {% endif %}
+                <div class="swh-badges">
+                  {% if snapshot_context and snapshot_context.origin_info %}
+                    <img class="swh-badge swh-badge-origin"
+                        src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
+                        onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
+                        title="Click to display badge integration info">
+                  {% endif %}
+                  {% if swhid_info.object_id %}
+                    <img class="swh-badge swh-badge-{{ swhid_info.object_type }}"
+                        src="{% url 'swh-badge' swhid_info.object_type swhid_info.object_id %}"
+                        onclick="swh.webapp.showBadgeInfoModal('{{ swhid_info.object_type }}', $(this).parent().parent().find('.swhid').text())"
+                        title="Click to display badge integration info">
+                  {% endif %}
+                </div>
                 {% if swhid_info.object_id %}
-                  <img class="swh-badge swh-badge-{{ swhid_info.object_type }}" src="{% url 'swh-badge' swhid_info.object_type swhid_info.object_id %}"
-                      onclick="swh.webapp.showBadgeInfoModal('{{ swhid_info.object_type }}', $(this).parent().find('.swhid').text())"
-                      title="Click to display badge integration info">
-                  <pre><a class="swhid" id="{{ swhid_info.swhid }}" href="{{ swhid_info.swhid_url }}">{{ swhid_info.swhid }}</a></pre>
+                <pre><a class="swhid" id="{{ swhid_info.swhid }}" href="{{ swhid_info.swhid_url }}">{{ swhid_info.swhid }}</a></pre>
                 {% endif %}
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
@@ -80,7 +86,7 @@ See top-level LICENSE file for more information
                     </form>
                   </div>
                 {% endif %}
-                <div class="float-right">
+                <div id="swhid-copy-buttons" class="float-right">
                   <button type="button" class="btn btn-default btn-sm btn-swhid-copy"
                           title="Copy SWHID to clipboard">
                     <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy identifier

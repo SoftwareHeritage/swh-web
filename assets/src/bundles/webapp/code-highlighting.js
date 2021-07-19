@@ -7,35 +7,38 @@
 
 import {removeUrlFragment} from 'utils/functions';
 
+// keep track of the first highlighted line
+let firstHighlightedLine = null;
+// highlighting color
+const lineHighlightColor = 'rgb(193, 255, 193)';
+
+// function to highlight a line
+export function highlightLine(i, firstHighlighted = false) {
+  const lineTd = $(`.hljs-ln-line[data-line-number="${i}"]`);
+  lineTd.css('background-color', lineHighlightColor);
+  if (firstHighlighted) {
+    firstHighlightedLine = i;
+  }
+  return lineTd;
+}
+
+// function to reset highlighting
+export function resetHighlightedLines() {
+  firstHighlightedLine = null;
+  $('.hljs-ln-line[data-line-number]').css('background-color', 'inherit');
+}
+
+export function scrollToLine(lineDomElt) {
+  if ($(lineDomElt).closest('.swh-content').length > 0) {
+    $('html, body').animate({
+      scrollTop: $(lineDomElt).offset().top - 70
+    }, 500);
+  }
+}
+
 export async function highlightCode(showLineNumbers = true) {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
-
-  // keep track of the first highlighted line
-  let firstHighlightedLine = null;
-  // highlighting color
-  const lineHighlightColor = 'rgb(193, 255, 193)';
-
-  // function to highlight a line
-  function highlightLine(i) {
-    const lineTd = $(`.hljs-ln-line[data-line-number="${i}"]`);
-    lineTd.css('background-color', lineHighlightColor);
-    return lineTd;
-  }
-
-  // function to reset highlighting
-  function resetHighlightedLines() {
-    firstHighlightedLine = null;
-    $('.hljs-ln-line[data-line-number]').css('background-color', 'inherit');
-  }
-
-  function scrollToLine(lineDomElt) {
-    if ($(lineDomElt).closest('.swh-content').length > 0) {
-      $('html, body').animate({
-        scrollTop: $(lineDomElt).offset().top - 70
-      }, 500);
-    }
-  }
 
   // function to highlight lines based on a url fragment
   // in the form '#Lx' or '#Lx-Ly'

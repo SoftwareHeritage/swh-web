@@ -1,0 +1,18 @@
+/**
+ * Copyright (C) 2021  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.introjs-tooltip {
+    min-width: 500px;
+}
+
+.introjs-tooltip.introjs-floating {
+    /* center tooltip not attached to a DOM element to the center of the screen */
+    position: fixed !important;
+    top: 50% !important;
+    margin: 0 auto !important;
+    transform: translate(-50%, -50%) !important;
+}

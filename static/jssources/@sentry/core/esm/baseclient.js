@@ -46,8 +46,8 @@ var BaseClient = /** @class */ (function () {
     function BaseClient(backendClass, options) {
         /** Array of used integrations. */
         this._integrations = {};
-        /** Number of call being processed */
-        this._processing = 0;
+        /** Number of calls being processed */
+        this._numProcessing = 0;
         this._backend = new backendClass(options);
         this._options = options;
         if (options.dsn) {
@@ -129,11 +129,11 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype.flush = function (timeout) {
         var _this = this;
-        return this._isClientProcessing(timeout).then(function (ready) {
+        return this._isClientDoneProcessing(timeout).then(function (clientFinished) {
             return _this._getBackend()
                 .getTransport()
                 .close(timeout)
-                .then(function (transportFlushed) { return ready && transportFlushed; });
+                .then(function (transportFlushed) { return clientFinished && transportFlushed; });
         });
     };
     /**
@@ -206,14 +206,23 @@ var BaseClient = /** @class */ (function () {
     BaseClient.prototype._sendSession = function (session) {
         this._getBackend().sendSession(session);
     };
-    /** Waits for the client to be done with processing. */
-    BaseClient.prototype._isClientProcessing = function (timeout) {
+    /**
+     * Determine if the client is finished processing. Returns a promise because it will wait `timeout` ms before saying
+     * "no" (resolving to `false`) in order to give the client a chance to potentially finish first.
+     *
+     * @param timeout The time, in ms, after which to resolve to `false` if the client is still busy. Passing `0` (or not
+     * passing anything) will make the promise wait as long as it takes for processing to finish before resolving to
+     * `true`.
+     * @returns A promise which will resolve to `true` if processing is already done or finishes before the timeout, and
+     * `false` otherwise
+     */
+    BaseClient.prototype._isClientDoneProcessing = function (timeout) {
         var _this = this;
         return new SyncPromise(function (resolve) {
             var ticked = 0;
             var tick = 1;
             var interval = setInterval(function () {
-                if (_this._processing == 0) {
+                if (_this._numProcessing == 0) {
                     clearInterval(interval);
                     resolve(true);
                 }
@@ -311,6 +320,10 @@ var BaseClient = /** @class */ (function () {
         if (event.contexts && event.contexts.trace) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             normalized.contexts.trace = event.contexts.trace;
+        }
+        var _a = this.getOptions()._experiments, _experiments = _a === void 0 ? {} : _a;
+        if (_experiments.ensureNoCircularStructures) {
+            return normalize(normalized);
         }
         return normalized;
     };
@@ -444,12 +457,12 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype._process = function (promise) {
         var _this = this;
-        this._processing += 1;
+        this._numProcessing += 1;
         void promise.then(function (value) {
-            _this._processing -= 1;
+            _this._numProcessing -= 1;
             return value;
         }, function (reason) {
-            _this._processing -= 1;
+            _this._numProcessing -= 1;
             return reason;
         });
     };
