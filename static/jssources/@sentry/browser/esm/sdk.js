@@ -1,3 +1,4 @@
+import { __assign } from "tslib";
 import { getCurrentHub, initAndBind, Integrations as CoreIntegrations } from '@sentry/core';
 import { addInstrumentationHandler, getGlobalObject, logger, SyncPromise } from '@sentry/utils';
 import { BrowserClient } from './client';
@@ -97,10 +98,15 @@ export function init(options) {
  */
 export function showReportDialog(options) {
     if (options === void 0) { options = {}; }
-    if (!options.eventId) {
-        options.eventId = getCurrentHub().lastEventId();
+    var hub = getCurrentHub();
+    var scope = hub.getScope();
+    if (scope) {
+        options.user = __assign(__assign({}, scope.getUser()), options.user);
     }
-    var client = getCurrentHub().getClient();
+    if (!options.eventId) {
+        options.eventId = hub.lastEventId();
+    }
+    var client = hub.getClient();
     if (client) {
         client.showReportDialog(options);
     }

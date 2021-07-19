@@ -85,9 +85,15 @@ $(document).ready(() => {
     $('#swh-identifiers').css('width', '1000px');
   }
 
+  // prevent automatic closing of SWHIDs tab during guided tour
+  // as it is displayed programmatically
+  function clickScreenToCloseFilter() {
+    return $('.introjs-overlay').length > 0;
+  }
+
   const tabSlideOptions = {
     tabLocation: 'right',
-    clickScreenToCloseFilters: ['.ui-slideouttab-panel', '.modal'],
+    clickScreenToCloseFilters: [clickScreenToCloseFilter, '.ui-slideouttab-panel', '.modal'],
     offset: function() {
       const width = $(window).width();
       if (width < BREAKPOINT_SM) {
