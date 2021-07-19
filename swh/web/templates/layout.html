@@ -21,6 +21,7 @@ See top-level LICENSE file for more information
 
     {% render_bundle 'vendors' %}
     {% render_bundle 'webapp' %}
+    {% render_bundle 'guided_tour' %}
 
     <script>
 /*
@@ -119,23 +120,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% if user.is_authenticated %}
               Logged in as
               {% if 'OIDC' in user.backend %}
-                <a href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
-                <a href="{% url 'oidc-logout' %}?next_path={% url 'logout' %}?remote_user=1">logout</a>
+                <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
+                <a href=  "{% url 'oidc-logout' %}?next_path={% url 'logout' %}?remote_user=1">logout</a>
               {% else %}
-                <strong>{{ user.username }}</strong>,
+                <strong id="swh-login">{{ user.username }}</strong>,
                 <a href="{{ logout_url }}">logout</a>
               {% endif %}
             {% elif oidc_enabled %}
               {% if request.path != logout_url %}
-                <a href="{% url 'oidc-login' %}?next_path={{ request.build_absolute_uri }}">login</a>
+                <a id="swh-login" href="{% url 'oidc-login' %}?next_path={{ request.build_absolute_uri }}">login</a>
               {% else %}
-                <a href="{% url 'oidc-login' %}">login</a>
+                <a id="swh-login" href="{% url 'oidc-login' %}">login</a>
               {% endif %}
             {% else %}
               {% if request.path != logout_url %}
-                <a href="{% url 'login' %}?next={{ request.build_absolute_uri }}">login</a>
+                <a id="swh-login" href="{% url 'login' %}?next={{ request.build_absolute_uri }}">login</a>
               {% else %}
-                <a href="{% url 'login' %}">login</a>
+                <a id="swh-login" href="{% url 'login' %}">login</a>
               {% endif %}
             {% endif %}
           </li>
@@ -208,7 +209,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </a>
             </li>
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
-              <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
+              {% if user.is_authenticated  and user.is_staff or "swh.ambassador" in user.get_all_permissions %}
+                <a href="#" class="nav-link swh-help-link" onclick="swh.guided_tour.guidedTourButtonClick(event)">
+              {% else %}
+                <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
+              {% endif %}
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
                 <p>Help</p>
               </a>
@@ -264,7 +269,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <a href="https://www.softwareheritage.org/contact/">Contact</a>-
         <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
         <a href="{% url 'api-1-homepage' %}">Web API</a><br/>
-        swh-web v{{ swh_web_version }}
+        {% if "production" not in DJANGO_SETTINGS_MODULE  %}
+          swh-web v{{ swh_web_version }}
+        {% endif %}
       </div>
     </footer>
     <div id="back-to-top">

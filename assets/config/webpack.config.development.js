@@ -344,6 +344,11 @@ module.exports = {
             outputPath: 'img/thirdParty/'
           }
         }]
+      },
+      {
+        test: /\.ya?ml$/,
+        type: 'json',
+        use: 'yaml-loader'
       }
     ],
     // tell webpack to not parse already minified files to speedup build process
