@@ -269,7 +269,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <a href="https://www.softwareheritage.org/contact/">Contact</a>-
         <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
         <a href="{% url 'api-1-homepage' %}">Web API</a><br/>
-        swh-web v{{ swh_web_version }}
+        {% if "production" not in DJANGO_SETTINGS_MODULE  %}
+          swh-web v{{ swh_web_version }}
+        {% endif %}
       </div>
     </footer>
     <div id="back-to-top">
