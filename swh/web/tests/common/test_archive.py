@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
+from copy import deepcopy
 import hashlib
 import itertools
 import random
@@ -26,7 +27,8 @@ from swh.model.model import (
 )
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.typing import OriginInfo
+from swh.web.common.typing import OriginInfo, PagedResult
+from swh.web.config import get_config
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
@@ -1011,6 +1013,32 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
 
     origins = list(archive.lookup_origins_by_sha1s([origin_sha1, unknown_origin_sha1]))
     assert origins == [origin_info, None]
+
+
+@given(origin())
+def test_search_origin(origin):
+    results = archive.search_origin(url_pattern=origin["url"])[0]
+    assert results == [{"url": origin["url"]}]
+
+
+@given(origin())
+def test_search_origin_use_ql(mocker, origin):
+    config = deepcopy(get_config())
+    config["search_config"]["enable_ql"] = True
+    mock_get_config = mocker.patch("swh.web.config.get_config")
+    mock_get_config.return_value = config
+
+    ORIGIN = [{"url": origin["url"]}]
+
+    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search.origin_search.return_value = PagedResult(
+        results=ORIGIN, next_page_token=None,
+    )
+
+    results = archive.search_origin(
+        url_pattern=f"origin = '{origin['url']}'", use_ql=True
+    )[0]
+    assert results == ORIGIN
 
 
 @given(snapshot())

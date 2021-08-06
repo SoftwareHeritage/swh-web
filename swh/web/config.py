@@ -41,10 +41,6 @@ SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {
     "allowed_hosts": ("list", []),
-    "search": (
-        "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5010/", "timeout": 10,},
-    ),
     "storage": (
         "dict",
         {"cls": "remote", "url": "http://127.0.0.1:5002/", "timeout": 10,},
@@ -56,6 +52,14 @@ DEFAULT_CONFIG = {
     "counters": (
         "dict",
         {"cls": "remote", "url": "http://127.0.0.1:5011/", "timeout": 1,},
+    ),
+    "search": (
+        "dict",
+        {"cls": "remote", "url": "http://127.0.0.1:5010/", "timeout": 10,},
+    ),
+    "search_config": (
+        "dict",
+        {"backend": "swh-indexer-storage", "enable_ql": False},  # or "swh-search"
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -128,7 +132,6 @@ DEFAULT_CONFIG = {
             "json_path": "1.0/status/578e5eddcdc0cc7951000520",
         },
     ),
-    "metadata_search_backend": ("string", "swh-indexer-storage"),  # or "swh-search"
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", STAGING_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),

@@ -12,6 +12,7 @@ import pytest
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
+from swh.search.interface import PagedResult
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
 from swh.web.api.utils import enrich_origin, enrich_origin_visit
@@ -522,6 +523,33 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
     assert rv.data == []
 
 
+def test_api_origin_search_use_ql(api_client, mocker):
+    mock_config = mocker.patch("swh.web.common.archive.config")
+    mock_config.get_config.return_value = {
+        "search_config": {"backend": "swh-search", "enable_ql": True}
+    }
+
+    expected_origins = {
+        "https://github.com/wcoder/highlightjs-line-numbers.js",
+        "https://github.com/memononen/libtess2",
+    }
+
+    ORIGINS = [{"url": origin} for origin in expected_origins]
+
+    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search.origin_search.return_value = PagedResult(
+        results=ORIGINS, next_page_token=None,
+    )
+
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": "origin = 'github.com'",},
+        query_params={"visit_type": "git", "use_ql": "true"},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    assert {origin["url"] for origin in rv.data} == expected_origins
+
+
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
 @pytest.mark.parametrize("limit", [1, 2, 3, 10])
 def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backend):
@@ -573,7 +601,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 def test_api_origin_metadata_search(api_client, mocker, backend):
 
     mock_config = mocker.patch("swh.web.common.archive.config")
-    mock_config.get_config.return_value = {"metadata_search_backend": backend}
+    mock_config.get_config.return_value = {"search_config": {"backend": backend}}
 
     url = reverse(
         "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}

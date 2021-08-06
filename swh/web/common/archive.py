@@ -297,6 +297,7 @@ def lookup_origins(
 
 def search_origin(
     url_pattern: str,
+    use_ql: bool = False,
     limit: int = 50,
     with_visit: bool = False,
     visit_types: Optional[List[str]] = None,
@@ -307,6 +308,7 @@ def search_origin(
 
     Args:
         url_pattern: the string pattern to search for in origin urls
+        use_ql: whether to use swh search query language or not
         limit: the maximum number of found origins to return
         with_visit: Whether origins with no visit are to be filtered out
         visit_types: Only origins having any of the provided visit types
@@ -321,13 +323,22 @@ def search_origin(
         assert isinstance(page_token, str)
 
     if search:
-        page_result = search.origin_search(
-            url_pattern=url_pattern,
-            page_token=page_token,
-            with_visit=with_visit,
-            visit_types=visit_types,
-            limit=limit,
-        )
+        if config.get_config()["search_config"].get("enable_ql") and use_ql:
+            page_result = search.origin_search(
+                query=url_pattern,
+                page_token=page_token,
+                with_visit=with_visit,
+                visit_types=visit_types,
+                limit=limit,
+            )
+        else:
+            page_result = search.origin_search(
+                url_pattern=url_pattern,
+                page_token=page_token,
+                with_visit=with_visit,
+                visit_types=visit_types,
+                limit=limit,
+            )
         origins = [converters.from_origin(ori_dict) for ori_dict in page_result.results]
     else:
         # Fallback to swh-storage if swh-search is not configured
@@ -367,7 +378,7 @@ def search_origin_metadata(
 
     """
     results = []
-    if search and config.get_config()["metadata_search_backend"] == "swh-search":
+    if search and config.get_config()["search_config"]["backend"] == "swh-search":
         page_result = search.origin_search(metadata_pattern=fulltext, limit=limit,)
         matches = idx_storage.origin_intrinsic_metadata_get(
             [r["url"] for r in page_result.results]
