@@ -33,7 +33,8 @@ def api_raw_extrinsic_metadata_swhid(request, target):
 
         Returns raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on a given object.
 
-        :param string target: The SWHID of the object whose metadata should be returned
+        :param string target: The core SWHID of the object whose metadata
+            should be returned
         :query string authority: A metadata authority identifier, formatted as
             ``<type> <IRI>``. Required.
         :query string after: An ISO representation of the minimum timestamp of metadata
