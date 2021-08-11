@@ -204,7 +204,7 @@ def api_raw_extrinsic_metadata_swhid_authorities(request, target):
         They can then be used to get the raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on
         that object from each of the authorities.
 
-        :param string target: The SWHID of the object whose metadata-providing
+        :param string target: The core SWHID of the object whose metadata-providing
           authorities should be returned
 
         {common_headers}
