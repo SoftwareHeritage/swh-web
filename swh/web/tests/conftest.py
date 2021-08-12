@@ -57,7 +57,7 @@ settings.register_profile(
 settings.register_profile(
     "swh-web-fast",
     settings(
-        deadline=None, max_examples=1, suppress_health_check=suppress_health_check,
+        deadline=None, max_examples=5, suppress_health_check=suppress_health_check,
     ),
 )
 
