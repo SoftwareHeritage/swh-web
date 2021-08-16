@@ -255,18 +255,6 @@ module.exports = {
           }
         }]
       },
-      {
-        test: require.resolve('js-cookie'),
-        use: [{
-          loader: 'expose-loader',
-          options: {
-            exposes: {
-              globalName: 'Cookies',
-              override: true
-            }
-          }
-        }]
-      },
       // css import configuration:
       //  - first process it with postcss
       //  - then extract it to a dedicated file associated to each bundle
