@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -129,6 +129,19 @@ def content_text_non_utf8():
     )
 
 
+def content_application_no_highlight():
+    """
+    Hypothesis strategy returning random textual contents with mimetype
+    starting with application/ and no detected programming language to
+    highlight ingested into the test archive.
+    """
+    return content().filter(
+        lambda c: c["mimetype"].startswith("application/")
+        and c["encoding"] != "binary"
+        and c["hljs_language"] == "nohighlight"
+    )
+
+
 def content_text_no_highlight():
     """
     Hypothesis strategy returning random textual contents with no detected
@@ -169,7 +182,7 @@ def content_utf8_detected_as_binary():
         if content["encoding"] != "binary":
             return False
         try:
-            content["data"].decode("utf-8")
+            content["raw_data"].decode("utf-8")
         except Exception:
             return False
         else:
