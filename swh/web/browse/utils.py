@@ -6,7 +6,6 @@
 import base64
 import stat
 import textwrap
-from threading import Lock
 
 import magic
 import sentry_sdk
@@ -66,9 +65,6 @@ def get_directory_entries(sha1_git):
     cache.set(cache_entry_id, (dirs, files))
 
     return dirs, files
-
-
-_lock = Lock()
 
 
 def get_mimetype_and_encoding_for_content(content):
@@ -161,11 +157,6 @@ def request_content(
     if filetype:
         mimetype = filetype["mimetype"]
         encoding = filetype["encoding"]
-        # workaround when encountering corrupted data due to implicit
-        # conversion from bytea to text in the indexer db (see T818)
-        # TODO: Remove that code when all data have been correctly converted
-        if mimetype.startswith("\\"):
-            filetype = None
 
     if not max_size or content_data["length"] < max_size:
         try:
