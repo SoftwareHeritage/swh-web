@@ -444,9 +444,9 @@ def revision_browse(request, sha1_git):
 
     vault_cooking = {
         "directory_context": False,
-        "directory_id": None,
+        "directory_swhid": None,
         "revision_context": True,
-        "revision_id": sha1_git,
+        "revision_swhid": f"swh:1:rev:{sha1_git}",
     }
 
     swh_objects = [SWHObjectInfo(object_type=REVISION, object_id=sha1_git)]
@@ -529,7 +529,7 @@ def revision_browse(request, sha1_git):
         }
 
         vault_cooking["directory_context"] = True
-        vault_cooking["directory_id"] = dir_id
+        vault_cooking["directory_swhid"] = f"swh:1:dir:{dir_id}"
 
         swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=dir_id))
 

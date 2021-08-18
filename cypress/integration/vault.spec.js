@@ -21,6 +21,10 @@ function checkVaultCookingTask(objectType) {
   cy.wait('@checkVaultCookingTask');
 }
 
+function getVaultItemList() {
+  return JSON.parse(window.localStorage.getItem('swh-vault-cooking-tasks'));
+}
+
 function updateVaultItemList(vaultUrl, vaultItems) {
   cy.visit(vaultUrl)
     .then(() => {
@@ -30,15 +34,15 @@ function updateVaultItemList(vaultUrl, vaultItems) {
     });
 }
 
-// Mocks API response : /api/1/vault/(:objectType)/(:hash)
-// objectType : {'directory', 'revision'}
-function genVaultCookingResponse(objectType, objectId, status, message, fetchUrl) {
+// Mocks API response : /api/1/vault/(:bundleType)/(:swhid)
+// bundleType : {'flat', 'gitfast'}
+function genVaultCookingResponse(bundleType, swhid, status, message, fetchUrl) {
   return {
-    'obj_type': objectType,
+    'bundle_type': bundleType,
     'id': 1,
     'progress_message': message,
     'status': status,
-    'obj_id': objectId,
+    'swhid': swhid,
     'fetch_url': fetchUrl
   };
 };
@@ -46,7 +50,7 @@ function genVaultCookingResponse(objectType, objectId, status, message, fetchUrl
 // Tests progressbar color, status
 // And status in localStorage
 function testStatus(taskId, color, statusMsg, status) {
-  cy.get(`.swh-vault-table #vault-task-${taskId}`)
+  cy.get(`.swh-vault-table #vault-task-${CSS.escape(taskId)}`)
     .should('be.visible')
     .find('.progress-bar')
     .should('be.visible')
@@ -54,8 +58,8 @@ function testStatus(taskId, color, statusMsg, status) {
     .and('contain', statusMsg)
     .then(() => {
       // Vault item with object_id as taskId should exist in localStorage
-      const currentVaultItems = JSON.parse(window.localStorage.getItem('swh-vault-cooking-tasks'));
-      const vaultItem = currentVaultItems.find(obj => obj.object_id === taskId);
+      const currentVaultItems = getVaultItemList();
+      const vaultItem = currentVaultItems.find(obj => obj.swhid === taskId);
 
       assert.isNotNull(vaultItem);
       assert.strictEqual(vaultItem.status, status);
@@ -66,20 +70,21 @@ describe('Vault Cooking User Interface Tests', function() {
 
   before(function() {
     const dirInfo = this.origin[0].directory[0];
-    this.directory = dirInfo.id;
+    this.directory = `swh:1:dir:${dirInfo.id}`;
     this.directoryUrl = this.Urls.browse_origin_directory() +
       `?origin_url=${this.origin[0].url}&path=${dirInfo.path}`;
-    this.vaultDirectoryUrl = this.Urls.api_1_vault_cook_directory(this.directory);
-    this.vaultFetchDirectoryUrl = this.Urls.api_1_vault_fetch_directory(this.directory);
+    this.vaultDirectoryUrl = this.Urls.api_1_vault_cook_flat(this.directory);
+    this.vaultFetchDirectoryUrl = this.Urls.api_1_vault_fetch_flat(this.directory);
 
-    this.revision = this.origin[1].revisions[0];
-    this.revisionUrl = this.Urls.browse_revision(this.revision);
-    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_revision_gitfast(this.revision);
-    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_revision_gitfast(this.revision);
+    this.revisionId = this.origin[1].revisions[0];
+    this.revision = `swh:1:rev:${this.revisionId}`;
+    this.revisionUrl = this.Urls.browse_revision(this.revisionId);
+    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_gitfast(this.revision);
+    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_gitfast(this.revision);
 
     const release = this.origin[1].release;
     this.releaseUrl = this.Urls.browse_release(release.id) + `?origin_url=${this.origin[1].url}`;
-    this.vaultReleaseDirectoryUrl = this.Urls.api_1_vault_cook_directory(release.directory);
+    this.vaultReleaseDirectoryUrl = this.Urls.api_1_vault_cook_flat(`swh:1:dir:${release.directory}`);
   });
 
   beforeEach(function() {
@@ -87,22 +92,32 @@ describe('Vault Cooking User Interface Tests', function() {
     // so we need to define it here
     this.vaultItems = [
       {
-        'object_type': 'revision',
-        'object_id': this.revision,
+        'bundle_type': 'gitfast',
+        'swhid': this.revision,
         'email': '',
         'status': 'done',
-        'fetch_url': `/api/1/vault/revision/${this.revision}/gitfast/raw/`,
+        'fetch_url': `/api/1/vault/gitfast/${this.revision}/raw/`,
+        'progress_message': null
+      }
+    ];
+    this.legacyVaultItems = [
+      {
+        'object_type': 'revision',
+        'object_id': this.revisionId,
+        'email': '',
+        'status': 'done',
+        'fetch_url': `/api/1/vault/revision/${this.revisionId}/gitfast/raw/`,
         'progress_message': null
       }
     ];
 
     this.genVaultDirCookingResponse = (status, message = null) => {
-      return genVaultCookingResponse('directory', this.directory, status,
+      return genVaultCookingResponse('flat', this.directory, status,
                                      message, this.vaultFetchDirectoryUrl);
     };
 
     this.genVaultRevCookingResponse = (status, message = null) => {
-      return genVaultCookingResponse('revision', this.revision, status,
+      return genVaultCookingResponse('gitfast', this.revision, status,
                                      message, this.vaultFetchRevisionUrl);
     };
 
@@ -166,19 +181,24 @@ describe('Vault Cooking User Interface Tests', function() {
 
     cy.visit(this.Urls.browse_vault());
 
-    // trick to override the response of an intercepted request
-    // https://github.com/cypress-io/cypress/issues/9302
-    cy.intercept('GET', this.vaultDirectoryUrl, req => this.genVaultDirCookingResponse('done'))
-      .as('checkVaultCookingTask');
-
-    // Stub responses when requesting the vault API to simulate
-    // a task has been created
-    cy.intercept('POST', this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('new')
-    }).as('createVaultCookingTask');
-
-    cy.contains(`#vault-task-${this.revision} button`, 'Download')
+    cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
       .click();
+  });
+
+  it('should display and upgrade previous cooking tasks from the legacy format', function() {
+    updateVaultItemList(this.Urls.browse_vault(), this.legacyVaultItems);
+
+    // updateVaultItemList doesn't work in this test?!?!
+    window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(this.vaultItems));
+
+    cy.visit(this.Urls.browse_vault());
+
+    // Check it is displayed
+    cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
+      .click();
+
+    // Check the LocalStorage was upgraded
+    expect(getVaultItemList()).to.deep.equal(this.vaultItems);
   });
 
   it('should create a directory cooking task and report the success', function() {
@@ -248,15 +268,15 @@ describe('Vault Cooking User Interface Tests', function() {
         testStatus(this.directory, progressbarColors['done'], 'done', 'done');
       });
 
-      cy.get(`#vault-task-${this.directory} .vault-origin a`)
+      cy.get(`#vault-task-${CSS.escape(this.directory)} .vault-origin a`)
         .should('contain', this.origin[0].url)
         .should('have.attr', 'href', `${this.Urls.browse_origin()}?origin_url=${this.origin[0].url}`);
 
-      cy.get(`#vault-task-${this.directory} .vault-object-info a`)
+      cy.get(`#vault-task-${CSS.escape(this.directory)} .vault-object-info a`)
         .should('have.text', this.directory)
         .should('have.attr', 'href', browseDirectoryUrl);
 
-      cy.get(`#vault-task-${this.directory} .vault-dl-link button`)
+      cy.get(`#vault-task-${CSS.escape(this.directory)} .vault-dl-link button`)
         .click();
 
       cy.wait('@fetchCookedArchive').then((xhr) => {
@@ -333,14 +353,14 @@ describe('Vault Cooking User Interface Tests', function() {
         testStatus(this.revision, progressbarColors['done'], 'done', 'done');
       });
 
-      cy.get(`#vault-task-${this.revision} .vault-origin`)
+      cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-origin`)
         .should('have.text', 'unknown');
 
-      cy.get(`#vault-task-${this.revision} .vault-object-info a`)
+      cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-object-info a`)
         .should('have.text', this.revision)
         .should('have.attr', 'href', browseRevisionUrl);
 
-      cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
+      cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
         .click();
 
       cy.wait('@fetchCookedArchive').then((xhr) => {
@@ -403,7 +423,7 @@ describe('Vault Cooking User Interface Tests', function() {
       }
     }).as('fetchCookedArchive');
 
-    cy.get(`#vault-task-${this.revision} .vault-dl-link button`)
+    cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
       .click();
 
     cy.wait('@fetchCookedArchive').then(() => {
@@ -431,13 +451,13 @@ describe('Vault Cooking User Interface Tests', function() {
 
     updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
 
-    cy.get(`#vault-task-${this.revision}`)
+    cy.get(`#vault-task-${CSS.escape(this.revision)}`)
       .find('input[type="checkbox"]')
       .click({force: true});
     cy.contains('button', 'Remove selected tasks')
       .click();
 
-    cy.get(`#vault-task-${this.revision}`)
+    cy.get(`#vault-task-${CSS.escape(this.revision)}`)
       .should('not.exist');
   });
 

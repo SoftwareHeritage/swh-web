@@ -54,7 +54,11 @@ urlpatterns = [
     url(r"^vault/$", _browse_vault_view, name="browse-vault"),
     # for backward compatibility
     url(r"^origin/save/$", _browse_origin_save_view, name="browse-origin-save"),
-    url(r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$", swhid_browse),
+    url(
+        r"^(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        swhid_browse,
+        name="browse-swhid",
+    ),
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()
