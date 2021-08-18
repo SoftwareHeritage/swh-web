@@ -108,7 +108,7 @@ def api_raw_extrinsic_metadata_swhid(request, target):
     limit = min(limit, 10000)
 
     try:
-        target = identifiers.CoreSWHID.from_string(target).to_extended()
+        target = identifiers.ExtendedSWHID.from_string(target)
     except identifiers.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 
@@ -145,14 +145,18 @@ def api_raw_extrinsic_metadata_swhid(request, target):
         "results": results,
         "headers": {},
     }
+
     if result_page.next_page_token is not None:
         response["headers"]["link-next"] = reverse(
-            "api-1-raw-extrinsic-metadata",
+            "api-1-raw-extrinsic-metadata-swhid",
+            url_args={"target": target},
             query_params=dict(
                 authority=authority_str,
                 after=after_str,
                 limit=limit_str,
-                page_token=base64.urlsafe_b64encode(result_page.next_page_token),
+                page_token=base64.urlsafe_b64encode(
+                    result_page.next_page_token.encode()
+                ),
             ),
             request=request,
         )
@@ -226,7 +230,7 @@ def api_raw_extrinsic_metadata_swhid_authorities(request, target):
     target_str = target
 
     try:
-        target = identifiers.CoreSWHID.from_string(target_str).to_extended()
+        target = identifiers.ExtendedSWHID.from_string(target_str)
     except identifiers.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 

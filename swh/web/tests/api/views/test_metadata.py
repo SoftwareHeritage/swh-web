@@ -154,17 +154,15 @@ def test_api_raw_extrinsic_metadata_list_authorities(
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    expected_results = [
-        {
-            "type": authority.type.value,
-            "url": authority.url,
-            "metadata_list_url": "http://testserver"
-            + reverse(
-                "api-1-raw-extrinsic-metadata-swhid",
-                url_args={"target": str(metadata.target)},
-                query_params={"authority": f"{authority.type.value} {authority.url}"},
-            ),
-        }
-    ]
+    expected_result = {
+        "type": authority.type.value,
+        "url": authority.url,
+        "metadata_list_url": "http://testserver"
+        + reverse(
+            "api-1-raw-extrinsic-metadata-swhid",
+            url_args={"target": str(metadata.target)},
+            query_params={"authority": f"{authority.type.value} {authority.url}"},
+        ),
+    }
 
-    assert rv.data == expected_results
+    assert expected_result in rv.data

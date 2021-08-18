@@ -51,10 +51,10 @@ if repr(settings()) == repr(hypothesis_default_settings):
 
 
 def _filter_checksum(cs):
-    generated_checksums = get_tests_data()["generated_checksums"]
-    if not int.from_bytes(cs, byteorder="little") or cs in generated_checksums:
-        return False
-    generated_checksums.add(cs)
+    # generated_checksums = get_tests_data()["generated_checksums"]
+    # if not int.from_bytes(cs, byteorder="little") or cs in generated_checksums:
+    #     return False
+    # generated_checksums.add(cs)
     return True
 
 

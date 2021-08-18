@@ -56,7 +56,7 @@ settings.register_profile(
 settings.register_profile(
     "swh-web-fast",
     settings(
-        deadline=None, max_examples=1, suppress_health_check=suppress_health_check,
+        deadline=None, max_examples=5, suppress_health_check=suppress_health_check,
     ),
 )
 
@@ -138,7 +138,7 @@ def api_request_factory():
 
 
 # Initialize tests data
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def tests_data():
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
@@ -150,13 +150,13 @@ def tests_data():
 
 
 # Fixture to manipulate data from a sample archive used in the tests
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def archive_data(tests_data):
     return _ArchiveData(tests_data)
 
 
 # Fixture to manipulate indexer data from a sample archive used in the tests
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
