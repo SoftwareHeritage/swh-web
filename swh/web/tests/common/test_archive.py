@@ -204,22 +204,29 @@ def test_stat_counters(archive_data):
 
 
 @given(new_origin(), visit_dates())
-def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
-    archive_data.origin_add([new_origin])
+def test_lookup_origin_visits(subtest, new_origin, visit_dates):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        archive_data.origin_add([new_origin])
 
-    archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
-    )
+        archive_data.origin_visit_add(
+            [
+                OriginVisit(origin=new_origin.url, date=ts, type="git",)
+                for ts in visit_dates
+            ]
+        )
 
-    actual_origin_visits = list(
-        archive.lookup_origin_visits(new_origin.url, per_page=100)
-    )
+        actual_origin_visits = list(
+            archive.lookup_origin_visits(new_origin.url, per_page=100)
+        )
 
-    expected_visits = archive_data.origin_visit_get(new_origin.url)
-    for expected_visit in expected_visits:
-        expected_visit["origin"] = new_origin.url
+        expected_visits = archive_data.origin_visit_get(new_origin.url)
+        for expected_visit in expected_visits:
+            expected_visit["origin"] = new_origin.url
 
-    assert actual_origin_visits == expected_visits
+        assert actual_origin_visits == expected_visits
 
 
 @given(new_origin(), visit_dates())

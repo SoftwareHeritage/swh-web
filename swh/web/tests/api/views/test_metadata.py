@@ -14,76 +14,90 @@ from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
 @given(raw_extrinsic_metadata())
-def test_api_raw_extrinsic_metadata(api_client, archive_data, metadata):
-    archive_data.metadata_authority_add([metadata.authority])
-    archive_data.metadata_fetcher_add([metadata.fetcher])
-    archive_data.raw_extrinsic_metadata_add([metadata])
+def test_api_raw_extrinsic_metadata(api_client, subtest, metadata):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        archive_data.metadata_authority_add([metadata.authority])
+        archive_data.metadata_fetcher_add([metadata.fetcher])
+        archive_data.raw_extrinsic_metadata_add([metadata])
 
-    authority = metadata.authority
-    url = reverse(
-        "api-1-raw-extrinsic-metadata-swhid",
-        url_args={"target": str(metadata.target)},
-        query_params={"authority": f"{authority.type.value} {authority.url}"},
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
+        authority = metadata.authority
+        url = reverse(
+            "api-1-raw-extrinsic-metadata-swhid",
+            url_args={"target": str(metadata.target)},
+            query_params={"authority": f"{authority.type.value} {authority.url}"},
+        )
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert len(rv.data) == 1
+        assert len(rv.data) == 1
 
-    expected_result = metadata.to_dict()
-    del expected_result["id"]
-    del expected_result["metadata"]
-    metadata_url = rv.data[0]["metadata_url"]
-    expected_result["metadata_url"] = metadata_url
-    expected_result["discovery_date"] = expected_result["discovery_date"].isoformat()
-    assert rv.data == [expected_result]
+        expected_result = metadata.to_dict()
+        del expected_result["id"]
+        del expected_result["metadata"]
+        metadata_url = rv.data[0]["metadata_url"]
+        expected_result["metadata_url"] = metadata_url
+        expected_result["discovery_date"] = expected_result[
+            "discovery_date"
+        ].isoformat()
+        assert rv.data == [expected_result]
 
-    rv = check_http_get_response(api_client, metadata_url, status_code=200)
-    assert rv["Content-Type"] == "application/octet-stream"
-    assert (
-        rv["Content-Disposition"]
-        == f'attachment; filename="{metadata.target}_metadata"'
-    )
-    assert rv.content == metadata.metadata
+        rv = check_http_get_response(api_client, metadata_url, status_code=200)
+        assert rv["Content-Type"] == "application/octet-stream"
+        assert (
+            rv["Content-Disposition"]
+            == f'attachment; filename="{metadata.target}_metadata"'
+        )
+        assert rv.content == metadata.metadata
 
 
 @pytest.mark.parametrize("limit", [1, 2, 10, 100])
 @given(strategies.sets(raw_extrinsic_metadata(), min_size=1))
-def test_api_raw_extrinsic_metadata_scroll(api_client, archive_data, limit, metadata):
-    # Make all metadata objects use the same authority and target
-    metadata0 = next(iter(metadata))
-    metadata = {
-        attr.evolve(m, authority=metadata0.authority, target=metadata0.target)
-        for m in metadata
-    }
-    authority = metadata0.authority
+def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        # Make all metadata objects use the same authority and target
+        metadata0 = next(iter(meta))
+        metadata = {
+            attr.evolve(m, authority=metadata0.authority, target=metadata0.target)
+            for m in meta
+        }
+        # Metadata ids must also be updated as they depend on authority and target
+        metadata = {attr.evolve(m, id=m.compute_hash()) for m in metadata}
+        authority = metadata0.authority
 
-    archive_data.metadata_authority_add([authority])
-    archive_data.metadata_fetcher_add(list({m.fetcher for m in metadata}))
-    archive_data.raw_extrinsic_metadata_add(metadata)
+        archive_data.metadata_authority_add([authority])
+        archive_data.metadata_fetcher_add(list({m.fetcher for m in metadata}))
+        archive_data.raw_extrinsic_metadata_add(metadata)
 
-    url = reverse(
-        "api-1-raw-extrinsic-metadata-swhid",
-        url_args={"target": str(metadata0.target)},
-        query_params={
-            "authority": f"{authority.type.value} {authority.url}",
-            "limit": limit,
-        },
-    )
+        url = reverse(
+            "api-1-raw-extrinsic-metadata-swhid",
+            url_args={"target": str(metadata0.target)},
+            query_params={
+                "authority": f"{authority.type.value} {authority.url}",
+                "limit": limit,
+            },
+        )
 
-    results = scroll_results(api_client, url)
+        results = scroll_results(api_client, url)
 
-    expected_results = [m.to_dict() for m in metadata]
-    for expected_result in expected_results:
-        del expected_result["id"]
-        del expected_result["metadata"]
-        expected_result["discovery_date"] = expected_result[
-            "discovery_date"
-        ].isoformat()
+        expected_results = [m.to_dict() for m in metadata]
 
-    for result in results:
-        del result["metadata_url"]
+        for expected_result in expected_results:
+            del expected_result["id"]
+            del expected_result["metadata"]
+            expected_result["discovery_date"] = expected_result[
+                "discovery_date"
+            ].isoformat()
 
-    assert results == expected_results
+        assert len(results) == len(expected_results)
+
+        for result in results:
+            del result["metadata_url"]
+            assert result in expected_results
 
 
 _swhid = "swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307"
@@ -140,31 +154,35 @@ def test_api_raw_extrinsic_metadata_check_params(
 
 
 @given(raw_extrinsic_metadata())
-def test_api_raw_extrinsic_metadata_list_authorities(
-    api_client, archive_data, metadata
-):
-    archive_data.metadata_authority_add([metadata.authority])
-    archive_data.metadata_fetcher_add([metadata.fetcher])
-    archive_data.raw_extrinsic_metadata_add([metadata])
+def test_api_raw_extrinsic_metadata_list_authorities(api_client, subtest, metadata):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        archive_data.metadata_authority_add([metadata.authority])
+        archive_data.metadata_fetcher_add([metadata.fetcher])
+        archive_data.raw_extrinsic_metadata_add([metadata])
 
-    authority = metadata.authority
-    url = reverse(
-        "api-1-raw-extrinsic-metadata-swhid-authorities",
-        url_args={"target": str(metadata.target)},
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
+        authority = metadata.authority
+        url = reverse(
+            "api-1-raw-extrinsic-metadata-swhid-authorities",
+            url_args={"target": str(metadata.target)},
+        )
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
-    expected_results = [
-        {
-            "type": authority.type.value,
-            "url": authority.url,
-            "metadata_list_url": "http://testserver"
-            + reverse(
-                "api-1-raw-extrinsic-metadata-swhid",
-                url_args={"target": str(metadata.target)},
-                query_params={"authority": f"{authority.type.value} {authority.url}"},
-            ),
-        }
-    ]
+        expected_results = [
+            {
+                "type": authority.type.value,
+                "url": authority.url,
+                "metadata_list_url": "http://testserver"
+                + reverse(
+                    "api-1-raw-extrinsic-metadata-swhid",
+                    url_args={"target": str(metadata.target)},
+                    query_params={
+                        "authority": f"{authority.type.value} {authority.url}"
+                    },
+                ),
+            }
+        ]
 
-    assert rv.data == expected_results
+        assert rv.data == expected_results
