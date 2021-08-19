@@ -5,12 +5,32 @@
 
 import attr
 from hypothesis import given, strategies
+from hypothesis.strategies._internal.core import sampled_from
 import pytest
 
-from swh.model.hypothesis_strategies import raw_extrinsic_metadata
+from swh.model.hypothesis_strategies import (
+    raw_extrinsic_metadata as raw_extrinsic_metadata_orig,
+)
+from swh.model.hypothesis_strategies import sha1_git
+from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID, ObjectType
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
+
+
+# public Web API endpoint for raw extrinsic metadata does not support
+# extended SWHIDs so we ensure only core ones will be used in test inputs.
+@strategies.composite
+def raw_extrinsic_metadata(draw):
+    remd = draw(raw_extrinsic_metadata_orig())
+    remd = attr.evolve(
+        remd,
+        target=ExtendedSWHID(
+            object_type=ExtendedObjectType(draw(sampled_from(ObjectType)).value),
+            object_id=draw(sha1_git()),
+        ),
+    )
+    return attr.evolve(remd, id=remd.compute_hash())
 
 
 @given(raw_extrinsic_metadata())
