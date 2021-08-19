@@ -38,10 +38,6 @@ var bundles = {};
 const bundlesDir = path.join(__dirname, '../src/bundles');
 fs.readdirSync(bundlesDir).forEach(file => {
   bundles[file] = ['bundles/' + file + '/index.js'];
-  // workaround for https://github.com/webpack/webpack-dev-server/issues/2692
-  if (isDevServer) {
-    bundles[file].unshift(`webpack-dev-server/client/index.js?http://localhost:${devServerPort}`);
-  }
 });
 
 // common loaders for css related assets (css, sass)
@@ -102,29 +98,31 @@ module.exports = {
   devtool: isDevServer ? 'eval' : 'source-map',
   // webpack-dev-server configuration
   devServer: {
-    clientLogLevel: 'warning',
+    client: {
+      logging: 'warn',
+      overlay: {
+        warnings: true,
+        errors: true
+      },
+      progress: true
+    },
+    devMiddleware: {
+      publicPath: devServerPublicPath,
+      stats: 'errors-only'
+    },
     host: '0.0.0.0',
     port: devServerPort,
-    publicPath: devServerPublicPath,
     // enable to serve static assets not managed by webpack
-    contentBase: path.resolve('./'),
+    static: {
+      directory: path.resolve('./')
+    },
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
     // and prefer to fully reload the frontend application in the browser instead
     hot: false,
-    inline: true,
     historyApiFallback: true,
     headers: {
       'Access-Control-Allow-Origin': '*'
-    },
-    compress: true,
-    stats: 'errors-only',
-    overlay: {
-      warnings: true,
-      errors: true
-    },
-    // workaround for https://github.com/webpack/webpack-dev-server/issues/2692
-    injectClient: false,
-    transportMode: 'ws'
+    }
   },
   // set entries to the bundles we want to produce
   entry: bundles,

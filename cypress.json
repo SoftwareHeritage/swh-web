@@ -26,6 +26,6 @@
   "retries": {
     "runMode": 4
   },
-  "hmrUrl": "ws://localhost:3000/sockjs-node",
-  "hmrRestartDelay": 3000
+  "hmrUrl": "ws://localhost:3000/ws",
+  "hmrRestartDelay": 5000
 }
