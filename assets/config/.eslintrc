@@ -42,7 +42,6 @@
         "fetch": false,
         "__STATIC__": false,
         "Image": false,
-        "Cookies": false,
         "nb": false,
         "MathJax": false
     },

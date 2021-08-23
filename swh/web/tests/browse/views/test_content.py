@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -22,6 +22,7 @@ from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     content,
+    content_application_no_highlight,
     content_image_type,
     content_text,
     content_text_no_highlight,
@@ -66,29 +67,33 @@ def test_content_view_text(client, archive_data, content):
     assert_not_contains(resp, "swh-metadata-popover")
 
 
-@given(content_text_no_highlight())
-def test_content_view_text_no_highlight(client, archive_data, content):
-    sha1_git = content["sha1_git"]
+@given(content_application_no_highlight(), content_text_no_highlight())
+def test_content_view_no_highlight(client, archive_data, content_app, content_text):
+    for content_ in (content_app, content_text):
+        content = content_
+        sha1_git = content["sha1_git"]
 
-    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+        url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
-    url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+        url_raw = reverse(
+            "browse-content-raw", url_args={"query_string": content["sha1"]}
+        )
 
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
-    )
+        resp = check_html_get_response(
+            client, url, status_code=200, template_used="browse/content.html"
+        )
 
-    content_display = _process_content_for_display(archive_data, content)
+        content_display = _process_content_for_display(archive_data, content)
 
-    assert_contains(resp, '<code class="nohighlight">')
-    assert_contains(resp, escape(content_display["content_data"]))
-    assert_contains(resp, url_raw)
+        assert_contains(resp, '<code class="nohighlight">')
+        assert_contains(resp, escape(content_display["content_data"]))
+        assert_contains(resp, url_raw)
 
-    swh_cnt_id = gen_swhid(CONTENT, sha1_git)
-    swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
+        swh_cnt_id = gen_swhid(CONTENT, sha1_git)
+        swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
 
-    assert_contains(resp, swh_cnt_id)
-    assert_contains(resp, swh_cnt_id_url)
+        assert_contains(resp, swh_cnt_id)
+        assert_contains(resp, swh_cnt_id_url)
 
 
 @given(content_text_non_utf8())

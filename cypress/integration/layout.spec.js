@@ -162,28 +162,15 @@ describe('Test top-bar', function() {
       }
     ];
 
-    const responses = [];
-    for (const std of statusTestData) {
-      responses.push(genStatusResponse(std.status, std.statusCode));
-    }
-
-    const checkStatusDisplay = (i) => {
+    for (let i = 0; i < statusTestData.length; ++i) {
       cy.visit(url);
-      // trick to override the response of an intercepted request
-      // https://github.com/cypress-io/cypress/issues/9302
-      cy.intercept(`${statusUrl}/**`, req => req.reply(responses.shift()))
-        .as(`getSwhStatusData${i}`);
-      cy.wait(`@getSwhStatusData${i}`);
+      cy.intercept(`${statusUrl}/**`, {
+        body: genStatusResponse(statusTestData[i].status, statusTestData[i].statusCode)
+      }).as(`getSwhStatusData`);
+      cy.wait(`@getSwhStatusData`);
       cy.get('.swh-current-status-indicator').should('have.class', statusTestData[i].color);
       cy.get('#swh-current-status-description').should('have.text', statusTestData[i].status);
-    };
-
-    checkStatusDisplay(0); // Operationnal
-    checkStatusDisplay(1); // Scheduled Maintenance
-    checkStatusDisplay(2); // Degraded Performance
-    checkStatusDisplay(3); // Partial Service Disruption
-    checkStatusDisplay(4); // Service Disruption
-    checkStatusDisplay(5); // Security Event
+    }
 
   });
 

@@ -1,23 +1,18 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import requests
-from requests.auth import HTTPBasicAuth
 import sentry_sdk
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
 
 from swh.web.admin.adminurls import admin_route
-from swh.web.config import get_config
-
-config = get_config()["deposit"]
+from swh.web.common.utils import get_deposits_list
 
 
 @admin_route(r"deposit/", view_name="admin-deposit")
@@ -31,26 +26,9 @@ def _admin_origin_save(request):
 def _admin_deposit_list(request):
     table_data = {}
     table_data["draw"] = int(request.GET["draw"])
-    deposits_list_url = config["private_api_url"] + "deposits"
-    deposits_list_auth = HTTPBasicAuth(
-        config["private_api_user"], config["private_api_password"]
-    )
     try:
-        nb_deposits = requests.get(
-            "%s?page_size=1" % deposits_list_url, auth=deposits_list_auth, timeout=30
-        ).json()["count"]
-
-        deposits_data = cache.get("swh-deposit-list")
-        if not deposits_data or deposits_data["count"] != nb_deposits:
-            deposits_data = requests.get(
-                "%s?page_size=%s" % (deposits_list_url, nb_deposits),
-                auth=deposits_list_auth,
-                timeout=30,
-            ).json()
-            cache.set("swh-deposit-list", deposits_data)
-
-        deposits = deposits_data["results"]
-
+        deposits = get_deposits_list()
+        deposits_count = len(deposits)
         search_value = request.GET["search[value]"]
         if search_value:
             deposits = [
@@ -85,7 +63,7 @@ def _admin_deposit_list(request):
         page = int(request.GET["start"]) / length + 1
         paginator = Paginator(deposits, length)
         data = paginator.page(page).object_list
-        table_data["recordsTotal"] = deposits_data["count"]
+        table_data["recordsTotal"] = deposits_count
         table_data["recordsFiltered"] = len(deposits)
         table_data["data"] = [
             {

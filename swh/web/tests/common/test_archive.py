@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
+from copy import deepcopy
 import hashlib
 import itertools
 import random
@@ -26,7 +27,8 @@ from swh.model.model import (
 )
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.typing import OriginInfo
+from swh.web.common.typing import OriginInfo, PagedResult
+from swh.web.config import get_config
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
@@ -202,22 +204,29 @@ def test_stat_counters(archive_data):
 
 
 @given(new_origin(), visit_dates())
-def test_lookup_origin_visits(archive_data, new_origin, visit_dates):
-    archive_data.origin_add([new_origin])
+def test_lookup_origin_visits(subtest, new_origin, visit_dates):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        archive_data.origin_add([new_origin])
 
-    archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
-    )
+        archive_data.origin_visit_add(
+            [
+                OriginVisit(origin=new_origin.url, date=ts, type="git",)
+                for ts in visit_dates
+            ]
+        )
 
-    actual_origin_visits = list(
-        archive.lookup_origin_visits(new_origin.url, per_page=100)
-    )
+        actual_origin_visits = list(
+            archive.lookup_origin_visits(new_origin.url, per_page=100)
+        )
 
-    expected_visits = archive_data.origin_visit_get(new_origin.url)
-    for expected_visit in expected_visits:
-        expected_visit["origin"] = new_origin.url
+        expected_visits = archive_data.origin_visit_get(new_origin.url)
+        for expected_visit in expected_visits:
+            expected_visit["origin"] = new_origin.url
 
-    assert actual_origin_visits == expected_visits
+        assert actual_origin_visits == expected_visits
 
 
 @given(new_origin(), visit_dates())
@@ -1011,6 +1020,32 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
 
     origins = list(archive.lookup_origins_by_sha1s([origin_sha1, unknown_origin_sha1]))
     assert origins == [origin_info, None]
+
+
+@given(origin())
+def test_search_origin(origin):
+    results = archive.search_origin(url_pattern=origin["url"])[0]
+    assert results == [{"url": origin["url"]}]
+
+
+@given(origin())
+def test_search_origin_use_ql(mocker, origin):
+    config = deepcopy(get_config())
+    config["search_config"]["enable_ql"] = True
+    mock_get_config = mocker.patch("swh.web.config.get_config")
+    mock_get_config.return_value = config
+
+    ORIGIN = [{"url": origin["url"]}]
+
+    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search.origin_search.return_value = PagedResult(
+        results=ORIGIN, next_page_token=None,
+    )
+
+    results = archive.search_origin(
+        url_pattern=f"origin = '{origin['url']}'", use_ql=True
+    )[0]
+    assert results == ORIGIN
 
 
 @given(snapshot())

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,7 @@
 from copy import deepcopy
 from datetime import timedelta
 import os
+from pathlib import Path
 import random
 import time
 from typing import Dict, List, Optional, Set
@@ -170,6 +171,14 @@ def _add_extra_contents(storage, contents):
     pbm_content = Content.from_data(pbm_image_data)
     storage.content_add([pbm_content])
     contents.add(pbm_content.sha1)
+
+    # add file with mimetype application/pgp-keys in the archive content
+    gpg_path = os.path.join(
+        os.path.dirname(__file__), "resources/contents/other/extensions/public.gpg"
+    )
+    gpg_content = Content.from_data(Path(gpg_path).read_bytes())
+    storage.content_add([gpg_content])
+    contents.add(gpg_content.sha1)
 
 
 INDEXER_TOOL = {
@@ -343,6 +352,7 @@ def _init_tests_data():
         assert cnt_data is not None
         mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
         _, _, cnt_data = _re_encode_content(mimetype, encoding, cnt_data)
+
         content_display_data = prepare_content_for_display(cnt_data, mimetype, path)
 
         content_metadata.update(
@@ -351,9 +361,11 @@ def _init_tests_data():
                 "mimetype": mimetype,
                 "encoding": encoding,
                 "hljs_language": content_display_data["language"],
+                "raw_data": cnt_data,
                 "data": content_display_data["content_data"],
             }
         )
+
         _contents[sha1] = content_metadata
         contents.append(content_metadata)
 

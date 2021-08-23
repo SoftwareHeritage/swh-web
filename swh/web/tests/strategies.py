@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -50,14 +50,6 @@ if repr(settings()) == repr(hypothesis_default_settings):
 # The following strategies exploit the hypothesis capabilities
 
 
-def _filter_checksum(cs):
-    generated_checksums = get_tests_data()["generated_checksums"]
-    if not int.from_bytes(cs, byteorder="little") or cs in generated_checksums:
-        return False
-    generated_checksums.add(cs)
-    return True
-
-
 def _known_swh_object(object_type):
     return sampled_from(get_tests_data()[object_type])
 
@@ -66,21 +58,21 @@ def sha1():
     """
     Hypothesis strategy returning a valid hexadecimal sha1 value.
     """
-    return binary(min_size=20, max_size=20).filter(_filter_checksum).map(hash_to_hex)
+    return binary(min_size=20, max_size=20).map(hash_to_hex)
 
 
 def invalid_sha1():
     """
     Hypothesis strategy returning an invalid sha1 representation.
     """
-    return binary(min_size=50, max_size=50).filter(_filter_checksum).map(hash_to_hex)
+    return binary(min_size=50, max_size=50).map(hash_to_hex)
 
 
 def sha256():
     """
     Hypothesis strategy returning a valid hexadecimal sha256 value.
     """
-    return binary(min_size=32, max_size=32).filter(_filter_checksum).map(hash_to_hex)
+    return binary(min_size=32, max_size=32).map(hash_to_hex)
 
 
 def content():
@@ -129,6 +121,19 @@ def content_text_non_utf8():
     )
 
 
+def content_application_no_highlight():
+    """
+    Hypothesis strategy returning random textual contents with mimetype
+    starting with application/ and no detected programming language to
+    highlight ingested into the test archive.
+    """
+    return content().filter(
+        lambda c: c["mimetype"].startswith("application/")
+        and c["encoding"] != "binary"
+        and c["hljs_language"] == "nohighlight"
+    )
+
+
 def content_text_no_highlight():
     """
     Hypothesis strategy returning random textual contents with no detected
@@ -169,7 +174,7 @@ def content_utf8_detected_as_binary():
         if content["encoding"] != "binary":
             return False
         try:
-            content["data"].decode("utf-8")
+            content["raw_data"].decode("utf-8")
         except Exception:
             return False
         else:
@@ -331,9 +336,7 @@ def new_origin():
     Hypothesis strategy returning a random origin not ingested
     into the test archive.
     """
-    return new_origin_strategy().filter(
-        lambda origin: get_tests_data()["storage"].origin_get([origin.url])[0] is None
-    )
+    return new_origin_strategy()
 
 
 def new_origins(nb_origins=None):

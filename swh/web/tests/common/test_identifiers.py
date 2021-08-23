@@ -610,10 +610,11 @@ def _check_resolved_swhid_browse_url(
 
 
 @given(directory())
-def test_resolve_swhid_with_escaped_chars(directory):
-    origin = "http://example.org/?project=abc;"
-    origin_swhid_escaped = quote(origin, safe="/?:@&")
-    origin_swhid_url_escaped = quote(origin, safe="/:@;")
+def test_resolve_swhid_with_escaped_chars(archive_data, directory):
+    origin_url = "http://example.org/?project=abc;"
+    archive_data.origin_add([Origin(url=origin_url)])
+    origin_swhid_escaped = quote(origin_url, safe="/?:@&")
+    origin_swhid_url_escaped = quote(origin_url, safe="/:@;")
     swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
     resolved_swhid = resolve_swhid(swhid)
     assert resolved_swhid["swhid_parsed"].origin == origin_swhid_escaped

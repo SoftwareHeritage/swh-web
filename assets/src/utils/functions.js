@@ -7,6 +7,8 @@
 
 // utility functions
 
+import Cookies from 'js-cookie';
+
 export function handleFetchError(response) {
   if (!response.ok) {
     throw response;

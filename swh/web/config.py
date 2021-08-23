@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -41,10 +41,6 @@ SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 DEFAULT_CONFIG = {
     "allowed_hosts": ("list", []),
-    "search": (
-        "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5010/", "timeout": 10,},
-    ),
     "storage": (
         "dict",
         {"cls": "remote", "url": "http://127.0.0.1:5002/", "timeout": 10,},
@@ -56,6 +52,14 @@ DEFAULT_CONFIG = {
     "counters": (
         "dict",
         {"cls": "remote", "url": "http://127.0.0.1:5011/", "timeout": 1,},
+    ),
+    "search": (
+        "dict",
+        {"cls": "remote", "url": "http://127.0.0.1:5010/", "timeout": 10,},
+    ),
+    "search_config": (
+        "dict",
+        {"backend": "swh-indexer-storage", "enable_ql": False},  # or "swh-search"
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -105,7 +109,7 @@ DEFAULT_CONFIG = {
         {
             "private_api_url": "https://deposit.softwareheritage.org/1/private/",
             "private_api_user": "swhworker",
-            "private_api_password": "",
+            "private_api_password": "some-password",
         },
     ),
     "coverage_count_origins": ("bool", False),
@@ -113,7 +117,10 @@ DEFAULT_CONFIG = {
     "es_workers_index_url": ("string", ""),
     "history_counters_url": (
         "string",
-        "https://stats.export.softwareheritage.org/history_counters.json",
+        (
+            "http://counters1.internal.softwareheritage.org:5011"
+            "/counters_history/history.json"
+        ),
     ),
     "client_config": ("dict", {}),
     "keycloak": ("dict", {"server_url": "", "realm_name": ""}),
@@ -128,7 +135,6 @@ DEFAULT_CONFIG = {
             "json_path": "1.0/status/578e5eddcdc0cc7951000520",
         },
     ),
-    "metadata_search_backend": ("string", "swh-indexer-storage"),  # or "swh-search"
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", STAGING_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),

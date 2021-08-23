@@ -109,7 +109,9 @@ function searchOriginsFirst(searchQueryText, limit) {
     baseSearchUrl = new URL(Urls.api_1_origin_metadata_search(), window.location);
     baseSearchUrl.searchParams.append('fulltext', searchQueryText);
   } else {
+    const useSearchQL = $('#swh-search-use-ql').prop('checked');
     baseSearchUrl = new URL(Urls.api_1_origin_search(searchQueryText), window.location);
+    baseSearchUrl.searchParams.append('use_ql', useSearchQL ?? false);
   }
 
   const withVisit = $('#swh-search-origins-with-visit').prop('checked');
@@ -198,6 +200,7 @@ export function initOriginSearch() {
         const searchQueryText = $('#swh-origins-url-patterns').val().trim();
         const withVisit = $('#swh-search-origins-with-visit').prop('checked');
         const withContent = $('#swh-filter-empty-visits').prop('checked');
+        const useSearchQL = $('#swh-search-use-ql').prop('checked');
         const searchMetadata = $('#swh-search-origin-metadata').prop('checked');
         const visitType = $('#swh-search-visit-type').val();
         const queryParameters = new URLSearchParams();
@@ -207,6 +210,9 @@ export function initOriginSearch() {
         }
         if (withContent) {
           queryParameters.append('with_content', withContent);
+        }
+        if (useSearchQL) {
+          queryParameters.append('use_ql', useSearchQL ?? false);
         }
         if (searchMetadata) {
           queryParameters.append('search_metadata', searchMetadata);
@@ -243,12 +249,14 @@ export function initOriginSearch() {
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('q');
     const withVisit = urlParams.has('with_visit');
+    const useSearchQL = urlParams.has('use_ql');
     const withContent = urlParams.has('with_content');
     const searchMetadata = urlParams.has('search_metadata');
     const visitType = urlParams.get('visit_type');
     if (query) {
       $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
+      $('#swh-search-use-ql').prop('checked', useSearchQL ?? false);
       $('#swh-filter-empty-visits').prop('checked', withContent);
       $('#swh-search-origin-metadata').prop('checked', searchMetadata);
       if (visitType) {
