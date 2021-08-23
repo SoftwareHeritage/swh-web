@@ -1,8 +1,9 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from base64 import b64encode
 import datetime
 from urllib.parse import quote
 
@@ -14,6 +15,7 @@ from django.urls.exceptions import NoReverseMatch
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
+from swh.web.config import get_config
 
 
 def test_shorten_path_noop():
@@ -228,3 +230,58 @@ def test_reverse_absolute_uri(request_factory):
     request = request_factory.get(utils.reverse("sample-test-view-no-url-args"))
     url = utils.reverse("sample-test-view-no-url-args", request=request)
     assert url == f"http://{request.META['SERVER_NAME']}/sample/test/view/no/url/args/"
+
+
+def test_get_deposits_list(requests_mock):
+    deposits_data = {
+        "count": 2,
+        "results": [
+            {
+                "check_task_id": "351820217",
+                "client": 2,
+                "collection": 1,
+                "complete_date": "2021-01-21T07:52:19.919312Z",
+                "external_id": "hal-03116143",
+                "id": 1412,
+                "load_task_id": "351820260",
+                "origin_url": "https://hal.archives-ouvertes.fr/hal-03116143",
+                "parent": None,
+                "reception_date": "2021-01-21T07:52:19.471019Z",
+                "status": "done",
+                "status_detail": None,
+                "swhid": "swh:1:dir:f25157ad1b13cb20ac3457d4f6756b49ac63d079",
+            },
+            {
+                "check_task_id": "381576507",
+                "client": 2,
+                "collection": 1,
+                "complete_date": "2021-07-07T08:00:44.726676Z",
+                "external_id": "hal-03275052",
+                "id": 1693,
+                "load_task_id": "381576508",
+                "origin_url": "https://hal.archives-ouvertes.fr/hal-03275052",
+                "parent": None,
+                "reception_date": "2021-07-07T08:00:44.327661Z",
+                "status": "done",
+                "status_detail": None,
+                "swhid": "swh:1:dir:825fa96d1810177ec08a772ffa5bd34bbd08b89c",
+            },
+        ],
+    }
+
+    config = get_config()["deposit"]
+    deposits_list_url = config["private_api_url"] + "deposits"
+
+    basic_auth_payload = (
+        config["private_api_user"] + ":" + config["private_api_password"]
+    ).encode()
+
+    requests_mock.get(
+        deposits_list_url,
+        json=deposits_data,
+        request_headers={
+            "Authorization": f"Basic {b64encode(basic_auth_payload).decode('ascii')}"
+        },
+    )
+
+    assert utils.get_deposits_list() == deposits_data["results"]

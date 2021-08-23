@@ -6,6 +6,7 @@
 from django.conf.urls import url
 from django.shortcuts import redirect, render
 
+from swh.web import config
 from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swhid_browse
 import swh.web.browse.views.content  # noqa
@@ -25,7 +26,12 @@ def _browse_help_view(request):
 
 def _browse_search_view(request):
     return render(
-        request, "browse/search.html", {"heading": "Search software origins to browse"}
+        request,
+        "browse/search.html",
+        {
+            "heading": "Search software origins to browse",
+            "enable_ql": config.get_config()["search_config"].get("enable_ql", False),
+        },
     )
 
 

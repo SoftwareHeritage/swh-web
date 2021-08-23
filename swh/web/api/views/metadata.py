@@ -33,7 +33,8 @@ def api_raw_extrinsic_metadata_swhid(request, target):
 
         Returns raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on a given object.
 
-        :param string target: The SWHID of the object whose metadata should be returned
+        :param string target: The core SWHID of the object whose metadata
+            should be returned
         :query string authority: A metadata authority identifier, formatted as
             ``<type> <IRI>``. Required.
         :query string after: An ISO representation of the minimum timestamp of metadata
@@ -144,14 +145,18 @@ def api_raw_extrinsic_metadata_swhid(request, target):
         "results": results,
         "headers": {},
     }
+
     if result_page.next_page_token is not None:
         response["headers"]["link-next"] = reverse(
-            "api-1-raw-extrinsic-metadata",
+            "api-1-raw-extrinsic-metadata-swhid",
+            url_args={"target": target},
             query_params=dict(
                 authority=authority_str,
                 after=after_str,
                 limit=limit_str,
-                page_token=base64.urlsafe_b64encode(result_page.next_page_token),
+                page_token=base64.urlsafe_b64encode(
+                    result_page.next_page_token.encode()
+                ),
             ),
             request=request,
         )
@@ -204,7 +209,7 @@ def api_raw_extrinsic_metadata_swhid_authorities(request, target):
         They can then be used to get the raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on
         that object from each of the authorities.
 
-        :param string target: The SWHID of the object whose metadata-providing
+        :param string target: The core SWHID of the object whose metadata-providing
           authorities should be returned
 
         {common_headers}

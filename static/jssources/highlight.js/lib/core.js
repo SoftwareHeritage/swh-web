@@ -1524,7 +1524,7 @@ function expandOrCloneMode(mode) {
   return mode;
 }
 
-var version = "11.1.0";
+var version = "11.2.0";
 
 /*
 Syntax highlighting with language autodetection.
@@ -1945,7 +1945,7 @@ const HLJS = function(hljs) {
         }
       }
       do {
-        if (top.scope && !top.isMultiClass) {
+        if (top.scope) {
           emitter.closeNode();
         }
         if (!top.skip && !top.subLanguage) {

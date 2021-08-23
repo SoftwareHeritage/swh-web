@@ -18,6 +18,20 @@ let previousElement = null;
 // environment to ease tour testing
 const originUrl = 'https://github.com/memononen/libtess2';
 
+function openSWHIDsTabBeforeNextStep() {
+  window.scrollTo(0, 0);
+  if (!$('#swh-identifiers').tabSlideOut('isOpen')) {
+    $('.introjs-helperLayer, .introjs-tooltipReferenceLayer').hide();
+    $('#swh-identifiers').tabSlideOut('open');
+    setTimeout(() => {
+      $('.introjs-helperLayer, .introjs-tooltipReferenceLayer').show();
+      tour.nextStep();
+    }, 500);
+    return false;
+  }
+  return true;
+}
+
 // init guided tour configuration when page loads in order
 // to hack on it in cypress tests
 $(() => {
@@ -44,15 +58,7 @@ $(() => {
       onBeforeChange: function(targetElement) {
         // open SWHIDs tab before its tour step
         if (targetElement && targetElement.id === 'swh-identifiers') {
-          if (!$('#swh-identifiers').tabSlideOut('isOpen')) {
-            $('.introjs-helperLayer, .introjs-tooltipReferenceLayer').hide();
-            $('#swh-identifiers').tabSlideOut('open');
-            setTimeout(() => {
-              $('.introjs-helperLayer, .introjs-tooltipReferenceLayer').show();
-              tour.nextStep();
-            }, 500);
-            return false;
-          }
+          return openSWHIDsTabBeforeNextStep();
         }
         return true;
       }
@@ -65,8 +71,10 @@ $(() => {
       onBeforeChange: function(targetElement) {
         const lineNumberStart = 11;
         const lineNumberEnd = 17;
+        if (targetElement && $(targetElement).hasClass('swhid')) {
+          return openSWHIDsTabBeforeNextStep();
         // forbid move to next step until user clicks on line numbers
-        if (targetElement && targetElement.dataset.lineNumber === `${lineNumberEnd}`) {
+        } else if (targetElement && targetElement.dataset.lineNumber === `${lineNumberEnd}`) {
           const background = $(`.hljs-ln-numbers[data-line-number="${lineNumberStart}"]`).css('background-color');
           const canGoNext = background !== 'rgba(0, 0, 0, 0)';
           if (!canGoNext && $('#swh-next-step-disabled').length === 0) {
@@ -157,6 +165,8 @@ export function initGuidedTour(page = 0) {
             nextPageUrl.searchParams.set('guided_tour', page + 1);
             if (guidedTourNext) {
               nextPageUrl.searchParams.set('guided_tour_next', guidedTourNext);
+            } else if (page === 0) {
+              nextPageUrl.searchParams.set('guided_tour_next', currentUrlStr);
             }
             window.location.href = decodeURIComponent(nextPageUrl.toString());
           });

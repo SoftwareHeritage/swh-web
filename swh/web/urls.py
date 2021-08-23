@@ -37,7 +37,11 @@ favicon_view = RedirectView.as_view(
 
 
 def _default_view(request):
-    return render(request, "homepage.html")
+    return render(
+        request,
+        "homepage.html",
+        {"enable_ql": swh_web_config["search_config"].get("enable_ql", False),},
+    )
 
 
 urlpatterns = [

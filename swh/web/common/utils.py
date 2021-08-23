@@ -6,7 +6,7 @@
 from datetime import datetime, timezone
 import os
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 from docutils.core import publish_parts
@@ -16,7 +16,10 @@ from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 from pkg_resources import get_distribution
 from prometheus_client.registry import CollectorRegistry
+import requests
+from requests.auth import HTTPBasicAuth
 
+from django.core.cache import cache
 from django.http import HttpRequest, QueryDict
 from django.urls import reverse as django_reverse
 
@@ -354,3 +357,28 @@ def prettify_html(html: str) -> str:
         The prettified HTML document
     """
     return BeautifulSoup(html, "lxml").prettify()
+
+
+def get_deposits_list() -> List[Dict[str, Any]]:
+    """Return the list of software deposits using swh-deposit API
+    """
+    config = get_config()["deposit"]
+    deposits_list_url = config["private_api_url"] + "deposits"
+    deposits_list_auth = HTTPBasicAuth(
+        config["private_api_user"], config["private_api_password"]
+    )
+
+    nb_deposits = requests.get(
+        "%s?page_size=1" % deposits_list_url, auth=deposits_list_auth, timeout=30
+    ).json()["count"]
+
+    deposits_data = cache.get("swh-deposit-list")
+    if not deposits_data or deposits_data["count"] != nb_deposits:
+        deposits_data = requests.get(
+            "%s?page_size=%s" % (deposits_list_url, nb_deposits),
+            auth=deposits_list_auth,
+            timeout=30,
+        ).json()
+        cache.set("swh-deposit-list", deposits_data)
+
+    return deposits_data["results"]
