@@ -48,6 +48,15 @@ See top-level LICENSE file for more information
       search in metadata (instead of URL)
     </label>
   </div>
+  {% if enable_ql %}
+  <div class="custom-control custom-checkbox swhid-option">
+    <input class="custom-control-input" value="option-use-ql" type="checkbox"
+          id="swh-search-use-ql">
+    <label class="custom-control-label font-weight-normal" for="swh-search-use-ql">
+      search using the <a href="https://docs.softwareheritage.org/devel/swh-search/query-language.html">advanced search query language</a>
+    </label>
+  </div>
+  {% endif %}
 </form>
 
 <script>

@@ -168,6 +168,7 @@ def api_origin_search(request, url_pattern):
             results.
 
         :param string url_pattern: a string pattern
+        :query boolean use_ql: whether to use swh search query language or not
         :query int limit: the maximum number of found origins to return
             (bounded to 1000)
         :query boolean with_visit: if true, only return origins with at least
@@ -189,12 +190,14 @@ def api_origin_search(request, url_pattern):
     result = {}
     limit = min(int(request.query_params.get("limit", "70")), 1000)
     page_token = request.query_params.get("page_token")
+    use_ql = request.query_params.get("use_ql", "false")
     with_visit = request.query_params.get("with_visit", "false")
     visit_type = request.query_params.get("visit_type")
 
     (results, page_token) = api_lookup(
         archive.search_origin,
         url_pattern,
+        bool(strtobool(use_ql)),
         limit,
         bool(strtobool(with_visit)),
         [visit_type] if visit_type else None,

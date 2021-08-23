@@ -643,7 +643,6 @@ def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
         assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
         assert mock_get_origin_visit_snapshot.called
         assert mock_snapshot_archive.lookup_origin.called
-        assert mock_snapshot_archive.lookup_snapshot_sizes.called
 
 
 @given(origin())
@@ -696,7 +695,6 @@ def test_origin_empty_snapshot(client, mocker, origin):
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
     assert mock_get_origin_visit_snapshot.called
-    assert mock_archive.lookup_snapshot_sizes.called
 
 
 @given(new_origin())

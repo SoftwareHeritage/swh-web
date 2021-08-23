@@ -10,6 +10,7 @@ from subprocess import PIPE, run
 import sys
 from typing import Any, Dict, List, Optional
 
+from _pytest.python import Function
 from hypothesis import HealthCheck, settings
 import pytest
 
@@ -138,7 +139,7 @@ def api_request_factory():
 
 
 # Initialize tests data
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def tests_data():
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
@@ -150,13 +151,13 @@ def tests_data():
 
 
 # Fixture to manipulate data from a sample archive used in the tests
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def archive_data(tests_data):
     return _ArchiveData(tests_data)
 
 
 # Fixture to manipulate indexer data from a sample archive used in the tests
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
@@ -393,3 +394,38 @@ def keycloak_oidc(keycloak_oidc, mocker):
     keycloak_oidc_client.return_value = keycloak_oidc
 
     return keycloak_oidc
+
+
+@pytest.fixture
+def subtest(request):
+    """A hack to explicitly set up and tear down fixtures.
+
+    This fixture allows you to set up and tear down fixtures within the test
+    function itself. This is useful (necessary!) for using Hypothesis inside
+    pytest, as hypothesis will call the test function multiple times, without
+    setting up or tearing down fixture state as it is normally the case.
+
+    Copied from the pytest-subtesthack project, public domain license
+    (https://github.com/untitaker/pytest-subtesthack).
+    """
+    parent_test = request.node
+
+    def inner(func):
+        if hasattr(Function, "from_parent"):
+            item = Function.from_parent(
+                parent_test,
+                name=request.function.__name__ + "[]",
+                originalname=request.function.__name__,
+                callobj=func,
+            )
+        else:
+            item = Function(
+                name=request.function.__name__ + "[]", parent=parent_test, callobj=func
+            )
+        nextitem = parent_test  # prevents pytest from tearing down module fixtures
+
+        item.ihook.pytest_runtest_setup(item=item)
+        item.ihook.pytest_runtest_call(item=item)
+        item.ihook.pytest_runtest_teardown(item=item, nextitem=nextitem)
+
+    return inner

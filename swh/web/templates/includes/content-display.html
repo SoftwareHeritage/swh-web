@@ -26,7 +26,7 @@ See top-level LICENSE file for more information
       {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
         <div class="swh-ipynb">
         </div>
-      {% elif "text/" in mimetype and encoding != "binary" %}
+      {% elif "text/" in mimetype or "application/" in mimetype and encoding != "binary" %}
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>

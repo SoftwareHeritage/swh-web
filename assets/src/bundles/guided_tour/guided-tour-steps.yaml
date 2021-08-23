@@ -7,12 +7,8 @@ homepage:
   - title: Welcome to the guided tour !
     intro: |
       This guided tour will showcase Software Heritage web application
-      features in order to help you navigate into the archive
-
-  - title: Homepage
-    intro: |
-      This is the entry point of Software Heritage web application,
-      let's see what we can do from here.
+      features in order to help you navigate into the archive.<br/>
+      Let's see what we can do from the homepage first.
 
   - element: .swh-search-box
     title: Search archived software origins
@@ -21,7 +17,7 @@ homepage:
       source codes has been obtained, like a git repository, a directory
       containing tarballs, etc.<br/><br/>
       Software origins are identified by URLs (git clone URLs for instance).<br/><br/>
-      That form enables to search for terms in the full set of archived software
+      You can search for terms in the full set of archived software
       origin URLs. You will be redirected to a dedicated interface displaying search
       results. Clicking on an origin URL will then take you to the source code browsing
       interface. If you enter a complete archived origin URL, you will be immediately
@@ -40,12 +36,12 @@ homepage:
       while browsing the archive. <br/>
       Those downloads correspond to tarballs containing source directories
       archived by Software Heritage. <br/>
-      That list of downloads is stored in your browser local storage so it
+      The list of downloads is stored in your browser local storage so it
       will be persistent across your visits.
 
   - element: .swh-help-link
     title: Launch guided tour
-    intro: Replay that guided tour.
+    intro: Replay the guided tour.
 
   - element: "#swh-login"
     title: Login or register
@@ -82,7 +78,7 @@ browseOrigin:
   - element: "#swh-origin-url"
     title: Software origin URL
     intro: |
-      Here you can find the URL of the archived software origin.<br/>
+      You can find the URL of the archived software origin.<br/>
       Following that link will always bring you back to the code in the HEAD branch
       as captured by the latest Software Heritage visit.
     position: bottom
@@ -90,23 +86,20 @@ browseOrigin:
   - element: "#swh-go-to-origin"
     title: Visit software origin
     intro: |
-      You can visit the software origin URL where source code was captured from
-      by following that link.
+      You can go directly to the place where source code was captured.
     position: bottom
 
   - element: "#swh-origin-visit"
     title: Software Heritage origin visit date
     intro: |
-      Here you can find the date when Software Heritage captured the source code of
-      that origin.<br/>
-      Following that link will always bring you back to the code in the HEAD branch
-      as captured by that visit.
+      You can find the date when Software Heritage captured the source code of
+      that origin.
     position: bottom
 
   - element: "#swh-browse-code-nav-link"
     title: Browse source code
     intro: |
-      Here you can browse the source code of a software origin. <br/>
+      You can browse the source code of a software origin. <br/>
       Clicking on the Code tab will always bring you back to the code in the HEAD branch
       for the currently selected Software Heritage visit.
     position: bottom
@@ -114,14 +107,14 @@ browseOrigin:
   - element: "#swh-browse-snapshot-branches-nav-link"
     title: Browse branches
     intro: |
-      Here you can browse the list of branches for a software origin. <br/>
+      You can browse the list of branches for a software origin. <br/>
       Links are offered to browse the source code contained in each branch.
     position: bottom
 
   - element: "#swh-browse-snapshot-releases-nav-link"
     title: Browse releases
     intro: |
-      Here you can browse the list of releases for a software origin. <br/>
+      You can browse the list of releases for a software origin. <br/>
       Links are offered to browse the source code contained in each release. <br/>
       Please note that for git origins, only annotated tags are considered as releases.
       For non annotated git tags, you can browse them in the Branches tab.
@@ -130,7 +123,7 @@ browseOrigin:
   - element: "#swh-browse-origin-visits-nav-link"
     title: Browse origin visits
     intro: |
-      Here you can find when Software Heritage captured the source code.
+      You can find when Software Heritage captured the source code.
       These visits are called snapshots and visualized in various ways: timeline,
       calendar and simple list.
       Like with a way-back machine, you can travel in time and see the code as it was
@@ -179,7 +172,7 @@ browseOrigin:
   - element: "#swh-tip-revision"
     title: Branch tip revision
     intro: |
-      Here you can see the latest revision (commit) archived by Software Heritage
+      You can see the latest revision (commit) archived by Software Heritage
       for the current branch.
     position: bottom
 
@@ -193,8 +186,12 @@ browseOrigin:
   - element: "#swh-identifiers"
     title: Get SWHIDs of browsed objects
     intro: |
-      In that tab, you can get the SWHIDs of currently browsed objects.
-      Let's see what we can do from here.
+      The <b>SWHID</b> (Software Heritage Identifier), is an intrinsic identifier that is
+      computed uniquely from the software artifact itself.<br/>
+      All details about the syntax, semantics, interoperability and implementation can be
+      found in
+      <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html"
+      target="_blank" rel="noopener noreferrer">the formal specification</a>.
     position: left
 
   - element: "#swhid-object-types"
@@ -229,21 +226,21 @@ browseOrigin:
   - element: .swh-badges
     title: Software Heritage badges
     intro: |
-        You can include Software Heritage badges in the README file of you code repository
-        to indicate its archival by Software Heritage.<br/>
-        Clicking on a badge will show you how to do so depending on your README format.
+      You can include Software Heritage badges in the README file of you code repository
+      to indicate its archival by Software Heritage.<br/>
+      Clicking on a badge will show you how to do so depending on your README format.
 
   - element: .swhid
     title: Software Heritage IDentifier (SWHID)
     intro: |
-        Here you can find the SWHID of the selected object.
+      You can find the SWHID of the selected object.
     position: left
 
   - element: "#swhid-options"
     title: Add / remove qualifiers to SWHID
     intro: |
-        Toggle the adding of qualifiers to the SWHID which adds extra information regarding
-        the context the object has been found.
+      Toggle the adding of qualifiers to the SWHID which adds extra information regarding
+      the context the object has been found.
     position: bottom
 
   - element: "#swhid-copy-buttons"
@@ -255,16 +252,14 @@ browseOrigin:
 
   - title: Browsing a source code file
     intro: |
-        Special features are also offered when browsing a source code file.<br/>
-        This is what we will see in the next part of that tour.
+      Special features are also offered when browsing a source code file.<br/>
+      This is what we will see in the next part of that tour.
 
 browseContent:
 
   - title: Browsing a source code file
     intro: |
-      You just arrived in the source code view of Software Heritage web application.<br/>
-      Extra features are available in it compared to source directory view, let's make
-      a review of them.
+      You just arrived in the source code file view. Let's check a few extra features.
 
   - element: .swh-tr-link
     title: Download source code file
@@ -284,7 +279,7 @@ browseContent:
   - element: .hljs-ln-numbers[data-line-number="11"]
     title: Highlight a source code line
     intro: |
-      Click on the line number to highlight the corresponding line of code.<br/>
+      <b>Click on the line number to highlight the corresponding line of code.</b><br/>
       When a line gets selected, it is automatically added in the SWHID qualifiers
       for the associated content object. It enables to easily browse back that
       specific line of code.
@@ -293,14 +288,23 @@ browseContent:
   - element: .hljs-ln-numbers[data-line-number="17"]
     title: Highlight a range of source code lines,
     intro: |
-      Hold Shift key and click on the line number to highlight a range of source
-      code lines.<br/>
+      <b>Hold Shift key and click on the line number to highlight a range of source
+      code lines.</b><br/>
       When a range of lines get selected, it is automatically added in the SWHID qualifiers
       for the associated content object. It enables to easily browse back that specific
       code snippet.
     position: bottom
 
-  - title: End of guided tour
+  - element: .swhid
+    title: SWHID with lines qualifier
     intro: |
-      Thank your for having followed that guided tour ! <br/>
+      As you can see, selecting lines of code updates the source file SWHID with
+      lines qualifier.<br>
+      Browsing such qualified SWHID will immediately take you to the selected
+      code snippet.
+    position: left
+
+  - title: Guided tour completed
+    intro: |
+      Thank your for following our guided tour ! <br/>
       You will be now redirected to the page you were browsing prior launching it.
