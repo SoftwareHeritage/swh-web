@@ -160,6 +160,27 @@ describe('Vault Cooking User Interface Tests', function() {
       .should('contain', 'Archive cooking request submission failed.');
   });
 
+  it('should display previous cooking tasks', function() {
+
+    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
+
+    cy.visit(this.Urls.browse_vault());
+
+    // trick to override the response of an intercepted request
+    // https://github.com/cypress-io/cypress/issues/9302
+    cy.intercept('GET', this.vaultDirectoryUrl, req => this.genVaultDirCookingResponse('done'))
+      .as('checkVaultCookingTask');
+
+    // Stub responses when requesting the vault API to simulate
+    // a task has been created
+    cy.intercept('POST', this.vaultDirectoryUrl, {
+      body: this.genVaultDirCookingResponse('new')
+    }).as('createVaultCookingTask');
+
+    cy.contains(`#vault-task-${this.revision} button`, 'Download')
+      .click();
+  });
+
   it('should create a directory cooking task and report the success', function() {
 
     // Browse a directory
