@@ -4,8 +4,8 @@
 # See top-level LICENSE file for more information
 
 import attr
-from hypothesis import given, strategies
-from hypothesis.strategies._internal.core import sampled_from
+from hypothesis import given
+from hypothesis.strategies import composite, sampled_from, sets
 import pytest
 
 from swh.model.hypothesis_strategies import (
@@ -20,7 +20,7 @@ from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 # public Web API endpoint for raw extrinsic metadata does not support
 # extended SWHIDs so we ensure only core ones will be used in test inputs.
-@strategies.composite
+@composite
 def raw_extrinsic_metadata(draw):
     remd = draw(raw_extrinsic_metadata_orig())
     remd = attr.evolve(
@@ -73,7 +73,7 @@ def test_api_raw_extrinsic_metadata(api_client, subtest, metadata):
 
 
 @pytest.mark.parametrize("limit", [1, 2, 10, 100])
-@given(strategies.sets(raw_extrinsic_metadata(), min_size=1))
+@given(sets(raw_extrinsic_metadata(), min_size=1))
 def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
