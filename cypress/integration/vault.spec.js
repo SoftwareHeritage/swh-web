@@ -25,13 +25,8 @@ function getVaultItemList() {
   return JSON.parse(window.localStorage.getItem('swh-vault-cooking-tasks'));
 }
 
-function updateVaultItemList(vaultUrl, vaultItems) {
-  cy.visit(vaultUrl)
-    .then(() => {
-      // Add uncooked task to localStorage
-      // which updates it in vault items list
-      window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultItems));
-    });
+function updateVaultItemList(vaultItems) {
+  window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultItems));
 }
 
 // Mocks API response : /api/1/vault/(:bundleType)/(:swhid)
@@ -177,7 +172,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
   it('should display previous cooking tasks', function() {
 
-    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
+    updateVaultItemList(this.vaultItems);
 
     cy.visit(this.Urls.browse_vault());
 
@@ -186,19 +181,16 @@ describe('Vault Cooking User Interface Tests', function() {
   });
 
   it('should display and upgrade previous cooking tasks from the legacy format', function() {
-    updateVaultItemList(this.Urls.browse_vault(), this.legacyVaultItems);
-
-    // updateVaultItemList doesn't work in this test?!?!
-    window.localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(this.vaultItems));
+    updateVaultItemList(this.legacyVaultItems);
 
     cy.visit(this.Urls.browse_vault());
 
     // Check it is displayed
     cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
-      .click();
-
-    // Check the LocalStorage was upgraded
-    expect(getVaultItemList()).to.deep.equal(this.vaultItems);
+      .then(() => {
+        // Check the LocalStorage was upgraded
+        expect(getVaultItemList()).to.deep.equal(this.vaultItems);
+      });
   });
 
   it('should create a directory cooking task and report the success', function() {
@@ -409,7 +401,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
   it('should offer to recook an archive if no more available to download', function() {
 
-    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
+    updateVaultItemList(this.vaultItems);
 
     // Send 404 when fetching vault item
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
@@ -423,7 +415,8 @@ describe('Vault Cooking User Interface Tests', function() {
       }
     }).as('fetchCookedArchive');
 
-    cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
+    cy.visit(this.Urls.browse_vault())
+      .get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
       .click();
 
     cy.wait('@fetchCookedArchive').then(() => {
@@ -449,9 +442,10 @@ describe('Vault Cooking User Interface Tests', function() {
 
   it('should remove selected vault items', function() {
 
-    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
+    updateVaultItemList(this.vaultItems);
 
-    cy.get(`#vault-task-${CSS.escape(this.revision)}`)
+    cy.visit(this.Urls.browse_vault())
+      .get(`#vault-task-${CSS.escape(this.revision)}`)
       .find('input[type="checkbox"]')
       .click({force: true});
     cy.contains('button', 'Remove selected tasks')

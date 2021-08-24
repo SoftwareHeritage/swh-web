@@ -127,9 +127,11 @@ async function checkVaultCookingTasks() {
       if (cookingTask.object_type === 'directory') {
         cookingTask.swhid = `swh:1:dir:${cookingTask.object_id}`;
         cookingTask.bundle_type = 'flat';
+        cookingTask.fetch_url = Urls.api_1_vault_fetch_flat(cookingTask.swhid);
       } else if (cookingTask.object_type === 'revision') {
         cookingTask.swhid = `swh:1:rev:${cookingTask.object_id}`;
         cookingTask.bundle_type = 'gitfast';
+        cookingTask.fetch_url = Urls.api_1_vault_fetch_gitfast(cookingTask.swhid);
       } else {
         // Log to the console + Sentry
         console.error(`Unexpected cookingTask.object_type: ${cookingTask.object_type}`);
