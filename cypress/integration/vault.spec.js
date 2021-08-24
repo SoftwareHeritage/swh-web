@@ -5,8 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-const vaultItems = [];
-
 const progressbarColors = {
   'new': 'rgba(128, 128, 128, 0.5)',
   'pending': 'rgba(0, 0, 255, 0.5)',
@@ -82,18 +80,22 @@ describe('Vault Cooking User Interface Tests', function() {
     const release = this.origin[1].release;
     this.releaseUrl = this.Urls.browse_release(release.id) + `?origin_url=${this.origin[1].url}`;
     this.vaultReleaseDirectoryUrl = this.Urls.api_1_vault_cook_directory(release.directory);
-
-    vaultItems[0] = {
-      'object_type': 'revision',
-      'object_id': this.revision,
-      'email': '',
-      'status': 'done',
-      'fetch_url': `/api/1/vault/revision/${this.revision}/gitfast/raw/`,
-      'progress_message': null
-    };
   });
 
   beforeEach(function() {
+    // For some reason, this gets reset if we define it in the before() hook,
+    // so we need to define it here
+    this.vaultItems = [
+      {
+        'object_type': 'revision',
+        'object_id': this.revision,
+        'email': '',
+        'status': 'done',
+        'fetch_url': `/api/1/vault/revision/${this.revision}/gitfast/raw/`,
+        'progress_message': null
+      }
+    ];
+
     this.genVaultDirCookingResponse = (status, message = null) => {
       return genVaultCookingResponse('directory', this.directory, status,
                                      message, this.vaultFetchDirectoryUrl);
@@ -366,7 +368,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
   it('should offer to recook an archive if no more available to download', function() {
 
-    updateVaultItemList(this.Urls.browse_vault(), vaultItems);
+    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
 
     // Send 404 when fetching vault item
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
@@ -406,7 +408,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
   it('should remove selected vault items', function() {
 
-    updateVaultItemList(this.Urls.browse_vault(), vaultItems);
+    updateVaultItemList(this.Urls.browse_vault(), this.vaultItems);
 
     cy.get(`#vault-task-${this.revision}`)
       .find('input[type="checkbox"]')
