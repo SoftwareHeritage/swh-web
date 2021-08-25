@@ -138,7 +138,7 @@ def api_vault_cook_flat(request, swhid):
     throttle_scope="swh_vault_cooking",
     never_cache=True,
 )
-@api_doc("/vault/directory/", tags=["hidden"])
+@api_doc("/vault/directory/", tags=["deprecated"])
 @format_docstring()
 def api_vault_cook_directory(request, dir_id):
     """
@@ -198,7 +198,7 @@ def api_vault_fetch_flat(request, swhid):
     "api-1-vault-fetch-directory",
     checksum_args=["dir_id"],
 )
-@api_doc("/vault/directory/raw/", tags=["hidden"])
+@api_doc("/vault/directory/raw/", tags=["hidden", "deprecated"])
 def api_vault_fetch_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
@@ -225,7 +225,7 @@ def api_vault_fetch_directory(request, dir_id):
     throttle_scope="swh_vault_cooking",
     never_cache=True,
 )
-@api_doc("/vault/gitfast/", tags=["hidden"])
+@api_doc("/vault/gitfast/")
 @format_docstring()
 def api_vault_cook_gitfast(request, swhid):
     """
@@ -300,7 +300,7 @@ def api_vault_cook_gitfast(request, swhid):
     throttle_scope="swh_vault_cooking",
     never_cache=True,
 )
-@api_doc("/vault/revision/gitfast/", tags=["hidden"])
+@api_doc("/vault/revision/gitfast/", tags=["deprecated"])
 @format_docstring()
 def api_vault_cook_revision_gitfast(request, rev_id):
     """
@@ -360,7 +360,7 @@ def api_vault_fetch_revision_gitfast(request, swhid):
     "api-1-vault-fetch-revision_gitfast",
     checksum_args=["rev_id"],
 )
-@api_doc("/vault/revision_gitfast/raw/", tags=["hidden"])
+@api_doc("/vault/revision_gitfast/raw/", tags=["hidden", "deprecated"])
 def _api_vault_revision_gitfast_raw(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
