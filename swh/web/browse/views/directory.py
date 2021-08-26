@@ -155,9 +155,9 @@ def _directory_browse(request, sha1_git, path=None):
 
     vault_cooking = {
         "directory_context": True,
-        "directory_id": sha1_git,
+        "directory_swhid": f"swh:1:dir:{sha1_git}",
         "revision_context": False,
-        "revision_id": None,
+        "revision_swhid": None,
     }
 
     swh_objects = [SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git)]

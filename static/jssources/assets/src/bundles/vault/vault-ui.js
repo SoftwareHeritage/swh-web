@@ -72,10 +72,10 @@ export async function recookObject() {
     clearTimeout(checkVaultId);
     // build cook request url
     let cookingUrl;
-    if (recookTask.object_type === 'directory') {
-      cookingUrl = Urls.api_1_vault_cook_directory(recookTask.object_id);
+    if (recookTask.bundle_type === 'flat') {
+      cookingUrl = Urls.api_1_vault_cook_flat(recookTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(recookTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_gitfast(recookTask.swhid);
     }
     if (recookTask.email) {
       cookingUrl += '?email=' + recookTask.email;
@@ -89,21 +89,21 @@ export async function recookObject() {
       recookTask.status = 'new';
       const vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
       for (let i = 0; i < vaultCookingTasks.length; ++i) {
-        if (vaultCookingTasks[i].object_id === recookTask.object_id) {
+        if (vaultCookingTasks[i].swhid === recookTask.swhid) {
           vaultCookingTasks[i] = recookTask;
           break;
         }
       }
       // save updated tasks to local storage
       localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
-      // restart cooking tasks status polling
-      checkVaultCookingTasks();
       // hide recook archive modal
       $('#vault-recook-object-modal').modal('hide');
+      // restart cooking tasks status polling
+      await checkVaultCookingTasks();
     } catch (_) {
       // something went wrong
-      checkVaultCookingTasks();
       $('#vault-recook-object-modal').modal('hide');
+      await checkVaultCookingTasks();
     }
   }
 }
@@ -121,21 +121,42 @@ async function checkVaultCookingTasks() {
 
   for (let i = 0; i < vaultCookingTasks.length; ++i) {
     const cookingTask = vaultCookingTasks[i];
-    currentObjectIds.push(cookingTask.object_id);
-    tasks[cookingTask.object_id] = cookingTask;
+
+    if (typeof cookingTask.object_type !== 'undefined') {
+      // Legacy cooking task, upgrade it to the new schema
+      if (cookingTask.object_type === 'directory') {
+        cookingTask.swhid = `swh:1:dir:${cookingTask.object_id}`;
+        cookingTask.bundle_type = 'flat';
+        cookingTask.fetch_url = Urls.api_1_vault_fetch_flat(cookingTask.swhid);
+      } else if (cookingTask.object_type === 'revision') {
+        cookingTask.swhid = `swh:1:rev:${cookingTask.object_id}`;
+        cookingTask.bundle_type = 'gitfast';
+        cookingTask.fetch_url = Urls.api_1_vault_fetch_gitfast(cookingTask.swhid);
+      } else {
+        // Log to the console + Sentry
+        console.error(`Unexpected cookingTask.object_type: ${cookingTask.object_type}`);
+        // Ignore it for now and hope a future version will fix it
+        continue;
+      }
+      delete cookingTask.object_type;
+      delete cookingTask.object_id;
+    }
+
+    currentObjectIds.push(cookingTask.swhid);
+    tasks[cookingTask.swhid] = cookingTask;
     let cookingUrl;
-    if (cookingTask.object_type === 'directory') {
-      cookingUrl = Urls.api_1_vault_cook_directory(cookingTask.object_id);
+    if (cookingTask.bundle_type === 'flat') {
+      cookingUrl = Urls.api_1_vault_cook_flat(cookingTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_gitfast(cookingTask.swhid);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
       cookingTaskRequests.push(fetch(cookingUrl));
     }
   }
   $('.swh-vault-table tbody tr').each((i, row) => {
-    const objectId = $(row).find('.vault-object-info').data('object-id');
-    if ($.inArray(objectId, currentObjectIds) === -1) {
+    const swhid = $(row).find('.vault-object-info').data('swhid');
+    if ($.inArray(swhid, currentObjectIds) === -1) {
       $(row).remove();
     }
   });
@@ -146,24 +167,20 @@ async function checkVaultCookingTasks() {
 
     const table = $('#vault-cooking-tasks tbody');
     for (let i = 0; i < cookingTasks.length; ++i) {
-      const cookingTask = tasks[cookingTasks[i].obj_id];
+      const cookingTask = tasks[cookingTasks[i].swhid];
       cookingTask.status = cookingTasks[i].status;
       cookingTask.fetch_url = cookingTasks[i].fetch_url;
       cookingTask.progress_message = cookingTasks[i].progress_message;
     }
     for (let i = 0; i < vaultCookingTasks.length; ++i) {
       const cookingTask = vaultCookingTasks[i];
-      const rowTask = $(`#vault-task-${cookingTask.object_id}`);
+      const rowTask = $(`#vault-task-${CSS.escape(cookingTask.swhid)}`);
 
       if (!rowTask.length) {
 
         let browseUrl = cookingTask.browse_url;
         if (!browseUrl) {
-          if (cookingTask.object_type === 'directory') {
-            browseUrl = Urls.browse_directory(cookingTask.object_id);
-          } else {
-            browseUrl = Urls.browse_revision(cookingTask.object_id);
-          }
+          browseUrl = Urls.browse_swhid(cookingTask.swhid);
         }
 
         const progressBar = $.parseHTML(progress)[0];
@@ -204,7 +221,7 @@ export function removeCookingTaskInfo(tasksToRemove) {
     return;
   }
   vaultCookingTasks = $.grep(vaultCookingTasks, task => {
-    return $.inArray(task.object_id, tasksToRemove) === -1;
+    return $.inArray(task.swhid, tasksToRemove) === -1;
   });
   localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
 }
@@ -221,8 +238,8 @@ export function initUi() {
     $('.swh-vault-table tbody tr').each((i, row) => {
       const taskSelected = $(row).find('.vault-task-toggle-selection').prop('checked');
       if (taskSelected) {
-        const objectId = $(row).find('.vault-object-info').data('object-id');
-        tasksToRemove.push(objectId);
+        const swhid = $(row).find('.vault-object-info').data('swhid');
+        tasksToRemove.push(swhid);
         $(row).remove();
       }
     });

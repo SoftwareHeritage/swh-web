@@ -330,6 +330,7 @@ def api_doc(
 
                 * hidden: remove the entry points from the listing
                 * upcoming: display the entry point but it is not followable
+                * deprecated: display the entry point as deprecated in the index
         api_version: api version string
     """
 

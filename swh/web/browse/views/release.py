@@ -119,9 +119,9 @@ def release_browse(request, sha1_git):
             rev_directory = revision["directory"]
             vault_cooking = {
                 "directory_context": True,
-                "directory_id": rev_directory,
+                "directory_swhid": f"swh:1:dir:{rev_directory}",
                 "revision_context": True,
-                "revision_id": release["target"],
+                "revision_swhid": f"swh:1:rev:{release['target']}",
             }
             swh_objects.append(
                 SWHObjectInfo(object_type=REVISION, object_id=release["target"])
@@ -143,9 +143,9 @@ def release_browse(request, sha1_git):
             archive.lookup_directory(release["target"])
             vault_cooking = {
                 "directory_context": True,
-                "directory_id": release["target"],
+                "directory_swhid": f"swh:1:dir:{release['target']}",
                 "revision_context": False,
-                "revision_id": None,
+                "revision_swhid": None,
             }
             swh_objects.append(
                 SWHObjectInfo(object_type=DIRECTORY, object_id=release["target"])
