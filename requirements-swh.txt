@@ -6,4 +6,4 @@ swh.model >= 2.6.3
 swh.scheduler >= 0.7.0
 swh.search >= 0.2.0
 swh.storage >= 0.31.0
-swh.vault >= 0.0.33
+swh.vault >= 1.0.0

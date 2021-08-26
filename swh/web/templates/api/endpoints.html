@@ -46,7 +46,7 @@ See top-level LICENSE file for more information
     <tbody>
       {% for route, doc in doc_routes %}
         <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-1-doc-route-{{ tag }} {% endfor %}">
-          {% if doc.tags|length > 0 %}
+          {% if "upcoming" in doc.tags %}
             <td id="{{ route }}">
               {% url doc.route_view_name %}
             </td>
@@ -55,6 +55,7 @@ See top-level LICENSE file for more information
               <a href="{% url doc.route_view_name %}">
                 {{ doc.route }}
               </a>
+              {% if "deprecated" in doc.tags %}(deprecated){% endif %}
             </td>
           {% endif %}
           <td class="d-none d-sm-table-cell">

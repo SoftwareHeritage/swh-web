@@ -839,9 +839,9 @@ def browse_snapshot_directory(
 
     vault_cooking = {
         "directory_context": True,
-        "directory_id": sha1_git,
+        "directory_swhid": f"swh:1:dir:{sha1_git}",
         "revision_context": True,
-        "revision_id": revision_id,
+        "revision_swhid": f"swh:1:rev:{revision_id}",
     }
 
     swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)

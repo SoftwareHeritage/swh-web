@@ -14,12 +14,12 @@ const alertStyle = {
   'z-index': '100000'
 };
 
-export async function vaultRequest(objectType, objectId) {
+export async function vaultRequest(objectType, swhid) {
   let vaultUrl;
   if (objectType === 'directory') {
-    vaultUrl = Urls.api_1_vault_cook_directory(objectId);
+    vaultUrl = Urls.api_1_vault_cook_flat(swhid);
   } else {
-    vaultUrl = Urls.api_1_vault_cook_revision_gitfast(objectId);
+    vaultUrl = Urls.api_1_vault_cook_gitfast(swhid);
   }
   // check if object has already been cooked
   const response = await fetch(vaultUrl);
@@ -29,7 +29,7 @@ export async function vaultRequest(objectType, objectId) {
   if (data.exception === 'NotFoundExc' || data.status === 'failed') {
     // if last cooking has failed, remove previous task info from localStorage
     // in order to force the recooking of the object
-    swh.vault.removeCookingTaskInfo([objectId]);
+    swh.vault.removeCookingTaskInfo([swhid]);
     $(`#vault-cook-${objectType}-modal`).modal('show');
     // object has been cooked and should be in the vault cache,
     // it will be asked to cook it again if it is not
@@ -46,14 +46,14 @@ export async function vaultRequest(objectType, objectId) {
   }
 }
 
-async function addVaultCookingTask(cookingTask) {
+async function addVaultCookingTask(objectType, cookingTask) {
 
   const swhidsContext = swh.webapp.getSwhIdsContext();
-  cookingTask.origin = swhidsContext[cookingTask.object_type].context.origin;
-  cookingTask.path = swhidsContext[cookingTask.object_type].context.path;
-  cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_with_context_url;
+  cookingTask.origin = swhidsContext[objectType].context.origin;
+  cookingTask.path = swhidsContext[objectType].context.path;
+  cookingTask.browse_url = swhidsContext[objectType].swhid_with_context_url;
   if (!cookingTask.browse_url) {
-    cookingTask.browse_url = swhidsContext[cookingTask.object_type].swhid_url;
+    cookingTask.browse_url = swhidsContext[objectType].swhid_url;
   }
 
   let vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
@@ -61,14 +61,14 @@ async function addVaultCookingTask(cookingTask) {
     vaultCookingTasks = [];
   }
   if (vaultCookingTasks.find(val => {
-    return val.object_type === cookingTask.object_type &&
-            val.object_id === cookingTask.object_id;
+    return val.bundle_type === cookingTask.bundle_type &&
+            val.swhid === cookingTask.swhid;
   }) === undefined) {
     let cookingUrl;
-    if (cookingTask.object_type === 'directory') {
-      cookingUrl = Urls.api_1_vault_cook_directory(cookingTask.object_id);
+    if (cookingTask.bundle_type === 'flat') {
+      cookingUrl = Urls.api_1_vault_cook_flat(cookingTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_revision_gitfast(cookingTask.object_id);
+      cookingUrl = Urls.api_1_vault_cook_gitfast(cookingTask.swhid);
     }
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;
@@ -107,25 +107,25 @@ function validateEmail(email) {
   return re.test(String(email).toLowerCase());
 }
 
-export function cookDirectoryArchive(directoryId) {
+export function cookDirectoryArchive(swhid) {
   const email = $('#swh-vault-directory-email').val().trim();
   if (!email || validateEmail(email)) {
     const cookingTask = {
-      'object_type': 'directory',
-      'object_id': directoryId,
+      'bundle_type': 'flat',
+      'swhid': swhid,
       'email': email,
       'status': 'new'
     };
-    addVaultCookingTask(cookingTask);
+    addVaultCookingTask('directory', cookingTask);
 
   } else {
     $('#invalid-email-modal').modal('show');
   }
 }
 
-export async function fetchDirectoryArchive(directoryId) {
+export async function fetchDirectoryArchive(directorySwhid) {
   $('#vault-fetch-directory-modal').modal('hide');
-  const vaultUrl = Urls.api_1_vault_cook_directory(directoryId);
+  const vaultUrl = Urls.api_1_vault_cook_flat(directorySwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
   swh.vault.fetchCookedObject(data.fetch_url);
@@ -135,20 +135,20 @@ export function cookRevisionArchive(revisionId) {
   const email = $('#swh-vault-revision-email').val().trim();
   if (!email || validateEmail(email)) {
     const cookingTask = {
-      'object_type': 'revision',
-      'object_id': revisionId,
+      'bundle_type': 'gitfast',
+      'swhid': revisionId,
       'email': email,
       'status': 'new'
     };
-    addVaultCookingTask(cookingTask);
+    addVaultCookingTask('revision', cookingTask);
   } else {
     $('#invalid-email-modal').modal('show');
   }
 }
 
-export async function fetchRevisionArchive(revisionId) {
+export async function fetchRevisionArchive(revisionSwhid) {
   $('#vault-fetch-directory-modal').modal('hide');
-  const vaultUrl = Urls.api_1_vault_cook_revision_gitfast(revisionId);
+  const vaultUrl = Urls.api_1_vault_cook_gitfast(revisionSwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
   swh.vault.fetchCookedObject(data.fetch_url);
