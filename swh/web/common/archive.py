@@ -11,7 +11,14 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 from urllib.parse import urlparse
 
 from swh.model import hashutil
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import (
+    CONTENT,
+    DIRECTORY,
+    RELEASE,
+    REVISION,
+    SNAPSHOT,
+    CoreSWHID,
+)
 from swh.model.model import OriginVisit, Revision
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -1234,29 +1241,29 @@ def lookup_directory_through_revision(revision, path=None, limit=100, with_data=
     return (rev["id"], lookup_directory_with_revision(rev["id"], path, with_data))
 
 
-def _vault_request(vault_fn, *args, **kwargs):
+def _vault_request(vault_fn, bundle_type: str, swhid: CoreSWHID, **kwargs):
     try:
-        return vault_fn(*args, **kwargs)
+        return vault_fn(bundle_type, swhid, **kwargs)
     except VaultNotFoundExc:
         return None
 
 
-def vault_cook(obj_type, obj_id, email=None):
+def vault_cook(bundle_type: str, swhid: CoreSWHID, email=None):
     """Cook a vault bundle.
     """
-    return _vault_request(vault.cook, obj_type, obj_id, email=email)
+    return _vault_request(vault.cook, bundle_type, swhid, email=email)
 
 
-def vault_fetch(obj_type, obj_id):
+def vault_fetch(bundle_type: str, swhid: CoreSWHID):
     """Fetch a vault bundle.
     """
-    return _vault_request(vault.fetch, obj_type, obj_id)
+    return _vault_request(vault.fetch, bundle_type, swhid)
 
 
-def vault_progress(obj_type, obj_id):
+def vault_progress(bundle_type: str, swhid: CoreSWHID):
     """Get the current progress of a vault bundle.
     """
-    return _vault_request(vault.progress, obj_type, obj_id)
+    return _vault_request(vault.progress, bundle_type, swhid)
 
 
 def diff_revision(rev_id):
