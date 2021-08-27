@@ -399,7 +399,7 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('contain', 'Archive cooking request successfully submitted.');
   });
 
-  it('should offer to recook an archive if no more available to download', function() {
+  it('should offer to recook an archive if no longer available for download', function() {
 
     updateVaultItemList(this.vaultItems);
 
