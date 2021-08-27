@@ -241,7 +241,7 @@ def api_vault_cook_gitfast(request, swhid):
 
         Once the cooking task has been executed, the resulting gitfast archive
         can be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/revision/(rev_id)/gitfast/raw/`.
+        :http:get:`/api/1/vault/gitfast/(swhid)/raw/`.
 
         Then to import the revision in the current directory, use::
 
@@ -249,7 +249,7 @@ def api_vault_cook_gitfast(request, swhid):
             $ zcat path/to/swh:1:rev:*.gitfast.gz | git fast-import
             $ git checkout HEAD
 
-        :param string rev_id: the revision's sha1 identifier
+        :param string swhid: the revision's permanent identifiers
 
         :query string email: e-mail to notify when the gitfast archive is ready
 
@@ -257,7 +257,7 @@ def api_vault_cook_gitfast(request, swhid):
 
         :>json string fetch_url: the url from which to download the archive
             once it has been cooked
-            (see :http:get:`/api/1/vault/gitfast/(rev_id)/raw/`)
+            (see :http:get:`/api/1/vault/gitfast/(swhid)/raw/`)
         :>json string progress_message: message describing the cooking task
             progress
         :>json number id: the cooking task id
@@ -371,3 +371,120 @@ def _api_vault_revision_gitfast_raw(request, rev_id):
         "api-1-vault-fetch-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
     )
     return redirect(rev_gitfast_raw_url)
+
+
+######################################################
+# git_bare bundles
+
+
+@api_route(
+    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/",
+    "api-1-vault-cook-git-bare",
+    methods=["GET", "POST"],
+    throttle_scope="swh_vault_cooking",
+    never_cache=True,
+)
+@api_doc("/vault/git-bare/")
+@format_docstring()
+def api_vault_cook_git_bare(request, swhid):
+    """
+    .. http:get:: /api/1/vault/git-bare/(swhid)/
+    .. http:post:: /api/1/vault/git-bare/(swhid)/
+
+        Request the cooking of a git-bare archive for a revision or check
+        its cooking status.
+
+        That endpoint enables to create a vault cooking task for a revision
+        through a POST request or check the status of a previously created one
+        through a GET request.
+
+        Once the cooking task has been executed, the resulting git-bare archive
+        can be downloaded using the dedicated endpoint
+        :http:get:`/api/1/vault/git-bare/(swhid)/raw/`.
+
+        Then to import the revision in the current directory, use::
+
+            $ tar -xzf path/to/swh:1:rev:*.git_bare.tar.gz
+            $ git clone swh:1:rev:*.git new_repository
+
+        (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
+
+        This will create a directory called ``new_repository``, which is a git
+        repository containing the requested objects.
+
+        :param string swhid: the revision's permanent identifier
+
+        :query string email: e-mail to notify when the git-bare archive is ready
+
+        {common_headers}
+
+        :>json string fetch_url: the url from which to download the archive
+            once it has been cooked
+            (see :http:get:`/api/1/vault/git-bare/(swhid)/raw/`)
+        :>json string progress_message: message describing the cooking task
+            progress
+        :>json number id: the cooking task id
+        :>json string status: the cooking task status (new/pending/done/failed)
+        :>json string swhid: the identifier of the object to cook
+
+        :statuscode 200: no error
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
+    """
+    swhid = CoreSWHID.from_string(swhid)
+    if swhid.object_type == ObjectType.REVISION:
+        res = _dispatch_cook_progress(request, "git_bare", swhid)
+        res["fetch_url"] = reverse(
+            "api-1-vault-fetch-git-bare",
+            url_args={"swhid": str(swhid)},
+            request=request,
+        )
+        return _vault_response(res)
+    elif swhid.object_type == ObjectType.CONTENT:
+        raise BadInputExc(
+            "Content objects do not need to be cooked, "
+            "use `/api/1/content/raw/` instead."
+        )
+    elif swhid.object_type == ObjectType.DIRECTORY:
+        raise BadInputExc(
+            "Only revisions can be cooked as 'git-bare' bundles. "
+            "Use `/api/1/vault/flat/` to cook directories, as flat bundles."
+        )
+    else:
+        raise BadInputExc("Only revisions can be cooked as 'git-bare' bundles.")
+
+
+@api_route(
+    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/", "api-1-vault-fetch-git-bare",
+)
+@api_doc("/vault/git-bare/raw/")
+def api_vault_fetch_revision_git_bare(request, swhid):
+    """
+    .. http:get:: /api/1/vault/git-bare/(swhid)/raw/
+
+        Fetch the cooked git-bare archive for a revision.
+
+        See :http:get:`/api/1/vault/git-bare/(swhid)/` to get more
+        details on git-bare cooking.
+
+        :param string swhid: the revision's permanent identifier
+
+        :resheader Content-Type: application/octet-stream
+
+        :statuscode 200: no error
+        :statuscode 404: requested directory did not receive any cooking
+            request yet (in case of GET) or can not be found in the archive
+            (in case of POST)
+    """
+    res = api_lookup(
+        archive.vault_fetch,
+        "git_bare",
+        CoreSWHID.from_string(swhid),
+        notfound_msg="Cooked archive for {} not found.".format(swhid),
+        request=request,
+    )
+    fname = "{}.git_bare.tar.gz".format(swhid)
+    response = HttpResponse(res, content_type="application/gzip")
+    response["Content-disposition"] = "attachment; filename={}".format(fname)
+    return response
