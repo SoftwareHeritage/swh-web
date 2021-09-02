@@ -268,6 +268,10 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('have.text', this.directory)
         .should('have.attr', 'href', browseDirectoryUrl);
 
+      cy.get(`#vault-task-${CSS.escape(this.directory)}`)
+        .invoke('attr', 'title')
+        .should('contain', 'the directory can be extracted');
+
       cy.get(`#vault-task-${CSS.escape(this.directory)} .vault-dl-link button`)
         .click();
 
@@ -351,6 +355,10 @@ describe('Vault Cooking User Interface Tests', function() {
       cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-object-info a`)
         .should('have.text', this.revision)
         .should('have.attr', 'href', browseRevisionUrl);
+
+      cy.get(`#vault-task-${CSS.escape(this.revision)}`)
+        .invoke('attr', 'title')
+        .should('contain', 'the git repository can be imported');
 
       cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
         .click();

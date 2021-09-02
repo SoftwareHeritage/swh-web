@@ -5,7 +5,7 @@
   See top-level LICENSE file for more information
 %>
 
-<% if (cookingTask.object_type === 'directory') { %>
+<% if (cookingTask.swhid.match(/^swh:1:dir:.*/)) { %>
   <tr id="vault-task-<%= cookingTask.swhid %>"
       title="Once downloaded, the directory can be extracted with the following command:
 
@@ -36,8 +36,8 @@ $ cd new_repository/">
       <td class="vault-origin">unknown</td>
     <% } %>
     <td>
-      <i class="<%= swh.webapp.getSwhObjectIcon(cookingTask.object_type) %> mdi-fw"></i>
-      <%= cookingTask.object_type %>
+      <i class="<%= swh.webapp.getSwhObjectIcon(cookingTask.swhid.match(/swh:1:([a-z]+):/)[1]) %> mdi-fw"></i>
+      <%= cookingTask.bundle_type %>
     </td>
     <td class="vault-object-info" data-swhid="<%= cookingTask.swhid %>">
       <b>id:</b>&nbsp;<a href="<%= browseUrl %>"><%= cookingTask.swhid %></a>
