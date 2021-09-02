@@ -84,7 +84,7 @@ def api_vault_cook_flat(request, swhid):
 
         Then to extract the cooked directory in the current one, use::
 
-            $ tar xvf path/to/swh:1:*.tar.gz
+            $ tar xvf path/to/swh_1_*.tar.gz
 
         :param string swhid: the object's SWHID
 
@@ -189,7 +189,9 @@ def api_vault_fetch_flat(request, swhid):
     )
     fname = "{}.tar.gz".format(swhid)
     response = HttpResponse(res, content_type="application/gzip")
-    response["Content-disposition"] = "attachment; filename={}".format(fname)
+    response["Content-disposition"] = "attachment; filename={}".format(
+        fname.replace(":", "_")
+    )
     return response
 
 
@@ -246,7 +248,7 @@ def api_vault_cook_gitfast(request, swhid):
         Then to import the revision in the current directory, use::
 
             $ git init
-            $ zcat path/to/swh:1:rev:*.gitfast.gz | git fast-import
+            $ zcat path/to/swh_1_rev_*.gitfast.gz | git fast-import
             $ git checkout HEAD
 
         :param string swhid: the revision's permanent identifiers
@@ -351,7 +353,9 @@ def api_vault_fetch_revision_gitfast(request, swhid):
     )
     fname = "{}.gitfast.gz".format(swhid)
     response = HttpResponse(res, content_type="application/gzip")
-    response["Content-disposition"] = "attachment; filename={}".format(fname)
+    response["Content-disposition"] = "attachment; filename={}".format(
+        fname.replace(":", "_")
+    )
     return response
 
 
@@ -404,7 +408,7 @@ def api_vault_cook_git_bare(request, swhid):
 
         Then to import the revision in the current directory, use::
 
-            $ tar -xf path/to/swh:1:rev:*.git.tar
+            $ tar -xf path/to/swh_1_rev_*.git.tar
             $ git clone swh:1:rev:*.git new_repository
 
         (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
@@ -486,5 +490,7 @@ def api_vault_fetch_revision_git_bare(request, swhid):
     )
     fname = "{}.git.tar".format(swhid)
     response = HttpResponse(res, content_type="application/gzip")
-    response["Content-disposition"] = "attachment; filename={}".format(fname)
+    response["Content-disposition"] = "attachment; filename={}".format(
+        fname.replace(":", "_")
+    )
     return response

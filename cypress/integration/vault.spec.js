@@ -200,9 +200,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API to simulate archive download
     cy.intercept('GET', this.vaultFetchDirectoryUrl, {
-      fixture: `${this.directory}.tar.gz`,
+      fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+        'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -285,9 +285,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API indicating to simulate archive download
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
-      fixture: `${this.revision}.git.tar`,
+      fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.revision}.git.tar`,
+        'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -462,9 +462,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API to simulate archive download
     cy.intercept({url: this.vaultFetchDirectoryUrl}, {
-      fixture: `${this.directory}.tar.gz`,
+      fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+        'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -495,9 +495,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API to simulate archive download
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
-      fixture: `${this.revision}.git.tar`,
+      fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.revision}.git.tar`,
+        'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
