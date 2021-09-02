@@ -404,7 +404,7 @@ def api_vault_cook_git_bare(request, swhid):
 
         Then to import the revision in the current directory, use::
 
-            $ tar -xzf path/to/swh:1:rev:*.git_bare.tar.gz
+            $ tar -xf path/to/swh:1:rev:*.git.tar
             $ git clone swh:1:rev:*.git new_repository
 
         (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
@@ -484,7 +484,7 @@ def api_vault_fetch_revision_git_bare(request, swhid):
         notfound_msg="Cooked archive for {} not found.".format(swhid),
         request=request,
     )
-    fname = "{}.git_bare.tar.gz".format(swhid)
+    fname = "{}.git.tar".format(swhid)
     response = HttpResponse(res, content_type="application/gzip")
     response["Content-disposition"] = "attachment; filename={}".format(fname)
     return response

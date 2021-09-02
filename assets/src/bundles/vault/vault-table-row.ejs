@@ -12,10 +12,11 @@
 $ tar xvzf <%= cookingTask.swhid %>.tar.gz">
 <% } else { %>
   <tr id="vault-task-<%= cookingTask.swhid %>"
-      title="Once downloaded, the git repository can be imported with the following commands:
+      title="Once downloaded, the git repository can be imported to a 'new_repository' directory with the following commands:
 
-$ git init
-$ zcat <%= cookingTask.swhid %>.gitfast.gz | git fast-import">
+$ tar xvf <%= cookingTask.swhid %>.git.tar
+$ git clone <%= cookingTask.swhid %>.git new_repository
+$ cd new_repository/">
 <% } %>
     <td>
       <div class="custom-control custom-checkbox">
