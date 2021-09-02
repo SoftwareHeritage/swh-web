@@ -34,7 +34,9 @@ See top-level LICENSE file for more information
     <div class="form-group col-md-2">
       <label for="swh-input-visit-type">Origin type</label>
       <select id="swh-input-visit-type" class="form-control" required onchange="swh.save.maybeRequireExtraInputs();">
-        {% comment %} <option selected value="">Choose...</option> {% endcomment %}
+        {% for visit_type in visit_types %}
+          <option value="{{ visit_type }}">{{ visit_type }}</option>
+        {% endfor %}
       </select>
       <div class="invalid-feedback">The origin type must be specified</div>
     </div>

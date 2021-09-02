@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -34,7 +34,7 @@ def test_revision_browse(client, archive_data, revision):
 
 
 @given(origin())
-def test_revision_origin_snapshot_browse(client, archive_data, origin):
+def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     revision = archive_data.snapshot_get_head(snapshot)
 

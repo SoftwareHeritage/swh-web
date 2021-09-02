@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -120,8 +120,8 @@ def test_remove_unauthorized_origin_url(client):
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_PENDING
 
 
-def test_accept_pending_save_request(client, mocker):
-    mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
+def test_accept_pending_save_request(client, swh_scheduler):
+
     visit_type = "git"
     origin_url = "https://v2.pikacode.com/bthate/botlib.git"
     save_request_url = reverse(
@@ -138,20 +138,6 @@ def test_accept_pending_save_request(client, mocker):
 
     check_not_login(client, accept_request_url)
 
-    tasks_data = [
-        {
-            "priority": "high",
-            "policy": "oneshot",
-            "type": "load-git",
-            "arguments": {"kwargs": {"repo_url": origin_url}, "args": []},
-            "status": "next_run_not_scheduled",
-            "id": 1,
-        }
-    ]
-
-    mock_scheduler.create_tasks.return_value = tasks_data
-    mock_scheduler.get_tasks.return_value = tasks_data
-
     client.login(username=_user_name, password=_user_password)
     response = check_http_post_response(client, accept_request_url, status_code=200)
 
@@ -160,8 +146,8 @@ def test_accept_pending_save_request(client, mocker):
     assert response.data[0]["save_task_status"] == SAVE_TASK_NOT_YET_SCHEDULED
 
 
-def test_reject_pending_save_request(client, mocker):
-    mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
+def test_reject_pending_save_request(client, swh_scheduler):
+
     visit_type = "git"
     origin_url = "https://wikipedia.com"
 
@@ -182,20 +168,6 @@ def test_reject_pending_save_request(client, mocker):
 
     client.login(username=_user_name, password=_user_password)
     response = check_http_post_response(client, reject_request_url, status_code=200)
-
-    tasks_data = [
-        {
-            "priority": "high",
-            "policy": "oneshot",
-            "type": "load-git",
-            "arguments": {"kwargs": {"repo_url": origin_url}, "args": []},
-            "status": "next_run_not_scheduled",
-            "id": 1,
-        }
-    ]
-
-    mock_scheduler.create_tasks.return_value = tasks_data
-    mock_scheduler.get_tasks.return_value = tasks_data
 
     response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
