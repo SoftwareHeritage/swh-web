@@ -292,7 +292,7 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
-        'Content-Type': 'application/gzip'
+        'Content-Type': 'application/x-tar'
       }
     }).as('fetchCookedArchive');
 
@@ -506,7 +506,7 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
-        'Content-Type': 'application/gzip'
+        'Content-Type': 'application/x-tar'
       }
     }).as('fetchCookedArchive');
 
