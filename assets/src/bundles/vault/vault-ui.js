@@ -75,7 +75,7 @@ export async function recookObject() {
     if (recookTask.bundle_type === 'flat') {
       cookingUrl = Urls.api_1_vault_cook_flat(recookTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_gitfast(recookTask.swhid);
+      cookingUrl = Urls.api_1_vault_cook_git_bare(recookTask.swhid);
     }
     if (recookTask.email) {
       cookingUrl += '?email=' + recookTask.email;
@@ -130,8 +130,8 @@ async function checkVaultCookingTasks() {
         cookingTask.fetch_url = Urls.api_1_vault_fetch_flat(cookingTask.swhid);
       } else if (cookingTask.object_type === 'revision') {
         cookingTask.swhid = `swh:1:rev:${cookingTask.object_id}`;
-        cookingTask.bundle_type = 'gitfast';
-        cookingTask.fetch_url = Urls.api_1_vault_fetch_gitfast(cookingTask.swhid);
+        cookingTask.bundle_type = 'git_bare';
+        cookingTask.fetch_url = Urls.api_1_vault_fetch_git_bare(cookingTask.swhid);
       } else {
         // Log to the console + Sentry
         console.error(`Unexpected cookingTask.object_type: ${cookingTask.object_type}`);
@@ -148,7 +148,7 @@ async function checkVaultCookingTasks() {
     if (cookingTask.bundle_type === 'flat') {
       cookingUrl = Urls.api_1_vault_cook_flat(cookingTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_gitfast(cookingTask.swhid);
+      cookingUrl = Urls.api_1_vault_cook_git_bare(cookingTask.swhid);
     }
     if (cookingTask.status !== 'done' && cookingTask.status !== 'failed') {
       cookingTaskRequests.push(fetch(cookingUrl));

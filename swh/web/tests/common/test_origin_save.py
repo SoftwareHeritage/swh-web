@@ -7,12 +7,14 @@ from datetime import datetime, timedelta, timezone
 from functools import partial
 import re
 from typing import Optional
+import uuid
 
 import iso8601
 import pytest
 import requests
 
 from swh.core.pytest_plugin import get_response_cb
+from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web.common.exc import BadInputExc
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -49,7 +51,7 @@ _es_workers_index_url = "%s/swh_workers-*" % _es_url
 
 _origin_url = "https://gitlab.com/inkscape/inkscape"
 _visit_type = "git"
-_task_id = 203525448
+_task_id = 1
 
 
 @pytest.fixture(autouse=True)
@@ -61,59 +63,37 @@ def requests_mock_datadir(datadir, requests_mock_datadir):
 
 
 @pytest.mark.django_db
-def test_get_save_origin_archived_task_info(mocker):
-    _get_save_origin_task_info_test(mocker, task_archived=True)
+def test_get_save_origin_archived_task_info(swh_scheduler):
+    _get_save_origin_task_info_test(swh_scheduler, task_archived=True)
 
 
 @pytest.mark.django_db
-def test_get_save_origin_task_full_info_with_es(mocker):
-    _get_save_origin_task_info_test(mocker, es_available=True)
+def test_get_save_origin_task_info_without_es(swh_scheduler):
+    _get_save_origin_task_info_test(swh_scheduler, es_available=False)
 
 
-@pytest.mark.django_db
-def test_get_save_origin_task_info_with_es(mocker):
-    _get_save_origin_task_info_test(mocker, es_available=True, full_info=False)
-
-
-@pytest.mark.django_db
-def test_get_save_origin_task_info_without_es(mocker):
-    _get_save_origin_task_info_test(mocker, es_available=False)
-
-
-def _mock_scheduler(
-    mocker,
+def _fill_scheduler_db(
+    swh_scheduler,
     task_status="completed",
     task_run_status="eventful",
     task_archived=False,
     visit_started_date=None,
 ):
-    mock_scheduler = mocker.patch("swh.web.common.origin_save.scheduler")
-    task = {
-        "arguments": {"args": [], "kwargs": {"repo_url": _origin_url},},
-        "current_interval": timedelta(days=64),
-        "id": _task_id,
-        "next_run": datetime.now(tz=timezone.utc) + timedelta(days=64),
-        "policy": "oneshot",
-        "priority": "high",
-        "retries_left": 0,
-        "status": task_status,
-        "type": "load-git",
-    }
-    mock_scheduler.get_tasks.return_value = [dict(task) if not task_archived else None]
+    task = task_run = None
+    if not task_archived:
+        task = swh_scheduler.create_tasks(
+            [create_oneshot_task_dict("load-git", repo_url=_origin_url)]
+        )[0]
+        backend_id = str(uuid.uuid4())
 
-    task_run = {
-        "backend_id": "f00c712c-e820-41ce-a07c-9bf8df914205",
-        "ended": datetime.now(tz=timezone.utc) + timedelta(minutes=5),
-        "id": 654270631,
-        "metadata": {},
-        "scheduled": datetime.now(tz=timezone.utc),
-        "started": visit_started_date,
-        "status": task_run_status,
-        "task": _task_id,
-    }
-    mock_scheduler.get_task_runs.return_value = [
-        dict(task_run) if not task_archived else None
-    ]
+        if task_status != "next_run_not_scheduled":
+            swh_scheduler.schedule_task_run(task["id"], backend_id)
+
+        if task_run_status is not None:
+            swh_scheduler.start_task_run(backend_id)
+            task_run = dict(
+                swh_scheduler.end_task_run(backend_id, task_run_status).items()
+            )
     return task, task_run
 
 
@@ -125,7 +105,9 @@ def _mock_scheduler(
         ("archives", False),  # when no privilege, this is rejected
     ],
 )
-def test__check_visit_type_savable(wrong_type, privileged_user):
+def test_check_visit_type_savable(wrong_type, privileged_user, swh_scheduler):
+
+    swh_scheduler.add_load_archive_task_type()
 
     with pytest.raises(BadInputExc, match="Allowed types"):
         _check_visit_type_savable(wrong_type, privileged_user)
@@ -134,7 +116,10 @@ def test__check_visit_type_savable(wrong_type, privileged_user):
     _check_visit_type_savable("archives", True)
 
 
-def test_get_savable_visit_types():
+def test_get_savable_visit_types(swh_scheduler):
+
+    swh_scheduler.add_load_archive_task_type()
+
     default_list = list(_visit_type_task.keys())
 
     assert set(get_savable_visit_types()) == set(default_list)
@@ -146,7 +131,7 @@ def test_get_savable_visit_types():
 
 
 def _get_save_origin_task_info_test(
-    mocker, task_archived=False, es_available=True, full_info=True
+    swh_scheduler, task_archived=False, es_available=True, full_info=True
 ):
     swh_web_config = get_config()
 
@@ -164,7 +149,7 @@ def _get_save_origin_task_info_test(
         loading_task_id=_task_id,
     )
 
-    task, task_run = _mock_scheduler(mocker, task_archived=task_archived)
+    task, task_run = _fill_scheduler_db(swh_scheduler, task_archived=task_archived)
 
     es_response = requests.post("%s/_search" % _es_workers_index_url).json()
 
@@ -215,7 +200,7 @@ def _get_save_origin_task_info_test(
 
 
 @pytest.mark.django_db
-def test_get_save_origin_requests_find_visit_date(mocker):
+def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     # create a save request
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
@@ -227,7 +212,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     )
 
     # mock scheduler and archive
-    _mock_scheduler(mocker)
+    _fill_scheduler_db(swh_scheduler)
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     mock_get_origin_visits = mocker.patch(
@@ -271,7 +256,7 @@ def test_get_save_origin_requests_find_visit_date(mocker):
     sor.request_date = datetime.now(tz=timezone.utc) - timedelta(days=31)
     sor.save()
 
-    _mock_scheduler(mocker, task_status="disabled", task_run_status="failed")
+    _fill_scheduler_db(swh_scheduler, task_status="disabled", task_run_status="failed")
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
 
@@ -282,7 +267,11 @@ def test_get_save_origin_requests_find_visit_date(mocker):
 
 
 def _get_save_origin_requests(
-    mocker, load_status, visit_status, request_date: Optional[datetime] = None
+    mocker,
+    swh_scheduler,
+    load_status,
+    visit_status,
+    request_date: Optional[datetime] = None,
 ):
     """Wrapper around the get_origin_save_origin_request call.
 
@@ -298,8 +287,8 @@ def _get_save_origin_requests(
     )
 
     # mock scheduler and archives
-    _mock_scheduler(
-        mocker, task_status="next_run_scheduled", task_run_status=load_status
+    _fill_scheduler_db(
+        swh_scheduler, task_status="next_run_scheduled", task_run_status=load_status
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
@@ -473,12 +462,14 @@ def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("visit_status", [VISIT_STATUS_CREATED, VISIT_STATUS_ONGOING,])
-def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
+def test_get_save_origin_requests_no_visit_date_found(
+    mocker, swh_scheduler, visit_status
+):
     """Uneventful visits with failed visit status are marked as failed
 
     """
     sors = _get_save_origin_requests(
-        mocker, load_status="scheduled", visit_status=visit_status,
+        mocker, swh_scheduler, load_status="scheduled", visit_status=visit_status,
     )
     # check no visit date has been found
     assert len(sors) == 1
@@ -489,12 +480,14 @@ def test_get_save_origin_requests_no_visit_date_found(mocker, visit_status):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("visit_status", ["not_found", "failed",])
-def test_get_save_origin_requests_no_failed_status_override(mocker, visit_status):
+def test_get_save_origin_requests_no_failed_status_override(
+    mocker, swh_scheduler, visit_status
+):
     """Uneventful visits with failed statuses (failed, not found) are marked as failed
 
     """
     sors = _get_save_origin_requests(
-        mocker, load_status="uneventful", visit_status=visit_status
+        mocker, swh_scheduler, load_status="uneventful", visit_status=visit_status
     )
     assert len(sors) == 1
 
@@ -517,10 +510,12 @@ def test_get_save_origin_requests_no_failed_status_override(mocker, visit_status
         ("uneventful", VISIT_STATUS_PARTIAL),
     ],
 )
-def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_status):
+def test_get_visit_info_for_save_request_succeeded(
+    mocker, swh_scheduler, load_status, visit_status
+):
     """Nominal scenario, below 30 days, returns something"""
     sors = _get_save_origin_requests(
-        mocker, load_status=load_status, visit_status=visit_status
+        mocker, swh_scheduler, load_status=load_status, visit_status=visit_status
     )
     assert len(sors) == 1
 
@@ -535,12 +530,14 @@ def test_get_visit_info_for_save_request_succeeded(mocker, load_status, visit_st
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("load_status", ["eventful", "uneventful",])
-def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
+def test_get_visit_info_incomplete_visit_still_successful(
+    mocker, swh_scheduler, load_status
+):
     """Incomplete visit information, yet the task is updated partially
 
     """
     sors = _get_save_origin_requests(
-        mocker, load_status=load_status, visit_status=None,
+        mocker, swh_scheduler, load_status=load_status, visit_status=None,
     )
     assert len(sors) == 1
 
@@ -559,7 +556,9 @@ def test_get_visit_info_incomplete_visit_still_successful(mocker, load_status):
 
 
 @pytest.mark.django_db
-def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_data):
+def test_refresh_in_progress_save_request_statuses(
+    mocker, swh_scheduler, api_client, archive_data
+):
     """Refresh a pending save origins requests and update if the status changes
     """
     date_now = datetime.now(tz=timezone.utc)
@@ -578,8 +577,10 @@ def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_d
     )
 
     # mock scheduler and archives
-    _mock_scheduler(
-        mocker, task_status="next_run_scheduled", task_run_status=SAVE_TASK_SCHEDULED
+    _fill_scheduler_db(
+        swh_scheduler,
+        task_status="next_run_scheduled",
+        task_run_status=SAVE_TASK_SCHEDULED,
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
@@ -602,8 +603,8 @@ def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_d
     mock_get_origin_visits.return_value = [visit_info]
 
     # make the scheduler return a running event
-    _mock_scheduler(
-        mocker,
+    _fill_scheduler_db(
+        swh_scheduler,
         task_status="next_run_scheduled",
         task_run_status="started",
         visit_started_date=visit_started_date,
@@ -625,8 +626,8 @@ def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_d
 
     # make the visit status completed
     # make the scheduler return a running event
-    _mock_scheduler(
-        mocker,
+    _fill_scheduler_db(
+        swh_scheduler,
         task_status="completed",
         task_run_status="eventful",
         visit_started_date=visit_started_date,
@@ -658,7 +659,7 @@ def test_refresh_in_progress_save_request_statuses(mocker, api_client, archive_d
 
 
 @pytest.mark.django_db
-def test_refresh_save_request_statuses(mocker, api_client, archive_data):
+def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archive_data):
     """Refresh filters save origins requests and update if changes
 
     """
@@ -676,8 +677,10 @@ def test_refresh_save_request_statuses(mocker, api_client, archive_data):
     )
 
     # mock scheduler and archives
-    _mock_scheduler(
-        mocker, task_status="next_run_scheduled", task_run_status=SAVE_TASK_SCHEDULED
+    _fill_scheduler_db(
+        swh_scheduler,
+        task_status="next_run_scheduled",
+        task_run_status=SAVE_TASK_SCHEDULED,
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}

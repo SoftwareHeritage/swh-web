@@ -30,7 +30,7 @@ function updateVaultItemList(vaultItems) {
 }
 
 // Mocks API response : /api/1/vault/(:bundleType)/(:swhid)
-// bundleType : {'flat', 'gitfast'}
+// bundleType : {'flat', 'git_bare'}
 function genVaultCookingResponse(bundleType, swhid, status, message, fetchUrl) {
   return {
     'bundle_type': bundleType,
@@ -74,8 +74,8 @@ describe('Vault Cooking User Interface Tests', function() {
     this.revisionId = this.origin[1].revisions[0];
     this.revision = `swh:1:rev:${this.revisionId}`;
     this.revisionUrl = this.Urls.browse_revision(this.revisionId);
-    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_gitfast(this.revision);
-    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_gitfast(this.revision);
+    this.vaultRevisionUrl = this.Urls.api_1_vault_cook_git_bare(this.revision);
+    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_git_bare(this.revision);
 
     const release = this.origin[1].release;
     this.releaseUrl = this.Urls.browse_release(release.id) + `?origin_url=${this.origin[1].url}`;
@@ -87,11 +87,11 @@ describe('Vault Cooking User Interface Tests', function() {
     // so we need to define it here
     this.vaultItems = [
       {
-        'bundle_type': 'gitfast',
+        'bundle_type': 'git_bare',
         'swhid': this.revision,
         'email': '',
         'status': 'done',
-        'fetch_url': `/api/1/vault/gitfast/${this.revision}/raw/`,
+        'fetch_url': `/api/1/vault/git-bare/${this.revision}/raw/`,
         'progress_message': null
       }
     ];
@@ -112,7 +112,7 @@ describe('Vault Cooking User Interface Tests', function() {
     };
 
     this.genVaultRevCookingResponse = (status, message = null) => {
-      return genVaultCookingResponse('gitfast', this.revision, status,
+      return genVaultCookingResponse('git_bare', this.revision, status,
                                      message, this.vaultFetchRevisionUrl);
     };
 
@@ -200,9 +200,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API to simulate archive download
     cy.intercept('GET', this.vaultFetchDirectoryUrl, {
-      fixture: `${this.directory}.tar.gz`,
+      fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+        'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -268,6 +268,10 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('have.text', this.directory)
         .should('have.attr', 'href', browseDirectoryUrl);
 
+      cy.get(`#vault-task-${CSS.escape(this.directory)}`)
+        .invoke('attr', 'title')
+        .should('contain', 'the directory can be extracted');
+
       cy.get(`#vault-task-${CSS.escape(this.directory)} .vault-dl-link button`)
         .click();
 
@@ -285,9 +289,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API indicating to simulate archive download
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
-      fixture: `${this.revision}.gitfast.gz`,
+      fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
+        'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -352,6 +356,10 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('have.text', this.revision)
         .should('have.attr', 'href', browseRevisionUrl);
 
+      cy.get(`#vault-task-${CSS.escape(this.revision)}`)
+        .invoke('attr', 'title')
+        .should('contain', 'the git repository can be imported');
+
       cy.get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
         .click();
 
@@ -399,7 +407,7 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('contain', 'Archive cooking request successfully submitted.');
   });
 
-  it('should offer to recook an archive if no more available to download', function() {
+  it('should offer to recook an archive if no longer available for download', function() {
 
     updateVaultItemList(this.vaultItems);
 
@@ -462,9 +470,9 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // Stub response to the vault API to simulate archive download
     cy.intercept({url: this.vaultFetchDirectoryUrl}, {
-      fixture: `${this.directory}.tar.gz`,
+      fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.directory}.tar.gz`,
+        'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');
@@ -488,16 +496,16 @@ describe('Vault Cooking User Interface Tests', function() {
 
   });
 
-  it('should offer to immediately download a revision gitfast archive if already cooked', function() {
+  it('should offer to immediately download a bare revision git archive if already cooked', function() {
     cy.adminLogin();
     // Browse a directory
     cy.visit(this.revisionUrl);
 
     // Stub response to the vault API to simulate archive download
     cy.intercept({url: this.vaultFetchRevisionUrl}, {
-      fixture: `${this.revision}.gitfast.gz`,
+      fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
-        'Content-disposition': `attachment; filename=${this.revision}.gitfast.gz`,
+        'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
         'Content-Type': 'application/gzip'
       }
     }).as('fetchCookedArchive');

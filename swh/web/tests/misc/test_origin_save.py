@@ -9,7 +9,6 @@ import json
 import pytest
 
 from swh.auth.django.utils import oidc_user_from_profile
-from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDED
 from swh.web.common.utils import reverse
@@ -25,32 +24,6 @@ def test_old_save_url_redirection(client):
 
     resp = check_http_get_response(client, url, status_code=302)
     assert resp["location"] == redirect_url
-
-
-def test_save_types_list_default(client):
-    """Unprivileged listing should display default list of visit types.
-
-    """
-    url = reverse("origin-save-types-list")
-    resp = check_http_get_response(client, url, status_code=200)
-
-    actual_response = resp.json()
-    assert set(actual_response) == set(VISIT_TYPES)
-
-
-@pytest.mark.django_db
-def test_save_types_list_privileged(client, keycloak_oidc):
-    """Privileged listing should display all visit types.
-
-    """
-    keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
-    client.login(code="", code_verifier="", redirect_uri="")
-
-    url = reverse("origin-save-types-list")
-    resp = check_http_get_response(client, url, status_code=200)
-
-    actual_response = resp.json()
-    assert set(actual_response) == set(PRIVILEGED_VISIT_TYPES)
 
 
 @pytest.mark.django_db

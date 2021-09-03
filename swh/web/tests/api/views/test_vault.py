@@ -35,10 +35,12 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{directory}"),
         ("gitfast", f"swh:1:rev:{revision}"),
+        ("git_bare", f"swh:1:rev:{revision}"),
     ):
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": swhid},
+            f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
+            url_args={"swhid": swhid},
         )
         stub_cook = {
             "type": bundle_type,
@@ -54,7 +56,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
 
         email = "test@test.mail"
         url = reverse(
-            f"api-1-vault-cook-{bundle_type}",
+            f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
             url_args={"swhid": swhid},
             query_params={"email": email},
         )
@@ -91,9 +93,13 @@ def test_api_vault_cook_notfound(
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{directory}"),
         ("gitfast", f"swh:1:rev:{revision}"),
+        ("git_bare", f"swh:1:rev:{revision}"),
     ):
 
-        url = reverse(f"api-1-vault-cook-{bundle_type}", url_args={"swhid": swhid})
+        url = reverse(
+            f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
+            url_args={"swhid": swhid},
+        )
 
         rv = check_api_get_responses(api_client, url, status_code=404)
 
@@ -106,8 +112,12 @@ def test_api_vault_cook_notfound(
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{unknown_directory}"),
         ("gitfast", f"swh:1:rev:{unknown_revision}"),
+        ("git_bare", f"swh:1:rev:{unknown_revision}"),
     ):
-        url = reverse(f"api-1-vault-cook-{bundle_type}", url_args={"swhid": swhid})
+        url = reverse(
+            f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
+            url_args={"swhid": swhid},
+        )
         rv = check_api_post_responses(api_client, url, data=None, status_code=404)
 
         assert rv.data["exception"] == "NotFoundExc"
@@ -117,7 +127,8 @@ def test_api_vault_cook_notfound(
         )
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": swhid},
+            f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
+            url_args={"swhid": swhid},
         )
 
         rv = check_api_get_responses(api_client, fetch_url, status_code=404)
@@ -126,13 +137,13 @@ def test_api_vault_cook_notfound(
         mock_vault.fetch.assert_called_with(bundle_type, CoreSWHID.from_string(swhid))
 
 
-@pytest.mark.parametrize("bundle_type", ["flat", "gitfast"])
+@pytest.mark.parametrize("bundle_type", ["flat", "gitfast", "git_bare"])
 def test_api_vault_cook_error_content(api_client, mocker, bundle_type):
     swhid = "swh:1:cnt:" + "0" * 40
 
     email = "test@test.mail"
     url = reverse(
-        f"api-1-vault-cook-{bundle_type}",
+        f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
         url_args={"swhid": swhid},
         query_params={"email": email},
     )
@@ -156,6 +167,9 @@ def test_api_vault_cook_error_content(api_client, mocker, bundle_type):
         ("gitfast", "dir", True),
         ("gitfast", "rel", False),
         ("gitfast", "snp", False),
+        ("git_bare", "dir", True),
+        ("git_bare", "rel", False),
+        ("git_bare", "snp", False),
     ],
 )
 def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint):
@@ -163,7 +177,7 @@ def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint)
 
     email = "test@test.mail"
     url = reverse(
-        f"api-1-vault-cook-{bundle_type}",
+        f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
         url_args={"swhid": swhid},
         query_params={"email": email},
     )

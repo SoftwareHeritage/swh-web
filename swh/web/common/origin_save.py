@@ -5,6 +5,7 @@
 
 from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from itertools import product
 import json
 import logging
@@ -20,7 +21,6 @@ from django.db.models import Q, QuerySet
 from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
-from swh.web import config
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.common.models import (
@@ -46,8 +46,7 @@ from swh.web.common.typing import (
     SaveOriginRequestInfo,
 )
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
-
-scheduler = config.scheduler()
+from swh.web.config import get_config, scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +148,12 @@ _save_task_run_status = {
 }
 
 
+@lru_cache()
+def get_scheduler_load_task_types() -> List[str]:
+    task_types = scheduler().get_task_types()
+    return [t["type"] for t in task_types if t["type"].startswith("load")]
+
+
 def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
     """Returned the supported task types the user has access to.
 
@@ -165,7 +170,12 @@ def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
     else:
         task_types = _visit_type_task
 
-    return task_types
+    # scheduler is not available when running cypress tests
+    if get_config().get("e2e_tests_mode"):
+        return task_types
+    else:
+        load_task_types = get_scheduler_load_task_types()
+        return {k: v for k, v in task_types.items() if v in load_task_types}
 
 
 def get_savable_visit_types(privileged_user: bool = False) -> List[str]:
@@ -490,9 +500,9 @@ def create_save_origin_request(
             # a task has already been created to load the origin
             elif sor.loading_task_id != -1:
                 # get the scheduler task and its status
-                tasks = scheduler.get_tasks([sor.loading_task_id])
+                tasks = scheduler().get_tasks([sor.loading_task_id])
                 task = tasks[0] if tasks else None
-                task_runs = scheduler.get_task_runs([sor.loading_task_id])
+                task_runs = scheduler().get_task_runs([sor.loading_task_id])
                 task_run = task_runs[0] if task_runs else None
                 save_request_info = _update_save_request_info(sor, task, task_run)
                 task_status = save_request_info["save_task_status"]
@@ -513,7 +523,7 @@ def create_save_origin_request(
                 visit_type_tasks[visit_type], **task_kwargs
             )
 
-            task = scheduler.create_tasks([task_dict])[0]
+            task = scheduler().create_tasks([task_dict])[0]
 
             # pending save request has been accepted
             if sor:
@@ -592,9 +602,9 @@ def update_save_origin_requests_from_queryset(
         task_ids.append(sor.loading_task_id)
     save_requests = []
     if task_ids:
-        tasks = scheduler.get_tasks(task_ids)
+        tasks = scheduler().get_tasks(task_ids)
         tasks = {task["id"]: task for task in tasks}
-        task_runs = scheduler.get_task_runs(tasks)
+        task_runs = scheduler().get_task_runs(tasks)
         task_runs = {task_run["task"]: task_run for task_run in task_runs}
         for sor in requests_queryset:
             sr_dict = _update_save_request_info(
@@ -707,12 +717,12 @@ def get_save_origin_task_info(
     except ObjectDoesNotExist:
         return {}
 
-    task = scheduler.get_tasks([save_request.loading_task_id])
+    task = scheduler().get_tasks([save_request.loading_task_id])
     task = task[0] if task else None
     if task is None:
         return {}
 
-    task_run = scheduler.get_task_runs([task["id"]])
+    task_run = scheduler().get_task_runs([task["id"]])
     task_run = task_run[0] if task_run else None
     if task_run is None:
         return {}
@@ -724,7 +734,7 @@ def get_save_origin_task_info(
     # Enrich the task run with the loading visit status
     task_run["visit_status"] = save_request.visit_status
 
-    es_workers_index_url = config.get_config()["es_workers_index_url"]
+    es_workers_index_url = get_config()["es_workers_index_url"]
     if not es_workers_index_url:
         return task_run
     es_workers_index_url += "/_search"
