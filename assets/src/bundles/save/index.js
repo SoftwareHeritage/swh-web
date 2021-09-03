@@ -115,16 +115,10 @@ const userRequestsFilterCheckbox = `
 
 export function initOriginSave() {
 
-  $(document).ready(async() => {
+  $(document).ready(() => {
 
     $.fn.dataTable.ext.errMode = 'none';
 
-    const response = await fetch(Urls.origin_save_types_list());
-    const data = await response.json();
-
-    for (const originType of data) {
-      $('#swh-input-visit-type').append(`<option value="${originType}">${originType}</option>`);
-    }
     // set git as the default value as before
     $('#swh-input-visit-type').val('git');
 

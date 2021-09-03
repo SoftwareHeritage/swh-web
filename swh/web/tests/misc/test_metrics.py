@@ -34,7 +34,7 @@ from swh.web.tests.utils import check_http_get_response
 
 
 @pytest.mark.django_db
-def test_origin_save_metrics(client):
+def test_origin_save_metrics(client, swh_scheduler):
     visit_types = get_savable_visit_types()
     request_statuses = (
         SAVE_REQUEST_ACCEPTED,

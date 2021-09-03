@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
 import json
 import os
 import shutil
@@ -18,10 +19,12 @@ from django.core.cache import cache
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
+from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common import converters
+from swh.web.common.origin_save import get_scheduler_load_task_types
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.config import get_config
 from swh.web.tests.data import get_tests_data, override_storages
@@ -57,7 +60,7 @@ settings.register_profile(
 settings.register_profile(
     "swh-web-fast",
     settings(
-        deadline=None, max_examples=1, suppress_health_check=suppress_health_check,
+        deadline=None, max_examples=5, suppress_health_check=suppress_health_check,
     ),
 )
 
@@ -429,3 +432,51 @@ def subtest(request):
         item.ihook.pytest_runtest_teardown(item=item, nextitem=nextitem)
 
     return inner
+
+
+@pytest.fixture
+def swh_scheduler(swh_scheduler):
+    config = get_config()
+    scheduler = config["scheduler"]
+    config["scheduler"] = swh_scheduler
+    # create load-git and load-hg task types
+    for task_type in TASK_TYPES.values():
+        swh_scheduler.create_task_type(task_type)
+    # create load-svn task type
+    swh_scheduler.create_task_type(
+        {
+            "type": "load-svn",
+            "description": "Update a mercurial repository",
+            "backend_name": "swh.loader.svn.tasks.DumpMountAndLoadSvnRepository",
+            "default_interval": timedelta(days=64),
+            "min_interval": timedelta(hours=12),
+            "max_interval": timedelta(days=64),
+            "backoff_factor": 2,
+            "max_queue_length": None,
+            "num_retries": 7,
+            "retry_delay": timedelta(hours=2),
+        }
+    )
+
+    # add method to add load-archive-files task type during tests
+    def add_load_archive_task_type():
+        swh_scheduler.create_task_type(
+            {
+                "type": "load-archive-files",
+                "description": "Load tarballs",
+                "backend_name": "swh.loader.package.archive.tasks.LoadArchive",
+                "default_interval": timedelta(days=64),
+                "min_interval": timedelta(hours=12),
+                "max_interval": timedelta(days=64),
+                "backoff_factor": 2,
+                "max_queue_length": None,
+                "num_retries": 7,
+                "retry_delay": timedelta(hours=2),
+            }
+        )
+
+    swh_scheduler.add_load_archive_task_type = add_load_archive_task_type
+
+    yield swh_scheduler
+    config["scheduler"] = scheduler
+    get_scheduler_load_task_types.cache_clear()

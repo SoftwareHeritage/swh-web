@@ -278,58 +278,40 @@ module.exports = {
       // web fonts import configuration
       {
         test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext][query]'
+        }
       }, {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext][query]'
+        }
       }, {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext][query]'
+        }
       }, {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext][query]'
+        }
       }, {
         test: /\.otf(\?v=\d+\.\d+\.\d+)?$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext][query]'
+        }
       }, {
         test: /\.png$/,
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'img/thirdParty/'
-          }
-        }]
+        type: 'asset/resource',
+        generator: {
+          filename: 'img/thirdParty/[name][ext][query]'
+        }
       },
       {
         test: /\.ya?ml$/,
@@ -396,7 +378,7 @@ module.exports = {
         },
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
-          to: path.resolve(__dirname, '../../static/fonts/[name].[ext]')
+          to: path.resolve(__dirname, '../../static/fonts/[name][ext]')
         }
       ]
     }),

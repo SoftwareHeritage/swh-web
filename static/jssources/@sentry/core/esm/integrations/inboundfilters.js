@@ -136,10 +136,10 @@ var InboundFilters = /** @class */ (function () {
     /** JSDoc */
     InboundFilters.prototype._getLastValidUrl = function (frames) {
         if (frames === void 0) { frames = []; }
-        var _a;
+        var _a, _b;
         for (var i = frames.length - 1; i >= 0; i--) {
             var frame = frames[i];
-            if (((_a = frame) === null || _a === void 0 ? void 0 : _a.filename) !== '<anonymous>') {
+            if (((_a = frame) === null || _a === void 0 ? void 0 : _a.filename) !== '<anonymous>' && ((_b = frame) === null || _b === void 0 ? void 0 : _b.filename) !== '[native code]') {
                 return frame.filename || null;
             }
         }

@@ -19,7 +19,7 @@ export async function vaultRequest(objectType, swhid) {
   if (objectType === 'directory') {
     vaultUrl = Urls.api_1_vault_cook_flat(swhid);
   } else {
-    vaultUrl = Urls.api_1_vault_cook_gitfast(swhid);
+    vaultUrl = Urls.api_1_vault_cook_git_bare(swhid);
   }
   // check if object has already been cooked
   const response = await fetch(vaultUrl);
@@ -68,7 +68,7 @@ async function addVaultCookingTask(objectType, cookingTask) {
     if (cookingTask.bundle_type === 'flat') {
       cookingUrl = Urls.api_1_vault_cook_flat(cookingTask.swhid);
     } else {
-      cookingUrl = Urls.api_1_vault_cook_gitfast(cookingTask.swhid);
+      cookingUrl = Urls.api_1_vault_cook_git_bare(cookingTask.swhid);
     }
     if (cookingTask.email) {
       cookingUrl += '?email=' + cookingTask.email;
@@ -135,7 +135,7 @@ export function cookRevisionArchive(revisionId) {
   const email = $('#swh-vault-revision-email').val().trim();
   if (!email || validateEmail(email)) {
     const cookingTask = {
-      'bundle_type': 'gitfast',
+      'bundle_type': 'git_bare',
       'swhid': revisionId,
       'email': email,
       'status': 'new'
@@ -148,7 +148,7 @@ export function cookRevisionArchive(revisionId) {
 
 export async function fetchRevisionArchive(revisionSwhid) {
   $('#vault-fetch-directory-modal').modal('hide');
-  const vaultUrl = Urls.api_1_vault_cook_gitfast(revisionSwhid);
+  const vaultUrl = Urls.api_1_vault_cook_git_bare(revisionSwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
   swh.vault.fetchCookedObject(data.fetch_url);

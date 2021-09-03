@@ -21,16 +21,11 @@ def _origin_save_view(request):
     return render(
         request,
         "misc/origin-save.html",
-        {"heading": ("Request the saving of a software origin into the archive")},
+        {
+            "heading": ("Request the saving of a software origin into the archive"),
+            "visit_types": get_savable_visit_types(privileged_user(request)),
+        },
     )
-
-
-def _visit_save_types_list(request) -> JsonResponse:
-    """Return the list of supported visit types as json response
-
-    """
-    visit_types = get_savable_visit_types(privileged_user(request))
-    return JsonResponse(visit_types, safe=False)
 
 
 def _origin_save_requests_list(request, status):
@@ -89,7 +84,6 @@ def _save_origin_task_info(request, save_request_id):
 
 urlpatterns = [
     url(r"^save/$", _origin_save_view, name="origin-save"),
-    url(r"^save/types/list/$", _visit_save_types_list, name="origin-save-types-list"),
     url(
         r"^save/requests/list/(?P<status>.+)/$",
         _origin_save_requests_list,
