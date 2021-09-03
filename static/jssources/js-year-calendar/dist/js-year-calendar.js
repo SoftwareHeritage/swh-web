@@ -158,12 +158,25 @@
 
     /**
      * Triggered after the changing the current year.
+     * Works only if the calendar is used in a full year mode. Otherwise, use `periodChanged` event.
      * @event
      * @example
      * ```
      * 
      * document.querySelector('.calendar').addEventListener('yearChanged', function(e) {
      *   console.log("New year selected: " + e.currentYear);
+     * })
+     * ```
+     */
+
+    /**
+     * Triggered after the changing the visible period.
+     * @event
+     * @example
+     * ```
+     * 
+     * document.querySelector('.calendar').addEventListener('periodChanged', function(e) {
+     *   console.log(`New period selected: ${e.startDate} ${e.endDate}`);
      * })
      * ```
      */
@@ -181,6 +194,8 @@
       _defineProperty(this, "element", void 0);
 
       _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "_startDate", void 0);
 
       _defineProperty(this, "_dataSource", void 0);
 
@@ -208,6 +223,8 @@
 
       _defineProperty(this, "yearChanged", void 0);
 
+      _defineProperty(this, "periodChanged", void 0);
+
       if (element instanceof HTMLElement) {
         this.element = element;
       } else if (typeof element === "string") {
@@ -222,7 +239,17 @@
 
       this._initializeOptions(options);
 
-      this.setYear(this.options.startYear);
+      var startYear = new Date().getFullYear();
+      var startMonth = 0;
+
+      if (this.options.startDate) {
+        startYear = this.options.startDate.getFullYear();
+        startMonth = this.options.startDate.getMonth();
+      } else if (this.options.startYear) {
+        startYear = this.options.startYear;
+      }
+
+      this.setStartDate(new Date(startYear, startMonth, 1));
     }
 
     _createClass(Calendar, [{
@@ -233,7 +260,9 @@
         }
 
         this.options = {
-          startYear: !isNaN(parseInt(opt.startYear)) ? parseInt(opt.startYear) : new Date().getFullYear(),
+          startYear: !isNaN(parseInt(opt.startYear)) ? parseInt(opt.startYear) : null,
+          startDate: opt.startDate instanceof Date ? opt.startDate : null,
+          numberMonthsDisplayed: !isNaN(parseInt(opt.numberMonthsDisplayed)) && opt.numberMonthsDisplayed > 0 && opt.numberMonthsDisplayed <= 12 ? parseInt(opt.numberMonthsDisplayed) : 12,
           minDate: opt.minDate instanceof Date ? opt.minDate : null,
           maxDate: opt.maxDate instanceof Date ? opt.maxDate : null,
           language: opt.language != null && Calendar.locales[opt.language] != null ? opt.language : 'en',
@@ -274,6 +303,10 @@
           this.element.addEventListener('yearChanged', opt.yearChanged);
         }
 
+        if (opt.periodChanged) {
+          this.element.addEventListener('periodChanged', opt.periodChanged);
+        }
+
         if (opt.renderEnd) {
           this.element.addEventListener('renderEnd', opt.renderEnd);
         }
@@ -303,17 +336,25 @@
       value: function _fetchDataSource(callback) {
         if (typeof this.options.dataSource === "function") {
           var getDataSource = this.options.dataSource;
+          var currentPeriod = this.getCurrentPeriod();
+          var fetchParameters = {
+            year: currentPeriod.startDate.getFullYear(),
+            startDate: currentPeriod.startDate,
+            endDate: currentPeriod.endDate
+          };
 
           if (getDataSource.length == 2) {
             // 2 parameters, means callback method
-            getDataSource(this.options.startYear, callback);
+            getDataSource(fetchParameters, callback);
           } else {
             // 1 parameter, means synchronous or promise method
-            var result = getDataSource(this.options.startYear);
+            var result = getDataSource(fetchParameters);
 
             if (result instanceof Array) {
               callback(result);
-            } else {
+            }
+
+            if (result && result.then) {
               result.then(callback);
             }
           }
@@ -360,7 +401,7 @@
 
           var months = this.element.querySelector('.months-container');
           months.style.opacity = '0';
-          months.style.display = 'block';
+          months.style.display = 'flex';
           months.style.transition = 'opacity 0.5s';
           setTimeout(function () {
             months.style.opacity = '1';
@@ -368,9 +409,12 @@
               return months.style.transition = '';
             }, 500);
           }, 0);
+          var currentPeriod = this.getCurrentPeriod();
 
           this._triggerEvent('renderEnd', {
-            currentYear: this.options.startYear
+            currentYear: currentPeriod.startDate.getFullYear(),
+            startDate: currentPeriod.startDate,
+            endDate: currentPeriod.endDate
           });
         }
       }
@@ -380,10 +424,12 @@
         var header = document.createElement('div');
         header.classList.add('calendar-header');
         var headerTable = document.createElement('table');
+        var period = this.getCurrentPeriod(); // Left arrow
+
         var prevDiv = document.createElement('th');
         prevDiv.classList.add('prev');
 
-        if (this.options.minDate != null && this.options.minDate > new Date(this.options.startYear - 1, 11, 31)) {
+        if (this.options.minDate != null && this.options.minDate >= period.startDate) {
           prevDiv.classList.add('disabled');
         }
 
@@ -391,54 +437,78 @@
         prevIcon.innerHTML = "&lsaquo;";
         prevDiv.appendChild(prevIcon);
         headerTable.appendChild(prevDiv);
-        var prev2YearDiv = document.createElement('th');
-        prev2YearDiv.classList.add('year-title');
-        prev2YearDiv.classList.add('year-neighbor2');
-        prev2YearDiv.textContent = (this.options.startYear - 2).toString();
 
-        if (this.options.minDate != null && this.options.minDate > new Date(this.options.startYear - 2, 11, 31)) {
-          prev2YearDiv.classList.add('disabled');
-        }
+        if (this._isFullYearMode()) {
+          // Year N-2
+          var prev2YearDiv = document.createElement('th');
+          prev2YearDiv.classList.add('year-title');
+          prev2YearDiv.classList.add('year-neighbor2');
+          prev2YearDiv.textContent = (this._startDate.getFullYear() - 2).toString();
 
-        headerTable.appendChild(prev2YearDiv);
-        var prevYearDiv = document.createElement('th');
-        prevYearDiv.classList.add('year-title');
-        prevYearDiv.classList.add('year-neighbor');
-        prevYearDiv.textContent = (this.options.startYear - 1).toString();
+          if (this.options.minDate != null && this.options.minDate > new Date(this._startDate.getFullYear() - 2, 11, 31)) {
+            prev2YearDiv.classList.add('disabled');
+          }
 
-        if (this.options.minDate != null && this.options.minDate > new Date(this.options.startYear - 1, 11, 31)) {
-          prevYearDiv.classList.add('disabled');
-        }
+          headerTable.appendChild(prev2YearDiv); // Year N-1
 
-        headerTable.appendChild(prevYearDiv);
+          var prevYearDiv = document.createElement('th');
+          prevYearDiv.classList.add('year-title');
+          prevYearDiv.classList.add('year-neighbor');
+          prevYearDiv.textContent = (this._startDate.getFullYear() - 1).toString();
+
+          if (this.options.minDate != null && this.options.minDate > new Date(this._startDate.getFullYear() - 1, 11, 31)) {
+            prevYearDiv.classList.add('disabled');
+          }
+
+          headerTable.appendChild(prevYearDiv);
+        } // Current year
+
+
         var yearDiv = document.createElement('th');
         yearDiv.classList.add('year-title');
-        yearDiv.textContent = this.options.startYear.toString();
+
+        if (this._isFullYearMode()) {
+          yearDiv.textContent = this._startDate.getFullYear().toString();
+        } else if (this.options.numberMonthsDisplayed == 12) {
+          yearDiv.textContent = "".concat(period.startDate.getFullYear(), " - ").concat(period.endDate.getFullYear());
+        } else if (this.options.numberMonthsDisplayed > 1) {
+          yearDiv.textContent = "".concat(Calendar.locales[this.options.language].months[period.startDate.getMonth()], " ").concat(period.startDate.getFullYear(), " - ").concat(Calendar.locales[this.options.language].months[period.endDate.getMonth()], " ").concat(period.endDate.getFullYear());
+        } else {
+          yearDiv.textContent = "".concat(Calendar.locales[this.options.language].months[period.startDate.getMonth()], " ").concat(period.startDate.getFullYear());
+        }
+
         headerTable.appendChild(yearDiv);
-        var nextYearDiv = document.createElement('th');
-        nextYearDiv.classList.add('year-title');
-        nextYearDiv.classList.add('year-neighbor');
-        nextYearDiv.textContent = (this.options.startYear + 1).toString();
 
-        if (this.options.maxDate != null && this.options.maxDate < new Date(this.options.startYear + 1, 0, 1)) {
-          nextYearDiv.classList.add('disabled');
-        }
+        if (this._isFullYearMode()) {
+          // Year N+1
+          var nextYearDiv = document.createElement('th');
+          nextYearDiv.classList.add('year-title');
+          nextYearDiv.classList.add('year-neighbor');
+          nextYearDiv.textContent = (this._startDate.getFullYear() + 1).toString();
 
-        headerTable.appendChild(nextYearDiv);
-        var next2YearDiv = document.createElement('th');
-        next2YearDiv.classList.add('year-title');
-        next2YearDiv.classList.add('year-neighbor2');
-        next2YearDiv.textContent = (this.options.startYear + 2).toString();
+          if (this.options.maxDate != null && this.options.maxDate < new Date(this._startDate.getFullYear() + 1, 0, 1)) {
+            nextYearDiv.classList.add('disabled');
+          }
 
-        if (this.options.maxDate != null && this.options.maxDate < new Date(this.options.startYear + 2, 0, 1)) {
-          next2YearDiv.classList.add('disabled');
-        }
+          headerTable.appendChild(nextYearDiv); // Year N+2
 
-        headerTable.appendChild(next2YearDiv);
+          var next2YearDiv = document.createElement('th');
+          next2YearDiv.classList.add('year-title');
+          next2YearDiv.classList.add('year-neighbor2');
+          next2YearDiv.textContent = (this._startDate.getFullYear() + 2).toString();
+
+          if (this.options.maxDate != null && this.options.maxDate < new Date(this._startDate.getFullYear() + 2, 0, 1)) {
+            next2YearDiv.classList.add('disabled');
+          }
+
+          headerTable.appendChild(next2YearDiv);
+        } // Right arrow
+
+
         var nextDiv = document.createElement('th');
         nextDiv.classList.add('next');
 
-        if (this.options.maxDate != null && this.options.maxDate < new Date(this.options.startYear + 1, 0, 1)) {
+        if (this.options.maxDate != null && this.options.maxDate <= period.endDate) {
           nextDiv.classList.add('disabled');
         }
 
@@ -454,8 +524,9 @@
       value: function _renderBody() {
         var monthsDiv = document.createElement('div');
         monthsDiv.classList.add('months-container');
+        var monthStartDate = new Date(this._startDate.getTime());
 
-        for (var m = 0; m < 12; m++) {
+        for (var m = 0; m < this.options.numberMonthsDisplayed; m++) {
           /* Container */
           var monthDiv = document.createElement('div');
           monthDiv.classList.add('month-container');
@@ -465,7 +536,6 @@
             monthDiv.classList.add("month-".concat(this._nbCols));
           }
 
-          var firstDate = new Date(this.options.startYear, m, 1);
           var table = document.createElement('table');
           table.classList.add('month');
           /* Month header */
@@ -475,7 +545,7 @@
           var titleCell = document.createElement('th');
           titleCell.classList.add('month-title');
           titleCell.setAttribute('colspan', this.options.displayWeekNumber ? '8' : '7');
-          titleCell.textContent = Calendar.locales[this.options.language].months[m];
+          titleCell.textContent = Calendar.locales[this.options.language].months[monthStartDate.getMonth()];
           titleRow.appendChild(titleCell);
           thead.appendChild(titleRow);
           var headerRow = document.createElement('tr');
@@ -487,7 +557,7 @@
             headerRow.appendChild(weekNumberCell);
           }
 
-          var weekStart = this.options.weekStart ? this.options.weekStart : Calendar.locales[this.options.language].weekStart;
+          var weekStart = this.getWeekStart();
           var d = weekStart;
 
           do {
@@ -508,8 +578,8 @@
           table.appendChild(thead);
           /* Days */
 
-          var currentDate = new Date(firstDate.getTime());
-          var lastDate = new Date(this.options.startYear, m + 1, 0);
+          var currentDate = new Date(monthStartDate.getTime());
+          var lastDate = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth() + 1, 0);
 
           while (currentDate.getDay() != weekStart) {
             currentDate.setDate(currentDate.getDate() - 1);
@@ -536,7 +606,7 @@
                 cell.classList.add('hidden');
               }
 
-              if (currentDate < firstDate) {
+              if (currentDate < monthStartDate) {
                 cell.classList.add('old');
               } else if (currentDate > lastDate) {
                 cell.classList.add('new');
@@ -564,6 +634,7 @@
 
           monthDiv.appendChild(table);
           monthsDiv.appendChild(monthDiv);
+          monthStartDate.setMonth(monthStartDate.getMonth() + 1);
         }
 
         this.element.appendChild(monthsDiv);
@@ -607,8 +678,12 @@
         if (this._dataSource != null && this._dataSource.length > 0) {
           this.element.querySelectorAll('.month-container').forEach(function (month) {
             var monthId = parseInt(month.dataset.monthId);
-            var firstDate = new Date(_this.options.startYear, monthId, 1);
-            var lastDate = new Date(_this.options.startYear, monthId + 1, 1);
+
+            var currentYear = _this._startDate.getFullYear();
+
+            var currentMonth = _this._startDate.getMonth() + monthId;
+            var firstDate = new Date(currentYear, currentMonth, 1);
+            var lastDate = new Date(currentYear, currentMonth + 1, 1);
 
             if ((_this.options.minDate == null || lastDate > _this.options.minDate) && (_this.options.maxDate == null || firstDate <= _this.options.maxDate)) {
               var monthData = [];
@@ -621,8 +696,8 @@
 
               if (monthData.length > 0) {
                 month.querySelectorAll('.day-content').forEach(function (day) {
-                  var currentDate = new Date(_this.options.startYear, monthId, parseInt(day.textContent));
-                  var nextDate = new Date(_this.options.startYear, monthId, currentDate.getDate() + 1);
+                  var currentDate = new Date(currentYear, currentMonth, parseInt(day.textContent));
+                  var nextDate = new Date(currentYear, currentMonth, currentDate.getDate() + 1);
                   var dayData = [];
 
                   if ((_this.options.minDate == null || currentDate >= _this.options.minDate) && (_this.options.maxDate == null || currentDate <= _this.options.maxDate)) {
@@ -754,7 +829,7 @@
                 months.style.transition = '';
                 months.style.marginLeft = '0';
                 setTimeout(function () {
-                  _this2.setYear(_this2.options.startYear - 1);
+                  _this2.setStartDate(new Date(_this2._startDate.getFullYear(), _this2._startDate.getMonth() - _this2.options.numberMonthsDisplayed, 1));
                 }, 50);
               }, 100);
             }
@@ -770,7 +845,7 @@
                 months.style.transition = '';
                 months.style.marginLeft = '0';
                 setTimeout(function () {
-                  _this2.setYear(_this2.options.startYear + 1);
+                  _this2.setStartDate(new Date(_this2._startDate.getFullYear(), _this2._startDate.getMonth() + _this2.options.numberMonthsDisplayed, 1));
                 }, 50);
               }, 100);
             }
@@ -929,13 +1004,13 @@
           var monthSize = _this2.element.querySelector('.month').offsetWidth + 10;
           _this2._nbCols = null;
 
-          if (monthSize * 6 < calendarSize) {
+          if (monthSize * 6 < calendarSize && _this2.options.numberMonthsDisplayed >= 6) {
             _this2._nbCols = 2;
-          } else if (monthSize * 4 < calendarSize) {
+          } else if (monthSize * 4 < calendarSize && _this2.options.numberMonthsDisplayed >= 4) {
             _this2._nbCols = 3;
-          } else if (monthSize * 3 < calendarSize) {
+          } else if (monthSize * 3 < calendarSize && _this2.options.numberMonthsDisplayed >= 3) {
             _this2._nbCols = 4;
-          } else if (monthSize * 2 < calendarSize) {
+          } else if (monthSize * 2 < calendarSize && _this2.options.numberMonthsDisplayed >= 2) {
             _this2._nbCols = 6;
           } else {
             _this2._nbCols = 12;
@@ -971,8 +1046,10 @@
           var maxDate = this._rangeEnd > this._rangeStart ? this._rangeEnd : this._rangeStart;
           this.element.querySelectorAll('.month-container').forEach(function (month) {
             var monthId = parseInt(month.dataset.monthId);
+            var monthStartDate = new Date(_this3._startDate.getFullYear(), _this3._startDate.getMonth() + monthId, 1);
+            var monthEndDate = new Date(_this3._startDate.getFullYear(), _this3._startDate.getMonth() + monthId + 1, 1);
 
-            if (minDate.getMonth() <= monthId && maxDate.getMonth() >= monthId) {
+            if (minDate.getTime() < monthEndDate.getTime() && maxDate.getTime() >= monthStartDate.getTime()) {
               month.querySelectorAll('td.day:not(.old):not(.new)').forEach(function (day) {
                 var date = _this3._getDate(day);
 
@@ -1161,9 +1238,8 @@
       key: "_getDate",
       value: function _getDate(elt) {
         var day = elt.querySelector('.day-content').textContent;
-        var month = elt.closest('.month-container').dataset.monthId;
-        var year = this.options.startYear;
-        return new Date(year, month, day);
+        var monthId = parseInt(elt.closest('.month-container').dataset.monthId);
+        return new Date(this._startDate.getFullYear(), this._startDate.getMonth() + monthId, day);
       }
     }, {
       key: "_triggerEvent",
@@ -1223,6 +1299,11 @@
         }
 
         return false;
+      }
+    }, {
+      key: "_isFullYearMode",
+      value: function _isFullYearMode() {
+        return this._startDate.getMonth() == 0 && this.options.numberMonthsDisplayed == 12;
       }
       /**
           * Gets the week number for a specified date.
@@ -1306,16 +1387,34 @@
         }
       }
       /**
+          * Gets the period displayed on the calendar.
+          */
+
+    }, {
+      key: "getCurrentPeriod",
+      value: function getCurrentPeriod() {
+        var startDate = new Date(this._startDate.getTime());
+        var endDate = new Date(this._startDate.getTime());
+        endDate.setMonth(endDate.getMonth() + this.options.numberMonthsDisplayed);
+        endDate.setTime(endDate.getTime() - 1);
+        return {
+          startDate: startDate,
+          endDate: endDate
+        };
+      }
+      /**
           * Gets the year displayed on the calendar.
+       * If the calendar is not used in a full year configuration, this will return the year of the first date displayed in the calendar.
           */
 
     }, {
       key: "getYear",
       value: function getYear() {
-        return this.options.startYear;
+        return this._isFullYearMode() ? this._startDate.getFullYear() : null;
       }
       /**
           * Sets the year displayed on the calendar.
+       * If the calendar is not used in a full year configuration, this will set the start date to January 1st of the given year.
           *
           * @param year The year to displayed on the calendar.
           */
@@ -1323,12 +1422,35 @@
     }, {
       key: "setYear",
       value: function setYear(year) {
-        var _this6 = this;
-
         var parsedYear = parseInt(year);
 
         if (!isNaN(parsedYear)) {
-          this.options.startYear = parsedYear; // Clear the calendar (faster method)
+          this.setStartDate(new Date(parsedYear, 0, 1));
+        }
+      }
+      /**
+          * Gets the first date displayed on the calendar.
+          */
+
+    }, {
+      key: "getStartDate",
+      value: function getStartDate() {
+        return this._startDate;
+      }
+      /**
+          * Sets the first date that should be displayed on the calendar.
+          *
+          * @param startDate The first date that should be displayed on the calendar.
+          */
+
+    }, {
+      key: "setStartDate",
+      value: function setStartDate(startDate) {
+        var _this6 = this;
+
+        if (startDate instanceof Date) {
+          this.options.startDate = startDate;
+          this._startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1); // Clear the calendar (faster method)
 
           while (this.element.firstChild) {
             this.element.removeChild(this.element.firstChild);
@@ -1338,10 +1460,22 @@
             this._renderHeader();
           }
 
-          var eventResult = this._triggerEvent('yearChanged', {
-            currentYear: this.options.startYear,
+          var newPeriod = this.getCurrentPeriod();
+
+          var periodEventResult = this._triggerEvent('periodChanged', {
+            startDate: newPeriod.startDate,
+            endDate: newPeriod.endDate,
             preventRendering: false
           });
+
+          var yearEventResult = null;
+
+          if (this._isFullYearMode()) {
+            yearEventResult = this._triggerEvent('yearChanged', {
+              currentYear: this._startDate.getFullYear(),
+              preventRendering: false
+            });
+          }
 
           if (typeof this.options.dataSource === "function") {
             this.render(true);
@@ -1354,9 +1488,41 @@
               _this6.render(false);
             });
           } else {
-            if (!eventResult.preventRendering) {
+            if (!periodEventResult.preventRendering && (!yearEventResult || !yearEventResult.preventRedering)) {
               this.render();
             }
+          }
+        }
+      }
+      /**
+          * Gets the number of months displayed by the calendar.
+          */
+
+    }, {
+      key: "getNumberMonthsDisplayed",
+      value: function getNumberMonthsDisplayed() {
+        return this.options.numberMonthsDisplayed;
+      }
+      /**
+          * Sets the number of months displayed that should be displayed by the calendar.
+       * 
+       * This method causes a refresh of the calendar.
+          *
+          * @param numberMonthsDisplayed Number of months that should be displayed by the calendar.
+       * @param preventRedering Indicates whether the rendering should be prevented after the property update.
+          */
+
+    }, {
+      key: "setNumberMonthsDisplayed",
+      value: function setNumberMonthsDisplayed(numberMonthsDisplayed) {
+        var preventRendering = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var parsedNumber = parseInt(numberMonthsDisplayed);
+
+        if (!isNaN(parsedNumber) && parsedNumber > 0 && parsedNumber <= 12) {
+          this.options.numberMonthsDisplayed = parsedNumber;
+
+          if (!preventRendering) {
+            this.render();
           }
         }
       }
@@ -1918,7 +2084,7 @@
     }, {
       key: "getWeekStart",
       value: function getWeekStart() {
-        return this.options.weekStart ? this.options.weekStart : Calendar.locales[this.options.language].weekStart;
+        return this.options.weekStart !== null ? this.options.weekStart : Calendar.locales[this.options.language].weekStart;
       }
       /**
           * Sets the starting day of the week.

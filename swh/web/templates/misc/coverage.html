@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2015-2019  The Software Heritage developers
+Copyright (C) 2015-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -23,7 +23,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2015-2019  The Software Heritage developers
+Copyright (C) 2015-2021  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -49,43 +49,103 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="wrapper" style="margin-left: 0;" data-iframe-height>
       <div class="content">
         <div class="container-fluid">
-          <div class="row">
-            {% for provider in providers %}
-              <div class="col-md-2 swh-coverage-col">
-                <div class="card swh-coverage" id="{{ provider.provider_id }}" title="{{ provider.provider_info }}">
-                  <a href="{{ provider.provider_url }}">
-                    <img class="card-img-top swh-coverage-logo" src="{% static provider.provider_logo %}">
-                  </a>
-                  <div class="text-center swh-coverage-origin-count"></div>
+          <p>
+            A significant amount of source code has already been ingested in the Software Heritage
+            archive. It notably includes the following software origins.
+          </p>
+          {% for origins_type, origins_data in origins.items %}
+            <h5>{{ origins_type }}</h5>
+            <p>{{ origins_data.info | safe }}</p>
+            <div class="row">
+              {% for origins in origins_data.origins %}
+                <div class="col-md-4 swh-coverage-col">
+                  <div class="card swh-coverage" id="{{ origins.type }}" title="{{ origins.info }}">
+                    <a href="{{ origins.info_url }}" target="_blank" rel="noopener noreferrer">
+                      {% with 'img/logos/'|add:origins.type.lower|add:'.png' as png_logo %}
+                        <img class="card-img-top swh-coverage-logo" src="{% static png_logo %}"
+                             alt="{{ origins.type }}">
+                      {% endwith %}
+                    </a>
+                    <div class="card-header swh-coverage-header">
+                      <a class="collapsed d-block" data-toggle="collapse"
+                         href="#swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         aria-expanded="true" aria-controls="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         id="heading-collapsed"
+                         title="click to expand or collapse detailed information about software origins">
+                        <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
+                        <div class="text-center" style="font-size: 120%">
+                          {% if "count" in origins %}
+                            {{ origins.count }} origins
+                          {% else %}
+                            <br/>
+                          {% endif %}
+                        </div>
+                      </a>
+                    </div>
+                    <div id="swh-coverage-info-{{ origins_type.lower|cut:' ' }}" class="collapse"
+                         aria-labelledby="heading-collapsed">
+                      <div class="card-body text-center swh-coverage-info-body">
+                        <table style="width: 100%">
+                        {% if "instances" in origins %}
+                          <thead>
+                            <tr>
+                              <th>instance</th>
+                              <th>type</th>
+                              <th>count</th>
+                              <th>search</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for instance, visit_types in origins.instances.items %}
+                              {% for visit_type, data in visit_types.items %}
+                                {% if data.count %}
+                                  <tr>
+                                    <td>{{ instance }}</td>
+                                    <td>{{ visit_type }}</td>
+                                    <td>{{ data.count }}</td>
+                                    <td>
+                                      <a href="{{ data.search_url }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="mdi mdi-magnify"></i>
+                                      </a>
+                                    </td>
+                                  </tr>
+                                {% endif %}
+                              {% endfor %}
+                            {% endfor %}
+                          </tbody>
+                        {% else %}
+                          <thead>
+                            <tr>
+                              <th>instance</th>
+                              <th>type</th>
+                              <th>search</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for visit_type, search_url in origins.search_urls.items %}
+                            <tr>
+                              <td>{{ origins.type }}</td>
+                              <td>{{ visit_type }}</td>
+                              <td>
+                                <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">
+                                  <i class="mdi mdi-magnify"></i>
+                                </a>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                          </tbody>
+                        {% endif %}
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            {% endfor %}
-          </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
         </div>
       </div>
     </div>
     <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>
   </body>
-  {% if count_origins %}
-    <script>
-      $.ajax({
-        url: Urls.swh_coverage_count(),
-        dataType: 'json',
-        success: function (data) {
-          for (var i = 0 ; i < data.length; ++i) {
-            var origin_count = data[i].origin_count;
-            var provider_id = data[i].provider_id;
-            var origin_types = data[i].origin_types;
-            if (origin_count < 0) {
-              $('.swh-coverage-origin-count').text('');
-              break;
-            } else {
-              var text = origin_count.toLocaleString() + ' ' + origin_types;
-              $('#'+provider_id + ' .swh-coverage-origin-count').text(text);
-            }
-          }
-        }
-      });
-    </script>
-  {% endif %}
 </html>

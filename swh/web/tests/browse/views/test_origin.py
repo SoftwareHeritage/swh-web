@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -67,7 +67,7 @@ def test_origin_visits_browse(client, archive_data, origin):
 
 
 @given(origin_with_multiple_visits())
-def test_origin_content_view(client, archive_data, origin):
+def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
     def _get_archive_data(visit_idx):
@@ -157,7 +157,7 @@ def test_origin_content_view(client, archive_data, origin):
 
 
 @given(origin())
-def test_origin_root_directory_view(client, archive_data, origin):
+def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
     visit = origin_visits[-1]
@@ -273,7 +273,7 @@ def test_origin_root_directory_view(client, archive_data, origin):
 
 
 @given(origin())
-def test_origin_sub_directory_view(client, archive_data, origin):
+def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
     visit = origin_visits[-1]

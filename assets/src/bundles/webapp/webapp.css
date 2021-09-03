@@ -126,11 +126,11 @@ pre {
 }
 
 .sitename .first-word {
-    font-family: 'Alegreya Sans', sans-serif;
+    font-family: "Alegreya Sans", sans-serif;
 }
 
 .sitename .second-word {
-    font-family: 'Alegreya', serif;
+    font-family: "Alegreya", serif;
 }
 
 .swh-counter {
@@ -190,7 +190,7 @@ pre {
 }
 
 .modal::before {
-    content: '';
+    content: "";
     display: inline-block;
     height: 100%;
     vertical-align: middle;
@@ -221,7 +221,7 @@ pre {
 
 a.dropdown-left::before {
     content: "\f035e";
-    font-family: 'Material Design Icons';
+    font-family: "Material Design Icons";
     display: block;
     width: 20px;
     height: 20px;
@@ -235,7 +235,13 @@ a.dropdown-left::before {
     border-right-style: none;
     border-bottom-style: solid;
     border-bottom-width: 5px;
-    border-image: linear-gradient(to right, rgb(226, 0, 38) 0%, rgb(254, 205, 27) 100%) 1 1 1 1;
+    border-image:
+        linear-gradient(
+            to right,
+            rgb(226, 0, 38) 0%,
+            rgb(254, 205, 27) 100%
+        )
+        1 1 1 1;
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
@@ -479,19 +485,24 @@ hr.swh-faded-line {
     border: none;
 }
 
+.swh-coverage {
+    padding-top: 0.3rem;
+    border: none;
+    overflow: visible;
+}
+
+.swh-coverage a {
+    text-decoration: none;
+}
+
 .swh-coverage-col {
     padding-left: 10px;
     padding-right: 10px;
 }
 
-.swh-coverage {
-    height: calc(65px + 1em);
-    padding-top: 0.3rem;
-    border: none;
-}
-
-.swh-coverage a {
-    text-decoration: none;
+.swh-coverage-header {
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .swh-coverage-logo {
@@ -503,13 +514,48 @@ hr.swh-faded-line {
     object-fit: contain;
 
     /* polyfill for old browsers, see https://github.com/bfred-it/object-fit-images */
-    font-family: 'object-fit: contain;';
+    font-family: "object-fit: contain;";
 }
 
 .swh-coverage-list {
     width: 100%;
     height: 320px;
     border: none;
+}
+
+.swh-coverage-chevron {
+    position: absolute;
+    right: 0;
+}
+
+.swh-coverage .card-header .mdi {
+    transition: 0.3s transform ease-in-out;
+}
+
+.swh-coverage .card-header .collapsed .mdi {
+    transform: rotate(90deg);
+}
+
+.swh-coverage-info-body {
+    max-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin; /* Firefox only */
+    padding: 0;
+}
+
+/* Thin scrollbar for chromium based browsers */
+
+.swh-coverage-info-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.swh-coverage-info-body::-webkit-scrollbar-track {
+    background: #eff0f1;
+}
+
+.swh-coverage-info-body::-webkit-scrollbar-thumb {
+    background: #909396;
 }
 
 tr.swh-tr-hover-highlight:hover td {
