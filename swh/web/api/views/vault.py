@@ -205,7 +205,7 @@ def api_vault_fetch_directory(request, dir_id):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
 
-        This endpoint was replaced by :http:get:`/api/1/vault/flat/raw/`
+        This endpoint was replaced by :http:get:`/api/1/vault/flat/(swhid)/raw/`
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         dir_id, ["sha1"], "Only sha1_git is supported."
@@ -308,7 +308,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
 
-        This endpoint was replaced by :http:get:`/api/1/vault/gitfast/`
+        This endpoint was replaced by :http:get:`/api/1/vault/gitfast/(swhid)/`
     """
     _, obj_id = query.parse_hash_with_algorithms_or_throws(
         rev_id, ["sha1"], "Only sha1_git is supported."
@@ -369,7 +369,7 @@ def _api_vault_revision_gitfast_raw(request, rev_id):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
 
-        This endpoint was replaced by :http:get:`/api/1/vault/gitfast/raw/`
+        This endpoint was replaced by :http:get:`/api/1/vault/gitfast/(swhid)/raw/`
     """
     rev_gitfast_raw_url = reverse(
         "api-1-vault-fetch-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
