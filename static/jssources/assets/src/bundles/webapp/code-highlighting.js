@@ -36,7 +36,7 @@ export function scrollToLine(lineDomElt) {
   }
 }
 
-export async function highlightCode(showLineNumbers = true) {
+export async function highlightCode(showLineNumbers = true, selector = 'code') {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
@@ -68,7 +68,7 @@ export async function highlightCode(showLineNumbers = true) {
 
   $(document).ready(() => {
     // highlight code and add line numbers
-    $('code').each((i, elt) => {
+    $(selector).each((i, elt) => {
       hljs.highlightElement(elt);
       if (showLineNumbers) {
         hljs.lineNumbersElement(elt, {singleLine: true});

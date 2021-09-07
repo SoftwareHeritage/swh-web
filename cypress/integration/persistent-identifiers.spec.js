@@ -189,8 +189,8 @@ describe('Persistent Identifiers Tests', function() {
 
       for (const badgeType of ['html', 'md', 'rst']) {
         cy.get(`.modal .swh-badge-${badgeType}`)
-          .contains(`${urlPrefix}${originBrowseUrl}`)
-          .contains(`${urlPrefix}${originBadgeUrl}`);
+          .should('contain.text', `${urlPrefix}${originBrowseUrl}`)
+          .should('contain.text', `${urlPrefix}${originBadgeUrl}`);
       }
 
       cy.get('.modal.show .close')
@@ -203,8 +203,8 @@ describe('Persistent Identifiers Tests', function() {
 
       for (const badgeType of ['html', 'md', 'rst']) {
         cy.get(`.modal .swh-badge-${badgeType}`)
-          .contains(`${urlPrefix}${td.browseUrl}`)
-          .contains(`${urlPrefix}${td.badgeSWHIDUrl}`);
+          .should('contain.text', `${urlPrefix}${td.browseUrl}`)
+          .should('contain.text', `${urlPrefix}${td.badgeSWHIDUrl}`);
       }
 
       cy.get('.modal.show .close')

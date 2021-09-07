@@ -170,12 +170,12 @@ def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
     else:
         task_types = _visit_type_task
 
-    # scheduler is not available when running cypress tests
-    if get_config().get("e2e_tests_mode"):
-        return task_types
-    else:
+    # filter visit types according to scheduler load task types if available
+    try:
         load_task_types = get_scheduler_load_task_types()
         return {k: v for k, v in task_types.items() if v in load_task_types}
+    except Exception:
+        return task_types
 
 
 def get_savable_visit_types(privileged_user: bool = False) -> List[str]:

@@ -34,13 +34,13 @@ export function showBadgeInfoModal(objectType, objectSWHID) {
   </a>
   <div>
     <label>HTML</label>
-    <pre class="swh-badge-html">&lt;a href="${absoluteBadgeLinkUrl}"&gt;
+    <pre><code class="swh-badge-html html">&lt;a href="${absoluteBadgeLinkUrl}"&gt;
     &lt;img src="${absoluteBadgeImageUrl}"&gt;
-&lt;/a&gt;</pre>
+&lt;/a&gt;</code></pre>
   </div>
   <div>
     <label>Markdown</label>
-    <pre class="swh-badge-md">[![SWH](${absoluteBadgeImageUrl})](${absoluteBadgeLinkUrl})</pre>
+    <pre><code class="swh-badge-md markdown">[![SWH](${absoluteBadgeImageUrl})](${absoluteBadgeLinkUrl})</code></pre>
   </div>
   <div>
     <label>reStructuredText</label>
@@ -48,4 +48,6 @@ export function showBadgeInfoModal(objectType, objectSWHID) {
     :target: ${absoluteBadgeLinkUrl}</pre>
   </div>`;
   swh.webapp.showModalHtml('Software Heritage badge integration', html);
+  swh.webapp.highlightCode(false, '.swh-badge-html');
+  swh.webapp.highlightCode(false, '.swh-badge-md');
 }
