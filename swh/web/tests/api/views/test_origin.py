@@ -549,7 +549,7 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
 def test_api_origin_search_use_ql(api_client, mocker):
     mock_config = mocker.patch("swh.web.common.archive.config")
     mock_config.get_config.return_value = {
-        "search_config": {"backend": "swh-search", "enable_ql": True}
+        "search_config": {"metadata_backend": "swh-search", "enable_ql": True}
     }
 
     expected_origins = {
@@ -624,7 +624,9 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 def test_api_origin_metadata_search(api_client, mocker, backend):
 
     mock_config = mocker.patch("swh.web.common.archive.config")
-    mock_config.get_config.return_value = {"search_config": {"backend": backend}}
+    mock_config.get_config.return_value = {
+        "search_config": {"metadata_backend": backend}
+    }
 
     url = reverse(
         "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
