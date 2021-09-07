@@ -85,6 +85,9 @@ def _get_branch(branches, branch_name, snapshot_id):
             branches_from=branch_name,
             branches_count=1,
             target_types=["revision", "alias"],
+            # pull request branches must be browsable even if they are hidden
+            # by default in branches list
+            branch_name_exclude_prefix=None,
         )
         snp_branch, _, _ = process_snapshot_branches(snp)
         if snp_branch and snp_branch[0]["name"] == branch_name:
