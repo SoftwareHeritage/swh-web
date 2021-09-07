@@ -8,8 +8,18 @@ from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import privileged_user
 from swh.web.common.origin_save import (
     create_save_origin_request,
+    get_savable_visit_types,
     get_save_origin_requests,
 )
+
+
+def _savable_visit_types():
+    visit_types = sorted(get_savable_visit_types())
+    docstring = ""
+    for visit_type in visit_types[:-1]:
+        docstring += f"**{visit_type}**, "
+    docstring += f"and **{visit_types[-1]}**"
+    return docstring
 
 
 @api_route(
@@ -20,7 +30,7 @@ from swh.web.common.origin_save import (
     never_cache=True,
 )
 @api_doc("/origin/save/")
-@format_docstring()
+@format_docstring(visit_types=_savable_visit_types())
 def api_save_origin(request, visit_type, origin_url):
     """
     .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
@@ -56,7 +66,7 @@ def api_save_origin(request, visit_type, origin_url):
         might have been submitted for the same origin).
 
         :param string visit_type: the type of visit to perform
-            (currently the supported types are ``git``, ``hg`` and ``svn``)
+            (currently the supported types are {visit_types})
         :param string origin_url: the url of the origin to save
 
         {common_headers}

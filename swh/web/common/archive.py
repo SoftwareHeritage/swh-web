@@ -385,7 +385,10 @@ def search_origin_metadata(
 
     """
     results = []
-    if search and config.get_config()["search_config"]["backend"] == "swh-search":
+    if (
+        search
+        and config.get_config()["search_config"]["metadata_backend"] == "swh-search"
+    ):
         page_result = search.origin_search(metadata_pattern=fulltext, limit=limit,)
         matches = idx_storage.origin_intrinsic_metadata_get(
             [r["url"] for r in page_result.results]

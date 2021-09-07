@@ -32,10 +32,10 @@ from swh.web.tests.utils import (
 def test_api_vault_cook(api_client, mocker, directory, revision):
     mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
-    for bundle_type, swhid in (
-        ("flat", f"swh:1:dir:{directory}"),
-        ("gitfast", f"swh:1:rev:{revision}"),
-        ("git_bare", f"swh:1:rev:{revision}"),
+    for bundle_type, swhid, content_type, in (
+        ("flat", f"swh:1:dir:{directory}", "application/gzip"),
+        ("gitfast", f"swh:1:rev:{revision}", "application/gzip"),
+        ("git_bare", f"swh:1:rev:{revision}", "application/x-tar"),
     ):
 
         fetch_url = reverse(
@@ -74,7 +74,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         )
 
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
-        assert rv["Content-Type"] == "application/gzip"
+        assert rv["Content-Type"] == content_type
         assert rv.content == stub_fetch
         mock_archive.vault_fetch.assert_called_with(
             bundle_type, CoreSWHID.from_string(swhid)
