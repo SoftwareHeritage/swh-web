@@ -208,5 +208,14 @@ See top-level LICENSE file for more information
 <script>
   swh.webapp.initPage('api');
   swh.webapp.highlightCode(false);
+  // restore Web API links removed by code highlighting
+  setTimeout(function() {
+    $('.hljs-string').each(function(idx, element) {
+      var text = $(element).text();
+      if (text.match(/^"http.*:\/\/.*/)) {
+        $(element).html('<a class="hljs-string" href=' + text + '>' + text + '</a>')
+      }
+    });
+  }, 500);
 </script>
 {% endblock %}

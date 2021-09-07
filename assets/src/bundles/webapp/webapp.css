@@ -664,7 +664,7 @@ div.d3-tooltip {
 .swh-badge-html,
 .swh-badge-md,
 .swh-badge-rst {
-    white-space: pre-wrap;
+    white-space: pre-wrap !important;
 }
 
 /* Material Design icons alignment tweaks */
