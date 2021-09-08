@@ -25,7 +25,7 @@ from django.urls import reverse as django_reverse
 
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
-from swh.web.config import ORIGIN_VISIT_TYPES, get_config
+from swh.web.config import get_config, search
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -284,7 +284,6 @@ def context_processor(request):
             ]
         ),
         "swh_web_version": get_distribution("swh.web").version,
-        "visit_types": ORIGIN_VISIT_TYPES,
         "iframe_mode": False,
     }
 
@@ -389,3 +388,13 @@ def get_deposits_list() -> List[Dict[str, Any]]:
         cache.set("swh-deposit-list", deposits_data)
 
     return deposits_data["results"]
+
+
+def origin_visit_types() -> List[str]:
+    """Return the exhaustive list of visit types for origins
+    ingested into the archive.
+    """
+    try:
+        return sorted(search().visit_types_count().keys())
+    except Exception:
+        return []
