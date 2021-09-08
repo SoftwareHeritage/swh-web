@@ -8,7 +8,7 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if vault_cooking %}
-  {% if user.is_staff %}
+  {% if user.is_authenticated  and user.is_staff or "swh.vault.git_bare.ui" in user.get_all_permissions %}
     <button class="btn btn-default btn-sm dropdown-toggle swh-vault-download" type="button" data-toggle="dropdown">
       <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>
       Download
