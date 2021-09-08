@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from django.core.cache import cache
 from django.shortcuts import render
-from django.template.defaultfilters import filesizeformat
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
@@ -772,7 +771,6 @@ def browse_snapshot_directory(
         )
         if f["length"] is not None:
             sum_file_sizes += f["length"]
-            f["length"] = filesizeformat(f["length"])
         if f["name"].lower().startswith("readme"):
             readmes[f["name"]] = f["checksums"]["sha1"]
 
@@ -796,7 +794,6 @@ def browse_snapshot_directory(
     if root_directory:
         nb_files = len(files)
         nb_dirs = len(dirs)
-        sum_file_sizes = filesizeformat(sum_file_sizes)
         dir_path = "/" + path
 
     revision_found = True
@@ -1012,7 +1009,7 @@ def browse_snapshot_content(
         content_url=browse_content_link,
         mimetype=content_data.get("mimetype"),
         encoding=content_data.get("encoding"),
-        size=filesizeformat(content_data.get("length", 0)),
+        size=content_data.get("length", 0),
         language=content_data.get("language"),
         root_directory=root_directory,
         path=f"/{filepath}",

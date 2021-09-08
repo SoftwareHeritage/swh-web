@@ -48,7 +48,7 @@ See top-level LICENSE file for more information
               {{ f.perms }}
             </td>
             <td class="d-none d-sm-table-cell">
-              {{ f.length }}
+              {% if f.length is not None %}{{ f.length|filesizeformat }}{% endif %}
             </td>
           </tr>
         {% endfor %}
