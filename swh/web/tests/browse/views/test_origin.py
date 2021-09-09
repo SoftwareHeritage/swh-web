@@ -821,6 +821,16 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
         resp, f"Revision {unknown_revision } could not be found in the archive."
     )
 
+    # no revision card
+    assert_not_contains(resp, "swh-tip-revision")
+    # no Download dropdown
+    assert_not_contains(resp, "swh-vault-download")
+    # no History link
+    assert_not_contains(resp, "swh-tr-link")
+    # no SWHIDs for directory and revision
+    assert_not_contains(resp, "swh:1:dir:")
+    assert_not_contains(resp, "swh:1:rev:")
+
 
 @given(origin())
 def test_origin_content_no_path(client, origin):

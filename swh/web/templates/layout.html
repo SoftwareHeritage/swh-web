@@ -67,7 +67,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <link rel="search" type="application/opensearchdescription+xml" title="Software Heritage archive of public source code" href="{% static 'xml/swh-opensearch.xml' %}">
     <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
 
-    {% if "production" in DJANGO_SETTINGS_MODULE  %}
+    {% if not swh_web_dev and not swh_web_staging %}
 
       <!-- Matomo -->
       <script type="text/javascript">
