@@ -10,7 +10,6 @@ import sentry_sdk
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.template.defaultfilters import filesizeformat
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
@@ -315,7 +314,7 @@ def content_display(request, query_string):
         content_url=content_url,
         mimetype=content_data.get("mimetype"),
         encoding=content_data.get("encoding"),
-        size=filesizeformat(content_data.get("length", 0)),
+        size=content_data.get("length", 0),
         language=content_data.get("language"),
         root_directory=root_dir,
         path=f"/{path}" if path else None,

@@ -285,3 +285,15 @@ def test_get_deposits_list(requests_mock):
     )
 
     assert utils.get_deposits_list() == deposits_data["results"]
+
+
+@pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
+def test_origin_visit_types(mocker, backend):
+    if backend != "swh-search":
+        # equivalent to not configuring search in the config
+        search = mocker.patch("swh.web.common.utils.search")
+        search.return_value = None
+        assert utils.origin_visit_types() == []
+    else:
+        # see swh/web/tests/data.py for origins added for tests
+        assert utils.origin_visit_types() == ["git", "tar"]

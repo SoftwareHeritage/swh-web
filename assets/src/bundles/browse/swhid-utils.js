@@ -112,7 +112,7 @@ $(document).ready(() => {
   $('#swh-identifiers').tabSlideOut(tabSlideOptions);
 
   // set the tab visible once the close animation is terminated
-  $('#swh-identifiers').css('display', 'block');
+  $('#swh-identifiers').addClass('d-none d-sm-block');
   $('.swhid-context-option').trigger('click');
 
   // highlighted code lines changed

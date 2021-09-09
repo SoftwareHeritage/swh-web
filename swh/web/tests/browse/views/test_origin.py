@@ -1297,3 +1297,22 @@ def test_pull_request_branches_filtering(client, origin):
         client, url, status_code=200, template_used="browse/branches.html"
     )
     assert_not_contains(resp, "refs/pull/")
+
+
+@given(origin_with_pull_request_branches())
+def test_browse_pull_request_branch(client, archive_data, origin):
+    snapshot = archive_data.snapshot_get_latest(origin.url)
+    pr_branch = random.choice(
+        [
+            branch
+            for branch in snapshot["branches"].keys()
+            if branch.startswith("refs/pull/")
+        ]
+    )
+    url = reverse(
+        "browse-origin-directory",
+        query_params={"origin_url": origin.url, "branch": pr_branch},
+    )
+    check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )

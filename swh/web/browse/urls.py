@@ -15,7 +15,7 @@ import swh.web.browse.views.origin  # noqa
 import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
-from swh.web.common.utils import reverse
+from swh.web.common.utils import origin_visit_types, reverse
 
 
 def _browse_help_view(request):
@@ -31,6 +31,7 @@ def _browse_search_view(request):
         {
             "heading": "Search software origins to browse",
             "enable_ql": config.get_config()["search_config"].get("enable_ql", False),
+            "visit_types": origin_visit_types(),
         },
     )
 

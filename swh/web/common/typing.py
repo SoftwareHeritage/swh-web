@@ -167,7 +167,7 @@ class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     content_url: str
     mimetype: str
     encoding: str
-    size: str
+    size: int
     language: str
     path: Optional[str]
     filename: Optional[str]
@@ -182,7 +182,7 @@ class DirectoryMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     directory: str
     nb_files: int
     nb_dirs: int
-    sum_file_sizes: str
+    sum_file_sizes: int
     root_directory: Optional[str]
     path: str
     revision: Optional[str]

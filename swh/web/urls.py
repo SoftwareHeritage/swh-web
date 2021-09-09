@@ -27,6 +27,7 @@ from swh.web.common.exc import (
     swh_handle404,
     swh_handle500,
 )
+from swh.web.common.utils import origin_visit_types
 from swh.web.config import get_config
 
 swh_web_config = get_config()
@@ -40,7 +41,10 @@ def _default_view(request):
     return render(
         request,
         "homepage.html",
-        {"enable_ql": swh_web_config["search_config"].get("enable_ql", False),},
+        {
+            "enable_ql": swh_web_config["search_config"].get("enable_ql", False),
+            "visit_types": origin_visit_types(),
+        },
     )
 
 
