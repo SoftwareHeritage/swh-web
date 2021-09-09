@@ -1,3 +1,17 @@
+swh-web (0.0.323-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.323     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2021-09-09 13:14:58 +0200)
+  * Upstream changes:     - v0.0.323     - * browse/snapshot_context:
+    Ensure pull request branches can be browsed     - * Add
+    'swh.vault.git_bare.ui' use role, to display the 'git bare' button
+    on the UI     - * Add link to extrinsic metadata API from the browse
+    view     - * misc: Add iframe view for contents and directories     -
+    * directory-display: Show human-readable file sizes (KB, MB, ...).
+    - * api/vault: Re-add obj_type and obj_id to legacy API endpoints
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 09 Sep 2021 11:33:07 +0000
+
 swh-web (0.0.322-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.322     - (tagged by Vincent SELLIER
