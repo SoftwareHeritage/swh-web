@@ -5,7 +5,7 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-{% if snapshot_context and snapshot_context.revision_id %}
+{% if snapshot_context and snapshot_context.revision_info %}
   <div id="swh-tip-revision" class="card d-none d-md-block">
     <div class="card-body pt-2 pb-1 d-flex align-items-start justify-content-between">
       <i style="min-width: 36px;" class="{{ swh_object_icons.revision }} mdi-36px mdi-fw" aria-hidden="true"></i>

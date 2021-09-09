@@ -796,6 +796,8 @@ def browse_snapshot_directory(
         nb_dirs = len(dirs)
         dir_path = "/" + path
 
+    swh_objects = []
+    vault_cooking = {}
     revision_found = True
     if sha1_git is None and revision_id is not None:
         try:
@@ -803,11 +805,17 @@ def browse_snapshot_directory(
         except NotFoundExc:
             revision_found = False
 
-    swh_objects = [
-        SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git),
-        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
-        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
-    ]
+    if sha1_git is not None:
+        swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git))
+        vault_cooking.update(
+            {"directory_context": True, "directory_swhid": f"swh:1:dir:{sha1_git}",}
+        )
+    if revision_found:
+        swh_objects.append(SWHObjectInfo(object_type=REVISION, object_id=revision_id))
+        vault_cooking.update(
+            {"revision_context": True, "revision_swhid": f"swh:1:rev:{revision_id}",}
+        )
+    swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
 
     visit_date = None
     visit_type = None
@@ -837,13 +845,6 @@ def browse_snapshot_directory(
         visit_type=visit_type,
     )
 
-    vault_cooking = {
-        "directory_context": True,
-        "directory_swhid": f"swh:1:dir:{sha1_git}",
-        "revision_context": True,
-        "revision_swhid": f"swh:1:rev:{revision_id}",
-    }
-
     swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)
 
     dir_path = "/".join([bc["name"] for bc in breadcrumbs]) + "/"
@@ -857,7 +858,7 @@ def browse_snapshot_directory(
     )
 
     top_right_link = None
-    if not snapshot_context["is_empty"]:
+    if not snapshot_context["is_empty"] and revision_found:
         top_right_link = {
             "url": history_url,
             "icon": swh_object_icons["revisions history"],
