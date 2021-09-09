@@ -53,13 +53,12 @@ def _vault_response(
         "progress_message": vault_response["progress_msg"],
         "id": vault_response["task_id"],
         "status": vault_response["task_status"],
-        "swhid": vault_response["swhid"],
+        "swhid": str(vault_response["swhid"]),
     }
 
     if add_legacy_items:
-        swhid = CoreSWHID.from_string(vault_response["swhid"])
-        d["obj_type"] = swhid.object_type.name.lower()
-        d["obj_id"] = hash_to_hex(swhid.object_id)
+        d["obj_type"] = vault_response["swhid"].object_type.name.lower()
+        d["obj_id"] = hash_to_hex(vault_response["swhid"].object_id)
 
     return d
 
