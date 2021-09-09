@@ -37,10 +37,11 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         ("gitfast", f"swh:1:rev:{revision}", "application/gzip"),
         ("git_bare", f"swh:1:rev:{revision}", "application/x-tar"),
     ):
+        swhid = CoreSWHID.from_string(swhid)
 
         fetch_url = reverse(
             f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
-            url_args={"swhid": swhid},
+            url_args={"swhid": str(swhid)},
         )
         stub_cook = {
             "type": bundle_type,
@@ -57,7 +58,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         email = "test@test.mail"
         url = reverse(
             f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
-            url_args={"swhid": swhid},
+            url_args={"swhid": str(swhid)},
             query_params={"email": email},
         )
 
@@ -67,18 +68,14 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
             "progress_message": None,
             "id": 1,
             "status": "done",
-            "swhid": swhid,
+            "swhid": str(swhid),
         }
-        mock_archive.vault_cook.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid), email
-        )
+        mock_archive.vault_cook.assert_called_with(bundle_type, swhid, email)
 
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == content_type
         assert rv.content == stub_fetch
-        mock_archive.vault_fetch.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid)
-        )
+        mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
 @given(directory(), revision(), unknown_directory(), unknown_revision())
@@ -95,46 +92,44 @@ def test_api_vault_cook_notfound(
         ("gitfast", f"swh:1:rev:{revision}"),
         ("git_bare", f"swh:1:rev:{revision}"),
     ):
+        swhid = CoreSWHID.from_string(swhid)
 
         url = reverse(
             f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
-            url_args={"swhid": swhid},
+            url_args={"swhid": str(swhid)},
         )
 
         rv = check_api_get_responses(api_client, url, status_code=404)
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooking of {swhid} was never requested."
-        mock_vault.progress.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid)
-        )
+        mock_vault.progress.assert_called_with(bundle_type, swhid)
 
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{unknown_directory}"),
         ("gitfast", f"swh:1:rev:{unknown_revision}"),
         ("git_bare", f"swh:1:rev:{unknown_revision}"),
     ):
+        swhid = CoreSWHID.from_string(swhid)
         url = reverse(
             f"api-1-vault-cook-{bundle_type.replace('_', '-')}",
-            url_args={"swhid": swhid},
+            url_args={"swhid": str(swhid)},
         )
         rv = check_api_post_responses(api_client, url, data=None, status_code=404)
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"{swhid} not found."
-        mock_vault.cook.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid), email=None
-        )
+        mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
             f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
-            url_args={"swhid": swhid},
+            url_args={"swhid": str(swhid)},
         )
 
         rv = check_api_get_responses(api_client, fetch_url, status_code=404)
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooked archive for {swhid} not found."
-        mock_vault.fetch.assert_called_with(bundle_type, CoreSWHID.from_string(swhid))
+        mock_vault.fetch.assert_called_with(bundle_type, swhid)
 
 
 @pytest.mark.parametrize("bundle_type", ["flat", "gitfast", "git_bare"])
@@ -204,10 +199,10 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         ("directory", "flat", "directory", directory),
         ("revision_gitfast", "gitfast", "revision", revision),
     ):
-        swhid = f"swh:1:{obj_type[:3]}:{obj_id}"
+        swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": swhid},
+            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": str(swhid)},
         )
         stub_cook = {
             "type": obj_type,
@@ -236,20 +231,16 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
             "progress_message": None,
             "id": 1,
             "status": "done",
-            "swhid": swhid,
+            "swhid": str(swhid),
             "obj_type": response_obj_type,
             "obj_id": obj_id,
         }
-        mock_archive.vault_cook.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid), email
-        )
+        mock_archive.vault_cook.assert_called_with(bundle_type, swhid, email)
 
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == "application/gzip"
         assert rv.content == stub_fetch
-        mock_archive.vault_fetch.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid)
-        )
+        mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
 @given(directory(), revision())
@@ -306,21 +297,19 @@ def test_api_vault_cook_notfound_legacy(
             f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
-        swhid = f"swh:1:{obj_type[:3]}:{obj_id}"
+        swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
 
         rv = check_api_get_responses(api_client, url, status_code=404)
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooking of {swhid} was never requested."
-        mock_vault.progress.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid)
-        )
+        mock_vault.progress.assert_called_with(bundle_type, swhid)
 
     for obj_type, bundle_type, obj_id in (
         ("directory", "flat", unknown_directory),
         ("revision_gitfast", "gitfast", unknown_revision),
     ):
-        swhid = f"swh:1:{obj_type[:3]}:{obj_id}"
+        swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
 
         url = reverse(
             f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id}
@@ -329,9 +318,7 @@ def test_api_vault_cook_notfound_legacy(
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"{swhid} not found."
-        mock_vault.cook.assert_called_with(
-            bundle_type, CoreSWHID.from_string(swhid), email=None
-        )
+        mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
             f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
@@ -340,11 +327,11 @@ def test_api_vault_cook_notfound_legacy(
         # Redirected to the current 'fetch' url
         rv = check_http_get_response(api_client, fetch_url, status_code=302)
         redirect_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": swhid},
+            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": str(swhid)},
         )
         assert rv["location"] == redirect_url
 
         rv = check_api_get_responses(api_client, redirect_url, status_code=404)
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooked archive for {swhid} not found."
-        mock_vault.fetch.assert_called_with(bundle_type, CoreSWHID.from_string(swhid))
+        mock_vault.fetch.assert_called_with(bundle_type, swhid)
