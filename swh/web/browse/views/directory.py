@@ -9,7 +9,6 @@ import sentry_sdk
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.template.defaultfilters import filesizeformat
 
 from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
 from swh.web.browse.browseurls import browse_route
@@ -130,13 +129,10 @@ def _directory_browse(request, sha1_git, path=None):
         )
         if f["length"] is not None:
             sum_file_sizes += f["length"]
-            f["length"] = filesizeformat(f["length"])
         if f["name"].lower().startswith("readme"):
             readmes[f["name"]] = f["checksums"]["sha1"]
 
     readme_name, readme_url, readme_html = get_readme_to_display(readmes)
-
-    sum_file_sizes = filesizeformat(sum_file_sizes)
 
     dir_metadata = DirectoryMetadata(
         object_type=DIRECTORY,

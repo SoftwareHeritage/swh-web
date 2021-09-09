@@ -9,7 +9,6 @@ import textwrap
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 
 from swh.model.hashutil import hash_to_bytes
@@ -515,8 +514,6 @@ def revision_browse(request, sha1_git):
                 url_args={"sha1_git": sha1_git},
                 query_params=query_params,
             )
-            if f["length"] is not None:
-                f["length"] = filesizeformat(f["length"])
             if f["name"].lower().startswith("readme"):
                 readmes[f["name"]] = f["checksums"]["sha1"]
 

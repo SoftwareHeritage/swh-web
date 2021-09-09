@@ -77,6 +77,7 @@ assets/src/bundles/webapp/code-highlighting.js
 assets/src/bundles/webapp/coverage.css
 assets/src/bundles/webapp/history-counters.css
 assets/src/bundles/webapp/history-counters.js
+assets/src/bundles/webapp/iframes.js
 assets/src/bundles/webapp/index.js
 assets/src/bundles/webapp/math-typesetting.js
 assets/src/bundles/webapp/notebook-rendering.js
@@ -157,6 +158,7 @@ docs/uri-scheme-browse-revision.rst
 docs/uri-scheme-browse-snapshot.rst
 docs/uri-scheme-browse.rst
 docs/uri-scheme-identifiers.rst
+docs/uri-scheme-misc.rst
 docs/_static/.placeholder
 docs/_templates/.placeholder
 static/robots.txt
@@ -181,8 +183,8 @@ static/css/vault.25fc5883f848b48ffa5b.css
 static/css/vault.25fc5883f848b48ffa5b.css.map
 static/css/vendors.3be8ca184265c2b8a84c.css
 static/css/vendors.3be8ca184265c2b8a84c.css.map
-static/css/webapp.36fd914ec19375a72b42.css
-static/css/webapp.36fd914ec19375a72b42.css.map
+static/css/webapp.ae9028d5184b7db78b7d.css
+static/css/webapp.ae9028d5184b7db78b7d.css.map
 static/fonts/MathJax_AMS-Regular.woff
 static/fonts/MathJax_Calligraphic-Bold.woff
 static/fonts/MathJax_Calligraphic-Regular.woff
@@ -298,9 +300,9 @@ static/js/admin.a3c91e40c53eb2d387b8.js.map
 static/js/auth.0d84a9e4d4bc81529be4.js
 static/js/auth.0d84a9e4d4bc81529be4.js.LICENSE.txt
 static/js/auth.0d84a9e4d4bc81529be4.js.map
-static/js/browse.15685fbad51ebbbbd05f.js
-static/js/browse.15685fbad51ebbbbd05f.js.LICENSE.txt
-static/js/browse.15685fbad51ebbbbd05f.js.map
+static/js/browse.3a4ea81ed3bff4f62a85.js
+static/js/browse.3a4ea81ed3bff4f62a85.js.LICENSE.txt
+static/js/browse.3a4ea81ed3bff4f62a85.js.map
 static/js/d3.35613564c32235d8ecd2.js
 static/js/d3.35613564c32235d8ecd2.js.map
 static/js/guided_tour.f67023a0a4b6499cdfbb.js
@@ -333,9 +335,9 @@ static/js/vault.d67a777bb1e8384d735b.js.map
 static/js/vendors.fcfef683a888c7fc3e33.js
 static/js/vendors.fcfef683a888c7fc3e33.js.LICENSE.txt
 static/js/vendors.fcfef683a888c7fc3e33.js.map
-static/js/webapp.14d03a80109a6076b814.js
-static/js/webapp.14d03a80109a6076b814.js.LICENSE.txt
-static/js/webapp.14d03a80109a6076b814.js.map
+static/js/webapp.62c6721f70dda6d33cdf.js
+static/js/webapp.62c6721f70dda6d33cdf.js.LICENSE.txt
+static/js/webapp.62c6721f70dda6d33cdf.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
@@ -433,6 +435,7 @@ static/jssources/assets/src/bundles/vendors/index.js
 static/jssources/assets/src/bundles/webapp/badges.js
 static/jssources/assets/src/bundles/webapp/code-highlighting.js
 static/jssources/assets/src/bundles/webapp/history-counters.js
+static/jssources/assets/src/bundles/webapp/iframes.js
 static/jssources/assets/src/bundles/webapp/index.js
 static/jssources/assets/src/bundles/webapp/math-typesetting.js
 static/jssources/assets/src/bundles/webapp/notebook-rendering.js
@@ -1533,6 +1536,7 @@ swh/web/common/migrations/__init__.py
 swh/web/misc/__init__.py
 swh/web/misc/badges.py
 swh/web/misc/coverage.py
+swh/web/misc/iframe.py
 swh/web/misc/metrics.py
 swh/web/misc/origin_save.py
 swh/web/misc/urls.py
@@ -1583,6 +1587,7 @@ swh/web/templates/includes/top-navigation.html
 swh/web/templates/includes/vault-common.html
 swh/web/templates/includes/vault-create-tasks.html
 swh/web/templates/misc/coverage.html
+swh/web/templates/misc/iframe.html
 swh/web/templates/misc/jslicenses.html
 swh/web/templates/misc/origin-save.html
 swh/web/tests/__init__.py
@@ -1650,6 +1655,7 @@ swh/web/tests/common/test_utils.py
 swh/web/tests/misc/__init__.py
 swh/web/tests/misc/test_badges.py
 swh/web/tests/misc/test_coverage.py
+swh/web/tests/misc/test_iframe.py
 swh/web/tests/misc/test_metrics.py
 swh/web/tests/misc/test_origin_save.py
 swh/web/tests/resources/contents/code/LICENSE

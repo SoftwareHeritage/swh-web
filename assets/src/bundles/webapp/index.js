@@ -26,3 +26,4 @@ export * from './badges';
 export * from './sentry';
 export * from './math-typesetting';
 export * from './status-widget';
+export * from './iframes';

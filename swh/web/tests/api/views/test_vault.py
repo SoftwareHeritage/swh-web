@@ -200,9 +200,9 @@ def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint)
 def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
     mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
-    for obj_type, bundle_type, obj_id in (
-        ("directory", "flat", directory),
-        ("revision_gitfast", "gitfast", revision),
+    for obj_type, bundle_type, response_obj_type, obj_id in (
+        ("directory", "flat", "directory", directory),
+        ("revision_gitfast", "gitfast", "revision", revision),
     ):
         swhid = f"swh:1:{obj_type[:3]}:{obj_id}"
 
@@ -215,6 +215,8 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
             "task_id": 1,
             "task_status": "done",
             "swhid": swhid,
+            "obj_type": response_obj_type,
+            "obj_id": obj_id,
         }
         stub_fetch = b"content"
 
@@ -235,6 +237,8 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
             "id": 1,
             "status": "done",
             "swhid": swhid,
+            "obj_type": response_obj_type,
+            "obj_id": obj_id,
         }
         mock_archive.vault_cook.assert_called_with(
             bundle_type, CoreSWHID.from_string(swhid), email

@@ -8,6 +8,7 @@ from typing import Any, Dict
 from django.http import HttpResponse
 from django.shortcuts import redirect
 
+from swh.model.hashutil import hash_to_hex
 from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -44,14 +45,23 @@ def _dispatch_cook_progress(request, bundle_type: str, swhid: CoreSWHID):
         )
 
 
-def _vault_response(vault_response: Dict[str, Any]) -> Dict[str, Any]:
-    return {
+def _vault_response(
+    vault_response: Dict[str, Any], add_legacy_items: bool
+) -> Dict[str, Any]:
+    d = {
         "fetch_url": vault_response["fetch_url"],
         "progress_message": vault_response["progress_msg"],
         "id": vault_response["task_id"],
         "status": vault_response["task_status"],
-        "swhid": str(vault_response["swhid"]),
+        "swhid": vault_response["swhid"],
     }
+
+    if add_legacy_items:
+        swhid = CoreSWHID.from_string(vault_response["swhid"])
+        d["obj_type"] = swhid.object_type.name.lower()
+        d["obj_id"] = hash_to_hex(swhid.object_id)
+
+    return d
 
 
 ######################################################
@@ -114,7 +124,7 @@ def api_vault_cook_flat(request, swhid):
         res["fetch_url"] = reverse(
             "api-1-vault-fetch-flat", url_args={"swhid": str(swhid)}, request=request,
         )
-        return _vault_response(res)
+        return _vault_response(res, add_legacy_items=False)
     elif swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
@@ -155,7 +165,7 @@ def api_vault_cook_directory(request, dir_id):
     res["fetch_url"] = reverse(
         "api-1-vault-fetch-flat", url_args={"swhid": swhid}, request=request,
     )
-    return _vault_response(res)
+    return _vault_response(res, add_legacy_items=True)
 
 
 @api_route(
@@ -279,7 +289,7 @@ def api_vault_cook_gitfast(request, swhid):
             url_args={"swhid": str(swhid)},
             request=request,
         )
-        return _vault_response(res)
+        return _vault_response(res, add_legacy_items=False)
     elif swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
@@ -319,7 +329,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     res["fetch_url"] = reverse(
         "api-1-vault-fetch-gitfast", url_args={"swhid": swhid}, request=request,
     )
-    return _vault_response(res)
+    return _vault_response(res, add_legacy_items=True)
 
 
 @api_route(
@@ -444,7 +454,7 @@ def api_vault_cook_git_bare(request, swhid):
             url_args={"swhid": str(swhid)},
             request=request,
         )
-        return _vault_response(res)
+        return _vault_response(res, add_legacy_items=False)
     elif swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
