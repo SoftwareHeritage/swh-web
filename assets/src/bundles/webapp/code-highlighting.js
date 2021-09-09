@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -22,21 +22,35 @@ export function highlightLine(i, firstHighlighted = false) {
   return lineTd;
 }
 
+// function to highlight a range of lines
+export function highlightLines(first, last) {
+  if (!first) {
+    return;
+  }
+  if (!last) {
+    last = first;
+  }
+  for (let i = first; i <= last; ++i) {
+    highlightLine(i);
+  }
+}
+
 // function to reset highlighting
 export function resetHighlightedLines() {
   firstHighlightedLine = null;
   $('.hljs-ln-line[data-line-number]').css('background-color', 'inherit');
 }
 
-export function scrollToLine(lineDomElt) {
+export function scrollToLine(lineDomElt, offset = 70) {
   if ($(lineDomElt).closest('.swh-content').length > 0) {
     $('html, body').animate({
-      scrollTop: $(lineDomElt).offset().top - 70
+      scrollTop: $(lineDomElt).offset().top - offset
     }, 500);
   }
 }
 
-export async function highlightCode(showLineNumbers = true, selector = 'code') {
+export async function highlightCode(showLineNumbers = true, selector = 'code',
+                                    enableLinesSelection = true) {
 
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
@@ -60,9 +74,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code') {
     } else if (lines[0] < lines[lines.length - 1]) {
       firstHighlightedLine = parseInt(lines[0]);
       scrollToLine(highlightLine(lines[0]));
-      for (let i = lines[0] + 1; i <= lines[lines.length - 1]; ++i) {
-        highlightLine(i);
-      }
+      highlightLines(lines[0] + 1, lines[lines.length - 1]);
     }
   }
 
@@ -75,7 +87,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code') {
       }
     });
 
-    if (!showLineNumbers) {
+    if (!showLineNumbers || !enableLinesSelection) {
       return;
     }
 
@@ -88,9 +100,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code') {
         if (evt.shiftKey && firstHighlightedLine && line > firstHighlightedLine) {
           const firstLine = firstHighlightedLine;
           resetHighlightedLines();
-          for (let i = firstLine; i <= line; ++i) {
-            highlightLine(i);
-          }
+          highlightLines(firstLine, line);
           firstHighlightedLine = firstLine;
           window.location.hash = `#L${firstLine}-L${line}`;
         } else {

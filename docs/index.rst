@@ -15,6 +15,7 @@ and mechanized (REST API) use
    uri-scheme-api
    uri-scheme-browse
    uri-scheme-identifiers
+   uri-scheme-misc
 
 
 

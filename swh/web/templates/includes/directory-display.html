@@ -1,11 +1,13 @@
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-{% include "includes/revision-info.html" %}
+{% if not iframe_mode %}
+  {% include "includes/revision-info.html" %}
+{% endif %}
 
 {% if snapshot_context and snapshot_context.is_empty %}
   {% include "includes/empty-snapshot.html" %}
@@ -46,14 +48,16 @@ See top-level LICENSE file for more information
               {{ f.perms }}
             </td>
             <td class="d-none d-sm-table-cell">
-              {{ f.length }}
+              {% if f.length is not None %}{{ f.length|filesizeformat }}{% endif %}
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  <hr class="mt-0 mb-2">
+  {% if not iframe_mode %}
+    <hr class="mt-0 mb-2">
+  {% endif %}
 {% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
   <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
   <br/>

@@ -251,9 +251,11 @@ export function showModalConfirm(title, message, callback) {
   $('#swh-web-modal-confirm').modal('show');
 }
 
-export function showModalHtml(title, html) {
+export function showModalHtml(title, html, width = '500px') {
   $('#swh-web-modal-html .modal-title').text(title);
   $('#swh-web-modal-html .modal-body').html(html);
+  $('#swh-web-modal-html .modal-dialog').css('max-width', width);
+  $('#swh-web-modal-html .modal-dialog').css('width', width);
   $('#swh-web-modal-html').modal('show');
 }
 
