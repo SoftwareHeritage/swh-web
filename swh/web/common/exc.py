@@ -8,6 +8,7 @@ import traceback
 
 import sentry_sdk
 
+from django.core import exceptions
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -27,7 +28,7 @@ class BadInputExc(ValueError):
     pass
 
 
-class NotFoundExc(Exception):
+class NotFoundExc(exceptions.ObjectDoesNotExist):
     """Good request to the api but no result were found.
 
     Example: Asking a content with the right identifier format but
@@ -38,7 +39,7 @@ class NotFoundExc(Exception):
     pass
 
 
-class ForbiddenExc(Exception):
+class ForbiddenExc(exceptions.PermissionDenied):
     """Good request to the api, forbidden result to return due to enforce
        policy.
 
@@ -128,12 +129,24 @@ def swh_handle500(request):
     return _generate_error_page(request, 500, error_description)
 
 
+def sentry_capture_exception(exc):
+    if not isinstance(
+        exc,
+        (
+            exceptions.ObjectDoesNotExist,
+            exceptions.DisallowedHost,
+            exceptions.PermissionDenied,
+        ),
+    ):
+        sentry_sdk.capture_exception(exc)
+
+
 def handle_view_exception(request, exc):
     """
     Function used to generate an error page when an exception
     was raised inside a swh-web browse view.
     """
-    sentry_sdk.capture_exception(exc)
+    sentry_capture_exception(exc)
     error_code = 500
     error_description = "%s: %s" % (type(exc).__name__, str(exc))
     if get_config()["debug"]:

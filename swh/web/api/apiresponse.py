@@ -8,8 +8,6 @@ import logging
 import traceback
 from typing import Any, Dict, Optional
 
-import sentry_sdk
-
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.cache import add_never_cache_headers
@@ -21,7 +19,13 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api import utils
-from swh.web.common.exc import BadInputExc, ForbiddenExc, LargePayloadExc, NotFoundExc
+from swh.web.common.exc import (
+    BadInputExc,
+    ForbiddenExc,
+    LargePayloadExc,
+    NotFoundExc,
+    sentry_capture_exception,
+)
 from swh.web.common.utils import gen_path_info, shorten_path
 from swh.web.config import get_config
 
@@ -220,6 +224,6 @@ def error_response_handler(
 ) -> Optional[HttpResponse]:
     """Custom DRF exception handler used to generate API error responses.
     """
-    sentry_sdk.capture_exception(exc)
+    sentry_capture_exception(exc)
     doc_data = getattr(exc, "doc_data", None)
     return error_response(context["request"], exc, doc_data)
