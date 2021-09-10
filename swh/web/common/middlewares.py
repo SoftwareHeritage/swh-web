@@ -5,9 +5,8 @@
 
 
 from htmlmin import minify
-import sentry_sdk
 
-from swh.web.common.exc import handle_view_exception
+from swh.web.common.exc import handle_view_exception, sentry_capture_exception
 from swh.web.common.utils import prettify_html
 
 
@@ -51,7 +50,7 @@ class HtmlMinifyMiddleware(object):
                 )
                 response.content = minified_html.encode("utf-8")
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
+                sentry_capture_exception(exc)
         return response
 
 
