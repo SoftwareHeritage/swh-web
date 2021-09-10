@@ -1,3 +1,12 @@
+swh-web (0.0.326-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.326     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2021-09-10 14:43:11 +0200)
+  * Upstream changes:     - v0.0.326     - * Stop logging some
+    exceptions to Sentry
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 10 Sep 2021 13:04:19 +0000
+
 swh-web (0.0.325-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.325     - (tagged by Antoine Lambert
