@@ -329,9 +329,9 @@ static/js/save.8b61bd830cef7ecf2bee.js.map
 static/js/showdown.9de47fa35ce9116667c0.js
 static/js/showdown.9de47fa35ce9116667c0.js.LICENSE.txt
 static/js/showdown.9de47fa35ce9116667c0.js.map
-static/js/vault.d67a777bb1e8384d735b.js
-static/js/vault.d67a777bb1e8384d735b.js.LICENSE.txt
-static/js/vault.d67a777bb1e8384d735b.js.map
+static/js/vault.c3b09286179cc55e5a20.js
+static/js/vault.c3b09286179cc55e5a20.js.LICENSE.txt
+static/js/vault.c3b09286179cc55e5a20.js.map
 static/js/vendors.fcfef683a888c7fc3e33.js
 static/js/vendors.fcfef683a888c7fc3e33.js.LICENSE.txt
 static/js/vendors.fcfef683a888c7fc3e33.js.map
