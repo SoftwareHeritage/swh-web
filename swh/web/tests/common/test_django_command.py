@@ -126,6 +126,7 @@ def fake_refreshed_data():
             save_task_status=meta["task_status"],
             id=i,
             loading_task_id=i,
+            note=None,
         )
         for i, meta in enumerate(entries)
     ]
