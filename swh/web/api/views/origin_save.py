@@ -85,6 +85,8 @@ def api_save_origin(request, visit_type, origin_url):
         :>json string visit_status: the status of the visit, either **full**,
             **partial**, **not_found** or **failed** if a visit occurred, null
             otherwise.
+        :>json string note: optional note giving details about the save request,
+            for instance why it has been rejected
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided

@@ -246,6 +246,8 @@ class SaveOriginRequestInfo(TypedDict):
     """End of the visit if terminated"""
     save_task_status: str
     """Status of the scheduled task"""
+    note: Optional[str]
+    """Optional note associated to the request, for instance rejection reason"""
 
 
 class OriginExistenceCheckInfo(TypedDict):
