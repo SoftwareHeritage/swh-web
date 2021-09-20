@@ -1,7 +1,7 @@
 import { __assign, __read, __spread, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
-import { SessionStatus, } from '@sentry/types';
+import { Outcome, SessionStatus, } from '@sentry/types';
 import { dateTimestampInSeconds, Dsn, isPlainObject, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 /**
@@ -127,11 +127,16 @@ var BaseClient = /** @class */ (function () {
     /**
      * @inheritDoc
      */
+    BaseClient.prototype.getTransport = function () {
+        return this._getBackend().getTransport();
+    };
+    /**
+     * @inheritDoc
+     */
     BaseClient.prototype.flush = function (timeout) {
         var _this = this;
         return this._isClientDoneProcessing(timeout).then(function (clientFinished) {
-            return _this._getBackend()
-                .getTransport()
+            return _this.getTransport()
                 .close(timeout)
                 .then(function (transportFlushed) { return clientFinished && transportFlushed; });
         });
@@ -404,8 +409,10 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype._processEvent = function (event, hint, scope) {
         var _this = this;
+        var _a, _b;
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        var _a = this.getOptions(), beforeSend = _a.beforeSend, sampleRate = _a.sampleRate;
+        var _c = this.getOptions(), beforeSend = _c.beforeSend, sampleRate = _c.sampleRate;
+        var transport = this.getTransport();
         if (!this._isEnabled()) {
             return SyncPromise.reject(new SentryError('SDK not enabled, will not capture event.'));
         }
@@ -414,11 +421,14 @@ var BaseClient = /** @class */ (function () {
         // 0.0 === 0% events are sent
         // Sampling for transaction happens somewhere else
         if (!isTransaction && typeof sampleRate === 'number' && Math.random() > sampleRate) {
+            (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.SampleRate, 'event');
             return SyncPromise.reject(new SentryError("Discarding event because it's not included in the random sample (sampling rate = " + sampleRate + ")"));
         }
         return this._prepareEvent(event, scope, hint)
             .then(function (prepared) {
+            var _a, _b;
             if (prepared === null) {
+                (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.EventProcessor, event.type || 'event');
                 throw new SentryError('An event processor returned null, will not send event.');
             }
             var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
@@ -429,7 +439,9 @@ var BaseClient = /** @class */ (function () {
             return _this._ensureBeforeSendRv(beforeSendResult);
         })
             .then(function (processedEvent) {
+            var _a, _b;
             if (processedEvent === null) {
+                (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.BeforeSend, event.type || 'event');
                 throw new SentryError('`beforeSend` returned `null`, will not send event.');
             }
             var session = scope && scope.getSession && scope.getSession();

@@ -34,7 +34,7 @@ var BrowserBackend = /** @class */ (function (_super) {
             // We return the noop transport here in case there is no Dsn.
             return _super.prototype._setupTransport.call(this);
         }
-        var transportOptions = __assign(__assign({}, this._options.transportOptions), { dsn: this._options.dsn, tunnel: this._options.tunnel, _metadata: this._options._metadata });
+        var transportOptions = __assign(__assign({}, this._options.transportOptions), { dsn: this._options.dsn, tunnel: this._options.tunnel, sendClientReports: this._options.sendClientReports, _metadata: this._options._metadata });
         if (this._options.transport) {
             return new this._options.transport(transportOptions);
         }
