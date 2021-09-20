@@ -171,6 +171,37 @@ def test_reject_pending_save_request(client, swh_scheduler):
 
     response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
+    assert response.data[0]["note"] is None
+
+
+def test_reject_pending_save_request_with_note(client, swh_scheduler):
+
+    visit_type = "git"
+    origin_url = "https://wikipedia.com"
+
+    save_request_url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": visit_type, "origin_url": origin_url},
+    )
+
+    response = check_http_post_response(client, save_request_url, status_code=200)
+    assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
+
+    reject_request_url = reverse(
+        "admin-origin-save-request-reject",
+        url_args={"visit_type": visit_type, "origin_url": origin_url},
+    )
+
+    data = {"note": "The URL does not target a git repository"}
+
+    client.login(username=_user_name, password=_user_password)
+    response = check_http_post_response(
+        client, reject_request_url, status_code=200, data=data
+    )
+
+    response = check_http_get_response(client, save_request_url, status_code=200)
+    assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
+    assert response.data[0]["note"] == data["note"]
 
 
 def test_remove_save_request(client):
