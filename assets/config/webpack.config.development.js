@@ -369,7 +369,7 @@ module.exports = {
       Util: 'exports-loader?Util!bootstrap/js/dist/util'
     }),
     // needed in order to use pdf.js
-    new webpack.IgnorePlugin(/^\.\/pdf.worker.js$/),
+    new webpack.IgnorePlugin({resourceRegExp: /^\.\/pdf.worker.js$/}),
     new CopyWebpackPlugin({
       patterns: [
         {
