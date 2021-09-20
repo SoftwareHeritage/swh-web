@@ -1,6 +1,7 @@
 import { __extends } from "tslib";
 import { eventToSentryRequest, sessionToSentryRequest } from '@sentry/core';
-import { SyncPromise } from '@sentry/utils';
+import { Outcome } from '@sentry/types';
+import { SentryError, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
 /** `XHR` based transport */
 var XHRTransport = /** @class */ (function (_super) {
@@ -27,6 +28,7 @@ var XHRTransport = /** @class */ (function (_super) {
     XHRTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
         var _this = this;
         if (this._isRateLimited(sentryRequest.type)) {
+            this.recordLostEvent(Outcome.RateLimitBackoff, sentryRequest.type);
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
@@ -34,7 +36,8 @@ var XHRTransport = /** @class */ (function (_super) {
                 status: 429,
             });
         }
-        return this._buffer.add(function () {
+        return this._buffer
+            .add(function () {
             return new SyncPromise(function (resolve, reject) {
                 var request = new XMLHttpRequest();
                 request.onreadystatechange = function () {
@@ -54,6 +57,16 @@ var XHRTransport = /** @class */ (function (_super) {
                 }
                 request.send(sentryRequest.body);
             });
+        })
+            .then(undefined, function (reason) {
+            // It's either buffer rejection or any other xhr/fetch error, which are treated as NetworkError.
+            if (reason instanceof SentryError) {
+                _this.recordLostEvent(Outcome.QueueOverflow, sentryRequest.type);
+            }
+            else {
+                _this.recordLostEvent(Outcome.NetworkError, sentryRequest.type);
+            }
+            throw reason;
         });
     };
     return XHRTransport;

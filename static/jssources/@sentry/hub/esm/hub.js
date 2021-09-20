@@ -164,7 +164,10 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.captureEvent = function (event, hint) {
-        var eventId = (this._lastEventId = uuid4());
+        var eventId = uuid4();
+        if (event.type !== 'transaction') {
+            this._lastEventId = eventId;
+        }
         this._invokeClient('captureEvent', event, __assign(__assign({}, hint), { event_id: eventId }));
         return eventId;
     };
