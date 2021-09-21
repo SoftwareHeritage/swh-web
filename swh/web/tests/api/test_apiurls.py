@@ -47,11 +47,11 @@ def test_api_route_never_cache(api_client):
     resp = check_api_get_responses(api_client, url, status_code=200)
     assert resp.data == {"result": 1}
     assert "Cache-Control" in resp
-    assert resp["Cache-Control"] == _cache_control
+    assert resp["Cache-Control"].startswith(_cache_control)
 
 
 def test_api_route_never_cache_with_error(api_client):
     url = reverse("api-1-never-cache-route-with-error")
     resp = check_api_get_responses(api_client, url, status_code=500)
     assert "Cache-Control" in resp
-    assert resp["Cache-Control"] == _cache_control
+    assert resp["Cache-Control"].startswith(_cache_control)
