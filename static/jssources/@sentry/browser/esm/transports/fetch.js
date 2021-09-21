@@ -1,6 +1,7 @@
 import { __extends } from "tslib";
 import { eventToSentryRequest, sessionToSentryRequest } from '@sentry/core';
-import { getGlobalObject, isNativeFetch, logger, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
+import { Outcome } from '@sentry/types';
+import { getGlobalObject, isNativeFetch, logger, SentryError, supportsReferrerPolicy, SyncPromise, } from '@sentry/utils';
 import { BaseTransport } from './base';
 /**
  * A special usecase for incorrectly wrapped Fetch APIs in conjunction with ad-blockers.
@@ -96,6 +97,7 @@ var FetchTransport = /** @class */ (function (_super) {
     FetchTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
         var _this = this;
         if (this._isRateLimited(sentryRequest.type)) {
+            this.recordLostEvent(Outcome.RateLimitBackoff, sentryRequest.type);
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
@@ -118,7 +120,8 @@ var FetchTransport = /** @class */ (function (_super) {
         if (this.options.headers !== undefined) {
             options.headers = this.options.headers;
         }
-        return this._buffer.add(function () {
+        return this._buffer
+            .add(function () {
             return new SyncPromise(function (resolve, reject) {
                 void _this._fetch(sentryRequest.url, options)
                     .then(function (response) {
@@ -136,6 +139,16 @@ var FetchTransport = /** @class */ (function (_super) {
                 })
                     .catch(reject);
             });
+        })
+            .then(undefined, function (reason) {
+            // It's either buffer rejection or any other xhr/fetch error, which are treated as NetworkError.
+            if (reason instanceof SentryError) {
+                _this.recordLostEvent(Outcome.QueueOverflow, sentryRequest.type);
+            }
+            else {
+                _this.recordLostEvent(Outcome.NetworkError, sentryRequest.type);
+            }
+            throw reason;
         });
     };
     return FetchTransport;

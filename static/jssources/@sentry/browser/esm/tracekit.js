@@ -2,7 +2,7 @@
  * This was originally forked from https://github.com/occ/TraceKit, but has since been
  * largely modified and is now maintained as part of Sentry JS SDK.
  */
-import { __assign } from "tslib";
+import { __assign, __read } from "tslib";
 // global reference to slice
 var UNKNOWN_FUNCTION = '?';
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
@@ -60,6 +60,7 @@ export function computeStackTrace(ex) {
 /** JSDoc */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, complexity
 function computeStackTraceFromStackProp(ex) {
+    var _a, _b;
     if (!ex || !ex.stack) {
         return null;
     }
@@ -85,12 +86,7 @@ function computeStackTraceFromStackProp(ex) {
             // Kamil: One more hack won't hurt us right? Understanding and adding more rules on top of these regexps right now
             // would be way too time consuming. (TODO: Rewrite whole RegExp to be more readable)
             var func = parts[1] || UNKNOWN_FUNCTION;
-            var isSafariExtension = func.indexOf('safari-extension') !== -1;
-            var isSafariWebExtension = func.indexOf('safari-web-extension') !== -1;
-            if (isSafariExtension || isSafariWebExtension) {
-                func = func.indexOf('@') !== -1 ? func.split('@')[0] : UNKNOWN_FUNCTION;
-                url = isSafariExtension ? "safari-extension:" + url : "safari-web-extension:" + url;
-            }
+            _a = __read(extractSafariExtensionDetails(func, url), 2), func = _a[0], url = _a[1];
             element = {
                 url: url,
                 func: func,
@@ -124,9 +120,12 @@ function computeStackTraceFromStackProp(ex) {
                 // NOTE: this hack doesn't work if top-most frame is eval
                 stack[0].column = ex.columnNumber + 1;
             }
+            var url = parts[3];
+            var func = parts[1] || UNKNOWN_FUNCTION;
+            _b = __read(extractSafariExtensionDetails(func, url), 2), func = _b[0], url = _b[1];
             element = {
-                url: parts[3],
-                func: parts[1] || UNKNOWN_FUNCTION,
+                url: url,
+                func: func,
                 args: parts[2] ? parts[2].split(',') : [],
                 line: parts[4] ? +parts[4] : null,
                 column: parts[5] ? +parts[5] : null,
@@ -200,6 +199,36 @@ function computeStackTraceFromStacktraceProp(ex) {
         stack: stack,
     };
 }
+/**
+ * Safari web extensions, starting version unknown, can produce "frames-only" stacktraces.
+ * What it means, is that instead of format like:
+ *
+ * Error: wat
+ *   at function@url:row:col
+ *   at function@url:row:col
+ *   at function@url:row:col
+ *
+ * it produces something like:
+ *
+ *   function@url:row:col
+ *   function@url:row:col
+ *   function@url:row:col
+ *
+ * Because of that, it won't be captured by `chrome` RegExp and will fall into `Gecko` branch.
+ * This function is extracted so that we can use it in both places without duplicating the logic.
+ * Unfortunatelly "just" changing RegExp is too complicated now and making it pass all tests
+ * and fix this case seems like an impossible, or at least way too time-consuming task.
+ */
+var extractSafariExtensionDetails = function (func, url) {
+    var isSafariExtension = func.indexOf('safari-extension') !== -1;
+    var isSafariWebExtension = func.indexOf('safari-web-extension') !== -1;
+    return isSafariExtension || isSafariWebExtension
+        ? [
+            func.indexOf('@') !== -1 ? func.split('@')[0] : UNKNOWN_FUNCTION,
+            isSafariExtension ? "safari-extension:" + url : "safari-web-extension:" + url,
+        ]
+        : [func, url];
+};
 /** Remove N number of frames from the stack */
 function popFrames(stacktrace, popSize) {
     try {

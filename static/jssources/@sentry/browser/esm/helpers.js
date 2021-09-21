@@ -153,6 +153,9 @@ export function injectReportDialog(options) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         script.onload = options.onLoad;
     }
-    (document.head || document.body).appendChild(script);
+    var injectionPoint = document.head || document.body;
+    if (injectionPoint) {
+        injectionPoint.appendChild(script);
+    }
 }
 //# sourceMappingURL=helpers.js.map

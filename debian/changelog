@@ -1,8 +1,27 @@
-swh-web (0.0.326-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.329-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.329     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2021-09-21 11:07:24 +0200)
+  * Upstream changes:     - version 0.0.329
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 10 Sep 2021 13:08:22 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 21 Sep 2021 09:29:36 +0000
+
+swh-web (0.0.328-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.328     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2021-09-20 17:08:14 +0200)
+  * Upstream changes:     - version 0.0.328
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 20 Sep 2021 15:27:58 +0000
+
+swh-web (0.0.327-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.327     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2021-09-15 14:03:21 +0200)
+  * Upstream changes:     - v0.0.327     - * vault: Only show the first
+    status line
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 15 Sep 2021 12:23:10 +0000
 
 swh-web (0.0.326-1~swh1) unstable-swh; urgency=medium
 

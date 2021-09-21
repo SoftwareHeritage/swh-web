@@ -1,7 +1,7 @@
-import { __values } from "tslib";
+import { __read, __values } from "tslib";
 import { API } from '@sentry/core';
 import { Status, } from '@sentry/types';
-import { logger, parseRetryAfterHeader, PromiseBuffer, SentryError } from '@sentry/utils';
+import { dateTimestampInSeconds, logger, parseRetryAfterHeader, PromiseBuffer, SentryError } from '@sentry/utils';
 var CATEGORY_MAPPING = {
     event: 'error',
     transaction: 'transaction',
@@ -11,14 +11,23 @@ var CATEGORY_MAPPING = {
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {
     function BaseTransport(options) {
+        var _this = this;
         this.options = options;
         /** A simple buffer holding all requests. */
         this._buffer = new PromiseBuffer(30);
         /** Locks transport after receiving rate limits in a response */
         this._rateLimits = {};
+        this._outcomes = {};
         this._api = new API(options.dsn, options._metadata, options.tunnel);
         // eslint-disable-next-line deprecation/deprecation
         this.url = this._api.getStoreEndpointWithUrlEncodedAuth();
+        if (this.options.sendClientReports) {
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'hidden') {
+                    _this._flushOutcomes();
+                }
+            });
+        }
     }
     /**
      * @inheritDoc
@@ -31,6 +40,62 @@ var BaseTransport = /** @class */ (function () {
      */
     BaseTransport.prototype.close = function (timeout) {
         return this._buffer.drain(timeout);
+    };
+    /**
+     * @inheritDoc
+     */
+    BaseTransport.prototype.recordLostEvent = function (reason, category) {
+        var _a;
+        if (!this.options.sendClientReports) {
+            return;
+        }
+        // We want to track each category (event, transaction, session) separately
+        // but still keep the distinction between different type of outcomes.
+        // We could use nested maps, but it's much easier to read and type this way.
+        // A correct type for map-based implementation if we want to go that route
+        // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
+        var key = CATEGORY_MAPPING[category] + ":" + reason;
+        logger.log("Adding outcome: " + key);
+        this._outcomes[key] = (_a = this._outcomes[key], (_a !== null && _a !== void 0 ? _a : 0)) + 1;
+    };
+    /**
+     * Send outcomes as an envelope
+     */
+    BaseTransport.prototype._flushOutcomes = function () {
+        if (!this.options.sendClientReports) {
+            return;
+        }
+        if (!navigator || typeof navigator.sendBeacon !== 'function') {
+            logger.warn('Beacon API not available, skipping sending outcomes.');
+            return;
+        }
+        var outcomes = this._outcomes;
+        this._outcomes = {};
+        // Nothing to send
+        if (!Object.keys(outcomes).length) {
+            logger.log('No outcomes to flush');
+            return;
+        }
+        logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
+        var url = this._api.getEnvelopeEndpointWithUrlEncodedAuth();
+        // Envelope header is required to be at least an empty object
+        var envelopeHeader = JSON.stringify({});
+        var itemHeaders = JSON.stringify({
+            type: 'client_report',
+        });
+        var item = JSON.stringify({
+            timestamp: dateTimestampInSeconds(),
+            discarded_events: Object.keys(outcomes).map(function (key) {
+                var _a = __read(key.split(':'), 2), category = _a[0], reason = _a[1];
+                return {
+                    reason: reason,
+                    category: category,
+                    quantity: outcomes[key],
+                };
+            }),
+        });
+        var envelope = envelopeHeader + "\n" + itemHeaders + "\n" + item;
+        navigator.sendBeacon(url, envelope);
     };
     /**
      * Handle Sentry repsonse for promise-based transports.
