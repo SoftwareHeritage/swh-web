@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,15 +12,7 @@ from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    ObjectType,
-    QualifiedSWHID,
-)
+from swh.model.identifiers import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (
@@ -33,8 +25,18 @@ from swh.web.common.typing import (
 from swh.web.common.utils import reverse
 
 
+def parse_object_type(object_type: str) -> ObjectType:
+    try:
+        return ObjectType[object_type.upper()]
+    except KeyError:
+        valid_types = ", ".join(variant.name.lower() for variant in ObjectType)
+        raise BadInputExc(
+            f"Invalid swh object type! Valid types are {valid_types}; not {object_type}"
+        )
+
+
 def gen_swhid(
-    object_type: str,
+    object_type: ObjectType,
     object_id: str,
     scheme_version: int = 1,
     metadata: SWHIDContext = {},
@@ -61,11 +63,10 @@ def gen_swhid(
             generate a valid identifier
     """
     try:
-        decoded_object_type = ObjectType[object_type.upper()]
         decoded_object_id = hash_to_bytes(object_id)
         obj_swhid = str(
             QualifiedSWHID(
-                object_type=decoded_object_type,
+                object_type=object_type,
                 object_id=decoded_object_id,
                 scheme_version=scheme_version,
                 **metadata,
@@ -136,7 +137,7 @@ def resolve_swhid(
                 release = archive.lookup_release(
                     hash_to_hex(swhid_parsed.anchor.object_id)
                 )
-                if release["target_type"] == REVISION:
+                if release["target_type"] == ObjectType.REVISION.name.lower():
                     revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
             if object_type == ObjectType.CONTENT:
@@ -241,7 +242,7 @@ def get_swhid(swhid: str) -> QualifiedSWHID:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
 
 
-def group_swhids(swhids: Iterable[QualifiedSWHID],) -> Dict[str, List[bytes]]:
+def group_swhids(swhids: Iterable[QualifiedSWHID],) -> Dict[ObjectType, List[bytes]]:
     """
     Groups many SoftWare Heritage persistent IDentifiers into a
     dictionary depending on their type.
@@ -255,18 +256,18 @@ def group_swhids(swhids: Iterable[QualifiedSWHID],) -> Dict[str, List[bytes]]:
             keys: object types
             values: object hashes
     """
-    swhids_by_type: Dict[str, List[bytes]] = {
-        CONTENT: [],
-        DIRECTORY: [],
-        REVISION: [],
-        RELEASE: [],
-        SNAPSHOT: [],
+    swhids_by_type: Dict[ObjectType, List[bytes]] = {
+        ObjectType.CONTENT: [],
+        ObjectType.DIRECTORY: [],
+        ObjectType.REVISION: [],
+        ObjectType.RELEASE: [],
+        ObjectType.SNAPSHOT: [],
     }
 
     for obj_swhid in swhids:
         obj_id = obj_swhid.object_id
         obj_type = obj_swhid.object_type
-        swhids_by_type[obj_type.name.lower()].append(hash_to_bytes(obj_id))
+        swhids_by_type[obj_type].append(hash_to_bytes(obj_id))
 
     return swhids_by_type
 
@@ -313,47 +314,49 @@ def get_swhids_info(
                 swhid_context["origin"] = quote(
                     snapshot_context["origin_info"]["url"], safe="/?:@&"
                 )
-            if object_type != SNAPSHOT:
+            if object_type != ObjectType.SNAPSHOT:
                 swhid_context["visit"] = gen_swhid(
-                    SNAPSHOT, snapshot_context["snapshot_id"]
+                    ObjectType.SNAPSHOT, snapshot_context["snapshot_id"]
                 )
-            if object_type in (CONTENT, DIRECTORY):
+            if object_type in (ObjectType.CONTENT, ObjectType.DIRECTORY):
                 if snapshot_context["release_id"] is not None:
                     swhid_context["anchor"] = gen_swhid(
-                        RELEASE, snapshot_context["release_id"]
+                        ObjectType.RELEASE, snapshot_context["release_id"]
                     )
                 elif snapshot_context["revision_id"] is not None:
                     swhid_context["anchor"] = gen_swhid(
-                        REVISION, snapshot_context["revision_id"]
+                        ObjectType.REVISION, snapshot_context["revision_id"]
                     )
 
-        if object_type in (CONTENT, DIRECTORY):
+        if object_type in (ObjectType.CONTENT, ObjectType.DIRECTORY):
             if (
                 extra_context
                 and "revision" in extra_context
                 and extra_context["revision"]
                 and "anchor" not in swhid_context
             ):
-                swhid_context["anchor"] = gen_swhid(REVISION, extra_context["revision"])
+                swhid_context["anchor"] = gen_swhid(
+                    ObjectType.REVISION, extra_context["revision"]
+                )
             elif (
                 extra_context
                 and "root_directory" in extra_context
                 and extra_context["root_directory"]
                 and "anchor" not in swhid_context
                 and (
-                    object_type != DIRECTORY
+                    object_type != ObjectType.DIRECTORY
                     or extra_context["root_directory"] != object_id
                 )
             ):
                 swhid_context["anchor"] = gen_swhid(
-                    DIRECTORY, extra_context["root_directory"]
+                    ObjectType.DIRECTORY, extra_context["root_directory"]
                 )
             path = None
             if extra_context and "path" in extra_context:
                 path = extra_context["path"] or "/"
-                if "filename" in extra_context and object_type == CONTENT:
+                if "filename" in extra_context and object_type == ObjectType.CONTENT:
                     path += extra_context["filename"]
-                if object_type == DIRECTORY and path == "/":
+                if object_type == ObjectType.DIRECTORY and path == "/":
                     path = None
             if path:
                 swhid_context["path"] = quote(path, safe="/?:@&")

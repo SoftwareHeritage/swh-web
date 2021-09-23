@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,7 +9,7 @@ from hypothesis import given
 
 from django.utils.html import escape
 
-from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
@@ -107,7 +107,7 @@ def _release_browse_checks(
     assert_contains(resp, target_type)
     assert_contains(resp, '<a href="%s">%s</a>' % (escape(target_url), target))
 
-    swh_rel_id = gen_swhid(RELEASE, release_id)
+    swh_rel_id = gen_swhid(ObjectType.RELEASE, release_id)
     swh_rel_id_url = reverse("browse-swhid", url_args={"swhid": swh_rel_id})
     assert_contains(resp, swh_rel_id)
     assert_contains(resp, swh_rel_id_url)
@@ -118,7 +118,7 @@ def _release_browse_checks(
         )
         assert_contains(resp, f'href="{browse_origin_url}"')
     elif snapshot_id:
-        swh_snp_id = gen_swhid(SNAPSHOT, snapshot_id)
+        swh_snp_id = gen_swhid(ObjectType.SNAPSHOT, snapshot_id)
         swh_snp_id_url = reverse("browse-swhid", url_args={"swhid": swh_snp_id})
         assert_contains(resp, f'href="{swh_snp_id_url}"')
 
@@ -139,9 +139,9 @@ def _release_browse_checks(
             rev_metadata["origin"] = dir_metadata["origin"] = origin_url
             snapshot = archive_data.snapshot_get_latest(origin_url)
             rev_metadata["visit"] = dir_metadata["visit"] = gen_swhid(
-                SNAPSHOT, snapshot["id"]
+                ObjectType.SNAPSHOT, snapshot["id"]
             )
-            dir_metadata["anchor"] = gen_swhid(RELEASE, release_id)
+            dir_metadata["anchor"] = gen_swhid(ObjectType.RELEASE, release_id)
 
         elif snapshot_id:
             directory_url = reverse(
@@ -150,17 +150,17 @@ def _release_browse_checks(
                 query_params={"release": release_data["name"],},
             )
             rev_metadata["visit"] = dir_metadata["visit"] = gen_swhid(
-                SNAPSHOT, snapshot_id
+                ObjectType.SNAPSHOT, snapshot_id
             )
-            dir_metadata["anchor"] = gen_swhid(RELEASE, release_id)
+            dir_metadata["anchor"] = gen_swhid(ObjectType.RELEASE, release_id)
         else:
             directory_url = reverse("browse-directory", url_args={"sha1_git": rev_dir})
         assert_contains(resp, escape(directory_url))
 
-        swh_rev_id = gen_swhid(REVISION, rev["id"], metadata=rev_metadata)
+        swh_rev_id = gen_swhid(ObjectType.REVISION, rev["id"], metadata=rev_metadata)
         swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
         assert_contains(resp, swh_rev_id_url)
 
-        swh_dir_id = gen_swhid(DIRECTORY, rev_dir, metadata=dir_metadata)
+        swh_dir_id = gen_swhid(ObjectType.DIRECTORY, rev_dir, metadata=dir_metadata)
         swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
         assert_contains(resp, swh_dir_id_url)

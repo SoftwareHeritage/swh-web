@@ -1,11 +1,11 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from hypothesis import given
 
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
@@ -31,27 +31,30 @@ def test_swhid_resolve_success(
 ):
 
     for obj_type, obj_id in (
-        (CONTENT, content["sha1_git"]),
-        (DIRECTORY, directory),
-        (RELEASE, release),
-        (REVISION, revision),
-        (SNAPSHOT, snapshot),
+        (ObjectType.CONTENT, content["sha1_git"]),
+        (ObjectType.DIRECTORY, directory),
+        (ObjectType.RELEASE, release),
+        (ObjectType.REVISION, revision),
+        (ObjectType.SNAPSHOT, snapshot),
     ):
 
         swhid = gen_swhid(obj_type, obj_id, metadata={"origin": origin["url"]})
+
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
 
         resp = check_api_get_responses(api_client, url, status_code=200)
 
-        if obj_type == CONTENT:
+        if obj_type == ObjectType.CONTENT:
             url_args = {"query_string": "sha1_git:%s" % obj_id}
-        elif obj_type == SNAPSHOT:
+        elif obj_type == ObjectType.SNAPSHOT:
             url_args = {"snapshot_id": obj_id}
         else:
             url_args = {"sha1_git": obj_id}
 
+        obj_type_str = obj_type.name.lower()
+
         browse_rev_url = reverse(
-            "browse-%s" % obj_type,
+            f"browse-{obj_type_str}",
             url_args=url_args,
             query_params={"origin_url": origin["url"]},
             request=resp.wsgi_request,
@@ -62,7 +65,7 @@ def test_swhid_resolve_success(
             "metadata": {"origin": origin["url"]},
             "namespace": "swh",
             "object_id": obj_id,
-            "object_type": obj_type,
+            "object_type": obj_type_str,
             "scheme_version": 1,
         }
 
@@ -93,11 +96,11 @@ def test_swhid_resolve_not_found(
 ):
 
     for obj_type, obj_id in (
-        (CONTENT, unknown_content["sha1_git"]),
-        (DIRECTORY, unknown_directory),
-        (RELEASE, unknown_release),
-        (REVISION, unknown_revision),
-        (SNAPSHOT, unknown_snapshot),
+        (ObjectType.CONTENT, unknown_content["sha1_git"]),
+        (ObjectType.DIRECTORY, unknown_directory),
+        (ObjectType.RELEASE, unknown_release),
+        (ObjectType.REVISION, unknown_revision),
+        (ObjectType.SNAPSHOT, unknown_snapshot),
     ):
 
         swhid = gen_swhid(obj_type, obj_id)
@@ -118,11 +121,11 @@ def test_api_known_swhid_all_present(
     api_client, content, directory, release, revision, snapshot
 ):
     input_swhids = [
-        gen_swhid(CONTENT, content["sha1_git"]),
-        gen_swhid(DIRECTORY, directory),
-        gen_swhid(REVISION, revision),
-        gen_swhid(RELEASE, release),
-        gen_swhid(SNAPSHOT, snapshot),
+        gen_swhid(ObjectType.CONTENT, content["sha1_git"]),
+        gen_swhid(ObjectType.DIRECTORY, directory),
+        gen_swhid(ObjectType.REVISION, revision),
+        gen_swhid(ObjectType.RELEASE, release),
+        gen_swhid(ObjectType.SNAPSHOT, snapshot),
     ]
 
     url = reverse("api-1-known")
@@ -134,11 +137,11 @@ def test_api_known_swhid_all_present(
 
 @given(content(), directory())
 def test_api_known_swhid_some_present(api_client, content, directory):
-    content_ = gen_swhid(CONTENT, content["sha1_git"])
-    directory_ = gen_swhid(DIRECTORY, directory)
-    unknown_revision_ = gen_swhid(REVISION, random_sha1())
-    unknown_release_ = gen_swhid(RELEASE, random_sha1())
-    unknown_snapshot_ = gen_swhid(SNAPSHOT, random_sha1())
+    content_ = gen_swhid(ObjectType.CONTENT, content["sha1_git"])
+    directory_ = gen_swhid(ObjectType.DIRECTORY, directory)
+    unknown_revision_ = gen_swhid(ObjectType.REVISION, random_sha1())
+    unknown_release_ = gen_swhid(ObjectType.RELEASE, random_sha1())
+    unknown_snapshot_ = gen_swhid(ObjectType.SNAPSHOT, random_sha1())
 
     input_swhids = [
         content_,

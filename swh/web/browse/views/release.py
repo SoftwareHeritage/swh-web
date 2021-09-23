@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@ import sentry_sdk
 
 from django.shortcuts import render
 
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -81,7 +81,7 @@ def release_browse(request, sha1_git):
     snapshot_id = snapshot_context.get("snapshot_id", None)
 
     release_metadata = ReleaseMetadata(
-        object_type=RELEASE,
+        object_type=ObjectType.RELEASE,
         object_id=sha1_git,
         release=sha1_git,
         author=release["author"]["fullname"] if release["author"] else "None",
@@ -101,13 +101,13 @@ def release_browse(request, sha1_git):
     if release["message"]:
         release_note_lines = release["message"].split("\n")
 
-    swh_objects = [SWHObjectInfo(object_type=RELEASE, object_id=sha1_git)]
+    swh_objects = [SWHObjectInfo(object_type=ObjectType.RELEASE, object_id=sha1_git)]
 
     vault_cooking = None
 
     rev_directory = None
     target_link = None
-    if release["target_type"] == REVISION:
+    if release["target_type"] == ObjectType.REVISION.name.lower():
         target_link = gen_revision_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -124,14 +124,16 @@ def release_browse(request, sha1_git):
                 "revision_swhid": f"swh:1:rev:{release['target']}",
             }
             swh_objects.append(
-                SWHObjectInfo(object_type=REVISION, object_id=release["target"])
+                SWHObjectInfo(
+                    object_type=ObjectType.REVISION, object_id=release["target"]
+                )
             )
             swh_objects.append(
-                SWHObjectInfo(object_type=DIRECTORY, object_id=rev_directory)
+                SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=rev_directory)
             )
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
-    elif release["target_type"] == DIRECTORY:
+    elif release["target_type"] == ObjectType.DIRECTORY.name.lower():
         target_link = gen_directory_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -148,11 +150,13 @@ def release_browse(request, sha1_git):
                 "revision_swhid": None,
             }
             swh_objects.append(
-                SWHObjectInfo(object_type=DIRECTORY, object_id=release["target"])
+                SWHObjectInfo(
+                    object_type=ObjectType.DIRECTORY, object_id=release["target"]
+                )
             )
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
-    elif release["target_type"] == CONTENT:
+    elif release["target_type"] == ObjectType.CONTENT.name.lower():
         target_link = gen_content_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -160,9 +164,9 @@ def release_browse(request, sha1_git):
             link_attrs=None,
         )
         swh_objects.append(
-            SWHObjectInfo(object_type=CONTENT, object_id=release["target"])
+            SWHObjectInfo(object_type=ObjectType.CONTENT, object_id=release["target"])
         )
-    elif release["target_type"] == RELEASE:
+    elif release["target_type"] == ObjectType.RELEASE.name.lower():
         target_link = gen_release_link(
             release["target"],
             snapshot_context=snapshot_context,
@@ -202,7 +206,9 @@ def release_browse(request, sha1_git):
         snapshot_id = snapshot_context["snapshot_id"]
 
     if snapshot_id:
-        swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)
+        )
 
     swhids_info = get_swhids_info(swh_objects, snapshot_context)
 

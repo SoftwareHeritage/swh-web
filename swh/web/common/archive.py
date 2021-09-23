@@ -11,14 +11,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 from urllib.parse import urlparse
 
 from swh.model import hashutil
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    CoreSWHID,
-)
+from swh.model.identifiers import ObjectType, CoreSWHID
 from swh.model.model import OriginVisit, Revision
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -26,7 +19,7 @@ from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_ali
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.common import converters, query
-from swh.web.common.exc import BadInputExc, NotFoundExc
+from swh.web.common.exc import NotFoundExc
 from swh.web.common.typing import (
     OriginInfo,
     OriginMetadataInfo,
@@ -1331,7 +1324,7 @@ def get_revisions_walker(rev_walker_type, rev_start, *args, **kwargs):
     return _RevisionsWalkerProxy(rev_walker_type, rev_start, *args, **kwargs)
 
 
-def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
+def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
     """
     Utility function for looking up an object in the archive by its type
     and id.
@@ -1351,24 +1344,18 @@ def lookup_object(object_type: str, object_id: str) -> Dict[str, Any]:
             the archive
         BadInputExc: if the object identifier is invalid
     """
-    if object_type == CONTENT:
+    if object_type == ObjectType.CONTENT:
         return lookup_content(f"sha1_git:{object_id}")
-    elif object_type == DIRECTORY:
+    elif object_type == ObjectType.DIRECTORY:
         return {"id": object_id, "content": list(lookup_directory(object_id))}
-    elif object_type == RELEASE:
+    elif object_type == ObjectType.RELEASE:
         return lookup_release(object_id)
-    elif object_type == REVISION:
+    elif object_type == ObjectType.REVISION:
         return lookup_revision(object_id)
-    elif object_type == SNAPSHOT:
+    elif object_type == ObjectType.SNAPSHOT:
         return lookup_snapshot(object_id)
-
-    raise BadInputExc(
-        (
-            "Invalid swh object type! Valid types are "
-            f"{CONTENT}, {DIRECTORY}, {RELEASE} "
-            f"{REVISION} or {SNAPSHOT}."
-        )
-    )
+    else:
+        raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
 def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
@@ -1385,15 +1372,15 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
     missing_hashes = []
 
     for obj_type, obj_ids in grouped_swhids.items():
-        if obj_type == CONTENT:
+        if obj_type == ObjectType.CONTENT:
             missing_hashes.append(storage.content_missing_per_sha1_git(obj_ids))
-        elif obj_type == DIRECTORY:
+        elif obj_type == ObjectType.DIRECTORY:
             missing_hashes.append(storage.directory_missing(obj_ids))
-        elif obj_type == REVISION:
+        elif obj_type == ObjectType.REVISION:
             missing_hashes.append(storage.revision_missing(obj_ids))
-        elif obj_type == RELEASE:
+        elif obj_type == ObjectType.RELEASE:
             missing_hashes.append(storage.release_missing(obj_ids))
-        elif obj_type == SNAPSHOT:
+        elif obj_type == ObjectType.SNAPSHOT:
             missing_hashes.append(storage.snapshot_missing(obj_ids))
 
     missing = set(

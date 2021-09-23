@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,7 +14,7 @@ import pytest
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Directory,
     DirectoryEntry,
@@ -857,19 +857,19 @@ def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
     expected = archive_data.content_find(content)
-    assert archive.lookup_object(CONTENT, content["sha1_git"]) == expected
+    assert archive.lookup_object(ObjectType.CONTENT, content["sha1_git"]) == expected
 
     expected = archive_data.directory_get(directory)
-    assert archive.lookup_object(DIRECTORY, directory) == expected
+    assert archive.lookup_object(ObjectType.DIRECTORY, directory) == expected
 
     expected = archive_data.release_get(release)
-    assert archive.lookup_object(RELEASE, release) == expected
+    assert archive.lookup_object(ObjectType.RELEASE, release) == expected
 
     expected = archive_data.revision_get(revision)
-    assert archive.lookup_object(REVISION, revision) == expected
+    assert archive.lookup_object(ObjectType.REVISION, revision) == expected
 
     expected = {**archive_data.snapshot_get(snapshot), "next_branch": None}
-    assert archive.lookup_object(SNAPSHOT, snapshot) == expected
+    assert archive.lookup_object(ObjectType.SNAPSHOT, snapshot) == expected
 
 
 @given(
@@ -887,23 +887,23 @@ def test_lookup_unknown_objects(
     unknown_snapshot,
 ):
     with pytest.raises(NotFoundExc) as e:
-        archive.lookup_object(CONTENT, unknown_content["sha1_git"])
+        archive.lookup_object(ObjectType.CONTENT, unknown_content["sha1_git"])
     assert e.match(r"Content.*not found")
 
     with pytest.raises(NotFoundExc) as e:
-        archive.lookup_object(DIRECTORY, unknown_directory)
+        archive.lookup_object(ObjectType.DIRECTORY, unknown_directory)
     assert e.match(r"Directory.*not found")
 
     with pytest.raises(NotFoundExc) as e:
-        archive.lookup_object(RELEASE, unknown_release)
+        archive.lookup_object(ObjectType.RELEASE, unknown_release)
     assert e.match(r"Release.*not found")
 
     with pytest.raises(NotFoundExc) as e:
-        archive.lookup_object(REVISION, unknown_revision)
+        archive.lookup_object(ObjectType.REVISION, unknown_revision)
     assert e.match(r"Revision.*not found")
 
     with pytest.raises(NotFoundExc) as e:
-        archive.lookup_object(SNAPSHOT, unknown_snapshot)
+        archive.lookup_object(ObjectType.SNAPSHOT, unknown_snapshot)
     assert e.match(r"Snapshot.*not found")
 
 
@@ -911,27 +911,23 @@ def test_lookup_unknown_objects(
 def test_lookup_invalid_objects(invalid_sha1):
 
     with pytest.raises(BadInputExc) as e:
-        archive.lookup_object("foo", invalid_sha1)
-    assert e.match("Invalid swh object type")
-
-    with pytest.raises(BadInputExc) as e:
-        archive.lookup_object(CONTENT, invalid_sha1)
+        archive.lookup_object(ObjectType.CONTENT, invalid_sha1)
     assert e.match("Invalid hash")
 
     with pytest.raises(BadInputExc) as e:
-        archive.lookup_object(DIRECTORY, invalid_sha1)
+        archive.lookup_object(ObjectType.DIRECTORY, invalid_sha1)
     assert e.match("Invalid checksum")
 
     with pytest.raises(BadInputExc) as e:
-        archive.lookup_object(RELEASE, invalid_sha1)
+        archive.lookup_object(ObjectType.RELEASE, invalid_sha1)
     assert e.match("Invalid checksum")
 
     with pytest.raises(BadInputExc) as e:
-        archive.lookup_object(REVISION, invalid_sha1)
+        archive.lookup_object(ObjectType.REVISION, invalid_sha1)
     assert e.match("Invalid checksum")
 
     with pytest.raises(BadInputExc) as e:
-        archive.lookup_object(SNAPSHOT, invalid_sha1)
+        archive.lookup_object(ObjectType.SNAPSHOT, invalid_sha1)
     assert e.match("Invalid checksum")
 
 
@@ -943,11 +939,11 @@ def test_lookup_missing_hashes_non_present():
     missing_snp = random_sha1()
 
     grouped_swhids = {
-        CONTENT: [hash_to_bytes(missing_cnt)],
-        DIRECTORY: [hash_to_bytes(missing_dir)],
-        REVISION: [hash_to_bytes(missing_rev)],
-        RELEASE: [hash_to_bytes(missing_rel)],
-        SNAPSHOT: [hash_to_bytes(missing_snp)],
+        ObjectType.CONTENT: [hash_to_bytes(missing_cnt)],
+        ObjectType.DIRECTORY: [hash_to_bytes(missing_dir)],
+        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
+        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
+        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
     }
 
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
@@ -968,11 +964,11 @@ def test_lookup_missing_hashes_some_present(archive_data, content, directory):
     missing_snp = random_sha1()
 
     grouped_swhids = {
-        CONTENT: [hash_to_bytes(content["sha1_git"])],
-        DIRECTORY: [hash_to_bytes(directory)],
-        REVISION: [hash_to_bytes(missing_rev)],
-        RELEASE: [hash_to_bytes(missing_rel)],
-        SNAPSHOT: [hash_to_bytes(missing_snp)],
+        ObjectType.CONTENT: [hash_to_bytes(content["sha1_git"])],
+        ObjectType.DIRECTORY: [hash_to_bytes(directory)],
+        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
+        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
+        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
     }
 
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
@@ -1204,8 +1200,8 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
     branches_count = nb_branches_by_target_type // 2
 
     for target_type in (
-        DIRECTORY,
-        REVISION,
+        ObjectType.DIRECTORY.name.lower(),
+        ObjectType.REVISION.name.lower(),
     ):
         partial_branches = archive.lookup_snapshot(
             hash_to_hex(snapshot.id),
