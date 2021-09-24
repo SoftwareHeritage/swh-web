@@ -13,15 +13,7 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    RELEASE,
-    REVISION,
-    SNAPSHOT,
-    CoreSWHID,
-    ObjectType,
-)
+from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import Snapshot
 from swh.web.browse.utils import (
     content_display_max_size,
@@ -806,16 +798,22 @@ def browse_snapshot_directory(
             revision_found = False
 
     if sha1_git is not None:
-        swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=sha1_git)
+        )
         vault_cooking.update(
             {"directory_context": True, "directory_swhid": f"swh:1:dir:{sha1_git}",}
         )
     if revision_found:
-        swh_objects.append(SWHObjectInfo(object_type=REVISION, object_id=revision_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id)
+        )
         vault_cooking.update(
             {"revision_context": True, "revision_swhid": f"swh:1:rev:{revision_id}",}
         )
-    swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
+    swh_objects.append(
+        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)
+    )
 
     visit_date = None
     visit_type = None
@@ -825,10 +823,12 @@ def browse_snapshot_directory(
 
     release_id = snapshot_context["release_id"]
     if release_id:
-        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.RELEASE, object_id=release_id)
+        )
 
     dir_metadata = DirectoryMetadata(
-        object_type=DIRECTORY,
+        object_type=ObjectType.DIRECTORY,
         object_id=sha1_git,
         directory=sha1_git,
         nb_files=nb_files,
@@ -984,10 +984,12 @@ def browse_snapshot_content(
     content_checksums = content_data.get("checksums", {})
 
     swh_objects = [
-        SWHObjectInfo(object_type=CONTENT, object_id=content_checksums.get("sha1_git")),
-        SWHObjectInfo(object_type=DIRECTORY, object_id=directory_id),
-        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
-        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
+        SWHObjectInfo(
+            object_type=ObjectType.CONTENT, object_id=content_checksums.get("sha1_git")
+        ),
+        SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory_id),
+        SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id),
+        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id),
     ]
 
     visit_date = None
@@ -998,10 +1000,12 @@ def browse_snapshot_content(
 
     release_id = snapshot_context["release_id"]
     if release_id:
-        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.RELEASE, object_id=release_id)
+        )
 
     content_metadata = ContentMetadata(
-        object_type=CONTENT,
+        object_type=ObjectType.CONTENT,
         object_id=content_checksums.get("sha1_git"),
         sha1=content_checksums.get("sha1"),
         sha1_git=content_checksums.get("sha1_git"),
@@ -1175,13 +1179,15 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
         revision_metadata["origin visit type"] = visit_info["type"]
 
     swh_objects = [
-        SWHObjectInfo(object_type=REVISION, object_id=revision_id),
-        SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id),
+        SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id),
+        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id),
     ]
 
     release_id = snapshot_context["release_id"]
     if release_id:
-        swh_objects.append(SWHObjectInfo(object_type=RELEASE, object_id=release_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.RELEASE, object_id=release_id)
+        )
         browse_rel_link = gen_release_link(release_id)
         revision_metadata["release"] = release_id
         revision_metadata["context-independent release"] = browse_rel_link

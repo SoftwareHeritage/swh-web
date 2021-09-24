@@ -7,9 +7,9 @@ import json
 import re
 
 from django import template
-from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.safestring import mark_safe
 
+from swh.web.common.converters import SWHDjangoJSONEncoder
 from swh.web.common.origin_save import get_savable_visit_types
 from swh.web.common.utils import rst_to_html
 
@@ -79,7 +79,7 @@ def jsonify(obj):
         JSON representation of the variable.
 
     """
-    return mark_safe(json.dumps(obj, cls=DjangoJSONEncoder))
+    return mark_safe(json.dumps(obj, cls=SWHDjangoJSONEncoder))
 
 
 @register.filter

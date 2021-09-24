@@ -85,6 +85,9 @@ See top-level LICENSE file for more information
           <li><code>git</code>, for origins using <a href="https://git-scm.com/">Git</a></li>
           <li><code>hg</code>, for origins using <a href="https://www.mercurial-scm.org/">Mercurial</a></li>
           <li><code>svn</code>, for origins using <a href="https://subversion.apache.org/">Subversion</a></li>
+          {% if "cvs" in visit_types %}
+            <li><code>cvs</code>, for origins using <a href="http://cvs.nongnu.org/">CVS</a></li>
+          {% endif %}
         </ul>
       </li>
       <li><b>Origin url:</b> the url of the remote repository for the software origin.<br/>

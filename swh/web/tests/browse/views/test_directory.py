@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ from django.utils.html import escape
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Directory,
     DirectoryEntry,
@@ -236,29 +236,29 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
 
     dir_swhid = gen_swhid(
-        DIRECTORY,
+        ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(REVISION, branch_info["revision"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
             "path": "/",
         },
     )
     assert_contains(resp, dir_swhid)
 
     rev_swhid = gen_swhid(
-        REVISION,
+        ObjectType.REVISION,
         branch_info["revision"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
     )
     assert_contains(resp, snp_swhid)
 
@@ -300,39 +300,39 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
 
     dir_swhid = gen_swhid(
-        DIRECTORY,
+        ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(RELEASE, release_info["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
             "path": "/",
         },
     )
     assert_contains(resp, dir_swhid)
 
     rev_swhid = gen_swhid(
-        REVISION,
+        ObjectType.REVISION,
         release_info["target"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     rel_swhid = gen_swhid(
-        RELEASE,
+        ObjectType.RELEASE,
         release_info["id"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
     )
     assert_contains(resp, snp_swhid)
 
@@ -476,24 +476,24 @@ def _directory_view_checks(
 
     assert_contains(resp, "vault-cook-directory")
 
-    swh_dir_id = gen_swhid(DIRECTORY, directory_entries[0]["dir_id"])
+    swh_dir_id = gen_swhid(ObjectType.DIRECTORY, directory_entries[0]["dir_id"])
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
 
     swhid_context = {}
     if origin_url:
         swhid_context["origin"] = origin_url
     if snapshot_id:
-        swhid_context["visit"] = gen_swhid(SNAPSHOT, snapshot_id)
+        swhid_context["visit"] = gen_swhid(ObjectType.SNAPSHOT, snapshot_id)
     if root_directory_sha1 != directory_entries[0]["dir_id"]:
-        swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
+        swhid_context["anchor"] = gen_swhid(ObjectType.DIRECTORY, root_directory_sha1)
     if root_directory_sha1 != directory_entries[0]["dir_id"]:
-        swhid_context["anchor"] = gen_swhid(DIRECTORY, root_directory_sha1)
+        swhid_context["anchor"] = gen_swhid(ObjectType.DIRECTORY, root_directory_sha1)
     if revision_id:
-        swhid_context["anchor"] = gen_swhid(REVISION, revision_id)
+        swhid_context["anchor"] = gen_swhid(ObjectType.REVISION, revision_id)
     swhid_context["path"] = f"/{path}/" if path else None
 
     swh_dir_id = gen_swhid(
-        DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
+        ObjectType.DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
     )
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)

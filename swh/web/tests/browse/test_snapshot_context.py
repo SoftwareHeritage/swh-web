@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,6 +7,7 @@ import random
 
 from hypothesis import given
 
+from swh.model.identifiers import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
     get_origin_visit_snapshot,
@@ -130,7 +131,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
         is_empty = not branches and not releases
-        snapshot_swhid = gen_swhid("snapshot", snapshot)
+        snapshot_swhid = gen_swhid(ObjectType.SNAPSHOT, snapshot)
         snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
 
         expected = SnapshotContext(
@@ -223,7 +224,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             "browse-origin-visits", query_params={"origin_url": kwargs["origin_url"]}
         )
         is_empty = not branches and not releases
-        snapshot_swhid = gen_swhid("snapshot", snapshot)
+        snapshot_swhid = gen_swhid(ObjectType.SNAPSHOT, snapshot)
         snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
 
         visit_info["url"] = reverse(

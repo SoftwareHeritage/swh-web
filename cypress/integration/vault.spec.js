@@ -407,6 +407,38 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('contain', 'Archive cooking request successfully submitted.');
   });
 
+  it('should create a directory cooking task with an email address', function() {
+    // Browse a directory
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when checking vault task status
+    cy.intercept('GET', this.vaultDirectoryUrl, {body: {'exception': 'NotFoundExc'}})
+      .as('checkVaultCookingTask');
+
+    // Stub responses when requesting the vault API to simulate
+    // a task has been created
+    cy.intercept('POST', this.vaultDirectoryUrl + '?email=foo%2Bbar%40example.org', {
+      body: this.genVaultDirCookingResponse('new')
+    }).as('createVaultCookingTask');
+
+    // Open vault cook directory modal
+    cy.contains('button', 'Download')
+      .click();
+
+    cy.wait('@checkVaultCookingTask');
+
+    // Create a vault cooking task through the GUI and fill email input
+    cy.get('#vault-cook-directory-modal input[type="email"]')
+      .type('foo+bar@example.org', {force: true});
+
+    cy.get('#vault-cook-directory-modal')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@createVaultCookingTask');
+
+  });
+
   it('should offer to recook an archive if no longer available for download', function() {
 
     updateVaultItemList(this.vaultItems);

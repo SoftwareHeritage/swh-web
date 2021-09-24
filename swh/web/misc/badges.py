@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  The Software Heritage developers
+# Copyright (C) 2019-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,10 +14,10 @@ from django.http import HttpRequest, HttpResponse
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import RELEASE, CoreSWHID, ObjectType, QualifiedSWHID
+from swh.model.identifiers import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.identifiers import resolve_swhid
+from swh.web.common.identifiers import parse_object_type, resolve_swhid
 from swh.web.common.utils import reverse
 
 _orange = "#f36a24"
@@ -92,9 +92,9 @@ def _swh_badge(
             # from it
             if object_swhid:
                 parsed_swhid = QualifiedSWHID.from_string(object_swhid)
-                object_type = parsed_swhid.object_type.name.lower()
+                parsed_object_type = parsed_swhid.object_type
                 object_id = hash_to_hex(parsed_swhid.object_id)
-                swh_object = archive.lookup_object(object_type, object_id)
+                swh_object = archive.lookup_object(parsed_swhid.object_type, object_id)
                 # remove SWHID qualified if any for badge text
                 right_text = str(
                     CoreSWHID(
@@ -102,18 +102,20 @@ def _swh_badge(
                         object_id=parsed_swhid.object_id,
                     )
                 )
+                object_type = parsed_swhid.object_type.name.lower()
             else:
+                parsed_object_type = parse_object_type(object_type)
                 right_text = str(
                     CoreSWHID(
-                        object_type=ObjectType[object_type.upper()],
+                        object_type=parsed_object_type,
                         object_id=hash_to_bytes(object_id),
                     )
                 )
-                swh_object = archive.lookup_object(object_type, object_id)
+                swh_object = archive.lookup_object(parsed_object_type, object_id)
 
             whole_link = resolve_swhid(str(right_text))["browse_url"]
             # use release name for badge text
-            if object_type == RELEASE:
+            if parsed_object_type == ObjectType.RELEASE:
                 right_text = "release %s" % swh_object["name"]
         left_text = "archived"
     except (BadInputExc, ValidationError):

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 from hypothesis import given
 
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.model.model import Origin
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
@@ -27,7 +27,7 @@ from swh.web.tests.utils import check_html_get_response
 @given(content())
 def test_content_id_browse(client, content):
     cnt_sha1_git = content["sha1_git"]
-    swhid = gen_swhid(CONTENT, cnt_sha1_git)
+    swhid = gen_swhid(ObjectType.CONTENT, cnt_sha1_git)
 
     for swhid_ in (swhid, swhid.upper()):
         url = reverse("browse-swhid", url_args={"swhid": swhid_})
@@ -43,7 +43,7 @@ def test_content_id_browse(client, content):
 
 @given(directory())
 def test_directory_id_browse(client, directory):
-    swhid = gen_swhid(DIRECTORY, directory)
+    swhid = gen_swhid(ObjectType.DIRECTORY, directory)
 
     for swhid_ in (swhid, swhid.upper()):
         url = reverse("browse-swhid", url_args={"swhid": swhid_})
@@ -58,7 +58,7 @@ def test_directory_id_browse(client, directory):
 
 @given(revision())
 def test_revision_id_browse(client, revision):
-    swhid = gen_swhid(REVISION, revision)
+    swhid = gen_swhid(ObjectType.REVISION, revision)
 
     for swhid_ in (swhid, swhid.upper()):
         url = reverse("browse-swhid", url_args={"swhid": swhid_})
@@ -87,7 +87,7 @@ def test_revision_id_browse(client, revision):
 
 @given(release())
 def test_release_id_browse(client, release):
-    swhid = gen_swhid(RELEASE, release)
+    swhid = gen_swhid(ObjectType.RELEASE, release)
 
     for swhid_ in (swhid, swhid.upper()):
         url = reverse("browse-swhid", url_args={"swhid": swhid_})
@@ -113,7 +113,7 @@ def test_release_id_browse(client, release):
 
 @given(snapshot())
 def test_snapshot_id_browse(client, snapshot):
-    swhid = gen_swhid(SNAPSHOT, snapshot)
+    swhid = gen_swhid(ObjectType.SNAPSHOT, snapshot)
 
     for swhid_ in (swhid, swhid.upper()):
         url = reverse("browse-swhid", url_args={"swhid": swhid_})
@@ -157,7 +157,9 @@ def test_content_id_optional_parts_browse(client, archive_data, content):
     archive_data.origin_add([Origin(url=origin_url)])
 
     swhid = gen_swhid(
-        CONTENT, cnt_sha1_git, metadata={"lines": "4-20", "origin": origin_url},
+        ObjectType.CONTENT,
+        cnt_sha1_git,
+        metadata={"lines": "4-20", "origin": origin_url},
     )
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
@@ -191,7 +193,7 @@ def test_legacy_swhid_browse(archive_data, client, origin):
         [e for e in directory_content if e["type"] == "file"]
     )
     legacy_swhid = gen_swhid(
-        CONTENT,
+        ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={"origin": origin["url"]},
     )
@@ -204,12 +206,12 @@ def test_legacy_swhid_browse(archive_data, client, origin):
     )
 
     swhid = gen_swhid(
-        CONTENT,
+        ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(REVISION, revision),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.REVISION, revision),
         },
     )
 
@@ -232,7 +234,9 @@ def test_browse_swhid_special_characters_escaping(client, archive_data, director
     archive_data.origin_add([Origin(url=origin)])
     origin_swhid_escaped = quote(origin, safe="/?:@&")
     origin_swhid_url_escaped = quote(origin, safe="/:@;")
-    swhid = gen_swhid(DIRECTORY, directory, metadata={"origin": origin_swhid_escaped})
+    swhid = gen_swhid(
+        ObjectType.DIRECTORY, directory, metadata={"origin": origin_swhid_escaped}
+    )
     url = reverse("browse-swhid", url_args={"swhid": swhid})
 
     resp = check_html_get_response(client, url, status_code=302)
