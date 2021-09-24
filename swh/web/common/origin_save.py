@@ -121,7 +121,12 @@ def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str
 
 # map visit type to scheduler task
 # TODO: do not hardcode the task name here (T1157)
-_visit_type_task = {"git": "load-git", "hg": "load-hg", "svn": "load-svn"}
+_visit_type_task = {
+    "git": "load-git",
+    "hg": "load-hg",
+    "svn": "load-svn",
+    "cvs": "load-cvs",
+}
 
 _visit_type_task_privileged = {
     "archives": "load-archive-files",
@@ -203,7 +208,9 @@ def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) ->
         )
 
 
-_validate_url = URLValidator(schemes=["http", "https", "svn", "git"])
+_validate_url = URLValidator(
+    schemes=["http", "https", "svn", "git", "rsync", "pserver", "ssh"]
+)
 
 
 def _check_origin_url_valid(origin_url: str) -> None:

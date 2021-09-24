@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -54,14 +54,14 @@ def api_resolve_swhid(request, swhid):
     # object is present in the archive, NotFoundExc
     # will be raised otherwise
     swhid_parsed = swhid_resolved["swhid_parsed"]
-    object_type = swhid_parsed.object_type.name.lower()
+    object_type = swhid_parsed.object_type
     object_id = hash_to_hex(swhid_parsed.object_id)
-    archive.lookup_object(object_type, object_id)
+    archive.lookup_object(swhid_parsed.object_type, object_id)
     # id is well-formed and the pointed object exists
     return {
         "namespace": swhid_parsed.namespace,
         "scheme_version": swhid_parsed.scheme_version,
-        "object_type": object_type,
+        "object_type": object_type.name.lower(),
         "object_id": object_id,
         "metadata": swhid_parsed.qualifiers(),
         "browse_url": request.build_absolute_uri(swhid_resolved["browse_url"]),

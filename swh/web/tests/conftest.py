@@ -446,8 +446,23 @@ def swh_scheduler(swh_scheduler):
     swh_scheduler.create_task_type(
         {
             "type": "load-svn",
-            "description": "Update a mercurial repository",
+            "description": "Update a Subversion repository",
             "backend_name": "swh.loader.svn.tasks.DumpMountAndLoadSvnRepository",
+            "default_interval": timedelta(days=64),
+            "min_interval": timedelta(hours=12),
+            "max_interval": timedelta(days=64),
+            "backoff_factor": 2,
+            "max_queue_length": None,
+            "num_retries": 7,
+            "retry_delay": timedelta(hours=2),
+        }
+    )
+    # create load-cvs task type
+    swh_scheduler.create_task_type(
+        {
+            "type": "load-cvs",
+            "description": "Update a CVS repository",
+            "backend_name": "swh.loader.cvs.tasks.DumpMountAndLoadSvnRepository",
             "default_interval": timedelta(days=64),
             "min_interval": timedelta(hours=12),
             "max_interval": timedelta(days=64),

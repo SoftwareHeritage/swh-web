@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,14 +12,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    REVISION,
-    SNAPSHOT,
-    CoreSWHID,
-    ObjectType,
-)
+from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -377,7 +370,7 @@ def revision_browse(request, sha1_git):
         dirs, files = get_directory_entries(dir_id)
 
     revision_metadata = RevisionMetadata(
-        object_type=REVISION,
+        object_type=ObjectType.REVISION,
         object_id=sha1_git,
         revision=sha1_git,
         author=revision["author"]["fullname"] if revision["author"] else "None",
@@ -448,7 +441,7 @@ def revision_browse(request, sha1_git):
         "revision_swhid": f"swh:1:rev:{sha1_git}",
     }
 
-    swh_objects = [SWHObjectInfo(object_type=REVISION, object_id=sha1_git)]
+    swh_objects = [SWHObjectInfo(object_type=ObjectType.REVISION, object_id=sha1_git)]
 
     content = None
     content_size = None
@@ -492,7 +485,7 @@ def revision_browse(request, sha1_git):
         }
 
         swh_objects.append(
-            SWHObjectInfo(object_type=CONTENT, object_id=file_info["target"])
+            SWHObjectInfo(object_type=ObjectType.CONTENT, object_id=file_info["target"])
         )
     else:
         for d in dirs:
@@ -528,7 +521,9 @@ def revision_browse(request, sha1_git):
         vault_cooking["directory_context"] = True
         vault_cooking["directory_swhid"] = f"swh:1:dir:{dir_id}"
 
-        swh_objects.append(SWHObjectInfo(object_type=DIRECTORY, object_id=dir_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=dir_id)
+        )
 
     query_params.pop("path", None)
 
@@ -537,7 +532,9 @@ def revision_browse(request, sha1_git):
     )
 
     if snapshot_id:
-        swh_objects.append(SWHObjectInfo(object_type=SNAPSHOT, object_id=snapshot_id))
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)
+        )
 
     swhids_info = get_swhids_info(swh_objects, snapshot_context, extra_context)
 

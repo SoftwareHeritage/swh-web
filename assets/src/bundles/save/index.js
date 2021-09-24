@@ -358,7 +358,7 @@ export function validateSaveOriginUrl(input) {
   }
 
   if (validUrl) {
-    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:'];
+    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:', 'rsync:', 'pserver:', 'ssh:'];
     validUrl = (
       allowedProtocols.find(protocol => protocol === originUrl.protocol) !== undefined
     );

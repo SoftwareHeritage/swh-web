@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,8 +7,11 @@ import datetime
 import json
 from typing import Any, Dict, Union
 
+from django.core.serializers.json import DjangoJSONEncoder
+
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
+from swh.model.identifiers import ObjectType
 from swh.model.model import RawExtrinsicMetadata, Release, Revision
 from swh.storage.interface import PartialBranches
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
@@ -227,6 +230,17 @@ def from_release(release: Release) -> Dict[str, Any]:
         bytess={"message", "name", "fullname", "email"},
         dates={"date"},
     )
+
+
+class SWHDjangoJSONEncoder(DjangoJSONEncoder):
+    """Wrapper around DjangoJSONEncoder to serialize SWH-specific types
+    found in :class:`swh.web.common.typing.SWHObjectInfo`."""
+
+    def default(self, o):
+        if isinstance(o, ObjectType):
+            return o.name.lower()
+        else:
+            super().default(o)
 
 
 class SWHMetadataEncoder(json.JSONEncoder):

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,7 +10,7 @@ import sentry_sdk
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from swh.model.identifiers import DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
@@ -135,7 +135,7 @@ def _directory_browse(request, sha1_git, path=None):
     readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
     dir_metadata = DirectoryMetadata(
-        object_type=DIRECTORY,
+        object_type=ObjectType.DIRECTORY,
         object_id=sha1_git,
         directory=root_sha1_git,
         nb_files=len(files),
@@ -156,23 +156,26 @@ def _directory_browse(request, sha1_git, path=None):
         "revision_swhid": None,
     }
 
-    swh_objects = [SWHObjectInfo(object_type=DIRECTORY, object_id=sha1_git)]
+    swh_objects = [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=sha1_git)]
 
     if snapshot_context:
         swh_objects.append(
             SWHObjectInfo(
-                object_type=REVISION, object_id=snapshot_context["revision_id"]
+                object_type=ObjectType.REVISION,
+                object_id=snapshot_context["revision_id"],
             )
         )
         swh_objects.append(
             SWHObjectInfo(
-                object_type=SNAPSHOT, object_id=snapshot_context["snapshot_id"]
+                object_type=ObjectType.SNAPSHOT,
+                object_id=snapshot_context["snapshot_id"],
             )
         )
         if snapshot_context["release_id"]:
             swh_objects.append(
                 SWHObjectInfo(
-                    object_type=RELEASE, object_id=snapshot_context["release_id"]
+                    object_type=ObjectType.RELEASE,
+                    object_id=snapshot_context["release_id"],
                 )
             )
 
