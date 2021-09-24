@@ -10,14 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import (
-    CONTENT,
-    DIRECTORY,
-    REVISION,
-    SNAPSHOT,
-    ObjectType,
-    QualifiedSWHID,
-)
+from swh.model.identifiers import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
@@ -220,7 +213,8 @@ def swhid_iframe(request, swhid: str):
             view_data = _get_content_rendering_data(parsed_swhid, path)
             swh_objects.append(
                 SWHObjectInfo(
-                    object_type=CONTENT, object_id=parsed_swhid.object_id.hex()
+                    object_type=ObjectType.CONTENT,
+                    object_id=parsed_swhid.object_id.hex(),
                 )
             )
 
@@ -230,7 +224,8 @@ def swhid_iframe(request, swhid: str):
             )
             swh_objects.append(
                 SWHObjectInfo(
-                    object_type=DIRECTORY, object_id=parsed_swhid.object_id.hex()
+                    object_type=ObjectType.DIRECTORY,
+                    object_id=parsed_swhid.object_id.hex(),
                 )
             )
 
@@ -251,7 +246,8 @@ def swhid_iframe(request, swhid: str):
             if parsed_swhid.object_type == ObjectType.CONTENT and len(breadcrumbs) > 1:
                 swh_objects.append(
                     SWHObjectInfo(
-                        object_type=DIRECTORY, object_id=breadcrumbs[-2]["object_id"]
+                        object_type=ObjectType.DIRECTORY,
+                        object_id=breadcrumbs[-2]["object_id"],
                     )
                 )
                 swhids_info_extra_context["path"] = breadcrumbs[-2]["path"]
@@ -260,13 +256,13 @@ def swhid_iframe(request, swhid: str):
             if snapshot_context:
                 swh_objects.append(
                     SWHObjectInfo(
-                        object_type=REVISION,
+                        object_type=ObjectType.REVISION,
                         object_id=snapshot_context["revision_id"] or "",
                     )
                 )
                 swh_objects.append(
                     SWHObjectInfo(
-                        object_type=SNAPSHOT,
+                        object_type=ObjectType.SNAPSHOT,
                         object_id=snapshot_context["snapshot_id"] or "",
                     )
                 )

@@ -9,7 +9,7 @@ from hypothesis import given
 
 from django.utils.html import escape
 
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     _re_encode_content,
@@ -60,7 +60,7 @@ def test_content_view_text(client, archive_data, content):
         assert_contains(resp, escape(content_display["content_data"]))
     assert_contains(resp, url_raw)
 
-    swh_cnt_id = gen_swhid(CONTENT, sha1_git)
+    swh_cnt_id = gen_swhid(ObjectType.CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
@@ -89,7 +89,7 @@ def test_content_view_no_highlight(client, archive_data, content_app, content_te
         assert_contains(resp, escape(content_display["content_data"]))
         assert_contains(resp, url_raw)
 
-        swh_cnt_id = gen_swhid(CONTENT, sha1_git)
+        swh_cnt_id = gen_swhid(ObjectType.CONTENT, sha1_git)
         swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
 
         assert_contains(resp, swh_cnt_id)
@@ -108,7 +108,7 @@ def test_content_view_no_utf8_text(client, archive_data, content):
 
     content_display = _process_content_for_display(archive_data, content)
 
-    swh_cnt_id = gen_swhid(CONTENT, sha1_git)
+    swh_cnt_id = gen_swhid(ObjectType.CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id_url)
     assert_contains(resp, escape(content_display["content_data"]))
@@ -181,11 +181,13 @@ def test_content_view_text_with_path(client, archive_data, content):
     path = path.replace(root_dir_sha1 + "/", "").replace(filename, "")
 
     swhid_context = {
-        "anchor": gen_swhid(DIRECTORY, root_dir_sha1),
+        "anchor": gen_swhid(ObjectType.DIRECTORY, root_dir_sha1),
         "path": f"/{path}{filename}",
     }
 
-    swh_cnt_id = gen_swhid(CONTENT, content["sha1_git"], metadata=swhid_context)
+    swh_cnt_id = gen_swhid(
+        ObjectType.CONTENT, content["sha1_git"], metadata=swhid_context
+    )
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
@@ -449,40 +451,40 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
 
     cnt_swhid = gen_swhid(
-        CONTENT,
+        ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(REVISION, branch_info["revision"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
             "path": f"/{directory_file['name']}",
         },
     )
     assert_contains(resp, cnt_swhid)
 
     dir_swhid = gen_swhid(
-        DIRECTORY,
+        ObjectType.DIRECTORY,
         directory,
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(REVISION, branch_info["revision"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
         },
     )
     assert_contains(resp, dir_swhid)
 
     rev_swhid = gen_swhid(
-        REVISION,
+        ObjectType.REVISION,
         branch_info["revision"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
     )
     assert_contains(resp, snp_swhid)
 
@@ -523,50 +525,50 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
 
     cnt_swhid = gen_swhid(
-        CONTENT,
+        ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(RELEASE, release_info["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
             "path": f"/{directory_file['name']}",
         },
     )
     assert_contains(resp, cnt_swhid)
 
     dir_swhid = gen_swhid(
-        DIRECTORY,
+        ObjectType.DIRECTORY,
         release_info["directory"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(RELEASE, release_info["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+            "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
         },
     )
     assert_contains(resp, dir_swhid)
 
     rev_swhid = gen_swhid(
-        REVISION,
+        ObjectType.REVISION,
         release_info["target"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     rel_swhid = gen_swhid(
-        RELEASE,
+        ObjectType.RELEASE,
         release_info["id"],
         metadata={
             "origin": origin["url"],
-            "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
+            "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
     )
     assert_contains(resp, snp_swhid)
 

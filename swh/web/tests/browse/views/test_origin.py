@@ -12,7 +12,7 @@ from hypothesis import given
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CONTENT, DIRECTORY, RELEASE, REVISION, SNAPSHOT
+from swh.model.identifiers import ObjectType
 from swh.model.model import (
     OriginVisit,
     OriginVisitStatus,
@@ -754,12 +754,12 @@ def test_origin_release_browse(client, archive_data, origin):
 
     swhid_context = {
         "origin": origin["url"],
-        "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-        "anchor": gen_swhid(RELEASE, release_data["id"]),
+        "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+        "anchor": gen_swhid(ObjectType.RELEASE, release_data["id"]),
     }
 
     swh_dir_id = gen_swhid(
-        DIRECTORY, revision_data["directory"], metadata=swhid_context
+        ObjectType.DIRECTORY, revision_data["directory"], metadata=swhid_context
     )
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
@@ -986,12 +986,14 @@ def _origin_content_view_test_helper(
 
     swhid_context = {
         "origin": origin_info["url"],
-        "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-        "anchor": gen_swhid(REVISION, head_rev_id),
+        "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+        "anchor": gen_swhid(ObjectType.REVISION, head_rev_id),
         "path": f"/{content_path}",
     }
 
-    swh_cnt_id = gen_swhid(CONTENT, content["sha1_git"], metadata=swhid_context)
+    swh_cnt_id = gen_swhid(
+        ObjectType.CONTENT, content["sha1_git"], metadata=swhid_context
+    )
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
     assert_contains(resp, swh_cnt_id_url)
@@ -1126,13 +1128,13 @@ def _origin_directory_view_test_helper(
 
     swhid_context = {
         "origin": origin_info["url"],
-        "visit": gen_swhid(SNAPSHOT, snapshot["id"]),
-        "anchor": gen_swhid(REVISION, head_rev_id),
+        "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
+        "anchor": gen_swhid(ObjectType.REVISION, head_rev_id),
         "path": f"/{path}" if path else None,
     }
 
     swh_dir_id = gen_swhid(
-        DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
+        ObjectType.DIRECTORY, directory_entries[0]["dir_id"], metadata=swhid_context
     )
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)

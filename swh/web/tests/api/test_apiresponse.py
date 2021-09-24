@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ from corsheaders.middleware import (
 )
 from hypothesis import given
 
-from swh.model.identifiers import CONTENT, DIRECTORY, REVISION
+from swh.model.identifiers import ObjectType
 from swh.web.api.apiresponse import (
     compute_link_header,
     filter_by_fields,
@@ -163,9 +163,9 @@ def test_api_endpoints_have_cors_headers(client, content, directory, revision):
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
 
     swhids = [
-        gen_swhid(CONTENT, content["sha1_git"]),
-        gen_swhid(DIRECTORY, directory),
-        gen_swhid(REVISION, revision),
+        gen_swhid(ObjectType.CONTENT, content["sha1_git"]),
+        gen_swhid(ObjectType.DIRECTORY, directory),
+        gen_swhid(ObjectType.REVISION, revision),
     ]
     url = reverse("api-1-known")
     ac_request_method = "POST"

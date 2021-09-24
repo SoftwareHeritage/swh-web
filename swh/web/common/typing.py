@@ -10,6 +10,7 @@ from typing_extensions import TypedDict
 from django.http import QueryDict
 
 from swh.core.api.classes import PagedResult as CorePagedResult
+from swh.model.identifiers import ObjectType
 
 QueryParameters = Union[Dict[str, Any], QueryDict]
 
@@ -133,7 +134,7 @@ class SnapshotContext(TypedDict):
 
 
 class SWHObjectInfo(TypedDict):
-    object_type: str
+    object_type: ObjectType
     object_id: str
 
 

@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import * as EmailValidator from 'email-validator';
+
 import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
 
 const alertStyle = {
@@ -71,7 +73,7 @@ async function addVaultCookingTask(objectType, cookingTask) {
       cookingUrl = Urls.api_1_vault_cook_git_bare(cookingTask.swhid);
     }
     if (cookingTask.email) {
-      cookingUrl += '?email=' + cookingTask.email;
+      cookingUrl += '?email=' + encodeURIComponent(cookingTask.email);
     }
 
     try {
@@ -102,14 +104,9 @@ async function addVaultCookingTask(objectType, cookingTask) {
   }
 }
 
-function validateEmail(email) {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-}
-
 export function cookDirectoryArchive(swhid) {
   const email = $('#swh-vault-directory-email').val().trim();
-  if (!email || validateEmail(email)) {
+  if (!email || EmailValidator.validate(email)) {
     const cookingTask = {
       'bundle_type': 'flat',
       'swhid': swhid,
@@ -133,7 +130,7 @@ export async function fetchDirectoryArchive(directorySwhid) {
 
 export function cookRevisionArchive(revisionId) {
   const email = $('#swh-vault-revision-email').val().trim();
-  if (!email || validateEmail(email)) {
+  if (!email || EmailValidator.validate(email)) {
     const cookingTask = {
       'bundle_type': 'git_bare',
       'swhid': revisionId,
