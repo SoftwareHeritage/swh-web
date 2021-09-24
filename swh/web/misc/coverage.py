@@ -94,6 +94,12 @@ listed_origins = {
             "search_pattern": "gnu",
         },
         {
+            "type": "heptapod",
+            "info_url": "https://heptapod.net/",
+            "info": "public repositories from multiple Heptapod instances",
+            "search_pattern": "heptapod",
+        },
+        {
             "type": "launchpad",
             "info_url": "https://launchpad.net",
             "logo": "img/logos/launchpad.png",
