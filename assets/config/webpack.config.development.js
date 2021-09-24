@@ -114,7 +114,10 @@ module.exports = {
     port: devServerPort,
     // enable to serve static assets not managed by webpack
     static: {
-      directory: path.resolve('./')
+      directory: path.resolve('./'),
+      watch: {
+        ignored: /node_modules/
+      }
     },
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
     // and prefer to fully reload the frontend application in the browser instead
