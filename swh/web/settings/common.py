@@ -252,6 +252,7 @@ LOGGING = {
         },
         "django.db.backends": {"handlers": ["null"], "propagate": False},
         "django.utils.autoreload": {"level": "INFO",},
+        "swh.core.statsd": {"level": "INFO",},
     },
 }
 
