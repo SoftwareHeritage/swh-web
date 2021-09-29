@@ -94,6 +94,12 @@ listed_origins = {
             "search_pattern": "gnu",
         },
         {
+            "type": "heptapod",
+            "info_url": "https://heptapod.net/",
+            "info": "public repositories from multiple Heptapod instances",
+            "search_pattern": "heptapod",
+        },
+        {
             "type": "launchpad",
             "info_url": "https://launchpad.net",
             "logo": "img/logos/launchpad.png",
@@ -114,6 +120,12 @@ listed_origins = {
             "info_url": "https://www.npmjs.com",
             "info": "public packages from the package registry for javascript",
             "search_pattern": "https://www.npmjs.com",
+        },
+        {
+            "type": "opam",
+            "info_url": "https://opam.ocaml.org/",
+            "info": "public packages from the source-based package manager for OCaml",
+            "search_pattern": "opam+https://opam.ocaml.org/",
         },
         # apart our forge, most phabricator origins have not been archived
         # while they have been listed so do not display those type of origins

@@ -284,11 +284,13 @@ static/img/logos/gnu.png
 static/img/logos/googlecode.png
 static/img/logos/guix.png
 static/img/logos/hal.png
+static/img/logos/heptapod.png
 static/img/logos/inria.jpg
 static/img/logos/ipol.png
 static/img/logos/launchpad.png
 static/img/logos/nixos.png
 static/img/logos/npm.png
+static/img/logos/opam.png
 static/img/logos/phabricator.png
 static/img/logos/pypi.png
 static/img/logos/sourceforge.png

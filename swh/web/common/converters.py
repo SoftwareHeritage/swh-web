@@ -204,7 +204,7 @@ def from_origin(origin: Dict[str, Any]) -> OriginInfo:
     """Convert from a swh origin to an origin dictionary.
 
     """
-    return from_swh(origin)
+    return from_swh(origin, blacklist={"id"})
 
 
 def from_release(release: Release) -> Dict[str, Any]:

@@ -1,11 +1,6 @@
 {
   "status": "done",
   "assets": {
-    "robots.txt": {
-      "name": "robots.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/robots.txt",
-      "publicPath": "/static/robots.txt"
-    },
     "img/thirdParty/chosen-sprite.png": {
       "name": "img/thirdParty/chosen-sprite.png",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/img/thirdParty/chosen-sprite.png",
@@ -16,105 +11,10 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/img/thirdParty/chosen-sprite@2x.png",
       "publicPath": "/static/img/thirdParty/chosen-sprite@2x.png"
     },
-    "fonts/alegreya-latin-400.woff": {
-      "name": "fonts/alegreya-latin-400.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400.woff",
-      "publicPath": "/static/fonts/alegreya-latin-400.woff"
-    },
-    "fonts/alegreya-latin-400.woff2": {
-      "name": "fonts/alegreya-latin-400.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-400.woff2"
-    },
-    "fonts/alegreya-latin-400italic.woff": {
-      "name": "fonts/alegreya-latin-400italic.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400italic.woff",
-      "publicPath": "/static/fonts/alegreya-latin-400italic.woff"
-    },
-    "fonts/alegreya-latin-400italic.woff2": {
-      "name": "fonts/alegreya-latin-400italic.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400italic.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-400italic.woff2"
-    },
-    "fonts/alegreya-latin-500.woff": {
-      "name": "fonts/alegreya-latin-500.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500.woff",
-      "publicPath": "/static/fonts/alegreya-latin-500.woff"
-    },
-    "fonts/alegreya-latin-500.woff2": {
-      "name": "fonts/alegreya-latin-500.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-500.woff2"
-    },
-    "fonts/alegreya-latin-500italic.woff": {
-      "name": "fonts/alegreya-latin-500italic.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500italic.woff",
-      "publicPath": "/static/fonts/alegreya-latin-500italic.woff"
-    },
-    "fonts/alegreya-latin-500italic.woff2": {
-      "name": "fonts/alegreya-latin-500italic.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500italic.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-500italic.woff2"
-    },
-    "fonts/alegreya-latin-700.woff": {
-      "name": "fonts/alegreya-latin-700.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700.woff",
-      "publicPath": "/static/fonts/alegreya-latin-700.woff"
-    },
-    "fonts/alegreya-latin-700.woff2": {
-      "name": "fonts/alegreya-latin-700.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-700.woff2"
-    },
-    "fonts/alegreya-latin-700italic.woff": {
-      "name": "fonts/alegreya-latin-700italic.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700italic.woff",
-      "publicPath": "/static/fonts/alegreya-latin-700italic.woff"
-    },
-    "fonts/alegreya-latin-700italic.woff2": {
-      "name": "fonts/alegreya-latin-700italic.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700italic.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-700italic.woff2"
-    },
-    "fonts/alegreya-latin-800.woff": {
-      "name": "fonts/alegreya-latin-800.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800.woff",
-      "publicPath": "/static/fonts/alegreya-latin-800.woff"
-    },
-    "fonts/alegreya-latin-800.woff2": {
-      "name": "fonts/alegreya-latin-800.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-800.woff2"
-    },
-    "fonts/alegreya-latin-800italic.woff": {
-      "name": "fonts/alegreya-latin-800italic.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800italic.woff",
-      "publicPath": "/static/fonts/alegreya-latin-800italic.woff"
-    },
-    "fonts/alegreya-latin-800italic.woff2": {
-      "name": "fonts/alegreya-latin-800italic.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800italic.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-800italic.woff2"
-    },
-    "fonts/alegreya-latin-900.woff": {
-      "name": "fonts/alegreya-latin-900.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900.woff",
-      "publicPath": "/static/fonts/alegreya-latin-900.woff"
-    },
-    "fonts/alegreya-latin-900.woff2": {
-      "name": "fonts/alegreya-latin-900.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-900.woff2"
-    },
-    "fonts/alegreya-latin-900italic.woff": {
-      "name": "fonts/alegreya-latin-900italic.woff",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900italic.woff",
-      "publicPath": "/static/fonts/alegreya-latin-900italic.woff"
-    },
-    "fonts/alegreya-latin-900italic.woff2": {
-      "name": "fonts/alegreya-latin-900italic.woff2",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900italic.woff2",
-      "publicPath": "/static/fonts/alegreya-latin-900italic.woff2"
+    "robots.txt": {
+      "name": "robots.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/robots.txt",
+      "publicPath": "/static/robots.txt"
     },
     "fonts/alegreya-sans-latin-100.woff": {
       "name": "fonts/alegreya-sans-latin-100.woff",
@@ -255,6 +155,106 @@
       "name": "fonts/alegreya-sans-latin-900italic.woff2",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-sans-latin-900italic.woff2",
       "publicPath": "/static/fonts/alegreya-sans-latin-900italic.woff2"
+    },
+    "fonts/alegreya-latin-400.woff": {
+      "name": "fonts/alegreya-latin-400.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400.woff",
+      "publicPath": "/static/fonts/alegreya-latin-400.woff"
+    },
+    "fonts/alegreya-latin-400.woff2": {
+      "name": "fonts/alegreya-latin-400.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-400.woff2"
+    },
+    "fonts/alegreya-latin-400italic.woff": {
+      "name": "fonts/alegreya-latin-400italic.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400italic.woff",
+      "publicPath": "/static/fonts/alegreya-latin-400italic.woff"
+    },
+    "fonts/alegreya-latin-400italic.woff2": {
+      "name": "fonts/alegreya-latin-400italic.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-400italic.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-400italic.woff2"
+    },
+    "fonts/alegreya-latin-500.woff": {
+      "name": "fonts/alegreya-latin-500.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500.woff",
+      "publicPath": "/static/fonts/alegreya-latin-500.woff"
+    },
+    "fonts/alegreya-latin-500.woff2": {
+      "name": "fonts/alegreya-latin-500.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-500.woff2"
+    },
+    "fonts/alegreya-latin-500italic.woff": {
+      "name": "fonts/alegreya-latin-500italic.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500italic.woff",
+      "publicPath": "/static/fonts/alegreya-latin-500italic.woff"
+    },
+    "fonts/alegreya-latin-500italic.woff2": {
+      "name": "fonts/alegreya-latin-500italic.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-500italic.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-500italic.woff2"
+    },
+    "fonts/alegreya-latin-700.woff": {
+      "name": "fonts/alegreya-latin-700.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700.woff",
+      "publicPath": "/static/fonts/alegreya-latin-700.woff"
+    },
+    "fonts/alegreya-latin-700.woff2": {
+      "name": "fonts/alegreya-latin-700.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-700.woff2"
+    },
+    "fonts/alegreya-latin-700italic.woff": {
+      "name": "fonts/alegreya-latin-700italic.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700italic.woff",
+      "publicPath": "/static/fonts/alegreya-latin-700italic.woff"
+    },
+    "fonts/alegreya-latin-700italic.woff2": {
+      "name": "fonts/alegreya-latin-700italic.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-700italic.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-700italic.woff2"
+    },
+    "fonts/alegreya-latin-800.woff": {
+      "name": "fonts/alegreya-latin-800.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800.woff",
+      "publicPath": "/static/fonts/alegreya-latin-800.woff"
+    },
+    "fonts/alegreya-latin-800.woff2": {
+      "name": "fonts/alegreya-latin-800.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-800.woff2"
+    },
+    "fonts/alegreya-latin-800italic.woff": {
+      "name": "fonts/alegreya-latin-800italic.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800italic.woff",
+      "publicPath": "/static/fonts/alegreya-latin-800italic.woff"
+    },
+    "fonts/alegreya-latin-800italic.woff2": {
+      "name": "fonts/alegreya-latin-800italic.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-800italic.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-800italic.woff2"
+    },
+    "fonts/alegreya-latin-900.woff": {
+      "name": "fonts/alegreya-latin-900.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900.woff",
+      "publicPath": "/static/fonts/alegreya-latin-900.woff"
+    },
+    "fonts/alegreya-latin-900.woff2": {
+      "name": "fonts/alegreya-latin-900.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-900.woff2"
+    },
+    "fonts/alegreya-latin-900italic.woff": {
+      "name": "fonts/alegreya-latin-900italic.woff",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900italic.woff",
+      "publicPath": "/static/fonts/alegreya-latin-900italic.woff"
+    },
+    "fonts/alegreya-latin-900italic.woff2": {
+      "name": "fonts/alegreya-latin-900italic.woff2",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/alegreya-latin-900italic.woff2",
+      "publicPath": "/static/fonts/alegreya-latin-900italic.woff2"
     },
     "fonts/materialdesignicons-webfont.eot": {
       "name": "fonts/materialdesignicons-webfont.eot",
@@ -591,11 +591,6 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.5b863a88bcd7fc73f3b0.js",
       "publicPath": "/static/js/mathjax.5b863a88bcd7fc73f3b0.js"
     },
-    "css/auth.0336a94c2c02b4b2a4f4.css.map": {
-      "name": "css/auth.0336a94c2c02b4b2a4f4.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/auth.0336a94c2c02b4b2a4f4.css.map",
-      "publicPath": "/static/css/auth.0336a94c2c02b4b2a4f4.css.map"
-    },
     "css/browse.6315ef52ed73df532bed.css.map": {
       "name": "css/browse.6315ef52ed73df532bed.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
@@ -605,6 +600,11 @@
       "name": "css/guided_tour.9ee473ff88d3b9feceea.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.9ee473ff88d3b9feceea.css.map",
       "publicPath": "/static/css/guided_tour.9ee473ff88d3b9feceea.css.map"
+    },
+    "css/auth.0336a94c2c02b4b2a4f4.css.map": {
+      "name": "css/auth.0336a94c2c02b4b2a4f4.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/auth.0336a94c2c02b4b2a4f4.css.map",
+      "publicPath": "/static/css/auth.0336a94c2c02b4b2a4f4.css.map"
     },
     "css/origin.00463c872372de75fae3.css.map": {
       "name": "css/origin.00463c872372de75fae3.css.map",
