@@ -1,9 +1,10 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import datetime
+import hashlib
 
 from swh.model import hashutil
 from swh.model.model import (
@@ -158,16 +159,16 @@ def test_from_swh_none():
 
 
 def test_from_origin():
+
+    origin_url = "rsync://ftp.gnu.org/gnu/octave"
+
     origin_input = {
-        "id": 9,
-        "type": "ftp",
-        "url": "rsync://ftp.gnu.org/gnu/octave",
+        "id": hashlib.sha1(origin_url.encode("utf-8")).digest(),
+        "url": origin_url,
     }
 
     expected_origin = {
-        "id": 9,
-        "type": "ftp",
-        "url": "rsync://ftp.gnu.org/gnu/octave",
+        "url": origin_url,
     }
 
     actual_origin = converters.from_origin(origin_input)
