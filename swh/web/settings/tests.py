@@ -92,17 +92,18 @@ from .common import LOGGING  # noqa, isort: skip
 
 ALLOWED_HOSTS = ["*"]
 
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": swh_web_config["test_db"],
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": swh_web_config["test_db"]["name"],
     }
 }
 
 # when not running unit tests, make the webapp fetch data from memory storages
 if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
     swh_web_config.update({"debug": True, "e2e_tests_mode": True})
+    from django.conf import settings
+
     from swh.web.tests.data import get_tests_data, override_storages
 
     test_data = get_tests_data()
@@ -112,6 +113,9 @@ if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
         test_data["search"],
         test_data["counters"],
     )
+
+    # using sqlite3 for frontend tests
+    settings.DATABASES["default"].update({("ENGINE", "django.db.backends.sqlite3")})
 else:
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore

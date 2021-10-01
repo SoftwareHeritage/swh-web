@@ -16,6 +16,7 @@ from hypothesis import HealthCheck, settings
 import pytest
 
 from django.core.cache import cache
+from django.test.utils import setup_databases  # type: ignore
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
@@ -495,3 +496,22 @@ def swh_scheduler(swh_scheduler):
     yield swh_scheduler
     config["scheduler"] = scheduler
     get_scheduler_load_task_types.cache_clear()
+
+
+@pytest.fixture(scope="session")
+def django_db_setup(request, django_db_blocker, postgresql_proc):
+    from django.conf import settings
+
+    settings.DATABASES["default"].update(
+        {
+            ("ENGINE", "django.db.backends.postgresql"),
+            ("NAME", get_config()["test_db"]["name"]),
+            ("USER", postgresql_proc.user),
+            ("HOST", postgresql_proc.host),
+            ("PORT", postgresql_proc.port),
+        }
+    )
+    with django_db_blocker.unblock():
+        setup_databases(
+            verbosity=request.config.option.verbose, interactive=False, keepdb=False
+        )

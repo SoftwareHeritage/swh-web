@@ -90,7 +90,7 @@ DEFAULT_CONFIG = {
     "vault": ("dict", {"cls": "remote", "args": {"url": "http://127.0.0.1:5005/",}}),
     "scheduler": ("dict", {"cls": "remote", "url": "http://127.0.0.1:5008/"}),
     "development_db": ("string", os.path.join(SETTINGS_DIR, "db.sqlite3")),
-    "test_db": ("string", os.path.join(SETTINGS_DIR, "testdb.sqlite3")),
+    "test_db": ("dict", {"name": "swh-web-test"}),
     "production_db": ("dict", {"name": "swh-web"}),
     "deposit": (
         "dict",
