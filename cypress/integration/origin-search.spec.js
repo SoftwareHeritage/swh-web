@@ -227,6 +227,17 @@ describe('Test origin-search', function() {
     cy.xhrShouldBeCalled('searchOrigin', 1);
   });
 
+  it('should add query language support for staff users', function() {
+    cy.get('#swh-search-use-ql')
+      .should('not.exist');
+
+    cy.adminLogin();
+    cy.visit(url);
+
+    cy.get('#swh-search-use-ql')
+      .should('exist');
+  });
+
   context('Test pagination', function() {
     it('should not paginate if there are not many results', function() {
       // Setup search

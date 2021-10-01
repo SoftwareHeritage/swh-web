@@ -44,10 +44,7 @@ DEFAULT_CONFIG = {
     ),
     "search_config": (
         "dict",
-        {
-            "metadata_backend": "swh-indexer-storage",  # or "swh-search"
-            "enable_ql": False,
-        },
+        {"metadata_backend": "swh-indexer-storage",},  # or "swh-search"
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
