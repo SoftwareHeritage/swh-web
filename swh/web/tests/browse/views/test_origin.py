@@ -8,6 +8,7 @@ import re
 import string
 
 from hypothesis import given
+import pytest
 
 from django.utils.html import escape
 
@@ -617,32 +618,44 @@ def test_browse_origin_content_unknown_visit(client, mocker, origin):
     assert mock_get_origin_visits.called
 
 
-@given(origin())
-def test_browse_origin_content_directory_empty_snapshot(client, mocker, origin):
-    mock_snapshot_archive = mocker.patch("swh.web.browse.snapshot_context.archive")
-    mock_get_origin_visit_snapshot = mocker.patch(
-        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
+def _add_empty_snapshot_origin(new_origin, archive_data):
+    snapshot = Snapshot(branches={})
+    archive_data.origin_add([new_origin])
+    archive_data.snapshot_add([snapshot])
+    visit = archive_data.origin_visit_add(
+        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
+    )[0]
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit.visit,
+        date=now(),
+        status="full",
+        snapshot=snapshot.id,
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [], {})
-    mock_snapshot_archive.lookup_origin.return_value = origin
-    mock_snapshot_archive.lookup_snapshot_sizes.return_value = {
-        "alias": 0,
-        "revision": 0,
-        "release": 0,
-    }
+    archive_data.origin_visit_status_add([visit_status])
 
-    for browse_context in ("content", "directory"):
-        url = reverse(
-            f"browse-origin-{browse_context}",
-            query_params={"origin_url": origin["url"], "path": "baz"},
-        )
 
-        resp = check_html_get_response(
-            client, url, status_code=200, template_used=f"browse/{browse_context}.html"
-        )
-        assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
-        assert mock_get_origin_visit_snapshot.called
-        assert mock_snapshot_archive.lookup_origin.called
+@pytest.mark.django_db
+@pytest.mark.parametrize("object_type", ["content", "directory"])
+@given(new_origin())
+def test_browse_origin_content_directory_empty_snapshot(
+    client, staff_user, archive_data, object_type, new_origin
+):
+
+    _add_empty_snapshot_origin(new_origin, archive_data)
+
+    # to check proper generation of raw extrinsic metadata api links
+    client.force_login(staff_user)
+
+    url = reverse(
+        f"browse-origin-{object_type}",
+        query_params={"origin_url": new_origin.url, "path": "baz"},
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used=f"browse/{object_type}.html"
+    )
+    assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
 
 
 @given(origin())
@@ -673,20 +686,14 @@ def test_browse_directory_snapshot_not_found(client, mocker, origin):
     assert mock_get_snapshot_context.called
 
 
-@given(origin())
-def test_origin_empty_snapshot(client, mocker, origin):
-    mock_archive = mocker.patch("swh.web.browse.snapshot_context.archive")
-    mock_get_origin_visit_snapshot = mocker.patch(
-        "swh.web.browse.snapshot_context.get_origin_visit_snapshot"
+@given(new_origin())
+def test_origin_empty_snapshot(client, archive_data, new_origin):
+
+    _add_empty_snapshot_origin(new_origin, archive_data)
+
+    url = reverse(
+        "browse-origin-directory", query_params={"origin_url": new_origin.url}
     )
-    mock_get_origin_visit_snapshot.return_value = ([], [], {})
-    mock_archive.lookup_snapshot_sizes.return_value = {
-        "alias": 0,
-        "revision": 0,
-        "release": 0,
-    }
-    mock_archive.lookup_origin.return_value = origin
-    url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/directory.html"
@@ -694,7 +701,6 @@ def test_origin_empty_snapshot(client, mocker, origin):
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
     assert not re.search("swh-tr-link", resp_content)
-    assert mock_get_origin_visit_snapshot.called
 
 
 @given(new_origin())

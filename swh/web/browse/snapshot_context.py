@@ -791,6 +791,7 @@ def browse_snapshot_directory(
     swh_objects = []
     vault_cooking = {}
     revision_found = True
+
     if sha1_git is None and revision_id is not None:
         try:
             archive.lookup_revision(revision_id)
@@ -804,7 +805,7 @@ def browse_snapshot_directory(
         vault_cooking.update(
             {"directory_context": True, "directory_swhid": f"swh:1:dir:{sha1_git}",}
         )
-    if revision_found:
+    if revision_id is not None and revision_found:
         swh_objects.append(
             SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id)
         )
@@ -983,14 +984,25 @@ def browse_snapshot_content(
 
     content_checksums = content_data.get("checksums", {})
 
-    swh_objects = [
-        SWHObjectInfo(
-            object_type=ObjectType.CONTENT, object_id=content_checksums.get("sha1_git")
-        ),
-        SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory_id),
-        SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id),
-        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id),
-    ]
+    sha1_git = content_checksums.get("sha1_git")
+
+    swh_objects = []
+
+    if sha1_git is not None:
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.CONTENT, object_id=sha1_git)
+        )
+    if directory_id is not None:
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory_id)
+        )
+    if revision_id is not None:
+        swh_objects.append(
+            SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id)
+        )
+    swh_objects.append(
+        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)
+    )
 
     visit_date = None
     visit_type = None
