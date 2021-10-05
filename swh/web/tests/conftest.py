@@ -15,6 +15,7 @@ from _pytest.python import Function
 from hypothesis import HealthCheck, settings
 import pytest
 
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test.utils import setup_databases  # type: ignore
 from rest_framework.test import APIClient, APIRequestFactory
@@ -515,3 +516,18 @@ def django_db_setup(request, django_db_blocker, postgresql_proc):
         setup_databases(
             verbosity=request.config.option.verbose, interactive=False, keepdb=False
         )
+
+
+@pytest.fixture
+def staff_user():
+    return User.objects.create_user(username="admin", password="", is_staff=True)
+
+
+@pytest.fixture
+def regular_user():
+    return User.objects.create_user(username="johndoe", password="")
+
+
+@pytest.fixture
+def regular_user2():
+    return User.objects.create_user(username="janedoe", password="")
