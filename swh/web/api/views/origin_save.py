@@ -5,7 +5,11 @@
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.auth.utils import privileged_user
+from swh.web.auth.utils import (
+    API_SAVE_ORIGIN_PERMISSION,
+    SWH_AMBASSADOR_PERMISSION,
+    privileged_user,
+)
 from swh.web.common.origin_save import (
     create_save_origin_request,
     get_savable_visit_types,
@@ -100,7 +104,10 @@ def api_save_origin(request, visit_type, origin_url):
         sor = create_save_origin_request(
             visit_type,
             origin_url,
-            privileged_user(request),
+            privileged_user(
+                request,
+                permissions=[SWH_AMBASSADOR_PERMISSION, API_SAVE_ORIGIN_PERMISSION],
+            ),
             user_id=request.user.id,
             **data,
         )

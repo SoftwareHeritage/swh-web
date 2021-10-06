@@ -11,7 +11,7 @@ import pytest
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION
+from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION, SWH_AMBASSADOR_PERMISSION
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -34,6 +34,7 @@ from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_response,
     check_api_post_responses,
+    create_django_permission,
 )
 
 pytestmark = pytest.mark.django_db
@@ -332,24 +333,7 @@ _visit_type = "git"
 _origin_url = "https://github.com/python/cpython"
 
 
-def test_save_requests_rate_limit(api_client, mocker):
-    create_save_origin_request = mocker.patch(
-        "swh.web.api.views.origin_save.create_save_origin_request"
-    )
-
-    def _save_request_dict(*args, **kwargs):
-        return {
-            "id": 1,
-            "visit_type": _visit_type,
-            "origin_url": _origin_url,
-            "save_request_date": datetime.now().isoformat(),
-            "save_request_status": SAVE_REQUEST_ACCEPTED,
-            "save_task_status": SAVE_TASK_NOT_YET_SCHEDULED,
-            "visit_date": None,
-            "visit_status": None,
-        }
-
-    create_save_origin_request.side_effect = _save_request_dict
+def test_save_requests_rate_limit(api_client, swh_scheduler):
 
     url = reverse(
         "api-1-save-origin",
@@ -360,6 +344,59 @@ def test_save_requests_rate_limit(api_client, mocker):
         check_api_post_response(api_client, url, status_code=200)
 
     check_api_post_response(api_client, url, status_code=429)
+
+
+def test_save_requests_no_rate_limit_if_permission(
+    api_client, regular_user, swh_scheduler
+):
+
+    regular_user.user_permissions.add(
+        create_django_permission(API_SAVE_ORIGIN_PERMISSION)
+    )
+
+    assert regular_user.has_perm(API_SAVE_ORIGIN_PERMISSION)
+
+    api_client.force_login(regular_user)
+
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": _visit_type, "origin_url": _origin_url},
+    )
+
+    for _ in range(save_origin_rate_post):
+        check_api_post_response(api_client, url, status_code=200)
+
+    check_api_post_response(api_client, url, status_code=200)
+
+
+def test_save_request_unknown_repo_with_permission(
+    api_client, regular_user, mocker, swh_scheduler
+):
+
+    regular_user.user_permissions.add(
+        create_django_permission(API_SAVE_ORIGIN_PERMISSION)
+    )
+
+    assert regular_user.has_perm(API_SAVE_ORIGIN_PERMISSION)
+
+    api_client.force_login(regular_user)
+
+    origin_url = "https://unkwownforge.org/user/repo"
+    check_created_save_request_status(
+        api_client,
+        mocker,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
+    check_save_request_status(
+        api_client,
+        mocker,
+        swh_scheduler,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
 
 
 def test_save_request_form_server_error(api_client, mocker):

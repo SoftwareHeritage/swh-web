@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from swh.web.auth.utils import privileged_user
+from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION, privileged_user
 from swh.web.common.models import SaveOriginRequest
 from swh.web.common.origin_save import (
     get_savable_visit_types,
@@ -23,7 +23,9 @@ def _origin_save_view(request):
         "misc/origin-save.html",
         {
             "heading": ("Request the saving of a software origin into the archive"),
-            "visit_types": get_savable_visit_types(privileged_user(request)),
+            "visit_types": get_savable_visit_types(
+                privileged_user(request, permissions=[SWH_AMBASSADOR_PERMISSION])
+            ),
         },
     )
 
