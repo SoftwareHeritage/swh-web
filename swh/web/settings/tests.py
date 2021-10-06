@@ -115,7 +115,9 @@ if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
     )
 
     # using sqlite3 for frontend tests
-    settings.DATABASES["default"].update({("ENGINE", "django.db.backends.sqlite3")})
+    settings.DATABASES["default"].update(
+        {"ENGINE": "django.db.backends.sqlite3", "NAME": "swh-web-test.sqlite3"}
+    )
 else:
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
