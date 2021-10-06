@@ -87,7 +87,6 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
       color.red /= nbVisits;
       color.green /= nbVisits;
       color.blue /= nbVisits;
-      console.log(color);
       circle.css('background-color', `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`);
       circle.css('width', size + 'px');
       circle.css('height', size + 'px');

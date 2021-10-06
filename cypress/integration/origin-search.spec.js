@@ -198,7 +198,6 @@ describe('Test origin-search', function() {
       .then(() => {
         const searchText = 'plugin';
         doSearch(searchText);
-        console.log(searchText);
         cy.wait('@originMetadataSearch').then((req) => {
           expect(req.response.body[0].metadata.metadata.description).to.equal(
             'Line numbering plugin for Highlight.js'
