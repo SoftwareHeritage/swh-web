@@ -6,7 +6,6 @@
 import pytest
 
 from django.conf.urls import url
-from django.contrib.auth.models import User
 from django.test.utils import override_settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -159,10 +158,7 @@ def test_scope3_requests_are_throttled_exempted(api_client):
 
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
-def test_staff_users_are_not_rate_limited(api_client):
-    staff_user = User.objects.create_user(
-        username="johndoe", password="", is_staff=True
-    )
+def test_staff_users_are_not_rate_limited(api_client, staff_user):
 
     api_client.force_login(staff_user)
 
@@ -177,11 +173,9 @@ def test_staff_users_are_not_rate_limited(api_client):
 
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
-def test_non_staff_users_are_rate_limited(api_client):
+def test_non_staff_users_are_rate_limited(api_client, regular_user):
 
-    user = User.objects.create_user(username="johndoe", password="", is_staff=False)
-
-    api_client.force_login(user)
+    api_client.force_login(regular_user)
 
     scope2_limiter_rate_user = (
         scope2_limiter_rate * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR
@@ -215,13 +209,17 @@ def test_non_staff_users_are_rate_limited(api_client):
 
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
-def test_users_with_throttling_exempted_perm_are_not_rate_limited(api_client):
-    user = User.objects.create_user(username="johndoe", password="")
-    user.user_permissions.add(create_django_permission(API_THROTTLING_EXEMPTED_PERM))
+def test_users_with_throttling_exempted_perm_are_not_rate_limited(
+    api_client, regular_user
+):
 
-    assert user.has_perm(API_THROTTLING_EXEMPTED_PERM)
+    regular_user.user_permissions.add(
+        create_django_permission(API_THROTTLING_EXEMPTED_PERM)
+    )
 
-    api_client.force_login(user)
+    assert regular_user.has_perm(API_THROTTLING_EXEMPTED_PERM)
+
+    api_client.force_login(regular_user)
 
     for _ in range(scope2_limiter_rate + 1):
         response = api_client.get("/scope2_func")

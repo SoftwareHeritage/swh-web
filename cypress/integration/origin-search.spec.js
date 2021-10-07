@@ -198,7 +198,6 @@ describe('Test origin-search', function() {
       .then(() => {
         const searchText = 'plugin';
         doSearch(searchText);
-        console.log(searchText);
         cy.wait('@originMetadataSearch').then((req) => {
           expect(req.response.body[0].metadata.metadata.description).to.equal(
             'Line numbering plugin for Highlight.js'
@@ -225,6 +224,17 @@ describe('Test origin-search', function() {
 
     cy.xhrShouldBeCalled('resolveSWHID', 0);
     cy.xhrShouldBeCalled('searchOrigin', 1);
+  });
+
+  it('should add query language support for staff users', function() {
+    cy.get('#swh-search-use-ql')
+      .should('not.exist');
+
+    cy.adminLogin();
+    cy.visit(url);
+
+    cy.get('#swh-search-use-ql')
+      .should('exist');
   });
 
   context('Test pagination', function() {

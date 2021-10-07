@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -22,6 +22,7 @@
 }
 
 .swh-visit-full::before {
+    /* mdi-check-bold */
     content: '\f0e1e';
 }
 
@@ -30,6 +31,7 @@
 }
 
 .swh-visit-partial::before {
+    /* mdi-alter */
     content: '\f0026';
 }
 
@@ -38,6 +40,7 @@
 }
 
 .swh-visit-failed::before {
+    /* mdi-close-thick */
     content: '\f1398';
 }
 
@@ -46,7 +49,26 @@
 }
 
 .swh-visit-ongoing::before {
+    /* mdi-sync */
     content: '\f04e6';
+}
+
+.swh-visit-created {
+    color: #7d8080;
+}
+
+.swh-visit-created::before {
+    /* mdi-camera-plus */
+    content: '\f0edb';
+}
+
+.swh-visit-not_found {
+    color: #000;
+}
+
+.swh-visit-not_found::before {
+    /* mdi-web-off */
+    content: '\f0a8e';
 }
 
 #swh-visits-calendar.calendar {

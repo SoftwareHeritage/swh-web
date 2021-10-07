@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,6 @@
 from django.conf.urls import url
 from django.shortcuts import redirect, render
 
-from swh.web import config
 from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swhid_browse
 import swh.web.browse.views.content  # noqa
@@ -30,7 +29,6 @@ def _browse_search_view(request):
         "browse/search.html",
         {
             "heading": "Search software origins to browse",
-            "enable_ql": config.get_config()["search_config"].get("enable_ql", False),
             "visit_types": origin_visit_types(),
         },
     )

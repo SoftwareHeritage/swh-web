@@ -5,7 +5,11 @@
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.auth.utils import privileged_user
+from swh.web.auth.utils import (
+    API_SAVE_ORIGIN_PERMISSION,
+    SWH_AMBASSADOR_PERMISSION,
+    privileged_user,
+)
 from swh.web.common.origin_save import (
     create_save_origin_request,
     get_savable_visit_types,
@@ -85,6 +89,8 @@ def api_save_origin(request, visit_type, origin_url):
         :>json string visit_status: the status of the visit, either **full**,
             **partial**, **not_found** or **failed** if a visit occurred, null
             otherwise.
+        :>json string note: optional note giving details about the save request,
+            for instance why it has been rejected
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
@@ -98,7 +104,10 @@ def api_save_origin(request, visit_type, origin_url):
         sor = create_save_origin_request(
             visit_type,
             origin_url,
-            privileged_user(request),
+            privileged_user(
+                request,
+                permissions=[SWH_AMBASSADOR_PERMISSION, API_SAVE_ORIGIN_PERMISSION],
+            ),
             user_id=request.user.id,
             **data,
         )
