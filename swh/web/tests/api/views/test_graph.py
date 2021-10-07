@@ -12,7 +12,7 @@ from hypothesis import given
 from django.http.response import StreamingHttpResponse
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID
+from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config

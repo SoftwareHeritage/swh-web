@@ -10,8 +10,8 @@ from hypothesis import given
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType, QualifiedSWHID
 from swh.model.model import Origin
+from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.common.exc import BadInputExc
 from swh.web.common.identifiers import (

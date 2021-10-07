@@ -13,7 +13,6 @@ import pytest
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     OriginVisit,
     OriginVisitStatus,
@@ -21,6 +20,7 @@ from swh.model.model import (
     SnapshotBranch,
     TargetType,
 )
+from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc

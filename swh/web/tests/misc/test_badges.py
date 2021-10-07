@@ -7,7 +7,7 @@ from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType, QualifiedSWHID
+from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse

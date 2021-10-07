@@ -8,7 +8,7 @@ import re
 from hypothesis import given
 import pytest
 
-from swh.model.identifiers import CoreSWHID
+from swh.model.swhids import CoreSWHID
 from swh.vault.exc import NotFoundExc
 from swh.web.common.utils import reverse
 from swh.web.tests.strategies import (

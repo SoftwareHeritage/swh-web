@@ -20,7 +20,6 @@ from swh.indexer.storage import get_indexer_storage
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_hex
-from swh.model.identifiers import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.model.model import (
     Content,
     Directory,
@@ -29,6 +28,7 @@ from swh.model.model import (
     OriginVisitStatus,
     Snapshot,
 )
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.search import get_search
 from swh.storage import get_storage
 from swh.storage.algos.dir_iterators import dir_iterator

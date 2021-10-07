@@ -9,7 +9,7 @@ from hypothesis import given
 
 from django.utils.html import escape
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     _re_encode_content,

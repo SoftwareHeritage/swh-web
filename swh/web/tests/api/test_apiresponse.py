@@ -12,7 +12,7 @@ from corsheaders.middleware import (
 )
 from hypothesis import given
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.api.apiresponse import (
     compute_link_header,
     filter_by_fields,

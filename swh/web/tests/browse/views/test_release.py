@@ -9,7 +9,7 @@ from hypothesis import given
 
 from django.utils.html import escape
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains

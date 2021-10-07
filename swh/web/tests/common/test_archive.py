@@ -13,7 +13,6 @@ import pytest
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Directory,
     DirectoryEntry,
@@ -24,6 +23,7 @@ from swh.model.model import (
     SnapshotBranch,
     TargetType,
 )
+from swh.model.swhids import ObjectType
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult

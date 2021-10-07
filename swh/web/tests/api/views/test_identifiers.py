@@ -5,7 +5,7 @@
 
 from hypothesis import given
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1

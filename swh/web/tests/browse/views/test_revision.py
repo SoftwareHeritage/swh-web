@@ -11,8 +11,8 @@ from hypothesis import given
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType
 from swh.model.model import Revision, RevisionType, TimestampWithTimezone
+from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains

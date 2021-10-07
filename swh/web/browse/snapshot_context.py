@@ -13,8 +13,8 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import Snapshot
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.browse.utils import (
     content_display_max_size,
     format_log_entries,

@@ -6,7 +6,7 @@
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CoreSWHID, ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.common.utils import reverse
 from swh.web.tests.strategies import (
     content_swhid,

@@ -7,7 +7,7 @@ import random
 
 from hypothesis import given
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
     get_origin_visit_snapshot,

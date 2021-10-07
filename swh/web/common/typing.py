@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 from django.http import QueryDict
 
 from swh.core.api.classes import PagedResult as CorePagedResult
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 
 QueryParameters = Union[Dict[str, Any], QueryDict]
 

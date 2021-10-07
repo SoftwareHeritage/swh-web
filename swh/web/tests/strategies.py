@@ -23,7 +23,6 @@ from hypothesis.strategies import (
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Content,
     Directory,
@@ -32,6 +31,7 @@ from swh.model.model import (
     RevisionType,
     TimestampWithTimezone,
 )
+from swh.model.swhids import ObjectType
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest
 from swh.web.common.utils import browsers_supported_image_mimes
