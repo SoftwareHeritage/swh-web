@@ -18,7 +18,7 @@ pyyaml
 requests
 sentry-sdk
 typing-extensions
-psycopg2
+psycopg2<2.9
 swh.auth[django]>=0.5.3
 swh.core>=0.0.95
 swh.counters>=0.5.1

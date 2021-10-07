@@ -102,6 +102,7 @@ class SaveOriginRequest(models.Model):
     )
     # store ids of users that submitted the request as string list
     user_ids = models.TextField(null=True)
+    note = models.TextField(null=True)
 
     class Meta:
         app_label = "swh_web_common"
@@ -127,6 +128,7 @@ class SaveOriginRequest(models.Model):
             visit_status=self.visit_status,
             visit_date=visit_date.isoformat() if visit_date else None,
             loading_task_id=self.loading_task_id,
+            note=self.note,
         )
 
     def __str__(self) -> str:

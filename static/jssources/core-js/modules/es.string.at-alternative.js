@@ -1,8 +1,7 @@
 'use strict';
 var $ = require('../internals/export');
 var requireObjectCoercible = require('../internals/require-object-coercible');
-var toInteger = require('../internals/to-integer');
-var toLength = require('../internals/to-length');
+var toIntegerOrInfinity = require('../internals/to-integer-or-infinity');
 var toString = require('../internals/to-string');
 var fails = require('../internals/fails');
 
@@ -15,8 +14,8 @@ var FORCED = fails(function () {
 $({ target: 'String', proto: true, forced: FORCED }, {
   at: function at(index) {
     var S = toString(requireObjectCoercible(this));
-    var len = toLength(S.length);
-    var relativeIndex = toInteger(index);
+    var len = S.length;
+    var relativeIndex = toIntegerOrInfinity(index);
     var k = relativeIndex >= 0 ? relativeIndex : len + relativeIndex;
     return (k < 0 || k >= len) ? undefined : S.charAt(k);
   }

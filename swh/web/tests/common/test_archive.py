@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
-from copy import deepcopy
 import hashlib
 import itertools
 import random
@@ -28,7 +27,6 @@ from swh.model.model import (
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
-from swh.web.config import get_config
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
@@ -1026,10 +1024,6 @@ def test_search_origin(origin):
 
 @given(origin())
 def test_search_origin_use_ql(mocker, origin):
-    config = deepcopy(get_config())
-    config["search_config"]["enable_ql"] = True
-    mock_get_config = mocker.patch("swh.web.config.get_config")
-    mock_get_config.return_value = config
 
     ORIGIN = [{"url": origin["url"]}]
 
@@ -1038,10 +1032,14 @@ def test_search_origin_use_ql(mocker, origin):
         results=ORIGIN, next_page_token=None,
     )
 
-    results = archive.search_origin(
-        url_pattern=f"origin = '{origin['url']}'", use_ql=True
-    )[0]
+    query = f"origin = '{origin['url']}'"
+
+    results = archive.search_origin(url_pattern=query, use_ql=True)[0]
     assert results == ORIGIN
+
+    mock_archive_search.origin_search.assert_called_with(
+        query=query, page_token=None, with_visit=False, visit_types=None, limit=50
+    )
 
 
 @given(snapshot())

@@ -9,8 +9,8 @@ var fallbackGlobalObject = {};
 export function getGlobalObject() {
     return (isNodeEnv()
         ? global
-        : typeof window !== 'undefined'
-            ? window
+        : typeof window !== 'undefined' // eslint-disable-line no-restricted-globals
+            ? window // eslint-disable-line no-restricted-globals
             : typeof self !== 'undefined'
                 ? self
                 : fallbackGlobalObject);
@@ -160,8 +160,9 @@ export function addExceptionMechanism(event, mechanism) {
  * A safe form of location.href
  */
 export function getLocationHref() {
+    var global = getGlobalObject();
     try {
-        return document.location.href;
+        return global.document.location.href;
     }
     catch (oO) {
         return '';

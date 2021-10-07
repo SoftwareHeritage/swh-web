@@ -324,6 +324,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
     request_date = datetime.now(tz=timezone.utc)
     _visit_date = request_date + timedelta(minutes=5) if visit_date else None
     request_date = datetime.now(tz=timezone.utc)
+    note = "request succeeded"
     sor = SaveOriginRequest(
         request_date=request_date,
         visit_type=_visit_type,
@@ -333,6 +334,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         loading_task_status=None,
         visit_date=_visit_date,
         loading_task_id=1,
+        note=note,
     )
 
     assert sor.to_dict() == SaveOriginRequestInfo(
@@ -345,6 +347,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         visit_status=sor.visit_status,
         visit_date=_visit_date.isoformat() if _visit_date else None,
         loading_task_id=sor.loading_task_id,
+        note=note,
     )
 
 

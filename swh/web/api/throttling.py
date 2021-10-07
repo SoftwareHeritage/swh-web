@@ -12,6 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
 
+from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION
 from swh.web.config import get_config
 
 APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
@@ -83,6 +84,14 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                         ip_network(network) for network in networks
                     ]
         return self.exempted_networks
+
+    def get_scope(self, view: APIView):
+        if not self.scope:
+            # class based view case
+            return getattr(view, self.scope_attr, None)
+        else:
+            # function based view case
+            return self.scope
 
     def allow_request(self, request: Request, view: APIView) -> bool:
         # class based view case
@@ -172,8 +181,12 @@ class SwhWebUserRateThrottle(SwhWebRateThrottle):
         return (num_requests * self.NUM_REQUESTS_FACTOR, duration)
 
     def allow_request(self, request: Request, view: APIView) -> bool:
-        # no throttling for staff users or users with adequate permission
         if request.user.is_staff or request.user.has_perm(API_THROTTLING_EXEMPTED_PERM):
+            # no throttling for staff users or users with adequate permission
+            return True
+        scope = self.get_scope(view)
+        if scope == "save_origin" and request.user.has_perm(API_SAVE_ORIGIN_PERMISSION):
+            # no throttling on save origin endpoint for users with adequate permission
             return True
         return super().allow_request(request, view)
 

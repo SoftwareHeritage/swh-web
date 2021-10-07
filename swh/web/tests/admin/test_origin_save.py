@@ -7,8 +7,6 @@ from urllib.parse import unquote
 
 import pytest
 
-from django.contrib.auth import get_user_model
-
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -22,10 +20,6 @@ from swh.web.common.origin_save import can_save_origin
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import check_http_get_response, check_http_post_response
 
-_user_name = "swh-web-admin"
-_user_mail = "admin@swh-web.org"
-_user_password = "..34~pounds~BEAUTY~march~63.."
-
 _authorized_origin_url = "https://scm.ourproject.org/anonscm/"
 _unauthorized_origin_url = "https://www.softwareheritage.org/"
 
@@ -35,10 +29,6 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(autouse=True)
 def populated_db():
-    User = get_user_model()
-    user = User.objects.create_user(_user_name, _user_mail, _user_password)
-    user.is_staff = True
-    user.save()
     SaveAuthorizedOrigin.objects.create(url=_authorized_origin_url)
     SaveUnauthorizedOrigin.objects.create(url=_unauthorized_origin_url)
 
@@ -50,7 +40,7 @@ def check_not_login(client, url):
     assert unquote(resp.url) == login_url
 
 
-def test_add_authorized_origin_url(client):
+def test_add_authorized_origin_url(client, staff_user):
     authorized_url = "https://scm.adullact.net/anonscm/"
     assert can_save_origin(authorized_url) == SAVE_REQUEST_PENDING
 
@@ -62,13 +52,13 @@ def test_add_authorized_origin_url(client):
 
     assert can_save_origin(authorized_url) == SAVE_REQUEST_PENDING
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
 
     check_http_post_response(client, url, status_code=200)
     assert can_save_origin(authorized_url) == SAVE_REQUEST_ACCEPTED
 
 
-def test_remove_authorized_origin_url(client):
+def test_remove_authorized_origin_url(client, staff_user):
     assert can_save_origin(_authorized_origin_url) == SAVE_REQUEST_ACCEPTED
 
     url = reverse(
@@ -80,12 +70,12 @@ def test_remove_authorized_origin_url(client):
 
     assert can_save_origin(_authorized_origin_url) == SAVE_REQUEST_ACCEPTED
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     check_http_post_response(client, url, status_code=200)
     assert can_save_origin(_authorized_origin_url) == SAVE_REQUEST_PENDING
 
 
-def test_add_unauthorized_origin_url(client):
+def test_add_unauthorized_origin_url(client, staff_user):
     unauthorized_url = "https://www.yahoo./"
     assert can_save_origin(unauthorized_url) == SAVE_REQUEST_PENDING
 
@@ -98,12 +88,12 @@ def test_add_unauthorized_origin_url(client):
 
     assert can_save_origin(unauthorized_url) == SAVE_REQUEST_PENDING
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     check_http_post_response(client, url, status_code=200)
     assert can_save_origin(unauthorized_url) == SAVE_REQUEST_REJECTED
 
 
-def test_remove_unauthorized_origin_url(client):
+def test_remove_unauthorized_origin_url(client, staff_user):
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_REJECTED
 
     url = reverse(
@@ -115,12 +105,12 @@ def test_remove_unauthorized_origin_url(client):
 
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_REJECTED
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     check_http_post_response(client, url, status_code=200)
     assert can_save_origin(_unauthorized_origin_url) == SAVE_REQUEST_PENDING
 
 
-def test_accept_pending_save_request(client, swh_scheduler):
+def test_accept_pending_save_request(client, staff_user, swh_scheduler):
 
     visit_type = "git"
     origin_url = "https://v2.pikacode.com/bthate/botlib.git"
@@ -138,7 +128,7 @@ def test_accept_pending_save_request(client, swh_scheduler):
 
     check_not_login(client, accept_request_url)
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     response = check_http_post_response(client, accept_request_url, status_code=200)
 
     response = check_http_get_response(client, save_request_url, status_code=200)
@@ -146,7 +136,7 @@ def test_accept_pending_save_request(client, swh_scheduler):
     assert response.data[0]["save_task_status"] == SAVE_TASK_NOT_YET_SCHEDULED
 
 
-def test_reject_pending_save_request(client, swh_scheduler):
+def test_reject_pending_save_request(client, staff_user, swh_scheduler):
 
     visit_type = "git"
     origin_url = "https://wikipedia.com"
@@ -166,14 +156,45 @@ def test_reject_pending_save_request(client, swh_scheduler):
 
     check_not_login(client, reject_request_url)
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     response = check_http_post_response(client, reject_request_url, status_code=200)
 
     response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
+    assert response.data[0]["note"] is None
 
 
-def test_remove_save_request(client):
+def test_reject_pending_save_request_with_note(client, staff_user, swh_scheduler):
+
+    visit_type = "git"
+    origin_url = "https://wikipedia.com"
+
+    save_request_url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": visit_type, "origin_url": origin_url},
+    )
+
+    response = check_http_post_response(client, save_request_url, status_code=200)
+    assert response.data["save_request_status"] == SAVE_REQUEST_PENDING
+
+    reject_request_url = reverse(
+        "admin-origin-save-request-reject",
+        url_args={"visit_type": visit_type, "origin_url": origin_url},
+    )
+
+    data = {"note": "The URL does not target a git repository"}
+
+    client.force_login(staff_user)
+    response = check_http_post_response(
+        client, reject_request_url, status_code=200, data=data
+    )
+
+    response = check_http_get_response(client, save_request_url, status_code=200)
+    assert response.data[0]["save_request_status"] == SAVE_REQUEST_REJECTED
+    assert response.data[0]["note"] == data["note"]
+
+
+def test_remove_save_request(client, staff_user):
     sor = SaveOriginRequest.objects.create(
         visit_type="git",
         origin_url="https://wikipedia.com",
@@ -187,6 +208,6 @@ def test_remove_save_request(client):
 
     check_not_login(client, remove_request_url)
 
-    client.login(username=_user_name, password=_user_password)
+    client.force_login(staff_user)
     check_http_post_response(client, remove_request_url, status_code=200)
     assert SaveOriginRequest.objects.count() == 0

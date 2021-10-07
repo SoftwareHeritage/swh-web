@@ -1,6 +1,7 @@
 import { __assign } from "tslib";
 import { API, captureException, withScope } from '@sentry/core';
-import { addExceptionMechanism, addExceptionTypeValue, logger } from '@sentry/utils';
+import { addExceptionMechanism, addExceptionTypeValue, getGlobalObject, logger } from '@sentry/utils';
+var global = getGlobalObject();
 var ignoreOnError = 0;
 /**
  * @hidden
@@ -138,6 +139,9 @@ export function wrap(fn, options, before) {
  */
 export function injectReportDialog(options) {
     if (options === void 0) { options = {}; }
+    if (!global.document) {
+        return;
+    }
     if (!options.eventId) {
         logger.error("Missing eventId option in showReportDialog call");
         return;
@@ -146,14 +150,14 @@ export function injectReportDialog(options) {
         logger.error("Missing dsn option in showReportDialog call");
         return;
     }
-    var script = document.createElement('script');
+    var script = global.document.createElement('script');
     script.async = true;
     script.src = new API(options.dsn).getReportDialogEndpoint(options);
     if (options.onLoad) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         script.onload = options.onLoad;
     }
-    var injectionPoint = document.head || document.body;
+    var injectionPoint = global.document.head || global.document.body;
     if (injectionPoint) {
         injectionPoint.appendChild(script);
     }
