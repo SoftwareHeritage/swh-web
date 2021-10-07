@@ -547,11 +547,6 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
 
 
 def test_api_origin_search_use_ql(api_client, mocker):
-    mock_config = mocker.patch("swh.web.common.archive.config")
-    mock_config.get_config.return_value = {
-        "search_config": {"metadata_backend": "swh-search", "enable_ql": True}
-    }
-
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
         "https://github.com/memononen/libtess2",
@@ -564,13 +559,19 @@ def test_api_origin_search_use_ql(api_client, mocker):
         results=ORIGINS, next_page_token=None,
     )
 
+    query = "origin = 'github.com'"
+
     url = reverse(
         "api-1-origin-search",
-        url_args={"url_pattern": "origin = 'github.com'",},
+        url_args={"url_pattern": query},
         query_params={"visit_type": "git", "use_ql": "true"},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
+
+    mock_archive_search.origin_search.assert_called_with(
+        query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
+    )
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])

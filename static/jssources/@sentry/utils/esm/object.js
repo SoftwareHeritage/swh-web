@@ -173,9 +173,13 @@ function normalizeValue(value, key) {
     if (typeof global !== 'undefined' && value === global) {
         return '[Global]';
     }
+    // It's safe to use `window` and `document` here in this manner, as we are asserting using `typeof` first
+    // which won't throw if they are not present.
+    // eslint-disable-next-line no-restricted-globals
     if (typeof window !== 'undefined' && value === window) {
         return '[Window]';
     }
+    // eslint-disable-next-line no-restricted-globals
     if (typeof document !== 'undefined' && value === document) {
         return '[Document]';
     }

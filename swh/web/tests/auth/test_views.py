@@ -118,7 +118,7 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
 
     # check token has been generated and saved encrypted to database
     assert len(OIDCUserOfflineTokens.objects.all()) == nb_tokens + 1
-    encrypted_token = OIDCUserOfflineTokens.objects.last().offline_token
+    encrypted_token = OIDCUserOfflineTokens.objects.last().offline_token.tobytes()
     secret = get_config()["secret_key"].encode()
     salt = request.user.sub.encode()
     decrypted_token = decrypt_data(encrypted_token, secret, salt)
@@ -131,7 +131,7 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
     return decrypted_token
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_generate_bearer_token_authenticated_user_success(client, keycloak_oidc):
     """
     Authenticated user should be able to generate a bearer token using OIDC
@@ -150,7 +150,7 @@ def test_oidc_list_bearer_tokens_anonymous_user(client):
     check_http_get_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_list_bearer_tokens(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to list his tokens.
@@ -182,7 +182,7 @@ def test_oidc_get_bearer_token_anonymous_user(client):
     check_http_post_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_get_bearer_token(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to display a token.
@@ -204,7 +204,7 @@ def test_oidc_get_bearer_token(client, keycloak_oidc):
         assert response.content == token
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to display a token.
@@ -245,7 +245,7 @@ def test_oidc_revoke_bearer_tokens_anonymous_user(client):
     check_http_post_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_revoke_bearer_tokens(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to revoke tokens.
@@ -279,7 +279,7 @@ def test_oidc_profile_view_anonymous_user(client):
     assert resp["location"] == login_url
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(reset_sequences=True)
 def test_oidc_profile_view(client, keycloak_oidc):
     """
     Authenticated users should be able to request the profile page

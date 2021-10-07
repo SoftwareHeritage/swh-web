@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -188,7 +190,9 @@ def _admin_origin_save_request_reject(request, visit_type, origin_url):
     sor = SaveOriginRequest.objects.get(
         visit_type=visit_type, origin_url=origin_url, status=SAVE_REQUEST_PENDING
     )
+
     sor.status = SAVE_REQUEST_REJECTED
+    sor.note = json.loads(request.body).get("note")
     sor.save()
     return HttpResponse(status=200)
 

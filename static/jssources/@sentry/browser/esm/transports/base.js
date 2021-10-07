@@ -1,13 +1,14 @@
 import { __read, __values } from "tslib";
 import { API } from '@sentry/core';
 import { Status, } from '@sentry/types';
-import { dateTimestampInSeconds, logger, parseRetryAfterHeader, PromiseBuffer, SentryError } from '@sentry/utils';
+import { dateTimestampInSeconds, getGlobalObject, logger, parseRetryAfterHeader, PromiseBuffer, SentryError, } from '@sentry/utils';
 var CATEGORY_MAPPING = {
     event: 'error',
     transaction: 'transaction',
     session: 'session',
     attachment: 'attachment',
 };
+var global = getGlobalObject();
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {
     function BaseTransport(options) {
@@ -21,9 +22,9 @@ var BaseTransport = /** @class */ (function () {
         this._api = new API(options.dsn, options._metadata, options.tunnel);
         // eslint-disable-next-line deprecation/deprecation
         this.url = this._api.getStoreEndpointWithUrlEncodedAuth();
-        if (this.options.sendClientReports) {
-            document.addEventListener('visibilitychange', function () {
-                if (document.visibilityState === 'hidden') {
+        if (this.options.sendClientReports && global.document) {
+            global.document.addEventListener('visibilitychange', function () {
+                if (global.document.visibilityState === 'hidden') {
                     _this._flushOutcomes();
                 }
             });
@@ -65,7 +66,7 @@ var BaseTransport = /** @class */ (function () {
         if (!this.options.sendClientReports) {
             return;
         }
-        if (!navigator || typeof navigator.sendBeacon !== 'function') {
+        if (!global.navigator || typeof global.navigator.sendBeacon !== 'function') {
             logger.warn('Beacon API not available, skipping sending outcomes.');
             return;
         }
@@ -95,7 +96,7 @@ var BaseTransport = /** @class */ (function () {
             }),
         });
         var envelope = envelopeHeader + "\n" + itemHeaders + "\n" + item;
-        navigator.sendBeacon(url, envelope);
+        global.navigator.sendBeacon(url, envelope);
     };
     /**
      * Handle Sentry repsonse for promise-based transports.

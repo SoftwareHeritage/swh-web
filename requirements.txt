@@ -22,4 +22,4 @@ pyyaml
 requests
 sentry-sdk
 typing-extensions
-psycopg2
+psycopg2 < 2.9

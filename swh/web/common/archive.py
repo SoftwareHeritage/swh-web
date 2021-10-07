@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 from urllib.parse import urlparse
 
 from swh.model import hashutil
-from swh.model.identifiers import ObjectType, CoreSWHID
+from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import OriginVisit, Revision
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -323,7 +323,7 @@ def search_origin(
         assert isinstance(page_token, str)
 
     if search:
-        if config.get_config()["search_config"].get("enable_ql") and use_ql:
+        if use_ql:
             page_result = search.origin_search(
                 query=url_pattern,
                 page_token=page_token,

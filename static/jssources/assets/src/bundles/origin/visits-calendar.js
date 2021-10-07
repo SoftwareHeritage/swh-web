@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -7,6 +7,9 @@
 
 import Calendar from 'js-year-calendar';
 import 'js-year-calendar/dist/js-year-calendar.css';
+import hexRgb from 'hex-rgb';
+
+import {visitStatusColor} from './utils';
 
 const minSize = 15;
 const maxSize = 28;
@@ -73,22 +76,18 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
       const dayNumber = $('<div></div>');
       dayNumber.text($(element).text());
       const circle = $('<div></div>');
-      let r = 0;
-      let g = 0;
+      const color = {red: 0, green: 0, blue: 0, alpha: 0.4};
       for (let i = 0; i < nbVisits; ++i) {
         const visit = visitsByDate[dateStr][i];
-        if (visit.status === 'full') {
-          g += 255;
-        } else if (visit.status === 'partial') {
-          r += 255;
-          g += 255;
-        } else {
-          r += 255;
-        }
+        const visitColor = hexRgb(visitStatusColor[visit.status]);
+        color.red += visitColor.red;
+        color.green += visitColor.green;
+        color.blue += visitColor.blue;
       }
-      r /= nbVisits;
-      g /= nbVisits;
-      circle.css('background-color', 'rgba(' + r + ', ' + g + ', 0, 0.3)');
+      color.red /= nbVisits;
+      color.green /= nbVisits;
+      color.blue /= nbVisits;
+      circle.css('background-color', `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`);
       circle.css('width', size + 'px');
       circle.css('height', size + 'px');
       circle.css('border-radius', size + 'px');

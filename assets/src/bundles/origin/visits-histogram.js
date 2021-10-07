@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -11,6 +11,8 @@
 //  - visitsData: raw swh origin visits data
 //  - currentYear: the visits year to display by default
 //  - yearClickCallback: callback when the user selects a year through the histogram
+
+import {visitStatusColor} from './utils';
 
 export async function createVisitsHistogram(container, visitsData, currentYear, yearClickCallback) {
 
@@ -53,8 +55,8 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
 
   // create ordinal colorscale mapping visit status
   const colors = d3.scaleOrdinal()
-    .domain(['full', 'partial', 'failed', 'ongoing'])
-    .range(['#008000', '#edc344', '#ff0000', '#0000ff']);
+    .domain(Object.keys(visitStatusColor))
+    .range(Object.values(visitStatusColor));
 
   // first swh crawls were made in 2015
   const startYear = 2015;
