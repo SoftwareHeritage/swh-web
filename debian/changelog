@@ -1,3 +1,9 @@
+swh-web (0.0.332-1~swh1~bpo10+2) buster-swh; urgency=medium
+
+  * Pin pytest-django to >= 3.5.1
+
+ -- Antoine Lambert <anlambert@softwareheritage.org>  Thu, 07 Oct 2021 14:02:09 +0200
+
 swh-web (0.0.332-1~swh1~bpo10+1) buster-swh; urgency=medium
 
   * Rebuild for buster-swh
