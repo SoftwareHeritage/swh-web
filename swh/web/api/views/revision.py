@@ -49,7 +49,7 @@ def api_revision(request, sha1_git):
         Get information about a revision in the archive. Revisions are
         identified by **sha1** checksums, compatible with Git commit
         identifiers.
-        See :func:`swh.model.identifiers.revision_identifier` in our data model
+        See :func:`swh.model.git_objects.revision_git_object` in our data model
         module for details about how they are computed.
 
         :param string sha1_git: hexadecimal representation of the revision

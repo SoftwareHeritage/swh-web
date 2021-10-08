@@ -4,7 +4,7 @@ Snapshot
 .. http:get:: /browse/snapshot/(snapshot_id)/
 
     HTML view that displays the content of a snapshot from its identifier
-    (see :func:`swh.model.identifiers.snapshot_identifier`
+    (see :func:`swh.model.git_objects.snapshot_git_object`
     in our data model module for details about how they are computed).
 
     A snapshot is a set of named branches, which are pointers to objects at any
