@@ -22,7 +22,7 @@ from swh.web.api.apiresponse import (
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import content, directory, revision
+from swh.web.tests.strategies import directory, revision
 from swh.web.tests.utils import check_http_get_response, check_http_post_response
 
 
@@ -153,7 +153,7 @@ def test_error_response_handler(mocker, api_client):
     assert "Traceback" in resp.data["traceback"]
 
 
-@given(content(), directory(), revision())
+@given(directory(), revision())
 def test_api_endpoints_have_cors_headers(client, content, directory, revision):
     url = reverse("api-1-stat-counters")
 

@@ -13,18 +13,10 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import (
-    content,
-    directory,
-    origin,
-    release,
-    revision,
-    snapshot,
-)
+from swh.web.tests.strategies import directory, origin, release, revision, snapshot
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(content())
 def test_content_id_browse(client, content):
     cnt_sha1_git = content["sha1_git"]
     swhid = gen_swhid(ObjectType.CONTENT, cnt_sha1_git)
@@ -149,7 +141,6 @@ def test_bad_id_browse(client, release):
     check_html_get_response(client, url, status_code=400)
 
 
-@given(content())
 def test_content_id_optional_parts_browse(client, archive_data, content):
     cnt_sha1_git = content["sha1_git"]
     origin_url = "https://github.com/user/repo"

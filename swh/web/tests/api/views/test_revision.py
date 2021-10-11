@@ -17,7 +17,7 @@ from swh.model.model import (
 from swh.web.api.utils import enrich_content, enrich_directory_entry, enrich_revision
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import content, new_person, new_swh_date, revision
+from swh.web.tests.strategies import new_person, new_swh_date, revision
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
@@ -132,7 +132,7 @@ def test_api_revision_directory_ok_returns_dir_entries(
     }
 
 
-@given(content(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_api_revision_directory_ok_returns_content(
     api_client, archive_data, content, person, date
 ):

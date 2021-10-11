@@ -8,16 +8,10 @@ from hypothesis import given
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import (
-    content_swhid,
-    directory_swhid,
-    revision_swhid,
-    unknown_directory,
-)
+from swh.web.tests.strategies import directory_swhid, revision_swhid, unknown_directory
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(content_swhid())
 def test_content_swhid_iframe(client, content_swhid):
     url = reverse("swhid-iframe", url_args={"swhid": str(content_swhid)})
     check_html_get_response(
@@ -25,7 +19,6 @@ def test_content_swhid_iframe(client, content_swhid):
     )
 
 
-@given(content_swhid())
 def test_content_core_swhid_iframe(client, content_swhid):
     content_core_swhid = CoreSWHID(
         object_type=content_swhid.object_type, object_id=content_swhid.object_id
@@ -74,7 +67,6 @@ def test_iframe_object_not_found(client, unknown_directory):
     )
 
 
-@given(content_swhid())
 def test_swhid_iframe_unknown_error(client, mocker, content_swhid):
     mocker.patch("swh.web.misc.iframe.get_swhid").side_effect = Exception("Error")
     url = reverse("swhid-iframe", url_args={"swhid": str(content_swhid)})

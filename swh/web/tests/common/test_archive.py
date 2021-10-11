@@ -31,11 +31,7 @@ from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
     ancestor_revisions,
-    content,
-    contents,
-    contents_with_ctags,
     directory,
-    empty_content,
     empty_directory,
     invalid_sha1,
     new_origin,
@@ -59,7 +55,6 @@ from swh.web.tests.strategies import (
 )
 
 
-@given(contents())
 def test_lookup_multiple_hashes_all_present(contents):
     input_data = []
     expected_output = []
@@ -70,7 +65,7 @@ def test_lookup_multiple_hashes_all_present(contents):
     assert archive.lookup_multiple_hashes(input_data) == expected_output
 
 
-@given(contents(), unknown_contents())
+@given(unknown_contents())
 def test_lookup_multiple_hashes_some_missing(contents, unknown_contents):
     input_contents = list(itertools.chain(contents, unknown_contents))
     random.shuffle(input_contents)
@@ -92,7 +87,6 @@ def test_lookup_hash_does_not_exist():
     assert actual_lookup == {"found": None, "algo": "sha1_git"}
 
 
-@given(content())
 def test_lookup_hash_exist(archive_data, content):
     actual_lookup = archive.lookup_hash("sha1:%s" % content["sha1"])
 
@@ -109,7 +103,6 @@ def test_search_hash_does_not_exist():
     assert {"found": False} == actual_lookup
 
 
-@given(content())
 def test_search_hash_exist(content):
     actual_lookup = archive.search_hash("sha1:%s" % content["sha1"])
 
@@ -119,7 +112,6 @@ def test_search_hash_exist(content):
 @pytest.mark.skipif(
     ctags_json_missing, reason="requires ctags with json output support"
 )
-@given(contents_with_ctags())
 def test_lookup_content_ctags(indexer_data, contents_with_ctags):
     content_sha1 = random.choice(contents_with_ctags["sha1s"])
     indexer_data.content_add_ctags(content_sha1)
@@ -142,7 +134,6 @@ def test_lookup_content_ctags_no_hash():
     assert actual_ctags == []
 
 
-@given(content())
 def test_lookup_content_filetype(indexer_data, content):
     indexer_data.content_add_mimetype(content["sha1"])
     actual_filetype = archive.lookup_content_filetype(content["sha1"])
@@ -151,7 +142,6 @@ def test_lookup_content_filetype(indexer_data, content):
     assert actual_filetype == expected_filetype
 
 
-@given(contents_with_ctags())
 def test_lookup_expression(indexer_data, contents_with_ctags):
     per_page = 10
     expected_ctags = []
@@ -187,7 +177,6 @@ def test_lookup_expression_no_result():
 
 
 @pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")
-@given(content())
 def test_lookup_content_license(indexer_data, content):
     indexer_data.content_add_license(content["sha1"])
     actual_license = archive.lookup_content_license(content["sha1"])
@@ -627,7 +616,6 @@ def test_lookup_content_raw_not_found():
     )
 
 
-@given(content())
 def test_lookup_content_raw(archive_data, content):
     actual_content = archive.lookup_content_raw("sha256:%s" % content["sha256"])
 
@@ -636,8 +624,7 @@ def test_lookup_content_raw(archive_data, content):
     assert actual_content == expected_content
 
 
-@given(empty_content())
-def test_lookup_empty_content_raw(archive_data, empty_content):
+def test_lookup_empty_content_raw(empty_content):
     content_raw = archive.lookup_content_raw(f"sha1_git:{empty_content['sha1_git']}")
     assert content_raw["data"] == b""
 
@@ -654,7 +641,6 @@ def test_lookup_content_not_found():
     )
 
 
-@given(content())
 def test_lookup_content_with_sha1(archive_data, content):
     actual_content = archive.lookup_content(f"sha1:{content['sha1']}")
 
@@ -663,7 +649,6 @@ def test_lookup_content_with_sha1(archive_data, content):
     assert actual_content == expected_content
 
 
-@given(content())
 def test_lookup_content_with_sha256(archive_data, content):
     actual_content = archive.lookup_content(f"sha256:{content['sha256']}")
 
@@ -850,7 +835,7 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(content(), directory(), release(), revision(), snapshot())
+@given(directory(), release(), revision(), snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
@@ -955,8 +940,8 @@ def test_lookup_missing_hashes_non_present():
     }
 
 
-@given(content(), directory())
-def test_lookup_missing_hashes_some_present(archive_data, content, directory):
+@given(directory())
+def test_lookup_missing_hashes_some_present(content, directory):
     missing_rev = random_sha1()
     missing_rel = random_sha1()
     missing_snp = random_sha1()

@@ -10,7 +10,6 @@ from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    content,
     directory,
     origin,
     release,
@@ -25,9 +24,9 @@ from swh.web.tests.strategies import (
 from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
 
 
-@given(origin(), content(), directory(), release(), revision(), snapshot())
+@given(origin(), directory(), release(), revision(), snapshot())
 def test_swhid_resolve_success(
-    api_client, client, origin, content, directory, release, revision, snapshot
+    api_client, client, content, origin, directory, release, revision, snapshot
 ):
 
     for obj_type, obj_id in (
@@ -116,7 +115,7 @@ def test_swh_origin_id_not_resolvable(api_client):
     check_api_get_responses(api_client, url, status_code=400)
 
 
-@given(content(), directory(), release(), revision(), snapshot())
+@given(directory(), release(), revision(), snapshot())
 def test_api_known_swhid_all_present(
     api_client, content, directory, release, revision, snapshot
 ):
@@ -135,7 +134,7 @@ def test_api_known_swhid_all_present(
     assert resp.data == {swhid: {"known": True} for swhid in input_swhids}
 
 
-@given(content(), directory())
+@given(directory())
 def test_api_known_swhid_some_present(api_client, content, directory):
     content_ = gen_swhid(ObjectType.CONTENT, content["sha1_git"])
     directory_ = gen_swhid(ObjectType.DIRECTORY, directory)

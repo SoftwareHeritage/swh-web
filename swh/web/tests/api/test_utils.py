@@ -11,14 +11,7 @@ from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import (
-    content,
-    directory,
-    origin,
-    release,
-    revision,
-    snapshot,
-)
+from swh.web.tests.strategies import directory, origin, release, revision, snapshot
 
 url_map = [
     {
@@ -227,7 +220,6 @@ def test_enrich_content_without_hashes():
     assert utils.enrich_content({"id": "123"}) == {"id": "123"}
 
 
-@given(content())
 def test_enrich_content_with_hashes(api_request_factory, content):
 
     for algo in DEFAULT_ALGORITHMS:
@@ -262,7 +254,6 @@ def test_enrich_content_with_hashes(api_request_factory, content):
         assert enriched_content == content_data
 
 
-@given(content())
 def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, content):
 
     for algo in DEFAULT_ALGORITHMS:

@@ -20,11 +20,10 @@ from hypothesis.strategies import (
     text,
 )
 
-from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
 from swh.model.model import (
-    Content,
     Directory,
     Person,
     Revision,
@@ -34,7 +33,6 @@ from swh.model.model import (
 from swh.model.swhids import ObjectType
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest
-from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -74,114 +72,6 @@ def sha256():
     Hypothesis strategy returning a valid hexadecimal sha256 value.
     """
     return binary(min_size=32, max_size=32).map(hash_to_hex)
-
-
-def content():
-    """
-    Hypothesis strategy returning a random content ingested
-    into the test archive.
-    """
-    return _known_swh_object("contents")
-
-
-def contents():
-    """
-    Hypothesis strategy returning random contents ingested
-    into the test archive.
-    """
-    return lists(content(), min_size=2, max_size=8)
-
-
-def empty_content():
-    """
-    Hypothesis strategy returning the empty content ingested
-    into the test archive.
-    """
-    empty_content = Content.from_data(data=b"").to_dict()
-    for algo in DEFAULT_ALGORITHMS:
-        empty_content[algo] = hash_to_hex(empty_content[algo])
-    return just(empty_content)
-
-
-def content_text():
-    """
-    Hypothesis strategy returning random textual contents ingested
-    into the test archive.
-    """
-    return content().filter(lambda c: c["mimetype"].startswith("text/"))
-
-
-def content_text_non_utf8():
-    """
-    Hypothesis strategy returning random textual contents not encoded
-    to UTF-8 ingested into the test archive.
-    """
-    return content().filter(
-        lambda c: c["mimetype"].startswith("text/")
-        and c["encoding"] not in ("utf-8", "us-ascii")
-    )
-
-
-def content_application_no_highlight():
-    """
-    Hypothesis strategy returning random textual contents with mimetype
-    starting with application/ and no detected programming language to
-    highlight ingested into the test archive.
-    """
-    return content().filter(
-        lambda c: c["mimetype"].startswith("application/")
-        and c["encoding"] != "binary"
-        and c["hljs_language"] == "nohighlight"
-    )
-
-
-def content_text_no_highlight():
-    """
-    Hypothesis strategy returning random textual contents with no detected
-    programming language to highlight ingested into the test archive.
-    """
-    return content().filter(
-        lambda c: c["mimetype"].startswith("text/")
-        and c["hljs_language"] == "nohighlight"
-    )
-
-
-def content_image_type():
-    """
-    Hypothesis strategy returning random image contents ingested
-    into the test archive.
-    """
-    return content().filter(lambda c: c["mimetype"] in browsers_supported_image_mimes)
-
-
-def content_unsupported_image_type_rendering():
-    """
-    Hypothesis strategy returning random image contents ingested
-    into the test archive that can not be rendered by browsers.
-    """
-    return content().filter(
-        lambda c: c["mimetype"].startswith("image/")
-        and c["mimetype"] not in browsers_supported_image_mimes
-    )
-
-
-def content_utf8_detected_as_binary():
-    """
-    Hypothesis strategy returning random textual contents detected as binary
-    by libmagic while they are valid UTF-8 encoded files.
-    """
-
-    def utf8_binary_detected(content):
-        if content["encoding"] != "binary":
-            return False
-        try:
-            content["raw_data"].decode("utf-8")
-        except Exception:
-            return False
-        else:
-            return True
-
-    return content().filter(utf8_binary_detected)
 
 
 @composite
@@ -604,37 +494,6 @@ def non_ancestor_revisions():
 # that can not be generated and thus are hardcoded.
 
 
-def contents_with_ctags():
-    """
-    Hypothesis strategy returning contents ingested into the test
-    archive. Those contents are ctags compatible, that is running
-    ctags on those lay results.
-    """
-    return just(
-        {
-            "sha1s": [
-                "0ab37c02043ebff946c1937523f60aadd0844351",
-                "15554cf7608dde6bfefac7e3d525596343a85b6f",
-                "2ce837f1489bdfb8faf3ebcc7e72421b5bea83bd",
-                "30acd0b47fc25e159e27a980102ddb1c4bea0b95",
-                "4f81f05aaea3efb981f9d90144f746d6b682285b",
-                "5153aa4b6e4455a62525bc4de38ed0ff6e7dd682",
-                "59d08bafa6a749110dfb65ba43a61963d5a5bf9f",
-                "7568285b2d7f31ae483ae71617bd3db873deaa2c",
-                "7ed3ee8e94ac52ba983dd7690bdc9ab7618247b4",
-                "8ed7ef2e7ff9ed845e10259d08e4145f1b3b5b03",
-                "9b3557f1ab4111c8607a4f2ea3c1e53c6992916c",
-                "9c20da07ed14dc4fcd3ca2b055af99b2598d8bdd",
-                "c20ceebd6ec6f7a19b5c3aebc512a12fbdc9234b",
-                "e89e55a12def4cd54d5bff58378a3b5119878eb7",
-                "e8c0654fe2d75ecd7e0b01bee8a8fc60a130097e",
-                "eb6595e559a1d34a2b41e8d4835e0e4f98a5d2b5",
-            ],
-            "symbol_name": "ABS",
-        }
-    )
-
-
 def revision_with_submodules():
     """
     Hypothesis strategy returning a revision that is known to
@@ -655,14 +514,6 @@ def swhid():
     ingested into the test archive.
     """
     return _known_swh_object("swhids")
-
-
-def content_swhid():
-    """
-    Hypothesis strategy returning a qualified SWHID for a content object
-    ingested into the test archive.
-    """
-    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.CONTENT)
 
 
 def directory_swhid():
