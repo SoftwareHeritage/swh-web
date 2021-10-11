@@ -131,6 +131,8 @@ class SnapshotContext(TypedDict):
     """common URL arguments when browsing snapshot content"""
     visit_info: Optional[OriginVisitInfo]
     """optional origin visit info associated to the snapshot"""
+    directory_url: Optional[str]
+    """optional root directory URL associated to the snapshot"""
 
 
 class SWHObjectInfo(TypedDict):
