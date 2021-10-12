@@ -5,13 +5,10 @@
 
 import random
 
-from hypothesis import given
-
 from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import snapshot
 
 url_map = [
     {
@@ -496,7 +493,6 @@ def test_enrich_revision_with_invalid_message(
     assert actual_revision == revision_data
 
 
-@given(snapshot())
 def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
     snapshot_data = archive_data.snapshot_get(snapshot)
 

@@ -8,21 +8,12 @@ import random
 
 from hypothesis import assume, settings
 from hypothesis.extra.dateutil import timezones
-from hypothesis.strategies import (
-    binary,
-    characters,
-    composite,
-    datetimes,
-    lists,
-    sampled_from,
-    text,
-)
+from hypothesis.strategies import binary, characters, composite, datetimes, lists, text
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
 from swh.model.model import Person, Revision, RevisionType, TimestampWithTimezone
-from swh.model.swhids import ObjectType
 from swh.web.tests.data import get_tests_data
 
 # Module dedicated to the generation of input data for tests through
@@ -34,13 +25,6 @@ from swh.web.tests.data import get_tests_data
 hypothesis_default_settings = settings.get_profile("default")
 if repr(settings()) == repr(hypothesis_default_settings):
     settings.load_profile("swh-web")
-
-
-# The following strategies exploit the hypothesis capabilities
-
-
-def _known_swh_object(object_type):
-    return sampled_from(get_tests_data()[object_type])
 
 
 def sha1():
@@ -240,14 +224,6 @@ def unknown_revisions(min_size=2, max_size=8):
     return lists(unknown_revision(), min_size=min_size, max_size=max_size)
 
 
-def snapshot():
-    """
-    Hypothesis strategy returning a random snapshot ingested
-    into the test archive.
-    """
-    return _known_swh_object("snapshots")
-
-
 def new_snapshots(nb_snapshots=None):
     min_size = nb_snapshots if nb_snapshots else 2
     max_size = nb_snapshots if nb_snapshots else 8
@@ -267,19 +243,3 @@ def unknown_snapshot():
         lambda s: get_tests_data()["storage"].snapshot_get_branches(hash_to_bytes(s))
         is None
     )
-
-
-def swhid():
-    """
-    Hypothesis strategy returning a qualified SWHID for any object
-    ingested into the test archive.
-    """
-    return _known_swh_object("swhids")
-
-
-def snapshot_swhid():
-    """
-    Hypothesis strategy returning a qualified SWHID for a snapshot object
-    ingested into the test archive.
-    """
-    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.SNAPSHOT)

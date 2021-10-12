@@ -5,8 +5,6 @@
 
 import random
 
-from hypothesis import given
-
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
@@ -23,7 +21,6 @@ from swh.web.common.typing import (
     SnapshotReleaseInfo,
 )
 from swh.web.common.utils import format_utc_iso_date, reverse
-from swh.web.tests.strategies import snapshot
 
 
 def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_visits):
@@ -87,7 +84,6 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
         assert origin_visit_branches == (branches, releases, aliases)
 
 
-@given(snapshot())
 def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
     for browse_context, kwargs in (

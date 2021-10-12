@@ -521,8 +521,15 @@ def releases(tests_data):
 
 
 @pytest.fixture(scope="function")
+def snapshot(tests_data):
+    """Fixture returning a random snapshot ingested into the test archive.
+    """
+    return random.choice(_known_swh_objects(tests_data, "snapshots"))
+
+
+@pytest.fixture(scope="function")
 def origin(tests_data):
-    """Fixturee returning a random origin ingested into the test archive.
+    """Fixture returning a random origin ingested into the test archive.
     """
     return random.choice(_known_swh_objects(tests_data, "origins"))
 
@@ -608,6 +615,14 @@ def revision_swhid(tests_data):
     ingested into the test archive.
     """
     return _object_type_swhid(tests_data, ObjectType.REVISION)
+
+
+@pytest.fixture(scope="function")
+def snapshot_swhid(tests_data):
+    """Fixture returning a qualified SWHID for a snapshot object
+    ingested into the test archive.
+    """
+    return _object_type_swhid(tests_data, ObjectType.SNAPSHOT)
 
 
 # Fixture to manipulate data from a sample archive used in the tests

@@ -12,11 +12,10 @@ from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import new_snapshot, snapshot
+from swh.web.tests.strategies import new_snapshot
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
-@given(snapshot())
 def test_api_snapshot(api_client, archive_data, snapshot):
 
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot})
@@ -26,7 +25,6 @@ def test_api_snapshot(api_client, archive_data, snapshot):
     assert rv.data == expected_data
 
 
-@given(snapshot())
 def test_api_snapshot_paginated(api_client, archive_data, snapshot):
 
     branches_offset = 0
@@ -88,7 +86,6 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
     assert rv.data == whole_snapshot
 
 
-@given(snapshot())
 def test_api_snapshot_filtered(api_client, archive_data, snapshot):
 
     snapshot_branches = []
@@ -125,7 +122,6 @@ def test_api_snapshot_errors(api_client):
     check_api_get_responses(api_client, url, status_code=404)
 
 
-@given(snapshot())
 def test_api_snapshot_uppercase(api_client, snapshot):
     url = reverse(
         "api-1-snapshot-uppercase-checksum", url_args={"snapshot_id": snapshot.upper()}

@@ -34,7 +34,6 @@ from swh.web.tests.strategies import (
     new_origin,
     new_revision,
     sha256,
-    snapshot,
     unknown_content,
     unknown_contents,
     unknown_directory,
@@ -796,7 +795,6 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
@@ -984,7 +982,6 @@ def test_search_origin_use_ql(mocker, origin):
     )
 
 
-@given(snapshot())
 def test_lookup_snapshot_sizes(archive_data, snapshot):
     branches = archive_data.snapshot_get(snapshot)["branches"]
 
@@ -1031,7 +1028,6 @@ def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     )
 
 
-@given(snapshot())
 def test_lookup_snapshot_alias(snapshot):
     resolved_alias = archive.lookup_snapshot_alias(snapshot, "HEAD")
     assert resolved_alias is not None

@@ -6,7 +6,6 @@
 import random
 from urllib.parse import quote
 
-from hypothesis import given
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
@@ -25,7 +24,6 @@ from swh.web.common.identifiers import (
 from swh.web.common.typing import SWHObjectInfo
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import snapshot
 
 
 def test_gen_swhid(content):
@@ -63,7 +61,6 @@ def test_parse_object_type():
     assert e.match("Invalid swh object type")
 
 
-@given(snapshot())
 def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -100,7 +97,6 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
-@given(snapshot())
 def test_get_swhid(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -119,7 +115,6 @@ def test_get_swhid(content, directory, release, revision, snapshot):
         get_swhid("foo")
 
 
-@given(snapshot())
 def test_group_swhids(content, directory, release, revision, snapshot):
     swhids = []
     expected = {}
