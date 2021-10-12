@@ -387,6 +387,22 @@ def empty_directory():
 
 
 @pytest.fixture(scope="function")
+def release(tests_data):
+    """Fixture returning a random release ingested into the test archive.
+    """
+    return random.choice(_known_swh_objects(tests_data, "releases"))
+
+
+@pytest.fixture(scope="function")
+def releases(tests_data):
+    """Fixture returning random releases ingested into the test archive.
+    """
+    return random.choices(
+        _known_swh_objects(tests_data, "releases"), k=random.randint(2, 8)
+    )
+
+
+@pytest.fixture(scope="function")
 def origin(tests_data):
     """Fixturee returning a random origin ingested into the test archive.
     """
@@ -458,6 +474,14 @@ def directory_swhid(tests_data):
     ingested into the test archive.
     """
     return _object_type_swhid(tests_data, ObjectType.DIRECTORY)
+
+
+@pytest.fixture(scope="function")
+def release_swhid(tests_data):
+    """Fixture returning a qualified SWHID for a random release object
+    ingested into the test archive.
+    """
+    return _object_type_swhid(tests_data, ObjectType.RELEASE)
 
 
 # Fixture to manipulate data from a sample archive used in the tests

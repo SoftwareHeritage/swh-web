@@ -13,7 +13,7 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import release, revision, snapshot
+from swh.web.tests.strategies import revision, snapshot
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -76,7 +76,6 @@ def test_revision_id_browse(client, revision):
         assert resp["location"] == revision_browse_url
 
 
-@given(release())
 def test_release_id_browse(client, release):
     swhid = gen_swhid(ObjectType.RELEASE, release)
 
@@ -132,7 +131,6 @@ def test_snapshot_id_browse(client, snapshot):
         assert resp["location"] == release_browse_url
 
 
-@given(release())
 def test_bad_id_browse(client, release):
     swhid = f"swh:1:foo:{release}"
     url = reverse("browse-swhid", url_args={"swhid": swhid})
@@ -165,7 +163,6 @@ def test_content_id_optional_parts_browse(client, archive_data, content):
     assert resp["location"] == content_browse_url
 
 
-@given(release())
 def test_origin_id_not_resolvable(client, release):
     swhid = "swh:1:ori:8068d0075010b590762c6cb5682ed53cb3c13deb"
     url = reverse("browse-swhid", url_args={"swhid": swhid})

@@ -160,22 +160,6 @@ def visit_dates(nb_dates=None):
     ).map(sorted)
 
 
-def release():
-    """
-    Hypothesis strategy returning a random release ingested
-    into the test archive.
-    """
-    return _known_swh_object("releases")
-
-
-def releases(min_size=2, max_size=8):
-    """
-    Hypothesis strategy returning random releases ingested
-    into the test archive.
-    """
-    return lists(release(), min_size=min_size, max_size=max_size)
-
-
 def unknown_release():
     """
     Hypothesis strategy returning a random revision not ingested
@@ -410,14 +394,6 @@ def swhid():
     ingested into the test archive.
     """
     return _known_swh_object("swhids")
-
-
-def release_swhid():
-    """
-    Hypothesis strategy returning a qualified SWHID for a release object
-    ingested into the test archive.
-    """
-    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.RELEASE)
 
 
 def revision_swhid():

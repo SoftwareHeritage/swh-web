@@ -35,8 +35,6 @@ from swh.web.tests.strategies import (
     new_origin,
     new_revision,
     non_ancestor_revisions,
-    release,
-    releases,
     revision,
     revision_with_submodules,
     revisions,
@@ -251,7 +249,6 @@ def test_lookup_release_ko_id_checksum_too_long(sha256):
     assert e.match("Only sha1_git is supported.")
 
 
-@given(releases())
 def test_lookup_release_multiple(archive_data, releases):
     actual_releases = list(archive.lookup_release_multiple(releases))
 
@@ -288,7 +285,6 @@ def test_lookup_directory_with_path_found(archive_data, directory):
     assert actual_result == directory_entry
 
 
-@given(release())
 def test_lookup_release(archive_data, release):
     actual_release = archive.lookup_release(release)
 
@@ -821,7 +817,7 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(release(), revision(), snapshot())
+@given(revision(), snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):

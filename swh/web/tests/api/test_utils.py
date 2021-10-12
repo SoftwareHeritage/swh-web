@@ -11,7 +11,7 @@ from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import release, revision, snapshot
+from swh.web.tests.strategies import revision, snapshot
 
 url_map = [
     {
@@ -100,7 +100,6 @@ def test_enrich_release_empty():
     assert actual_release == {}
 
 
-@given(release())
 def test_enrich_release_content_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -120,7 +119,6 @@ def test_enrich_release_content_target(api_request_factory, archive_data, releas
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_directory_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -140,7 +138,6 @@ def test_enrich_release_directory_target(api_request_factory, archive_data, rele
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_revision_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -158,7 +155,6 @@ def test_enrich_release_revision_target(api_request_factory, archive_data, relea
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_release_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)

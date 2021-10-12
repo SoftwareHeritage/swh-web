@@ -16,7 +16,6 @@ from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     invalid_sha1,
     new_origin,
-    release,
     revision,
     snapshot,
     unknown_content,
@@ -40,7 +39,6 @@ def test_origin_badge(client, origin):
     _test_badge_endpoints(client, "origin", origin["url"])
 
 
-@given(release())
 def test_release_badge(client, release):
     _test_badge_endpoints(client, "release", release)
 
@@ -112,7 +110,6 @@ def test_badge_errors(
         _check_generated_badge(resp, "", "", error="invalid id")
 
 
-@given(release())
 def test_badge_endpoints_have_cors_header(client, origin, release):
     url = reverse(
         "swh-badge", url_args={"object_type": "origin", "object_id": origin["url"]}

@@ -33,9 +33,13 @@ from swh.web.common.utils import (
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import new_origin, new_snapshot
-from swh.web.tests.strategies import release as existing_release
-from swh.web.tests.strategies import revisions, unknown_revision, visit_dates
+from swh.web.tests.strategies import (
+    new_origin,
+    new_snapshot,
+    revisions,
+    unknown_revision,
+    visit_dates,
+)
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -1229,10 +1233,10 @@ def _origin_releases_test_helper(
 
 
 @given(
-    new_origin(), visit_dates(), revisions(min_size=10, max_size=10), existing_release()
+    new_origin(), visit_dates(), revisions(min_size=10, max_size=10),
 )
 def test_origin_branches_pagination_with_alias(
-    client, archive_data, mocker, new_origin, visit_dates, revisions, existing_release
+    client, archive_data, mocker, release, new_origin, visit_dates, revisions,
 ):
     """
     When a snapshot contains a branch or a release alias, pagination links
@@ -1246,14 +1250,14 @@ def test_origin_branches_pagination_with_alias(
             "target_type": "revision",
             "target": hash_to_bytes(revisions[i]),
         }
-    release = "".join(random.choices(string.ascii_lowercase, k=8))
+    release_name = "".join(random.choices(string.ascii_lowercase, k=8))
     snp_dict["branches"][b"RELEASE_ALIAS"] = {
         "target_type": "alias",
-        "target": release.encode(),
+        "target": release_name.encode(),
     }
-    snp_dict["branches"][release.encode()] = {
+    snp_dict["branches"][release_name.encode()] = {
         "target_type": "release",
-        "target": hash_to_bytes(existing_release),
+        "target": hash_to_bytes(release),
     }
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
