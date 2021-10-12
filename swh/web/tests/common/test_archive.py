@@ -31,8 +31,6 @@ from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
     ancestor_revisions,
-    directory,
-    empty_directory,
     invalid_sha1,
     new_origin,
     new_revision,
@@ -274,7 +272,6 @@ def test_lookup_release_multiple_none_found():
     assert actual_releases == [None] * len(unknown_releases_)
 
 
-@given(directory())
 def test_lookup_directory_with_path_not_found(directory):
     path = "some/invalid/path/here"
     with pytest.raises(NotFoundExc) as e:
@@ -284,7 +281,6 @@ def test_lookup_directory_with_path_not_found(directory):
     )
 
 
-@given(directory())
 def test_lookup_directory_with_path_found(archive_data, directory):
     directory_content = archive_data.directory_ls(directory)
     directory_entry = random.choice(directory_content)
@@ -671,7 +667,6 @@ def test_lookup_directory_not_found():
     assert e.match("Directory with sha1_git %s not found" % unknown_directory_)
 
 
-@given(directory())
 def test_lookup_directory(archive_data, directory):
     actual_directory_ls = list(archive.lookup_directory(directory))
 
@@ -680,7 +675,6 @@ def test_lookup_directory(archive_data, directory):
     assert actual_directory_ls == expected_directory_ls
 
 
-@given(empty_directory())
 def test_lookup_directory_empty(empty_directory):
     actual_directory_ls = list(archive.lookup_directory(empty_directory))
 
@@ -835,7 +829,7 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(directory(), release(), revision(), snapshot())
+@given(release(), revision(), snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
@@ -940,7 +934,6 @@ def test_lookup_missing_hashes_non_present():
     }
 
 
-@given(directory())
 def test_lookup_missing_hashes_some_present(content, directory):
     missing_rev = random_sha1()
     missing_rel = random_sha1()
@@ -1156,7 +1149,7 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
                 assert not branch_name.startswith(exclude_prefix)
 
 
-@given(directory(), revision())
+@given(revision())
 def test_lookup_snapshot_branch_names_filtering_paginated(
     archive_data, directory, revision
 ):

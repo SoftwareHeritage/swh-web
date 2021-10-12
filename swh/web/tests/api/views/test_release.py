@@ -17,7 +17,7 @@ from swh.model.model import (
 )
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import directory, release
+from swh.web.tests.strategies import release
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
@@ -39,7 +39,7 @@ def test_api_release(api_client, archive_data, release):
     assert rv.data == expected_release
 
 
-@given(directory(), release())
+@given(release())
 def test_api_release_target_type_not_a_revision(
     api_client, archive_data, content, directory, release
 ):

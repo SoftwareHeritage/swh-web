@@ -17,7 +17,6 @@ from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
-    directory,
     new_origin,
     new_person,
     new_swh_date,
@@ -323,7 +322,7 @@ def test_revision_invalid_path(client, archive_data, revision):
     assert_not_contains(resp, "swh-metadata-popover", status_code=404)
 
 
-@given(directory(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_revision_metadata_display(archive_data, client, directory, person, date):
     metadata = {"foo": "bar"}
     revision = Revision(

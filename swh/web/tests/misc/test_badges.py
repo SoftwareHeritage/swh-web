@@ -14,7 +14,6 @@ from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
-    directory,
     invalid_sha1,
     new_origin,
     origin,
@@ -34,7 +33,6 @@ def test_content_badge(client, content):
     _test_badge_endpoints(client, "content", content["sha1_git"])
 
 
-@given(directory())
 def test_directory_badge(client, directory):
     _test_badge_endpoints(client, "directory", directory)
 

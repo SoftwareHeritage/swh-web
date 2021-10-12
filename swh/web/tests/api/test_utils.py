@@ -11,7 +11,7 @@ from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import directory, origin, release, revision, snapshot
+from swh.web.tests.strategies import origin, release, revision, snapshot
 
 url_map = [
     {
@@ -180,7 +180,6 @@ def test_enrich_directory_entry_no_type():
     assert utils.enrich_directory_entry({"id": "dir-id"}) == {"id": "dir-id"}
 
 
-@given(directory())
 def test_enrich_directory_entry_with_type(api_request_factory, archive_data, directory):
 
     dir_content = archive_data.directory_ls(directory)

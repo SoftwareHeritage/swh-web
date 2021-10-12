@@ -31,9 +31,6 @@ from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
-    directory,
-    directory_with_subdirs,
-    empty_directory,
     invalid_sha1,
     new_person,
     new_swh_date,
@@ -43,20 +40,20 @@ from swh.web.tests.strategies import (
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(directory())
 def test_root_directory_view(client, archive_data, directory):
     _directory_view_checks(client, directory, archive_data.directory_ls(directory))
 
 
-@given(directory_with_subdirs())
-def test_sub_directory_view(client, archive_data, directory):
-    dir_content = archive_data.directory_ls(directory)
+def test_sub_directory_view(client, archive_data, directory_with_subdirs):
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
     subdir = random.choice([e for e in dir_content if e["type"] == "dir"])
     subdir_content = archive_data.directory_ls(subdir["target"])
-    _directory_view_checks(client, directory, subdir_content, subdir["name"])
+    _directory_view_checks(
+        client, directory_with_subdirs, subdir_content, subdir["name"]
+    )
 
 
-@given(empty_directory(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_sub_directory_view_origin_context(
     client, archive_data, empty_directory, person, date
 ):
@@ -153,7 +150,6 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     )
 
 
-@given(directory())
 def test_directory_with_invalid_path(client, directory):
     path = "foo/bar"
     dir_url = reverse(
@@ -171,7 +167,6 @@ def test_directory_with_invalid_path(client, directory):
     assert_contains(resp, error_message, status_code=404)
 
 
-@given(directory())
 def test_directory_uppercase(client, directory):
     url = reverse(
         "browse-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}
@@ -184,7 +179,6 @@ def test_directory_uppercase(client, directory):
     assert resp["location"] == redirect_url
 
 
-@given(directory())
 def test_permalink_box_context(client, tests_data, directory):
     origin_url = random.choice(tests_data["origins"])["url"]
     url = reverse(

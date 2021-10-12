@@ -23,13 +23,7 @@ from hypothesis.strategies import (
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.hypothesis_strategies import origins as new_origin_strategy
 from swh.model.hypothesis_strategies import snapshots as new_snapshot
-from swh.model.model import (
-    Directory,
-    Person,
-    Revision,
-    RevisionType,
-    TimestampWithTimezone,
-)
+from swh.model.model import Person, Revision, RevisionType, TimestampWithTimezone
 from swh.model.swhids import ObjectType
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest
@@ -109,51 +103,6 @@ def unknown_contents():
     into the test archive.
     """
     return lists(unknown_content(), min_size=2, max_size=8)
-
-
-def directory():
-    """
-    Hypothesis strategy returning a random directory ingested
-    into the test archive.
-    """
-    return _known_swh_object("directories")
-
-
-def _directory_with_entry_type(type_):
-    return directory().filter(
-        lambda d: any(
-            [
-                e["type"] == type_
-                for e in list(
-                    get_tests_data()["storage"].directory_ls(hash_to_bytes(d))
-                )
-            ]
-        )
-    )
-
-
-def directory_with_subdirs():
-    """
-    Hypothesis strategy returning a random directory containing
-    sub directories ingested into the test archive.
-    """
-    return _directory_with_entry_type("dir")
-
-
-def directory_with_files():
-    """
-    Hypothesis strategy returning a random directory containing
-    at least one regular file
-    """
-    return _directory_with_entry_type("file")
-
-
-def empty_directory():
-    """
-    Hypothesis strategy returning the empty directory ingested
-    into the test archive.
-    """
-    return just(Directory(entries=()).id.hex())
 
 
 def unknown_directory():
@@ -514,14 +463,6 @@ def swhid():
     ingested into the test archive.
     """
     return _known_swh_object("swhids")
-
-
-def directory_swhid():
-    """
-    Hypothesis strategy returning a qualified SWHID for a directory object
-    ingested into the test archive.
-    """
-    return swhid().filter(lambda swhid: swhid.object_type == ObjectType.DIRECTORY)
 
 
 def release_swhid():

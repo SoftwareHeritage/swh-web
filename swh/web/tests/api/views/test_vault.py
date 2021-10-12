@@ -11,12 +11,7 @@ import pytest
 from swh.model.swhids import CoreSWHID
 from swh.vault.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import (
-    directory,
-    revision,
-    unknown_directory,
-    unknown_revision,
-)
+from swh.web.tests.strategies import revision, unknown_directory, unknown_revision
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_responses,
@@ -28,7 +23,7 @@ from swh.web.tests.utils import (
 # Current API:
 
 
-@given(directory(), revision())
+@given(revision())
 def test_api_vault_cook(api_client, mocker, directory, revision):
     mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
@@ -78,7 +73,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
-@given(directory(), revision(), unknown_directory(), unknown_revision())
+@given(revision(), unknown_directory(), unknown_revision())
 def test_api_vault_cook_notfound(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):
@@ -191,7 +186,7 @@ def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint)
 # Legacy API:
 
 
-@given(directory(), revision())
+@given(revision())
 def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
     mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
@@ -243,7 +238,7 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
-@given(directory(), revision())
+@given(revision())
 def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
 
     for obj_type, obj_id in (
@@ -279,7 +274,7 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
         assert rv["location"] == redirect_url
 
 
-@given(directory(), revision(), unknown_directory(), unknown_revision())
+@given(revision(), unknown_directory(), unknown_revision())
 def test_api_vault_cook_notfound_legacy(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):

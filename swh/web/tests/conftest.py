@@ -27,7 +27,7 @@ from swh.model.hashutil import (
     hash_to_bytes,
     hash_to_hex,
 )
-from swh.model.model import Content
+from swh.model.model import Content, Directory
 from swh.model.swhids import ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -340,19 +340,77 @@ def contents_with_ctags():
 
 
 @pytest.fixture(scope="function")
-def content_swhid(tests_data):
+def directory(tests_data):
+    """Fixture returning a random directory ingested into the test archive.
     """
-    Fixture returning a qualified SWHID for a random content object
-    ingested into the test archive.
-    """
+    return random.choice(_known_swh_objects(tests_data, "directories"))
+
+
+def _directory_with_entry_type(tests_data, type_):
     return random.choice(
         list(
             filter(
-                lambda swhid: swhid.object_type == ObjectType.CONTENT,
+                lambda d: any(
+                    [
+                        e["type"] == type_
+                        for e in list(
+                            tests_data["storage"].directory_ls(hash_to_bytes(d))
+                        )
+                    ]
+                ),
+                _known_swh_objects(tests_data, "directories"),
+            )
+        )
+    )
+
+
+@pytest.fixture(scope="function")
+def directory_with_subdirs(tests_data):
+    """Fixture returning a random directory containing sub directories ingested
+    into the test archive.
+    """
+    return _directory_with_entry_type(tests_data, "dir")
+
+
+@pytest.fixture(scope="function")
+def directory_with_files(tests_data):
+    """Fixture returning a random directory containing at least one regular file.
+    """
+    return _directory_with_entry_type(tests_data, "file")
+
+
+@pytest.fixture(scope="function")
+def empty_directory():
+    """Fixture returning the empty directory ingested into the test archive.
+    """
+    return Directory(entries=()).id.hex()
+
+
+def _object_type_swhid(tests_data, object_type):
+    return random.choice(
+        list(
+            filter(
+                lambda swhid: swhid.object_type == object_type,
                 _known_swh_objects(tests_data, "swhids"),
             )
         )
     )
+
+
+@pytest.fixture(scope="function")
+def content_swhid(tests_data):
+    """Fixture returning a qualified SWHID for a random content object
+    ingested into the test archive.
+    """
+    return _object_type_swhid(tests_data, ObjectType.CONTENT)
+
+
+@pytest.fixture(scope="function")
+def directory_swhid(tests_data):
+    """Fixture returning a qualified SWHID for a random directory object
+    ingested into the test archive.
+    """
+    return _object_type_swhid(tests_data, ObjectType.DIRECTORY)
 
 
 # Fixture to manipulate data from a sample archive used in the tests

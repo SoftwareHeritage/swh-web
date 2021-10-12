@@ -26,9 +26,6 @@ from swh.web.common.typing import SWHObjectInfo
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    directory,
-    directory_with_files,
-    directory_with_subdirs,
     origin,
     origin_with_multiple_visits,
     release,
@@ -72,7 +69,7 @@ def test_parse_object_type():
     assert e.match("Invalid swh object type")
 
 
-@given(directory(), release(), revision(), snapshot())
+@given(release(), revision(), snapshot())
 def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -109,7 +106,7 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
-@given(directory(), release(), revision(), snapshot())
+@given(release(), revision(), snapshot())
 def test_get_swhid(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -128,7 +125,7 @@ def test_get_swhid(content, directory, release, revision, snapshot):
         get_swhid("foo")
 
 
-@given(directory(), release(), revision(), snapshot())
+@given(release(), revision(), snapshot())
 def test_group_swhids(content, directory, release, revision, snapshot):
     swhids = []
     expected = {}
@@ -149,23 +146,30 @@ def test_group_swhids(content, directory, release, revision, snapshot):
     assert swhid_groups == expected
 
 
-@given(directory_with_subdirs())
-def test_get_swhids_info_directory_context(archive_data, directory):
+def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs):
     swhid = get_swhids_info(
-        [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory)],
+        [
+            SWHObjectInfo(
+                object_type=ObjectType.DIRECTORY, object_id=directory_with_subdirs
+            )
+        ],
         snapshot_context=None,
     )[0]
     assert swhid["swhid_with_context"] is None
 
     # path qualifier should be discarded for a root directory
     swhid = get_swhids_info(
-        [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory)],
+        [
+            SWHObjectInfo(
+                object_type=ObjectType.DIRECTORY, object_id=directory_with_subdirs
+            )
+        ],
         snapshot_context=None,
         extra_context={"path": "/"},
     )[0]
     assert swhid["swhid_with_context"] is None
 
-    dir_content = archive_data.directory_ls(directory)
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
     dir_subdirs = [e for e in dir_content if e["type"] == "dir"]
     dir_subdir = random.choice(dir_subdirs)
     dir_subdir_path = f'/{dir_subdir["name"]}/'
@@ -178,7 +182,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
     ]
 
     extra_context = {
-        "root_directory": directory,
+        "root_directory": directory_with_subdirs,
         "path": dir_subdir_path,
     }
 
@@ -202,7 +206,7 @@ def test_get_swhids_info_directory_context(archive_data, directory):
     for swhid in (swhid_lower, swhid_upper):
         swhid_dir_parsed = get_swhid(swhid)
 
-        anchor = gen_swhid(ObjectType.DIRECTORY, directory)
+        anchor = gen_swhid(ObjectType.DIRECTORY, directory_with_subdirs)
 
         assert swhid_dir_parsed.qualifiers() == {
             "anchor": anchor,
@@ -439,8 +443,8 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
                 assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
-@given(origin(), directory())
-def test_get_swhids_info_characters_and_url_escaping(archive_data, origin, directory):
+@given(origin())
+def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, origin):
     snapshot_context = get_snapshot_context(origin_url=origin["url"])
     snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
     path = "/foo;/bar%"
@@ -632,7 +636,6 @@ def _check_resolved_swhid_browse_url(
         assert obj_swhid_resolved["browse_url"] == expected_url
 
 
-@given(directory())
 def test_resolve_swhid_with_escaped_chars(archive_data, directory):
     origin_url = "http://example.org/?project=abc;"
     archive_data.origin_add([Origin(url=origin_url)])
@@ -646,13 +649,14 @@ def test_resolve_swhid_with_escaped_chars(archive_data, directory):
     assert origin_swhid_url_escaped in resolved_swhid["browse_url"]
 
 
-@given(directory_with_subdirs())
-def test_resolve_directory_swhid_path_without_trailing_slash(archive_data, directory):
-    dir_content = archive_data.directory_ls(directory)
+def test_resolve_directory_swhid_path_without_trailing_slash(
+    archive_data, directory_with_subdirs
+):
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
     dir_subdirs = [e for e in dir_content if e["type"] == "dir"]
     dir_subdir = random.choice(dir_subdirs)
     dir_subdir_path = dir_subdir["name"]
-    anchor = gen_swhid(ObjectType.DIRECTORY, directory)
+    anchor = gen_swhid(ObjectType.DIRECTORY, directory_with_subdirs)
     swhid = gen_swhid(
         ObjectType.DIRECTORY,
         dir_subdir["target"],
@@ -661,13 +665,12 @@ def test_resolve_directory_swhid_path_without_trailing_slash(archive_data, direc
     resolved_swhid = resolve_swhid(swhid)
     browse_url = reverse(
         "browse-directory",
-        url_args={"sha1_git": directory},
+        url_args={"sha1_git": directory_with_subdirs},
         query_params={"path": dir_subdir_path},
     )
     assert resolved_swhid["browse_url"] == browse_url
 
 
-@given(directory())
 def test_resolve_swhid_with_malformed_origin_url(archive_data, directory):
     origin_url = "http://example.org/project/abc"
     malformed_origin_url = "http:/example.org/project/abc"
@@ -716,14 +719,15 @@ def test_resolve_dir_entry_swhid_with_anchor_revision(archive_data, revision):
     assert resolved_swhid["browse_url"] == browse_url
 
 
-@given(directory_with_subdirs())
-def test_resolve_dir_entry_swhid_with_anchor_directory(archive_data, directory):
-    dir_content = archive_data.directory_ls(directory)
+def test_resolve_dir_entry_swhid_with_anchor_directory(
+    archive_data, directory_with_subdirs
+):
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
     dir_entry = random.choice(
         [entry for entry in dir_content if entry["type"] == "dir"]
     )
 
-    dir_swhid = gen_swhid(ObjectType.DIRECTORY, directory)
+    dir_swhid = gen_swhid(ObjectType.DIRECTORY, directory_with_subdirs)
 
     swhid = gen_swhid(
         ObjectType.DIRECTORY,
@@ -732,7 +736,7 @@ def test_resolve_dir_entry_swhid_with_anchor_directory(archive_data, directory):
     )
     browse_url = reverse(
         "browse-directory",
-        url_args={"sha1_git": directory},
+        url_args={"sha1_git": directory_with_subdirs},
         query_params={"path": f"{dir_entry['name']}"},
     )
 
@@ -741,14 +745,15 @@ def test_resolve_dir_entry_swhid_with_anchor_directory(archive_data, directory):
     assert resolved_swhid["browse_url"] == browse_url
 
 
-@given(directory_with_files())
-def test_resolve_file_entry_swhid_with_anchor_directory(archive_data, directory):
-    dir_content = archive_data.directory_ls(directory)
+def test_resolve_file_entry_swhid_with_anchor_directory(
+    archive_data, directory_with_files
+):
+    dir_content = archive_data.directory_ls(directory_with_files)
     file_entry = random.choice(
         [entry for entry in dir_content if entry["type"] == "file"]
     )
 
-    dir_swhid = gen_swhid(ObjectType.DIRECTORY, directory)
+    dir_swhid = gen_swhid(ObjectType.DIRECTORY, directory_with_files)
 
     sha1_git = file_entry["checksums"]["sha1_git"]
     swhid = gen_swhid(
@@ -759,7 +764,7 @@ def test_resolve_file_entry_swhid_with_anchor_directory(archive_data, directory)
     browse_url = reverse(
         "browse-content",
         url_args={"query_string": f"sha1_git:{sha1_git}"},
-        query_params={"path": f"{directory}/{file_entry['name']}"},
+        query_params={"path": f"{directory_with_files}/{file_entry['name']}"},
     )
 
     resolved_swhid = resolve_swhid(swhid)
