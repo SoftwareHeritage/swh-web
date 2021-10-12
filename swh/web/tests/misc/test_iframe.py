@@ -3,12 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import unknown_directory
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -53,7 +51,6 @@ def test_iframe_unsupported_object(client, revision_swhid):
     )
 
 
-@given(unknown_directory())
 def test_iframe_object_not_found(client, unknown_directory):
     swhid = CoreSWHID(
         object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(unknown_directory)

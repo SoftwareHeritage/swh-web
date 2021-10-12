@@ -29,19 +29,7 @@ from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
-from swh.web.tests.strategies import (
-    invalid_sha1,
-    new_origin,
-    new_revision,
-    sha256,
-    unknown_content,
-    unknown_contents,
-    unknown_directory,
-    unknown_release,
-    unknown_revision,
-    unknown_snapshot,
-    visit_dates,
-)
+from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 
 
 def test_lookup_multiple_hashes_all_present(contents):
@@ -54,7 +42,6 @@ def test_lookup_multiple_hashes_all_present(contents):
     assert archive.lookup_multiple_hashes(input_data) == expected_output
 
 
-@given(unknown_contents())
 def test_lookup_multiple_hashes_some_missing(contents, unknown_contents):
     input_contents = list(itertools.chain(contents, unknown_contents))
     random.shuffle(input_contents)
@@ -229,14 +216,12 @@ def test_lookup_origin(archive_data, new_origin):
     assert actual_origin == expected_origin
 
 
-@given(invalid_sha1())
 def test_lookup_release_ko_id_checksum_not_a_sha1(invalid_sha1):
     with pytest.raises(BadInputExc) as e:
         archive.lookup_release(invalid_sha1)
     assert e.match("Invalid checksum")
 
 
-@given(sha256())
 def test_lookup_release_ko_id_checksum_too_long(sha256):
     with pytest.raises(BadInputExc) as e:
         archive.lookup_release(sha256)
@@ -285,7 +270,6 @@ def test_lookup_release(archive_data, release):
     assert actual_release == archive_data.release_get(release)
 
 
-@given(invalid_sha1(), sha256())
 def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha256):
     sha1_git_root = revision
     sha1_git = invalid_sha1
@@ -301,7 +285,6 @@ def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha2
     assert e.match("Only sha1_git is supported")
 
 
-@given(unknown_revision())
 def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -313,7 +296,6 @@ def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     assert e.match("Revision %s not found" % sha1_git)
 
 
-@given(unknown_revision())
 def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -500,7 +482,7 @@ def test_lookup_revision_invalid_msg(archive_data, new_revision):
 
     revision = archive.lookup_revision(hash_to_hex(new_revision["id"]))
     assert revision["message"] == "elegant fix for bug \\xff"
-    assert revision["decoding_failures"] == ["message"]
+    assert "message" in revision["decoding_failures"]
 
 
 @given(new_revision())
@@ -814,13 +796,6 @@ def test_lookup_known_objects(
     assert archive.lookup_object(ObjectType.SNAPSHOT, snapshot) == expected
 
 
-@given(
-    unknown_content(),
-    unknown_directory(),
-    unknown_release(),
-    unknown_revision(),
-    unknown_snapshot(),
-)
 def test_lookup_unknown_objects(
     unknown_content,
     unknown_directory,
@@ -849,7 +824,6 @@ def test_lookup_unknown_objects(
     assert e.match(r"Snapshot.*not found")
 
 
-@given(invalid_sha1())
 def test_lookup_invalid_objects(invalid_sha1):
 
     with pytest.raises(BadInputExc) as e:

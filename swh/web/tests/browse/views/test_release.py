@@ -5,15 +5,12 @@
 
 import random
 
-from hypothesis import given
-
 from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import unknown_release
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -45,7 +42,6 @@ def test_release_browse_with_origin_snapshot(
     )
 
 
-@given(unknown_release())
 def test_release_browse_not_found(client, archive_data, unknown_release):
     url = reverse("browse-release", url_args={"sha1_git": unknown_release})
 

@@ -30,12 +30,7 @@ from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    invalid_sha1,
-    new_person,
-    new_swh_date,
-    unknown_directory,
-)
+from swh.web.tests.strategies import new_person, new_swh_date
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -134,7 +129,6 @@ def test_sub_directory_view_origin_context(
     )
 
 
-@given(invalid_sha1(), unknown_directory())
 def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     dir_url = reverse("browse-directory", url_args={"sha1_git": invalid_sha1})
 

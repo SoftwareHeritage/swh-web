@@ -5,13 +5,11 @@
 
 import re
 
-from hypothesis import given
 import pytest
 
 from swh.model.swhids import CoreSWHID
 from swh.vault.exc import NotFoundExc
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import unknown_directory, unknown_revision
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_responses,
@@ -72,7 +70,6 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
-@given(unknown_directory(), unknown_revision())
 def test_api_vault_cook_notfound(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):
@@ -271,7 +268,6 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
         assert rv["location"] == redirect_url
 
 
-@given(unknown_directory(), unknown_revision())
 def test_api_vault_cook_notfound_legacy(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):

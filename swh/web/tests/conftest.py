@@ -40,7 +40,13 @@ from swh.web.common.origin_save import get_scheduler_load_task_types
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.config import get_config
-from swh.web.tests.data import get_tests_data, override_storages
+from swh.web.tests.data import (
+    get_tests_data,
+    override_storages,
+    random_content,
+    random_sha1,
+    random_sha256,
+)
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -166,6 +172,27 @@ def tests_data():
     return data
 
 
+@pytest.fixture(scope="function")
+def sha1():
+    """Fixture returning a valid hexadecimal sha1 value.
+    """
+    return random_sha1()
+
+
+@pytest.fixture(scope="function")
+def invalid_sha1():
+    """Fixture returning an invalid sha1 representation.
+    """
+    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(50)))
+
+
+@pytest.fixture(scope="function")
+def sha256():
+    """Fixture returning a valid hexadecimal sha256 value.
+    """
+    return random_sha256()
+
+
 def _known_swh_objects(tests_data, object_type):
     return tests_data[object_type]
 
@@ -184,6 +211,36 @@ def contents(tests_data):
     return random.choices(
         _known_swh_objects(tests_data, "contents"), k=random.randint(2, 8)
     )
+
+
+def _new_content(tests_data):
+    while True:
+        new_content = random_content()
+        sha1_bytes = hash_to_bytes(new_content["sha1"])
+        if tests_data["storage"].content_get_data(sha1_bytes) is None:
+            return new_content
+
+
+@pytest.fixture(scope="function")
+def unknown_content(tests_data):
+    """Fixture returning a random content not ingested into the test archive.
+    """
+    return _new_content(tests_data)
+
+
+@pytest.fixture(scope="function")
+def unknown_contents(tests_data):
+    """Fixture returning random contents not ingested into the test archive.
+    """
+    new_contents = []
+    new_content_ids = set()
+    nb_contents = random.randint(2, 8)
+    while len(new_contents) != nb_contents:
+        new_content = _new_content(tests_data)
+        if new_content["sha1"] not in new_content_ids:
+            new_contents.append(new_content)
+            new_content_ids.add(new_content["sha1"])
+    return list(new_contents)
 
 
 @pytest.fixture(scope="function")
@@ -382,6 +439,17 @@ def directory_with_files(tests_data):
 
 
 @pytest.fixture(scope="function")
+def unknown_directory(tests_data):
+    """Fixture returning a random directory not ingested into the test archive.
+    """
+    while True:
+        new_directory = random_sha1()
+        sha1_bytes = hash_to_bytes(new_directory)
+        if list(tests_data["storage"].directory_missing([sha1_bytes])):
+            return new_directory
+
+
+@pytest.fixture(scope="function")
 def empty_directory():
     """Fixture returning the empty directory ingested into the test archive.
     """
@@ -413,6 +481,17 @@ def revisions_list(tests_data):
         return random.choices(_known_swh_objects(tests_data, "revisions"), k=size,)
 
     return gen_revisions_list
+
+
+@pytest.fixture(scope="function")
+def unknown_revision(tests_data):
+    """Fixture returning a random revision not ingested into the test archive.
+    """
+    while True:
+        new_revision = random_sha1()
+        sha1_bytes = hash_to_bytes(new_revision)
+        if tests_data["storage"].revision_get([sha1_bytes])[0] is None:
+            return new_revision
 
 
 def _get_origin_dfs_revisions_walker(tests_data):
@@ -521,10 +600,32 @@ def releases(tests_data):
 
 
 @pytest.fixture(scope="function")
+def unknown_release(tests_data):
+    """Fixture returning a random release not ingested into the test archive.
+    """
+    while True:
+        new_release = random_sha1()
+        sha1_bytes = hash_to_bytes(new_release)
+        if tests_data["storage"].release_get([sha1_bytes])[0] is None:
+            return new_release
+
+
+@pytest.fixture(scope="function")
 def snapshot(tests_data):
     """Fixture returning a random snapshot ingested into the test archive.
     """
     return random.choice(_known_swh_objects(tests_data, "snapshots"))
+
+
+@pytest.fixture(scope="function")
+def unknown_snapshot(tests_data):
+    """Fixture returning a random snapshot not ingested into the test archive.
+    """
+    while True:
+        new_snapshot = random_sha1()
+        sha1_bytes = hash_to_bytes(new_snapshot)
+        if tests_data["storage"].snapshot_get_branches(sha1_bytes) is None:
+            return new_snapshot
 
 
 @pytest.fixture(scope="function")

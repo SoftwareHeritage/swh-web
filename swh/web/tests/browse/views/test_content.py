@@ -5,8 +5,6 @@
 
 import random
 
-from hypothesis import given
-
 from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
@@ -20,7 +18,6 @@ from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import invalid_sha1, unknown_content
 from swh.web.tests.utils import check_html_get_response, check_http_get_response
 
 
@@ -318,7 +315,6 @@ def test_content_raw_bin(client, archive_data, content_image_type):
     assert resp.content == content_data
 
 
-@given(invalid_sha1(), unknown_content())
 def test_content_request_errors(client, invalid_sha1, unknown_content):
     url = reverse("browse-content", url_args={"query_string": invalid_sha1})
     check_html_get_response(client, url, status_code=400, template_used="error.html")

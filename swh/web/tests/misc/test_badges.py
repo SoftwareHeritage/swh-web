@@ -13,15 +13,7 @@ from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import (
-    invalid_sha1,
-    new_origin,
-    unknown_content,
-    unknown_directory,
-    unknown_release,
-    unknown_revision,
-    unknown_snapshot,
-)
+from swh.web.tests.strategies import new_origin
 from swh.web.tests.utils import check_http_get_response
 
 
@@ -49,24 +41,16 @@ def test_snapshot_badge(client, snapshot):
     _test_badge_endpoints(client, "snapshot", snapshot)
 
 
-@given(
-    unknown_content(),
-    unknown_directory(),
-    new_origin(),
-    unknown_release(),
-    unknown_revision(),
-    unknown_snapshot(),
-    invalid_sha1(),
-)
+@given(new_origin(),)
 def test_badge_errors(
     client,
     unknown_content,
     unknown_directory,
-    new_origin,
     unknown_release,
     unknown_revision,
     unknown_snapshot,
     invalid_sha1,
+    new_origin,
 ):
     for object_type, object_id in (
         ("content", unknown_content["sha1_git"]),

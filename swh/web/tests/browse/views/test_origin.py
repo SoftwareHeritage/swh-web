@@ -33,12 +33,7 @@ from swh.web.common.utils import (
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    new_origin,
-    new_snapshot,
-    unknown_revision,
-    visit_dates,
-)
+from swh.web.tests.strategies import new_origin, new_snapshot, visit_dates
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -773,9 +768,9 @@ def test_origin_release_browse_not_found(client, origin_with_releases):
     )
 
 
-@given(new_origin(), unknown_revision())
+@given(new_origin())
 def test_origin_browse_directory_branch_with_non_resolvable_revision(
-    client, archive_data, new_origin, unknown_revision
+    client, archive_data, unknown_revision, new_origin,
 ):
     branch_name = "master"
     snapshot = Snapshot(

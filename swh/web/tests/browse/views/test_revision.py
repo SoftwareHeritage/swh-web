@@ -16,12 +16,7 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    new_origin,
-    new_person,
-    new_swh_date,
-    unknown_revision,
-)
+from swh.web.tests.strategies import new_origin, new_person, new_swh_date
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -155,7 +150,7 @@ def test_revision_log_browse(client, archive_data, revision):
         )
 
 
-@given(unknown_revision(), new_origin())
+@given(new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
     url = reverse("browse-revision", url_args={"sha1_git": unknown_revision})
 

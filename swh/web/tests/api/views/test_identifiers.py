@@ -3,19 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from hypothesis import given
 
 from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import (
-    unknown_content,
-    unknown_directory,
-    unknown_release,
-    unknown_revision,
-    unknown_snapshot,
-)
 from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
 
 
@@ -72,13 +64,6 @@ def test_swhid_resolve_invalid(api_client):
     check_api_get_responses(api_client, url, status_code=400)
 
 
-@given(
-    unknown_content(),
-    unknown_directory(),
-    unknown_release(),
-    unknown_revision(),
-    unknown_snapshot(),
-)
 def test_swhid_resolve_not_found(
     api_client,
     unknown_content,
