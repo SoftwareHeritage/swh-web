@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
 from datetime import timedelta
 import json
 import os
@@ -31,6 +32,7 @@ from swh.model.model import Content, Directory
 from swh.model.swhids import ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
+from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common import converters
@@ -387,6 +389,122 @@ def empty_directory():
 
 
 @pytest.fixture(scope="function")
+def revision(tests_data):
+    """Fixturereturning a random revision ingested into the test archive.
+    """
+    return random.choice(_known_swh_objects(tests_data, "revisions"))
+
+
+@pytest.fixture(scope="function")
+def revisions(tests_data):
+    """Fixture returning random revisions ingested into the test archive.
+    """
+    return random.choices(
+        _known_swh_objects(tests_data, "revisions"), k=random.randint(2, 8),
+    )
+
+
+@pytest.fixture(scope="function")
+def revisions_list(tests_data):
+    """Fixture returning random revisions ingested into the test archive.
+    """
+
+    def gen_revisions_list(size):
+        return random.choices(_known_swh_objects(tests_data, "revisions"), k=size,)
+
+    return gen_revisions_list
+
+
+def _get_origin_dfs_revisions_walker(tests_data):
+    storage = tests_data["storage"]
+    origin = random.choice(tests_data["origins"][:-1])
+    snapshot = snapshot_get_latest(storage, origin["url"])
+    if snapshot.branches[b"HEAD"].target_type.value == "alias":
+        target = snapshot.branches[b"HEAD"].target
+        head = snapshot.branches[target].target
+    else:
+        head = snapshot.branches[b"HEAD"].target
+    return get_revisions_walker("dfs", storage, head)
+
+
+@pytest.fixture(scope="function")
+def ancestor_revisions(tests_data):
+    """Fixture returning a pair of revisions ingested into the test archive
+    with an ancestor relation.
+    """
+    # get a dfs revisions walker for one of the origins
+    # loaded into the test archive
+    revisions_walker = _get_origin_dfs_revisions_walker(tests_data)
+    master_revisions = []
+    children = defaultdict(list)
+    init_rev_found = False
+    # get revisions only authored in the master branch
+    for rev in revisions_walker:
+        for rev_p in rev["parents"]:
+            children[rev_p].append(rev["id"])
+        if not init_rev_found:
+            master_revisions.append(rev)
+        if not rev["parents"]:
+            init_rev_found = True
+
+    # head revision
+    root_rev = master_revisions[0]
+    # pick a random revision, different from head, only authored
+    # in the master branch
+    ancestor_rev_idx = random.choice(list(range(1, len(master_revisions) - 1)))
+    ancestor_rev = master_revisions[ancestor_rev_idx]
+    ancestor_child_revs = children[ancestor_rev["id"]]
+
+    return {
+        "sha1_git_root": hash_to_hex(root_rev["id"]),
+        "sha1_git": hash_to_hex(ancestor_rev["id"]),
+        "children": [hash_to_hex(r) for r in ancestor_child_revs],
+    }
+
+
+@pytest.fixture(scope="function")
+def non_ancestor_revisions(tests_data):
+    """Fixture returning a pair of revisions ingested into the test archive
+    with no ancestor relation.
+    """
+    # get a dfs revisions walker for one of the origins
+    # loaded into the test archive
+    revisions_walker = _get_origin_dfs_revisions_walker(tests_data)
+    merge_revs = []
+    children = defaultdict(list)
+    # get all merge revisions
+    for rev in revisions_walker:
+        if len(rev["parents"]) > 1:
+            merge_revs.append(rev)
+        for rev_p in rev["parents"]:
+            children[rev_p].append(rev["id"])
+    # find a merge revisions whose parents have a unique child revision
+    random.shuffle(merge_revs)
+    selected_revs = None
+    for merge_rev in merge_revs:
+        if all(len(children[rev_p]) == 1 for rev_p in merge_rev["parents"]):
+            selected_revs = merge_rev["parents"]
+
+    return {
+        "sha1_git_root": hash_to_hex(selected_revs[0]),
+        "sha1_git": hash_to_hex(selected_revs[1]),
+    }
+
+
+@pytest.fixture(scope="function")
+def revision_with_submodules():
+    """Fixture returning a revision that is known to
+    point to a directory with revision entries (aka git submodules)
+    """
+
+    return {
+        "rev_sha1_git": "ffcb69001f3f6745dfd5b48f72ab6addb560e234",
+        "rev_dir_sha1_git": "d92a21446387fa28410e5a74379c934298f39ae2",
+        "rev_dir_rev_path": "libtess2",
+    }
+
+
+@pytest.fixture(scope="function")
 def release(tests_data):
     """Fixture returning a random release ingested into the test archive.
     """
@@ -482,6 +600,14 @@ def release_swhid(tests_data):
     ingested into the test archive.
     """
     return _object_type_swhid(tests_data, ObjectType.RELEASE)
+
+
+@pytest.fixture(scope="function")
+def revision_swhid(tests_data):
+    """Fixture returning a qualified SWHID for a random revision object
+    ingested into the test archive.
+    """
+    return _object_type_swhid(tests_data, ObjectType.REVISION)
 
 
 # Fixture to manipulate data from a sample archive used in the tests

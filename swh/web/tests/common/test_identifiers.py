@@ -25,7 +25,7 @@ from swh.web.common.identifiers import (
 from swh.web.common.typing import SWHObjectInfo
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import revision, snapshot
+from swh.web.tests.strategies import snapshot
 
 
 def test_gen_swhid(content):
@@ -63,7 +63,7 @@ def test_parse_object_type():
     assert e.match("Invalid swh object type")
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -100,7 +100,7 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_get_swhid(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
@@ -119,7 +119,7 @@ def test_get_swhid(content, directory, release, revision, snapshot):
         get_swhid("foo")
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_group_swhids(content, directory, release, revision, snapshot):
     swhids = []
     expected = {}
@@ -216,7 +216,6 @@ def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs)
         }
 
 
-@given(revision())
 def test_get_swhids_info_revision_context(archive_data, revision):
     revision_data = archive_data.revision_get(revision)
     directory = revision_data["directory"]
@@ -678,7 +677,6 @@ def test_resolve_swhid_with_malformed_origin_url(archive_data, directory):
     assert origin_url in resolved_swhid["browse_url"]
 
 
-@given(revision())
 def test_resolve_dir_entry_swhid_with_anchor_revision(archive_data, revision):
     revision_data = archive_data.revision_get(revision)
     directory = revision_data["directory"]

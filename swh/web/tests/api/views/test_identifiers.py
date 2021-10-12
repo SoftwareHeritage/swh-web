@@ -10,7 +10,6 @@ from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.strategies import (
-    revision,
     snapshot,
     unknown_content,
     unknown_directory,
@@ -21,9 +20,9 @@ from swh.web.tests.strategies import (
 from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_swhid_resolve_success(
-    api_client, client, content, directory, origin, release, revision, snapshot
+    api_client, content, directory, origin, release, revision, snapshot
 ):
 
     for obj_type, obj_id in (
@@ -112,7 +111,7 @@ def test_swh_origin_id_not_resolvable(api_client):
     check_api_get_responses(api_client, url, status_code=400)
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_api_known_swhid_all_present(
     api_client, content, directory, release, revision, snapshot
 ):

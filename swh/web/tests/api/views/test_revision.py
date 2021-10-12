@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -17,11 +17,10 @@ from swh.model.model import (
 from swh.web.api.utils import enrich_content, enrich_directory_entry, enrich_revision
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import new_person, new_swh_date, revision
+from swh.web.tests.strategies import new_person, new_swh_date
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
-@given(revision())
 def test_api_revision(api_client, archive_data, revision):
     url = reverse("api-1-revision", url_args={"sha1_git": revision})
     rv = check_api_get_responses(api_client, url, status_code=200)
@@ -44,7 +43,6 @@ def test_api_revision_not_found(api_client):
     }
 
 
-@given(revision())
 def test_api_revision_raw_ok(api_client, archive_data, revision):
     url = reverse("api-1-revision-raw-message", url_args={"sha1_git": revision})
 
@@ -68,7 +66,6 @@ def test_api_revision_raw_ko_no_rev(api_client):
     }
 
 
-@given(revision())
 def test_api_revision_log(api_client, archive_data, revision):
     limit = 10
 
@@ -111,7 +108,6 @@ def test_api_revision_directory_ko_not_found(api_client):
     }
 
 
-@given(revision())
 def test_api_revision_directory_ok_returns_dir_entries(
     api_client, archive_data, revision
 ):
@@ -176,7 +172,7 @@ def test_api_revision_directory_ok_returns_content(
     }
 
 
-@given(revision(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_api_revision_directory_ok_returns_revision(
     api_client, archive_data, revision, person, date
 ):
@@ -220,7 +216,6 @@ def test_api_revision_directory_ok_returns_revision(
     }
 
 
-@given(revision())
 def test_api_revision_uppercase(api_client, revision):
     url = reverse(
         "api-1-revision-uppercase-checksum", url_args={"sha1_git": revision.upper()}

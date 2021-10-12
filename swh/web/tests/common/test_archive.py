@@ -30,14 +30,9 @@ from swh.web.common.typing import OriginInfo, PagedResult
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import (
-    ancestor_revisions,
     invalid_sha1,
     new_origin,
     new_revision,
-    non_ancestor_revisions,
-    revision,
-    revision_with_submodules,
-    revisions,
     sha256,
     snapshot,
     unknown_content,
@@ -291,7 +286,7 @@ def test_lookup_release(archive_data, release):
     assert actual_release == archive_data.release_get(release)
 
 
-@given(revision(), invalid_sha1(), sha256())
+@given(invalid_sha1(), sha256())
 def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha256):
     sha1_git_root = revision
     sha1_git = invalid_sha1
@@ -307,7 +302,7 @@ def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha2
     assert e.match("Only sha1_git is supported")
 
 
-@given(revision(), unknown_revision())
+@given(unknown_revision())
 def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -319,7 +314,7 @@ def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     assert e.match("Revision %s not found" % sha1_git)
 
 
-@given(revision(), unknown_revision())
+@given(unknown_revision())
 def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -330,7 +325,6 @@ def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
     assert e.match("Revision root %s not found" % sha1_git_root)
 
 
-@given(ancestor_revisions())
 def test_lookup_revision_with_context(archive_data, ancestor_revisions):
     sha1_git = ancestor_revisions["sha1_git"]
     root_sha1_git = ancestor_revisions["sha1_git_root"]
@@ -349,7 +343,6 @@ def test_lookup_revision_with_context(archive_data, ancestor_revisions):
         assert actual_revision == expected_revision
 
 
-@given(non_ancestor_revisions())
 def test_lookup_revision_with_context_ko(non_ancestor_revisions):
     sha1_git = non_ancestor_revisions["sha1_git"]
     root_sha1_git = non_ancestor_revisions["sha1_git_root"]
@@ -401,7 +394,6 @@ def test_lookup_directory_with_revision_unknown_content(archive_data, new_revisi
     assert e.match("Content not found for revision %s" % new_revision_id)
 
 
-@given(revision())
 def test_lookup_directory_with_revision_ko_path_to_nowhere(revision):
     invalid_path = "path/to/something/unknown"
     with pytest.raises(NotFoundExc) as e:
@@ -412,7 +404,6 @@ def test_lookup_directory_with_revision_ko_path_to_nowhere(revision):
     assert e.match("not found")
 
 
-@given(revision_with_submodules())
 def test_lookup_directory_with_revision_submodules(
     archive_data, revision_with_submodules
 ):
@@ -435,7 +426,6 @@ def test_lookup_directory_with_revision_submodules(
     assert actual_data == expected_data
 
 
-@given(revision())
 def test_lookup_directory_with_revision_without_path(archive_data, revision):
     actual_directory_entries = archive.lookup_directory_with_revision(revision)
 
@@ -446,7 +436,6 @@ def test_lookup_directory_with_revision_without_path(archive_data, revision):
     assert actual_directory_entries["content"] == expected_directory_entries
 
 
-@given(revision())
 def test_lookup_directory_with_revision_with_path(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -472,7 +461,6 @@ def test_lookup_directory_with_revision_with_path(archive_data, revision):
         assert actual_dir_entry["content"] == sub_dir_entries
 
 
-@given(revision())
 def test_lookup_directory_with_revision_with_path_to_file_and_data(
     archive_data, revision
 ):
@@ -500,7 +488,6 @@ def test_lookup_directory_with_revision_with_path_to_file_and_data(
     assert actual_dir_entry["content"]["data"] == expected_data["data"]
 
 
-@given(revision())
 def test_lookup_revision(archive_data, revision):
     actual_revision = archive.lookup_revision(revision)
     assert actual_revision == archive_data.revision_get(revision)
@@ -535,7 +522,6 @@ def test_lookup_revision_msg_no_rev():
     assert e.match("Revision with sha1_git %s not found." % unknown_revision_)
 
 
-@given(revisions())
 def test_lookup_revision_multiple(archive_data, revisions):
     actual_revisions = list(archive.lookup_revision_multiple(revisions))
 
@@ -554,7 +540,6 @@ def test_lookup_revision_multiple_none_found():
     assert actual_revisions == [None] * len(unknown_revisions_)
 
 
-@given(revision())
 def test_lookup_revision_log(archive_data, revision):
     actual_revision_log = list(archive.lookup_revision_log(revision, limit=25))
     expected_revision_log = archive_data.revision_log(revision, limit=25)
@@ -690,7 +675,6 @@ def test_lookup_revision_by(archive_data, origin):
     assert actual_revision == expected_revision
 
 
-@given(revision())
 def test_lookup_revision_with_context_by_ko(origin, revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_with_context_by(
@@ -757,7 +741,6 @@ def test_lookup_revision_through_with_revision_by(archive_data, origin):
     ) == archive.lookup_revision_by(origin["url"], branch_name, None)
 
 
-@given(ancestor_revisions())
 def test_lookup_revision_through_with_context(ancestor_revisions):
     sha1_git = ancestor_revisions["sha1_git"]
     sha1_git_root = ancestor_revisions["sha1_git_root"]
@@ -767,14 +750,12 @@ def test_lookup_revision_through_with_context(ancestor_revisions):
     ) == archive.lookup_revision_with_context(sha1_git_root, sha1_git)
 
 
-@given(revision())
 def test_lookup_revision_through_with_revision(revision):
     assert archive.lookup_revision_through(
         {"sha1_git": revision}
     ) == archive.lookup_revision(revision)
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ko_not_found(revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_directory_through_revision(
@@ -782,7 +763,6 @@ def test_lookup_directory_through_revision_ko_not_found(revision):
         )
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ok(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -797,7 +777,6 @@ def test_lookup_directory_through_revision_ok(archive_data, revision):
     ) == (revision, archive.lookup_directory_with_revision(revision, dir_entry["name"]))
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -817,7 +796,7 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(revision(), snapshot())
+@given(snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
@@ -1022,7 +1001,6 @@ def test_lookup_snapshot_sizes(archive_data, snapshot):
     assert archive.lookup_snapshot_sizes(snapshot) == expected_sizes
 
 
-@given(revision())
 def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1061,13 +1039,11 @@ def test_lookup_snapshot_alias(snapshot):
     assert resolved_alias["target"] is not None
 
 
-@given(revision())
 def test_lookup_snapshot_missing(revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_snapshot(revision)
 
 
-@given(revision())
 def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1089,7 +1065,6 @@ def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     assert not branches
 
 
-@given(revision())
 def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1134,7 +1109,6 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
                 assert not branch_name.startswith(exclude_prefix)
 
 
-@given(revision())
 def test_lookup_snapshot_branch_names_filtering_paginated(
     archive_data, directory, revision
 ):

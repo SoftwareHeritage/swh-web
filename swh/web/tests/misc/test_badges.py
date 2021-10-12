@@ -16,7 +16,6 @@ from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     invalid_sha1,
     new_origin,
-    revision,
     snapshot,
     unknown_content,
     unknown_directory,
@@ -43,7 +42,6 @@ def test_release_badge(client, release):
     _test_badge_endpoints(client, "release", release)
 
 
-@given(revision())
 def test_revision_badge(client, revision):
     _test_badge_endpoints(client, "revision", revision)
 

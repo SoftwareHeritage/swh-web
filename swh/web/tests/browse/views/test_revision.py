@@ -20,13 +20,11 @@ from swh.web.tests.strategies import (
     new_origin,
     new_person,
     new_swh_date,
-    revision,
     unknown_revision,
 )
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(revision())
 def test_revision_browse(client, archive_data, revision):
     _revision_browse_checks(client, archive_data, revision)
 
@@ -45,7 +43,6 @@ def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, or
     _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
 
 
-@given(revision())
 def test_revision_log_browse(client, archive_data, revision):
     per_page = 10
 
@@ -158,7 +155,7 @@ def test_revision_log_browse(client, archive_data, revision):
         )
 
 
-@given(revision(), unknown_revision(), new_origin())
+@given(unknown_revision(), new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
     url = reverse("browse-revision", url_args={"sha1_git": unknown_revision})
 
@@ -183,7 +180,6 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
     )
 
 
-@given(revision())
 def test_revision_uppercase(client, revision):
     url = reverse(
         "browse-revision-uppercase-checksum", url_args={"sha1_git": revision.upper()}
@@ -301,7 +297,6 @@ def _revision_browse_checks(
     assert_contains(resp, swh_dir_id_url)
 
 
-@given(revision())
 def test_revision_invalid_path(client, archive_data, revision):
     path = "foo/bar"
     url = reverse(

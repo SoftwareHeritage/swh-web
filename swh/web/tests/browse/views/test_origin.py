@@ -36,7 +36,6 @@ from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import (
     new_origin,
     new_snapshot,
-    revisions,
     unknown_revision,
     visit_dates,
 )
@@ -433,14 +432,12 @@ def test_origin_releases(client, archive_data, origin):
 
 
 @given(
-    new_origin(),
-    new_snapshot(min_size=4, max_size=4),
-    visit_dates(),
-    revisions(min_size=3, max_size=3),
+    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
 )
 def test_origin_snapshot_null_branch(
-    client, archive_data, new_origin, new_snapshot, visit_dates, revisions
+    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
 ):
+    revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
     archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
@@ -475,14 +472,12 @@ def test_origin_snapshot_null_branch(
 
 
 @given(
-    new_origin(),
-    new_snapshot(min_size=4, max_size=4),
-    visit_dates(),
-    revisions(min_size=4, max_size=4),
+    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
 )
 def test_origin_snapshot_invalid_branch(
-    client, archive_data, new_origin, new_snapshot, visit_dates, revisions
+    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
 ):
+    revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
     archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
@@ -1233,15 +1228,16 @@ def _origin_releases_test_helper(
 
 
 @given(
-    new_origin(), visit_dates(), revisions(min_size=10, max_size=10),
+    new_origin(), visit_dates(),
 )
 def test_origin_branches_pagination_with_alias(
-    client, archive_data, mocker, release, new_origin, visit_dates, revisions,
+    client, archive_data, mocker, release, revisions_list, new_origin, visit_dates,
 ):
     """
     When a snapshot contains a branch or a release alias, pagination links
     in the branches / releases view should be displayed.
     """
+    revisions = revisions_list(size=10)
     mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) / 2)
     snp_dict = {"branches": {}, "id": hash_to_bytes(random_sha1())}
     for i in range(len(revisions)):

@@ -11,7 +11,7 @@ from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import revision, snapshot
+from swh.web.tests.strategies import snapshot
 
 url_map = [
     {
@@ -287,7 +287,6 @@ def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, conte
         assert enriched_content == content_data
 
 
-@given(revision())
 def test_enrich_revision_without_children_or_parent(
     api_request_factory, archive_data, revision
 ):
@@ -317,11 +316,10 @@ def test_enrich_revision_without_children_or_parent(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_children_and_parent_no_dir(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     del revision_data["directory"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
@@ -359,11 +357,8 @@ def test_enrich_revision_with_children_and_parent_no_dir(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
-def test_enrich_revision_no_context(
-    api_request_factory, revision, parent_revision, child_revision
-):
-
+def test_enrich_revisionno_context(api_request_factory, revisions_list):
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = {
         "id": revision,
         "parents": [parent_revision],
@@ -403,11 +398,10 @@ def test_enrich_revision_no_context(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_no_message(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     revision_data["message"] = None
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
@@ -451,11 +445,10 @@ def test_enrich_revision_with_no_message(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_invalid_message(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     revision_data["decoding_failures"] = ["message"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)

@@ -13,7 +13,7 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import revision, snapshot
+from swh.web.tests.strategies import snapshot
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -47,7 +47,6 @@ def test_directory_id_browse(client, directory):
         assert resp["location"] == directory_browse_url
 
 
-@given(revision())
 def test_revision_id_browse(client, revision):
     swhid = gen_swhid(ObjectType.REVISION, revision)
 

@@ -8,7 +8,7 @@ from hypothesis import given
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import revision_swhid, unknown_directory
+from swh.web.tests.strategies import unknown_directory
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -46,7 +46,6 @@ def test_directory_core_swhid_iframe(client, directory_swhid):
     )
 
 
-@given(revision_swhid())
 def test_iframe_unsupported_object(client, revision_swhid):
     url = reverse("swhid-iframe", url_args={"swhid": str(revision_swhid)})
     check_html_get_response(
