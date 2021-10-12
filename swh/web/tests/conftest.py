@@ -386,6 +386,53 @@ def empty_directory():
     return Directory(entries=()).id.hex()
 
 
+@pytest.fixture(scope="function")
+def origin(tests_data):
+    """Fixturee returning a random origin ingested into the test archive.
+    """
+    return random.choice(_known_swh_objects(tests_data, "origins"))
+
+
+@pytest.fixture(scope="function")
+def origin_with_multiple_visits(tests_data):
+    """Fixture returning a random origin with multiple visits ingested
+    into the test archive.
+    """
+    origins = []
+    storage = tests_data["storage"]
+    for origin in tests_data["origins"]:
+        visit_page = storage.origin_visit_get(origin["url"])
+        if len(visit_page.results) > 1:
+            origins.append(origin)
+    return random.choice(origins)
+
+
+@pytest.fixture(scope="function")
+def origin_with_releases(tests_data):
+    """Fixture returning a random origin with releases ingested into the test archive.
+    """
+    origins = []
+    for origin in tests_data["origins"]:
+        snapshot = snapshot_get_latest(tests_data["storage"], origin["url"])
+        if any([b.target_type.value == "release" for b in snapshot.branches.values()]):
+            origins.append(origin)
+    return random.choice(origins)
+
+
+@pytest.fixture(scope="function")
+def origin_with_pull_request_branches(tests_data):
+    """Fixture returning a random origin with pull request branches ingested
+    into the test archive.
+    """
+    origins = []
+    storage = tests_data["storage"]
+    for origin in storage.origin_list(limit=1000).results:
+        snapshot = snapshot_get_latest(storage, origin.url)
+        if any([b"refs/pull/" in b for b in snapshot.branches]):
+            origins.append(origin)
+    return random.choice(origins)
+
+
 def _object_type_swhid(tests_data, object_type):
     return random.choice(
         list(

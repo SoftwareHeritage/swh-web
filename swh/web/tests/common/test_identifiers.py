@@ -25,13 +25,7 @@ from swh.web.common.identifiers import (
 from swh.web.common.typing import SWHObjectInfo
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import (
-    origin,
-    origin_with_multiple_visits,
-    release,
-    revision,
-    snapshot,
-)
+from swh.web.tests.strategies import release, revision, snapshot
 
 
 def test_gen_swhid(content):
@@ -270,14 +264,15 @@ def test_get_swhids_info_revision_context(archive_data, revision):
         }
 
 
-@given(origin_with_multiple_visits())
-def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
+def test_get_swhids_info_origin_snapshot_context(
+    archive_data, origin_with_multiple_visits
+):
     """
     Test SWHIDs with contextual info computation under a variety of origin / snapshot
     browsing contexts.
     """
-
-    visits = archive_data.origin_visit_get(origin["url"])
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
 
     for visit in visits:
         snapshot = archive_data.snapshot_get(visit["snapshot"])
@@ -327,12 +322,12 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
                 {"anchor_type": ObjectType.REVISION, "anchor_id": revision_id},
             ),
             (
-                {"origin_url": origin["url"], "snapshot_id": snapshot_id},
+                {"origin_url": origin_url, "snapshot_id": snapshot_id},
                 {"anchor_type": ObjectType.REVISION, "anchor_id": head_rev_id},
             ),
             (
                 {
-                    "origin_url": origin["url"],
+                    "origin_url": origin_url,
                     "snapshot_id": snapshot_id,
                     "branch_name": branch_name,
                 },
@@ -343,7 +338,7 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
             ),
             (
                 {
-                    "origin_url": origin["url"],
+                    "origin_url": origin_url,
                     "snapshot_id": snapshot_id,
                     "release_name": release_name,
                 },
@@ -351,7 +346,7 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
             ),
             (
                 {
-                    "origin_url": origin["url"],
+                    "origin_url": origin_url,
                     "snapshot_id": snapshot_id,
                     "revision_id": revision_id,
                 },
@@ -429,10 +424,10 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
             expected_snp_context = {}
 
             if "origin_url" in snp_ctx_params:
-                expected_cnt_context["origin"] = origin["url"]
-                expected_dir_context["origin"] = origin["url"]
-                expected_rev_context["origin"] = origin["url"]
-                expected_snp_context["origin"] = origin["url"]
+                expected_cnt_context["origin"] = origin_url
+                expected_dir_context["origin"] = origin_url
+                expected_rev_context["origin"] = origin_url
+                expected_snp_context["origin"] = origin_url
 
             assert swhid_cnt_parsed.qualifiers() == expected_cnt_context
             assert swhid_dir_parsed.qualifiers() == expected_dir_context
@@ -443,7 +438,6 @@ def test_get_swhids_info_origin_snapshot_context(archive_data, origin):
                 assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
-@given(origin())
 def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, origin):
     snapshot_context = get_snapshot_context(origin_url=origin["url"])
     snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
@@ -472,9 +466,11 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, or
     assert parsed_url_swhid.qualifiers()["path"] == "/foo%253B/bar%2525"
 
 
-@given(origin_with_multiple_visits())
-def test_resolve_swhids_snapshot_context(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_resolve_swhids_snapshot_context(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     head_rev_id = archive_data.snapshot_get_head(snapshot)
@@ -512,7 +508,7 @@ def test_resolve_swhids_snapshot_context(client, archive_data, origin):
         {"revision_id": random_rev_id},
     ):
         snapshot_context = get_snapshot_context(
-            snapshot["id"], origin["url"], **snp_ctx_params
+            snapshot["id"], origin_url, **snp_ctx_params
         )
 
         _check_resolved_swhid_browse_url(

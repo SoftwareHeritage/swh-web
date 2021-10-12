@@ -13,7 +13,7 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import origin, release, revision, snapshot
+from swh.web.tests.strategies import release, revision, snapshot
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -173,7 +173,6 @@ def test_origin_id_not_resolvable(client, release):
     check_html_get_response(client, url, status_code=400)
 
 
-@given(origin())
 def test_legacy_swhid_browse(archive_data, client, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     revision = archive_data.snapshot_get_head(snapshot)

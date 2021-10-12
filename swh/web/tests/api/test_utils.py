@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import origin, release, revision, snapshot
+from swh.web.tests.strategies import release, revision, snapshot
 
 url_map = [
     {
@@ -538,7 +538,6 @@ def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
     assert actual_snapshot == snapshot_data
 
 
-@given(origin())
 def test_enrich_origin(api_request_factory, origin):
     url = reverse("api-1-origin", url_args={"origin_url": origin["url"]})
     request = api_request_factory.get(url)
@@ -553,7 +552,6 @@ def test_enrich_origin(api_request_factory, origin):
     assert actual_origin == origin_data
 
 
-@given(origin())
 def test_enrich_origin_search_result(api_request_factory, origin):
     url = reverse("api-1-origin-search", url_args={"url_pattern": origin["url"]})
     request = api_request_factory.get(url)
@@ -578,7 +576,6 @@ def test_enrich_origin_search_result(api_request_factory, origin):
     )
 
 
-@given(origin())
 def test_enrich_origin_visit(api_request_factory, origin):
 
     origin_visit = random.choice(get_origin_visits(origin))

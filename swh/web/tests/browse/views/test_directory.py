@@ -34,7 +34,6 @@ from swh.web.tests.strategies import (
     invalid_sha1,
     new_person,
     new_swh_date,
-    origin_with_multiple_visits,
     unknown_directory,
 )
 from swh.web.tests.utils import check_html_get_response
@@ -193,9 +192,11 @@ def test_permalink_box_context(client, tests_data, directory):
     assert_contains(resp, 'id="swhid-context-option-directory"')
 
 
-@given(origin_with_multiple_visits())
-def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_directory_origin_snapshot_branch_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
@@ -212,7 +213,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "branch": branch_info["name"],
             "path": directory_subdir["name"],
@@ -224,7 +225,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
@@ -233,7 +234,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
             "path": "/",
@@ -245,21 +246,23 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.REVISION,
         branch_info["revision"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 
 
-@given(origin_with_multiple_visits())
-def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_drectory_origin_snapshot_release_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
@@ -276,7 +279,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "release": release_info["name"],
             "path": directory_subdir["name"],
@@ -288,7 +291,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
@@ -297,7 +300,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
             "path": "/",
@@ -309,7 +312,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.REVISION,
         release_info["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
@@ -319,21 +322,23 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.RELEASE,
         release_info["id"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 
 
-@given(origin_with_multiple_visits())
-def test_directory_origin_snapshot_revision_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_directory_origin_snapshot_revision_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     branches, releases, _ = process_snapshot_branches(snapshot)
@@ -349,7 +354,7 @@ def test_directory_origin_snapshot_revision_browse(client, archive_data, origin)
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "revision": branch_info["revision"],
             "path": directory_subdir["name"],

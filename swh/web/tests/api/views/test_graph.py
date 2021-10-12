@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,8 +7,6 @@ import hashlib
 import json
 import textwrap
 
-from hypothesis import given
-
 from django.http.response import StreamingHttpResponse
 
 from swh.model.hashutil import hash_to_bytes
@@ -16,7 +14,6 @@ from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
 from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
-from swh.web.tests.strategies import origin
 from swh.web.tests.utils import check_http_get_response
 
 
@@ -165,7 +162,6 @@ def test_graph_ndjson_response(api_client, keycloak_oidc, requests_mock):
     assert b"".join(resp.streaming_content) == response_ndjson.encode()
 
 
-@given(origin())
 def test_graph_response_resolve_origins(
     archive_data, api_client, keycloak_oidc, requests_mock, origin
 ):

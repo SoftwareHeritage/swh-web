@@ -13,7 +13,7 @@ from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import origin_with_releases, release, unknown_release
+from swh.web.tests.strategies import release, unknown_release
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -22,9 +22,11 @@ def test_release_browse(client, archive_data, release):
     _release_browse_checks(client, release, archive_data)
 
 
-@given(origin_with_releases())
-def test_release_browse_with_origin_snapshot(client, archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin["url"])
+def test_release_browse_with_origin_snapshot(
+    client, archive_data, origin_with_releases
+):
+    origin_url = origin_with_releases["url"]
+    snapshot = archive_data.snapshot_get_latest(origin_url)
     release = random.choice(
         [
             b["target"]
@@ -33,13 +35,13 @@ def test_release_browse_with_origin_snapshot(client, archive_data, origin):
         ]
     )
 
-    _release_browse_checks(client, release, archive_data, origin_url=origin["url"])
+    _release_browse_checks(client, release, archive_data, origin_url=origin_url)
     _release_browse_checks(client, release, archive_data, snapshot_id=snapshot["id"])
     _release_browse_checks(
         client,
         release,
         archive_data,
-        origin_url=origin["url"],
+        origin_url=origin_url,
         snapshot_id=snapshot["id"],
     )
 

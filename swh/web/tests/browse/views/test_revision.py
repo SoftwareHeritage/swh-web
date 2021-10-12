@@ -20,7 +20,6 @@ from swh.web.tests.strategies import (
     new_origin,
     new_person,
     new_swh_date,
-    origin,
     revision,
     unknown_revision,
 )
@@ -32,7 +31,6 @@ def test_revision_browse(client, archive_data, revision):
     _revision_browse_checks(client, archive_data, revision)
 
 
-@given(origin())
 def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     revision = archive_data.snapshot_get_head(snapshot)

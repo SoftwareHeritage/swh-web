@@ -35,7 +35,6 @@ from swh.web.tests.strategies import (
     new_origin,
     new_revision,
     non_ancestor_revisions,
-    origin,
     release,
     releases,
     revision,
@@ -578,7 +577,6 @@ def _get_origin_branches(archive_data, origin):
     return branches
 
 
-@given(origin())
 def test_lookup_revision_log_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -592,7 +590,6 @@ def test_lookup_revision_log_by(archive_data, origin):
     assert actual_log == expected_log
 
 
-@given(origin())
 def test_lookup_revision_log_by_notfound(origin):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_log_by(
@@ -681,13 +678,11 @@ def test_lookup_directory_empty(empty_directory):
     assert actual_directory_ls == []
 
 
-@given(origin())
 def test_lookup_revision_by_nothing_found(origin):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_by(origin["url"], "invalid-branch-name")
 
 
-@given(origin())
 def test_lookup_revision_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -699,7 +694,7 @@ def test_lookup_revision_by(archive_data, origin):
     assert actual_revision == expected_revision
 
 
-@given(origin(), revision())
+@given(revision())
 def test_lookup_revision_with_context_by_ko(origin, revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_with_context_by(
@@ -707,7 +702,6 @@ def test_lookup_revision_with_context_by_ko(origin, revision):
         )
 
 
-@given(origin())
 def test_lookup_revision_with_context_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -740,7 +734,6 @@ def test_lookup_revision_through_ko_not_implemented():
         archive.lookup_revision_through({"something-unknown": 10})
 
 
-@given(origin())
 def test_lookup_revision_through_with_context_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -759,7 +752,6 @@ def test_lookup_revision_through_with_context_by(archive_data, origin):
     ) == archive.lookup_revision_with_context_by(origin["url"], branch_name, None, rev)
 
 
-@given(origin())
 def test_lookup_revision_through_with_revision_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -952,7 +944,6 @@ def test_lookup_missing_hashes_some_present(content, directory):
     assert actual_result == {missing_rev, missing_rel, missing_snp}
 
 
-@given(origin())
 def test_lookup_origin_extra_trailing_slash(origin):
     origin_info = archive.lookup_origin({"url": f"{origin['url']}/"})
     assert origin_info["url"] == origin["url"]
@@ -973,7 +964,7 @@ def test_lookup_origin_single_slash_after_protocol(archive_data):
     assert origin_info["url"] == origin_url
 
 
-@given(origin(), new_origin())
+@given(new_origin())
 def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
     hasher = hashlib.sha1()
     hasher.update(origin["url"].encode("utf-8"))
@@ -994,13 +985,11 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
     assert origins == [origin_info, None]
 
 
-@given(origin())
 def test_search_origin(origin):
     results = archive.search_origin(url_pattern=origin["url"])[0]
     assert results == [{"url": origin["url"]}]
 
 
-@given(origin())
 def test_search_origin_use_ql(mocker, origin):
 
     ORIGIN = [{"url": origin["url"]}]

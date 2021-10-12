@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  The Software Heritage developers
+# Copyright (C) 2019-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -16,7 +16,6 @@ from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.strategies import (
     invalid_sha1,
     new_origin,
-    origin,
     release,
     revision,
     snapshot,
@@ -37,7 +36,6 @@ def test_directory_badge(client, directory):
     _test_badge_endpoints(client, "directory", directory)
 
 
-@given(origin())
 def test_origin_badge(client, origin):
     _test_badge_endpoints(client, "origin", origin["url"])
 
@@ -114,7 +112,7 @@ def test_badge_errors(
         _check_generated_badge(resp, "", "", error="invalid id")
 
 
-@given(origin(), release())
+@given(release())
 def test_badge_endpoints_have_cors_header(client, origin, release):
     url = reverse(
         "swh-badge", url_args={"object_type": "origin", "object_id": origin["url"]}

@@ -23,16 +23,11 @@ from swh.web.common.typing import (
     SnapshotReleaseInfo,
 )
 from swh.web.common.utils import format_utc_iso_date, reverse
-from swh.web.tests.strategies import (
-    origin_with_multiple_visits,
-    origin_with_releases,
-    snapshot,
-)
+from swh.web.tests.strategies import snapshot
 
 
-@given(origin_with_multiple_visits())
-def test_get_origin_visit_snapshot_simple(archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_visits):
+    visits = archive_data.origin_visit_get(origin_with_multiple_visits["url"])
 
     for visit in visits:
 
@@ -86,7 +81,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
         assert branches and releases, "Incomplete test data."
 
         origin_visit_branches = get_origin_visit_snapshot(
-            origin, visit_id=visit["visit"]
+            origin_with_multiple_visits, visit_id=visit["visit"]
         )
 
         assert origin_visit_branches == (branches, releases, aliases)
@@ -172,20 +167,21 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         )
 
 
-@given(origin_with_multiple_visits())
-def test_get_snapshot_context_with_origin(archive_data, origin):
+def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_visits):
 
-    origin_visits = get_origin_visits(origin)
+    origin_visits = get_origin_visits(origin_with_multiple_visits)
 
     timestamp = format_utc_iso_date(origin_visits[0]["date"], "%Y-%m-%dT%H:%M:%SZ")
     visit_id = origin_visits[1]["visit"]
 
+    origin_url = origin_with_multiple_visits["url"]
+
     for browse_context, kwargs in (
-        ("content", {"origin_url": origin["url"], "path": "/some/path"}),
-        ("directory", {"origin_url": origin["url"]}),
-        ("log", {"origin_url": origin["url"]}),
-        ("directory", {"origin_url": origin["url"], "timestamp": timestamp,},),
-        ("directory", {"origin_url": origin["url"], "visit_id": visit_id,},),
+        ("content", {"origin_url": origin_url, "path": "/some/path"}),
+        ("directory", {"origin_url": origin_url}),
+        ("log", {"origin_url": origin_url}),
+        ("directory", {"origin_url": origin_url, "timestamp": timestamp,},),
+        ("directory", {"origin_url": origin_url, "visit_id": visit_id,},),
     ):
 
         visit_id = kwargs["visit_id"] if "visit_id" in kwargs else None
@@ -243,7 +239,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
-            origin_info={"url": origin["url"]},
+            origin_info={"url": origin_url},
             origin_visits_url=origin_visits_url,
             release=None,
             release_alias=False,
@@ -382,9 +378,8 @@ def _check_branch_release_revision_parameters(
     assert snapshot_context == expected_revision
 
 
-@given(origin_with_releases())
-def test_get_release_large_snapshot(archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin["url"])
+def test_get_release_large_snapshot(archive_data, origin_with_releases):
+    snapshot = archive_data.snapshot_get_latest(origin_with_releases["url"])
     release_id = random.choice(
         [
             v["target"]
