@@ -5,6 +5,7 @@
 
 from collections import defaultdict
 from datetime import timedelta
+import functools
 import json
 import os
 import random
@@ -253,107 +254,121 @@ def empty_content():
     return empty_content
 
 
+@functools.lru_cache(maxsize=None)
+def _content_text():
+    return list(
+        filter(
+            lambda c: c["mimetype"].startswith("text/"),
+            _known_swh_objects(get_tests_data(), "contents"),
+        )
+    )
+
+
 @pytest.fixture(scope="function")
-def content_text(tests_data):
+def content_text():
     """
     Fixture returning a random textual content ingested into the test archive.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"].startswith("text/"),
-                _known_swh_objects(tests_data, "contents"),
-            )
+    return random.choice(_content_text())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_text_non_utf8():
+    return list(
+        filter(
+            lambda c: c["mimetype"].startswith("text/")
+            and c["encoding"] not in ("utf-8", "us-ascii"),
+            _known_swh_objects(get_tests_data(), "contents"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_text_non_utf8(tests_data):
+def content_text_non_utf8():
     """Fixture returning a random textual content not encoded to UTF-8 ingested
     into the test archive.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"].startswith("text/")
-                and c["encoding"] not in ("utf-8", "us-ascii"),
-                _known_swh_objects(tests_data, "contents"),
-            )
+    return random.choice(_content_text_non_utf8())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_application_no_highlight():
+    return list(
+        filter(
+            lambda c: c["mimetype"].startswith("application/")
+            and c["encoding"] != "binary"
+            and c["hljs_language"] == "nohighlight",
+            _known_swh_objects(get_tests_data(), "contents"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_application_no_highlight(tests_data):
+def content_application_no_highlight():
     """Fixture returning a random textual content with mimetype
     starting with application/ and no detected programming language to
     highlight ingested into the test archive.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"].startswith("application/")
-                and c["encoding"] != "binary"
-                and c["hljs_language"] == "nohighlight",
-                _known_swh_objects(tests_data, "contents"),
-            )
+    return random.choice(_content_application_no_highlight())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_text_no_highlight():
+    return list(
+        filter(
+            lambda c: c["mimetype"].startswith("text/")
+            and c["hljs_language"] == "nohighlight",
+            _known_swh_objects(get_tests_data(), "contents"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_text_no_highlight(tests_data):
+def content_text_no_highlight():
     """Fixture returning a random textual content with no detected
     programming language to highlight ingested into the test archive.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"].startswith("text/")
-                and c["hljs_language"] == "nohighlight",
-                _known_swh_objects(tests_data, "contents"),
-            )
+    return random.choice(_content_text_no_highlight())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_image_type():
+    return list(
+        filter(
+            lambda c: c["mimetype"] in browsers_supported_image_mimes,
+            _known_swh_objects(get_tests_data(), "contents"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_image_type(tests_data):
+def content_image_type():
     """Fixture returning a random image content ingested into the test archive.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"] in browsers_supported_image_mimes,
-                _known_swh_objects(tests_data, "contents"),
-            )
+    return random.choice(_content_image_type())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_unsupported_image_type_rendering():
+    return list(
+        filter(
+            lambda c: c["mimetype"].startswith("image/")
+            and c["mimetype"] not in browsers_supported_image_mimes,
+            _known_swh_objects(get_tests_data(), "contents"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_unsupported_image_type_rendering(tests_data):
+def content_unsupported_image_type_rendering():
     """Fixture returning a random image content ingested into the test archive that
     can not be rendered by browsers.
     """
-    return random.choice(
-        list(
-            filter(
-                lambda c: c["mimetype"].startswith("image/")
-                and c["mimetype"] not in browsers_supported_image_mimes,
-                _known_swh_objects(tests_data, "contents"),
-            )
-        )
-    )
+    return random.choice(_content_unsupported_image_type_rendering())
 
 
-@pytest.fixture(scope="function")
-def content_utf8_detected_as_binary(tests_data):
-    """Fixture returning a random textual content detected as binary
-    by libmagic while they are valid UTF-8 encoded files.
-    """
-
+@functools.lru_cache(maxsize=None)
+def _content_utf8_detected_as_binary():
     def utf8_binary_detected(content):
         if content["encoding"] != "binary":
             return False
@@ -364,9 +379,18 @@ def content_utf8_detected_as_binary(tests_data):
         else:
             return True
 
-    return random.choice(
-        list(filter(utf8_binary_detected, _known_swh_objects(tests_data, "contents")))
+    return list(
+        filter(utf8_binary_detected, _known_swh_objects(get_tests_data(), "contents"))
     )
+
+
+@pytest.fixture(scope="function")
+def content_utf8_detected_as_binary():
+    """Fixture returning a random textual content detected as binary
+    by libmagic while they are valid UTF-8 encoded files.
+    """
+
+    return random.choice(_content_utf8_detected_as_binary())
 
 
 @pytest.fixture(scope="function")
@@ -405,37 +429,35 @@ def directory(tests_data):
     return random.choice(_known_swh_objects(tests_data, "directories"))
 
 
-def _directory_with_entry_type(tests_data, type_):
-    return random.choice(
-        list(
-            filter(
-                lambda d: any(
-                    [
-                        e["type"] == type_
-                        for e in list(
-                            tests_data["storage"].directory_ls(hash_to_bytes(d))
-                        )
-                    ]
-                ),
-                _known_swh_objects(tests_data, "directories"),
-            )
+@functools.lru_cache(maxsize=None)
+def _directory_with_entry_type(type_):
+    tests_data = get_tests_data()
+    return list(
+        filter(
+            lambda d: any(
+                [
+                    e["type"] == type_
+                    for e in list(tests_data["storage"].directory_ls(hash_to_bytes(d)))
+                ]
+            ),
+            _known_swh_objects(tests_data, "directories"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def directory_with_subdirs(tests_data):
+def directory_with_subdirs():
     """Fixture returning a random directory containing sub directories ingested
     into the test archive.
     """
-    return _directory_with_entry_type(tests_data, "dir")
+    return random.choice(_directory_with_entry_type("dir"))
 
 
 @pytest.fixture(scope="function")
-def directory_with_files(tests_data):
+def directory_with_files():
     """Fixture returning a random directory containing at least one regular file.
     """
-    return _directory_with_entry_type(tests_data, "file")
+    return random.choice(_directory_with_entry_type("file"))
 
 
 @pytest.fixture(scope="function")
@@ -506,14 +528,11 @@ def _get_origin_dfs_revisions_walker(tests_data):
     return get_revisions_walker("dfs", storage, head)
 
 
-@pytest.fixture(scope="function")
-def ancestor_revisions(tests_data):
-    """Fixture returning a pair of revisions ingested into the test archive
-    with an ancestor relation.
-    """
+@functools.lru_cache(maxsize=None)
+def _ancestor_revisions_data():
     # get a dfs revisions walker for one of the origins
     # loaded into the test archive
-    revisions_walker = _get_origin_dfs_revisions_walker(tests_data)
+    revisions_walker = _get_origin_dfs_revisions_walker(get_tests_data())
     master_revisions = []
     children = defaultdict(list)
     init_rev_found = False
@@ -525,7 +544,15 @@ def ancestor_revisions(tests_data):
             master_revisions.append(rev)
         if not rev["parents"]:
             init_rev_found = True
+    return master_revisions, children
 
+
+@pytest.fixture(scope="function")
+def ancestor_revisions():
+    """Fixture returning a pair of revisions ingested into the test archive
+    with an ancestor relation.
+    """
+    master_revisions, children = _ancestor_revisions_data()
     # head revision
     root_rev = master_revisions[0]
     # pick a random revision, different from head, only authored
@@ -541,14 +568,11 @@ def ancestor_revisions(tests_data):
     }
 
 
-@pytest.fixture(scope="function")
-def non_ancestor_revisions(tests_data):
-    """Fixture returning a pair of revisions ingested into the test archive
-    with no ancestor relation.
-    """
+@functools.lru_cache(maxsize=None)
+def _non_ancestor_revisions_data():
     # get a dfs revisions walker for one of the origins
     # loaded into the test archive
-    revisions_walker = _get_origin_dfs_revisions_walker(tests_data)
+    revisions_walker = _get_origin_dfs_revisions_walker(get_tests_data())
     merge_revs = []
     children = defaultdict(list)
     # get all merge revisions
@@ -557,6 +581,15 @@ def non_ancestor_revisions(tests_data):
             merge_revs.append(rev)
         for rev_p in rev["parents"]:
             children[rev_p].append(rev["id"])
+    return merge_revs, children
+
+
+@pytest.fixture(scope="function")
+def non_ancestor_revisions():
+    """Fixture returning a pair of revisions ingested into the test archive
+    with no ancestor relation.
+    """
+    merge_revs, children = _non_ancestor_revisions_data()
     # find a merge revisions whose parents have a unique child revision
     random.shuffle(merge_revs)
     selected_revs = None
@@ -635,95 +668,112 @@ def origin(tests_data):
     return random.choice(_known_swh_objects(tests_data, "origins"))
 
 
-@pytest.fixture(scope="function")
-def origin_with_multiple_visits(tests_data):
-    """Fixture returning a random origin with multiple visits ingested
-    into the test archive.
-    """
+@functools.lru_cache(maxsize=None)
+def _origin_with_multiple_visits():
+    tests_data = get_tests_data()
     origins = []
     storage = tests_data["storage"]
     for origin in tests_data["origins"]:
         visit_page = storage.origin_visit_get(origin["url"])
         if len(visit_page.results) > 1:
             origins.append(origin)
-    return random.choice(origins)
+    return origins
 
 
 @pytest.fixture(scope="function")
-def origin_with_releases(tests_data):
-    """Fixture returning a random origin with releases ingested into the test archive.
+def origin_with_multiple_visits():
+    """Fixture returning a random origin with multiple visits ingested
+    into the test archive.
     """
+    return random.choice(_origin_with_multiple_visits())
+
+
+@functools.lru_cache(maxsize=None)
+def _origin_with_releases():
+    tests_data = get_tests_data()
     origins = []
     for origin in tests_data["origins"]:
         snapshot = snapshot_get_latest(tests_data["storage"], origin["url"])
         if any([b.target_type.value == "release" for b in snapshot.branches.values()]):
             origins.append(origin)
-    return random.choice(origins)
+    return origins
 
 
 @pytest.fixture(scope="function")
-def origin_with_pull_request_branches(tests_data):
-    """Fixture returning a random origin with pull request branches ingested
-    into the test archive.
+def origin_with_releases():
+    """Fixture returning a random origin with releases ingested into the test archive.
     """
+    return random.choice(_origin_with_releases())
+
+
+@functools.lru_cache(maxsize=None)
+def _origin_with_pull_request_branches():
+    tests_data = get_tests_data()
     origins = []
     storage = tests_data["storage"]
     for origin in storage.origin_list(limit=1000).results:
         snapshot = snapshot_get_latest(storage, origin.url)
         if any([b"refs/pull/" in b for b in snapshot.branches]):
             origins.append(origin)
-    return random.choice(origins)
+    return origins
 
 
-def _object_type_swhid(tests_data, object_type):
-    return random.choice(
-        list(
-            filter(
-                lambda swhid: swhid.object_type == object_type,
-                _known_swh_objects(tests_data, "swhids"),
-            )
+@pytest.fixture(scope="function")
+def origin_with_pull_request_branches():
+    """Fixture returning a random origin with pull request branches ingested
+    into the test archive.
+    """
+    return random.choice(_origin_with_pull_request_branches())
+
+
+@functools.lru_cache(maxsize=None)
+def _object_type_swhid(object_type):
+    return list(
+        filter(
+            lambda swhid: swhid.object_type == object_type,
+            _known_swh_objects(get_tests_data(), "swhids"),
         )
     )
 
 
 @pytest.fixture(scope="function")
-def content_swhid(tests_data):
+def content_swhid():
     """Fixture returning a qualified SWHID for a random content object
     ingested into the test archive.
     """
-    return _object_type_swhid(tests_data, ObjectType.CONTENT)
+    return random.choice(_object_type_swhid(ObjectType.CONTENT))
 
 
 @pytest.fixture(scope="function")
-def directory_swhid(tests_data):
+def directory_swhid():
     """Fixture returning a qualified SWHID for a random directory object
     ingested into the test archive.
     """
-    return _object_type_swhid(tests_data, ObjectType.DIRECTORY)
+    return random.choice(_object_type_swhid(ObjectType.DIRECTORY))
 
 
 @pytest.fixture(scope="function")
-def release_swhid(tests_data):
+def release_swhid():
     """Fixture returning a qualified SWHID for a random release object
     ingested into the test archive.
     """
-    return _object_type_swhid(tests_data, ObjectType.RELEASE)
+    return random.choice(_object_type_swhid(ObjectType.RELEASE))
 
 
 @pytest.fixture(scope="function")
-def revision_swhid(tests_data):
+def revision_swhid():
     """Fixture returning a qualified SWHID for a random revision object
     ingested into the test archive.
     """
-    return _object_type_swhid(tests_data, ObjectType.REVISION)
+    return random.choice(_object_type_swhid(ObjectType.REVISION))
 
 
 @pytest.fixture(scope="function")
-def snapshot_swhid(tests_data):
+def snapshot_swhid():
     """Fixture returning a qualified SWHID for a snapshot object
     ingested into the test archive.
     """
-    return _object_type_swhid(tests_data, ObjectType.SNAPSHOT)
+    return random.choice(_object_type_swhid(ObjectType.SNAPSHOT))
 
 
 # Fixture to manipulate data from a sample archive used in the tests
