@@ -12,6 +12,7 @@ import random
 import shutil
 from subprocess import PIPE, run
 import sys
+import time
 from typing import Any, Dict, List, Optional
 
 from _pytest.python import Function
@@ -85,6 +86,10 @@ settings.register_profile(
 )
 
 
+def pytest_addoption(parser):
+    parser.addoption("--swh-web-random-seed", action="store", default=None)
+
+
 def pytest_configure(config):
     # Use fast hypothesis profile by default if none has been
     # explicitly specified in pytest option
@@ -135,6 +140,47 @@ def pytest_configure(config):
 
     with open(webpack_stats, "w") as outfile:
         json.dump(mock_webpack_stats, outfile)
+
+
+_swh_web_custom_section = "swh-web custom section"
+_random_seed_cache_key = "swh-web/random-seed"
+
+
+@pytest.fixture(scope="function", autouse=True)
+def random_seed(pytestconfig):
+    state = random.getstate()
+    seed = pytestconfig.getoption("--swh-web-random-seed")
+    if seed is None:
+        seed = time.time()
+    seed = int(seed)
+    cache.set(_random_seed_cache_key, seed)
+    random.seed(seed)
+    yield seed
+    random.setstate(state)
+
+
+def pytest_report_teststatus(report, config):
+    if report.when == "call" and report.outcome == "failed":
+        seed = cache.get(_random_seed_cache_key, None)
+        line = (
+            f'FAILED {report.nodeid}: Use "pytest --swh-web-random-seed={seed} '
+            f'{report.nodeid}" to reproduce that test failure with same inputs'
+        )
+        report.sections.append((_swh_web_custom_section, line))
+
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    reports = terminalreporter.getreports("failed")
+    content = os.linesep.join(
+        text
+        for report in reports
+        for secname, text in report.sections
+        if secname == _swh_web_custom_section
+    )
+    if content:
+        terminalreporter.ensure_newline()
+        terminalreporter.section(_swh_web_custom_section, sep="-", blue=True, bold=True)
+        terminalreporter.line(content)
 
 
 # Clear Django cache before each test
