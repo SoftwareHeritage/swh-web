@@ -195,7 +195,9 @@ def test_directory_origin_snapshot_branch_browse(
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
     branches, releases, _ = process_snapshot_branches(snapshot)
-    branch_info = random.choice(branches)
+    branch_info = next(
+        branch for branch in branches if branch["name"] == "refs/heads/master"
+    )
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
@@ -336,7 +338,9 @@ def test_directory_origin_snapshot_revision_browse(
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     branches, releases, _ = process_snapshot_branches(snapshot)
-    branch_info = random.choice(branches)
+    branch_info = next(
+        branch for branch in branches if branch["name"] == "refs/heads/master"
+    )
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
