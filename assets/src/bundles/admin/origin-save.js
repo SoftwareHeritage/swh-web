@@ -307,20 +307,70 @@ export function acceptOriginSaveRequest() {
   }
 }
 
+const rejectModalHtml = `
+<form id="swh-rejection-form">
+  <div class="form-group row">
+    <label for="swh-rejection-reason" class="col-4 col-form-label">Rejection reason:</label>
+    <div class="col-8">
+      <select class="custom-select" id="swh-rejection-reason">
+        <option value="custom" selected>Custom</option>
+        <option value="invalid-origin">Invalid origin</option>
+        <option value="invalid-origin-type">Invalid origin type</option>
+        <option value="origin-not-found">Origin not found</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <textarea class="form-control" id="swh-rejection-text"></textarea>
+  </div>
+  <button type="submit" class="btn btn-default float-right" id="swh-rejection-submit">Reject</button>
+</form>
+`;
+
 export function rejectOriginSaveRequest() {
   const selectedRow = pendingSaveRequestsTable.row('.selected');
+  const rowData = selectedRow.data();
   if (selectedRow.length) {
     const rejectOriginSaveRequestCallback = async() => {
-      const rowData = selectedRow.data();
+      $('#swh-web-modal-html').modal('hide');
       const rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(rowData['visit_type'], rowData['origin_url']);
-      await csrfPost(rejectSaveRequestUrl);
+      await csrfPost(rejectSaveRequestUrl, {}, JSON.stringify({note: $('#swh-rejection-text').val()}));
       pendingSaveRequestsTable.ajax.reload(null, false);
     };
 
-    swh.webapp.showModalConfirm(
-      'Reject origin save request ?',
-      'Are you sure to reject this origin save request ?',
-      rejectOriginSaveRequestCallback);
+    let currentRejectionReason = 'custom';
+    const rejectionTexts = {};
+    swh.webapp.showModalHtml('Reject origin save request ?', rejectModalHtml);
+    $('#swh-rejection-reason').on('change', (event) => {
+      // backup current textarea value
+      rejectionTexts[currentRejectionReason] = $('#swh-rejection-text').val();
+      currentRejectionReason = event.target.value;
+      let newRejectionText = '';
+      if (rejectionTexts.hasOwnProperty(currentRejectionReason)) {
+        // restore previous textarea value
+        newRejectionText = rejectionTexts[currentRejectionReason];
+      } else {
+        // fill textarea with default text according to rejection type
+        if (currentRejectionReason === 'invalid-origin') {
+          newRejectionText = `The origin with URL ${rowData['origin_url']} is not a link to a  ${rowData['visit_type']} repository.`;
+        } else if (currentRejectionReason === 'invalid-origin-type') {
+          newRejectionText = `The origin with URL ${rowData['origin_url']} is not of type ${rowData['visit_type']}.`;
+        } else if (currentRejectionReason === 'origin-not-found') {
+          newRejectionText = `The origin with URL ${rowData['origin_url']} cannot be found.`;
+        }
+      }
+      $('#swh-rejection-text').val(newRejectionText);
+    });
+    $('#swh-rejection-form').on('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      // ensure confirmation modal will be displayed above the html modal
+      $('#swh-web-modal-html').css('z-index', 4000);
+      swh.webapp.showModalConfirm(
+        'Reject origin save request ?',
+        'Are you sure to reject this origin save request ?',
+        rejectOriginSaveRequestCallback);
+    });
   }
 }
 
