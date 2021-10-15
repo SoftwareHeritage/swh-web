@@ -219,3 +219,63 @@ describe('Test Admin Origin Save Urls Filtering', function() {
   });
 
 });
+
+describe('Test Admin Origin Save', function() {
+
+  it(`should reject a save code now request with note`, function() {
+    const originUrl = `https://example.org/${Date.now()}`;
+    const rejectionNote = 'The provided URL does not target a git repository.';
+
+    // anonymous user creates a request put in pending state
+    cy.visit(this.Urls.origin_save());
+
+    cy.get('#swh-input-origin-url')
+      .type(originUrl);
+
+    cy.get('#swh-input-origin-save-submit')
+      .click();
+
+    // admin user logs in and visits save code now admin page
+    cy.adminLogin();
+    cy.visit(this.Urls.admin_origin_save());
+
+    // admin rejects the save request and adds a rejection note
+    cy.contains('#swh-origin-save-pending-requests', originUrl)
+      .click();
+
+    cy.get('#swh-reject-save-origin-request')
+      .click();
+
+    cy.get('#swh-rejection-text')
+      .then(textarea => {
+        textarea.val(rejectionNote);
+      });
+
+    cy.get('#swh-rejection-submit')
+      .click();
+
+    cy.get('#swh-web-modal-confirm-ok-btn')
+      .click();
+
+    // checks rejection note has been saved to swh-web database
+    cy.request(this.Urls.api_1_save_origin('git', originUrl))
+      .then(response => {
+        expect(response.body[0]['note']).to.equal(rejectionNote);
+      });
+
+    // remove rejected request from swh-web database to avoid side effects
+    // in tests located in origin-save.spec.js
+    cy.visit(this.Urls.admin_origin_save());
+    cy.get('#swh-save-requests-rejected-tab')
+      .click();
+
+    cy.contains('#swh-origin-save-rejected-requests', originUrl)
+      .click();
+
+    cy.get('#swh-remove-rejected-save-origin-request')
+      .click();
+
+    cy.get('#swh-web-modal-confirm-ok-btn')
+      .click();
+  });
+});

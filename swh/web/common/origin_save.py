@@ -609,10 +609,16 @@ def update_save_origin_requests_from_queryset(
         task_ids.append(sor.loading_task_id)
     save_requests = []
     if task_ids:
-        tasks = scheduler().get_tasks(task_ids)
-        tasks = {task["id"]: task for task in tasks}
-        task_runs = scheduler().get_task_runs(tasks)
-        task_runs = {task_run["task"]: task_run for task_run in task_runs}
+        try:
+            tasks = scheduler().get_tasks(task_ids)
+            tasks = {task["id"]: task for task in tasks}
+            task_runs = scheduler().get_task_runs(tasks)
+            task_runs = {task_run["task"]: task_run for task_run in task_runs}
+        except Exception:
+            # allow to avoid mocking api GET responses for /origin/save endpoint when
+            # running cypress tests as scheduler is not available
+            tasks = {}
+            task_runs = {}
         for sor in requests_queryset:
             sr_dict = _update_save_request_info(
                 sor, tasks.get(sor.loading_task_id), task_runs.get(sor.loading_task_id),
