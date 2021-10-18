@@ -35,7 +35,7 @@ run-migrations-prod:
 
 .PHONY: run-migrations-test
 run-migrations-test:
-	rm -f swh/web/settings/testdb.sqlite3
+	rm -f swh-web-test.sqlite3
 	django-admin migrate --settings=$(SETTINGS_TEST) -v0 2>/dev/null
 
 add-users-test: run-migrations-test
