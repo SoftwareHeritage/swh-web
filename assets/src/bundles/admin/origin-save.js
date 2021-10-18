@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -122,6 +122,20 @@ export function initOriginSaveAdmin() {
     enableRowSelection('#swh-origin-save-pending-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(pendingSaveRequestsTable);
 
+    columnsData.push({
+      name: 'info',
+      render: (data, type, row) => {
+        if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed' ||
+            row.note != null) {
+          return `<i class="mdi mdi-information-outline swh-save-request-info" aria-hidden="true"
+                     style="cursor: pointer"
+                     onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
+        } else {
+          return '';
+        }
+      }
+    });
+
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
       serverSide: true,
       processing: true,
@@ -143,21 +157,9 @@ export function initOriginSaveAdmin() {
     enableRowSelection('#swh-origin-save-rejected-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(rejectedSaveRequestsTable);
 
-    columnsData.push({
+    columnsData.splice(columnsData.length - 1, 0, {
       data: 'save_task_status',
       name: 'save_task_status'
-    });
-
-    columnsData.push({
-      name: 'info',
-      render: (data, type, row) => {
-        if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed') {
-          return '<i class="mdi mdi-information-outline swh-save-request-info" aria-hidden="true" style="cursor: pointer"' +
-                  `onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
-        } else {
-          return '';
-        }
-      }
     });
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable({

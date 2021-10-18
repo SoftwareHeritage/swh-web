@@ -730,26 +730,37 @@ def get_save_origin_task_info(
     except ObjectDoesNotExist:
         return {}
 
-    task = scheduler().get_tasks([save_request.loading_task_id])
+    task_info: Dict[str, Any] = {}
+    if save_request.note is not None:
+        task_info["note"] = save_request.note
+
+    try:
+        task = scheduler().get_tasks([save_request.loading_task_id])
+    except Exception:
+        # to avoid mocking GET responses of /save/task/info/ endpoint when running
+        # cypress tests as scheduler is not available in that case
+        task = None
+
     task = task[0] if task else None
     if task is None:
-        return {}
+        return task_info
 
     task_run = scheduler().get_task_runs([task["id"]])
     task_run = task_run[0] if task_run else None
     if task_run is None:
-        return {}
-    task_run["type"] = task["type"]
-    task_run["arguments"] = task["arguments"]
-    task_run["id"] = task_run["task"]
-    del task_run["task"]
-    del task_run["metadata"]
-    # Enrich the task run with the loading visit status
-    task_run["visit_status"] = save_request.visit_status
+        return task_info
+    task_info.update(task_run)
+    task_info["type"] = task["type"]
+    task_info["arguments"] = task["arguments"]
+    task_info["id"] = task_run["task"]
+    del task_info["task"]
+    del task_info["metadata"]
+    # Enrich the task info with the loading visit status
+    task_info["visit_status"] = save_request.visit_status
 
     es_workers_index_url = get_config()["es_workers_index_url"]
     if not es_workers_index_url:
-        return task_run
+        return task_info
     es_workers_index_url += "/_search"
 
     if save_request.visit_date:
@@ -793,17 +804,17 @@ def get_save_origin_task_info(
             task_run_info = results["hits"]["hits"][-1]["_source"]
             if "swh_logging_args_runtime" in task_run_info:
                 duration = task_run_info["swh_logging_args_runtime"]
-                task_run["duration"] = duration
+                task_info["duration"] = duration
             if "message" in task_run_info:
-                task_run["message"] = task_run_info["message"]
+                task_info["message"] = task_run_info["message"]
             if "swh_logging_args_name" in task_run_info:
-                task_run["name"] = task_run_info["swh_logging_args_name"]
+                task_info["name"] = task_run_info["swh_logging_args_name"]
             elif "swh_task_name" in task_run_info:
-                task_run["name"] = task_run_info["swh_task_name"]
+                task_info["name"] = task_run_info["swh_task_name"]
             if "hostname" in task_run_info:
-                task_run["worker"] = task_run_info["hostname"]
+                task_info["worker"] = task_run_info["hostname"]
             elif "host" in task_run_info:
-                task_run["worker"] = task_run_info["host"]
+                task_info["worker"] = task_run_info["host"]
     except Exception as exc:
         logger.warning("Request to Elasticsearch failed\n%s", exc)
         sentry_sdk.capture_exception(exc)
@@ -811,19 +822,19 @@ def get_save_origin_task_info(
     if not full_info:
         for field in ("id", "backend_id", "worker"):
             # remove some staff only fields
-            task_run.pop(field, None)
+            task_info.pop(field, None)
         if "message" in task_run and "Loading failure" in task_run["message"]:
             # hide traceback for non staff users, only display exception
-            message_lines = task_run["message"].split("\n")
+            message_lines = task_info["message"].split("\n")
             message = ""
             for line in message_lines:
                 if line.startswith("Traceback"):
                     break
                 message += f"{line}\n"
             message += message_lines[-1]
-            task_run["message"] = message
+            task_info["message"] = message
 
-    return task_run
+    return task_info
 
 
 SUBMITTED_SAVE_REQUESTS_METRIC = "swh_web_submitted_save_requests"

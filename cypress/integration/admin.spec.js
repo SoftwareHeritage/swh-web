@@ -263,6 +263,20 @@ describe('Test Admin Origin Save', function() {
         expect(response.body[0]['note']).to.equal(rejectionNote);
       });
 
+    // check rejection note is displayed by clicking on the info icon
+    // in requests table from public save code now page
+    cy.visit(this.Urls.origin_save());
+    cy.get('#swh-origin-save-requests-list-tab')
+      .click();
+
+    cy.contains('#swh-origin-save-requests tr', originUrl);
+    cy.get('.swh-save-request-info')
+      .eq(0)
+      .click();
+
+    cy.get('.popover-body')
+      .should('have.text', rejectionNote);
+
     // remove rejected request from swh-web database to avoid side effects
     // in tests located in origin-save.spec.js
     cy.visit(this.Urls.admin_origin_save());
