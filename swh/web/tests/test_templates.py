@@ -7,11 +7,13 @@ from copy import deepcopy
 import random
 
 from pkg_resources import get_distribution
+import pytest
 
+from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.common.utils import reverse
 from swh.web.config import STAGING_SERVER_NAMES, get_config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_http_get_response
+from swh.web.tests.utils import check_http_get_response, create_django_permission
 
 swh_web_version = get_distribution("swh.web").version
 
@@ -61,3 +63,29 @@ def test_layout_swh_web_version_number_display(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_contains(resp, f"swh-web v{swh_web_version}")
+
+
+@pytest.mark.django_db
+def test_layout_no_deposit_admin_for_anonymous_user(client):
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "swh-deposit-admin-link")
+
+
+@pytest.mark.django_db
+def test_layout_deposit_admin_for_staff_user(client, staff_user):
+    client.force_login(staff_user)
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, "swh-deposit-admin-link")
+
+
+@pytest.mark.django_db
+def test_layout_deposit_admin_for_user_with_permission(client, regular_user):
+    regular_user.user_permissions.add(
+        create_django_permission(ADMIN_LIST_DEPOSIT_PERMISSION)
+    )
+    client.force_login(regular_user)
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, "swh-deposit-admin-link")
