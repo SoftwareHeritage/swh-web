@@ -6,18 +6,20 @@
 import os
 import subprocess
 
+pytest_command = ["python3", "-m", "pytest", "-s"]
+
 
 def test_random_fixtures():
     """Check random fixture values will be different when random seed
     is not explicitly provided.
     """
     result_first = subprocess.run(
-        ["pytest", "-s", "random_fixtures_test.py"],
+        [*pytest_command, "random_fixtures_test.py"],
         capture_output=True,
         cwd=os.path.dirname(__file__),
     )
     result_second = subprocess.run(
-        ["pytest", "-s", "random_fixtures_test.py"],
+        [*pytest_command, "random_fixtures_test.py"],
         capture_output=True,
         cwd=os.path.dirname(__file__),
     )
@@ -30,12 +32,12 @@ def test_random_fixtures_with_seed():
     is explicitly provided through a custom pytest option.
     """
     result_first = subprocess.run(
-        ["pytest", "-s", "--swh-web-random-seed=2021", "random_fixtures_test.py"],
+        [*pytest_command, "--swh-web-random-seed=2021", "random_fixtures_test.py"],
         capture_output=True,
         cwd=os.path.dirname(__file__),
     )
     result_second = subprocess.run(
-        ["pytest", "-s", "--swh-web-random-seed=2021", "random_fixtures_test.py"],
+        [*pytest_command, "--swh-web-random-seed=2021", "random_fixtures_test.py"],
         capture_output=True,
         cwd=os.path.dirname(__file__),
     )
