@@ -326,11 +326,14 @@ def content_display(request, query_string):
         origin_url=origin_url,
     )
 
-    swh_objects = [
-        SWHObjectInfo(
-            object_type=ObjectType.CONTENT, object_id=content_checksums.get("sha1_git")
+    swh_objects = []
+    if content_checksums:
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=ObjectType.CONTENT,
+                object_id=content_checksums.get("sha1_git"),
+            )
         )
-    ]
 
     if directory_id:
         swh_objects.append(
@@ -372,7 +375,7 @@ def content_display(request, query_string):
         "browse/content.html",
         {
             "heading": heading,
-            "swh_object_id": swhids_info[0]["swhid"],
+            "swh_object_id": swhids_info[0]["swhid"] if swhids_info else "",
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
             "content": content,

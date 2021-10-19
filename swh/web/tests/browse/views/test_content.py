@@ -5,6 +5,8 @@
 
 import random
 
+import pytest
+
 from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
@@ -315,7 +317,15 @@ def test_content_raw_bin(client, archive_data, content_image_type):
     assert resp.content == content_data
 
 
-def test_content_request_errors(client, invalid_sha1, unknown_content):
+@pytest.mark.django_db
+@pytest.mark.parametrize("staff_user_logged_in", [False, True])
+def test_content_request_errors(
+    client, staff_user, invalid_sha1, unknown_content, staff_user_logged_in
+):
+
+    if staff_user_logged_in:
+        client.force_login(staff_user)
+
     url = reverse("browse-content", url_args={"query_string": invalid_sha1})
     check_html_get_response(client, url, status_code=400, template_used="error.html")
 
