@@ -20,7 +20,6 @@ from swh.indexer.storage import get_indexer_storage
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_hex
-from swh.model.identifiers import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.model.model import (
     Content,
     Directory,
@@ -29,6 +28,7 @@ from swh.model.model import (
     OriginVisitStatus,
     Snapshot,
 )
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.search import get_search
 from swh.storage import get_storage
 from swh.storage.algos.dir_iterators import dir_iterator
@@ -345,7 +345,7 @@ def _init_tests_data():
             rev_id = rev_log[0]
             revisions.add(rev_id)
 
-        for rev in storage.revision_get(origin_revisions):
+        for rev in storage.revision_get(sorted(origin_revisions)):
             if rev is None:
                 continue
             dir_id = rev.directory
@@ -464,11 +464,11 @@ def _init_tests_data():
         "idx_storage": idx_storage,
         "counters": counters,
         "origins": _TEST_ORIGINS,
-        "contents": contents,
-        "directories": list(directories),
-        "releases": list(releases),
-        "revisions": list(map(hash_to_hex, revisions)),
-        "snapshots": list(snapshots),
+        "contents": list(sorted(contents, key=lambda c: c["sha1"])),
+        "directories": list(sorted(directories)),
+        "releases": list(sorted(releases)),
+        "revisions": list(sorted(map(hash_to_hex, revisions))),
+        "snapshots": list(sorted(snapshots)),
         "swhids": swhids,
     }
 

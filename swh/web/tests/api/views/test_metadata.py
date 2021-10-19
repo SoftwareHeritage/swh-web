@@ -12,7 +12,7 @@ from swh.model.hypothesis_strategies import (
     raw_extrinsic_metadata as raw_extrinsic_metadata_orig,
 )
 from swh.model.hypothesis_strategies import sha1_git
-from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID, ObjectType
+from swh.model.swhids import ExtendedObjectType, ExtendedSWHID, ObjectType
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response

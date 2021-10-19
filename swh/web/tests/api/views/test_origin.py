@@ -26,7 +26,7 @@ from swh.web.tests.data import (
     ORIGIN_METADATA_KEY,
     ORIGIN_METADATA_VALUE,
 )
-from swh.web.tests.strategies import new_origin, new_snapshots, origin, visit_dates
+from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
 from swh.web.tests.utils import check_api_get_responses
 
 
@@ -322,7 +322,6 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         assert rv.data == expected_visit
 
 
-@given(origin())
 def test_api_lookup_origin_visit_not_found(api_client, origin):
 
     all_visits = list(reversed(get_origin_visits(origin)))
@@ -394,7 +393,6 @@ def test_api_origins_scroll(api_client, archive_data, origin_count):
     assert {origin["url"] for origin in results} == origin_urls
 
 
-@given(origin())
 def test_api_origin_by_url(api_client, archive_data, origin):
     origin_url = origin["url"]
     url = reverse("api-1-origin", url_args={"origin_url": origin_url})
@@ -706,7 +704,6 @@ def test_api_origin_metadata_search_limit(api_client, mocker):
     oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=100)
 
 
-@given(origin())
 def test_api_origin_intrinsic_metadata(api_client, origin):
 
     url = reverse(

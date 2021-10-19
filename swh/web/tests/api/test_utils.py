@@ -1,24 +1,14 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import random
 
-from hypothesis import given
-
 from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
-from swh.web.tests.strategies import (
-    content,
-    directory,
-    origin,
-    release,
-    revision,
-    snapshot,
-)
 
 url_map = [
     {
@@ -107,7 +97,6 @@ def test_enrich_release_empty():
     assert actual_release == {}
 
 
-@given(release())
 def test_enrich_release_content_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -127,7 +116,6 @@ def test_enrich_release_content_target(api_request_factory, archive_data, releas
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_directory_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -147,7 +135,6 @@ def test_enrich_release_directory_target(api_request_factory, archive_data, rele
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_revision_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -165,7 +152,6 @@ def test_enrich_release_revision_target(api_request_factory, archive_data, relea
     assert actual_release == release_data
 
 
-@given(release())
 def test_enrich_release_release_target(api_request_factory, archive_data, release):
 
     release_data = archive_data.release_get(release)
@@ -187,7 +173,6 @@ def test_enrich_directory_entry_no_type():
     assert utils.enrich_directory_entry({"id": "dir-id"}) == {"id": "dir-id"}
 
 
-@given(directory())
 def test_enrich_directory_entry_with_type(api_request_factory, archive_data, directory):
 
     dir_content = archive_data.directory_ls(directory)
@@ -227,7 +212,6 @@ def test_enrich_content_without_hashes():
     assert utils.enrich_content({"id": "123"}) == {"id": "123"}
 
 
-@given(content())
 def test_enrich_content_with_hashes(api_request_factory, content):
 
     for algo in DEFAULT_ALGORITHMS:
@@ -262,7 +246,6 @@ def test_enrich_content_with_hashes(api_request_factory, content):
         assert enriched_content == content_data
 
 
-@given(content())
 def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, content):
 
     for algo in DEFAULT_ALGORITHMS:
@@ -301,7 +284,6 @@ def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, conte
         assert enriched_content == content_data
 
 
-@given(revision())
 def test_enrich_revision_without_children_or_parent(
     api_request_factory, archive_data, revision
 ):
@@ -331,11 +313,10 @@ def test_enrich_revision_without_children_or_parent(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_children_and_parent_no_dir(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     del revision_data["directory"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
@@ -373,11 +354,8 @@ def test_enrich_revision_with_children_and_parent_no_dir(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
-def test_enrich_revision_no_context(
-    api_request_factory, revision, parent_revision, child_revision
-):
-
+def test_enrich_revisionno_context(api_request_factory, revisions_list):
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = {
         "id": revision,
         "parents": [parent_revision],
@@ -417,11 +395,10 @@ def test_enrich_revision_no_context(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_no_message(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     revision_data["message"] = None
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
@@ -465,11 +442,10 @@ def test_enrich_revision_with_no_message(
     assert actual_revision == revision_data
 
 
-@given(revision(), revision(), revision())
 def test_enrich_revision_with_invalid_message(
-    api_request_factory, archive_data, revision, parent_revision, child_revision
+    api_request_factory, archive_data, revisions_list
 ):
-
+    revision, parent_revision, child_revision = revisions_list(size=3)
     revision_data = archive_data.revision_get(revision)
     revision_data["decoding_failures"] = ["message"]
     revision_data["parents"] = revision_data["parents"] + (parent_revision,)
@@ -517,7 +493,6 @@ def test_enrich_revision_with_invalid_message(
     assert actual_revision == revision_data
 
 
-@given(snapshot())
 def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
     snapshot_data = archive_data.snapshot_get(snapshot)
 
@@ -548,7 +523,6 @@ def test_enrich_snapshot(api_request_factory, archive_data, snapshot):
     assert actual_snapshot == snapshot_data
 
 
-@given(origin())
 def test_enrich_origin(api_request_factory, origin):
     url = reverse("api-1-origin", url_args={"origin_url": origin["url"]})
     request = api_request_factory.get(url)
@@ -563,7 +537,6 @@ def test_enrich_origin(api_request_factory, origin):
     assert actual_origin == origin_data
 
 
-@given(origin())
 def test_enrich_origin_search_result(api_request_factory, origin):
     url = reverse("api-1-origin-search", url_args={"url_pattern": origin["url"]})
     request = api_request_factory.get(url)
@@ -588,7 +561,6 @@ def test_enrich_origin_search_result(api_request_factory, origin):
     )
 
 
-@given(origin())
 def test_enrich_origin_visit(api_request_factory, origin):
 
     origin_visit = random.choice(get_origin_visits(origin))

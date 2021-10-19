@@ -12,7 +12,7 @@ from django.http import QueryDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType, QualifiedSWHID
+from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (

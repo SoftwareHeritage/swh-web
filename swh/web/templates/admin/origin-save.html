@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2019  The Software Heritage developers
+Copyright (C) 2018-2021  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -98,6 +98,7 @@ See top-level LICENSE file for more information
               <th data-priority="2">Date</th>
               <th data-priority="3">Type</th>
               <th data-priority="1">Url</th>
+              <th data-priority="4">Info</th>
             </tr>
           </thead>
         </table>
@@ -105,7 +106,7 @@ See top-level LICENSE file for more information
           <div class="col-md-10">
           </div>
           <div class="col-md-2">
-            <button class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeRejectedOriginSaveRequest()" disabled>Remove selected</button>
+            <button id="swh-remove-rejected-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.admin.removeRejectedOriginSaveRequest()" disabled>Remove selected</button>
           </div>
         </div>
       </div>

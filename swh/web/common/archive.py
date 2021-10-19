@@ -11,8 +11,8 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 from urllib.parse import urlparse
 
 from swh.model import hashutil
-from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import OriginVisit, Revision
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias

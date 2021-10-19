@@ -11,8 +11,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
-from swh.model.identifiers import ObjectType
 from swh.model.model import RawExtrinsicMetadata, Release, Revision
+from swh.model.swhids import ObjectType
 from swh.storage.interface import PartialBranches
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
 

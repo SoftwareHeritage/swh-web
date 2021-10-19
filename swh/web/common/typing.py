@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 from django.http import QueryDict
 
 from swh.core.api.classes import PagedResult as CorePagedResult
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 
 QueryParameters = Union[Dict[str, Any], QueryDict]
 
@@ -131,6 +131,8 @@ class SnapshotContext(TypedDict):
     """common URL arguments when browsing snapshot content"""
     visit_info: Optional[OriginVisitInfo]
     """optional origin visit info associated to the snapshot"""
+    directory_url: Optional[str]
+    """optional root directory URL associated to the snapshot"""
 
 
 class SWHObjectInfo(TypedDict):

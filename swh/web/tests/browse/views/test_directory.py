@@ -11,7 +11,6 @@ from django.utils.html import escape
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Directory,
     DirectoryEntry,
@@ -25,38 +24,30 @@ from swh.model.model import (
     TargetType,
     TimestampWithTimezone,
 )
+from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    directory,
-    directory_with_subdirs,
-    empty_directory,
-    invalid_sha1,
-    new_person,
-    new_swh_date,
-    origin_with_multiple_visits,
-    unknown_directory,
-)
+from swh.web.tests.strategies import new_person, new_swh_date
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(directory())
 def test_root_directory_view(client, archive_data, directory):
     _directory_view_checks(client, directory, archive_data.directory_ls(directory))
 
 
-@given(directory_with_subdirs())
-def test_sub_directory_view(client, archive_data, directory):
-    dir_content = archive_data.directory_ls(directory)
+def test_sub_directory_view(client, archive_data, directory_with_subdirs):
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
     subdir = random.choice([e for e in dir_content if e["type"] == "dir"])
     subdir_content = archive_data.directory_ls(subdir["target"])
-    _directory_view_checks(client, directory, subdir_content, subdir["name"])
+    _directory_view_checks(
+        client, directory_with_subdirs, subdir_content, subdir["name"]
+    )
 
 
-@given(empty_directory(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_sub_directory_view_origin_context(
     client, archive_data, empty_directory, person, date
 ):
@@ -138,7 +129,6 @@ def test_sub_directory_view_origin_context(
     )
 
 
-@given(invalid_sha1(), unknown_directory())
 def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     dir_url = reverse("browse-directory", url_args={"sha1_git": invalid_sha1})
 
@@ -153,7 +143,6 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     )
 
 
-@given(directory())
 def test_directory_with_invalid_path(client, directory):
     path = "foo/bar"
     dir_url = reverse(
@@ -171,7 +160,6 @@ def test_directory_with_invalid_path(client, directory):
     assert_contains(resp, error_message, status_code=404)
 
 
-@given(directory())
 def test_directory_uppercase(client, directory):
     url = reverse(
         "browse-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}
@@ -184,7 +172,6 @@ def test_directory_uppercase(client, directory):
     assert resp["location"] == redirect_url
 
 
-@given(directory())
 def test_permalink_box_context(client, tests_data, directory):
     origin_url = random.choice(tests_data["origins"])["url"]
     url = reverse(
@@ -199,14 +186,18 @@ def test_permalink_box_context(client, tests_data, directory):
     assert_contains(resp, 'id="swhid-context-option-directory"')
 
 
-@given(origin_with_multiple_visits())
-def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_directory_origin_snapshot_branch_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
     branches, releases, _ = process_snapshot_branches(snapshot)
-    branch_info = random.choice(branches)
+    branch_info = next(
+        branch for branch in branches if branch["name"] == "refs/heads/master"
+    )
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
@@ -218,7 +209,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "branch": branch_info["name"],
             "path": directory_subdir["name"],
@@ -230,7 +221,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
@@ -239,7 +230,7 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
             "path": "/",
@@ -251,21 +242,23 @@ def test_directory_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.REVISION,
         branch_info["revision"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 
 
-@given(origin_with_multiple_visits())
-def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_drectory_origin_snapshot_release_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
@@ -282,7 +275,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "release": release_info["name"],
             "path": directory_subdir["name"],
@@ -294,7 +287,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_subdir["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
@@ -303,7 +296,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         directory_subdir["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
             "path": "/",
@@ -315,7 +308,7 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.REVISION,
         release_info["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
@@ -325,25 +318,29 @@ def test_drectory_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.RELEASE,
         release_info["id"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 
 
-@given(origin_with_multiple_visits())
-def test_directory_origin_snapshot_revision_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_directory_origin_snapshot_revision_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     branches, releases, _ = process_snapshot_branches(snapshot)
-    branch_info = random.choice(branches)
+    branch_info = next(
+        branch for branch in branches if branch["name"] == "refs/heads/master"
+    )
 
     directory = archive_data.revision_get(branch_info["revision"])["directory"]
     directory_content = archive_data.directory_ls(directory)
@@ -355,7 +352,7 @@ def test_directory_origin_snapshot_revision_browse(client, archive_data, origin)
         "browse-directory",
         url_args={"sha1_git": directory},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "revision": branch_info["revision"],
             "path": directory_subdir["name"],

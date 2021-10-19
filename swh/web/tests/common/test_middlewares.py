@@ -3,19 +3,16 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from hypothesis import given
 import pytest
 
 from django.test import modify_settings
 
 from swh.web.common.utils import reverse
-from swh.web.tests.strategies import snapshot
 
 
 @modify_settings(
     MIDDLEWARE={"remove": ["swh.web.common.middlewares.ExceptionMiddleware"]}
 )
-@given(snapshot())
 def test_exception_middleware_disabled(client, mocker, snapshot):
     mock_browse_snapshot_directory = mocker.patch(
         "swh.web.browse.views.snapshot.browse_snapshot_directory"
@@ -28,7 +25,6 @@ def test_exception_middleware_disabled(client, mocker, snapshot):
         client.get(url)
 
 
-@given(snapshot())
 def test_exception_middleware_enabled(client, mocker, snapshot):
     mock_browse_snapshot_directory = mocker.patch(
         "swh.web.browse.views.snapshot.browse_snapshot_directory"

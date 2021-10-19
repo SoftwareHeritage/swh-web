@@ -5,9 +5,7 @@
 
 import random
 
-from hypothesis import given
-
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
     get_origin_visit_snapshot,
@@ -23,16 +21,10 @@ from swh.web.common.typing import (
     SnapshotReleaseInfo,
 )
 from swh.web.common.utils import format_utc_iso_date, reverse
-from swh.web.tests.strategies import (
-    origin_with_multiple_visits,
-    origin_with_releases,
-    snapshot,
-)
 
 
-@given(origin_with_multiple_visits())
-def test_get_origin_visit_snapshot_simple(archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_visits):
+    visits = archive_data.origin_visit_get(origin_with_multiple_visits["url"])
 
     for visit in visits:
 
@@ -86,13 +78,12 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin):
         assert branches and releases, "Incomplete test data."
 
         origin_visit_branches = get_origin_visit_snapshot(
-            origin, visit_id=visit["visit"]
+            origin_with_multiple_visits, visit_id=visit["visit"]
         )
 
         assert origin_visit_branches == (branches, releases, aliases)
 
 
-@given(snapshot())
 def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
     for browse_context, kwargs in (
@@ -130,6 +121,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
+        directory_url = reverse("browse-snapshot-directory", url_args=url_args)
         is_empty = not branches and not releases
         snapshot_swhid = gen_swhid(ObjectType.SNAPSHOT, snapshot)
         snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
@@ -156,6 +148,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
             snapshot_swhid=snapshot_swhid,
             url_args=url_args,
             visit_info=None,
+            directory_url=directory_url,
         )
 
         if revision_id:
@@ -170,20 +163,21 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         )
 
 
-@given(origin_with_multiple_visits())
-def test_get_snapshot_context_with_origin(archive_data, origin):
+def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_visits):
 
-    origin_visits = get_origin_visits(origin)
+    origin_visits = get_origin_visits(origin_with_multiple_visits)
 
     timestamp = format_utc_iso_date(origin_visits[0]["date"], "%Y-%m-%dT%H:%M:%SZ")
     visit_id = origin_visits[1]["visit"]
 
+    origin_url = origin_with_multiple_visits["url"]
+
     for browse_context, kwargs in (
-        ("content", {"origin_url": origin["url"], "path": "/some/path"}),
-        ("directory", {"origin_url": origin["url"]}),
-        ("log", {"origin_url": origin["url"]}),
-        ("directory", {"origin_url": origin["url"], "timestamp": timestamp,},),
-        ("directory", {"origin_url": origin["url"], "visit_id": visit_id,},),
+        ("content", {"origin_url": origin_url, "path": "/some/path"}),
+        ("directory", {"origin_url": origin_url}),
+        ("log", {"origin_url": origin_url}),
+        ("directory", {"origin_url": origin_url, "timestamp": timestamp,},),
+        ("directory", {"origin_url": origin_url, "visit_id": visit_id,},),
     ):
 
         visit_id = kwargs["visit_id"] if "visit_id" in kwargs else None
@@ -227,7 +221,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
         snapshot_swhid = gen_swhid(ObjectType.SNAPSHOT, snapshot)
         snapshot_sizes = archive_data.snapshot_count_branches(snapshot)
 
-        visit_info["url"] = reverse(
+        visit_info["url"] = directory_url = reverse(
             "browse-origin-directory", query_params=query_params
         )
         visit_info["formatted_date"] = format_utc_iso_date(visit_info["date"])
@@ -241,7 +235,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
-            origin_info={"url": origin["url"]},
+            origin_info={"url": origin_url},
             origin_visits_url=origin_visits_url,
             release=None,
             release_alias=False,
@@ -257,6 +251,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin):
             snapshot_swhid=snapshot_swhid,
             url_args={},
             visit_info=visit_info,
+            directory_url=directory_url,
         )
 
         if revision_id:
@@ -379,9 +374,8 @@ def _check_branch_release_revision_parameters(
     assert snapshot_context == expected_revision
 
 
-@given(origin_with_releases())
-def test_get_release_large_snapshot(archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin["url"])
+def test_get_release_large_snapshot(archive_data, origin_with_releases):
+    snapshot = archive_data.snapshot_get_latest(origin_with_releases["url"])
     release_id = random.choice(
         [
             v["target"]
