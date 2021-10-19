@@ -206,10 +206,11 @@ export function initOriginSave() {
           {
             name: 'info',
             render: (data, type, row) => {
-              if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed') {
-                return `<i class="mdi mdi-information-outline swh-save-request-info" ` +
-                       'aria-hidden="true" style="cursor: pointer"' +
-                       `onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
+              if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed' ||
+                  row.note != null) {
+                return `<i class="mdi mdi-information-outline swh-save-request-info"
+                           aria-hidden="true" style="cursor: pointer"
+                           onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
               } else {
                 return '';
               }
@@ -500,6 +501,9 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
   let content;
   if ($.isEmptyObject(saveRequestTaskInfo)) {
     content = 'Not available';
+
+  } else if (saveRequestTaskInfo.note != null) {
+    content = saveRequestTaskInfo.note;
   } else {
     const saveRequestInfo = [];
     const taskData = {

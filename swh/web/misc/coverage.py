@@ -179,6 +179,14 @@ legacy_origins = {
             "search_pattern": "googlecode.com",
             "count": "790,026",
         },
+        {
+            "type": "bitbucket",
+            "info_url": "https://bitbucket.org",
+            "info": "public repositories from Bitbucket",
+            "search_pattern": "https://bitbucket.org/",
+            "visit_types": ["hg"],
+            "count": "336,795",
+        }
     ],
 }
 

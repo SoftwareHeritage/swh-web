@@ -10,7 +10,7 @@ import iso8601
 
 from django.http import HttpResponse
 
-from swh.model import hashutil, identifiers
+from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -108,8 +108,8 @@ def api_raw_extrinsic_metadata_swhid(request, target):
     limit = min(limit, 10000)
 
     try:
-        target = identifiers.CoreSWHID.from_string(target).to_extended()
-    except identifiers.ValidationError as e:
+        target = swhids.CoreSWHID.from_string(target).to_extended()
+    except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 
     if page_token_str:
@@ -230,8 +230,8 @@ def api_raw_extrinsic_metadata_swhid_authorities(request, target):
     target_str = target
 
     try:
-        target = identifiers.CoreSWHID.from_string(target_str).to_extended()
-    except identifiers.ValidationError as e:
+        target = swhids.CoreSWHID.from_string(target_str).to_extended()
+    except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 
     authorities = archive.storage.raw_extrinsic_metadata_get_authorities(target=target)

@@ -15,8 +15,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from swh.model.hashutil import hash_to_hex
-from swh.model.identifiers import ExtendedObjectType, ExtendedSWHID
 from swh.model.model import Sha1Git
+from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer

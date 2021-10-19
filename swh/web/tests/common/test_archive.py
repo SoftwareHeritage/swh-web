@@ -13,7 +13,6 @@ import pytest
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     Directory,
     DirectoryEntry,
@@ -24,42 +23,15 @@ from swh.model.model import (
     SnapshotBranch,
     TargetType,
 )
+from swh.model.swhids import ObjectType
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
-from swh.web.tests.strategies import (
-    ancestor_revisions,
-    content,
-    contents,
-    contents_with_ctags,
-    directory,
-    empty_content,
-    empty_directory,
-    invalid_sha1,
-    new_origin,
-    new_revision,
-    non_ancestor_revisions,
-    origin,
-    release,
-    releases,
-    revision,
-    revision_with_submodules,
-    revisions,
-    sha256,
-    snapshot,
-    unknown_content,
-    unknown_contents,
-    unknown_directory,
-    unknown_release,
-    unknown_revision,
-    unknown_snapshot,
-    visit_dates,
-)
+from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 
 
-@given(contents())
 def test_lookup_multiple_hashes_all_present(contents):
     input_data = []
     expected_output = []
@@ -70,7 +42,6 @@ def test_lookup_multiple_hashes_all_present(contents):
     assert archive.lookup_multiple_hashes(input_data) == expected_output
 
 
-@given(contents(), unknown_contents())
 def test_lookup_multiple_hashes_some_missing(contents, unknown_contents):
     input_contents = list(itertools.chain(contents, unknown_contents))
     random.shuffle(input_contents)
@@ -92,7 +63,6 @@ def test_lookup_hash_does_not_exist():
     assert actual_lookup == {"found": None, "algo": "sha1_git"}
 
 
-@given(content())
 def test_lookup_hash_exist(archive_data, content):
     actual_lookup = archive.lookup_hash("sha1:%s" % content["sha1"])
 
@@ -109,7 +79,6 @@ def test_search_hash_does_not_exist():
     assert {"found": False} == actual_lookup
 
 
-@given(content())
 def test_search_hash_exist(content):
     actual_lookup = archive.search_hash("sha1:%s" % content["sha1"])
 
@@ -119,7 +88,6 @@ def test_search_hash_exist(content):
 @pytest.mark.skipif(
     ctags_json_missing, reason="requires ctags with json output support"
 )
-@given(contents_with_ctags())
 def test_lookup_content_ctags(indexer_data, contents_with_ctags):
     content_sha1 = random.choice(contents_with_ctags["sha1s"])
     indexer_data.content_add_ctags(content_sha1)
@@ -142,7 +110,6 @@ def test_lookup_content_ctags_no_hash():
     assert actual_ctags == []
 
 
-@given(content())
 def test_lookup_content_filetype(indexer_data, content):
     indexer_data.content_add_mimetype(content["sha1"])
     actual_filetype = archive.lookup_content_filetype(content["sha1"])
@@ -151,7 +118,6 @@ def test_lookup_content_filetype(indexer_data, content):
     assert actual_filetype == expected_filetype
 
 
-@given(contents_with_ctags())
 def test_lookup_expression(indexer_data, contents_with_ctags):
     per_page = 10
     expected_ctags = []
@@ -187,7 +153,6 @@ def test_lookup_expression_no_result():
 
 
 @pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")
-@given(content())
 def test_lookup_content_license(indexer_data, content):
     indexer_data.content_add_license(content["sha1"])
     actual_license = archive.lookup_content_license(content["sha1"])
@@ -251,21 +216,18 @@ def test_lookup_origin(archive_data, new_origin):
     assert actual_origin == expected_origin
 
 
-@given(invalid_sha1())
 def test_lookup_release_ko_id_checksum_not_a_sha1(invalid_sha1):
     with pytest.raises(BadInputExc) as e:
         archive.lookup_release(invalid_sha1)
     assert e.match("Invalid checksum")
 
 
-@given(sha256())
 def test_lookup_release_ko_id_checksum_too_long(sha256):
     with pytest.raises(BadInputExc) as e:
         archive.lookup_release(sha256)
     assert e.match("Only sha1_git is supported.")
 
 
-@given(releases())
 def test_lookup_release_multiple(archive_data, releases):
     actual_releases = list(archive.lookup_release_multiple(releases))
 
@@ -285,7 +247,6 @@ def test_lookup_release_multiple_none_found():
     assert actual_releases == [None] * len(unknown_releases_)
 
 
-@given(directory())
 def test_lookup_directory_with_path_not_found(directory):
     path = "some/invalid/path/here"
     with pytest.raises(NotFoundExc) as e:
@@ -295,7 +256,6 @@ def test_lookup_directory_with_path_not_found(directory):
     )
 
 
-@given(directory())
 def test_lookup_directory_with_path_found(archive_data, directory):
     directory_content = archive_data.directory_ls(directory)
     directory_entry = random.choice(directory_content)
@@ -304,14 +264,12 @@ def test_lookup_directory_with_path_found(archive_data, directory):
     assert actual_result == directory_entry
 
 
-@given(release())
 def test_lookup_release(archive_data, release):
     actual_release = archive.lookup_release(release)
 
     assert actual_release == archive_data.release_get(release)
 
 
-@given(revision(), invalid_sha1(), sha256())
 def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha256):
     sha1_git_root = revision
     sha1_git = invalid_sha1
@@ -327,7 +285,6 @@ def test_lookup_revision_with_context_ko_not_a_sha1(revision, invalid_sha1, sha2
     assert e.match("Only sha1_git is supported")
 
 
-@given(revision(), unknown_revision())
 def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -339,7 +296,6 @@ def test_lookup_revision_with_context_ko_sha1_git_does_not_exist(
     assert e.match("Revision %s not found" % sha1_git)
 
 
-@given(revision(), unknown_revision())
 def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
     revision, unknown_revision
 ):
@@ -350,7 +306,6 @@ def test_lookup_revision_with_context_ko_root_sha1_git_does_not_exist(
     assert e.match("Revision root %s not found" % sha1_git_root)
 
 
-@given(ancestor_revisions())
 def test_lookup_revision_with_context(archive_data, ancestor_revisions):
     sha1_git = ancestor_revisions["sha1_git"]
     root_sha1_git = ancestor_revisions["sha1_git_root"]
@@ -369,7 +324,6 @@ def test_lookup_revision_with_context(archive_data, ancestor_revisions):
         assert actual_revision == expected_revision
 
 
-@given(non_ancestor_revisions())
 def test_lookup_revision_with_context_ko(non_ancestor_revisions):
     sha1_git = non_ancestor_revisions["sha1_git"]
     root_sha1_git = non_ancestor_revisions["sha1_git_root"]
@@ -421,7 +375,6 @@ def test_lookup_directory_with_revision_unknown_content(archive_data, new_revisi
     assert e.match("Content not found for revision %s" % new_revision_id)
 
 
-@given(revision())
 def test_lookup_directory_with_revision_ko_path_to_nowhere(revision):
     invalid_path = "path/to/something/unknown"
     with pytest.raises(NotFoundExc) as e:
@@ -432,7 +385,6 @@ def test_lookup_directory_with_revision_ko_path_to_nowhere(revision):
     assert e.match("not found")
 
 
-@given(revision_with_submodules())
 def test_lookup_directory_with_revision_submodules(
     archive_data, revision_with_submodules
 ):
@@ -455,7 +407,6 @@ def test_lookup_directory_with_revision_submodules(
     assert actual_data == expected_data
 
 
-@given(revision())
 def test_lookup_directory_with_revision_without_path(archive_data, revision):
     actual_directory_entries = archive.lookup_directory_with_revision(revision)
 
@@ -466,7 +417,6 @@ def test_lookup_directory_with_revision_without_path(archive_data, revision):
     assert actual_directory_entries["content"] == expected_directory_entries
 
 
-@given(revision())
 def test_lookup_directory_with_revision_with_path(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -492,7 +442,6 @@ def test_lookup_directory_with_revision_with_path(archive_data, revision):
         assert actual_dir_entry["content"] == sub_dir_entries
 
 
-@given(revision())
 def test_lookup_directory_with_revision_with_path_to_file_and_data(
     archive_data, revision
 ):
@@ -520,7 +469,6 @@ def test_lookup_directory_with_revision_with_path_to_file_and_data(
     assert actual_dir_entry["content"]["data"] == expected_data["data"]
 
 
-@given(revision())
 def test_lookup_revision(archive_data, revision):
     actual_revision = archive.lookup_revision(revision)
     assert actual_revision == archive_data.revision_get(revision)
@@ -534,7 +482,7 @@ def test_lookup_revision_invalid_msg(archive_data, new_revision):
 
     revision = archive.lookup_revision(hash_to_hex(new_revision["id"]))
     assert revision["message"] == "elegant fix for bug \\xff"
-    assert revision["decoding_failures"] == ["message"]
+    assert "message" in revision["decoding_failures"]
 
 
 @given(new_revision())
@@ -555,7 +503,6 @@ def test_lookup_revision_msg_no_rev():
     assert e.match("Revision with sha1_git %s not found." % unknown_revision_)
 
 
-@given(revisions())
 def test_lookup_revision_multiple(archive_data, revisions):
     actual_revisions = list(archive.lookup_revision_multiple(revisions))
 
@@ -574,7 +521,6 @@ def test_lookup_revision_multiple_none_found():
     assert actual_revisions == [None] * len(unknown_revisions_)
 
 
-@given(revision())
 def test_lookup_revision_log(archive_data, revision):
     actual_revision_log = list(archive.lookup_revision_log(revision, limit=25))
     expected_revision_log = archive_data.revision_log(revision, limit=25)
@@ -593,7 +539,6 @@ def _get_origin_branches(archive_data, origin):
     return branches
 
 
-@given(origin())
 def test_lookup_revision_log_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -607,7 +552,6 @@ def test_lookup_revision_log_by(archive_data, origin):
     assert actual_log == expected_log
 
 
-@given(origin())
 def test_lookup_revision_log_by_notfound(origin):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_log_by(
@@ -627,7 +571,6 @@ def test_lookup_content_raw_not_found():
     )
 
 
-@given(content())
 def test_lookup_content_raw(archive_data, content):
     actual_content = archive.lookup_content_raw("sha256:%s" % content["sha256"])
 
@@ -636,8 +579,7 @@ def test_lookup_content_raw(archive_data, content):
     assert actual_content == expected_content
 
 
-@given(empty_content())
-def test_lookup_empty_content_raw(archive_data, empty_content):
+def test_lookup_empty_content_raw(empty_content):
     content_raw = archive.lookup_content_raw(f"sha1_git:{empty_content['sha1_git']}")
     assert content_raw["data"] == b""
 
@@ -654,7 +596,6 @@ def test_lookup_content_not_found():
     )
 
 
-@given(content())
 def test_lookup_content_with_sha1(archive_data, content):
     actual_content = archive.lookup_content(f"sha1:{content['sha1']}")
 
@@ -663,7 +604,6 @@ def test_lookup_content_with_sha1(archive_data, content):
     assert actual_content == expected_content
 
 
-@given(content())
 def test_lookup_content_with_sha256(archive_data, content):
     actual_content = archive.lookup_content(f"sha256:{content['sha256']}")
 
@@ -686,7 +626,6 @@ def test_lookup_directory_not_found():
     assert e.match("Directory with sha1_git %s not found" % unknown_directory_)
 
 
-@given(directory())
 def test_lookup_directory(archive_data, directory):
     actual_directory_ls = list(archive.lookup_directory(directory))
 
@@ -695,20 +634,17 @@ def test_lookup_directory(archive_data, directory):
     assert actual_directory_ls == expected_directory_ls
 
 
-@given(empty_directory())
 def test_lookup_directory_empty(empty_directory):
     actual_directory_ls = list(archive.lookup_directory(empty_directory))
 
     assert actual_directory_ls == []
 
 
-@given(origin())
 def test_lookup_revision_by_nothing_found(origin):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_by(origin["url"], "invalid-branch-name")
 
 
-@given(origin())
 def test_lookup_revision_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -720,7 +656,6 @@ def test_lookup_revision_by(archive_data, origin):
     assert actual_revision == expected_revision
 
 
-@given(origin(), revision())
 def test_lookup_revision_with_context_by_ko(origin, revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_revision_with_context_by(
@@ -728,7 +663,6 @@ def test_lookup_revision_with_context_by_ko(origin, revision):
         )
 
 
-@given(origin())
 def test_lookup_revision_with_context_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -761,7 +695,6 @@ def test_lookup_revision_through_ko_not_implemented():
         archive.lookup_revision_through({"something-unknown": 10})
 
 
-@given(origin())
 def test_lookup_revision_through_with_context_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -780,7 +713,6 @@ def test_lookup_revision_through_with_context_by(archive_data, origin):
     ) == archive.lookup_revision_with_context_by(origin["url"], branch_name, None, rev)
 
 
-@given(origin())
 def test_lookup_revision_through_with_revision_by(archive_data, origin):
     branches = _get_origin_branches(archive_data, origin)
     branch_name = random.choice(list(branches.keys()))
@@ -790,7 +722,6 @@ def test_lookup_revision_through_with_revision_by(archive_data, origin):
     ) == archive.lookup_revision_by(origin["url"], branch_name, None)
 
 
-@given(ancestor_revisions())
 def test_lookup_revision_through_with_context(ancestor_revisions):
     sha1_git = ancestor_revisions["sha1_git"]
     sha1_git_root = ancestor_revisions["sha1_git_root"]
@@ -800,14 +731,12 @@ def test_lookup_revision_through_with_context(ancestor_revisions):
     ) == archive.lookup_revision_with_context(sha1_git_root, sha1_git)
 
 
-@given(revision())
 def test_lookup_revision_through_with_revision(revision):
     assert archive.lookup_revision_through(
         {"sha1_git": revision}
     ) == archive.lookup_revision(revision)
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ko_not_found(revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_directory_through_revision(
@@ -815,7 +744,6 @@ def test_lookup_directory_through_revision_ko_not_found(revision):
         )
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ok(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -830,7 +758,6 @@ def test_lookup_directory_through_revision_ok(archive_data, revision):
     ) == (revision, archive.lookup_directory_with_revision(revision, dir_entry["name"]))
 
 
-@given(revision())
 def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
@@ -850,7 +777,6 @@ def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
     )
 
 
-@given(content(), directory(), release(), revision(), snapshot())
 def test_lookup_known_objects(
     archive_data, content, directory, release, revision, snapshot
 ):
@@ -870,13 +796,6 @@ def test_lookup_known_objects(
     assert archive.lookup_object(ObjectType.SNAPSHOT, snapshot) == expected
 
 
-@given(
-    unknown_content(),
-    unknown_directory(),
-    unknown_release(),
-    unknown_revision(),
-    unknown_snapshot(),
-)
 def test_lookup_unknown_objects(
     unknown_content,
     unknown_directory,
@@ -905,7 +824,6 @@ def test_lookup_unknown_objects(
     assert e.match(r"Snapshot.*not found")
 
 
-@given(invalid_sha1())
 def test_lookup_invalid_objects(invalid_sha1):
 
     with pytest.raises(BadInputExc) as e:
@@ -955,8 +873,7 @@ def test_lookup_missing_hashes_non_present():
     }
 
 
-@given(content(), directory())
-def test_lookup_missing_hashes_some_present(archive_data, content, directory):
+def test_lookup_missing_hashes_some_present(content, directory):
     missing_rev = random_sha1()
     missing_rel = random_sha1()
     missing_snp = random_sha1()
@@ -974,7 +891,6 @@ def test_lookup_missing_hashes_some_present(archive_data, content, directory):
     assert actual_result == {missing_rev, missing_rel, missing_snp}
 
 
-@given(origin())
 def test_lookup_origin_extra_trailing_slash(origin):
     origin_info = archive.lookup_origin({"url": f"{origin['url']}/"})
     assert origin_info["url"] == origin["url"]
@@ -995,7 +911,7 @@ def test_lookup_origin_single_slash_after_protocol(archive_data):
     assert origin_info["url"] == origin_url
 
 
-@given(origin(), new_origin())
+@given(new_origin())
 def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
     hasher = hashlib.sha1()
     hasher.update(origin["url"].encode("utf-8"))
@@ -1016,13 +932,11 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
     assert origins == [origin_info, None]
 
 
-@given(origin())
 def test_search_origin(origin):
     results = archive.search_origin(url_pattern=origin["url"])[0]
     assert results == [{"url": origin["url"]}]
 
 
-@given(origin())
 def test_search_origin_use_ql(mocker, origin):
 
     ORIGIN = [{"url": origin["url"]}]
@@ -1042,7 +956,6 @@ def test_search_origin_use_ql(mocker, origin):
     )
 
 
-@given(snapshot())
 def test_lookup_snapshot_sizes(archive_data, snapshot):
     branches = archive_data.snapshot_get(snapshot)["branches"]
 
@@ -1059,7 +972,6 @@ def test_lookup_snapshot_sizes(archive_data, snapshot):
     assert archive.lookup_snapshot_sizes(snapshot) == expected_sizes
 
 
-@given(revision())
 def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1090,7 +1002,6 @@ def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     )
 
 
-@given(snapshot())
 def test_lookup_snapshot_alias(snapshot):
     resolved_alias = archive.lookup_snapshot_alias(snapshot, "HEAD")
     assert resolved_alias is not None
@@ -1098,13 +1009,11 @@ def test_lookup_snapshot_alias(snapshot):
     assert resolved_alias["target"] is not None
 
 
-@given(revision())
 def test_lookup_snapshot_missing(revision):
     with pytest.raises(NotFoundExc):
         archive.lookup_snapshot(revision)
 
 
-@given(revision())
 def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1126,7 +1035,6 @@ def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     assert not branches
 
 
-@given(revision())
 def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
     rev_id = hash_to_bytes(revision)
     snapshot = Snapshot(
@@ -1171,7 +1079,6 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
                 assert not branch_name.startswith(exclude_prefix)
 
 
-@given(directory(), revision())
 def test_lookup_snapshot_branch_names_filtering_paginated(
     archive_data, directory, revision
 ):

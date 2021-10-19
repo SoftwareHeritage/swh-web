@@ -12,7 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from swh.model.hashutil import hash_to_hex
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -326,11 +326,14 @@ def content_display(request, query_string):
         origin_url=origin_url,
     )
 
-    swh_objects = [
-        SWHObjectInfo(
-            object_type=ObjectType.CONTENT, object_id=content_checksums.get("sha1_git")
+    swh_objects = []
+    if content_checksums:
+        swh_objects.append(
+            SWHObjectInfo(
+                object_type=ObjectType.CONTENT,
+                object_id=content_checksums.get("sha1_git"),
+            )
         )
-    ]
 
     if directory_id:
         swh_objects.append(
@@ -372,7 +375,7 @@ def content_display(request, query_string):
         "browse/content.html",
         {
             "heading": heading,
-            "swh_object_id": swhids_info[0]["swhid"],
+            "swh_object_id": swhids_info[0]["swhid"] if swhids_info else "",
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
             "content": content,

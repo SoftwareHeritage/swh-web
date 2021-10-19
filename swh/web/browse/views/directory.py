@@ -10,7 +10,7 @@ import sentry_sdk
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display

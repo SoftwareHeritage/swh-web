@@ -11,29 +11,19 @@ from hypothesis import given
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import ObjectType
 from swh.model.model import Revision, RevisionType, TimestampWithTimezone
+from swh.model.swhids import ObjectType
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    directory,
-    new_origin,
-    new_person,
-    new_swh_date,
-    origin,
-    revision,
-    unknown_revision,
-)
+from swh.web.tests.strategies import new_origin, new_person, new_swh_date
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(revision())
 def test_revision_browse(client, archive_data, revision):
     _revision_browse_checks(client, archive_data, revision)
 
 
-@given(origin())
 def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, origin):
     snapshot = archive_data.snapshot_get_latest(origin["url"])
     revision = archive_data.snapshot_get_head(snapshot)
@@ -48,7 +38,6 @@ def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, or
     _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
 
 
-@given(revision())
 def test_revision_log_browse(client, archive_data, revision):
     per_page = 10
 
@@ -161,7 +150,7 @@ def test_revision_log_browse(client, archive_data, revision):
         )
 
 
-@given(revision(), unknown_revision(), new_origin())
+@given(new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
     url = reverse("browse-revision", url_args={"sha1_git": unknown_revision})
 
@@ -186,7 +175,6 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
     )
 
 
-@given(revision())
 def test_revision_uppercase(client, revision):
     url = reverse(
         "browse-revision-uppercase-checksum", url_args={"sha1_git": revision.upper()}
@@ -304,7 +292,6 @@ def _revision_browse_checks(
     assert_contains(resp, swh_dir_id_url)
 
 
-@given(revision())
 def test_revision_invalid_path(client, archive_data, revision):
     path = "foo/bar"
     url = reverse(
@@ -323,7 +310,7 @@ def test_revision_invalid_path(client, archive_data, revision):
     assert_not_contains(resp, "swh-metadata-popover", status_code=404)
 
 
-@given(directory(), new_person(), new_swh_date())
+@given(new_person(), new_swh_date())
 def test_revision_metadata_display(archive_data, client, directory, person, date):
     metadata = {"foo": "bar"}
     revision = Revision(

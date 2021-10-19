@@ -12,7 +12,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CoreSWHID, ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (

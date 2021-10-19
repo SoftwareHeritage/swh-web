@@ -13,8 +13,8 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import Snapshot
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.browse.utils import (
     content_display_max_size,
     format_log_entries,
@@ -480,7 +480,7 @@ def get_snapshot_context(
             )
 
         visit_url = reverse("browse-origin-directory", query_params=query_params)
-        visit_info["url"] = visit_url
+        visit_info["url"] = directory_url = visit_url
 
         branches_url = reverse("browse-origin-branches", query_params=query_params)
 
@@ -489,6 +489,7 @@ def get_snapshot_context(
         assert snapshot_id is not None
         branches, releases, aliases = get_snapshot_content(snapshot_id)
         url_args = {"snapshot_id": snapshot_id}
+        directory_url = reverse("browse-snapshot-directory", url_args=url_args)
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
 
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
@@ -611,6 +612,7 @@ def get_snapshot_context(
                 revision_info["message_header"] = ""
 
     snapshot_context = SnapshotContext(
+        directory_url=directory_url,
         branch=branch_name,
         branch_alias=branch_name in aliases,
         branches=branches,

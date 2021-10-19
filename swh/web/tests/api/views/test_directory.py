@@ -5,16 +5,12 @@
 
 import random
 
-from hypothesis import given
-
 from swh.web.api.utils import enrich_directory_entry
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import directory
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
-@given(directory())
 def test_api_directory(api_client, archive_data, directory):
 
     url = reverse("api-1-directory", url_args={"sha1_git": directory})
@@ -39,7 +35,6 @@ def test_api_directory_not_found(api_client):
     }
 
 
-@given(directory())
 def test_api_directory_with_path_found(api_client, archive_data, directory):
 
     directory_content = archive_data.directory_ls(directory)
@@ -52,7 +47,6 @@ def test_api_directory_with_path_found(api_client, archive_data, directory):
     assert rv.data == enrich_directory_entry(dir_entry, rv.wsgi_request)
 
 
-@given(directory())
 def test_api_directory_with_path_not_found(api_client, directory):
 
     path = "some/path/to/nonexistent/dir/"
@@ -67,7 +61,6 @@ def test_api_directory_with_path_not_found(api_client, directory):
     }
 
 
-@given(directory())
 def test_api_directory_uppercase(api_client, directory):
     url = reverse(
         "api-1-directory-uppercase-checksum", url_args={"sha1_git": directory.upper()}
