@@ -1,36 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function optional(re) {
-  return concat('(?:', re, ')?');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: Tcl
 Description: Tcl is a very simple programming language.
@@ -39,6 +6,7 @@ Website: https://www.tcl.tk/about/language.html
 */
 
 function tcl(hljs) {
+  const regex = hljs.regex;
   const TCL_IDENT = /[a-zA-Z_][a-zA-Z0-9_]*/;
 
   const NUMBER = {
@@ -192,9 +160,9 @@ function tcl(hljs) {
         className: "variable",
         variants: [
           {
-            begin: concat(
+            begin: regex.concat(
               /\$/,
-              optional(/::/),
+              regex.optional(/::/),
               TCL_IDENT,
               '(::',
               TCL_IDENT,

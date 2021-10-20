@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: AspectJ
 Author: Hakan Ozler <ozler.hakan@gmail.com>
@@ -33,6 +8,7 @@ Audit: 2020
 
 /** @type LanguageFn */
 function aspectj(hljs) {
+  const regex = hljs.regex;
   const KEYWORDS = [
     "false",
     "synchronized",
@@ -185,7 +161,7 @@ function aspectj(hljs) {
         illegal: /["\[\]]/,
         contains: [
           {
-            begin: concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
+            begin: regex.concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
             returnBegin: true,
             contains: [ hljs.UNDERSCORE_TITLE_MODE ]
           }
@@ -201,7 +177,7 @@ function aspectj(hljs) {
         illegal: /["\[\]]/,
         contains: [
           {
-            begin: concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
+            begin: regex.concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
             keywords: KEYWORDS.concat(SHORTKEYS),
             relevance: 0
           },
@@ -223,7 +199,7 @@ function aspectj(hljs) {
         excludeEnd: true,
         contains: [
           {
-            begin: concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
+            begin: regex.concat(hljs.UNDERSCORE_IDENT_RE, /\s*\(/),
             returnBegin: true,
             relevance: 0,
             contains: [ hljs.UNDERSCORE_TITLE_MODE ]

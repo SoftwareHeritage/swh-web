@@ -1,14 +1,18 @@
-swh-web (0.0.332-1~swh1~bpo10+2) buster-swh; urgency=medium
+swh-web (0.0.334-1~swh1) unstable-swh; urgency=medium
 
-  * Pin pytest-django to >= 3.5.1
+  * New upstream release 0.0.334     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2021-10-20 11:29:35 +0200)
+  * Upstream changes:     - version 0.0.334
 
- -- Antoine Lambert <anlambert@softwareheritage.org>  Thu, 07 Oct 2021 14:02:09 +0200
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 20 Oct 2021 09:53:09 +0000
 
-swh-web (0.0.332-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.333-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.333     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2021-10-19 16:11:52 +0200)
+  * Upstream changes:     - version 0.0.333
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 07 Oct 2021 10:02:43 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 19 Oct 2021 14:34:25 +0000
 
 swh-web (0.0.332-1~swh1) unstable-swh; urgency=medium
 

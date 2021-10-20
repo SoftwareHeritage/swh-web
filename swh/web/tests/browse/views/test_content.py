@@ -5,11 +5,11 @@
 
 import random
 
-from hypothesis import given
+import pytest
 
 from django.utils.html import escape
 
-from swh.model.identifiers import ObjectType
+from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     _re_encode_content,
@@ -20,39 +20,27 @@ from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
 from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    content,
-    content_application_no_highlight,
-    content_image_type,
-    content_text,
-    content_text_no_highlight,
-    content_text_non_utf8,
-    content_unsupported_image_type_rendering,
-    content_utf8_detected_as_binary,
-    invalid_sha1,
-    origin_with_multiple_visits,
-    unknown_content,
-)
 from swh.web.tests.utils import check_html_get_response, check_http_get_response
 
 
-@given(content_text())
-def test_content_view_text(client, archive_data, content):
-    sha1_git = content["sha1_git"]
+def test_content_view_text(client, archive_data, content_text):
+    sha1_git = content_text["sha1_git"]
 
     url = reverse(
         "browse-content",
-        url_args={"query_string": content["sha1"]},
-        query_params={"path": content["path"]},
+        url_args={"query_string": content_text["sha1"]},
+        query_params={"path": content_text["path"]},
     )
 
-    url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+    url_raw = reverse(
+        "browse-content-raw", url_args={"query_string": content_text["sha1"]}
+    )
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/content.html"
     )
 
-    content_display = _process_content_for_display(archive_data, content)
+    content_display = _process_content_for_display(archive_data, content_text)
     mimetype = content_display["mimetype"]
 
     if mimetype.startswith("text/"):
@@ -67,9 +55,10 @@ def test_content_view_text(client, archive_data, content):
     assert_not_contains(resp, "swh-metadata-popover")
 
 
-@given(content_application_no_highlight(), content_text_no_highlight())
-def test_content_view_no_highlight(client, archive_data, content_app, content_text):
-    for content_ in (content_app, content_text):
+def test_content_view_no_highlight(
+    client, archive_data, content_application_no_highlight, content_text_no_highlight
+):
+    for content_ in (content_application_no_highlight, content_text_no_highlight):
         content = content_
         sha1_git = content["sha1_git"]
 
@@ -96,17 +85,18 @@ def test_content_view_no_highlight(client, archive_data, content_app, content_te
         assert_contains(resp, swh_cnt_id_url)
 
 
-@given(content_text_non_utf8())
-def test_content_view_no_utf8_text(client, archive_data, content):
-    sha1_git = content["sha1_git"]
+def test_content_view_no_utf8_text(client, archive_data, content_text_non_utf8):
+    sha1_git = content_text_non_utf8["sha1_git"]
 
-    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+    url = reverse(
+        "browse-content", url_args={"query_string": content_text_non_utf8["sha1"]}
+    )
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/content.html"
     )
 
-    content_display = _process_content_for_display(archive_data, content)
+    content_display = _process_content_for_display(archive_data, content_text_non_utf8)
 
     swh_cnt_id = gen_swhid(ObjectType.CONTENT, sha1_git)
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
@@ -114,33 +104,40 @@ def test_content_view_no_utf8_text(client, archive_data, content):
     assert_contains(resp, escape(content_display["content_data"]))
 
 
-@given(content_image_type())
-def test_content_view_image(client, archive_data, content):
-    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+def test_content_view_image(client, archive_data, content_image_type):
+    url = reverse(
+        "browse-content", url_args={"query_string": content_image_type["sha1"]}
+    )
 
-    url_raw = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+    url_raw = reverse(
+        "browse-content-raw", url_args={"query_string": content_image_type["sha1"]}
+    )
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/content.html"
     )
 
-    content_display = _process_content_for_display(archive_data, content)
+    content_display = _process_content_for_display(archive_data, content_image_type)
     mimetype = content_display["mimetype"]
     content_data = content_display["content_data"]
     assert_contains(resp, '<img src="data:%s;base64,%s"/>' % (mimetype, content_data))
     assert_contains(resp, url_raw)
 
 
-@given(content_unsupported_image_type_rendering())
-def test_content_view_image_no_rendering(client, archive_data, content):
-    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+def test_content_view_image_no_rendering(
+    client, archive_data, content_unsupported_image_type_rendering
+):
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": content_unsupported_image_type_rendering["sha1"]},
+    )
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/content.html"
     )
 
-    mimetype = content["mimetype"]
-    encoding = content["encoding"]
+    mimetype = content_unsupported_image_type_rendering["mimetype"]
+    encoding = content_unsupported_image_type_rendering["encoding"]
     assert_contains(
         resp,
         (
@@ -150,13 +147,12 @@ def test_content_view_image_no_rendering(client, archive_data, content):
     )
 
 
-@given(content_text())
-def test_content_view_text_with_path(client, archive_data, content):
-    path = content["path"]
+def test_content_view_text_with_path(client, archive_data, content_text):
+    path = content_text["path"]
 
     url = reverse(
         "browse-content",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_text["sha1"]},
         query_params={"path": path},
     )
 
@@ -166,11 +162,11 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     assert_contains(resp, '<nav class="bread-crumbs')
 
-    content_display = _process_content_for_display(archive_data, content)
+    content_display = _process_content_for_display(archive_data, content_text)
     mimetype = content_display["mimetype"]
 
     if mimetype.startswith("text/"):
-        hljs_language = content["hljs_language"]
+        hljs_language = content_text["hljs_language"]
         assert_contains(resp, '<code class="%s">' % hljs_language)
         assert_contains(resp, escape(content_display["content_data"]))
 
@@ -186,7 +182,7 @@ def test_content_view_text_with_path(client, archive_data, content):
     }
 
     swh_cnt_id = gen_swhid(
-        ObjectType.CONTENT, content["sha1_git"], metadata=swhid_context
+        ObjectType.CONTENT, content_text["sha1_git"], metadata=swhid_context
     )
     swh_cnt_id_url = reverse("browse-swhid", url_args={"swhid": swh_cnt_id})
     assert_contains(resp, swh_cnt_id)
@@ -214,14 +210,14 @@ def test_content_view_text_with_path(client, archive_data, content):
 
     url_raw = reverse(
         "browse-content-raw",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_text["sha1"]},
         query_params={"filename": filename},
     )
     assert_contains(resp, url_raw)
 
     url = reverse(
         "browse-content",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_text["sha1"]},
         query_params={"path": filename},
     )
 
@@ -234,7 +230,7 @@ def test_content_view_text_with_path(client, archive_data, content):
     invalid_path = "%s/foo/bar/baz" % root_dir_sha1
     url = reverse(
         "browse-content",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_text["sha1"]},
         query_params={"path": invalid_path},
     )
 
@@ -243,25 +239,26 @@ def test_content_view_text_with_path(client, archive_data, content):
     )
 
 
-@given(content_text())
-def test_content_raw_text(client, archive_data, content):
-    url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+def test_content_raw_text(client, archive_data, content_text):
+    url = reverse("browse-content-raw", url_args={"query_string": content_text["sha1"]})
 
     resp = check_http_get_response(
         client, url, status_code=200, content_type="text/plain"
     )
 
-    content_data = archive_data.content_get_data(content["sha1"])["data"]
+    content_data = archive_data.content_get_data(content_text["sha1"])["data"]
 
     assert resp["Content-Type"] == "text/plain"
-    assert resp["Content-disposition"] == ("filename=%s_%s" % ("sha1", content["sha1"]))
+    assert resp["Content-disposition"] == (
+        "filename=%s_%s" % ("sha1", content_text["sha1"])
+    )
     assert resp.content == content_data
 
-    filename = content["path"].split("/")[-1]
+    filename = content_text["path"].split("/")[-1]
 
     url = reverse(
         "browse-content-raw",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_text["sha1"]},
         query_params={"filename": filename},
     )
 
@@ -274,38 +271,40 @@ def test_content_raw_text(client, archive_data, content):
     assert resp.content == content_data
 
 
-@given(content_text_non_utf8())
-def test_content_raw_no_utf8_text(client, content):
-    url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+def test_content_raw_no_utf8_text(client, content_text_non_utf8):
+    url = reverse(
+        "browse-content-raw", url_args={"query_string": content_text_non_utf8["sha1"]}
+    )
 
     resp = check_http_get_response(
         client, url, status_code=200, content_type="text/plain"
     )
     _, encoding = get_mimetype_and_encoding_for_content(resp.content)
-    assert encoding == content["encoding"]
+    assert encoding == content_text_non_utf8["encoding"]
 
 
-@given(content_image_type())
-def test_content_raw_bin(client, archive_data, content):
-    url = reverse("browse-content-raw", url_args={"query_string": content["sha1"]})
+def test_content_raw_bin(client, archive_data, content_image_type):
+    url = reverse(
+        "browse-content-raw", url_args={"query_string": content_image_type["sha1"]}
+    )
 
     resp = check_http_get_response(
         client, url, status_code=200, content_type="application/octet-stream"
     )
 
-    filename = content["path"].split("/")[-1]
-    content_data = archive_data.content_get_data(content["sha1"])["data"]
+    filename = content_image_type["path"].split("/")[-1]
+    content_data = archive_data.content_get_data(content_image_type["sha1"])["data"]
 
     assert resp["Content-Type"] == "application/octet-stream"
     assert resp["Content-disposition"] == "attachment; filename=%s_%s" % (
         "sha1",
-        content["sha1"],
+        content_image_type["sha1"],
     )
     assert resp.content == content_data
 
     url = reverse(
         "browse-content-raw",
-        url_args={"query_string": content["sha1"]},
+        url_args={"query_string": content_image_type["sha1"]},
         query_params={"filename": filename},
     )
 
@@ -318,8 +317,15 @@ def test_content_raw_bin(client, archive_data, content):
     assert resp.content == content_data
 
 
-@given(invalid_sha1(), unknown_content())
-def test_content_request_errors(client, invalid_sha1, unknown_content):
+@pytest.mark.django_db
+@pytest.mark.parametrize("staff_user_logged_in", [False, True])
+def test_content_request_errors(
+    client, staff_user, invalid_sha1, unknown_content, staff_user_logged_in
+):
+
+    if staff_user_logged_in:
+        client.force_login(staff_user)
+
     url = reverse("browse-content", url_args={"query_string": invalid_sha1})
     check_html_get_response(client, url, status_code=400, template_used="error.html")
 
@@ -329,7 +335,6 @@ def test_content_request_errors(client, invalid_sha1, unknown_content):
     )
 
 
-@given(content())
 def test_content_bytes_missing(client, archive_data, mocker, content):
     mock_archive = mocker.patch("swh.web.browse.utils.archive")
     content_data = archive_data.content_get(content["sha1"])
@@ -387,7 +392,6 @@ def test_content_too_large(client, mocker):
     assert_contains(resp, url_raw)
 
 
-@given(content())
 def test_content_uppercase(client, content):
     url = reverse(
         "browse-content-uppercase-checksum",
@@ -401,22 +405,30 @@ def test_content_uppercase(client, content):
     assert resp["location"] == redirect_url
 
 
-@given(content_utf8_detected_as_binary())
-def test_content_utf8_detected_as_binary_display(client, archive_data, content):
-    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+def test_content_utf8_detected_as_binary_display(
+    client, archive_data, content_utf8_detected_as_binary
+):
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": content_utf8_detected_as_binary["sha1"]},
+    )
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/content.html"
     )
 
-    content_display = _process_content_for_display(archive_data, content)
+    content_display = _process_content_for_display(
+        archive_data, content_utf8_detected_as_binary
+    )
 
     assert_contains(resp, escape(content_display["content_data"]))
 
 
-@given(origin_with_multiple_visits())
-def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_content_origin_snapshot_branch_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
@@ -433,7 +445,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         "browse-content",
         url_args={"query_string": directory_file["checksums"]["sha1"]},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_with_multiple_visits["url"],
             "snapshot": snapshot["id"],
             "branch": branch_info["name"],
             "path": directory_file["name"],
@@ -445,7 +457,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Branch: <strong>{branch_info['name']}</strong>")
@@ -454,7 +466,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
             "path": f"/{directory_file['name']}",
@@ -466,7 +478,7 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         directory,
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
         },
@@ -477,21 +489,23 @@ def test_content_origin_snapshot_branch_browse(client, archive_data, origin):
         ObjectType.REVISION,
         branch_info["revision"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 
 
-@given(origin_with_multiple_visits())
-def test_content_origin_snapshot_release_browse(client, archive_data, origin):
-    visits = archive_data.origin_visit_get(origin["url"])
+def test_content_origin_snapshot_release_browse(
+    client, archive_data, origin_with_multiple_visits
+):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
     visit = random.choice(visits)
     snapshot = archive_data.snapshot_get(visit["snapshot"])
     snapshot_sizes = archive_data.snapshot_count_branches(visit["snapshot"])
@@ -507,7 +521,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         "browse-content",
         url_args={"query_string": directory_file["checksums"]["sha1"]},
         query_params={
-            "origin_url": origin["url"],
+            "origin_url": origin_url,
             "snapshot": snapshot["id"],
             "release": release_info["name"],
             "path": directory_file["name"],
@@ -519,7 +533,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
     )
 
     _check_origin_snapshot_related_html(
-        resp, origin, snapshot, snapshot_sizes, branches, releases
+        resp, origin_with_multiple_visits, snapshot, snapshot_sizes, branches, releases
     )
     assert_contains(resp, directory_file["name"])
     assert_contains(resp, f"Release: <strong>{release_info['name']}</strong>")
@@ -528,7 +542,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.CONTENT,
         directory_file["checksums"]["sha1_git"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
             "path": f"/{directory_file['name']}",
@@ -540,7 +554,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.DIRECTORY,
         release_info["directory"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
             "anchor": gen_swhid(ObjectType.RELEASE, release_info["id"]),
         },
@@ -551,7 +565,7 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.REVISION,
         release_info["target"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
@@ -561,14 +575,14 @@ def test_content_origin_snapshot_release_browse(client, archive_data, origin):
         ObjectType.RELEASE,
         release_info["id"],
         metadata={
-            "origin": origin["url"],
+            "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         },
     )
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin["url"],},
+        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
     )
     assert_contains(resp, snp_swhid)
 

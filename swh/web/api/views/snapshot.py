@@ -35,7 +35,7 @@ def api_snapshot(request, snapshot_id):
         target is unknown.
 
         A snapshot identifier is a salted sha1. See
-        :func:`swh.model.identifiers.snapshot_identifier` in our data model
+        :func:`swh.model.git_objects.snapshot_git_object` in our data model
         module for details about how they are computed.
 
         :param sha1 snapshot_id: a snapshot identifier

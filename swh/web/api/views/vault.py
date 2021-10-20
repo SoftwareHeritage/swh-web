@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 from swh.model.hashutil import hash_to_hex
-from swh.model.identifiers import CoreSWHID, ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup

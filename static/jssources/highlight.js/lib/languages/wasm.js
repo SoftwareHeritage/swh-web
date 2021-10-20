@@ -8,6 +8,7 @@ Audit: 2020
 
 /** @type LanguageFn */
 function wasm(hljs) {
+  hljs.regex;
   const BLOCK_COMMENT = hljs.COMMENT(/\(;/, /;\)/);
   BLOCK_COMMENT.contains.push("self");
   const LINE_COMMENT = hljs.COMMENT(/;;/, /$/);

@@ -3,13 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from hypothesis import given
 import pytest
 
 from swh.web.common.utils import reverse
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content
-from swh.web.tests.strategies import content, contents_with_ctags
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_responses,
@@ -17,7 +15,6 @@ from swh.web.tests.utils import (
 )
 
 
-@given(content())
 def test_api_content_filetype(api_client, indexer_data, content):
     indexer_data.content_add_mimetype(content["sha1"])
     url = reverse(
@@ -68,7 +65,6 @@ def test_api_content_language_sha_not_found(api_client):
 @pytest.mark.skipif(
     ctags_json_missing, reason="requires ctags with json output support"
 )
-@given(contents_with_ctags())
 def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
     expected_data = {}
     for content_sha1 in contents_with_ctags["sha1s"]:
@@ -136,7 +132,6 @@ def test_api_content_symbol_not_found(api_client):
 @pytest.mark.skipif(
     ctags_json_missing, reason="requires ctags with json output support"
 )
-@given(content())
 def test_api_content_ctags(api_client, indexer_data, content):
     indexer_data.content_add_ctags(content["sha1"])
     url = reverse(
@@ -155,7 +150,6 @@ def test_api_content_ctags(api_client, indexer_data, content):
 
 
 @pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")
-@given(content())
 def test_api_content_license(api_client, indexer_data, content):
     indexer_data.content_add_license(content["sha1"])
     url = reverse(
@@ -191,7 +185,6 @@ def test_api_content_license_sha_not_found(api_client):
     }
 
 
-@given(content())
 def test_api_content_metadata(api_client, archive_data, content):
     url = reverse("api-1-content", {"q": "sha1:%s" % content["sha1"]})
     rv = check_api_get_responses(api_client, url, status_code=200)
@@ -236,7 +229,6 @@ def test_api_content_raw_ko_not_found(api_client):
     }
 
 
-@given(content())
 def test_api_content_raw_text(api_client, archive_data, content):
     url = reverse("api-1-content-raw", url_args={"q": "sha1:%s" % content["sha1"]})
 
@@ -250,7 +242,6 @@ def test_api_content_raw_text(api_client, archive_data, content):
     assert rv.content == expected_data["data"]
 
 
-@given(content())
 def test_api_content_raw_text_with_filename(api_client, archive_data, content):
     url = reverse(
         "api-1-content-raw",
@@ -264,7 +255,6 @@ def test_api_content_raw_text_with_filename(api_client, archive_data, content):
     assert rv.content == expected_data["data"]
 
 
-@given(content())
 def test_api_check_content_known(api_client, content):
     url = reverse("api-1-content-known", url_args={"q": content["sha1"]})
     rv = check_api_get_responses(api_client, url, status_code=200)
@@ -274,7 +264,6 @@ def test_api_check_content_known(api_client, content):
     }
 
 
-@given(content())
 def test_api_check_content_known_post(api_client, content):
     url = reverse("api-1-content-known")
     rv = check_api_post_responses(
@@ -298,7 +287,6 @@ def test_api_check_content_known_not_found(api_client):
     }
 
 
-@given(content())
 def test_api_content_uppercase(api_client, content):
     url = reverse(
         "api-1-content-uppercase-checksum", url_args={"q": content["sha1"].upper()}

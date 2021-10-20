@@ -1,62 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: TOML, also INI
 Description: TOML aims to be a minimal configuration file format that's easy to read due to obvious semantics.
@@ -66,6 +7,7 @@ Website: https://github.com/toml-lang/toml
 */
 
 function ini(hljs) {
+  const regex = hljs.regex;
   const NUMBERS = {
     className: 'number',
     relevance: 0,
@@ -145,12 +87,12 @@ function ini(hljs) {
   const BARE_KEY = /[A-Za-z0-9_-]+/;
   const QUOTED_KEY_DOUBLE_QUOTE = /"(\\"|[^"])*"/;
   const QUOTED_KEY_SINGLE_QUOTE = /'[^']*'/;
-  const ANY_KEY = either(
+  const ANY_KEY = regex.either(
     BARE_KEY, QUOTED_KEY_DOUBLE_QUOTE, QUOTED_KEY_SINGLE_QUOTE
   );
-  const DOTTED_KEY = concat(
+  const DOTTED_KEY = regex.concat(
     ANY_KEY, '(\\s*\\.\\s*', ANY_KEY, ')*',
-    lookahead(/\s*=\s*[^#\s]/)
+    regex.lookahead(/\s*=\s*[^#\s]/)
   );
 
   return {

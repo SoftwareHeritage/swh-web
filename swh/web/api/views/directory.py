@@ -29,7 +29,7 @@ def api_directory(request, sha1_git, path=None):
         Get information about directory objects.
         Directories are identified by **sha1** checksums, compatible with Git
         directory identifiers.
-        See :func:`swh.model.identifiers.directory_identifier` in our data model
+        See :func:`swh.model.git_objects.directory_git_object` in our data model
         module for details about how they are computed.
 
         When given only a directory identifier, this endpoint returns information

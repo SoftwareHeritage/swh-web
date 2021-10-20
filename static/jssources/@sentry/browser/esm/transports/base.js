@@ -2,6 +2,7 @@ import { __read, __values } from "tslib";
 import { API } from '@sentry/core';
 import { Status, } from '@sentry/types';
 import { dateTimestampInSeconds, getGlobalObject, logger, parseRetryAfterHeader, PromiseBuffer, SentryError, } from '@sentry/utils';
+import { sendReport } from './utils';
 var CATEGORY_MAPPING = {
     event: 'error',
     transaction: 'transaction',
@@ -66,10 +67,6 @@ var BaseTransport = /** @class */ (function () {
         if (!this.options.sendClientReports) {
             return;
         }
-        if (!global.navigator || typeof global.navigator.sendBeacon !== 'function') {
-            logger.warn('Beacon API not available, skipping sending outcomes.');
-            return;
-        }
         var outcomes = this._outcomes;
         this._outcomes = {};
         // Nothing to send
@@ -96,7 +93,12 @@ var BaseTransport = /** @class */ (function () {
             }),
         });
         var envelope = envelopeHeader + "\n" + itemHeaders + "\n" + item;
-        global.navigator.sendBeacon(url, envelope);
+        try {
+            sendReport(url, envelope);
+        }
+        catch (e) {
+            logger.error(e);
+        }
     };
     /**
      * Handle Sentry repsonse for promise-based transports.

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,11 +14,7 @@ from swh.storage.utils import now
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
 from swh.web.common.typing import OriginInfo
-from swh.web.tests.strategies import (
-    new_origin,
-    new_snapshots,
-    origin_with_multiple_visits,
-)
+from swh.web.tests.strategies import new_origin, new_snapshots
 
 
 @given(new_snapshots(3))
@@ -238,9 +234,8 @@ def test_get_origin_visit_return_first_valid_partial_visit(
     assert get_origin_visit((OriginInfo(url=new_origin.url))) == expected_visit
 
 
-@given(origin_with_multiple_visits())
-def test_get_origin_visit_latest_snapshot(mocker, origin):
-    origin_visits = get_origin_visits(origin)
+def test_get_origin_visit_latest_snapshot(mocker, origin_with_multiple_visits):
+    origin_visits = get_origin_visits(origin_with_multiple_visits)
     first_visit = origin_visits[0]
     latest_visit = origin_visits[-1]
     mock_get_origin_visits = mocker.patch(
@@ -248,10 +243,14 @@ def test_get_origin_visit_latest_snapshot(mocker, origin):
     )
     mock_get_origin_visits.return_value = origin_visits
 
-    visit = get_origin_visit(origin, snapshot_id=latest_visit["snapshot"])
+    visit = get_origin_visit(
+        origin_with_multiple_visits, snapshot_id=latest_visit["snapshot"]
+    )
     assert visit == latest_visit
     assert not mock_get_origin_visits.called
 
-    visit = get_origin_visit(origin, snapshot_id=first_visit["snapshot"])
+    visit = get_origin_visit(
+        origin_with_multiple_visits, snapshot_id=first_visit["snapshot"]
+    )
     assert visit == first_visit
     assert mock_get_origin_visits.called

@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: Augmented Backus-Naur Form
 Author: Alex McKibben <alex@nullscope.net>
@@ -32,6 +7,7 @@ Audit: 2020
 
 /** @type LanguageFn */
 function abnf(hljs) {
+  const regex = hljs.regex;
   const IDENT = /^[a-zA-Z][a-zA-Z0-9-]*/;
 
   const KEYWORDS = [
@@ -77,7 +53,7 @@ function abnf(hljs) {
 
   const RULE_DECLARATION = {
     scope: "attribute",
-    match: concat(IDENT, /(?=\s*=)/)
+    match: regex.concat(IDENT, /(?=\s*=)/)
   };
 
   const ASSIGNMENT = {

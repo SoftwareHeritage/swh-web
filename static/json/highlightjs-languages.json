@@ -231,6 +231,7 @@
         "erl": "erlang",
         "ex": "elixir",
         "exs": "elixir",
+        "f#": "fsharp",
         "f90": "fortran",
         "f95": "fortran",
         "feature": "gherkin",

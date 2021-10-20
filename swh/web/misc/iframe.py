@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType, QualifiedSWHID
+from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,

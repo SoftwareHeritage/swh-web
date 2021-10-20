@@ -5,8 +5,6 @@
 
 from datetime import datetime
 
-from hypothesis import given
-
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
     ObjectType,
@@ -17,11 +15,9 @@ from swh.model.model import (
 )
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.strategies import content, directory, release
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
-@given(release())
 def test_api_release(api_client, archive_data, release):
     url = reverse("api-1-release", url_args={"sha1_git": release})
 
@@ -39,7 +35,6 @@ def test_api_release(api_client, archive_data, release):
     assert rv.data == expected_release
 
 
-@given(content(), directory(), release())
 def test_api_release_target_type_not_a_revision(
     api_client, archive_data, content, directory, release
 ):
@@ -107,7 +102,6 @@ def test_api_release_not_found(api_client):
     }
 
 
-@given(release())
 def test_api_release_uppercase(api_client, release):
     url = reverse(
         "api-1-release-uppercase-checksum", url_args={"sha1_git": release.upper()}

@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: HTTP
 Description: HTTP request and response headers with automatic body highlighting
@@ -32,11 +7,12 @@ Website: https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview
 */
 
 function http(hljs) {
+  const regex = hljs.regex;
   const VERSION = 'HTTP/(2|1\\.[01])';
   const HEADER_NAME = /[A-Za-z][A-Za-z0-9-]*/;
   const HEADER = {
     className: 'attribute',
-    begin: concat('^', HEADER_NAME, '(?=\\:\\s)'),
+    begin: regex.concat('^', HEADER_NAME, '(?=\\:\\s)'),
     starts: {
       contains: [
         {

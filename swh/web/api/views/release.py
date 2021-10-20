@@ -21,7 +21,7 @@ def api_release(request, sha1_git):
 
         Get information about a release in the archive. Releases are identified
         by **sha1** checksums, compatible with Git tag identifiers. See
-        :func:`swh.model.identifiers.release_identifier` in our data model
+        :func:`swh.model.git_objects.release_git_object` in our data model
         module for details about how they are computed.
 
         :param string sha1_git: hexadecimal representation of the release

@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  The Software Heritage developers
+# Copyright (C) 2019-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,78 +7,50 @@ from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType, QualifiedSWHID
+from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.identifiers import resolve_swhid
 from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.strategies import (
-    content,
-    directory,
-    invalid_sha1,
-    new_origin,
-    origin,
-    release,
-    revision,
-    snapshot,
-    unknown_content,
-    unknown_directory,
-    unknown_release,
-    unknown_revision,
-    unknown_snapshot,
-)
+from swh.web.tests.strategies import new_origin
 from swh.web.tests.utils import check_http_get_response
 
 
-@given(content())
 def test_content_badge(client, content):
     _test_badge_endpoints(client, "content", content["sha1_git"])
 
 
-@given(directory())
 def test_directory_badge(client, directory):
     _test_badge_endpoints(client, "directory", directory)
 
 
-@given(origin())
 def test_origin_badge(client, origin):
     _test_badge_endpoints(client, "origin", origin["url"])
 
 
-@given(release())
 def test_release_badge(client, release):
     _test_badge_endpoints(client, "release", release)
 
 
-@given(revision())
 def test_revision_badge(client, revision):
     _test_badge_endpoints(client, "revision", revision)
 
 
-@given(snapshot())
 def test_snapshot_badge(client, snapshot):
     _test_badge_endpoints(client, "snapshot", snapshot)
 
 
-@given(
-    unknown_content(),
-    unknown_directory(),
-    new_origin(),
-    unknown_release(),
-    unknown_revision(),
-    unknown_snapshot(),
-    invalid_sha1(),
-)
+@given(new_origin(),)
 def test_badge_errors(
     client,
     unknown_content,
     unknown_directory,
-    new_origin,
     unknown_release,
     unknown_revision,
     unknown_snapshot,
     invalid_sha1,
+    new_origin,
 ):
     for object_type, object_id in (
         ("content", unknown_content["sha1_git"]),
@@ -118,7 +90,6 @@ def test_badge_errors(
         _check_generated_badge(resp, "", "", error="invalid id")
 
 
-@given(origin(), release())
 def test_badge_endpoints_have_cors_header(client, origin, release):
     url = reverse(
         "swh-badge", url_args={"object_type": "origin", "object_id": origin["url"]}

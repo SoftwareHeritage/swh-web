@@ -61,6 +61,7 @@ function recurRegex(re, substitution, depth) {
 
 /** @type LanguageFn */
 function java(hljs) {
+  hljs.regex;
   const JAVA_IDENT_RE = '[\u00C0-\u02B8a-zA-Z_$][\u00C0-\u02B8a-zA-Z_$0-9]*';
   const GENERIC_IDENT_RE = JAVA_IDENT_RE +
     recurRegex('(?:<' + JAVA_IDENT_RE + '~~~(?:\\s*,\\s*' + JAVA_IDENT_RE + '~~~)*>)?', /~~~/g, 2);
@@ -190,6 +191,12 @@ function java(hljs) {
       },
       hljs.C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE,
+      {
+        begin: /"""/,
+        end: /"""/,
+        className: "string",
+        contains: [hljs.BACKSLASH_ESCAPE]
+      },
       hljs.APOS_STRING_MODE,
       hljs.QUOTE_STRING_MODE,
       {

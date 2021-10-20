@@ -13,7 +13,6 @@ import pytest
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import ObjectType
 from swh.model.model import (
     OriginVisit,
     OriginVisitStatus,
@@ -21,6 +20,7 @@ from swh.model.model import (
     SnapshotBranch,
     TargetType,
 )
+from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.exc import NotFoundExc
@@ -33,43 +33,35 @@ from swh.web.common.utils import (
 )
 from swh.web.tests.data import get_content, random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import (
-    new_origin,
-    new_snapshot,
-    origin,
-    origin_with_multiple_visits,
-    origin_with_pull_request_branches,
-    origin_with_releases,
-)
-from swh.web.tests.strategies import release as existing_release
-from swh.web.tests.strategies import revisions, unknown_revision, visit_dates
+from swh.web.tests.strategies import new_origin, new_snapshot, visit_dates
 from swh.web.tests.utils import check_html_get_response
 
 
-@given(origin_with_multiple_visits())
-def test_origin_visits_browse(client, archive_data, origin):
-    url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
+def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits):
+    origin_url = origin_with_multiple_visits["url"]
+    url = reverse("browse-origin-visits", query_params={"origin_url": origin_url})
 
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/origin-visits.html"
     )
 
-    visits = archive_data.origin_visit_get(origin["url"])
+    visits = archive_data.origin_visit_get(origin_url)
 
     for v in visits:
         vdate = format_utc_iso_date(v["date"], "%Y-%m-%dT%H:%M:%SZ")
         browse_dir_url = reverse(
             "browse-origin-directory",
-            query_params={"origin_url": origin["url"], "timestamp": vdate},
+            query_params={"origin_url": origin_url, "timestamp": vdate},
         )
         assert_contains(resp, browse_dir_url)
 
-    _check_origin_link(resp, origin["url"])
+    _check_origin_link(resp, origin_url)
 
 
-@given(origin_with_multiple_visits())
-def test_origin_content_view(client, archive_data, swh_scheduler, origin):
-    origin_visits = archive_data.origin_visit_get(origin["url"])
+def test_origin_content_view(
+    client, archive_data, swh_scheduler, origin_with_multiple_visits
+):
+    origin_visits = archive_data.origin_visit_get(origin_with_multiple_visits["url"])
 
     def _get_archive_data(visit_idx):
         snapshot = archive_data.snapshot_get(origin_visits[visit_idx]["snapshot"])
@@ -93,7 +85,7 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     _origin_content_view_test_helper(
         client,
         archive_data,
-        origin,
+        origin_with_multiple_visits,
         origin_visits[-1],
         tdata["snapshot_sizes"],
         tdata["branches"],
@@ -105,7 +97,7 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     _origin_content_view_test_helper(
         client,
         archive_data,
-        origin,
+        origin_with_multiple_visits,
         origin_visits[-1],
         tdata["snapshot_sizes"],
         tdata["branches"],
@@ -118,7 +110,7 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     _origin_content_view_test_helper(
         client,
         archive_data,
-        origin,
+        origin_with_multiple_visits,
         origin_visits[-1],
         tdata["snapshot_sizes"],
         tdata["branches"],
@@ -133,7 +125,7 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     _origin_content_view_test_helper(
         client,
         archive_data,
-        origin,
+        origin_with_multiple_visits,
         origin_visits[0],
         tdata["snapshot_sizes"],
         tdata["branches"],
@@ -146,7 +138,7 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     _origin_content_view_test_helper(
         client,
         archive_data,
-        origin,
+        origin_with_multiple_visits,
         origin_visits[0],
         tdata["snapshot_sizes"],
         tdata["branches"],
@@ -157,7 +149,6 @@ def test_origin_content_view(client, archive_data, swh_scheduler, origin):
     )
 
 
-@given(origin())
 def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
@@ -273,7 +264,6 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
     )
 
 
-@given(origin())
 def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
@@ -406,7 +396,6 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
     )
 
 
-@given(origin())
 def test_origin_branches(client, archive_data, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
@@ -422,7 +411,6 @@ def test_origin_branches(client, archive_data, origin):
     )
 
 
-@given(origin())
 def test_origin_releases(client, archive_data, origin):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
@@ -439,14 +427,12 @@ def test_origin_releases(client, archive_data, origin):
 
 
 @given(
-    new_origin(),
-    new_snapshot(min_size=4, max_size=4),
-    visit_dates(),
-    revisions(min_size=3, max_size=3),
+    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
 )
 def test_origin_snapshot_null_branch(
-    client, archive_data, new_origin, new_snapshot, visit_dates, revisions
+    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
 ):
+    revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
     archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
@@ -481,14 +467,12 @@ def test_origin_snapshot_null_branch(
 
 
 @given(
-    new_origin(),
-    new_snapshot(min_size=4, max_size=4),
-    visit_dates(),
-    revisions(min_size=4, max_size=4),
+    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
 )
 def test_origin_snapshot_invalid_branch(
-    client, archive_data, new_origin, new_snapshot, visit_dates, revisions
+    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
 ):
+    revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
     archive_data.origin_add([new_origin])
     for i, branch in enumerate(snp_dict["branches"].keys()):
@@ -530,7 +514,6 @@ def test_browse_visits_origin_not_found(client, new_origin):
     )
 
 
-@given(origin())
 def test_browse_origin_directory_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
@@ -547,7 +530,6 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
     assert not mock_get_origin_visits.called
 
 
-@given(origin())
 def test_browse_origin_directory_unknown_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
@@ -566,7 +548,6 @@ def test_browse_origin_directory_unknown_visit(client, mocker, origin):
     assert mock_get_origin_visits.called
 
 
-@given(origin())
 def test_browse_origin_directory_not_found(client, origin):
     url = reverse(
         "browse-origin-directory",
@@ -579,7 +560,6 @@ def test_browse_origin_directory_not_found(client, origin):
     assert re.search("Directory.*not found", resp.content.decode("utf-8"))
 
 
-@given(origin())
 def test_browse_origin_content_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
@@ -599,7 +579,6 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
     assert not mock_get_origin_visits.called
 
 
-@given(origin())
 def test_browse_origin_content_unknown_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.common.origin_visits.get_origin_visits"
@@ -658,7 +637,6 @@ def test_browse_origin_content_directory_empty_snapshot(
     assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
 
 
-@given(origin())
 def test_browse_origin_content_not_found(client, origin):
     url = reverse(
         "browse-origin-content",
@@ -671,7 +649,6 @@ def test_browse_origin_content_not_found(client, origin):
     assert re.search("Directory entry.*not found", resp.content.decode("utf-8"))
 
 
-@given(origin())
 def test_browse_directory_snapshot_not_found(client, mocker, origin):
     mock_get_snapshot_context = mocker.patch(
         "swh.web.browse.snapshot_context.get_snapshot_context"
@@ -739,9 +716,9 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     assert not re.search("swh-tr-link", resp_content)
 
 
-@given(origin_with_releases())
-def test_origin_release_browse(client, archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin["url"])
+def test_origin_release_browse(client, archive_data, origin_with_releases):
+    origin_url = origin_with_releases["url"]
+    snapshot = archive_data.snapshot_get_latest(origin_url)
     release = [
         b for b in snapshot["branches"].values() if b["target_type"] == "release"
     ][-1]
@@ -749,7 +726,7 @@ def test_origin_release_browse(client, archive_data, origin):
     revision_data = archive_data.revision_get(release_data["target"])
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": origin["url"], "release": release_data["name"]},
+        query_params={"origin_url": origin_url, "release": release_data["name"]},
     )
 
     resp = check_html_get_response(
@@ -759,7 +736,7 @@ def test_origin_release_browse(client, archive_data, origin):
     assert_contains(resp, release["target"])
 
     swhid_context = {
-        "origin": origin["url"],
+        "origin": origin_url,
         "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
         "anchor": gen_swhid(ObjectType.RELEASE, release_data["id"]),
     }
@@ -772,13 +749,15 @@ def test_origin_release_browse(client, archive_data, origin):
     assert_contains(resp, swh_dir_id_url)
 
 
-@given(origin_with_releases())
-def test_origin_release_browse_not_found(client, origin):
+def test_origin_release_browse_not_found(client, origin_with_releases):
 
     invalid_release_name = "swh-foo-bar"
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": origin["url"], "release": invalid_release_name},
+        query_params={
+            "origin_url": origin_with_releases["url"],
+            "release": invalid_release_name,
+        },
     )
 
     resp = check_html_get_response(
@@ -789,9 +768,9 @@ def test_origin_release_browse_not_found(client, origin):
     )
 
 
-@given(new_origin(), unknown_revision())
+@given(new_origin())
 def test_origin_browse_directory_branch_with_non_resolvable_revision(
-    client, archive_data, new_origin, unknown_revision
+    client, archive_data, unknown_revision, new_origin,
 ):
     branch_name = "master"
     snapshot = Snapshot(
@@ -838,7 +817,6 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
     assert_not_contains(resp, "swh:1:rev:")
 
 
-@given(origin())
 def test_origin_content_no_path(client, origin):
     url = reverse("browse-origin-content", query_params={"origin_url": origin["url"]})
 
@@ -1245,15 +1223,16 @@ def _origin_releases_test_helper(
 
 
 @given(
-    new_origin(), visit_dates(), revisions(min_size=10, max_size=10), existing_release()
+    new_origin(), visit_dates(),
 )
 def test_origin_branches_pagination_with_alias(
-    client, archive_data, mocker, new_origin, visit_dates, revisions, existing_release
+    client, archive_data, mocker, release, revisions_list, new_origin, visit_dates,
 ):
     """
     When a snapshot contains a branch or a release alias, pagination links
     in the branches / releases view should be displayed.
     """
+    revisions = revisions_list(size=10)
     mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) / 2)
     snp_dict = {"branches": {}, "id": hash_to_bytes(random_sha1())}
     for i in range(len(revisions)):
@@ -1262,14 +1241,14 @@ def test_origin_branches_pagination_with_alias(
             "target_type": "revision",
             "target": hash_to_bytes(revisions[i]),
         }
-    release = "".join(random.choices(string.ascii_lowercase, k=8))
+    release_name = "".join(random.choices(string.ascii_lowercase, k=8))
     snp_dict["branches"][b"RELEASE_ALIAS"] = {
         "target_type": "alias",
-        "target": release.encode(),
+        "target": release_name.encode(),
     }
-    snp_dict["branches"][release.encode()] = {
+    snp_dict["branches"][release_name.encode()] = {
         "target_type": "release",
-        "target": hash_to_bytes(existing_release),
+        "target": hash_to_bytes(release),
     }
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
@@ -1300,26 +1279,28 @@ def _check_origin_link(resp, origin_url):
     assert_contains(resp, f'href="{browse_origin_url}"')
 
 
-@given(origin_with_pull_request_branches())
-def test_pull_request_branches_filtering(client, origin):
+def test_pull_request_branches_filtering(client, origin_with_pull_request_branches):
+    origin_url = origin_with_pull_request_branches.url
     # check no pull request branches are displayed in the Branches / Releases dropdown
-    url = reverse("browse-origin-directory", query_params={"origin_url": origin.url})
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin_url})
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/directory.html"
     )
     assert_not_contains(resp, "refs/pull/")
 
     # check no pull request branches are displayed in the branches view
-    url = reverse("browse-origin-branches", query_params={"origin_url": origin.url})
+    url = reverse("browse-origin-branches", query_params={"origin_url": origin_url})
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse/branches.html"
     )
     assert_not_contains(resp, "refs/pull/")
 
 
-@given(origin_with_pull_request_branches())
-def test_browse_pull_request_branch(client, archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin.url)
+def test_browse_pull_request_branch(
+    client, archive_data, origin_with_pull_request_branches
+):
+    origin_url = origin_with_pull_request_branches.url
+    snapshot = archive_data.snapshot_get_latest(origin_url)
     pr_branch = random.choice(
         [
             branch
@@ -1329,7 +1310,7 @@ def test_browse_pull_request_branch(client, archive_data, origin):
     )
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": origin.url, "branch": pr_branch},
+        query_params={"origin_url": origin_url, "branch": pr_branch},
     )
     check_html_get_response(
         client, url, status_code=200, template_used="browse/directory.html"

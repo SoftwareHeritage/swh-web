@@ -1,36 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function optional(re) {
-  return concat('(?:', re, ')?');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: C
 Category: common, system
@@ -39,6 +6,7 @@ Website: https://en.wikipedia.org/wiki/C_(programming_language)
 
 /** @type LanguageFn */
 function c(hljs) {
+  const regex = hljs.regex;
   // added for historic reasons because `hljs.C_LINE_COMMENT_MODE` does
   // not include such support nor can we be sure all the grammars depending
   // on it would desire this behavior
@@ -54,8 +22,8 @@ function c(hljs) {
   const TEMPLATE_ARGUMENT_RE = '<[^<>]+>';
   const FUNCTION_TYPE_RE = '(' +
     DECLTYPE_AUTO_RE + '|' +
-    optional(NAMESPACE_RE) +
-    '[a-zA-Z_]\\w*' + optional(TEMPLATE_ARGUMENT_RE) +
+    regex.optional(NAMESPACE_RE) +
+    '[a-zA-Z_]\\w*' + regex.optional(TEMPLATE_ARGUMENT_RE) +
   ')';
 
 
@@ -136,18 +104,17 @@ function c(hljs) {
 
   const TITLE_MODE = {
     className: 'title',
-    begin: optional(NAMESPACE_RE) + hljs.IDENT_RE,
+    begin: regex.optional(NAMESPACE_RE) + hljs.IDENT_RE,
     relevance: 0
   };
 
-  const FUNCTION_TITLE = optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
+  const FUNCTION_TITLE = regex.optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
 
   const C_KEYWORDS = [
     "asm",
     "auto",
     "break",
     "case",
-    "const",
     "continue",
     "default",
     "do",
@@ -163,7 +130,6 @@ function c(hljs) {
     "restrict",
     "return",
     "sizeof",
-    "static",
     "struct",
     "switch",
     "typedef",
@@ -203,6 +169,9 @@ function c(hljs) {
     "_Decimal32",
     "_Decimal64",
     "_Decimal128",
+    // modifiers
+    "const",
+    "static",
     // aliases
     "complex",
     "bool",

@@ -14,7 +14,7 @@ from django.http import HttpRequest, HttpResponse
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.identifiers import CoreSWHID, ObjectType, QualifiedSWHID
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.identifiers import parse_object_type, resolve_swhid

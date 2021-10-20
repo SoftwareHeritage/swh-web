@@ -1,36 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
  Language: Groovy
  Author: Guillaume Laforge <glaforge@gmail.com>
@@ -44,6 +11,7 @@ function variants(variants, obj = {}) {
 }
 
 function groovy(hljs) {
+  const regex = hljs.regex;
   const IDENT_RE = '[A-Za-z0-9_$]+';
   const COMMENT = variants([
     hljs.C_LINE_COMMENT_MODE,
@@ -161,7 +129,7 @@ function groovy(hljs) {
       {
         // highlight labeled statements
         className: 'symbol',
-        begin: '^[ \t]*' + lookahead(IDENT_RE + ':'),
+        begin: '^[ \t]*' + regex.lookahead(IDENT_RE + ':'),
         excludeBegin: true,
         end: IDENT_RE + ':',
         relevance: 0
