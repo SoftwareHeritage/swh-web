@@ -1,168 +1,3 @@
-/**
- * @param {string} value
- * @returns {string}
- */
-
-/**
- * performs a shallow merge of multiple objects into one
- *
- * @template T
- * @param {T} original
- * @param {Record<string,any>[]} objects
- * @returns {T} a single new object
- */
-function inherit(original, ...objects) {
-  /** @type Record<string,any> */
-  const result = Object.create(null);
-
-  for (const key in original) {
-    result[key] = original[key];
-  }
-  objects.forEach(function(obj) {
-    for (const key in obj) {
-      result[key] = obj[key];
-    }
-  });
-  return /** @type {T} */ (result);
-}
-
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
-const UNDERSCORE_IDENT_RE = '[a-zA-Z_]\\w*';
-/**
- * Creates a comment mode
- *
- * @param {string | RegExp} begin
- * @param {string | RegExp} end
- * @param {Mode | {}} [modeOptions]
- * @returns {Partial<Mode>}
- */
-const COMMENT = function(begin, end, modeOptions = {}) {
-  const mode = inherit(
-    {
-      scope: 'comment',
-      begin,
-      end,
-      contains: []
-    },
-    modeOptions
-  );
-  mode.contains.push({
-    scope: 'doctag',
-    // hack to avoid the space from being included. the space is necessary to
-    // match here to prevent the plain text rule below from gobbling up doctags
-    begin: '[ ]*(?=(TODO|FIXME|NOTE|BUG|OPTIMIZE|HACK|XXX):)',
-    end: /(TODO|FIXME|NOTE|BUG|OPTIMIZE|HACK|XXX):/,
-    excludeBegin: true,
-    relevance: 0
-  });
-  const ENGLISH_WORD = either(
-    // list of common 1 and 2 letter words in English
-    "I",
-    "a",
-    "is",
-    "so",
-    "us",
-    "to",
-    "at",
-    "if",
-    "in",
-    "it",
-    "on",
-    // note: this is not an exhaustive list of contractions, just popular ones
-    /[A-Za-z]+['](d|ve|re|ll|t|s|n)/, // contractions - can't we'd they're let's, etc
-    /[A-Za-z]+[-][a-z]+/, // `no-way`, etc.
-    /[A-Za-z][a-z]{2,}/ // allow capitalized words at beginning of sentences
-  );
-  // looking like plain text, more likely to be a comment
-  mode.contains.push(
-    {
-      // TODO: how to include ", (, ) without breaking grammars that use these for
-      // comment delimiters?
-      // begin: /[ ]+([()"]?([A-Za-z'-]{3,}|is|a|I|so|us|[tT][oO]|at|if|in|it|on)[.]?[()":]?([.][ ]|[ ]|\))){3}/
-      // ---
-
-      // this tries to find sequences of 3 english words in a row (without any
-      // "programming" type syntax) this gives us a strong signal that we've
-      // TRULY found a comment - vs perhaps scanning with the wrong language.
-      // It's possible to find something that LOOKS like the start of the
-      // comment - but then if there is no readable text - good chance it is a
-      // false match and not a comment.
-      //
-      // for a visual example please see:
-      // https://github.com/highlightjs/highlight.js/issues/2827
-
-      begin: concat(
-        /[ ]+/, // necessary to prevent us gobbling up doctags like /* @author Bob Mcgill */
-        '(',
-        ENGLISH_WORD,
-        /[.]?[:]?([.][ ]|[ ])/,
-        '){3}') // look for 3 words in a row
-    }
-  );
-  return mode;
-};
-COMMENT('//', '$');
-COMMENT('/\\*', '\\*/');
-COMMENT('#', '$');
-
 /*
 Language: Python
 Description: Python is an interpreted, object-oriented, high-level programming language with dynamic semantics.
@@ -171,6 +6,8 @@ Category: common
 */
 
 function python(hljs) {
+  const regex = hljs.regex;
+  const IDENT_RE = /[\p{XID_Start}_]\p{XID_Continue}*/u;
   const RESERVED_WORDS = [
     'and',
     'as',
@@ -467,7 +304,7 @@ function python(hljs) {
   };
   const COMMENT_TYPE = {
     className: "comment",
-    begin: lookahead(/# type:/),
+    begin: regex.lookahead(/# type:/),
     end: /$/,
     keywords: KEYWORDS,
     contains: [
@@ -520,6 +357,7 @@ function python(hljs) {
       'gyp',
       'ipython'
     ],
+    unicodeRegex: true,
     keywords: KEYWORDS,
     illegal: /(<\/|->|\?)|=>/,
     contains: [
@@ -541,7 +379,7 @@ function python(hljs) {
       {
         match: [
           /def/, /\s+/,
-          UNDERSCORE_IDENT_RE
+          IDENT_RE,
         ],
         scope: {
           1: "keyword",
@@ -554,14 +392,14 @@ function python(hljs) {
           {
             match: [
               /class/, /\s+/,
-              UNDERSCORE_IDENT_RE, /\s*/,
-              /\(\s*/, UNDERSCORE_IDENT_RE,/\s*\)/
+              IDENT_RE, /\s*/,
+              /\(\s*/, IDENT_RE,/\s*\)/
             ],
           },
           {
             match: [
               /class/, /\s+/,
-              UNDERSCORE_IDENT_RE
+              IDENT_RE
             ],
           }
         ],

@@ -1,44 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function optional(re) {
-  return concat('(?:', re, ')?');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: C++
 Category: common, system
@@ -47,6 +6,7 @@ Website: https://isocpp.org
 
 /** @type LanguageFn */
 function cpp(hljs) {
+  const regex = hljs.regex;
   // added for historic reasons because `hljs.C_LINE_COMMENT_MODE` does
   // not include such support nor can we be sure all the grammars depending
   // on it would desire this behavior
@@ -62,8 +22,8 @@ function cpp(hljs) {
   const TEMPLATE_ARGUMENT_RE = '<[^<>]+>';
   const FUNCTION_TYPE_RE = '(?!struct)(' +
     DECLTYPE_AUTO_RE + '|' +
-    optional(NAMESPACE_RE) +
-    '[a-zA-Z_]\\w*' + optional(TEMPLATE_ARGUMENT_RE) +
+    regex.optional(NAMESPACE_RE) +
+    '[a-zA-Z_]\\w*' + regex.optional(TEMPLATE_ARGUMENT_RE) +
   ')';
 
   const CPP_PRIMITIVE_TYPES = {
@@ -139,11 +99,11 @@ function cpp(hljs) {
 
   const TITLE_MODE = {
     className: 'title',
-    begin: optional(NAMESPACE_RE) + hljs.IDENT_RE,
+    begin: regex.optional(NAMESPACE_RE) + hljs.IDENT_RE,
     relevance: 0
   };
 
-  const FUNCTION_TITLE = optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
+  const FUNCTION_TITLE = regex.optional(NAMESPACE_RE) + hljs.IDENT_RE + '\\s*\\(';
 
   // https://en.cppreference.com/w/cpp/keyword
   const RESERVED_KEYWORDS = [
@@ -167,7 +127,6 @@ function cpp(hljs) {
     'co_yield',
     'compl',
     'concept',
-    'const',
     'const_cast|10',
     'consteval',
     'constexpr',
@@ -211,9 +170,7 @@ function cpp(hljs) {
     'reinterpret_cast|10',
     'requires',
     'return',
-    'signed',
     'sizeof',
-    'static',
     'static_assert',
     'static_cast|10',
     'struct',
@@ -231,13 +188,12 @@ function cpp(hljs) {
     'typeid',
     'typename',
     'union',
-    'unsigned',
     'using',
     'virtual',
     'volatile',
     'while',
     'xor',
-    'xor_eq,'
+    'xor_eq'
   ];
 
   // https://en.cppreference.com/w/cpp/keyword
@@ -253,7 +209,11 @@ function cpp(hljs) {
     'long',
     'short',
     'void',
-    'wchar_t'
+    'wchar_t',
+    'unsigned',
+    'signed',
+    'const',
+    'static'
   ];
 
   const TYPE_HINTS = [
@@ -445,14 +405,15 @@ function cpp(hljs) {
       // Only for relevance, not highlighting.
       _hint: FUNCTION_HINTS
     },
-    begin: concat(
+    begin: regex.concat(
       /\b/,
       /(?!decltype)/,
       /(?!if)/,
       /(?!for)/,
+      /(?!switch)/,
       /(?!while)/,
       hljs.IDENT_RE,
-      lookahead(/(<[^<>]+>|)\s*\(/))
+      regex.lookahead(/(<[^<>]+>|)\s*\(/))
   };
 
   const EXPRESSION_CONTAINS = [

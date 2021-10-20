@@ -1,54 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
  Language: Apache Access Log
  Author: Oleg Efimov <efimovov@gmail.com>
@@ -59,7 +8,8 @@ function either(...args) {
  */
 
 /** @type LanguageFn */
-function accesslog(_hljs) {
+function accesslog(hljs) {
+  const regex = hljs.regex;
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
   const HTTP_VERBS = [
     "GET",
@@ -90,7 +40,7 @@ function accesslog(_hljs) {
       // Requests
       {
         className: 'string',
-        begin: concat(/"/, either(...HTTP_VERBS)),
+        begin: regex.concat(/"/, regex.either(...HTTP_VERBS)),
         end: /"/,
         keywords: HTTP_VERBS,
         illegal: /\n/,

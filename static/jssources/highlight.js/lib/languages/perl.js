@@ -1,54 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Perl
 Author: Peter Leonov <gojpeg@yandex.ru>
@@ -58,6 +7,7 @@ Category: common
 
 /** @type LanguageFn */
 function perl(hljs) {
+  const regex = hljs.regex;
   const KEYWORDS = [
     'abs',
     'accept',
@@ -314,7 +264,7 @@ function perl(hljs) {
         begin: /\$\d/
       },
       {
-        begin: concat(
+        begin: regex.concat(
           /[$%@](\^\w\b|#\w+(::\w+)*|\{\w+\}|\w+(::\w*)*)/,
           // negative look-ahead tries to avoid matching patterns that are not
           // Perl at all like $ident$, @ident@, etc.
@@ -349,9 +299,9 @@ function perl(hljs) {
   const PAIRED_DOUBLE_RE = (prefix, open, close = '\\1') => {
     const middle = (close === '\\1')
       ? close
-      : concat(close, open);
-    return concat(
-      concat("(?:", prefix, ")"),
+      : regex.concat(close, open);
+    return regex.concat(
+      regex.concat("(?:", prefix, ")"),
       open,
       /(?:\\.|[^\\\/])*?/,
       middle,
@@ -366,8 +316,8 @@ function perl(hljs) {
    * @param {string|RegExp} close
    */
   const PAIRED_RE = (prefix, open, close) => {
-    return concat(
-      concat("(?:", prefix, ")"),
+    return regex.concat(
+      regex.concat("(?:", prefix, ")"),
       open,
       /(?:\\.|[^\\\/])*?/,
       close,
@@ -458,7 +408,7 @@ function perl(hljs) {
           className: 'regexp',
           variants: [
             // allow matching common delimiters
-            { begin: PAIRED_DOUBLE_RE("s|tr|y", either(...REGEX_DELIMS, { capture: true })) },
+            { begin: PAIRED_DOUBLE_RE("s|tr|y", regex.either(...REGEX_DELIMS, { capture: true })) },
             // and then paired delmis
             { begin: PAIRED_DOUBLE_RE("s|tr|y", "\\(", "\\)") },
             { begin: PAIRED_DOUBLE_RE("s|tr|y", "\\[", "\\]") },
@@ -478,7 +428,7 @@ function perl(hljs) {
             // prefix is optional with /regex/
             { begin: PAIRED_RE("(?:m|qr)?", /\//, /\//)},
             // allow matching common delimiters
-            { begin: PAIRED_RE("m|qr", either(...REGEX_DELIMS, { capture: true }), /\1/)},
+            { begin: PAIRED_RE("m|qr", regex.either(...REGEX_DELIMS, { capture: true }), /\1/)},
             // allow common paired delmins
             { begin: PAIRED_RE("m|qr", /\(/, /\)/)},
             { begin: PAIRED_RE("m|qr", /\[/, /\]/)},

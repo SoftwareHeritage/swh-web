@@ -1,61 +1,27 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
  Language: SQL
  Website: https://en.wikipedia.org/wiki/SQL
  Category: common, database
  */
 
+/*
+
+Goals:
+
+SQL is intended to highlight basic/common SQL keywords and expressions
+
+- If pretty much every single SQL server includes supports, then it's a canidate.
+- It is NOT intended to include tons of vendor specific keywords (Oracle, MySQL,
+  PostgreSQL) although the list of data types is purposely a bit more expansive.
+- For more specific SQL grammars please see:
+  - PostgreSQL and PL/pgSQL - core
+  - T-SQL - https://github.com/highlightjs/highlightjs-tsql
+  - sql_more (core)
+
+ */
+
 function sql(hljs) {
+  const regex = hljs.regex;
   const COMMENT_MODE = hljs.COMMENT('--', '$');
   const STRING = {
     className: 'string',
@@ -650,7 +616,7 @@ function sql(hljs) {
   };
 
   const FUNCTION_CALL = {
-    begin: concat(/\b/, either(...FUNCTIONS), /\s*\(/),
+    begin: regex.concat(/\b/, regex.either(...FUNCTIONS), /\s*\(/),
     relevance: 0,
     keywords: {
       built_in: FUNCTIONS
@@ -687,7 +653,7 @@ function sql(hljs) {
     },
     contains: [
       {
-        begin: either(...COMBOS),
+        begin: regex.either(...COMBOS),
         relevance: 0,
         keywords: {
           $pattern: /[\w\.]+/,
@@ -698,7 +664,7 @@ function sql(hljs) {
       },
       {
         className: "type",
-        begin: either(...MULTI_WORD_TYPES)
+        begin: regex.either(...MULTI_WORD_TYPES)
       },
       FUNCTION_CALL,
       VARIABLE,

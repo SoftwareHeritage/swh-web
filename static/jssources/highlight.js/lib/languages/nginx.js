@@ -1,36 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: Nginx config
 Author: Peter Leonov <gojpeg@yandex.ru>
@@ -41,6 +8,7 @@ Website: https://www.nginx.com
 
 /** @type LanguageFn */
 function nginx(hljs) {
+  const regex = hljs.regex;
   const VAR = {
     className: 'variable',
     variants: [
@@ -51,7 +19,7 @@ function nginx(hljs) {
         begin: /\$\{\w+\}/
       },
       {
-        begin: concat(/[$@]/, hljs.UNDERSCORE_IDENT_RE)
+        begin: regex.concat(/[$@]/, hljs.UNDERSCORE_IDENT_RE)
       }
     ]
   };
@@ -174,11 +142,11 @@ function nginx(hljs) {
       },
       {
         className: 'section',
-        begin: concat(hljs.UNDERSCORE_IDENT_RE + lookahead(/\s+\{/)),
+        begin: regex.concat(hljs.UNDERSCORE_IDENT_RE + regex.lookahead(/\s+\{/)),
         relevance: 0
       },
       {
-        begin: lookahead(hljs.UNDERSCORE_IDENT_RE + '\\s'),
+        begin: regex.lookahead(hljs.UNDERSCORE_IDENT_RE + '\\s'),
         end: ';|\\{',
         contains: [
           {

@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: AsciiDoc
 Requires: xml.js
@@ -34,6 +9,7 @@ Category: markup
 
 /** @type LanguageFn */
 function asciidoc(hljs) {
+  const regex = hljs.regex;
   const HORIZONTAL_RULE = {
     begin: '^\'{3,}[ \\t]*$',
     relevance: 10
@@ -70,7 +46,7 @@ function asciidoc(hljs) {
     // inline unconstrained strong (multi-line)
     {
       className: 'strong',
-      begin: concat(
+      begin: regex.concat(
         /\*\*/,
         /((\*(?!\*)|\\[^\n]|[^*\n\\])+\n)+/,
         /(\*(?!\*)|\\[^\n]|[^*\n\\])*/,
@@ -100,7 +76,7 @@ function asciidoc(hljs) {
     // inline unconstrained emphasis (multi-line)
     {
       className: 'emphasis',
-      begin: concat(
+      begin: regex.concat(
         /__/,
         /((_(?!_)|\\[^\n]|[^_\n\\])+\n)+/,
         /(_(?!_)|\\[^\n]|[^_\n\\])*/,

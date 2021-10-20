@@ -1,38 +1,15 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
+/*
+ Language: GAMS
+ Author: Stefan Bechert <stefan.bechert@gmx.net>
+ Contributors: Oleg Efimov <efimovov@gmail.com>, Mikko Kouhia <mikko.kouhia@iki.fi>
+ Description: The General Algebraic Modeling System language
+ Website: https://www.gams.com
+ Category: scientific
  */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function anyNumberOfTimes(re) {
-  return concat('(?:', re, ')*');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
 
 /** @type LanguageFn */
 function gams(hljs) {
+  const regex = hljs.regex;
   const KEYWORDS = {
     keyword:
       'abort acronym acronyms alias all and assign binary card diag display ' +
@@ -116,10 +93,10 @@ function gams(hljs) {
       {
         className: 'comment',
         // one comment word, then possibly more
-        begin: concat(
+        begin: regex.concat(
           COMMENT_WORD,
           // [ ] because \s would be too broad (matching newlines)
-          anyNumberOfTimes(concat(/[ ]+/, COMMENT_WORD))
+          regex.anyNumberOfTimes(regex.concat(/[ ]+/, COMMENT_WORD))
         ),
         relevance: 0
       }
