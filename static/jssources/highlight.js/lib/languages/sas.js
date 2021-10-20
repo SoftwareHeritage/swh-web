@@ -1,45 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: SAS
 Author: Mauricio Caceres <mauricio.caceres.bravo@gmail.com>
@@ -48,6 +6,7 @@ Description: Syntax Highlighting for SAS
 
 /** @type LanguageFn */
 function sas(hljs) {
+  const regex = hljs.regex;
   // Data step and PROC SQL statements
   const SAS_KEYWORDS = [
     "do",
@@ -567,7 +526,7 @@ function sas(hljs) {
       },
       { // Built-in macro variables
         className: 'built_in',
-        begin: '%' + either(...MACRO_FUNCTIONS)
+        begin: '%' + regex.either(...MACRO_FUNCTIONS)
       },
       {
         // User-defined macro functions
@@ -579,7 +538,7 @@ function sas(hljs) {
         // built_in may need more nuance
         // https://github.com/highlightjs/highlight.js/issues/2521
         className: 'meta',
-        begin: either(...FUNCTIONS) + '(?=\\()'
+        begin: regex.either(...FUNCTIONS) + '(?=\\()'
       },
       {
         className: 'string',

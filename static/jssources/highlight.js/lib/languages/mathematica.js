@@ -6625,65 +6625,6 @@ const SYSTEM_SYMBOLS = [
   "$WolframUUID"
 ];
 
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function optional(re) {
-  return concat('(?:', re, ')?');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Wolfram Language
 Description: The Wolfram Language is the programming language used in Wolfram Mathematica, a modern technical computing system spanning most areas of technical computing.
@@ -6694,6 +6635,7 @@ Category: scientific
 
 /** @type LanguageFn */
 function mathematica(hljs) {
+  const regex = hljs.regex;
   /*
   This rather scary looking matching of Mathematica numbers is carefully explained by Robert Jacobson here:
   https://wltools.github.io/LanguageSpec/Specification/Syntax/Number-representations/
@@ -6701,18 +6643,18 @@ function mathematica(hljs) {
   const BASE_RE = /([2-9]|[1-2]\d|[3][0-5])\^\^/;
   const BASE_DIGITS_RE = /(\w*\.\w+|\w+\.\w*|\w+)/;
   const NUMBER_RE = /(\d*\.\d+|\d+\.\d*|\d+)/;
-  const BASE_NUMBER_RE = either(concat(BASE_RE, BASE_DIGITS_RE), NUMBER_RE);
+  const BASE_NUMBER_RE = regex.either(regex.concat(BASE_RE, BASE_DIGITS_RE), NUMBER_RE);
 
   const ACCURACY_RE = /``[+-]?(\d*\.\d+|\d+\.\d*|\d+)/;
   const PRECISION_RE = /`([+-]?(\d*\.\d+|\d+\.\d*|\d+))?/;
-  const APPROXIMATE_NUMBER_RE = either(ACCURACY_RE, PRECISION_RE);
+  const APPROXIMATE_NUMBER_RE = regex.either(ACCURACY_RE, PRECISION_RE);
 
   const SCIENTIFIC_NOTATION_RE = /\*\^[+-]?\d+/;
 
-  const MATHEMATICA_NUMBER_RE = concat(
+  const MATHEMATICA_NUMBER_RE = regex.concat(
     BASE_NUMBER_RE,
-    optional(APPROXIMATE_NUMBER_RE),
-    optional(SCIENTIFIC_NOTATION_RE)
+    regex.optional(APPROXIMATE_NUMBER_RE),
+    regex.optional(SCIENTIFIC_NOTATION_RE)
   );
 
   const NUMBERS = {
@@ -6773,7 +6715,7 @@ function mathematica(hljs) {
   const MESSAGES = {
     className: 'message-name',
     relevance: 0,
-    begin: concat("::", SYMBOL_RE)
+    begin: regex.concat("::", SYMBOL_RE)
   };
 
   return {

@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: Elixir
 Author: Josh Adams <josh@isotope11.com>
@@ -33,6 +8,7 @@ Website: https://elixir-lang.org
 
 /** @type LanguageFn */
 function elixir(hljs) {
+  const regex = hljs.regex;
   const ELIXIR_IDENT_RE = '[a-zA-Z_][a-zA-Z0-9_.]*(!|\\?)?';
   const ELIXIR_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~`|]|\\[\\]=?';
   const KEYWORDS = [
@@ -138,7 +114,7 @@ function elixir(hljs) {
   const escapeSigilEnd = (end) => {
     return {
       scope: "char.escape",
-      begin: concat(/\\/, end),
+      begin: regex.concat(/\\/, end),
       relevance: 0
     };
   };
@@ -173,7 +149,7 @@ function elixir(hljs) {
         begin: '~r' + '(?=' + SIGIL_DELIMITERS + ')',
         contains: SIGIL_DELIMITER_MODES.map(x => hljs.inherit(x,
           {
-            end: concat(x.end, /[uismxfU]{0,7}/),
+            end: regex.concat(x.end, /[uismxfU]{0,7}/),
             contains: [
               escapeSigilEnd(x.end),
               BACKSLASH_ESCAPE,
@@ -186,7 +162,7 @@ function elixir(hljs) {
         begin: '~R' + '(?=' + SIGIL_DELIMITERS + ')',
         contains: SIGIL_DELIMITER_MODES.map(x => hljs.inherit(x,
           {
-            end: concat(x.end, /[uismxfU]{0,7}/),
+            end: regex.concat(x.end, /[uismxfU]{0,7}/),
             contains: [ escapeSigilEnd(x.end) ]
           })
         )

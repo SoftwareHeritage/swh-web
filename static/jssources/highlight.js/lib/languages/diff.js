@@ -1,45 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Diff
 Description: Unified and context diff
@@ -50,6 +8,7 @@ Category: common
 
 /** @type LanguageFn */
 function diff(hljs) {
+  const regex = hljs.regex;
   return {
     name: 'Diff',
     aliases: ['patch'],
@@ -57,7 +16,7 @@ function diff(hljs) {
       {
         className: 'meta',
         relevance: 10,
-        match: either(
+        match: regex.either(
           /^@@ +-\d+,\d+ +\+\d+,\d+ +@@/,
           /^\*\*\* +\d+,\d+ +\*\*\*\*$/,
           /^--- +\d+,\d+ +----$/
@@ -67,7 +26,7 @@ function diff(hljs) {
         className: 'comment',
         variants: [
           {
-            begin: either(
+            begin: regex.either(
               /Index: /,
               /^index/,
               /={3,}/,

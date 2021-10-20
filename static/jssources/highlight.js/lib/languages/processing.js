@@ -1,62 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Processing
 Description: Processing is a flexible software sketchbook and a language for learning how to code within the context of the visual arts.
@@ -66,6 +7,7 @@ Category: graphics
 */
 
 function processing(hljs) {
+  const regex = hljs.regex;
   const BUILT_INS = [
     "displayHeight",
     "displayWidth",
@@ -333,14 +275,14 @@ function processing(hljs) {
   const FUNC_NAME = {
     variants: [
       {
-        match: concat(either(...BUILT_INS), lookahead(/\s*\(/)),
+        match: regex.concat(regex.either(...BUILT_INS), regex.lookahead(/\s*\(/)),
         className: "built_in"
       },
       {
         relevance: 0,
-        match: concat(
+        match: regex.concat(
           /\b(?!for|if|while)/,
-          IDENT, lookahead(/\s*\(/)),
+          IDENT, regex.lookahead(/\s*\(/)),
         className: "title.function"
       }
     ]

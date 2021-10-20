@@ -21,6 +21,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const DumpHighlightjsLanguagesDataPlugin = require('./webpack-plugins/dump-highlightjs-languages-data-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('serve')) !== undefined;
@@ -156,22 +157,6 @@ module.exports = {
   // module import configuration
   module: {
     rules: [
-      {
-      // Preprocess all js files with eslint for consistent code style
-      // and avoid bad js development practices.
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: [{
-          loader: 'eslint-loader',
-          options: {
-            configFile: path.join(__dirname, '.eslintrc'),
-            ignorePath: path.join(__dirname, '.eslintignore'),
-            cache: true,
-            emitWarning: true
-          }
-        }]
-      },
       {
       // Use babel-loader in order to use es6 syntax in js files
       // but also advanced js features like async/await syntax.
@@ -435,7 +420,15 @@ module.exports = {
       format: chalk.cyan.bold('webpack build of swh-web assets') + ' [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
       width: 50
     }),
-    new DumpHighlightjsLanguagesDataPlugin()
+    new DumpHighlightjsLanguagesDataPlugin(),
+    // Process all js files with eslint for consistent code style
+    // and avoid bad js development practices.
+    new ESLintPlugin({
+      overrideConfigFile: path.join(__dirname, '.eslintrc'),
+      ignorePath: path.join(__dirname, '.eslintignore'),
+      cache: true,
+      emitWarning: true
+    })
   ],
   // webpack optimizations
   optimization: {

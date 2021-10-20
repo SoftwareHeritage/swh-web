@@ -1,62 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Wren
 Description: Think Smalltalk in a Lua-sized package with a dash of Erlang and wrapped up in a familiar, modern syntax.
@@ -68,6 +9,7 @@ Website: https://wren.io/
 
 /** @type LanguageFn */
 function wren(hljs) {
+  const regex = hljs.regex;
   const IDENT_RE = /[a-zA-Z]\w*/;
   const KEYWORDS = [
     "as",
@@ -136,14 +78,14 @@ function wren(hljs) {
   ];
   const FUNCTION = {
     relevance: 0,
-    match: concat(/\b(?!(if|while|for|else|super)\b)/, IDENT_RE, /(?=\s*[({])/),
+    match: regex.concat(/\b(?!(if|while|for|else|super)\b)/, IDENT_RE, /(?=\s*[({])/),
     className: "title.function"
   };
   const FUNCTION_DEFINITION = {
-    match: concat(
-      either(
-        concat(/\b(?!(if|while|for|else|super)\b)/, IDENT_RE),
-        either(...OPERATORS)
+    match: regex.concat(
+      regex.either(
+        regex.concat(/\b(?!(if|while|for|else|super)\b)/, IDENT_RE),
+        regex.either(...OPERATORS)
       ),
       /(?=\s*\([^)]+\)\s*\{)/),
     className: "title.function",
@@ -189,7 +131,7 @@ function wren(hljs) {
 
   const OPERATOR = {
     relevance: 0,
-    match: either(...OPERATORS),
+    match: regex.either(...OPERATORS),
     className: "operator"
   };
 
@@ -201,7 +143,7 @@ function wren(hljs) {
 
   const PROPERTY = {
     className: "property",
-    begin: concat(/\./, lookahead(IDENT_RE)),
+    begin: regex.concat(/\./, regex.lookahead(IDENT_RE)),
     end: IDENT_RE,
     excludeBegin: true,
     relevance: 0
@@ -209,7 +151,7 @@ function wren(hljs) {
 
   const FIELD = {
     relevance: 0,
-    match: concat(/\b_/, IDENT_RE),
+    match: regex.concat(/\b_/, IDENT_RE),
     scope: "variable"
   };
 
@@ -286,7 +228,7 @@ function wren(hljs) {
   const ALL_KWS = [...KEYWORDS, ...LANGUAGE_VARS, ...LITERALS];
   const VARIABLE = {
     relevance: 0,
-    match: concat(
+    match: regex.concat(
       "\\b(?!",
       ALL_KWS.join("|"),
       "\\b)",

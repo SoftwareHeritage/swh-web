@@ -159,7 +159,7 @@ def random_seed(pytestconfig):
     random.setstate(state)
 
 
-def pytest_report_teststatus(report, config):
+def pytest_report_teststatus(report, *args):
     if report.when == "call" and report.outcome == "failed":
         seed = cache.get(_random_seed_cache_key, None)
         line = (
@@ -169,7 +169,7 @@ def pytest_report_teststatus(report, config):
         report.sections.append((_swh_web_custom_section, line))
 
 
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
+def pytest_terminal_summary(terminalreporter, *args):
     reports = terminalreporter.getreports("failed")
     content = os.linesep.join(
         text

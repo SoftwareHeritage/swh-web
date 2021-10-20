@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: LLVM IR
 Author: Michael Rodler <contact@f0rki.at>
@@ -34,6 +9,7 @@ Audit: 2020
 
 /** @type LanguageFn */
 function llvm(hljs) {
+  const regex = hljs.regex;
   const IDENT_RE = /([-a-zA-Z$._][\w$.-]*)/;
   const TYPE = {
     className: 'type',
@@ -67,7 +43,7 @@ function llvm(hljs) {
   const VARIABLE = {
     className: 'variable',
     variants: [
-      { begin: concat(/%/, IDENT_RE) },
+      { begin: regex.concat(/%/, IDENT_RE) },
       { begin: /%\d+/ },
       { begin: /#\d+/ },
     ]
@@ -75,10 +51,10 @@ function llvm(hljs) {
   const FUNCTION = {
     className: 'title',
     variants: [
-      { begin: concat(/@/, IDENT_RE) },
+      { begin: regex.concat(/@/, IDENT_RE) },
       { begin: /@\d+/ },
-      { begin: concat(/!/, IDENT_RE) },
-      { begin: concat(/!\d+/, IDENT_RE) },
+      { begin: regex.concat(/!/, IDENT_RE) },
+      { begin: regex.concat(/!\d+/, IDENT_RE) },
       // https://llvm.org/docs/LangRef.html#namedmetadatastructure
       // obviously a single digit can also be used in this fashion
       { begin: /!\d+/ }

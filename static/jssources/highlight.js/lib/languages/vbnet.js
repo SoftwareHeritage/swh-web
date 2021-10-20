@@ -1,54 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: Visual Basic .NET
 Description: Visual Basic .NET (VB.NET) is a multi-paradigm, object-oriented programming language, implemented on the .NET Framework.
@@ -59,6 +8,7 @@ Category: common
 
 /** @type LanguageFn */
 function vbnet(hljs) {
+  const regex = hljs.regex;
   /**
    * Character Literal
    * Either a single character ("a"C) or an escaped double quote (""""C).
@@ -91,23 +41,23 @@ function vbnet(hljs) {
     variants: [
       {
         // #YYYY-MM-DD# (ISO-Date) or #M/D/YYYY# (US-Date)
-        begin: concat(/# */, either(YYYY_MM_DD, MM_DD_YYYY), / *#/)
+        begin: regex.concat(/# */, regex.either(YYYY_MM_DD, MM_DD_YYYY), / *#/)
       },
       {
         // #H:mm[:ss]# (24h Time)
-        begin: concat(/# */, TIME_24H, / *#/)
+        begin: regex.concat(/# */, TIME_24H, / *#/)
       },
       {
         // #h[:mm[:ss]] A# (12h Time)
-        begin: concat(/# */, TIME_12H, / *#/)
+        begin: regex.concat(/# */, TIME_12H, / *#/)
       },
       {
         // date plus time
-        begin: concat(
+        begin: regex.concat(
           /# */,
-          either(YYYY_MM_DD, MM_DD_YYYY),
+          regex.either(YYYY_MM_DD, MM_DD_YYYY),
           / +/,
-          either(TIME_12H, TIME_24H),
+          regex.either(TIME_12H, TIME_24H),
           / *#/
         )
       }

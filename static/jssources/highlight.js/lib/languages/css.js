@@ -4,9 +4,14 @@ const MODES = (hljs) => {
       scope: 'meta',
       begin: '!important'
     },
+    BLOCK_COMMENT: hljs.C_BLOCK_COMMENT_MODE,
     HEXCOLOR: {
       scope: 'number',
-      begin: '#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})'
+      begin: /#(([0-9a-fA-F]{3,4})|(([0-9a-fA-F]{2}){3,4}))\b/
+    },
+    FUNCTION_DISPATCH: {
+      className: "built_in",
+      begin: /[\w-]+(?=\()/
     },
     ATTRIBUTE_SELECTOR_MODE: {
       scope: 'selector-attr',
@@ -235,6 +240,7 @@ const ATTRIBUTES = [
   'align-content',
   'align-items',
   'align-self',
+  'all',
   'animation',
   'animation-delay',
   'animation-direction',
@@ -244,7 +250,6 @@ const ATTRIBUTES = [
   'animation-name',
   'animation-play-state',
   'animation-timing-function',
-  'auto',
   'backface-visibility',
   'background',
   'background-attachment',
@@ -296,9 +301,11 @@ const ATTRIBUTES = [
   'break-before',
   'break-inside',
   'caption-side',
+  'caret-color',
   'clear',
   'clip',
   'clip-path',
+  'clip-rule',
   'color',
   'column-count',
   'column-fill',
@@ -310,9 +317,14 @@ const ATTRIBUTES = [
   'column-span',
   'column-width',
   'columns',
+  'contain',
   'content',
+  'content-visibility',
   'counter-increment',
   'counter-reset',
+  'cue',
+  'cue-after',
+  'cue-before',
   'cursor',
   'direction',
   'display',
@@ -326,6 +338,7 @@ const ATTRIBUTES = [
   'flex-shrink',
   'flex-wrap',
   'float',
+  'flow',
   'font',
   'font-display',
   'font-family',
@@ -337,10 +350,34 @@ const ATTRIBUTES = [
   'font-smoothing',
   'font-stretch',
   'font-style',
+  'font-synthesis',
   'font-variant',
+  'font-variant-caps',
+  'font-variant-east-asian',
   'font-variant-ligatures',
+  'font-variant-numeric',
+  'font-variant-position',
   'font-variation-settings',
   'font-weight',
+  'gap',
+  'glyph-orientation-vertical',
+  'grid',
+  'grid-area',
+  'grid-auto-columns',
+  'grid-auto-flow',
+  'grid-auto-rows',
+  'grid-column',
+  'grid-column-end',
+  'grid-column-start',
+  'grid-gap',
+  'grid-row',
+  'grid-row-end',
+  'grid-row-start',
+  'grid-template',
+  'grid-template-areas',
+  'grid-template-columns',
+  'grid-template-rows',
+  'hanging-punctuation',
   'height',
   'hyphens',
   'icon',
@@ -348,11 +385,11 @@ const ATTRIBUTES = [
   'image-rendering',
   'image-resolution',
   'ime-mode',
-  'inherit',
-  'initial',
+  'isolation',
   'justify-content',
   'left',
   'letter-spacing',
+  'line-break',
   'line-height',
   'list-style',
   'list-style-image',
@@ -365,10 +402,27 @@ const ATTRIBUTES = [
   'margin-top',
   'marks',
   'mask',
+  'mask-border',
+  'mask-border-mode',
+  'mask-border-outset',
+  'mask-border-repeat',
+  'mask-border-slice',
+  'mask-border-source',
+  'mask-border-width',
+  'mask-clip',
+  'mask-composite',
+  'mask-image',
+  'mask-mode',
+  'mask-origin',
+  'mask-position',
+  'mask-repeat',
+  'mask-size',
+  'mask-type',
   'max-height',
   'max-width',
   'min-height',
   'min-width',
+  'mix-blend-mode',
   'nav-down',
   'nav-index',
   'nav-left',
@@ -398,23 +452,68 @@ const ATTRIBUTES = [
   'page-break-after',
   'page-break-before',
   'page-break-inside',
+  'pause',
+  'pause-after',
+  'pause-before',
   'perspective',
   'perspective-origin',
   'pointer-events',
   'position',
   'quotes',
   'resize',
+  'rest',
+  'rest-after',
+  'rest-before',
   'right',
+  'row-gap',
+  'scroll-margin',
+  'scroll-margin-block',
+  'scroll-margin-block-end',
+  'scroll-margin-block-start',
+  'scroll-margin-bottom',
+  'scroll-margin-inline',
+  'scroll-margin-inline-end',
+  'scroll-margin-inline-start',
+  'scroll-margin-left',
+  'scroll-margin-right',
+  'scroll-margin-top',
+  'scroll-padding',
+  'scroll-padding-block',
+  'scroll-padding-block-end',
+  'scroll-padding-block-start',
+  'scroll-padding-bottom',
+  'scroll-padding-inline',
+  'scroll-padding-inline-end',
+  'scroll-padding-inline-start',
+  'scroll-padding-left',
+  'scroll-padding-right',
+  'scroll-padding-top',
+  'scroll-snap-align',
+  'scroll-snap-stop',
+  'scroll-snap-type',
+  'shape-image-threshold',
+  'shape-margin',
+  'shape-outside',
+  'speak',
+  'speak-as',
   'src', // @font-face
   'tab-size',
   'table-layout',
   'text-align',
+  'text-align-all',
   'text-align-last',
+  'text-combine-upright',
   'text-decoration',
   'text-decoration-color',
   'text-decoration-line',
   'text-decoration-style',
+  'text-emphasis',
+  'text-emphasis-color',
+  'text-emphasis-position',
+  'text-emphasis-style',
   'text-indent',
+  'text-justify',
+  'text-orientation',
   'text-overflow',
   'text-rendering',
   'text-shadow',
@@ -422,6 +521,7 @@ const ATTRIBUTES = [
   'text-underline-position',
   'top',
   'transform',
+  'transform-box',
   'transform-origin',
   'transform-style',
   'transition',
@@ -432,49 +532,26 @@ const ATTRIBUTES = [
   'unicode-bidi',
   'vertical-align',
   'visibility',
+  'voice-balance',
+  'voice-duration',
+  'voice-family',
+  'voice-pitch',
+  'voice-range',
+  'voice-rate',
+  'voice-stress',
+  'voice-volume',
   'white-space',
   'widows',
   'width',
+  'will-change',
   'word-break',
   'word-spacing',
   'word-wrap',
+  'writing-mode',
   'z-index'
   // reverse makes sure longer attributes `font-weight` are matched fully
   // instead of getting false positives on say `font`
 ].reverse();
-
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function lookahead(re) {
-  return concat('(?=', re, ')');
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
 
 /*
 Language: CSS
@@ -484,11 +561,8 @@ Website: https://developer.mozilla.org/en-US/docs/Web/CSS
 
 /** @type LanguageFn */
 function css(hljs) {
+  const regex = hljs.regex;
   const modes = MODES(hljs);
-  const FUNCTION_DISPATCH = {
-    className: "built_in",
-    begin: /[\w-]+(?=\()/
-  };
   const VENDOR_PREFIX = {
     begin: /-(webkit|moz|ms|o)-(?=[a-z])/
   };
@@ -513,7 +587,7 @@ function css(hljs) {
       keyframePosition: "selector-tag"
     },
     contains: [
-      hljs.C_BLOCK_COMMENT_MODE,
+      modes.BLOCK_COMMENT,
       VENDOR_PREFIX,
       // to recognize keyframe 40% etc which are outside the scope of our
       // attribute value mode
@@ -536,7 +610,7 @@ function css(hljs) {
             begin: ':(' + PSEUDO_CLASSES.join('|') + ')'
           },
           {
-            begin: '::(' + PSEUDO_ELEMENTS.join('|') + ')'
+            begin: ':(:)?(' + PSEUDO_ELEMENTS.join('|') + ')'
           }
         ]
       },
@@ -553,9 +627,10 @@ function css(hljs) {
       },
       // attribute values
       {
-        begin: ':',
-        end: '[;}]',
+        begin: /:/,
+        end: /[;}{]/,
         contains: [
+          modes.BLOCK_COMMENT,
           modes.HEXCOLOR,
           modes.IMPORTANT,
           modes.CSS_NUMBER_MODE,
@@ -581,11 +656,11 @@ function css(hljs) {
               }
             ]
           },
-          FUNCTION_DISPATCH
+          modes.FUNCTION_DISPATCH
         ]
       },
       {
-        begin: lookahead(/@/),
+        begin: regex.lookahead(/@/),
         end: '[{;]',
         relevance: 0,
         illegal: /:/, // break on Less variables @var: ...

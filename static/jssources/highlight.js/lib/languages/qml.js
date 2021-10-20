@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: QML
 Requires: javascript.js, xml.js
@@ -34,6 +9,7 @@ Category: scripting
 */
 
 function qml(hljs) {
+  const regex = hljs.regex;
   const KEYWORDS = {
     keyword:
       'in of on if for while finally var new function do return void else break catch ' +
@@ -115,7 +91,7 @@ function qml(hljs) {
   // Find QML object. A QML object is a QML identifier followed by { and ends at the matching }.
   // All we really care about is finding IDENT followed by { and just mark up the IDENT and ignore the {.
   const QML_OBJECT = {
-    begin: concat(QML_IDENT_RE, /\s*\{/),
+    begin: regex.concat(QML_IDENT_RE, /\s*\{/),
     end: /\{/,
     returnBegin: true,
     relevance: 0,

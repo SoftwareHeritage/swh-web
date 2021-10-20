@@ -1,28 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
 /*
 Language: ActionScript
 Author: Alexander Myadzel <myadzel@gmail.com>
@@ -32,10 +7,11 @@ Audit: 2020
 
 /** @type LanguageFn */
 function actionscript(hljs) {
+  const regex = hljs.regex;
   const IDENT_RE = /[a-zA-Z_$][a-zA-Z0-9_$]*/;
-  const PKG_NAME_RE = concat(
+  const PKG_NAME_RE = regex.concat(
     IDENT_RE,
-    concat("(\\.", IDENT_RE, ")*")
+    regex.concat("(\\.", IDENT_RE, ")*")
   );
   const IDENT_FUNC_RETURN_TYPE_RE = /([*]|[a-zA-Z_$][a-zA-Z0-9_$]*)/;
 
@@ -165,7 +141,7 @@ function actionscript(hljs) {
               AS3_REST_ARG_MODE
             ]
           },
-          { begin: concat(/:\s*/, IDENT_FUNC_RETURN_TYPE_RE) }
+          { begin: regex.concat(/:\s*/, IDENT_FUNC_RETURN_TYPE_RE) }
         ]
       },
       hljs.METHOD_GUARD

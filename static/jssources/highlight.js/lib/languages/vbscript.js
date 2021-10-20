@@ -1,54 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  const opts = stripOptionsFromArgs(args);
-  const joined = '(' +
-    (opts.capture ? "" : "?:") +
-    args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: VBScript
 Description: VBScript ("Microsoft Visual Basic Scripting Edition") is an Active Scripting language developed by Microsoft that is modeled on Visual Basic.
@@ -60,6 +9,7 @@ Category: scripting
 
 /** @type LanguageFn */
 function vbscript(hljs) {
+  const regex = hljs.regex;
   const BUILT_IN_FUNCTIONS = [
     "lcase",
     "month",
@@ -170,7 +120,7 @@ function vbscript(hljs) {
   ];
 
   const BUILT_IN_CALL = {
-    begin: concat(either(...BUILT_IN_FUNCTIONS), "\\s*\\("),
+    begin: regex.concat(regex.either(...BUILT_IN_FUNCTIONS), "\\s*\\("),
     // relevance 0 because this is acting as a beginKeywords really
     relevance: 0,
     keywords: {
