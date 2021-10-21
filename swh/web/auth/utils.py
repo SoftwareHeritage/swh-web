@@ -17,6 +17,7 @@ OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 
 SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
+ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:

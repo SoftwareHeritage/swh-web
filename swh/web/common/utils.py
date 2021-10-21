@@ -23,6 +23,7 @@ from django.core.cache import cache
 from django.http import HttpRequest, QueryDict
 from django.urls import reverse as django_reverse
 
+from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
 from swh.web.config import get_config, search
@@ -285,6 +286,7 @@ def context_processor(request):
         ),
         "swh_web_version": get_distribution("swh.web").version,
         "iframe_mode": False,
+        "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
     }
 
 
@@ -365,27 +367,41 @@ def prettify_html(html: str) -> str:
     return BeautifulSoup(html, "lxml").prettify()
 
 
-def get_deposits_list() -> List[Dict[str, Any]]:
+def _deposits_list_url(
+    deposits_list_base_url: str, page_size: int, username: Optional[str]
+) -> str:
+    deposits_list_url = f"{deposits_list_base_url}?page_size={page_size}"
+    if username is not None:
+        deposits_list_url += f"&username={username}"
+    return deposits_list_url
+
+
+def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
     """Return the list of software deposits using swh-deposit API
     """
     config = get_config()["deposit"]
-    deposits_list_url = config["private_api_url"] + "deposits"
+    deposits_list_base_url = config["private_api_url"] + "deposits"
     deposits_list_auth = HTTPBasicAuth(
         config["private_api_user"], config["private_api_password"]
     )
 
+    deposits_list_url = _deposits_list_url(
+        deposits_list_base_url, page_size=1, username=username
+    )
+
     nb_deposits = requests.get(
-        "%s?page_size=1" % deposits_list_url, auth=deposits_list_auth, timeout=30
+        deposits_list_url, auth=deposits_list_auth, timeout=30
     ).json()["count"]
 
-    deposits_data = cache.get("swh-deposit-list")
+    deposits_data = cache.get(f"swh-deposit-list-{username}")
     if not deposits_data or deposits_data["count"] != nb_deposits:
+        deposits_list_url = _deposits_list_url(
+            deposits_list_base_url, page_size=nb_deposits, username=username
+        )
         deposits_data = requests.get(
-            "%s?page_size=%s" % (deposits_list_url, nb_deposits),
-            auth=deposits_list_auth,
-            timeout=30,
+            deposits_list_url, auth=deposits_list_auth, timeout=30,
         ).json()
-        cache.set("swh-deposit-list", deposits_data)
+        cache.set(f"swh-deposit-list-{username}", deposits_data)
 
     return deposits_data["results"]
 
