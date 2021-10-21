@@ -1,8 +1,12 @@
-swh-web (0.0.334-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.335-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.335     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-10-21 14:30:23
+    +0200)
+  * Upstream changes:     - v0.0.335     - admin/deposit: Allow users
+    with permission to list their deposits
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 20 Oct 2021 09:57:49 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 21 Oct 2021 12:49:33 +0000
 
 swh-web (0.0.334-1~swh1) unstable-swh; urgency=medium
 

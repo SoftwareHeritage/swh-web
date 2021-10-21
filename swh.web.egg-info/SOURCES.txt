@@ -297,9 +297,9 @@ static/img/logos/pypi.png
 static/img/logos/sourceforge.png
 static/img/thirdParty/chosen-sprite.png
 static/img/thirdParty/chosen-sprite@2x.png
-static/js/admin.86629679a3bebd6bedc7.js
-static/js/admin.86629679a3bebd6bedc7.js.LICENSE.txt
-static/js/admin.86629679a3bebd6bedc7.js.map
+static/js/admin.685ee960c41207c14d44.js
+static/js/admin.685ee960c41207c14d44.js.LICENSE.txt
+static/js/admin.685ee960c41207c14d44.js.map
 static/js/auth.45d1efdcd5173c64b13e.js
 static/js/auth.45d1efdcd5173c64b13e.js.LICENSE.txt
 static/js/auth.45d1efdcd5173c64b13e.js.map
@@ -1627,6 +1627,7 @@ swh/web/tests/test_templates.py
 swh/web/tests/utils.py
 swh/web/tests/views.py
 swh/web/tests/admin/__init__.py
+swh/web/tests/admin/test_deposit.py
 swh/web/tests/admin/test_origin_save.py
 swh/web/tests/api/__init__.py
 swh/web/tests/api/test_api_lookup.py
