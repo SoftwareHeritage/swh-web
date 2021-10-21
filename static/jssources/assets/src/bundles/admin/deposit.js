@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -16,7 +16,7 @@ function genSwhLink(data, type) {
   return data;
 }
 
-export function initDepositAdmin() {
+export function initDepositAdmin(username, isStaff) {
   let depositsTable;
   $(document).ready(() => {
     $.fn.dataTable.ext.errMode = 'none';
@@ -44,6 +44,9 @@ export function initDepositAdmin() {
           url: Urls.admin_deposit_list(),
           data: d => {
             d.excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
+            if (!isStaff) {
+              d.username = username;
+            }
           }
         },
         columns: [
