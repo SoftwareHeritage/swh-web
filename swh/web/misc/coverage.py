@@ -186,7 +186,7 @@ legacy_origins = {
             "search_pattern": "https://bitbucket.org/",
             "visit_types": ["hg"],
             "count": "336,795",
-        }
+        },
     ],
 }
 
