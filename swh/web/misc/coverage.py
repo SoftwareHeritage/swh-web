@@ -314,7 +314,7 @@ def _swh_coverage(request):
         if origins_type not in listers_metrics:
             continue
 
-        count = sum(
+        count_total = sum(
             [metrics.origins_known for _, metrics in listers_metrics[origins_type]]
         )
         count_never_visited = sum(
@@ -323,9 +323,7 @@ def _swh_coverage(request):
                 for _, metrics in listers_metrics[origins_type]
             ]
         )
-        # CRAN origins are currently marked as not visited while they have been
-        if origins_type != "CRAN":
-            count -= count_never_visited
+        count = count_total - count_never_visited
 
         origins["count"] = f"{count:,}"
         origins["instances"] = defaultdict(dict)
