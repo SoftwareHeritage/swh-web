@@ -261,6 +261,11 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/materialdesignicons-webfont.eot",
       "publicPath": "/static/fonts/materialdesignicons-webfont.eot"
     },
+    "fonts/materialdesignicons-webfont.woff2?v=6.3.95": {
+      "name": "fonts/materialdesignicons-webfont.woff2?v=6.3.95",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/materialdesignicons-webfont.woff2",
+      "publicPath": "/static/fonts/materialdesignicons-webfont.woff2?v=6.3.95"
+    },
     "fonts/materialdesignicons-webfont.woff?v=6.3.95": {
       "name": "fonts/materialdesignicons-webfont.woff?v=6.3.95",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/materialdesignicons-webfont.woff",
@@ -271,10 +276,10 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/materialdesignicons-webfont.ttf",
       "publicPath": "/static/fonts/materialdesignicons-webfont.ttf?v=6.3.95"
     },
-    "fonts/materialdesignicons-webfont.woff2?v=6.3.95": {
-      "name": "fonts/materialdesignicons-webfont.woff2?v=6.3.95",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/materialdesignicons-webfont.woff2",
-      "publicPath": "/static/fonts/materialdesignicons-webfont.woff2?v=6.3.95"
+    "js/pdf.worker.min.js": {
+      "name": "js/pdf.worker.min.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdf.worker.min.js",
+      "publicPath": "/static/js/pdf.worker.min.js"
     },
     "fonts/MathJax_AMS-Regular.woff": {
       "name": "fonts/MathJax_AMS-Regular.woff",
@@ -390,11 +395,6 @@
       "name": "fonts/MathJax_Zero.woff",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/fonts/MathJax_Zero.woff",
       "publicPath": "/static/fonts/MathJax_Zero.woff"
-    },
-    "js/pdf.worker.min.js": {
-      "name": "js/pdf.worker.min.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdf.worker.min.js",
-      "publicPath": "/static/js/pdf.worker.min.js"
     },
     "robots.txt": {
       "name": "robots.txt",
@@ -601,15 +601,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
       "publicPath": "/static/css/browse.6315ef52ed73df532bed.css.map"
     },
-    "css/guided_tour.9ee473ff88d3b9feceea.css.map": {
-      "name": "css/guided_tour.9ee473ff88d3b9feceea.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.9ee473ff88d3b9feceea.css.map",
-      "publicPath": "/static/css/guided_tour.9ee473ff88d3b9feceea.css.map"
-    },
     "css/origin.e28207f869e6b8529db3.css.map": {
       "name": "css/origin.e28207f869e6b8529db3.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin.e28207f869e6b8529db3.css.map",
       "publicPath": "/static/css/origin.e28207f869e6b8529db3.css.map"
+    },
+    "css/guided_tour.9ee473ff88d3b9feceea.css.map": {
+      "name": "css/guided_tour.9ee473ff88d3b9feceea.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.9ee473ff88d3b9feceea.css.map",
+      "publicPath": "/static/css/guided_tour.9ee473ff88d3b9feceea.css.map"
     },
     "css/revision.afaa449841e338af6f48.css.map": {
       "name": "css/revision.afaa449841e338af6f48.css.map",
@@ -626,15 +626,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vendors.6831e69495dfc3604dbd.css.map",
       "publicPath": "/static/css/vendors.6831e69495dfc3604dbd.css.map"
     },
-    "css/webapp.ae9028d5184b7db78b7d.css.map": {
-      "name": "css/webapp.ae9028d5184b7db78b7d.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.ae9028d5184b7db78b7d.css.map",
-      "publicPath": "/static/css/webapp.ae9028d5184b7db78b7d.css.map"
-    },
     "css/highlightjs.ae43064ab38a65a04d81.css.map": {
       "name": "css/highlightjs.ae43064ab38a65a04d81.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/highlightjs.ae43064ab38a65a04d81.css.map",
       "publicPath": "/static/css/highlightjs.ae43064ab38a65a04d81.css.map"
+    },
+    "css/webapp.ae9028d5184b7db78b7d.css.map": {
+      "name": "css/webapp.ae9028d5184b7db78b7d.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.ae9028d5184b7db78b7d.css.map",
+      "publicPath": "/static/css/webapp.ae9028d5184b7db78b7d.css.map"
     },
     "css/showdown.426fbf6a7a6653fd4cbb.css.map": {
       "name": "css/showdown.426fbf6a7a6653fd4cbb.css.map",

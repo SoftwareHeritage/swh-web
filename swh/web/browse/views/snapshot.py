@@ -13,8 +13,21 @@ from swh.web.browse.snapshot_context import (
     browse_snapshot_directory,
     browse_snapshot_log,
     browse_snapshot_releases,
+    get_snapshot_context,
 )
+from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
+
+
+def get_snapshot_from_request(request):
+    snapshot = request.GET.get("snapshot")
+    if snapshot:
+        return snapshot
+    if request.GET.get("origin_url") is None:
+        raise BadInputExc("An origin URL must be provided as a query parameter.")
+    return get_snapshot_context(
+        origin_url=request.GET.get("origin_url"), timestamp=request.GET.get("timestamp")
+    )["snapshot_id"]
 
 
 @browse_route(
@@ -115,17 +128,35 @@ def snapshot_content_browse_legacy(request, snapshot_id, path):
 
 @browse_route(
     r"snapshot/(?P<snapshot_id>[0-9a-f]+)/log/",
+    r"snapshot/log/",
     view_name="browse-snapshot-log",
     checksum_args=["snapshot_id"],
 )
-def snapshot_log_browse(request, snapshot_id):
+def snapshot_log_browse(request, snapshot_id=None):
     """Django view that produces an HTML display of revisions history (aka
     the commit log) collected in a snapshot.
 
-    The url that points to it is
-    :http:get:`/browse/snapshot/(snapshot_id)/log/`
+    The URLs that point to it are
+    :http:get:`/browse/snapshot/(snapshot_id)/log/` and
+    :http:get:`/browse/snapshot/log/`
     """
-    return browse_snapshot_log(request, snapshot_id=snapshot_id)
+    if snapshot_id is None:
+        # This case happens when redirected from /origin/log
+        snapshot_id = get_snapshot_from_request(request)
+        # Redirect to the same route with snapshot_id
+        return redirect(
+            reverse(
+                "browse-snapshot-log",
+                url_args={"snapshot_id": snapshot_id},
+                query_params=request.GET,
+            ),
+        )
+    return browse_snapshot_log(
+        request,
+        snapshot_id=snapshot_id,
+        origin_url=request.GET.get("origin_url"),
+        timestamp=request.GET.get("timestamp"),
+    )
 
 
 @browse_route(
