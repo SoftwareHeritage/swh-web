@@ -1664,6 +1664,7 @@ swh/web/tests/browse/views/test_identifiers.py
 swh/web/tests/browse/views/test_origin.py
 swh/web/tests/browse/views/test_release.py
 swh/web/tests/browse/views/test_revision.py
+swh/web/tests/browse/views/test_snapshot.py
 swh/web/tests/common/__init__.py
 swh/web/tests/common/test_archive.py
 swh/web/tests/common/test_converters.py

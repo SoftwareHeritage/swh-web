@@ -451,6 +451,10 @@ Origin history
 """"""""""""""
 
 .. http:get:: /browse/origin/log/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/log/` instead.
 
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a software origin.
@@ -519,7 +523,7 @@ Origin history
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/log/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/log/` instead.
 
     HTML view that produces a display of revisions history heading
     to the last revision found during the latest visit of a software origin.

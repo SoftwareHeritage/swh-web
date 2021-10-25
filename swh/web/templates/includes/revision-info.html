@@ -14,7 +14,13 @@ See top-level LICENSE file for more information
         <a href="{{ snapshot_context.revision_info.revision_url }}">
           <b>{{ snapshot_context.revision_id }}</b>
         </a>
-        authored by <b>{{ snapshot_context.revision_info.author.name }}</b>
+        authored by <b>
+        {% if snapshot_context.revision_info.author.name %}
+          {{ snapshot_context.revision_info.author.name }}
+        {% else %}
+          {{ snapshot_context.revision_info.author.fullname }}
+        {% endif %}
+        </b>
         on <b>{{ snapshot_context.revision_info.date }}</b>
         <br/>
         <b>{{ snapshot_context.revision_info.message_header }}</b>
