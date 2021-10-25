@@ -177,6 +177,27 @@ Snapshot content
 Snapshot history
 """"""""""""""""
 
+.. http:get:: /browse/snapshot/log/
+
+    HTML view that produces a display of the revisions history (aka the commit log)
+    for the last collected revision for the given origin. An origin URL must be given
+    as a query parameter.
+
+    :query string origin_url: specify the origin from which to retrieve the commit log
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to
+       find the closest visit
+
+    :statuscode 200: no error
+    :statuscode 400: origin_url parameter is missing
+    :statuscode 404: requested origin is either missing or has no associated snapshots
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`snapshot/log?origin_url=https://github.com/python/cpython`
+        :swh_web_browse:`snapshot/log/?origin_url=https://github.com/python/cpython&timestamp=2021-01-23T22:24:10Z`
+
 .. http:get:: /browse/snapshot/(snapshot_id)/log/
 
     HTML view that produces a display of revisions history (aka the commit log)

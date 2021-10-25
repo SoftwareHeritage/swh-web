@@ -832,19 +832,43 @@ def test_origin_views_no_url_query_parameter(client):
     for browse_context in (
         "content",
         "directory",
-        "log",
         "branches",
         "releases",
         "visits",
     ):
         url = reverse(f"browse-origin-{browse_context}")
-
         resp = check_html_get_response(
             client, url, status_code=400, template_used="error.html"
         )
         assert_contains(
-            resp, "An origin URL must be provided as query parameter.", status_code=400
+            resp, "An origin URL must be provided as query parameter.", status_code=400,
         )
+
+
+@given(new_origin())
+@pytest.mark.parametrize("browse_context", ["log"])
+def test_origin_view_redirects(client, browse_context, new_origin):
+    query_params = {"origin_url": new_origin.url}
+    url = reverse(f"browse-origin-{browse_context}", query_params=query_params)
+
+    resp = check_html_get_response(client, url, status_code=301)
+    assert resp["location"] == reverse(
+        f"browse-snapshot-{browse_context}", query_params=query_params
+    )
+
+
+@given(new_origin())
+@pytest.mark.parametrize("browse_context", ["log"])
+def test_origin_view_legacy_redirects(client, browse_context, new_origin):
+    params = {"origin_url": new_origin.url, "timestamp": "2021-01-23T22:24:10Z"}
+    url = reverse(
+        f"browse-origin-{browse_context}-legacy", url_args=params, query_params=params
+    )
+
+    resp = check_html_get_response(client, url, status_code=301)
+    assert resp["location"] == reverse(
+        f"browse-snapshot-{browse_context}", query_params=params
+    )
 
 
 def _origin_content_view_test_helper(
