@@ -66,7 +66,8 @@ const cssLoaders = [
               'rules': {
                 'indentation': 4,
                 'font-family-no-missing-generic-family-keyword': null,
-                'no-descending-specificity': null
+                'no-descending-specificity': null,
+                'selector-class-pattern': null
               },
               'ignoreFiles': ['node_modules/**/*.css',
                               'assets/src/thirdparty/**/*.css']

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -33,12 +33,12 @@
 
 .swh-org span.task-status.todo {
     color: white;
-    background-color: rgb(39, 149, 182);
+    background-color: rgb(39 149 182);
 }
 
 .swh-org span.task-status.done {
     color: white;
-    background-color: rgb(81, 143, 31);
+    background-color: rgb(81 143 31);
 }
 
 .swh-org .section-number {
