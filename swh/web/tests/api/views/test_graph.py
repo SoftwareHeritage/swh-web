@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import hashlib
-import json
 import textwrap
 
 from django.http.response import StreamingHttpResponse
@@ -126,7 +125,7 @@ def test_graph_json_response(api_client, keycloak_oidc, requests_mock):
 
     resp = check_http_get_response(api_client, url, status_code=200)
     assert resp.content_type == "application/json"
-    assert resp.content == json.dumps(_response_json).encode()
+    assert resp.data == _response_json
 
 
 def test_graph_ndjson_response(api_client, keycloak_oidc, requests_mock):
@@ -254,4 +253,18 @@ def test_graph_response_resolve_origins_nothing_to_do(
 
     resp = check_http_get_response(api_client, url, status_code=200)
     assert resp.content_type == "application/json"
-    assert resp.content == json.dumps(_response_json).encode()
+    assert resp.data == _response_json
+
+
+def test_graph_response_invalid_accept_header(api_client):
+    url = reverse(
+        "api-1-graph",
+        url_args={"graph_query": "stats"},
+        query_params={"resolve_origins": "true"},
+    )
+
+    resp = api_client.get(url, HTTP_ACCEPT="text/html")
+    assert resp.status_code == 406
+    assert resp.content_type == "application/json"
+    assert resp.data["exception"] == "NotAcceptable"
+    assert resp.data["reason"] == "Could not satisfy the request Accept header."

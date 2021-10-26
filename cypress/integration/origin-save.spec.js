@@ -174,6 +174,22 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should validate git repo url starting with https://git.code.sf.net/u/', function() {
+    const sfUserGirProjectUrl = 'https://git.code.sf.net/u/username/project.git';
+    const originSaveUrl = this.Urls.api_1_save_origin('git', sfUserGirProjectUrl);
+
+    stubSaveRequest({requestUrl: originSaveUrl,
+                     saveRequestStatus: 'accepted',
+                     originurl: sfUserGirProjectUrl,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', sfUserGirProjectUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+  });
+
   it('should display warning message when pending', function() {
     stubSaveRequest({requestUrl: this.originSaveUrl,
                      saveRequestStatus: 'pending',

@@ -366,26 +366,7 @@ export function validateSaveOriginUrl(input) {
   }
 
   if (validUrl && originType === 'git') {
-    // additional checks for well known code hosting providers
-    switch (originUrl.hostname) {
-      case 'github.com':
-        validUrl = isGitRepoUrl(originUrl);
-        break;
-
-      case 'git.code.sf.net':
-        validUrl = isGitRepoUrl(originUrl, '/p/');
-        break;
-
-      case 'bitbucket.org':
-        validUrl = isGitRepoUrl(originUrl);
-        break;
-
-      default:
-        if (originUrl.hostname.startsWith('gitlab.')) {
-          validUrl = isGitRepoUrl(originUrl);
-        }
-        break;
-    }
+    validUrl = isGitRepoUrl(originUrl);
   }
 
   if (validUrl) {

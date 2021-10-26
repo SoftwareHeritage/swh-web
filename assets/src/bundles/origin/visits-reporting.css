@@ -12,7 +12,7 @@
 }
 
 .swh-visit-icon::before {
-    font-family: 'Material Design Icons';
+    font-family: "Material Design Icons";
     margin-right: 3px;
     vertical-align: bottom;
 }
@@ -23,7 +23,7 @@
 
 .swh-visit-full::before {
     /* mdi-check-bold */
-    content: '\f0e1e';
+    content: "\f0e1e";
 }
 
 .swh-visit-partial {
@@ -32,7 +32,7 @@
 
 .swh-visit-partial::before {
     /* mdi-alter */
-    content: '\f0026';
+    content: "\f0026";
 }
 
 .swh-visit-failed {
@@ -41,7 +41,7 @@
 
 .swh-visit-failed::before {
     /* mdi-close-thick */
-    content: '\f1398';
+    content: "\f1398";
 }
 
 .swh-visit-ongoing {
@@ -50,7 +50,7 @@
 
 .swh-visit-ongoing::before {
     /* mdi-sync */
-    content: '\f04e6';
+    content: "\f04e6";
 }
 
 .swh-visit-created {
@@ -59,7 +59,7 @@
 
 .swh-visit-created::before {
     /* mdi-camera-plus */
-    content: '\f0edb';
+    content: "\f0edb";
 }
 
 .swh-visit-not_found {
@@ -68,7 +68,7 @@
 
 .swh-visit-not_found::before {
     /* mdi-web-off */
-    content: '\f0a8e';
+    content: "\f0a8e";
 }
 
 #swh-visits-calendar.calendar {

@@ -45,9 +45,6 @@ fs.readdirSync(bundlesDir).forEach(file => {
 const cssLoaders = [
   MiniCssExtractPlugin.loader,
   {
-    loader: 'cache-loader'
-  },
-  {
     loader: 'css-loader',
     options: {
       sourceMap: !isDevServer
@@ -66,7 +63,8 @@ const cssLoaders = [
               'rules': {
                 'indentation': 4,
                 'font-family-no-missing-generic-family-keyword': null,
-                'no-descending-specificity': null
+                'no-descending-specificity': null,
+                'selector-class-pattern': null
               },
               'ignoreFiles': ['node_modules/**/*.css',
                               'assets/src/thirdparty/**/*.css']
@@ -88,7 +86,7 @@ const cssLoaders = [
 module.exports = {
   // use caching to speedup incremental builds
   cache: {
-    type: 'memory'
+    type: 'filesystem'
   },
   // set mode to development
   mode: 'development',
@@ -165,9 +163,6 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
-          {
-            loader: 'cache-loader'
-          },
           {
             loader: 'babel-loader',
             options: {

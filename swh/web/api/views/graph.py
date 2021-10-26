@@ -1,4 +1,4 @@
-# Copyright (C) 2020  The Software Heritage developers
+# Copyright (C) 2020-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,6 +11,7 @@ import requests
 
 from django.http.response import StreamingHttpResponse
 from rest_framework.decorators import renderer_classes
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -123,7 +124,7 @@ def api_graph(request: Request) -> None:
 
 
 @api_route(r"/graph/(?P<graph_query>.+)/", "api-1-graph")
-@renderer_classes([PlainTextRenderer])
+@renderer_classes([JSONRenderer, PlainTextRenderer])
 def api_graph_proxy(
     request: Request, graph_query: str
 ) -> Union[Response, StreamingHttpResponse]:
@@ -142,7 +143,7 @@ def api_graph_proxy(
     # graph stats and counter endpoint responses are not streamed
     if response.headers.get("Transfer-Encoding") != "chunked":
         return Response(
-            response.text,
+            response.json(),
             status=response.status_code,
             content_type=response.headers["Content-Type"],
         )

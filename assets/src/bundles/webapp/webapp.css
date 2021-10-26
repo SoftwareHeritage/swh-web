@@ -84,7 +84,7 @@ pre {
 
 .swh-table thead {
     background-color: #f2f4f5;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgb(0 0 0 / 20%);
     font-weight: normal;
 }
 
@@ -120,7 +120,7 @@ pre {
 
 .sitename .first-word,
 .sitename .second-word {
-    color: rgba(0, 0, 0, 0.75);
+    color: rgb(0 0 0 / 75%);
     font-weight: normal;
     font-size: 1.2rem;
 }
@@ -130,7 +130,7 @@ pre {
 }
 
 .sitename .second-word {
-    font-family: "Alegreya", serif;
+    font-family: Alegreya, serif;
 }
 
 .swh-counter {
@@ -216,7 +216,7 @@ pre {
 
 .dropdown-item:hover,
 .dropdown-item:focus {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgb(0 0 0 / 10%);
 }
 
 a.dropdown-left::before {
@@ -230,16 +230,16 @@ a.dropdown-left::before {
 }
 
 #swh-navbar {
+    border-style: solid;
     border-top-style: none;
     border-left-style: none;
     border-right-style: none;
-    border-bottom-style: solid;
     border-bottom-width: 5px;
     border-image:
         linear-gradient(
             to right,
-            rgb(226, 0, 38) 0%,
-            rgb(254, 205, 27) 100%
+            rgb(226 0 38) 0%,
+            rgb(254 205 27) 100%
         )
         1 1 1 1;
     width: 100%;
@@ -411,7 +411,7 @@ ul.nav-sidebar a {
 }
 
 .nav-pills .nav-link:not(.active):hover {
-    color: rgba(0, 0, 0, 0.55);
+    color: rgb(0 0 0 / 55%);
 }
 
 .swh-heading-color {
@@ -446,7 +446,7 @@ ul.nav-sidebar a {
     height: 73px;
     text-align: center;
     font-size: 10pt;
-    color: rgba(0, 0, 0, 0.75);
+    color: rgb(0 0 0 / 75%);
 }
 
 .swh-words-logo:hover {
@@ -730,7 +730,7 @@ div.d3-tooltip {
     position: absolute;
     text-align: center;
     letter-spacing: 1px;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 3px rgb(0 0 0 / 30%);
     top: 55px;
     right: -50px;
     left: auto;

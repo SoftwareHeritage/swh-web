@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -136,10 +136,12 @@ def make_api_response(
     # get request status code
     doc_data["status_code"] = options.get("status", 200)
 
+    accepted_media_type = getattr(request, "accepted_media_type", "application/json")
+
     # when requesting HTML, typically when browsing the API through its
     # documented views, we need to enrich the input data with documentation
     # and render the apidoc HTML template
-    if request.accepted_media_type == "text/html":
+    if accepted_media_type == "text/html":
         doc_data["response_data"] = data
         if data is not None:
             doc_data["response_data"] = json.dumps(
@@ -166,7 +168,7 @@ def make_api_response(
         response = Response(
             data,
             headers=headers,
-            content_type=request.accepted_media_type,
+            content_type=accepted_media_type,
             status=doc_data["status_code"],
         )
 
@@ -209,7 +211,7 @@ def error_response(
         "reason": str(exception),
     }
 
-    if request.accepted_media_type == "text/html":
+    if getattr(request, "accepted_media_type", None) == "text/html":
         error_data["reason"] = escape(error_data["reason"])
 
     if get_config()["debug"]:
