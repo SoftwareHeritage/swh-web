@@ -263,6 +263,9 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
         self.data["description"] = text.strip()
 
+    def visit_system_message(self, node):
+        return ""
+
     def unknown_visit(self, node) -> str:
         raise NotImplementedError(
             f"Unknown node type: {node.__class__.__name__}. Value: {node}"

@@ -1,14 +1,18 @@
 'use strict';
 /* eslint-disable es/no-string-prototype-matchall -- safe */
 var $ = require('../internals/export');
+var global = require('../internals/global');
+var call = require('../internals/function-call');
+var uncurryThis = require('../internals/function-uncurry-this');
 var createIteratorConstructor = require('../internals/create-iterator-constructor');
 var requireObjectCoercible = require('../internals/require-object-coercible');
 var toLength = require('../internals/to-length');
 var toString = require('../internals/to-string');
 var anObject = require('../internals/an-object');
 var classof = require('../internals/classof-raw');
+var isPrototypeOf = require('../internals/object-is-prototype-of');
 var isRegExp = require('../internals/is-regexp');
-var getRegExpFlags = require('../internals/regexp-flags');
+var regExpFlags = require('../internals/regexp-flags');
 var getMethod = require('../internals/get-method');
 var redefine = require('../internals/redefine');
 var fails = require('../internals/fails');
@@ -25,19 +29,21 @@ var REGEXP_STRING_ITERATOR = REGEXP_STRING + ' Iterator';
 var setInternalState = InternalStateModule.set;
 var getInternalState = InternalStateModule.getterFor(REGEXP_STRING_ITERATOR);
 var RegExpPrototype = RegExp.prototype;
-var nativeMatchAll = ''.matchAll;
+var TypeError = global.TypeError;
+var getFlags = uncurryThis(regExpFlags);
+var stringIndexOf = uncurryThis(''.indexOf);
+var un$MatchAll = uncurryThis(''.matchAll);
 
-var WORKS_WITH_NON_GLOBAL_REGEX = !!nativeMatchAll && !fails(function () {
-  'a'.matchAll(/./);
+var WORKS_WITH_NON_GLOBAL_REGEX = !!un$MatchAll && !fails(function () {
+  un$MatchAll('a', /./);
 });
 
-// eslint-disable-next-line max-len -- ignore
-var $RegExpStringIterator = createIteratorConstructor(function RegExpStringIterator(regexp, string, global, fullUnicode) {
+var $RegExpStringIterator = createIteratorConstructor(function RegExpStringIterator(regexp, string, $global, fullUnicode) {
   setInternalState(this, {
     type: REGEXP_STRING_ITERATOR,
     regexp: regexp,
     string: string,
-    global: global,
+    global: $global,
     unicode: fullUnicode,
     done: false
   });
@@ -59,18 +65,18 @@ var $RegExpStringIterator = createIteratorConstructor(function RegExpStringItera
 var $matchAll = function (string) {
   var R = anObject(this);
   var S = toString(string);
-  var C, flagsValue, flags, matcher, global, fullUnicode;
+  var C, flagsValue, flags, matcher, $global, fullUnicode;
   C = speciesConstructor(R, RegExp);
   flagsValue = R.flags;
-  if (flagsValue === undefined && R instanceof RegExp && !('flags' in RegExpPrototype)) {
-    flagsValue = getRegExpFlags.call(R);
+  if (flagsValue === undefined && isPrototypeOf(RegExpPrototype, R) && !('flags' in RegExpPrototype)) {
+    flagsValue = getFlags(R);
   }
   flags = flagsValue === undefined ? '' : toString(flagsValue);
   matcher = new C(C === RegExp ? R.source : R, flags);
-  global = !!~flags.indexOf('g');
-  fullUnicode = !!~flags.indexOf('u');
+  $global = !!~stringIndexOf(flags, 'g');
+  fullUnicode = !!~stringIndexOf(flags, 'u');
   matcher.lastIndex = toLength(R.lastIndex);
-  return new $RegExpStringIterator(matcher, S, global, fullUnicode);
+  return new $RegExpStringIterator(matcher, S, $global, fullUnicode);
 };
 
 // `String.prototype.matchAll` method
@@ -83,18 +89,18 @@ $({ target: 'String', proto: true, forced: WORKS_WITH_NON_GLOBAL_REGEX }, {
       if (isRegExp(regexp)) {
         flags = toString(requireObjectCoercible('flags' in RegExpPrototype
           ? regexp.flags
-          : getRegExpFlags.call(regexp)
+          : getFlags(regexp)
         ));
-        if (!~flags.indexOf('g')) throw TypeError('`.matchAll` does not allow non-global regexes');
+        if (!~stringIndexOf(flags, 'g')) throw TypeError('`.matchAll` does not allow non-global regexes');
       }
-      if (WORKS_WITH_NON_GLOBAL_REGEX) return nativeMatchAll.apply(O, arguments);
+      if (WORKS_WITH_NON_GLOBAL_REGEX) return un$MatchAll(O, regexp);
       matcher = getMethod(regexp, MATCH_ALL);
       if (matcher === undefined && IS_PURE && classof(regexp) == 'RegExp') matcher = $matchAll;
-      if (matcher) return matcher.call(regexp, O);
-    } else if (WORKS_WITH_NON_GLOBAL_REGEX) return nativeMatchAll.apply(O, arguments);
+      if (matcher) return call(matcher, regexp, O);
+    } else if (WORKS_WITH_NON_GLOBAL_REGEX) return un$MatchAll(O, regexp);
     S = toString(O);
     rx = new RegExp(regexp, 'g');
-    return IS_PURE ? $matchAll.call(rx, S) : rx[MATCH_ALL](S);
+    return IS_PURE ? call($matchAll, rx, S) : rx[MATCH_ALL](S);
   }
 });
 

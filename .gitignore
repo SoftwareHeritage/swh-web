@@ -23,7 +23,6 @@ static/css/
 static/fonts/
 static/jssources/
 static/img/thirdParty/
-.cache-loader/
 build/
 dist/
 .hypothesis
