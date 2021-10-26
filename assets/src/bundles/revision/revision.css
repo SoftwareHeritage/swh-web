@@ -1,20 +1,20 @@
 /**
- * Copyright (C) 2018  The Software Heritage developers
+ * Copyright (C) 2018-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 .swh-diff-lines-info {
-    background-color: rgba(0, 0, 255, 0.1) !important;
+    background-color: rgb(0 0 255 / 10%) !important;
 }
 
 .swh-diff-added-line {
-    background-color: rgba(0, 255, 0, 0.1) !important;
+    background-color: rgb(0 255 0 / 10%) !important;
 }
 
 .swh-diff-removed-line {
-    background-color: rgba(255, 0, 0, 0.1) !important;
+    background-color: rgb(255 0 0 / 10%) !important;
 }
 
 span.no-nl-marker {
