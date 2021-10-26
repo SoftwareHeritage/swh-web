@@ -373,7 +373,7 @@ export function validateSaveOriginUrl(input) {
         break;
 
       case 'git.code.sf.net':
-        validUrl = isGitRepoUrl(originUrl, '/p/');
+        validUrl = isGitRepoUrl(originUrl);
         break;
 
       case 'bitbucket.org':
