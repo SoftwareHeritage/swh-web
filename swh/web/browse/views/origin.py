@@ -10,7 +10,6 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import (
     browse_snapshot_content,
     browse_snapshot_directory,
-    browse_snapshot_releases,
     get_snapshot_context,
 )
 from swh.web.common import archive
@@ -190,19 +189,16 @@ def origin_branches_browse_legacy(request, origin_url, timestamp=None):
     r"origin/releases/", view_name="browse-origin-releases",
 )
 def origin_releases_browse(request):
-    """Django view that produces an HTML display of the list of releases
+    """
+    This route is deprecated; use http:get:`/browse/snapshot/releases` instead
+
+    Django view that produces an HTML display of the list of releases
     associated to an origin for a given visit.
 
     The URL that points to it is :http:get:`/browse/origin/releases/`
 
     """
-    return browse_snapshot_releases(
-        request,
-        origin_url=request.GET.get("origin_url"),
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=request.GET.get("timestamp"),
-        release_name_include=request.GET.get("name_include"),
-    )
+    return redirect_to_new_route(request, "browse-snapshot-releases")
 
 
 @browse_route(
@@ -211,7 +207,10 @@ def origin_releases_browse(request):
     view_name="browse-origin-releases-legacy",
 )
 def origin_releases_browse_legacy(request, origin_url, timestamp=None):
-    """Django view that produces an HTML display of the list of releases
+    """
+    This route is deprecated; use http:get:`/browse/snapshot/releases` instead
+
+    Django view that produces an HTML display of the list of releases
     associated to an origin for a given visit.
 
     The URLs that point to it are
@@ -219,12 +218,7 @@ def origin_releases_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/releases/`
 
     """
-    return browse_snapshot_releases(
-        request,
-        origin_url=origin_url,
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=timestamp,
-    )
+    return redirect_to_new_route(request, "browse-snapshot-releases")
 
 
 def _origin_visits_browse(request, origin_url):

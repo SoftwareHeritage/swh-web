@@ -589,7 +589,7 @@ Origin history
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/log/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/log/` instead.
 
     HTML view that produces a display of revisions history heading
     to the last revision found during a visit of a software origin closest
@@ -721,7 +721,7 @@ Origin branches
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/branches/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/branches/` instead.
 
     HTML view that produces a display of the list of branches
     found during a visit of a software origin closest to the provided timestamp.
@@ -753,6 +753,10 @@ Origin releases
 """""""""""""""
 
 .. http:get:: /browse/origin/releases/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/releases/` instead.
 
     HTML view that produces a display of the list of releases
     found during the latest full visit of a software origin.
@@ -789,7 +793,7 @@ Origin releases
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/releases/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/releases/` instead.
 
     HTML view that produces a display of the list of releases
     found during the latest full visit of a software origin.
@@ -824,7 +828,7 @@ Origin releases
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/releases/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/releases/` instead.
 
     HTML view that produces a display of the list of releases
     found during a visit of a software origin closest to the provided timestamp.

@@ -395,21 +395,6 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
     )
 
 
-def test_origin_releases(client, archive_data, origin):
-    origin_visits = archive_data.origin_visit_get(origin["url"])
-
-    visit = origin_visits[-1]
-    snapshot = archive_data.snapshot_get(visit["snapshot"])
-    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
-    snapshot_content = process_snapshot_branches(snapshot)
-
-    _origin_releases_test_helper(client, origin, snapshot_content, snapshot_sizes)
-
-    _origin_releases_test_helper(
-        client, origin, snapshot_content, snapshot_sizes, snapshot_id=visit["snapshot"]
-    )
-
-
 @given(
     new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
 )
@@ -816,7 +801,6 @@ def test_origin_views_no_url_query_parameter(client):
     for browse_context in (
         "content",
         "directory",
-        "releases",
         "visits",
     ):
         url = reverse(f"browse-origin-{browse_context}")
@@ -829,7 +813,7 @@ def test_origin_views_no_url_query_parameter(client):
 
 
 @given(new_origin())
-@pytest.mark.parametrize("browse_context", ["log", "branches"])
+@pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
 def test_origin_view_redirects(client, browse_context, new_origin):
     query_params = {"origin_url": new_origin.url}
     url = reverse(f"browse-origin-{browse_context}", query_params=query_params)
@@ -841,7 +825,7 @@ def test_origin_view_redirects(client, browse_context, new_origin):
 
 
 @given(new_origin())
-@pytest.mark.parametrize("browse_context", ["log", "branches"])
+@pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
 def test_origin_view_legacy_redirects(client, browse_context, new_origin):
     params = {"origin_url": new_origin.url, "timestamp": "2021-01-23T22:24:10Z"}
     url = reverse(
@@ -1136,52 +1120,6 @@ def _origin_directory_view_test_helper(
     _check_origin_link(resp, origin_info["url"])
 
     assert_not_contains(resp, "swh-metadata-popover")
-
-
-def _origin_releases_test_helper(
-    client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id=None
-):
-    query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
-
-    url = reverse("browse-origin-releases", query_params=query_params)
-
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/releases.html"
-    )
-
-    origin_releases = origin_snapshot[1]
-
-    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
-
-    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
-
-    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
-
-    nb_releases = len(origin_releases)
-    if nb_releases > 0:
-        assert_contains(resp, f'href="{escape(origin_releases_url)}"')
-        assert_contains(resp, f"Releases ({snapshot_sizes['release']}")
-
-    assert_contains(resp, '<tr class="swh-release-entry', count=nb_releases)
-    assert_contains(resp, 'title="The release', count=nb_releases)
-
-    for release in origin_releases:
-        browse_release_url = reverse(
-            "browse-release",
-            url_args={"sha1_git": release["id"]},
-            query_params=query_params,
-        )
-        browse_revision_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": release["target"]},
-            query_params=query_params,
-        )
-
-        assert_contains(resp, '<a href="%s">' % escape(browse_release_url))
-        assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
-
-    _check_origin_link(resp, origin_info["url"])
 
 
 def _check_origin_link(resp, origin_url):
