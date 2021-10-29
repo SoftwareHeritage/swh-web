@@ -21,7 +21,7 @@ describe('Test origin browse', function() {
       .click();
 
     cy.location('pathname')
-      .should('eq', this.Urls.browse_origin_branches());
+      .should('eq', this.Urls.browse_snapshot_branches(this.origin[1].snapshot));
 
     cy.location('search')
       .should('eq', `?origin_url=${this.origin[1].url}`);

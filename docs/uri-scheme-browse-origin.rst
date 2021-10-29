@@ -646,6 +646,10 @@ Origin branches
 """""""""""""""
 
 .. http:get:: /browse/origin/branches/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/branches/` instead.
 
     HTML view that produces a display of the list of branches
     found during the latest full visit of a software origin.
@@ -682,7 +686,7 @@ Origin branches
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/branches/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/snapshot/branches/` instead.
 
     HTML view that produces a display of the list of branches
     found during the latest full visit of a software origin.

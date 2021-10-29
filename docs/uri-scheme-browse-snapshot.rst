@@ -232,6 +232,29 @@ Snapshot history
 Snapshot branches
 """""""""""""""""
 
+.. http:get:: /browse/snapshot/branches/
+
+    HTML view that produces a display of the list of branches collected in a snapshot.
+    An origin URL must be given as a query parameter.
+
+    :query string origin_url: specify the origin from which to retrieve the snapshot and branches
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to
+       find the closest visit
+    :name_include: optional; to filter branches by name
+
+    :statuscode 200: no error
+    :statuscode 400: origin_url parameter is missing
+    :statuscode 404: requested origin is either missing or has no associated snapshots
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`snapshot/branches?origin_url=https://github.com/python/cpython`
+        :swh_web_browse:`snapshot/branches/?origin_url=https://github.com/python/cpython&timestamp=2021-01-23T22:24:10Z`
+        :swh_web_browse:`snapshot/branches/?origin_url=https://github.com/python/cpython&name_include=v2`
+
+
 .. http:get:: /browse/snapshot/(snapshot_id)/branches/
 
     HTML view that produces a display of the list of branches

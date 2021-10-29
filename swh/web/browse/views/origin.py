@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2021 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,6 @@ from django.urls import resolve
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import (
-    browse_snapshot_branches,
     browse_snapshot_content,
     browse_snapshot_directory,
     browse_snapshot_releases,
@@ -155,19 +154,16 @@ def origin_log_browse_legacy(request, origin_url, timestamp=None):
     r"origin/branches/", view_name="browse-origin-branches",
 )
 def origin_branches_browse(request):
-    """Django view that produces an HTML display of the list of branches
+    """
+    This route is deprecated; use http:get:`/browse/snapshot/branches` instead
+
+    Django view that produces an HTML display of the list of branches
     associated to an origin for a given visit.
 
     The URL that points to it is :http:get:`/browse/origin/branches/`
 
     """
-    return browse_snapshot_branches(
-        request,
-        origin_url=request.GET.get("origin_url"),
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=request.GET.get("timestamp"),
-        branch_name_include=request.GET.get("name_include"),
-    )
+    return redirect_to_new_route(request, "browse-snapshot-branches")
 
 
 @browse_route(
@@ -176,7 +172,10 @@ def origin_branches_browse(request):
     view_name="browse-origin-branches-legacy",
 )
 def origin_branches_browse_legacy(request, origin_url, timestamp=None):
-    """Django view that produces an HTML display of the list of branches
+    """
+    This route is deprecated; use http:get:`/browse/snapshot/branches` instead
+
+    Django view that produces an HTML display of the list of branches
     associated to an origin for a given visit.
 
     The URLs that point to it are
@@ -184,12 +183,7 @@ def origin_branches_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/branches/`
 
     """
-    return browse_snapshot_branches(
-        request,
-        origin_url=origin_url,
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=timestamp,
-    )
+    return redirect_to_new_route(request, "browse-snapshot-branches")
 
 
 @browse_route(

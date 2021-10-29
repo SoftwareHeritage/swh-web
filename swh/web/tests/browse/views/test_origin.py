@@ -5,7 +5,6 @@
 
 import random
 import re
-import string
 
 from hypothesis import given
 import pytest
@@ -31,7 +30,7 @@ from swh.web.common.utils import (
     parse_iso8601_date_to_utc,
     reverse,
 )
-from swh.web.tests.data import get_content, random_sha1
+from swh.web.tests.data import get_content
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.strategies import new_origin, new_snapshot, visit_dates
 from swh.web.tests.utils import check_html_get_response
@@ -393,21 +392,6 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         subdir_content,
         path=subdir_path,
         snapshot_id=visit["snapshot"],
-    )
-
-
-def test_origin_branches(client, archive_data, origin):
-    origin_visits = archive_data.origin_visit_get(origin["url"])
-
-    visit = origin_visits[-1]
-    snapshot = archive_data.snapshot_get(visit["snapshot"])
-    snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
-    snapshot_content = process_snapshot_branches(snapshot)
-
-    _origin_branches_test_helper(client, origin, snapshot_content, snapshot_sizes)
-
-    _origin_branches_test_helper(
-        client, origin, snapshot_content, snapshot_sizes, snapshot_id=visit["snapshot"]
     )
 
 
@@ -832,7 +816,6 @@ def test_origin_views_no_url_query_parameter(client):
     for browse_context in (
         "content",
         "directory",
-        "branches",
         "releases",
         "visits",
     ):
@@ -846,7 +829,7 @@ def test_origin_views_no_url_query_parameter(client):
 
 
 @given(new_origin())
-@pytest.mark.parametrize("browse_context", ["log"])
+@pytest.mark.parametrize("browse_context", ["log", "branches"])
 def test_origin_view_redirects(client, browse_context, new_origin):
     query_params = {"origin_url": new_origin.url}
     url = reverse(f"browse-origin-{browse_context}", query_params=query_params)
@@ -858,7 +841,7 @@ def test_origin_view_redirects(client, browse_context, new_origin):
 
 
 @given(new_origin())
-@pytest.mark.parametrize("browse_context", ["log"])
+@pytest.mark.parametrize("browse_context", ["log", "branches"])
 def test_origin_view_legacy_redirects(client, browse_context, new_origin):
     params = {"origin_url": new_origin.url, "timestamp": "2021-01-23T22:24:10Z"}
     url = reverse(
@@ -1155,51 +1138,6 @@ def _origin_directory_view_test_helper(
     assert_not_contains(resp, "swh-metadata-popover")
 
 
-def _origin_branches_test_helper(
-    client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id=None
-):
-    query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
-
-    url = reverse("browse-origin-branches", query_params=query_params)
-
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
-    )
-
-    origin_branches = origin_snapshot[0]
-    origin_releases = origin_snapshot[1]
-
-    origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
-
-    assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
-
-    origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
-
-    nb_releases = len(origin_releases)
-    if nb_releases > 0:
-        assert_contains(resp, f'href="{escape(origin_releases_url)}">')
-        assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
-
-    assert_contains(resp, '<tr class="swh-branch-entry', count=len(origin_branches))
-
-    for branch in origin_branches:
-        browse_branch_url = reverse(
-            "browse-origin-directory",
-            query_params={"branch": branch["name"], **query_params},
-        )
-        assert_contains(resp, '<a href="%s">' % escape(browse_branch_url))
-
-        browse_revision_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": branch["revision"]},
-            query_params=query_params,
-        )
-        assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
-
-    _check_origin_link(resp, origin_info["url"])
-
-
 def _origin_releases_test_helper(
     client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id=None
 ):
@@ -1246,78 +1184,11 @@ def _origin_releases_test_helper(
     _check_origin_link(resp, origin_info["url"])
 
 
-@given(
-    new_origin(), visit_dates(),
-)
-def test_origin_branches_pagination_with_alias(
-    client, archive_data, mocker, release, revisions_list, new_origin, visit_dates,
-):
-    """
-    When a snapshot contains a branch or a release alias, pagination links
-    in the branches / releases view should be displayed.
-    """
-    revisions = revisions_list(size=10)
-    mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) / 2)
-    snp_dict = {"branches": {}, "id": hash_to_bytes(random_sha1())}
-    for i in range(len(revisions)):
-        branch = "".join(random.choices(string.ascii_lowercase, k=8))
-        snp_dict["branches"][branch.encode()] = {
-            "target_type": "revision",
-            "target": hash_to_bytes(revisions[i]),
-        }
-    release_name = "".join(random.choices(string.ascii_lowercase, k=8))
-    snp_dict["branches"][b"RELEASE_ALIAS"] = {
-        "target_type": "alias",
-        "target": release_name.encode(),
-    }
-    snp_dict["branches"][release_name.encode()] = {
-        "target_type": "release",
-        "target": hash_to_bytes(release),
-    }
-    archive_data.origin_add([new_origin])
-    archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
-    visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
-    )[0]
-    visit_status = OriginVisitStatus(
-        origin=new_origin.url,
-        visit=visit.visit,
-        date=now(),
-        status="full",
-        snapshot=snp_dict["id"],
-    )
-    archive_data.origin_visit_status_add([visit_status])
-
-    url = reverse("browse-origin-branches", query_params={"origin_url": new_origin.url})
-
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
-    )
-    assert_contains(resp, '<ul class="pagination')
-
-
 def _check_origin_link(resp, origin_url):
     browse_origin_url = reverse(
         "browse-origin", query_params={"origin_url": origin_url}
     )
     assert_contains(resp, f'href="{browse_origin_url}"')
-
-
-def test_pull_request_branches_filtering(client, origin_with_pull_request_branches):
-    origin_url = origin_with_pull_request_branches.url
-    # check no pull request branches are displayed in the Branches / Releases dropdown
-    url = reverse("browse-origin-directory", query_params={"origin_url": origin_url})
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
-    )
-    assert_not_contains(resp, "refs/pull/")
-
-    # check no pull request branches are displayed in the branches view
-    url = reverse("browse-origin-branches", query_params={"origin_url": origin_url})
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
-    )
-    assert_not_contains(resp, "refs/pull/")
 
 
 def test_browse_pull_request_branch(

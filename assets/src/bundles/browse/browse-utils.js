@@ -83,7 +83,8 @@ export function initBrowseNavbar() {
   if (window.location.pathname === Urls.browse_origin_visits()) {
     $('#swh-browse-origin-visits-nav-link').addClass('active');
   } else if (window.location.pathname === Urls.browse_origin_branches() ||
-    window.location.pathname === Urls.browse_snapshot_branches()) {
+             window.location.pathname === Urls.browse_snapshot_branches() ||
+             window.location.pathname.endsWith('branches/')) {
     $('#swh-browse-snapshot-branches-nav-link').addClass('active');
   } else if (window.location.pathname === Urls.browse_origin_releases() ||
              window.location.pathname === Urls.browse_snapshot_releases()) {

@@ -161,17 +161,37 @@ def snapshot_log_browse(request, snapshot_id=None):
 
 @browse_route(
     r"snapshot/(?P<snapshot_id>[0-9a-f]+)/branches/",
+    r"snapshot/branches/",
     view_name="browse-snapshot-branches",
     checksum_args=["snapshot_id"],
 )
-def snapshot_branches_browse(request, snapshot_id):
-    """Django view that produces an HTML display of the list of releases
+def snapshot_branches_browse(request, snapshot_id=None):
+    """Django view that produces an HTML display of the list of branches
     collected in a snapshot.
 
-    The url that points to it is
-    :http:get:`/browse/snapshot/(snapshot_id)/branches/`
+    The URLs that point to it are
+    :http:get:`/browse/snapshot/(snapshot_id)/branches/` and
+    :http:get:`/browse/snapshot/branches/`
     """
-    return browse_snapshot_branches(request, snapshot_id=snapshot_id)
+    if snapshot_id is None:
+        # This case happens when redirected from /origin/branches
+        snapshot_id = get_snapshot_from_request(request)
+        # Redirect to the same route with the newest snapshot_id
+        # for the given origin
+        return redirect(
+            reverse(
+                "browse-snapshot-branches",
+                url_args={"snapshot_id": snapshot_id},
+                query_params=request.GET,
+            ),
+        )
+    return browse_snapshot_branches(
+        request,
+        snapshot_id=snapshot_id,
+        origin_url=request.GET.get("origin_url"),
+        timestamp=request.GET.get("timestamp"),
+        branch_name_include=request.GET.get("name_include"),
+    )
 
 
 @browse_route(
