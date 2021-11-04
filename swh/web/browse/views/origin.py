@@ -23,7 +23,7 @@ def redirect_to_new_route(request, new_route):
     # Send all the url_args and the request_args as query params
     # eg /origin/<url:url-val>/log?path=test
     # will be send as /log?url=<url-val>&path=test
-    args = {**request_path.kwargs, **{k: v for k, v in request.GET.items()}}
+    args = {**request_path.kwargs, **request.GET.dict()}
     return redirect(reverse(new_route, query_params=args), permanent=True,)
 
 

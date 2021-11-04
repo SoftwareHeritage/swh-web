@@ -827,15 +827,23 @@ def test_origin_view_redirects(client, browse_context, new_origin):
 @given(new_origin())
 @pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
 def test_origin_view_legacy_redirects(client, browse_context, new_origin):
-    params = {"origin_url": new_origin.url, "timestamp": "2021-01-23T22:24:10Z"}
-    url = reverse(
-        f"browse-origin-{browse_context}-legacy", url_args=params, query_params=params
-    )
+    # Each legacy route corresponds to two URL patterns, testing both
+    url_args = [
+        {"origin_url": new_origin.url},
+        {"origin_url": new_origin.url, "timestamp": "2021-01-23T22:24:10Z"},
+    ]
+    params = {"extra-param1": "extra-param1", "extra-param2": "extra-param2"}
+    for each_arg in url_args:
+        url = reverse(
+            f"browse-origin-{browse_context}-legacy",
+            url_args=each_arg,
+            query_params=params,
+        )
 
-    resp = check_html_get_response(client, url, status_code=301)
-    assert resp["location"] == reverse(
-        f"browse-snapshot-{browse_context}", query_params=params
-    )
+        resp = check_html_get_response(client, url, status_code=301)
+        assert resp["location"] == reverse(
+            f"browse-snapshot-{browse_context}", query_params={**each_arg, **params}
+        )
 
 
 def _origin_content_view_test_helper(
