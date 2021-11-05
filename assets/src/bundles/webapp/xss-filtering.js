@@ -29,9 +29,19 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
       return;
     }
 
+    let directory;
+    // get directory from which to check path existence
+    if (swhObjectMetadata.object_type === 'directory') {
+      // case when a README is rendered in a directory view
+      directory = swhObjectMetadata.object_id;
+    } else {
+      // otherwise we browse a content, get its directory
+      directory = swhObjectMetadata.directory;
+    }
+
     // used internal endpoint as image url to possibly get the image data
     // from the archive content
-    let directoryUrl = Urls.browse_directory_resolve_content_path(swhObjectMetadata.directory);
+    let directoryUrl = Urls.browse_directory_resolve_content_path(directory);
     let path = data.attrValue;
     // strip any query parameters appended to path
     let processedPath = path;
