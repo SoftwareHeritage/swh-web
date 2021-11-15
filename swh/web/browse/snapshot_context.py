@@ -55,20 +55,12 @@ _empty_snapshot_id = Snapshot(branches={}).id.hex()
 
 def _get_branch(branches, branch_name, snapshot_id):
     """
-    Utility function to get a specific branch from a branches list.
-    Its purpose is to get the default HEAD branch as some software origin
-    (e.g those with svn type) does not have it. In that latter case, check
-    if there is a master branch instead and returns it.
+    Utility function to get a specific branch from a snapshot.
+    Returns None if the branch cannot be found.
     """
     filtered_branches = [b for b in branches if b["name"] == branch_name]
     if filtered_branches:
         return filtered_branches[0]
-    elif branch_name == "HEAD":
-        filtered_branches = [b for b in branches if b["name"].endswith("master")]
-        if filtered_branches:
-            return filtered_branches[0]
-        elif branches:
-            return branches[0]
     else:
         # case where a large branches list has been truncated
         snp = archive.lookup_snapshot(
@@ -88,8 +80,8 @@ def _get_branch(branches, branch_name, snapshot_id):
 
 def _get_release(releases, release_name, snapshot_id):
     """
-    Utility function to get a specific release from a releases list.
-    Returns None if the release can not be found in the list.
+    Utility function to get a specific release from a snapshot.
+    Returns None if the release cannot be found.
     """
     filtered_releases = [r for r in releases if r["name"] == release_name]
     if filtered_releases:
@@ -109,7 +101,7 @@ def _get_release(releases, release_name, snapshot_id):
                 snapshot_id,
                 branches_from=release_name,
                 branches_count=1,
-                target_types=["release"],
+                target_types=["release", "alias"],
             )
         _, snp_release, _ = process_snapshot_branches(snp)
         if snp_release and snp_release[0]["name"] == release_name:
@@ -525,6 +517,7 @@ def get_snapshot_context(
         query_params["path"] = path
 
     if snapshot_total_size and revision_id is not None:
+        # browse specific revision for a snapshot requested
         revision = archive.lookup_revision(revision_id)
         root_directory = revision["directory"]
         branches.append(
@@ -540,6 +533,7 @@ def get_snapshot_context(
         )
         query_params["revision"] = revision_id
     elif snapshot_total_size and release_name:
+        # browse specific release for a snapshot requested
         release = _get_release(releases, release_name, snapshot_id)
         if release is None:
             _branch_not_found(
@@ -552,28 +546,70 @@ def get_snapshot_context(
                 visit_id,
             )
         else:
-            root_directory = release["directory"]
-            revision_id = release["target"]
+            if release["target_type"] == "revision":
+                revision = archive.lookup_revision(release["target"])
+                root_directory = revision["directory"]
+                revision_id = release["target"]
+            elif release["target_type"] == "directory":
+                root_directory = release["target"]
             release_id = release["id"]
             query_params["release"] = release_name
     elif snapshot_total_size:
+        head = aliases.get("HEAD")
         if branch_name:
+            # browse specific branch for a snapshot requested
             query_params["branch"] = branch_name
-        branch = _get_branch(branches, branch_name or "HEAD", snapshot_id)
-        if branch is None:
-            _branch_not_found(
-                "branch",
-                branch_name,
-                snapshot_id,
-                snapshot_sizes,
-                origin_info,
-                timestamp,
-                visit_id,
-            )
-        else:
+            branch = _get_branch(branches, branch_name, snapshot_id)
+            if branch is None:
+                _branch_not_found(
+                    "branch",
+                    branch_name,
+                    snapshot_id,
+                    snapshot_sizes,
+                    origin_info,
+                    timestamp,
+                    visit_id,
+                )
+            else:
+                branch_name = branch["name"]
+                revision_id = branch["revision"]
+                root_directory = branch["directory"]
+        elif head is not None:
+            # otherwise, browse branch targeted by the HEAD alias if it exists
+            if head["target_type"] == "revision":
+                # HEAD alias targets a revision
+                head_rev = archive.lookup_revision(head["target"])
+                branch_name = "HEAD"
+                revision_id = head_rev["id"]
+                root_directory = head_rev["directory"]
+            else:
+                # HEAD alias targets a release
+                release_name = archive.lookup_release(head["target"])["name"]
+                head_rel = _get_release(releases, release_name, snapshot_id)
+                if head_rel["target_type"] == "revision":
+                    revision = archive.lookup_revision(head_rel["target"])
+                    root_directory = revision["directory"]
+                    revision_id = head_rel["target"]
+                elif head_rel["target_type"] == "directory":
+                    root_directory = head_rel["target"]
+                release_id = head_rel["id"]
+        elif branches:
+            # fallback to browse first branch otherwise
+            branch = branches[0]
             branch_name = branch["name"]
             revision_id = branch["revision"]
             root_directory = branch["directory"]
+        elif releases:
+            # fallback to browse last release otherwise
+            release = releases[-1]
+            if release["target_type"] == "revision":
+                revision = archive.lookup_revision(release["target"])
+                root_directory = revision["directory"]
+                revision_id = release["target"]
+            elif release["target_type"] == "directory":
+                root_directory = release["target"]
+            release_id = release["id"]
+            release_name = release["name"]
 
     for b in branches:
         branch_query_params = dict(query_params)

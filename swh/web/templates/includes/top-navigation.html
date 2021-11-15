@@ -67,7 +67,7 @@ See top-level LICENSE file for more information
             <div class="tab-pane" id="swh-tab-releases">
               {% if snapshot_context.releases %}
                 {% for r in snapshot_context.releases %}
-                  {% if r.target_type == 'revision' %}
+                  {% if r.target_type == 'revision' or r.target_type == 'directory' %}
                     <li class="swh-release">
                       <a href="{{ r.url | safe }}">
                         {% if r.alias %}
