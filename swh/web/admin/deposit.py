@@ -14,6 +14,7 @@ from django.shortcuts import render
 from swh.web.admin.adminurls import admin_route
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.common.utils import (
+    get_deposit_raw_metadata,
     get_deposits_list,
     parse_swh_deposit_origin,
     parse_swh_metadata_provenance,
@@ -120,10 +121,15 @@ def _admin_deposit_list(request):
 
         table_data["data"] = data_list
 
+        for row in table_data["data"]:
+            metadata = get_deposit_raw_metadata(row["id"])
+            if metadata:
+                row["raw_metadata"] = metadata[-1]
+            else:
+                row["raw_metadata"] = None
+
     except Exception as exc:
         sentry_sdk.capture_exception(exc)
-        table_data[
-            "error"
-        ] = "An error occurred while retrieving the list of deposits !"
+        table_data["error"] = f"Could not retrieve deposits: {exc!r}"
 
     return JsonResponse(table_data)

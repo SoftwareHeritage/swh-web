@@ -426,7 +426,8 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
         deposits_list_url, auth=deposits_list_auth, timeout=30
     ).json()["count"]
 
-    deposits_data = cache.get(f"swh-deposit-list-{username}")
+    cache_key = f"swh-deposit-list-{username}"
+    deposits_data = cache.get(cache_key)
     if not deposits_data or deposits_data["count"] != nb_deposits:
         deposits_list_url = _deposits_list_url(
             deposits_list_base_url, page_size=nb_deposits, username=username
@@ -434,9 +435,22 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
         deposits_data = requests.get(
             deposits_list_url, auth=deposits_list_auth, timeout=30,
         ).json()
-        cache.set(f"swh-deposit-list-{username}", deposits_data)
+        cache.set(cache_key, deposits_data)
 
     return deposits_data["results"]
+
+
+def get_deposit_raw_metadata(deposit_id: int) -> Optional[str]:
+    cache_key = f"swh-deposit-raw-metadata-{deposit_id}"
+    metadata = cache.get(cache_key)
+    if metadata is None:
+        config = get_config()["deposit"]
+
+        url = f"{config['private_api_url']}/{deposit_id}/meta"
+        metadata = requests.get(url).json()["metadata_raw"]
+        cache.set(cache_key, metadata)
+
+    return metadata
 
 
 def origin_visit_types() -> List[str]:
