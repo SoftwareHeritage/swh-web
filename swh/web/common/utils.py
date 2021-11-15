@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import os
 import re
 from typing import Any, Dict, List, Optional
+import urllib.parse
 
 from bs4 import BeautifulSoup
 from docutils.core import publish_parts
@@ -370,10 +371,10 @@ def prettify_html(html: str) -> str:
 def _deposits_list_url(
     deposits_list_base_url: str, page_size: int, username: Optional[str]
 ) -> str:
-    deposits_list_url = f"{deposits_list_base_url}?page_size={page_size}"
+    params = {"page_size": str(page_size)}
     if username is not None:
-        deposits_list_url += f"&username={username}"
-    return deposits_list_url
+        params["username"] = username
+    return f"{deposits_list_base_url}?{urllib.parse.urlencode(params)}"
 
 
 def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
