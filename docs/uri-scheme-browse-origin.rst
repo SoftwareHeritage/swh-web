@@ -223,6 +223,10 @@ Origin content
 """"""""""""""
 
 .. http:get:: /browse/origin/content/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/content/` instead.
 
     HTML view that produces a display of a content
     associated to the latest full visit of a software origin.
@@ -282,7 +286,7 @@ Origin content
    :deprecated:
 
     .. warning::
-       That endpoint is deprecated, use :http:get:`/browse/origin/content/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/content/` instead.
 
     HTML view that produces a display of a content
     associated to the latest full visit of a software origin.
