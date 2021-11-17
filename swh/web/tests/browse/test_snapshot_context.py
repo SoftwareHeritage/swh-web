@@ -5,6 +5,9 @@
 
 import random
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.model import ObjectType as ModelObjectType
+from swh.model.model import Release, Snapshot, SnapshotBranch, TargetType
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
@@ -404,3 +407,101 @@ def _get_revision_info(archive_data, revision_id):
             revision_info["committer_date"]
         )
     return revision_info
+
+
+def test_get_snapshot_context_revision_release(archive_data, revision):
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=hash_to_bytes(revision),
+        target_type=ModelObjectType.REVISION,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=release_name.encode(), target_type=TargetType.ALIAS
+            ),
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    snapshot_no_head = Snapshot(
+        branches={
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot_no_head])
+
+    revision_data = archive_data.revision_get(revision)
+
+    for params in (
+        {"snapshot_id": snapshot.id.hex()},
+        {"snapshot_id": snapshot.id.hex(), "release_name": release_name},
+        {"snapshot_id": snapshot_no_head.id.hex()},
+    ):
+
+        snapshot_context = get_snapshot_context(**params)
+
+        assert snapshot_context["branches"] == []
+        assert snapshot_context["releases"] != []
+        assert snapshot_context["release"] == release_name
+        assert snapshot_context["release_id"] == release.id.hex()
+        assert snapshot_context["revision_id"] == revision
+        assert snapshot_context["root_directory"] == revision_data["directory"]
+
+
+def test_get_snapshot_context_directory_release(archive_data, directory):
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=hash_to_bytes(directory),
+        target_type=ModelObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=release_name.encode(), target_type=TargetType.ALIAS
+            ),
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    snapshot_no_head = Snapshot(
+        branches={
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot_no_head])
+
+    for params in (
+        {"snapshot_id": snapshot.id.hex()},
+        {"snapshot_id": snapshot.id.hex(), "release_name": release_name},
+        {"snapshot_id": snapshot_no_head.id.hex()},
+    ):
+
+        snapshot_context = get_snapshot_context(**params)
+
+        assert snapshot_context["branches"] == []
+        assert snapshot_context["releases"] != []
+        assert snapshot_context["release"] == release_name
+        assert snapshot_context["release_id"] == release.id.hex()
+        assert snapshot_context["revision_id"] is None
+        assert snapshot_context["root_directory"] == directory

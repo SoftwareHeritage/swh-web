@@ -187,7 +187,11 @@ def _directory_browse(request, sha1_git, path=None):
         heading += " - %s" % dir_path
 
     top_right_link = None
-    if snapshot_context is not None and not snapshot_context["is_empty"]:
+    if (
+        snapshot_context is not None
+        and not snapshot_context["is_empty"]
+        and snapshot_context["revision_id"] is not None
+    ):
         history_url = reverse(
             "browse-revision-log",
             url_args={"sha1_git": snapshot_context["revision_id"]},

@@ -1,4 +1,4 @@
-import { __read, __values } from "tslib";
+import { __assign, __read, __values } from "tslib";
 import { API } from '@sentry/core';
 import { Status, } from '@sentry/types';
 import { dateTimestampInSeconds, getGlobalObject, logger, parseRetryAfterHeader, PromiseBuffer, SentryError, } from '@sentry/utils';
@@ -77,7 +77,7 @@ var BaseTransport = /** @class */ (function () {
         logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
         var url = this._api.getEnvelopeEndpointWithUrlEncodedAuth();
         // Envelope header is required to be at least an empty object
-        var envelopeHeader = JSON.stringify({});
+        var envelopeHeader = JSON.stringify(__assign({}, (this.options.tunnel && { dsn: this._api.getDsn().toString() })));
         var itemHeaders = JSON.stringify({
             type: 'client_report',
         });

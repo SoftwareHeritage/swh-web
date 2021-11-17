@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2021  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -29,11 +29,32 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
       return;
     }
 
+    let directory;
+    // get directory from which to check path existence
+    if (swhObjectMetadata.object_type === 'directory') {
+      // case when a README is rendered in a directory view
+      directory = swhObjectMetadata.object_id;
+    } else {
+      // otherwise we browse a content, get its directory
+      directory = swhObjectMetadata.directory;
+    }
+
     // used internal endpoint as image url to possibly get the image data
     // from the archive content
-    let url = Urls.browse_directory_resolve_content_path(swhObjectMetadata.directory);
-    url += `?path=${data.attrValue}`;
-    data.attrValue = url;
+    let directoryUrl = Urls.browse_directory_resolve_content_path(directory);
+    let path = data.attrValue;
+    // strip any query parameters appended to path
+    let processedPath = path;
+    if (!processedPath.startsWith('/')) {
+      processedPath = '/' + processedPath;
+    }
+    const url = new URL(window.location.origin + processedPath);
+    if (url.search) {
+      path = path.replace(url.search, '');
+    }
+    // update img src attribute with archive URL
+    directoryUrl += `?path=${encodeURIComponent(path)}`;
+    data.attrValue = directoryUrl;
   }
 });
 

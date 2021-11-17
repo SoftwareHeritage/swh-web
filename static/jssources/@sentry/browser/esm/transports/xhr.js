@@ -51,7 +51,7 @@ var XHRTransport = /** @class */ (function (_super) {
                 };
                 request.open('POST', sentryRequest.url);
                 for (var header in _this.options.headers) {
-                    if (_this.options.headers.hasOwnProperty(header)) {
+                    if (Object.prototype.hasOwnProperty.call(_this.options.headers, header)) {
                         request.setRequestHeader(header, _this.options.headers[header]);
                     }
                 }

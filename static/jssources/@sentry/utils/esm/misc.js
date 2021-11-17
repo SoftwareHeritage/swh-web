@@ -1,20 +1,6 @@
-import { isNodeEnv } from './node';
+import { __assign } from "tslib";
+import { getGlobalObject } from './global';
 import { snipLine } from './string';
-var fallbackGlobalObject = {};
-/**
- * Safely get global scope object
- *
- * @returns Global scope object
- */
-export function getGlobalObject() {
-    return (isNodeEnv()
-        ? global
-        : typeof window !== 'undefined' // eslint-disable-line no-restricted-globals
-            ? window // eslint-disable-line no-restricted-globals
-            : typeof self !== 'undefined'
-                ? self
-                : fallbackGlobalObject);
-}
 /**
  * UUID4 generator
  *
@@ -93,32 +79,6 @@ export function getEventDescription(event) {
     }
     return event.event_id || '<unknown>';
 }
-/** JSDoc */
-export function consoleSandbox(callback) {
-    var global = getGlobalObject();
-    var levels = ['debug', 'info', 'warn', 'error', 'log', 'assert'];
-    if (!('console' in global)) {
-        return callback();
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    var originalConsole = global.console;
-    var wrappedLevels = {};
-    // Restore all wrapped console methods
-    levels.forEach(function (level) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (level in global.console && originalConsole[level].__sentry_original__) {
-            wrappedLevels[level] = originalConsole[level];
-            originalConsole[level] = originalConsole[level].__sentry_original__;
-        }
-    });
-    // Perform callback manipulations
-    var result = callback();
-    // Revert restoration to wrapped state
-    Object.keys(wrappedLevels).forEach(function (level) {
-        originalConsole[level] = wrappedLevels[level];
-    });
-    return result;
-}
 /**
  * Adds exception values, type and value to an synthetic Exception.
  * @param event The event to modify.
@@ -134,38 +94,24 @@ export function addExceptionTypeValue(event, value, type) {
     event.exception.values[0].type = event.exception.values[0].type || type || 'Error';
 }
 /**
- * Adds exception mechanism to a given event.
+ * Adds exception mechanism data to a given event. Uses defaults if the second parameter is not passed.
+ *
  * @param event The event to modify.
- * @param mechanism Mechanism of the mechanism.
+ * @param newMechanism Mechanism data to add to the event.
  * @hidden
  */
-export function addExceptionMechanism(event, mechanism) {
-    if (mechanism === void 0) { mechanism = {}; }
-    // TODO: Use real type with `keyof Mechanism` thingy and maybe make it better?
-    try {
-        // @ts-ignore Type 'Mechanism | {}' is not assignable to type 'Mechanism | undefined'
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        event.exception.values[0].mechanism = event.exception.values[0].mechanism || {};
-        Object.keys(mechanism).forEach(function (key) {
-            // @ts-ignore Mechanism has no index signature
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            event.exception.values[0].mechanism[key] = mechanism[key];
-        });
+export function addExceptionMechanism(event, newMechanism) {
+    var _a;
+    if (!event.exception || !event.exception.values) {
+        return;
     }
-    catch (_oO) {
-        // no-empty
-    }
-}
-/**
- * A safe form of location.href
- */
-export function getLocationHref() {
-    var global = getGlobalObject();
-    try {
-        return global.document.location.href;
-    }
-    catch (oO) {
-        return '';
+    var exceptionValue0 = event.exception.values[0];
+    var defaultMechanism = { type: 'generic', handled: true };
+    var currentMechanism = exceptionValue0.mechanism;
+    exceptionValue0.mechanism = __assign(__assign(__assign({}, defaultMechanism), currentMechanism), newMechanism);
+    if (newMechanism && 'data' in newMechanism) {
+        var mergedData = __assign(__assign({}, (_a = currentMechanism) === null || _a === void 0 ? void 0 : _a.data), newMechanism.data);
+        exceptionValue0.mechanism.data = mergedData;
     }
 }
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -236,5 +182,44 @@ export function addContextToFrame(lines, frame, linesOfContext) {
 export function stripUrlQueryAndFragment(urlPath) {
     // eslint-disable-next-line no-useless-escape
     return urlPath.split(/[\?#]/, 1)[0];
+}
+/**
+ * Checks whether or not we've already captured the given exception (note: not an identical exception - the very object
+ * in question), and marks it captured if not.
+ *
+ * This is useful because it's possible for an error to get captured by more than one mechanism. After we intercept and
+ * record an error, we rethrow it (assuming we've intercepted it before it's reached the top-level global handlers), so
+ * that we don't interfere with whatever effects the error might have had were the SDK not there. At that point, because
+ * the error has been rethrown, it's possible for it to bubble up to some other code we've instrumented. If it's not
+ * caught after that, it will bubble all the way up to the global handlers (which of course we also instrument). This
+ * function helps us ensure that even if we encounter the same error more than once, we only record it the first time we
+ * see it.
+ *
+ * Note: It will ignore primitives (always return `false` and not mark them as seen), as properties can't be set on
+ * them. {@link: Object.objectify} can be used on exceptions to convert any that are primitives into their equivalent
+ * object wrapper forms so that this check will always work. However, because we need to flag the exact object which
+ * will get rethrown, and because that rethrowing happens outside of the event processing pipeline, the objectification
+ * must be done before the exception captured.
+ *
+ * @param A thrown exception to check or flag as having been seen
+ * @returns `true` if the exception has already been captured, `false` if not (with the side effect of marking it seen)
+ */
+export function checkOrSetAlreadyCaught(exception) {
+    var _a;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if ((_a = exception) === null || _a === void 0 ? void 0 : _a.__sentry_captured__) {
+        return true;
+    }
+    try {
+        // set it this way rather than by assignment so that it's not ennumerable and therefore isn't recorded by the
+        // `ExtraErrorData` integration
+        Object.defineProperty(exception, '__sentry_captured__', {
+            value: true,
+        });
+    }
+    catch (err) {
+        // `exception` is a primitive, so we can't mark it seen
+    }
+    return false;
 }
 //# sourceMappingURL=misc.js.map
