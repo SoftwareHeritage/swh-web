@@ -1,3 +1,4 @@
+import { getGlobalObject } from './global';
 import { isString } from './is';
 /**
  * Given a child DOM element, returns a query-selector statement describing that
@@ -88,5 +89,17 @@ function _htmlElementAsString(el, keyAttrs) {
         }
     }
     return out.join('');
+}
+/**
+ * A safe form of location.href
+ */
+export function getLocationHref() {
+    var global = getGlobalObject();
+    try {
+        return global.document.location.href;
+    }
+    catch (oO) {
+        return '';
+    }
 }
 //# sourceMappingURL=browser.js.map

@@ -110,7 +110,7 @@ var TryCatch = /** @class */ (function () {
         var global = getGlobalObject();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         var proto = global[target] && global[target].prototype;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
         if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
             return;
         }

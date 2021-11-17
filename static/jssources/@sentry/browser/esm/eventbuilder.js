@@ -12,10 +12,7 @@ export function eventFromException(options, exception, hint) {
     var event = eventFromUnknownInput(exception, syntheticException, {
         attachStacktrace: options.attachStacktrace,
     });
-    addExceptionMechanism(event, {
-        handled: true,
-        type: 'generic',
-    });
+    addExceptionMechanism(event); // defaults to { type: 'generic', handled: true }
     event.level = Severity.Error;
     if (hint && hint.event_id) {
         event.event_id = hint.event_id;
@@ -52,16 +49,24 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
         event = eventFromStacktrace(computeStackTrace(exception));
         return event;
     }
+    // If it is a `DOMError` (which is a legacy API, but still supported in some browsers) then we just extract the name
+    // and message, as it doesn't provide anything else. According to the spec, all `DOMExceptions` should also be
+    // `Error`s, but that's not the case in IE11, so in that case we treat it the same as we do a `DOMError`.
+    //
+    // https://developer.mozilla.org/en-US/docs/Web/API/DOMError
+    // https://developer.mozilla.org/en-US/docs/Web/API/DOMException
+    // https://webidl.spec.whatwg.org/#es-DOMException-specialness
     if (isDOMError(exception) || isDOMException(exception)) {
-        // If it is a DOMError or DOMException (which are legacy APIs, but still supported in some browsers)
-        // then we just extract the name, code, and message, as they don't provide anything else
-        // https://developer.mozilla.org/en-US/docs/Web/API/DOMError
-        // https://developer.mozilla.org/en-US/docs/Web/API/DOMException
         var domException = exception;
-        var name_1 = domException.name || (isDOMError(domException) ? 'DOMError' : 'DOMException');
-        var message = domException.message ? name_1 + ": " + domException.message : name_1;
-        event = eventFromString(message, syntheticException, options);
-        addExceptionTypeValue(event, message);
+        if ('stack' in exception) {
+            event = eventFromStacktrace(computeStackTrace(exception));
+        }
+        else {
+            var name_1 = domException.name || (isDOMError(domException) ? 'DOMError' : 'DOMException');
+            var message = domException.message ? name_1 + ": " + domException.message : name_1;
+            event = eventFromString(message, syntheticException, options);
+            addExceptionTypeValue(event, message);
+        }
         if ('code' in domException) {
             event.tags = __assign(__assign({}, event.tags), { 'DOMException.code': "" + domException.code });
         }

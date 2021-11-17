@@ -135,7 +135,7 @@ Snapshot content
 
         :swh_web_browse:`snapshot/baebc2109e4a2ec22a1129a3859647e191d04df4/content/?path=init/initramfs.c`
         :swh_web_browse:`snapshot/673156c31a876c5b99b2fe3e89615529de9a3c44/content/?path=src/opengl/qglbuffer.h`
-        :swh_web_browse:`snapshot/673156c31a876c5b99b2fe3e89615529de9a3c44/content/?path=src/opengl/qglbuffer.h&?release=v5.0.0`
+        :swh_web_browse:`snapshot/673156c31a876c5b99b2fe3e89615529de9a3c44/content/?path=src/opengl/qglbuffer.h&release=v5.0.0`
 
 
 .. http:get:: /browse/snapshot/(snapshot_id)/content/(path)/
@@ -180,7 +180,7 @@ Snapshot history
 .. http:get:: /browse/snapshot/log/
 
     HTML view that produces a display of the revisions history (aka the commit log)
-    for the last collected revision for the given origin. An origin URL must be given
+    for the last collected revision for the given origin. An origin URL must be provided
     as a query parameter.
 
     :query string origin_url: specify the origin from which to retrieve the commit log
@@ -188,7 +188,7 @@ Snapshot history
        find the closest visit
 
     :statuscode 200: no error
-    :statuscode 400: origin_url parameter is missing
+    :statuscode 400: origin_url parameter is missing or an invalid snapshot identifier has been provided
     :statuscode 404: requested origin is either missing or has no associated snapshots
 
     **Examples:**
@@ -232,6 +232,28 @@ Snapshot history
 Snapshot branches
 """""""""""""""""
 
+.. http:get:: /browse/snapshot/branches/
+
+    HTML view that produces a display of the list of branches collected in a snapshot.
+    An origin URL must be provided as a query parameter.
+
+    :query string origin_url: specify the origin from which to retrieve the snapshot and branches
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to
+       find the closest visit
+    :name_include: optional; to filter branches by name
+
+    :statuscode 200: no error
+    :statuscode 400: origin_url parameter is missing or an invalid snapshot identifier has been provided
+    :statuscode 404: requested origin is either missing or has no associated snapshots
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`snapshot/branches?origin_url=https://github.com/python/cpython`
+        :swh_web_browse:`snapshot/branches/?origin_url=https://github.com/python/cpython&timestamp=2021-01-23T22:24:10Z`
+        :swh_web_browse:`snapshot/branches/?origin_url=https://github.com/python/cpython&name_include=v2`
+
 .. http:get:: /browse/snapshot/(snapshot_id)/branches/
 
     HTML view that produces a display of the list of branches
@@ -256,6 +278,28 @@ Snapshot branches
 
 Snapshot releases
 """""""""""""""""
+
+.. http:get:: /browse/snapshot/releases/
+
+    HTML view that produces a display of the list of releases
+    collected in a snapshot. An origin URL must be provided as a query parameter.
+
+    :query string origin_url: specify the origin from which to retrieve the snapshot and branches
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to
+       find the closest visit
+    :name_include: optional; to filter releases by name
+
+    :statuscode 200: no error
+    :statuscode 400: origin_url parameter is missing or an invalid snapshot identifier has been provided
+    :statuscode 404: requested origin is either missing or has no associated snapshots
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`snapshot/releases?origin_url=https://github.com/python/cpython`
+        :swh_web_browse:`snapshot/releases/?origin_url=https://github.com/python/cpython&timestamp=2021-01-23T22:24:10Z`
+        :swh_web_browse:`snapshot/releases/?origin_url=https://github.com/python/cpython&name_include=v2`
 
 .. http:get:: /browse/snapshot/(snapshot_id)/releases/
 

@@ -31,8 +31,12 @@ function updateProgressBar(progressBar, cookingTask) {
     progressBar.css('background-image', 'none');
   }
   var text = cookingTask.progress_message || cookingTask.status;
-  text = text.split('\n', 2)[0];
-  progressBar.text(text);
+  var firstLine, rest;
+  [firstLine, ...rest] = text.split('\n', 2);
+  progressBar.text(firstLine);
+  if (rest.length) {
+    progressBar.prop('title', rest[0]);
+  }
   if (cookingTask.status === 'new' || cookingTask.status === 'pending') {
     progressBar.addClass('progress-bar-animated');
   } else {
