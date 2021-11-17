@@ -2,8 +2,9 @@ import { __assign, __read, __spread, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
 import { Outcome, SessionStatus, } from '@sentry/types';
-import { dateTimestampInSeconds, Dsn, isPlainObject, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
+import { checkOrSetAlreadyCaught, dateTimestampInSeconds, Dsn, isPlainObject, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
+var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
 /**
  * Base implementation for all JavaScript SDK clients.
  *
@@ -60,6 +61,11 @@ var BaseClient = /** @class */ (function () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     BaseClient.prototype.captureException = function (exception, hint, scope) {
         var _this = this;
+        // ensure we haven't captured this very object before
+        if (checkOrSetAlreadyCaught(exception)) {
+            logger.log(ALREADY_SEEN_ERROR);
+            return;
+        }
         var eventId = hint && hint.event_id;
         this._process(this._getBackend()
             .eventFromException(exception, hint)
@@ -89,6 +95,12 @@ var BaseClient = /** @class */ (function () {
      * @inheritDoc
      */
     BaseClient.prototype.captureEvent = function (event, hint, scope) {
+        var _a;
+        // ensure we haven't captured this very object before
+        if (((_a = hint) === null || _a === void 0 ? void 0 : _a.originalException) && checkOrSetAlreadyCaught(hint.originalException)) {
+            logger.log(ALREADY_SEEN_ERROR);
+            return;
+        }
         var eventId = hint && hint.event_id;
         this._process(this._captureEvent(event, hint, scope).then(function (result) {
             eventId = result;

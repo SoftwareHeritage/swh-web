@@ -1,7 +1,7 @@
 import { __assign, __values } from "tslib";
+import { getGlobalObject } from './global';
 import { isInstanceOf, isString } from './is';
 import { logger } from './logger';
-import { getGlobalObject } from './misc';
 import { fill } from './object';
 import { getFunctionName } from './stacktrace';
 import { supportsHistory, supportsNativeFetch } from './supports';
