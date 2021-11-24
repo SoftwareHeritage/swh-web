@@ -308,7 +308,7 @@ def _swh_coverage(request):
         # scheduler metrics for those
         if origins_type in ("nixos", "guix"):
             count = _get_nixguix_origins_count(origins["search_pattern"])
-            origins["count"] = count
+            origins["count"] = f"{count:,}" if count else ""
             origins["instances"][origins_type] = {"nixguix": {"count": count}}
 
         if origins_type not in listers_metrics:
@@ -331,12 +331,9 @@ def _swh_coverage(request):
             # not yet in production
             if metrics.visit_type in ("bzr", "cvs"):
                 continue
+            instance_count = metrics.origins_known - metrics.origins_never_visited
             origins["instances"][instance].update(
-                {
-                    metrics.visit_type: {
-                        "count": metrics.origins_known - metrics.origins_never_visited
-                    }
-                }
+                {metrics.visit_type: {"count": f"{instance_count:,}"}}
             )
             origins["visit_types"] = list(
                 set(origins["instances"][instance].keys())

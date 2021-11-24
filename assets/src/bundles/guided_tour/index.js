@@ -17,6 +17,8 @@ let previousElement = null;
 // we use a origin available both in production and swh-web tests
 // environment to ease tour testing
 const originUrl = 'https://github.com/memononen/libtess2';
+// sha1 for the content used
+const contentSha1 = 'sha1_git:2d4e23bf1d3f64c1e8b94622178e18d89c653de0';
 
 function openSWHIDsTabBeforeNextStep() {
   window.scrollTo(0, 0);
@@ -64,7 +66,7 @@ $(() => {
       }
     },
     {
-      url: `${Urls.browse_origin_content()}?origin_url=${originUrl}&path=Example/example.c`,
+      url: `${Urls.browse_content(contentSha1)}?origin_url=${originUrl}&path=Example/example.c`,
       introJsOptions: {
         steps: guidedTourSteps.browseContent
       },

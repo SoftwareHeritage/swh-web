@@ -3,10 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import random
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.swhids import CoreSWHID, ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.common.utils import reverse
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -67,3 +69,38 @@ def test_swhid_iframe_unknown_error(client, mocker, content_swhid):
     check_html_get_response(
         client, url, status_code=500, template_used="misc/iframe.html"
     )
+
+
+def test_iframe_directory_no_snapshot_context(
+    client, archive_data, directory_with_subdirs
+):
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
+    subdir = random.choice([e for e in dir_content if e["type"] == "dir"])
+    path = f"/{subdir['name']}/"
+
+    root_swhid = CoreSWHID(
+        object_type=ObjectType.DIRECTORY,
+        object_id=hash_to_bytes(directory_with_subdirs),
+    )
+    swhid = CoreSWHID(
+        object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(subdir["target"])
+    )
+    qualified_swhid = QualifiedSWHID(
+        object_type=ObjectType.DIRECTORY,
+        object_id=hash_to_bytes(subdir["target"]),
+        anchor=root_swhid,
+        path=path,
+    )
+
+    url = reverse(
+        "swhid-iframe",
+        url_args={"swhid": f"{str(swhid)};path={path}"},
+        query_params={"focus_swhid": str(root_swhid)},
+    )
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="misc/iframe.html"
+    )
+
+    archive_url = reverse("browse-swhid", url_args={"swhid": str(qualified_swhid)})
+
+    assert_contains(resp, archive_url)
