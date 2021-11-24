@@ -16,9 +16,7 @@ from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Snapshot
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.browse.utils import (
-    content_display_max_size,
     format_log_entries,
-    gen_content_link,
     gen_release_link,
     gen_revision_link,
     gen_revision_log_link,
@@ -26,15 +24,12 @@ from swh.web.browse.utils import (
     gen_snapshot_link,
     get_directory_entries,
     get_readme_to_display,
-    prepare_content_for_display,
-    request_content,
 )
-from swh.web.common import archive, highlightjs
+from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.origin_visits import get_origin_visit
 from swh.web.common.typing import (
-    ContentMetadata,
     DirectoryMetadata,
     OriginInfo,
     SnapshotBranchInfo,
@@ -920,203 +915,6 @@ def browse_snapshot_directory(
             "readme_html": readme_html,
             "snapshot_context": snapshot_context,
             "vault_cooking": vault_cooking,
-            "show_actions": True,
-            "swhids_info": swhids_info,
-            "error_code": error_info["status_code"],
-            "error_message": http_status_code_message.get(error_info["status_code"]),
-            "error_description": error_info["description"],
-        },
-        status=error_info["status_code"],
-    )
-
-
-def browse_snapshot_content(
-    request,
-    snapshot_id=None,
-    origin_url=None,
-    timestamp=None,
-    path=None,
-    selected_language=None,
-):
-    """
-    Django view implementation for browsing a content in a snapshot context.
-    """
-    _check_origin_url(snapshot_id, origin_url)
-
-    if path is None:
-        raise BadInputExc("The path of a content must be given as query parameter.")
-
-    snapshot_context = get_snapshot_context(
-        snapshot_id=snapshot_id,
-        origin_url=origin_url,
-        timestamp=timestamp,
-        visit_id=request.GET.get("visit_id"),
-        path=path,
-        browse_context="content",
-        branch_name=request.GET.get("branch"),
-        release_name=request.GET.get("release"),
-        revision_id=request.GET.get("revision"),
-    )
-
-    root_directory = snapshot_context["root_directory"]
-    sha1_git = None
-    query_string = None
-    content_data = {}
-    directory_id = None
-    split_path = path.split("/")
-    filename = split_path[-1]
-    filepath = path[: -len(filename)]
-    error_info = {
-        "status_code": 200,
-        "description": None,
-    }
-    if root_directory:
-        try:
-            content_info = archive.lookup_directory_with_path(root_directory, path)
-            sha1_git = content_info["target"]
-            query_string = "sha1_git:" + sha1_git
-            content_data = request_content(query_string)
-
-            if filepath:
-                dir_info = archive.lookup_directory_with_path(root_directory, filepath)
-                directory_id = dir_info["target"]
-            else:
-                directory_id = root_directory
-        except NotFoundExc as e:
-            error_info["status_code"] = 404
-            error_info["description"] = f"NotFoundExc: {str(e)}"
-
-    revision_id = snapshot_context["revision_id"]
-    origin_info = snapshot_context["origin_info"]
-    visit_info = snapshot_context["visit_info"]
-    snapshot_id = snapshot_context["snapshot_id"]
-
-    if content_data.get("raw_data") is not None:
-        content_display_data = prepare_content_for_display(
-            content_data["raw_data"], content_data["mimetype"], path
-        )
-        content_data.update(content_display_data)
-
-    # Override language with user-selected language
-    if selected_language is not None:
-        content_data["language"] = selected_language
-
-    available_languages = None
-
-    if content_data.get("mimetype") is not None and "text/" in content_data["mimetype"]:
-        available_languages = highlightjs.get_supported_languages()
-
-    breadcrumbs = _build_breadcrumbs(snapshot_context, filepath)
-
-    breadcrumbs.append({"name": filename, "url": None})
-
-    browse_content_link = gen_content_link(sha1_git)
-
-    content_raw_url = None
-    if query_string:
-        content_raw_url = reverse(
-            "browse-content-raw",
-            url_args={"query_string": query_string},
-            query_params={"filename": filename},
-        )
-
-    content_checksums = content_data.get("checksums", {})
-
-    sha1_git = content_checksums.get("sha1_git")
-
-    swh_objects = []
-
-    if sha1_git is not None:
-        swh_objects.append(
-            SWHObjectInfo(object_type=ObjectType.CONTENT, object_id=sha1_git)
-        )
-    if directory_id is not None:
-        swh_objects.append(
-            SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory_id)
-        )
-    if revision_id is not None:
-        swh_objects.append(
-            SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id)
-        )
-    swh_objects.append(
-        SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)
-    )
-
-    visit_date = None
-    visit_type = None
-    if visit_info:
-        visit_date = format_utc_iso_date(visit_info["date"])
-        visit_type = visit_info["type"]
-
-    release_id = snapshot_context["release_id"]
-    if release_id:
-        swh_objects.append(
-            SWHObjectInfo(object_type=ObjectType.RELEASE, object_id=release_id)
-        )
-
-    content_metadata = ContentMetadata(
-        object_type=ObjectType.CONTENT,
-        object_id=content_checksums.get("sha1_git"),
-        sha1=content_checksums.get("sha1"),
-        sha1_git=content_checksums.get("sha1_git"),
-        sha256=content_checksums.get("sha256"),
-        blake2s256=content_checksums.get("blake2s256"),
-        content_url=browse_content_link,
-        mimetype=content_data.get("mimetype"),
-        encoding=content_data.get("encoding"),
-        size=content_data.get("length", 0),
-        language=content_data.get("language"),
-        root_directory=root_directory,
-        path=f"/{filepath}",
-        filename=filename,
-        directory=directory_id,
-        revision=revision_id,
-        release=release_id,
-        snapshot=snapshot_id,
-        origin_url=origin_url,
-        visit_date=visit_date,
-        visit_type=visit_type,
-    )
-
-    swhids_info = get_swhids_info(swh_objects, snapshot_context, content_metadata)
-
-    content_path = "/".join([bc["name"] for bc in breadcrumbs])
-    context_found = "snapshot: %s" % snapshot_context["snapshot_id"]
-    if origin_info:
-        context_found = "origin: %s" % origin_info["url"]
-    heading = "Content - %s - %s - %s" % (
-        content_path,
-        snapshot_context["branch"],
-        context_found,
-    )
-
-    top_right_link = None
-    if not snapshot_context["is_empty"]:
-        top_right_link = {
-            "url": content_raw_url,
-            "icon": swh_object_icons["content"],
-            "text": "Raw File",
-        }
-
-    return render(
-        request,
-        "browse/content.html",
-        {
-            "heading": heading,
-            "swh_object_name": "Content",
-            "swh_object_metadata": content_metadata,
-            "content": content_data.get("content_data"),
-            "content_size": content_data.get("length"),
-            "max_content_size": content_display_max_size,
-            "filename": filename,
-            "encoding": content_data.get("encoding"),
-            "mimetype": content_data.get("mimetype"),
-            "language": content_data.get("language"),
-            "available_languages": available_languages,
-            "breadcrumbs": breadcrumbs if root_directory else [],
-            "top_right_link": top_right_link,
-            "snapshot_context": snapshot_context,
-            "vault_cooking": None,
             "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": error_info["status_code"],

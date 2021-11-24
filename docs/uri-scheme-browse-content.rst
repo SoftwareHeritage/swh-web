@@ -41,6 +41,13 @@ Content
     :query string path: describe the path of the content relative to a root
         directory (used to add context aware navigation links when navigating
         from a directory view)
+    :query string origin_url: optional; specify the origin from which to retrieve the contnet.
+    :query string snapshot: optional; specify the snapshot from which to retrieve the contnet.
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to find the closest visit
+    :query string branch: optional; specify the snapshot branch name from which
+        to retrieve the content. HEAD branch will be used by default.
+    :query string release: optional; specify the snapshot release name from which
+        to retrieve the content.
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the archive
@@ -88,5 +95,32 @@ Content
         :swh_web_browse:`content/blake2s256:1cc1e3124957c9be8a454c58e92eb925cf4aa9823984bd01451c5b7e0fee99d1/raw/?filename=MAINTAINERS`
         :swh_web_browse:`content/sha1:1cb1447c1c7ddc1b03eac88398e40bd914d46b62/raw/`
         :swh_web_browse:`content/sha256:8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903/raw/?filename=COPYING`
+
+.. http:get:: /browse/content/
+
+    HTML view that displays a content identified by the query parameters.
+    An origin URL, snapshot or revision must be provided along with a content path
+    as query parameters.
+
+    :query string path: The path of the content relative to the root directory
+    :query string origin_url: optional; specify the origin from which to retrieve the contnet.
+    :query string snapshot: optional; specify the snapshot from which to retrieve the contnet.
+    :query string timestamp: optional; an ISO 8601 datetime string to parse in order to find the closest visit
+    :query string branch: optional; specify the snapshot branch name from which
+        to retrieve the content. HEAD branch will be used by default.
+    :query string release: optional; specify the snapshot release name from which
+        to retrieve the content.
+
+    :statuscode 200: no error
+    :statuscode 404: path and/or the identifier is missing in the query parameters.
+    :statuscode 404: requested content can not be found in the archive,
+        or the provided content path does not exist from the origin root directory
+
+    **Examples:**
+
+    .. parsed-literal::
+
+        :swh_web_browse:`content/?origin_url=https://github.com/python/cpython&path=.gitignore`
+        :swh_web_browse:`content/?snapshot=673156c31a876c5b99b2fe3e89615529de9a3c44&path=src/opengl/qglbuffer.h`
 
 .. _highlightjs: https://highlightjs.org/

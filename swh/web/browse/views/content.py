@@ -9,7 +9,7 @@ from distutils.util import strtobool
 import sentry_sdk
 
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import ObjectType
@@ -22,7 +22,7 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive, highlightjs, query
-from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -170,18 +170,55 @@ def _contents_diff(request, from_query_string, to_query_string):
     return JsonResponse(diff_data)
 
 
+def _get_content_from_request(request):
+    path = request.GET.get("path")
+    if path is None:
+        raise BadInputExc("The path query parameter must be provided.")
+    snapshot = request.GET.get("snapshot")
+    origin_url = request.GET.get("origin_url")
+    if snapshot is None and origin_url is None:
+        raise BadInputExc(
+            "The origin_url or snapshot query parameters must be provided."
+        )
+    snapshot_context = get_snapshot_context(
+        snapshot_id=snapshot,
+        origin_url=origin_url,
+        path=path,
+        timestamp=request.GET.get("timestamp"),
+        visit_id=request.GET.get("visit_id"),
+        branch_name=request.GET.get("branch"),
+        release_name=request.GET.get("release"),
+        browse_context="content",
+    )
+    root_directory = snapshot_context["root_directory"]
+    return archive.lookup_directory_with_path(root_directory, path)
+
+
 @browse_route(
     r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+.)/",
+    r"content/",
     view_name="browse-content",
     checksum_args=["query_string"],
 )
-def content_display(request, query_string):
+def content_display(request, query_string=None):
     """Django view that produces an HTML display of a content identified
     by its hash value.
 
-    The url that points to it is
+    The URLs that points to it are
     :http:get:`/browse/content/[(algo_hash):](hash)/`
+    :http:get:`/browse/content/`
     """
+    if query_string is None:
+        # this case happens when redirected from origin/content or snapshot/content
+        content = _get_content_from_request(request)
+        return redirect(
+            reverse(
+                "browse-content",
+                url_args={"query_string": f"sha1_git:{content['target']}"},
+                query_params=request.GET,
+            ),
+        )
+
     algo, checksum = query.parse_hash(query_string)
     checksum = hash_to_hex(checksum)
     origin_url = request.GET.get("origin_url")
@@ -204,6 +241,8 @@ def content_display(request, query_string):
             snapshot_context = get_snapshot_context(
                 origin_url=origin_url,
                 snapshot_id=snapshot_id,
+                timestamp=request.GET.get("timestamp"),
+                visit_id=request.GET.get("visit_id"),
                 branch_name=request.GET.get("branch"),
                 release_name=request.GET.get("release"),
                 revision_id=request.GET.get("revision"),

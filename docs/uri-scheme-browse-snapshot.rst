@@ -107,6 +107,10 @@ Snapshot content
 """"""""""""""""
 
 .. http:get:: /browse/snapshot/(snapshot_id)/content/
+   :deprecated:
+
+    .. warning::
+       That endpoint is deprecated, use :http:get:`/browse/content/` instead.
 
     HTML view that produces a display of a content reachable from
     a snapshot.
@@ -142,7 +146,7 @@ Snapshot content
    :deprecated:
 
     .. warning::
-      That endpoint is deprecated, use :http:get:`/browse/snapshot/(snapshot_id)/content/` instead.
+       That endpoint is deprecated, use :http:get:`/browse/content/` instead.
 
     HTML view that produces a display of a content reachable from
     a snapshot.

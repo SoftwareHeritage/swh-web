@@ -22,6 +22,8 @@ from requests.auth import HTTPBasicAuth
 
 from django.core.cache import cache
 from django.http import HttpRequest, QueryDict
+from django.shortcuts import redirect
+from django.urls import resolve
 from django.urls import reverse as django_reverse
 
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
@@ -415,3 +417,13 @@ def origin_visit_types() -> List[str]:
         return sorted(search().visit_types_count().keys())
     except Exception:
         return []
+
+
+def redirect_to_new_route(request, new_route, permanent=True):
+    """Redirect a request to another route with url args and query parameters
+    eg: /origin/<url:url-val>/log?path=test can be redirected as
+    /log?url=<url-val>&path=test. This can be used to deprecate routes
+    """
+    request_path = resolve(request.path_info)
+    args = {**request_path.kwargs, **request.GET.dict()}
+    return redirect(reverse(new_route, query_params=args), permanent=permanent,)

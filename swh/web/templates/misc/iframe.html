@@ -135,12 +135,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                       <i class="mdi mdi-refresh" aria-hidden="true"></i>
                     </a>
                   {% endif %}
-                  <a class="d-none d-lg-block" href="{% url 'browse-swhid' swhid %}"
+                  <a class="d-none d-lg-block" href="{{ archive_link }}"
                      target="_blank" rel="noopener noreferrer">
                     View in the archive
                     <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
                   </a>
-                  <a class="d-lg-none" href="{% url 'browse-swhid' swhid %}"
+                  <a class="d-lg-none" href="{{ archive_link }}"
                       target="_blank" rel="noopener noreferrer"
                       title="Go to archive">
                     <i class="mdi mdi-open-in-new" aria-hidden="true"></i>

@@ -7,7 +7,7 @@ homepage:
   - title: Welcome to the guided tour !
     intro: |
       This guided tour will showcase Software Heritage web application
-      features in order to help you navigate into the archive.<br/>
+      features to help you navigate into the archive.<br/>
       Let's see what we can do from the homepage first.
 
   - element: .swh-search-box
@@ -72,7 +72,8 @@ browseOrigin:
     intro: |
       You just arrived into the first view of the archived source code of an origin.
       The displayed source code files are taken from the most recent snapshot taken by
-      Software Heritage. By default, the content of the HEAD branch is displayed.
+      Software Heritage. By default, the content of the main branch (aka HEAD, master, ...)
+      is displayed.
       Continue your journey and dive deeper into the code and its development history.
 
   - element: "#swh-origin-url"
@@ -256,7 +257,6 @@ browseOrigin:
       This is what we will see in the next part of that tour.
 
 browseContent:
-
   - title: Browsing a source code file
     intro: |
       You just arrived in the source code file view. Let's check a few extra features.
@@ -307,4 +307,4 @@ browseContent:
   - title: Guided tour completed
     intro: |
       Thank your for following our guided tour ! <br/>
-      You will be now redirected to the page you were browsing prior launching it.
+      You will now be redirected to the page you were browsing prior to launching it.
