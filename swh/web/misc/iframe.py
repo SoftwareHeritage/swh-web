@@ -3,14 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf.urls import url
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.swhids import ObjectType, QualifiedSWHID
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
@@ -96,7 +96,7 @@ def _get_breacrumbs_data(
     focus_swhid: QualifiedSWHID,
     path: str,
     snapshot_context: Optional[SnapshotContext] = None,
-) -> List[Dict[str, Any]]:
+) -> Tuple[List[Dict[str, Any]], Optional[str]]:
     breadcrumbs = []
     filename = None
     # strip any leading or trailing slash from path qualifier of SWHID
@@ -114,6 +114,8 @@ def _get_breacrumbs_data(
     root_dir = None
     if snapshot_context and snapshot_context["root_directory"]:
         root_dir = snapshot_context["root_directory"]
+    elif swhid.anchor and swhid.anchor.object_type == ObjectType.DIRECTORY:
+        root_dir = swhid.anchor.object_id.hex()
     elif focus_swhid.object_type == ObjectType.DIRECTORY:
         root_dir = focus_swhid.object_id.hex()
 
@@ -125,6 +127,7 @@ def _get_breacrumbs_data(
             visit=swhid.visit,
             anchor=swhid.anchor,
         )
+
         breadcrumbs.append(
             {
                 "name": root_dir[:7],
@@ -133,7 +136,11 @@ def _get_breacrumbs_data(
                 "url": reverse(
                     "swhid-iframe",
                     url_args={"swhid": str(root_dir_swhid)},
-                    query_params={"focus_swhid": focus_swhid},
+                    query_params={
+                        "focus_swhid": focus_swhid
+                        if focus_swhid != root_dir_swhid
+                        else None
+                    },
                 ),
             }
         )
@@ -170,7 +177,7 @@ def _get_breacrumbs_data(
             }
         )
 
-    return breadcrumbs
+    return breadcrumbs, root_dir
 
 
 @xframe_options_exempt
@@ -182,10 +189,11 @@ def swhid_iframe(request, swhid: str):
     focus_swhid = request.GET.get("focus_swhid", swhid)
     parsed_swhid = None
     view_data = {}
-    breadcrumbs = []
+    breadcrumbs: List[Dict[str, Any]] = []
     swh_objects = []
     snapshot_context = None
     swhids_info_extra_context = {}
+    archive_link = None
     try:
         parsed_swhid = get_swhid(swhid)
         parsed_focus_swhid = get_swhid(focus_swhid)
@@ -239,7 +247,7 @@ def swhid_iframe(request, swhid: str):
 
         swhids_info_extra_context["path"] = path
         if parsed_swhid and view_data:
-            breadcrumbs = _get_breacrumbs_data(
+            breadcrumbs, root_dir = _get_breacrumbs_data(
                 parsed_swhid, parsed_focus_swhid, path, snapshot_context
             )
 
@@ -267,6 +275,28 @@ def swhid_iframe(request, swhid: str):
                     )
                 )
 
+            archive_link = reverse("browse-swhid", url_args={"swhid": swhid})
+            if (
+                parsed_swhid.origin is None
+                and parsed_swhid.visit is None
+                and parsed_swhid.anchor is None
+                and root_dir is not None
+            ):
+                # qualifier values cannot be used to get root directory from them,
+                # we need to add it as anchor in the SWHID argument of the archive link
+                root_dir_swhid = CoreSWHID(
+                    object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(root_dir)
+                )
+                archive_swhid = QualifiedSWHID(
+                    object_type=parsed_swhid.object_type,
+                    object_id=parsed_swhid.object_id,
+                    path=parsed_swhid.path,
+                    anchor=root_dir_swhid,
+                )
+                archive_link = reverse(
+                    "browse-swhid", url_args={"swhid": f"{archive_swhid}"},
+                )
+
     except BadInputExc as e:
         error_info = {"status_code": 400, "description": f"BadInputExc: {str(e)}"}
     except NotFoundExc as e:
@@ -285,6 +315,7 @@ def swhid_iframe(request, swhid: str):
             "breadcrumbs": breadcrumbs,
             "swhid": swhid,
             "focus_swhid": focus_swhid,
+            "archive_link": archive_link,
             "error_code": error_info["status_code"],
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
