@@ -308,9 +308,9 @@ static/js/browse.00748c8676ad34ff5f81.js.LICENSE.txt
 static/js/browse.00748c8676ad34ff5f81.js.map
 static/js/d3.9fbc8c4f808d6305db8c.js
 static/js/d3.9fbc8c4f808d6305db8c.js.map
-static/js/guided_tour.42038cd3cf5cb41e92e0.js
-static/js/guided_tour.42038cd3cf5cb41e92e0.js.LICENSE.txt
-static/js/guided_tour.42038cd3cf5cb41e92e0.js.map
+static/js/guided_tour.9734aa27598765424c60.js
+static/js/guided_tour.9734aa27598765424c60.js.LICENSE.txt
+static/js/guided_tour.9734aa27598765424c60.js.map
 static/js/highlightjs.08163204b82028c51462.js
 static/js/highlightjs.08163204b82028c51462.js.map
 static/js/mathjax.82b6ebf86da778cadb7d.js

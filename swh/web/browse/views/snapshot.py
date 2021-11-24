@@ -9,14 +9,13 @@ from django.shortcuts import redirect
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import (
     browse_snapshot_branches,
-    browse_snapshot_content,
     browse_snapshot_directory,
     browse_snapshot_log,
     browse_snapshot_releases,
     get_snapshot_context,
 )
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import redirect_to_new_route, reverse
 
 
 def get_snapshot_from_request(request):
@@ -93,17 +92,16 @@ def snapshot_directory_browse_legacy(request, snapshot_id, path=None):
     checksum_args=["snapshot_id"],
 )
 def snapshot_content_browse(request, snapshot_id):
-    """Django view that produces an HTML display of a content
+    """
+    This route is deprecated; use http:get:`/browse/content` instead
+
+    Django view that produces an HTML display of a content
     collected in a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/content/`
     """
-    return browse_snapshot_content(
-        request,
-        snapshot_id=snapshot_id,
-        path=request.GET.get("path"),
-        selected_language=request.GET.get("language"),
-    )
+
+    return redirect_to_new_route(request, "browse-content")
 
 
 @browse_route(
@@ -112,18 +110,16 @@ def snapshot_content_browse(request, snapshot_id):
     checksum_args=["snapshot_id"],
 )
 def snapshot_content_browse_legacy(request, snapshot_id, path):
-    """Django view that produces an HTML display of a content
+    """
+    This route is deprecated; use http:get:`/browse/content` instead
+
+    Django view that produces an HTML display of a content
     collected in a snapshot.
 
     The url that points to it is
     :http:get:`/browse/snapshot/(snapshot_id)/content/(path)/`
     """
-    return browse_snapshot_content(
-        request,
-        snapshot_id=snapshot_id,
-        path=path,
-        selected_language=request.GET.get("language"),
-    )
+    return redirect_to_new_route(request, "browse-content")
 
 
 @browse_route(

@@ -4,27 +4,21 @@
 # See top-level LICENSE file for more information
 
 from django.shortcuts import redirect, render
-from django.urls import resolve
 
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import (
-    browse_snapshot_content,
     browse_snapshot_directory,
     get_snapshot_context,
 )
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
-
-
-def redirect_to_new_route(request, new_route):
-    request_path = resolve(request.path_info)
-    # Send all the url_args and the request_args as query params
-    # eg /origin/<url:url-val>/log?path=test
-    # will be send as /log?url=<url-val>&path=test
-    args = {**request_path.kwargs, **request.GET.dict()}
-    return redirect(reverse(new_route, query_params=args), permanent=True,)
+from swh.web.common.utils import (
+    format_utc_iso_date,
+    parse_iso8601_date_to_utc,
+    redirect_to_new_route,
+    reverse,
+)
 
 
 @browse_route(
@@ -73,20 +67,16 @@ def origin_directory_browse_legacy(request, origin_url, timestamp=None, path=Non
     r"origin/content/", view_name="browse-origin-content",
 )
 def origin_content_browse(request):
-    """Django view that produces an HTML display of a content
+    """
+    This route is deprecated; use http:get:`/browse/content` instead
+
+    Django view that produces an HTML display of a content
     associated to an origin for a given visit.
 
     The URL that points to it is :http:get:`/browse/origin/content/`
 
     """
-    return browse_snapshot_content(
-        request,
-        origin_url=request.GET.get("origin_url"),
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=request.GET.get("timestamp"),
-        path=request.GET.get("path"),
-        selected_language=request.GET.get("language"),
-    )
+    return redirect_to_new_route(request, "browse-content")
 
 
 @browse_route(
@@ -96,7 +86,10 @@ def origin_content_browse(request):
     view_name="browse-origin-content-legacy",
 )
 def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None):
-    """Django view that produces an HTML display of a content
+    """
+    This route is deprecated; use http:get:`/browse/content` instead
+
+    Django view that produces an HTML display of a content
     associated to an origin for a given visit.
 
     The URLs that point to it are
@@ -104,14 +97,7 @@ def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None)
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/content/(path)/`
 
     """
-    return browse_snapshot_content(
-        request,
-        origin_url=origin_url,
-        snapshot_id=request.GET.get("snapshot"),
-        timestamp=timestamp,
-        path=path,
-        selected_language=request.GET.get("language"),
-    )
+    return redirect_to_new_route(request, "browse-content")
 
 
 @browse_route(

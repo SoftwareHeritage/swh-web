@@ -310,3 +310,22 @@ def _origin_releases_test_helper(
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
 
     _check_origin_link(resp, origin_info["url"])
+
+
+def test_snapshot_content_redirect(client, snapshot):
+    qry = {"extra-arg": "extra"}
+    url = reverse(
+        "browse-snapshot-content", url_args={"snapshot_id": snapshot}, query_params=qry
+    )
+    resp = check_html_get_response(client, url, status_code=301)
+    assert resp.url == reverse(
+        "browse-content", query_params={**{"snapshot_id": snapshot}, **qry}
+    )
+
+
+def test_snapshot_content_legacy_redirect(client, snapshot):
+    qry = {"extra-arg": "extra"}
+    url_args = {"snapshot_id": snapshot, "path": "test.txt"}
+    url = reverse("browse-snapshot-content-legacy", url_args=url_args, query_params=qry)
+    resp = check_html_get_response(client, url, status_code=301)
+    assert resp.url == reverse("browse-content", query_params={**url_args, **qry})
