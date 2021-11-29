@@ -168,7 +168,7 @@ describe('Test origin-search', function() {
       .get('#swh-search-origin-metadata')
       .check({force: true})
       .then(() => {
-        const searchText = origin.url;
+        const searchText = origin.url.slice(0, -1);
         doSearch(searchText);
         cy.location('search').then(locationSearch => {
           const urlParams = new URLSearchParams(locationSearch);
@@ -500,7 +500,7 @@ describe('Test origin-search', function() {
 
       cy.wait('@resolveSWHID');
 
-      cy.xhrShouldBeCalled('resolveSWHID', 1);
+      cy.xhrShouldBeCalled('resolveSWHID', 2);
       cy.xhrShouldBeCalled('searchOrigin', 0);
     });
   });

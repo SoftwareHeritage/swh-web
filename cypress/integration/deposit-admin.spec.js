@@ -51,10 +51,8 @@ describe('Test admin deposit page', function() {
 
   it('Should display properly entries', function() {
     cy.adminLogin();
-    cy.visit(this.Urls.admin_deposit());
 
     const testDeposits = responseDeposits;
-
     cy.intercept(`${this.Urls.admin_deposit_list()}**`, {
       body: {
         'draw': 10,
@@ -63,6 +61,8 @@ describe('Test admin deposit page', function() {
         'data': testDeposits
       }
     }).as('listDeposits');
+
+    cy.visit(this.Urls.admin_deposit());
 
     cy.location('pathname')
       .should('be.equal', this.Urls.admin_deposit());
