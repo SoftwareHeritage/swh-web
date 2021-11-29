@@ -163,10 +163,10 @@ describe('Test top-bar', function() {
     ];
 
     for (let i = 0; i < statusTestData.length; ++i) {
-      cy.visit(url);
       cy.intercept(`${statusUrl}/**`, {
         body: genStatusResponse(statusTestData[i].status, statusTestData[i].statusCode)
       }).as(`getSwhStatusData`);
+      cy.visit(url);
       cy.wait(`@getSwhStatusData`);
       cy.get('.swh-current-status-indicator').should('have.class', statusTestData[i].color);
       cy.get('#swh-current-status-description').should('have.text', statusTestData[i].status);
