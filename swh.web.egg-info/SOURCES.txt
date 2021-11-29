@@ -184,8 +184,8 @@ static/css/vault.25fc5883f848b48ffa5b.css
 static/css/vault.25fc5883f848b48ffa5b.css.map
 static/css/vendors.94bf775f430dd0aeeda9.css
 static/css/vendors.94bf775f430dd0aeeda9.css.map
-static/css/webapp.2008d290484a26afcbc4.css
-static/css/webapp.2008d290484a26afcbc4.css.map
+static/css/webapp.556dd4db8176c80d6de7.css
+static/css/webapp.556dd4db8176c80d6de7.css.map
 static/fonts/MathJax_AMS-Regular.woff
 static/fonts/MathJax_Calligraphic-Bold.woff
 static/fonts/MathJax_Calligraphic-Regular.woff
@@ -268,6 +268,7 @@ static/img/swh-logo.svg
 static/img/swh-spinner-small.gif
 static/img/swh-spinner.gif
 static/img/swh-vault.png
+static/img/swh_givingtuesday.png
 static/img/icons/swh-logo-32x32.png
 static/img/icons/swh-logo-archive-180x180.png
 static/img/icons/swh-logo-archive-192x192.png
@@ -1568,6 +1569,7 @@ swh/web/common/migrations/__init__.py
 swh/web/misc/__init__.py
 swh/web/misc/badges.py
 swh/web/misc/coverage.py
+swh/web/misc/fundraising.py
 swh/web/misc/iframe.py
 swh/web/misc/metrics.py
 swh/web/misc/origin_save.py
@@ -1619,6 +1621,7 @@ swh/web/templates/includes/top-navigation.html
 swh/web/templates/includes/vault-common.html
 swh/web/templates/includes/vault-create-tasks.html
 swh/web/templates/misc/coverage.html
+swh/web/templates/misc/fundraising-banner.html
 swh/web/templates/misc/iframe.html
 swh/web/templates/misc/jslicenses.html
 swh/web/templates/misc/origin-save.html
@@ -1691,6 +1694,7 @@ swh/web/tests/common/test_utils.py
 swh/web/tests/misc/__init__.py
 swh/web/tests/misc/test_badges.py
 swh/web/tests/misc/test_coverage.py
+swh/web/tests/misc/test_fundraising.py
 swh/web/tests/misc/test_iframe.py
 swh/web/tests/misc/test_metrics.py
 swh/web/tests/misc/test_origin_save.py

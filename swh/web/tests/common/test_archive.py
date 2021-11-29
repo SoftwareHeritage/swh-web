@@ -216,6 +216,14 @@ def test_lookup_origin(archive_data, new_origin):
     assert actual_origin == expected_origin
 
 
+def test_lookup_origin_snapshots(archive_data, origin_with_multiple_visits):
+    origin_url = origin_with_multiple_visits["url"]
+    visits = archive_data.origin_visit_get(origin_url)
+
+    origin_snapshots = archive.lookup_origin_snapshots(origin_with_multiple_visits)
+    assert set(origin_snapshots) == {v["snapshot"] for v in visits}
+
+
 def test_lookup_release_ko_id_checksum_not_a_sha1(invalid_sha1):
     with pytest.raises(BadInputExc) as e:
         archive.lookup_release(invalid_sha1)
