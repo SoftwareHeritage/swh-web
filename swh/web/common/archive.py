@@ -295,6 +295,21 @@ def lookup_origins(
     )
 
 
+def lookup_origin_snapshots(origin: OriginInfo) -> List[str]:
+    """Return ids of the snapshots of an origin.
+
+    Args:
+        origin: origin's dict with 'url' key
+
+    Returns:
+        List of unique snapshot identifiers in hexadecimal format resulting
+        from the visits of the origin.
+    """
+    return [
+        snapshot.hex() for snapshot in storage.origin_snapshot_get_all(origin["url"])
+    ]
+
+
 def search_origin(
     url_pattern: str,
     use_ql: bool = False,

@@ -122,6 +122,7 @@ DEFAULT_CONFIG = {
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", STAGING_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),
+    "give": ("dict", {"public_key": "", "token": ""}),
 }
 
 swhweb_config: Dict[str, Any] = {}

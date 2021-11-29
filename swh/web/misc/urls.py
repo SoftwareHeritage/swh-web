@@ -52,6 +52,7 @@ urlpatterns = [
     url(r"^", include("swh.web.misc.badges")),
     url(r"^metrics/prometheus/$", prometheus_metrics, name="metrics-prometheus"),
     url(r"^", include("swh.web.misc.iframe")),
+    url(r"^", include("swh.web.misc.fundraising")),
 ]
 
 

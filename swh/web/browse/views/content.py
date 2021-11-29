@@ -174,7 +174,7 @@ def _get_content_from_request(request):
     path = request.GET.get("path")
     if path is None:
         raise BadInputExc("The path query parameter must be provided.")
-    snapshot = request.GET.get("snapshot")
+    snapshot = request.GET.get("snapshot") or request.GET.get("snapshot_id")
     origin_url = request.GET.get("origin_url")
     if snapshot is None and origin_url is None:
         raise BadInputExc(
@@ -225,7 +225,7 @@ def content_display(request, query_string=None):
     selected_language = request.GET.get("language")
     if not origin_url:
         origin_url = request.GET.get("origin")
-    snapshot_id = request.GET.get("snapshot")
+    snapshot_id = request.GET.get("snapshot") or request.GET.get("snapshot_id")
     path = request.GET.get("path")
     content_data = {}
     error_info = {"status_code": 200, "description": None}
