@@ -591,6 +591,11 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.82b6ebf86da778cadb7d.js",
       "publicPath": "/static/js/mathjax.82b6ebf86da778cadb7d.js"
     },
+    "css/browse.6315ef52ed73df532bed.css.map": {
+      "name": "css/browse.6315ef52ed73df532bed.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
+      "publicPath": "/static/css/browse.6315ef52ed73df532bed.css.map"
+    },
     "css/auth.0336a94c2c02b4b2a4f4.css.map": {
       "name": "css/auth.0336a94c2c02b4b2a4f4.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/auth.0336a94c2c02b4b2a4f4.css.map",
@@ -601,20 +606,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.653462d58e0518f2bf11.css.map",
       "publicPath": "/static/css/guided_tour.653462d58e0518f2bf11.css.map"
     },
-    "css/browse.6315ef52ed73df532bed.css.map": {
-      "name": "css/browse.6315ef52ed73df532bed.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
-      "publicPath": "/static/css/browse.6315ef52ed73df532bed.css.map"
+    "css/origin.e28207f869e6b8529db3.css.map": {
+      "name": "css/origin.e28207f869e6b8529db3.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin.e28207f869e6b8529db3.css.map",
+      "publicPath": "/static/css/origin.e28207f869e6b8529db3.css.map"
     },
     "css/revision.4085c2cec17d77feb2b7.css.map": {
       "name": "css/revision.4085c2cec17d77feb2b7.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/revision.4085c2cec17d77feb2b7.css.map",
       "publicPath": "/static/css/revision.4085c2cec17d77feb2b7.css.map"
-    },
-    "css/origin.e28207f869e6b8529db3.css.map": {
-      "name": "css/origin.e28207f869e6b8529db3.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin.e28207f869e6b8529db3.css.map",
-      "publicPath": "/static/css/origin.e28207f869e6b8529db3.css.map"
     },
     "css/vault.25fc5883f848b48ffa5b.css.map": {
       "name": "css/vault.25fc5883f848b48ffa5b.css.map",
