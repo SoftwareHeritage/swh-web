@@ -17,7 +17,6 @@ See top-level LICENSE file for more information
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Software Heritage fundraising banner</title>
     {% render_bundle 'vendors' %}
-    {% render_bundle 'webapp' %}
     <script>
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
@@ -93,7 +92,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% comment %} large screen layout {% endcomment %}
         <div class="row align-items-center justify-content-end d-none d-xl-flex">
           <img src="{% static 'img/swh_givingtuesday.png' %}">
-          <div class="col-7 text-right align-middle pr-3">
+          <div class="col-8 text-right align-middle pr-3">
             <a target="_blank" id="swh-fundraising-text" rel="noopener noreferrer" href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Help Preserve Software Source Code for Future Generations
@@ -104,14 +103,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               {% endif %}
             </a>
           </div>
-          <div class="col-3 text-right">
+          <div class="col-2 text-right">
             {% if nb_donations != -1 %}
               <div class="progress position-relative">
                 <div class="progress-bar" role="progressbar" style="width: {{ goal_percent }}%;"
                      aria-valuenow="{{ nb_donations }}" aria-valuemin="0" aria-valuemax="{{ donations_goal }}">
                 </div>
                 <small class="justify-content-center d-flex position-absolute w-100">
-                  Current goal: {{ donations_goal }} donations, {{ goal_percent }}% complete
+                  {% if lang == "en" %}
+                    Goal: {{ donations_goal }} donations, {{ goal_percent }}% complete
+                  {% elif lang == "fr" %}
+                    Objectif: {{ donations_goal }} donations, {{ goal_percent }}% complété
+                  {% elif lang == "es" %}
+                    Objetivo: {{ donations_goal }} donaciones, {{ goal_percent }}% terminado
+                  {% endif %}
                 </small>
               </div>
             {% endif %}
@@ -159,8 +164,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </div>
     </div>
     <script>
-      if ($('body').width() < 1500) {
-        $('#swh-fundraising-text').hide();
+      if (jQuery('body').width() < 1500 || window.devicePixelRatio > 1) {
+        jQuery('#swh-fundraising-text').hide();
       }
     </script>
   </body>
