@@ -591,15 +591,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.82b6ebf86da778cadb7d.js",
       "publicPath": "/static/js/mathjax.82b6ebf86da778cadb7d.js"
     },
-    "css/browse.6315ef52ed73df532bed.css.map": {
-      "name": "css/browse.6315ef52ed73df532bed.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
-      "publicPath": "/static/css/browse.6315ef52ed73df532bed.css.map"
-    },
     "css/auth.0336a94c2c02b4b2a4f4.css.map": {
       "name": "css/auth.0336a94c2c02b4b2a4f4.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/auth.0336a94c2c02b4b2a4f4.css.map",
       "publicPath": "/static/css/auth.0336a94c2c02b4b2a4f4.css.map"
+    },
+    "css/browse.6315ef52ed73df532bed.css.map": {
+      "name": "css/browse.6315ef52ed73df532bed.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.6315ef52ed73df532bed.css.map",
+      "publicPath": "/static/css/browse.6315ef52ed73df532bed.css.map"
     },
     "css/guided_tour.653462d58e0518f2bf11.css.map": {
       "name": "css/guided_tour.653462d58e0518f2bf11.css.map",
@@ -631,15 +631,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.556dd4db8176c80d6de7.css.map",
       "publicPath": "/static/css/webapp.556dd4db8176c80d6de7.css.map"
     },
-    "css/highlightjs.ae43064ab38a65a04d81.css.map": {
-      "name": "css/highlightjs.ae43064ab38a65a04d81.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/highlightjs.ae43064ab38a65a04d81.css.map",
-      "publicPath": "/static/css/highlightjs.ae43064ab38a65a04d81.css.map"
-    },
     "css/showdown.426fbf6a7a6653fd4cbb.css.map": {
       "name": "css/showdown.426fbf6a7a6653fd4cbb.css.map",
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/showdown.426fbf6a7a6653fd4cbb.css.map",
       "publicPath": "/static/css/showdown.426fbf6a7a6653fd4cbb.css.map"
+    },
+    "css/highlightjs.ae43064ab38a65a04d81.css.map": {
+      "name": "css/highlightjs.ae43064ab38a65a04d81.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/highlightjs.ae43064ab38a65a04d81.css.map",
+      "publicPath": "/static/css/highlightjs.ae43064ab38a65a04d81.css.map"
     },
     "css/org.6851b70c924e28f6bf51.css.map": {
       "name": "css/org.6851b70c924e28f6bf51.css.map",
