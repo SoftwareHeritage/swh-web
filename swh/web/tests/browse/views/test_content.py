@@ -10,6 +10,9 @@ import pytest
 
 from django.utils.html import escape
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.model import ObjectType as ModelObjectType
+from swh.model.model import Release, Snapshot, SnapshotBranch, TargetType
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
@@ -1019,3 +1022,53 @@ def _check_origin_link(resp, origin_url):
         "browse-origin", query_params={"origin_url": origin_url}
     )
     assert_contains(resp, f'href="{browse_origin_url}"')
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("staff_user_logged_in", [False, True])
+def test_browse_content_snapshot_context_release_directory_target(
+    client, staff_user, archive_data, directory_with_files, staff_user_logged_in
+):
+
+    if staff_user_logged_in:
+        client.force_login(staff_user)
+
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=hash_to_bytes(directory_with_files),
+        target_type=ModelObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    dir_content = archive_data.directory_ls(directory_with_files)
+    file_entry = random.choice(
+        [entry for entry in dir_content if entry["type"] == "file"]
+    )
+
+    sha1_git = file_entry["checksums"]["sha1_git"]
+
+    browse_url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{sha1_git}"},
+        query_params={
+            "path": file_entry["name"],
+            "release": release_name,
+            "snapshot": snapshot.id.hex(),
+        },
+    )
+
+    check_html_get_response(
+        client, browse_url, status_code=200, template_used="browse/content.html"
+    )

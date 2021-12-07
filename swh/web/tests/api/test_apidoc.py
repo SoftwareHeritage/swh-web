@@ -39,9 +39,8 @@ _httpdomain_doc = """
 
     :>json object author: information about the author of the revision
     :>json object committer: information about the committer of the revision
-    :>json string committer_date: ISO representation of the commit date
-        (in UTC)
-    :>json string date: ISO representation of the revision date (in UTC)
+    :>json string committer_date: RFC3339 representation of the commit date
+    :>json string date: RFC3339 representation of the revision date
     :>json string directory: the unique identifier that revision points to
     :>json string directory_url: link to
         :http:get:`/api/1/directory/(sha1_git)/[(path)/]` to get information
@@ -288,12 +287,12 @@ def test_api_doc_parse_httpdomain():
         {
             "name": "committer_date",
             "type": "string",
-            "doc": "ISO representation of the commit date (in UTC)",
+            "doc": "RFC3339 representation of the commit date",
         },
         {
             "name": "date",
             "type": "string",
-            "doc": "ISO representation of the revision date (in UTC)",
+            "doc": "RFC3339 representation of the revision date",
         },
         {
             "name": "directory",
