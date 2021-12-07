@@ -30,7 +30,6 @@ dist/
 .pytest_cache
 .tox/
 .mypy_cache/
-debian/
 package-lock.json
 yarn-error.log
 cypress/mochawesome/
