@@ -1220,7 +1220,7 @@ def browse_snapshot_releases(
         _, displayed_releases, _ = process_snapshot_branches(snapshot)
 
     for release in displayed_releases:
-        query_params_tgt = {"snapshot": snapshot_id}
+        query_params_tgt = {"snapshot": snapshot_id, "release": release["name"]}
         if origin_info:
             query_params_tgt["origin_url"] = origin_info["url"]
 

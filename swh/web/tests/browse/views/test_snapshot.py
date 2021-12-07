@@ -295,6 +295,7 @@ def _origin_releases_test_helper(
     assert_contains(resp, 'title="The release', count=nb_releases)
 
     for release in origin_releases:
+        query_params["release"] = release["name"]
         browse_release_url = reverse(
             "browse-release",
             url_args={"sha1_git": release["id"]},
