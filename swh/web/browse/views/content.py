@@ -380,12 +380,13 @@ def content_display(request, query_string=None):
         )
 
     if snapshot_context:
-        swh_objects.append(
-            SWHObjectInfo(
-                object_type=ObjectType.REVISION,
-                object_id=snapshot_context["revision_id"],
+        if snapshot_context["revision_id"]:
+            swh_objects.append(
+                SWHObjectInfo(
+                    object_type=ObjectType.REVISION,
+                    object_id=snapshot_context["revision_id"],
+                )
             )
-        )
         swh_objects.append(
             SWHObjectInfo(
                 object_type=ObjectType.SNAPSHOT,

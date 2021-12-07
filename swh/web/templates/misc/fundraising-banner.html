@@ -55,6 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         height: 60px;
         position: absolute;
         left: 0;
+        padding-left: 6rem;
       }
 
       .swh-fundraising-banner .d-xl-none {
@@ -91,9 +92,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
         {% comment %} large screen layout {% endcomment %}
         <div class="row align-items-center justify-content-end d-none d-xl-flex">
-          <img id="swh-fundraising-img" src="{% static 'img/swh_givingtuesday.png' %}">
+          <img id="swh-fundraising-img" src="{% static 'img/swh-donor.png' %}">
           <div class="col-8 text-right align-middle pr-3">
-            <a target="_blank" id="swh-fundraising-text" rel="noopener noreferrer" href="{{ donation_form_url }}">
+            <a target="_blank" rel="noopener noreferrer" id="swh-fundraising-text" href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Help Preserve Software Source Code for Future Generations
               {% elif lang == "fr" %}
@@ -128,7 +129,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endif %}
           </div>
           <div class="col-2 text-left pl-3">
-            <a target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-primary" role="button"
+            <a target="_blank" rel="noopener noreferrer" id="swh-fundraising-text" class="btn btn-lg btn-primary" role="button"
               href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Become a donor

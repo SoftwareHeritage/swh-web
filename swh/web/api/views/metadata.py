@@ -37,14 +37,14 @@ def api_raw_extrinsic_metadata_swhid(request, target):
             should be returned
         :query string authority: A metadata authority identifier, formatted as
             ``<type> <IRI>``. Required.
-        :query string after: An ISO representation of the minimum timestamp of metadata
+        :query string after: ISO8601 representation of the minimum timestamp of metadata
             to fetch. Defaults to allowing all metadata.
         :query int limit: Maximum number of metadata objects to return.
 
         {common_headers}
 
         :>jsonarr string target: SWHID of the object described by this metadata
-        :>jsonarr string discovery_date: ISO8601 timestamp of the moment this
+        :>jsonarr string discovery_date: ISO8601/RFC3339 timestamp of the moment this
             metadata was collected.
         :>jsonarr object authority: authority this metadata is coming from
         :>jsonarr object fetcher: tool used to fetch the metadata
