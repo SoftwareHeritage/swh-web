@@ -30,7 +30,7 @@ def api_release(request, sha1_git):
         {common_headers}
 
         :>json object author: information about the author of the release
-        :>json string date: ISO representation of the release date (in UTC)
+        :>json string date: RFC3339 representation of the release date
         :>json string id: the release unique identifier
         :>json string message: the message associated to the release
         :>json string name: the name of the release

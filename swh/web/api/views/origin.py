@@ -28,7 +28,7 @@ DOC_RETURN_ORIGIN = """
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
 
 DOC_RETURN_ORIGIN_VISIT = """
-        :>json string date: ISO representation of the visit date (in UTC)
+        :>json string date: ISO8601/RFC3339 representation of the visit date (in UTC)
         :>json str origin: the origin canonical url
         :>json string origin_url: link to get information about the origin
         :>jsonarr string snapshot: the snapshot identifier of the visit

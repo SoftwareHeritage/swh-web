@@ -159,12 +159,13 @@ def _directory_browse(request, sha1_git, path=None):
     swh_objects = [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=sha1_git)]
 
     if snapshot_context:
-        swh_objects.append(
-            SWHObjectInfo(
-                object_type=ObjectType.REVISION,
-                object_id=snapshot_context["revision_id"],
+        if snapshot_context["revision_id"]:
+            swh_objects.append(
+                SWHObjectInfo(
+                    object_type=ObjectType.REVISION,
+                    object_id=snapshot_context["revision_id"],
+                )
             )
-        )
         swh_objects.append(
             SWHObjectInfo(
                 object_type=ObjectType.SNAPSHOT,

@@ -6,17 +6,17 @@
 import random
 
 from hypothesis import given
+import pytest
 
 from django.utils.html import escape
 
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
-    Directory,
-    DirectoryEntry,
     Origin,
     OriginVisit,
     OriginVisitStatus,
+    Release,
     Revision,
     RevisionType,
     Snapshot,
@@ -24,6 +24,8 @@ from swh.model.model import (
     TargetType,
     TimestampWithTimezone,
 )
+from swh.model.model import Directory, DirectoryEntry
+from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
@@ -497,3 +499,51 @@ def _directory_view_checks(
     assert_contains(resp, swh_dir_id_url)
 
     assert_not_contains(resp, "swh-metadata-popover")
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("staff_user_logged_in", [False, True])
+def test_browse_directory_snapshot_context_release_directory_target(
+    client, staff_user, archive_data, directory_with_subdirs, staff_user_logged_in
+):
+
+    if staff_user_logged_in:
+        client.force_login(staff_user)
+
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=hash_to_bytes(directory_with_subdirs),
+        target_type=ModelObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    dir_content = archive_data.directory_ls(directory_with_subdirs)
+    dir_entry = random.choice(
+        [entry for entry in dir_content if entry["type"] == "dir"]
+    )
+
+    browse_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory_with_subdirs},
+        query_params={
+            "path": dir_entry["name"],
+            "release": release_name,
+            "snapshot": snapshot.id.hex(),
+        },
+    )
+
+    check_html_get_response(
+        client, browse_url, status_code=200, template_used="browse/directory.html"
+    )
