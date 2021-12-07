@@ -99,9 +99,16 @@ DATABASES = {
     }
 }
 
-# when not running unit tests, make the webapp fetch data from memory storages
-if "pytest" not in sys.argv[0] and "PYTEST_XDIST_WORKER" not in os.environ:
-    swh_web_config.update({"debug": True, "e2e_tests_mode": True})
+# when running cypress tests, make the webapp fetch data from memory storages
+if not _pytest:
+    swh_web_config.update(
+        {
+            "debug": True,
+            "e2e_tests_mode": True,
+            # ensure scheduler not available to avoid side effects in cypress tests
+            "scheduler": {"cls": "remote", "url": ""},
+        }
+    )
     from django.conf import settings
 
     from swh.web.tests.data import get_tests_data, override_storages
