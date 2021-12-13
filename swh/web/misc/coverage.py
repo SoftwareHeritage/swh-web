@@ -12,6 +12,7 @@ import sentry_sdk
 
 from django.conf.urls import url
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
@@ -298,6 +299,7 @@ def _search_url(query: str, visit_type: str) -> str:
 
 
 @xframe_options_exempt
+@never_cache
 def _swh_coverage(request):
     listers_metrics = _get_listers_metrics()
     for origins in listed_origins["origins"]:
