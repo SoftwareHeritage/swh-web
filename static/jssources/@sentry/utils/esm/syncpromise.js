@@ -3,16 +3,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isThenable } from './is';
-/** SyncPromise internal states */
-var States;
-(function (States) {
-    /** Pending */
-    States["PENDING"] = "PENDING";
-    /** Resolved / OK */
-    States["RESOLVED"] = "RESOLVED";
-    /** Rejected / Error */
-    States["REJECTED"] = "REJECTED";
-})(States || (States = {}));
 /**
  * Thenable class that behaves like a Promise and follows it's interface
  * but is not async internally
@@ -20,19 +10,19 @@ var States;
 var SyncPromise = /** @class */ (function () {
     function SyncPromise(executor) {
         var _this = this;
-        this._state = States.PENDING;
+        this._state = "PENDING" /* PENDING */;
         this._handlers = [];
         /** JSDoc */
         this._resolve = function (value) {
-            _this._setResult(States.RESOLVED, value);
+            _this._setResult("RESOLVED" /* RESOLVED */, value);
         };
         /** JSDoc */
         this._reject = function (reason) {
-            _this._setResult(States.REJECTED, reason);
+            _this._setResult("REJECTED" /* REJECTED */, reason);
         };
         /** JSDoc */
         this._setResult = function (state, value) {
-            if (_this._state !== States.PENDING) {
+            if (_this._state !== "PENDING" /* PENDING */) {
                 return;
             }
             if (isThenable(value)) {
@@ -51,7 +41,7 @@ var SyncPromise = /** @class */ (function () {
         };
         /** JSDoc */
         this._executeHandlers = function () {
-            if (_this._state === States.PENDING) {
+            if (_this._state === "PENDING" /* PENDING */) {
                 return;
             }
             var cachedHandlers = _this._handlers.slice();
@@ -60,13 +50,13 @@ var SyncPromise = /** @class */ (function () {
                 if (handler.done) {
                     return;
                 }
-                if (_this._state === States.RESOLVED) {
+                if (_this._state === "RESOLVED" /* RESOLVED */) {
                     if (handler.onfulfilled) {
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         handler.onfulfilled(_this._value);
                     }
                 }
-                if (_this._state === States.REJECTED) {
+                if (_this._state === "REJECTED" /* REJECTED */) {
                     if (handler.onrejected) {
                         handler.onrejected(_this._value);
                     }
