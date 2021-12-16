@@ -1,8 +1,12 @@
-swh-web (0.0.347-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.348-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.348     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2021-12-16 17:01:49
+    +0100)
+  * Upstream changes:     - v0.0.348     - Adapt coverage tooltip for
+    debian based distributions
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 14 Dec 2021 19:36:57 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 16 Dec 2021 16:21:39 +0000
 
 swh-web (0.0.347-1~swh1) unstable-swh; urgency=medium
 
