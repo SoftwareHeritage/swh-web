@@ -227,5 +227,5 @@ def error_response_handler(
     """Custom DRF exception handler used to generate API error responses.
     """
     sentry_capture_exception(exc)
-    doc_data = getattr(exc, "doc_data", None)
+    doc_data = getattr(exc, "doc_data", {})
     return error_response(context["request"], exc, doc_data)
