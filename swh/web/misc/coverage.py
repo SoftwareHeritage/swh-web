@@ -60,7 +60,7 @@ listed_origins = {
         {
             "type": "debian",
             "info_url": "https://www.debian.org",
-            "info": "source packages from the Debian distribution",
+            "info": "source packages from Debian and Debian-based distributions",
             "search_pattern": "deb://",
         },
         {
