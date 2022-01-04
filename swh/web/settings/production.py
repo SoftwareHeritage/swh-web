@@ -59,3 +59,6 @@ DATABASES = {
 }
 
 WEBPACK_LOADER["DEFAULT"]["CACHE"] = True
+
+LOGIN_URL = "/oidc/login/"
+LOGIN_REDIRECT_URL = "/oidc/profile/"
