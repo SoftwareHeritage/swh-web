@@ -948,6 +948,9 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
     revision_id = snapshot_context["revision_id"]
 
+    if revision_id is None:
+        raise NotFoundExc("No revisions history found in the current snapshot context.")
+
     per_page = int(request.GET.get("per_page", PER_PAGE))
     offset = int(request.GET.get("offset", 0))
     revs_ordering = request.GET.get("revs_ordering", "committer_date")
