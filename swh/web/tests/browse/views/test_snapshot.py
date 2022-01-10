@@ -363,9 +363,20 @@ def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
     )
     archive_data.snapshot_add([snapshot])
 
-    url = reverse("browse-snapshot-log", url_args={"snapshot_id": snapshot.id.hex()})
+    snp_url = reverse(
+        "browse-snapshot-directory", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+    log_url = reverse(
+        "browse-snapshot-log", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+
     resp = check_html_get_response(
-        client, url, status_code=404, template_used="error.html"
+        client, snp_url, status_code=200, template_used="browse/directory.html"
+    )
+    assert_not_contains(resp, log_url)
+
+    resp = check_html_get_response(
+        client, log_url, status_code=404, template_used="error.html"
     )
     assert_contains(
         resp,

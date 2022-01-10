@@ -823,13 +823,15 @@ def browse_snapshot_directory(
 
     swh_objects = []
     vault_cooking = {}
-    revision_found = True
+    revision_found = False
 
     if sha1_git is None and revision_id is not None:
         try:
             archive.lookup_revision(revision_id)
         except NotFoundExc:
-            revision_found = False
+            pass
+        else:
+            revision_found = True
 
     if sha1_git is not None:
         swh_objects.append(
