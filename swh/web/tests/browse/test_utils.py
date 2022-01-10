@@ -1,13 +1,16 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+import pytest
 
 from swh.web.browse.utils import (
     gen_link,
     gen_person_mail_link,
     gen_revision_link,
     get_mimetype_and_encoding_for_content,
+    prepare_content_for_display,
 )
 from swh.web.common.utils import reverse
 
@@ -73,3 +76,14 @@ def test_gen_person_mail_link():
     person_none = {"name": None, "email": None, "fullname": None}
 
     assert gen_person_mail_link(person_none) == "None"
+
+
+@pytest.mark.parametrize(
+    "path, expected_language",
+    [("CMakeLists.txt", "cmake"), ("path/CMakeLists.txt", "cmake")],
+)
+def test_prepare_content_display_language_for_filename(path, expected_language):
+    content_display = prepare_content_for_display(
+        content_data=b"", mime_type="", path=path
+    )
+    assert content_display["language"] == expected_language
