@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,9 +6,11 @@
 from distutils.util import strtobool
 import json
 from typing import Dict, Iterator, Union
+from urllib.parse import unquote, urlparse, urlunparse
 
 import requests
 
+from django.http import QueryDict
 from django.http.response import StreamingHttpResponse
 from rest_framework.decorators import renderer_classes
 from rest_framework.renderers import JSONRenderer
@@ -136,9 +138,19 @@ def api_graph_proxy(
                 "You do not have permission to perform this action.", status=403
             )
     graph_query_url = get_config()["graph"]["server_url"]
+
+    graph_query = unquote(graph_query)
     graph_query_url += graph_query
-    if request.GET:
-        graph_query_url += "?" + request.GET.urlencode(safe="/;:")
+
+    parsed_url = urlparse(graph_query_url)
+    query_dict = QueryDict(parsed_url.query, mutable=True)
+    query_dict.update(request.GET)
+
+    if query_dict:
+        graph_query_url = urlunparse(
+            parsed_url._replace(query=query_dict.urlencode(safe="/;:"))
+        )
+
     response = requests.get(graph_query_url, stream=True)
 
     if response.status_code != 200:

@@ -1,10 +1,14 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import hashlib
+import re
 import textwrap
+from urllib.parse import unquote, urlparse
+
+import pytest
 
 from django.http.response import StreamingHttpResponse
 
@@ -290,3 +294,44 @@ def test_graph_error_response(api_client, keycloak_oidc, requests_mock):
     resp = check_http_get_response(api_client, url, status_code=404)
     assert resp.content_type == content_type
     assert resp.content == f'"{error_message}"'.encode()
+
+
+@pytest.mark.parametrize(
+    "graph_query, query_params, expected_graph_query_params",
+    [
+        ("stats", {}, ""),
+        ("stats", {"resolve_origins": "true"}, "resolve_origins=true"),
+        ("stats?a=1", {}, "a=1"),
+        ("stats%3Fb=2", {}, "b=2"),
+        ("stats?a=1", {"resolve_origins": "true"}, "a=1&resolve_origins=true"),
+        ("stats%3Fb=2", {"resolve_origins": "true"}, "b=2&resolve_origins=true"),
+        ("stats/?a=1", {"a": "2"}, "a=1&a=2"),
+        ("stats/%3Fa=1", {"a": "2"}, "a=1&a=2"),
+    ],
+)
+def test_graph_query_params(
+    api_client,
+    keycloak_oidc,
+    requests_mock,
+    graph_query,
+    query_params,
+    expected_graph_query_params,
+):
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    requests_mock.get(
+        re.compile(get_config()["graph"]["server_url"]),
+        json=_response_json,
+        headers={"Content-Type": "application/json"},
+    )
+
+    url = reverse(
+        "api-1-graph", url_args={"graph_query": graph_query}, query_params=query_params,
+    )
+
+    check_http_get_response(api_client, url, status_code=200)
+
+    url = requests_mock.request_history[0].url
+    parsed_url = urlparse(url)
+    assert parsed_url.path == f"/graph/{unquote(graph_query).split('?')[0]}"
+    assert parsed_url.query == expected_graph_query_params
