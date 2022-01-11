@@ -264,6 +264,7 @@
         "ipython": "python",
         "irb": "ruby",
         "jinja": "django",
+        "jldoctest": "julia-repl",
         "js": "javascript",
         "jsp": "java",
         "jsx": "javascript",
