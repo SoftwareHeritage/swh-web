@@ -140,6 +140,14 @@ def api_graph_proxy(
     if request.GET:
         graph_query_url += "?" + request.GET.urlencode(safe="/;:")
     response = requests.get(graph_query_url, stream=True)
+
+    if response.status_code != 200:
+        return Response(
+            response.content,
+            status=response.status_code,
+            content_type=response.headers["Content-Type"],
+        )
+
     # graph stats and counter endpoint responses are not streamed
     if response.headers.get("Transfer-Encoding") != "chunked":
         return Response(

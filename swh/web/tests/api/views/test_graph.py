@@ -268,3 +268,25 @@ def test_graph_response_invalid_accept_header(api_client):
     assert resp.content_type == "application/json"
     assert resp.data["exception"] == "NotAcceptable"
     assert resp.data["reason"] == "Could not satisfy the request Accept header."
+
+
+def test_graph_error_response(api_client, keycloak_oidc, requests_mock):
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    graph_query = "foo"
+
+    error_message = "Not found"
+    content_type = "text/plain"
+
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        text=error_message,
+        headers={"Content-Type": content_type},
+        status_code=404,
+    )
+
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+
+    resp = check_http_get_response(api_client, url, status_code=404)
+    assert resp.content_type == content_type
+    assert resp.content == f'"{error_message}"'.encode()
