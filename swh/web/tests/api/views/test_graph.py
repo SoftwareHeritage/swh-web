@@ -38,8 +38,10 @@ def test_graph_endpoint_needs_authentication(api_client):
     check_http_get_response(api_client, url, status_code=401)
 
 
-def _authenticate_graph_user(api_client, keycloak_oidc):
+def _authenticate_graph_user(api_client, keycloak_oidc, is_staff=False):
     keycloak_oidc.client_permissions = [API_GRAPH_PERM]
+    if is_staff:
+        keycloak_oidc.user_groups = ["/staff"]
     oidc_profile = keycloak_oidc.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
@@ -334,4 +336,83 @@ def test_graph_query_params(
     url = requests_mock.request_history[0].url
     parsed_url = urlparse(url)
     assert parsed_url.path == f"/graph/{unquote(graph_query).split('?')[0]}"
-    assert parsed_url.query == expected_graph_query_params
+    assert expected_graph_query_params in parsed_url.query
+
+
+def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_mock):
+    graph_config = get_config()["graph"]
+    graph_query = "stats"
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+
+    # currently unauthenticated user can only use the graph endpoint from
+    # Software Heritage VPN
+    check_http_get_response(
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['anonymous']}"
+        in requests_mock.request_history[0].url
+    )
+
+    # standard user
+    _authenticate_graph_user(api_client, keycloak_oidc)
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['user']}"
+        in requests_mock.request_history[1].url
+    )
+
+    # staff user
+    _authenticate_graph_user(api_client, keycloak_oidc, is_staff=True)
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['staff']}"
+        in requests_mock.request_history[2].url
+    )
+
+
+def test_graph_endpoint_max_edges_query_parameter_value(
+    api_client, keycloak_oidc, requests_mock
+):
+    graph_config = get_config()["graph"]
+    graph_query = "stats"
+
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    max_edges_max_value = graph_config["max_edges"]["user"]
+
+    max_edges = max_edges_max_value // 2
+    url = reverse(
+        "api-1-graph",
+        url_args={"graph_query": graph_query},
+        query_params={"max_edges": max_edges},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert f"max_edges={max_edges}" in requests_mock.request_history[0].url
+
+    max_edges = max_edges_max_value * 2
+    url = reverse(
+        "api-1-graph",
+        url_args={"graph_query": graph_query},
+        query_params={"max_edges": max_edges},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert f"max_edges={max_edges_max_value}" in requests_mock.request_history[1].url

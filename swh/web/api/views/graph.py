@@ -137,14 +137,26 @@ def api_graph_proxy(
             return Response(
                 "You do not have permission to perform this action.", status=403
             )
-    graph_query_url = get_config()["graph"]["server_url"]
 
+    graph_config = get_config()["graph"]
     graph_query = unquote(graph_query)
+    graph_query_url = graph_config["server_url"]
     graph_query_url += graph_query
 
     parsed_url = urlparse(graph_query_url)
     query_dict = QueryDict(parsed_url.query, mutable=True)
     query_dict.update(request.GET)
+
+    # clamp max_edges query parameter according to authentication
+    if request.user.is_staff:
+        max_edges = graph_config["max_edges"]["staff"]
+    elif request.user.is_authenticated:
+        max_edges = graph_config["max_edges"]["user"]
+    else:
+        max_edges = graph_config["max_edges"]["anonymous"]
+    query_dict["max_edges"] = min(
+        max_edges, int(query_dict.get("max_edges", max_edges + 1))
+    )
 
     if query_dict:
         graph_query_url = urlunparse(
