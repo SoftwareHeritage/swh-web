@@ -558,7 +558,7 @@ function cPlusPlus(hljs) {
       [
         PREPROCESSOR,
         { // containers: ie, `vector <int> rooms (9);`
-          begin: '\\b(deque|list|queue|priority_queue|pair|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array|tuple|optional|variant|function)\\s*<',
+          begin: '\\b(deque|list|queue|priority_queue|pair|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array|tuple|optional|variant|function)\\s*<(?!<)',
           end: '>',
           keywords: CPP_KEYWORDS,
           contains: [

@@ -80,7 +80,6 @@ function matlab(hljs) {
         className: 'string',
         begin: '\'', end: '\'',
         contains: [
-          hljs.BACKSLASH_ESCAPE,
           {begin: '\'\''}]
       },
       {
@@ -92,7 +91,6 @@ function matlab(hljs) {
         className: 'string',
         begin: '"', end: '"',
         contains: [
-          hljs.BACKSLASH_ESCAPE,
           {begin: '""'}
         ],
         starts: TRANSPOSE

@@ -218,12 +218,14 @@ def prepare_content_for_display(content_data, mime_type, path):
         key 'language'.
     """
 
-    language = highlightjs.get_hljs_language_from_filename(path)
+    language = None
+    if path:
+        language = highlightjs.get_hljs_language_from_filename(path.split("/")[-1])
 
-    if not language:
+    if language is None:
         language = highlightjs.get_hljs_language_from_mime_type(mime_type)
 
-    if not language:
+    if language is None:
         language = "nohighlight"
 
     if mime_type.startswith("image/"):

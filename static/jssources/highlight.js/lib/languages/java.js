@@ -104,7 +104,8 @@ function java(hljs) {
     'module',
     'requires',
     'exports',
-    'do'
+    'do',
+    'sealed'
   ];
 
   const BUILT_INS = [
@@ -209,6 +210,11 @@ function java(hljs) {
           1: "keyword",
           3: "title.class"
         }
+      },
+      {
+        // Exceptions for hyphenated keywords
+        match: /non-sealed/,
+        scope: "keyword"
       },
       {
         begin: [

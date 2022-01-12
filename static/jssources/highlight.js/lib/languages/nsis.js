@@ -1,59 +1,3 @@
-/**
- * @param {string} value
- * @returns {RegExp}
- * */
-
-/**
- * @param {RegExp | string } re
- * @returns {string}
- */
-function source(re) {
-  if (!re) return null;
-  if (typeof re === "string") return re;
-
-  return re.source;
-}
-
-/**
- * @param {...(RegExp | string) } args
- * @returns {string}
- */
-function concat(...args) {
-  const joined = args.map((x) => source(x)).join("");
-  return joined;
-}
-
-/**
- * @param { Array<string | RegExp | Object> } args
- * @returns {object}
- */
-function stripOptionsFromArgs(args) {
-  const opts = args[args.length - 1];
-
-  if (typeof opts === 'object' && opts.constructor === Object) {
-    args.splice(args.length - 1, 1);
-    return opts;
-  } else {
-    return {};
-  }
-}
-
-/**
- * Any of the passed expresssions may match
- *
- * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
- * @returns {string}
- */
-function either(...args) {
-  /** @type { object & {capture?: boolean} }  */
-  const opts = stripOptionsFromArgs(args);
-  const joined = '('
-    + (opts.capture ? "" : "?:")
-    + args.map((x) => source(x)).join("|") + ")";
-  return joined;
-}
-
 /*
 Language: NSIS
 Description: Nullsoft Scriptable Install System
@@ -62,6 +6,7 @@ Website: https://nsis.sourceforge.io/Main_Page
 */
 
 function nsis(hljs) {
+  const regex = hljs.regex;
   const LANGUAGE_CONSTANTS = [
     "ADMINTOOLS",
     "APPDATA",
@@ -201,46 +146,46 @@ function nsis(hljs) {
 
   const CONSTANTS = {
     className: 'variable.constant',
-    begin: concat(/\$/, either(...LANGUAGE_CONSTANTS))
+    begin: regex.concat(/\$/, regex.either(...LANGUAGE_CONSTANTS))
   };
 
   const DEFINES = {
     // ${defines}
     className: 'variable',
-    begin: /\$+\{[\w.:-]+\}/
+    begin: /\$+\{[\!\w.:-]+\}/
   };
 
   const VARIABLES = {
     // $variables
     className: 'variable',
-    begin: /\$+\w+/,
+    begin: /\$+\w[\w\.]*/,
     illegal: /\(\)\{\}/
   };
 
   const LANGUAGES = {
     // $(language_strings)
     className: 'variable',
-    begin: /\$+\([\w^.:-]+\)/
+    begin: /\$+\([\w^.:!-]+\)/
   };
 
   const PARAMETERS = {
     // command parameters
     className: 'params',
-    begin: either(...PARAM_NAMES)
+    begin: regex.either(...PARAM_NAMES)
   };
 
   const COMPILER = {
     // !compiler_flags
     className: 'keyword',
-    begin: concat(
+    begin: regex.concat(
       /!/,
-      either(...COMPILER_FLAGS)
+      regex.either(...COMPILER_FLAGS)
     )
   };
 
-  const METACHARS = {
+  const ESCAPE_CHARS = {
     // $\n, $\r, $\t, $$
-    className: 'meta',
+    className: 'char.escape',
     begin: /\$(\\[nrt]|\$)/
   };
 
@@ -268,7 +213,7 @@ function nsis(hljs) {
     ],
     illegal: /\n/,
     contains: [
-      METACHARS,
+      ESCAPE_CHARS,
       CONSTANTS,
       DEFINES,
       VARIABLES,
@@ -547,15 +492,32 @@ function nsis(hljs) {
     "zlib"
   ];
 
-  const FUNCTION_DEF = {
+  const FUNCTION_DEFINITION = {
     match: [
       /Function/,
       /\s+/,
-      concat(/(\.)?/, hljs.IDENT_RE)
+      regex.concat(/(\.)?/, hljs.IDENT_RE)
     ],
     scope: {
       1: "keyword",
       3: "title.function"
+    }
+  };
+
+  // Var Custom.Variable.Name.Item
+  // Var /GLOBAL Custom.Variable.Name.Item
+  const VARIABLE_NAME_RE = /[A-Za-z][\w.]*/;
+  const VARIABLE_DEFINITION = {
+    match: [
+      /Var/,
+      /\s+/,
+      /(?:\/GLOBAL\s+)?/,
+      VARIABLE_NAME_RE
+    ],
+    scope: {
+      1: "keyword",
+      3: "params",
+      4: "variable"
     }
   };
 
@@ -576,7 +538,8 @@ function nsis(hljs) {
           relevance: 0
         }
       ),
-      FUNCTION_DEF,
+      VARIABLE_DEFINITION,
+      FUNCTION_DEFINITION,
       {
         beginKeywords: 'Function PageEx Section SectionGroup FunctionEnd SectionEnd',
       },

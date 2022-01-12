@@ -1,10 +1,14 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import hashlib
+import re
 import textwrap
+from urllib.parse import unquote, urlparse
+
+import pytest
 
 from django.http.response import StreamingHttpResponse
 
@@ -34,8 +38,10 @@ def test_graph_endpoint_needs_authentication(api_client):
     check_http_get_response(api_client, url, status_code=401)
 
 
-def _authenticate_graph_user(api_client, keycloak_oidc):
+def _authenticate_graph_user(api_client, keycloak_oidc, is_staff=False):
     keycloak_oidc.client_permissions = [API_GRAPH_PERM]
+    if is_staff:
+        keycloak_oidc.user_groups = ["/staff"]
     oidc_profile = keycloak_oidc.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
 
@@ -268,3 +274,145 @@ def test_graph_response_invalid_accept_header(api_client):
     assert resp.content_type == "application/json"
     assert resp.data["exception"] == "NotAcceptable"
     assert resp.data["reason"] == "Could not satisfy the request Accept header."
+
+
+def test_graph_error_response(api_client, keycloak_oidc, requests_mock):
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    graph_query = "foo"
+
+    error_message = "Not found"
+    content_type = "text/plain"
+
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        text=error_message,
+        headers={"Content-Type": content_type},
+        status_code=404,
+    )
+
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+
+    resp = check_http_get_response(api_client, url, status_code=404)
+    assert resp.content_type == content_type
+    assert resp.content == f'"{error_message}"'.encode()
+
+
+@pytest.mark.parametrize(
+    "graph_query, query_params, expected_graph_query_params",
+    [
+        ("stats", {}, ""),
+        ("stats", {"resolve_origins": "true"}, "resolve_origins=true"),
+        ("stats?a=1", {}, "a=1"),
+        ("stats%3Fb=2", {}, "b=2"),
+        ("stats?a=1", {"resolve_origins": "true"}, "a=1&resolve_origins=true"),
+        ("stats%3Fb=2", {"resolve_origins": "true"}, "b=2&resolve_origins=true"),
+        ("stats/?a=1", {"a": "2"}, "a=1&a=2"),
+        ("stats/%3Fa=1", {"a": "2"}, "a=1&a=2"),
+    ],
+)
+def test_graph_query_params(
+    api_client,
+    keycloak_oidc,
+    requests_mock,
+    graph_query,
+    query_params,
+    expected_graph_query_params,
+):
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    requests_mock.get(
+        re.compile(get_config()["graph"]["server_url"]),
+        json=_response_json,
+        headers={"Content-Type": "application/json"},
+    )
+
+    url = reverse(
+        "api-1-graph", url_args={"graph_query": graph_query}, query_params=query_params,
+    )
+
+    check_http_get_response(api_client, url, status_code=200)
+
+    url = requests_mock.request_history[0].url
+    parsed_url = urlparse(url)
+    assert parsed_url.path == f"/graph/{unquote(graph_query).split('?')[0]}"
+    assert expected_graph_query_params in parsed_url.query
+
+
+def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_mock):
+    graph_config = get_config()["graph"]
+    graph_query = "stats"
+    url = reverse("api-1-graph", url_args={"graph_query": graph_query})
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+
+    # currently unauthenticated user can only use the graph endpoint from
+    # Software Heritage VPN
+    check_http_get_response(
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['anonymous']}"
+        in requests_mock.request_history[0].url
+    )
+
+    # standard user
+    _authenticate_graph_user(api_client, keycloak_oidc)
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['user']}"
+        in requests_mock.request_history[1].url
+    )
+
+    # staff user
+    _authenticate_graph_user(api_client, keycloak_oidc, is_staff=True)
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert (
+        f"max_edges={graph_config['max_edges']['staff']}"
+        in requests_mock.request_history[2].url
+    )
+
+
+def test_graph_endpoint_max_edges_query_parameter_value(
+    api_client, keycloak_oidc, requests_mock
+):
+    graph_config = get_config()["graph"]
+    graph_query = "stats"
+
+    requests_mock.get(
+        get_config()["graph"]["server_url"] + graph_query,
+        json={},
+        headers={"Content-Type": "application/json"},
+    )
+    _authenticate_graph_user(api_client, keycloak_oidc)
+
+    max_edges_max_value = graph_config["max_edges"]["user"]
+
+    max_edges = max_edges_max_value // 2
+    url = reverse(
+        "api-1-graph",
+        url_args={"graph_query": graph_query},
+        query_params={"max_edges": max_edges},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert f"max_edges={max_edges}" in requests_mock.request_history[0].url
+
+    max_edges = max_edges_max_value * 2
+    url = reverse(
+        "api-1-graph",
+        url_args={"graph_query": graph_query},
+        query_params={"max_edges": max_edges},
+    )
+    check_http_get_response(
+        api_client, url, status_code=200,
+    )
+    assert f"max_edges={max_edges_max_value}" in requests_mock.request_history[1].url

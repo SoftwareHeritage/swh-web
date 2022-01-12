@@ -110,7 +110,10 @@ DEFAULT_CONFIG = {
     "keycloak": ("dict", {"server_url": "", "realm_name": ""}),
     "graph": (
         "dict",
-        {"server_url": "http://graph.internal.softwareheritage.org:5009/graph/"},
+        {
+            "server_url": "http://graph.internal.softwareheritage.org:5009/graph/",
+            "max_edges": {"staff": 0, "user": 100000, "anonymous": 1000},
+        },
     ),
     "status": (
         "dict",
