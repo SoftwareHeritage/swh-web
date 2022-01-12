@@ -2,6 +2,9 @@
  * @param {string} value
  * @returns {RegExp}
  * */
+function escape(value) {
+  return new RegExp(value.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'm');
+}
 
 /**
  * @param {RegExp | string } re
@@ -46,11 +49,13 @@ function stripOptionsFromArgs(args) {
   }
 }
 
+/** @typedef { {capture?: boolean} } RegexEitherOptions */
+
 /**
  * Any of the passed expresssions may match
  *
  * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
+ * @param {(RegExp | string)[] | [...(RegExp | string)[], RegexEitherOptions]} args
  * @returns {string}
  */
 function either(...args) {
@@ -181,7 +186,9 @@ function fsharp(hljs) {
     "__SOURCE_FILE__"
   ];
 
-  const TYPES = [
+  // Since it's possible to re-bind/shadow names (e.g. let char = 'c'),
+  // these builtin types should only be matched when a type name is expected.
+  const KNOWN_TYPES = [
     // basic types
     "bool",
     "byte",
@@ -219,7 +226,9 @@ function fsharp(hljs) {
     "nativeptr",
     "obj",
     "outref",
-    "voidptr"
+    "voidptr",
+    // other important FSharp types
+    "Result"
   ];
 
   const BUILTINS = [
@@ -234,6 +243,7 @@ function fsharp(hljs) {
     "dict",
     "readOnlyDict",
     "set",
+    "get",
     "enum",
     "sizeof",
     "typeof",
@@ -263,7 +273,6 @@ function fsharp(hljs) {
   ];
 
   const ALL_KEYWORDS = {
-    type: TYPES,
     keyword: KEYWORDS,
     literal: LITERALS,
     built_in: BUILTINS,
@@ -283,16 +292,138 @@ function fsharp(hljs) {
     ]
   };
 
-  // 'a or ^a
+  // Most identifiers can contain apostrophes
+  const IDENTIFIER_RE = /[a-zA-Z_](\w|')*/;
+
+  const QUOTED_IDENTIFIER = {
+    scope: 'variable',
+    begin: /``/,
+    end: /``/
+  };
+
+  // 'a or ^a where a can be a ``quoted identifier``
+  const BEGIN_GENERIC_TYPE_SYMBOL_RE = /\B('|\^)/;
   const GENERIC_TYPE_SYMBOL = {
-    match: concat(/('|\^)/, hljs.UNDERSCORE_IDENT_RE),
     scope: 'symbol',
+    variants: [
+      // the type name is a quoted identifier:
+      { match: concat(BEGIN_GENERIC_TYPE_SYMBOL_RE, /``.*?``/) },
+      // the type name is a normal identifier (we don't use IDENTIFIER_RE because there cannot be another apostrophe here):
+      { match: concat(BEGIN_GENERIC_TYPE_SYMBOL_RE, hljs.UNDERSCORE_IDENT_RE) }
+    ],
     relevance: 0
+  };
+
+  const makeOperatorMode = function({ includeEqual }) {
+    // List or symbolic operator characters from the FSharp Spec 4.1, minus the dot, and with `?` added, used for nullable operators.
+    let allOperatorChars;
+    if (includeEqual)
+      allOperatorChars = "!%&*+-/<=>@^|~?";
+    else
+      allOperatorChars = "!%&*+-/<>@^|~?";
+    const OPERATOR_CHARS = Array.from(allOperatorChars);
+    const OPERATOR_CHAR_RE = concat('[', ...OPERATOR_CHARS.map(escape), ']');
+    // The lone dot operator is special. It cannot be redefined, and we don't want to highlight it. It can be used as part of a multi-chars operator though.
+    const OPERATOR_CHAR_OR_DOT_RE = either(OPERATOR_CHAR_RE, /\./);
+    // When a dot is present, it must be followed by another operator char:
+    const OPERATOR_FIRST_CHAR_OF_MULTIPLE_RE = concat(OPERATOR_CHAR_OR_DOT_RE, lookahead(OPERATOR_CHAR_OR_DOT_RE));
+    const SYMBOLIC_OPERATOR_RE = either(
+      concat(OPERATOR_FIRST_CHAR_OF_MULTIPLE_RE, OPERATOR_CHAR_OR_DOT_RE, '*'), // Matches at least 2 chars operators
+      concat(OPERATOR_CHAR_RE, '+'), // Matches at least one char operators
+    );
+    return {
+      scope: 'operator',
+      match: either(
+        // symbolic operators:
+        SYMBOLIC_OPERATOR_RE,
+        // other symbolic keywords:
+        // Type casting and conversion operators:
+        /:\?>/,
+        /:\?/,
+        /:>/,
+        /:=/, // Reference cell assignment
+        /::?/, // : or ::
+        /\$/), // A single $ can be used as an operator
+      relevance: 0
+    };
+  };
+
+  const OPERATOR = makeOperatorMode({ includeEqual: true });
+  // This variant is used when matching '=' should end a parent mode:
+  const OPERATOR_WITHOUT_EQUAL = makeOperatorMode({ includeEqual: false });
+
+  const makeTypeAnnotationMode = function(prefix, prefixScope) {
+    return {
+      begin: concat( // a type annotation is a
+        prefix,            // should be a colon or the 'of' keyword
+        lookahead(   // that has to be followed by
+          concat(
+            /\s*/,         // optional space
+            either(  // then either of:
+              /\w/,        // word
+              /'/,         // generic type name
+              /\^/,        // generic type name
+              /#/,         // flexible type name
+              /``/,        // quoted type name
+              /\(/,        // parens type expression
+              /{\|/,       // anonymous type annotation
+      )))),
+      beginScope: prefixScope,
+      // BUG: because ending with \n is necessary for some cases, multi-line type annotations are not properly supported.
+      // Examples where \n is required at the end:
+      // - abstract member definitions in classes: abstract Property : int * string
+      // - return type annotations: let f f' = f' () : returnTypeAnnotation
+      // - record fields definitions: { A : int \n B : string }
+      end: lookahead(
+        either(
+          /\n/,
+          /=/)),
+      relevance: 0,
+      // we need the known types, and we need the type constraint keywords and literals. e.g.: when 'a : null
+      keywords: hljs.inherit(ALL_KEYWORDS, { type: KNOWN_TYPES }),
+      contains: [
+        COMMENT,
+        GENERIC_TYPE_SYMBOL,
+        hljs.inherit(QUOTED_IDENTIFIER, { scope: null }), // match to avoid strange patterns inside that may break the parsing
+        OPERATOR_WITHOUT_EQUAL
+      ]
+    };
+  };
+
+  const TYPE_ANNOTATION = makeTypeAnnotationMode(/:/, 'operator');
+  const DISCRIMINATED_UNION_TYPE_ANNOTATION = makeTypeAnnotationMode(/\bof\b/, 'keyword');
+
+  // type MyType<'a> = ...
+  const TYPE_DECLARATION = {
+    begin: [
+      /(^|\s+)/, // prevents matching the following: `match s.stype with`
+      /type/,
+      /\s+/,
+      IDENTIFIER_RE
+    ],
+    beginScope: {
+      2: 'keyword',
+      4: 'title.class'
+    },
+    end: lookahead(/\(|=|$/),
+    keywords: ALL_KEYWORDS, // match keywords in type constraints. e.g.: when 'a : null
+    contains: [
+      COMMENT,
+      hljs.inherit(QUOTED_IDENTIFIER, { scope: null }), // match to avoid strange patterns inside that may break the parsing
+      GENERIC_TYPE_SYMBOL,
+      {
+        // For visual consistency, highlight type brackets as operators.
+        scope: 'operator',
+        match: /<|>/
+      },
+      TYPE_ANNOTATION // generic types can have constraints, which are type annotations. e.g. type MyType<'T when 'T : delegate<obj * string>> =
+    ]
   };
 
   const COMPUTATION_EXPRESSION = {
     // computation expressions:
     scope: 'computation-expression',
+    // BUG: might conflict with record deconstruction. e.g. let f { Name = name } = name // will highlight f
     match: /\b[_a-z]\w*(?=\s*\{)/
   };
 
@@ -427,10 +558,13 @@ function fsharp(hljs) {
     CHAR_LITERAL,
     BANG_KEYWORD_MODE,
     COMMENT,
+    QUOTED_IDENTIFIER,
+    TYPE_ANNOTATION,
     COMPUTATION_EXPRESSION,
     PREPROCESSOR,
     NUMBER,
-    GENERIC_TYPE_SYMBOL
+    GENERIC_TYPE_SYMBOL,
+    OPERATOR
   ];
   const STRING = {
     variants: [
@@ -459,42 +593,32 @@ function fsharp(hljs) {
       BANG_KEYWORD_MODE,
       STRING,
       COMMENT,
+      QUOTED_IDENTIFIER,
+      TYPE_DECLARATION,
       {
-        // type MyType<'a> = ...
-        begin: [
-          /type/,
-          /\s+/,
-          hljs.UNDERSCORE_IDENT_RE
-        ],
-        beginScope: {
-          1: 'keyword',
-          3: 'title.class'
-        },
-        end: lookahead(/\(|=|$/),
-        contains: [
-          GENERIC_TYPE_SYMBOL
-        ]
-      },
-      {
-        // [<Attributes("")>]
+        // e.g. [<Attributes("")>] or [<``module``: MyCustomAttributeThatWorksOnModules>]
+        // or [<Sealed; NoEquality; NoComparison; CompiledName("FSharpAsync`1")>]
         scope: 'meta',
-        begin: /^\s*\[</,
-        excludeBegin: true,
-        end: lookahead(/>\]/),
+        begin: /\[</,
+        end: />\]/,
         relevance: 2,
         contains: [
-          {
-            scope: 'string',
-            begin: /"/,
-            end: /"/
-          },
+          QUOTED_IDENTIFIER,
+          // can contain any constant value
+          TRIPLE_QUOTED_STRING,
+          VERBATIM_STRING,
+          QUOTED_STRING,
+          CHAR_LITERAL,
           NUMBER
         ]
       },
+      DISCRIMINATED_UNION_TYPE_ANNOTATION,
+      TYPE_ANNOTATION,
       COMPUTATION_EXPRESSION,
       PREPROCESSOR,
       NUMBER,
-      GENERIC_TYPE_SYMBOL
+      GENERIC_TYPE_SYMBOL,
+      OPERATOR
     ]
   };
 }

@@ -823,13 +823,15 @@ def browse_snapshot_directory(
 
     swh_objects = []
     vault_cooking = {}
-    revision_found = True
+    revision_found = False
 
     if sha1_git is None and revision_id is not None:
         try:
             archive.lookup_revision(revision_id)
         except NotFoundExc:
-            revision_found = False
+            pass
+        else:
+            revision_found = True
 
     if sha1_git is not None:
         swh_objects.append(
@@ -947,6 +949,9 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     )
 
     revision_id = snapshot_context["revision_id"]
+
+    if revision_id is None:
+        raise NotFoundExc("No revisions history found in the current snapshot context.")
 
     per_page = int(request.GET.get("per_page", PER_PAGE))
     offset = int(request.GET.get("offset", 0))

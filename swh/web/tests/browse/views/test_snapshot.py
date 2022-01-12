@@ -14,7 +14,15 @@ import pytest
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.model import OriginVisit, OriginVisitStatus, Snapshot
+from swh.model.model import (
+    ObjectType,
+    OriginVisit,
+    OriginVisitStatus,
+    Release,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+)
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.utils import reverse
@@ -330,3 +338,48 @@ def test_snapshot_content_legacy_redirect(client, snapshot):
     url = reverse("browse-snapshot-content-legacy", url_args=url_args, query_params=qry)
     resp = check_html_get_response(client, url, status_code=301)
     assert resp.url == reverse("browse-content", query_params={**url_args, **qry})
+
+
+def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=hash_to_bytes(directory),
+        target_type=ObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=release_name.encode(), target_type=TargetType.ALIAS
+            ),
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    snp_url = reverse(
+        "browse-snapshot-directory", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+    log_url = reverse(
+        "browse-snapshot-log", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+
+    resp = check_html_get_response(
+        client, snp_url, status_code=200, template_used="browse/directory.html"
+    )
+    assert_not_contains(resp, log_url)
+
+    resp = check_html_get_response(
+        client, log_url, status_code=404, template_used="error.html"
+    )
+    assert_contains(
+        resp,
+        "No revisions history found in the current snapshot context.",
+        status_code=404,
+    )

@@ -46,11 +46,13 @@ function stripOptionsFromArgs(args) {
   }
 }
 
+/** @typedef { {capture?: boolean} } RegexEitherOptions */
+
 /**
  * Any of the passed expresssions may match
  *
  * Creates a huge this | this | that | that match
- * @param {(RegExp | string)[] } args
+ * @param {(RegExp | string)[] | [...(RegExp | string)[], RegexEitherOptions]} args
  * @returns {string}
  */
 function either(...args) {
@@ -200,7 +202,7 @@ const precedencegroupKeywords = [
 ];
 
 // Keywords that start with a number sign (#).
-// #available is handled separately.
+// #(un)available is handled separately.
 const numberSignKeywords = [
   '#colorLiteral',
   '#column',
@@ -366,7 +368,7 @@ const keywordAttributes = [
   'usableFromInline'
 ];
 
-// Contextual keywords used in @available and #available.
+// Contextual keywords used in @available and #(un)available.
 const availabilityKeywords = [
   'iOS',
   'iOSApplicationExtension',
@@ -597,7 +599,7 @@ function swift(hljs) {
 
   // https://docs.swift.org/swift-book/ReferenceManual/Attributes.html
   const AVAILABLE_ATTRIBUTE = {
-    match: /(@|#)available/,
+    match: /(@|#(un)?)available/,
     className: "keyword",
     starts: {
       contains: [
