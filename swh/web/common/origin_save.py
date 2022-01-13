@@ -778,8 +778,12 @@ def get_save_origin_task_info(
     query = {
         "bool": {
             "must": [
-                {"match_phrase": {"priority": {"query": priority}}},
-                {"match_phrase": {"swh_task_id": {"query": task_run["backend_id"]}}},
+                {"match_phrase": {"syslog.priority": {"query": priority}}},
+                {
+                    "match_phrase": {
+                        "journald.custom.swh_task_id": {"query": task_run["backend_id"]}
+                    }
+                },
                 {
                     "range": {
                         "@timestamp": {

@@ -7,7 +7,7 @@ SETTINGS_DEV ?= swh.web.settings.development
 SETTINGS_PROD = swh.web.settings.production
 
 yarn-install: package.json
-	$(YARN) install
+	$(YARN) install --frozen-lockfile
 
 .PHONY: build-webpack-dev
 build-webpack-dev: yarn-install
