@@ -13,7 +13,6 @@ from swh.model.model import (
     Release,
     Revision,
     RevisionType,
-    Timestamp,
     TimestampWithTimezone,
 )
 from swh.web.common import converters
@@ -211,19 +210,12 @@ def test_from_origin_visit():
 
 def test_from_release():
     """Convert release model object to a dict should be ok"""
-    ts = int(
-        datetime.datetime(
-            2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
-        ).timestamp()
-    )
     release_input = Release(
         id=hashutil.hash_to_bytes("aad23fa492a0c5fed0708a6703be875448c86884"),
         target=hashutil.hash_to_bytes("5e46d564378afc44b31bb89f99d5675195fbdf67"),
         target_type=ObjectType.REVISION,
-        date=TimestampWithTimezone(
-            timestamp=Timestamp(seconds=ts, microseconds=0),
-            offset=0,
-            negative_utc=False,
+        date=TimestampWithTimezone.from_datetime(
+            datetime.datetime(2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc)
         ),
         author=Person(
             name=b"author name",
@@ -257,10 +249,8 @@ def test_from_release():
 
 
 def test_from_revision_model_object():
-    ts = int(
-        datetime.datetime(
-            2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc
-        ).timestamp()
+    date = TimestampWithTimezone.from_datetime(
+        datetime.datetime(2000, 1, 17, 11, 23, 54, tzinfo=datetime.timezone.utc)
     )
     revision_input = Revision(
         directory=hashutil.hash_to_bytes("7834ef7e7c357ce2af928115c6c6a42b7e2a44e6"),
@@ -275,16 +265,8 @@ def test_from_revision_model_object():
             email=b"robot@softwareheritage.org",
         ),
         message=b"synthetic revision message",
-        date=TimestampWithTimezone(
-            timestamp=Timestamp(seconds=ts, microseconds=0),
-            offset=0,
-            negative_utc=False,
-        ),
-        committer_date=TimestampWithTimezone(
-            timestamp=Timestamp(seconds=ts, microseconds=0),
-            offset=0,
-            negative_utc=False,
-        ),
+        date=date,
+        committer_date=date,
         synthetic=True,
         type=RevisionType.TAR,
         parents=tuple(

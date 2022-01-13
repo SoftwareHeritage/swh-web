@@ -825,7 +825,7 @@ def browse_snapshot_directory(
     vault_cooking = {}
     revision_found = False
 
-    if sha1_git is None and revision_id is not None:
+    if revision_id is not None:
         try:
             archive.lookup_revision(revision_id)
         except NotFoundExc:
