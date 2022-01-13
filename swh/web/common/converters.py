@@ -11,7 +11,12 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
-from swh.model.model import RawExtrinsicMetadata, Release, Revision
+from swh.model.model import (
+    RawExtrinsicMetadata,
+    Release,
+    Revision,
+    TimestampWithTimezone,
+)
 from swh.model.swhids import ObjectType
 from swh.storage.interface import PartialBranches
 from swh.web.common.typing import OriginInfo, OriginVisitInfo
@@ -124,8 +129,7 @@ def from_swh(
                 - a dict with three keys:
 
                   - timestamp (dict or integer timestamp)
-                  - offset
-                  - negative_utc
+                  - offset_bytes
 
                 - or, a datetime
 
@@ -137,20 +141,10 @@ def from_swh(
         if isinstance(v, datetime.datetime):
             return v.isoformat()
 
-        tz = datetime.timezone(datetime.timedelta(minutes=v["offset"]))
-        swh_timestamp = v["timestamp"]
-        if isinstance(swh_timestamp, dict):
-            date = datetime.datetime.fromtimestamp(swh_timestamp["seconds"], tz=tz)
-        else:
-            date = datetime.datetime.fromtimestamp(swh_timestamp, tz=tz)
-
-        datestr = date.isoformat()
-
-        if v["offset"] == 0 and v["negative_utc"]:
-            # remove the rightmost + and replace it with a -
-            return "-".join(datestr.rsplit("+", 1))
-
-        return datestr
+        v = v.copy()
+        if isinstance(v["timestamp"], float):
+            v["timestamp"] = int(v["timestamp"])
+        return TimestampWithTimezone.from_dict(v).to_datetime().isoformat()
 
     if not dict_swh:
         return dict_swh

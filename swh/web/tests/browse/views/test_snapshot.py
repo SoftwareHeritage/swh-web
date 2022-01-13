@@ -19,16 +19,19 @@ from swh.model.model import (
     OriginVisit,
     OriginVisitStatus,
     Release,
+    Revision,
+    RevisionType,
     Snapshot,
     SnapshotBranch,
     TargetType,
+    TimestampWithTimezone,
 )
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.strategies import new_origin, visit_dates
+from swh.web.tests.strategies import new_origin, new_person, new_swh_date, visit_dates
 from swh.web.tests.utils import check_html_get_response
 
 
@@ -383,3 +386,42 @@ def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
         "No revisions history found in the current snapshot context.",
         status_code=404,
     )
+
+
+@given(new_person(), new_swh_date())
+def test_browse_snapshot_log_when_revisions(
+    client, archive_data, directory, person, date
+):
+
+    revision = Revision(
+        directory=hash_to_bytes(directory),
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    archive_data.revision_add([revision])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=revision.id, target_type=TargetType.REVISION
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    snp_url = reverse(
+        "browse-snapshot-directory", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+    log_url = reverse(
+        "browse-snapshot-log", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+
+    resp = check_html_get_response(
+        client, snp_url, status_code=200, template_used="browse/directory.html"
+    )
+    assert_contains(resp, log_url)

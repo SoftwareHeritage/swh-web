@@ -3,16 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.model import (
-    ObjectType,
-    Person,
-    Release,
-    Timestamp,
-    TimestampWithTimezone,
-)
+from swh.model.model import ObjectType, Person, Release, TimestampWithTimezone
 from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
@@ -53,13 +47,7 @@ def test_api_release_target_type_not_a_revision(
                 fullname=b"author <author@company.org>",
                 name=b"author",
             ),
-            date=TimestampWithTimezone(
-                timestamp=Timestamp(
-                    seconds=int(datetime.now().timestamp()), microseconds=0
-                ),
-                offset=0,
-                negative_utc=False,
-            ),
+            date=TimestampWithTimezone.from_datetime(datetime.now(tz=timezone.utc)),
             message=b"sample release message",
             name=b"sample release",
             synthetic=False,
