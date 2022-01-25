@@ -84,7 +84,7 @@ def test_content_view_no_highlight(
 
         content_display = _process_content_for_display(archive_data, content)
 
-        assert_contains(resp, '<code class="nohighlight">')
+        assert_contains(resp, '<code class="plaintext">')
         assert_contains(resp, escape(content_display["content_data"]))
         assert_contains(resp, url_raw)
 

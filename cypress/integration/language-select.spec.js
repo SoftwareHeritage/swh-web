@@ -32,9 +32,9 @@ describe('Test Content Language Select', function() {
   });
 
   context('When Language is not detected', function() {
-    it('should have no selected language in dropdown', function() {
+    it('should have plaintext language in dropdown', function() {
       cy.visit(contentWithoutLanguageInfo).then(() => {
-        assert.strictEqual($('.language-select').val(), null);
+        assert.strictEqual($('.language-select').val(), 'plaintext');
       });
     });
   });

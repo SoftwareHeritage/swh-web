@@ -342,8 +342,7 @@ def _content_application_no_highlight():
     return list(
         filter(
             lambda c: c["mimetype"].startswith("application/")
-            and c["encoding"] != "binary"
-            and c["hljs_language"] == "nohighlight",
+            and c["hljs_language"] == "plaintext",
             _known_swh_objects(get_tests_data(), "contents"),
         )
     )
@@ -363,7 +362,7 @@ def _content_text_no_highlight():
     return list(
         filter(
             lambda c: c["mimetype"].startswith("text/")
-            and c["hljs_language"] == "nohighlight",
+            and c["hljs_language"] == "plaintext",
             _known_swh_objects(get_tests_data(), "contents"),
         )
     )

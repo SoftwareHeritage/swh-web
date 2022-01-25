@@ -190,7 +190,7 @@
   resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.16.7.tgz#aa3a8ab4c3cceff8e65eb9e73d87dc4ff320b2f5"
   integrity sha512-Qg3Nk7ZxpgMrsox6HreY1ZNKdBq7K72tDSliA6dCl5f007jR4ne8iD5UzuNnCJH2xBf2BEEVGr+/OL6Gdp7RxA==
 
-"@babel/helper-remap-async-to-generator@^7.16.7", "@babel/helper-remap-async-to-generator@^7.16.8":
+"@babel/helper-remap-async-to-generator@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/helper-remap-async-to-generator/-/helper-remap-async-to-generator-7.16.8.tgz#29ffaade68a367e2ed09c90901986918d25e57e3"
   integrity sha512-fm0gH7Flb8H51LqJHy3HJ3wnE1+qtYR2A99K06ahwrawLdOFsCEWjZOrYricXJHoPSudNKxrMBUPEIPxiIIvBw==
@@ -241,7 +241,7 @@
   resolved "https://registry.yarnpkg.com/@babel/helper-validator-option/-/helper-validator-option-7.16.7.tgz#b203ce62ce5fe153899b617c08957de860de4d23"
   integrity sha512-TRtenOuRUVo9oIQGPC5G9DgK4743cdxvtOw0weQNpZXaS16SCBi5MNjZF8vba3ETURjZpTbVn7Vvcf2eAwFozQ==
 
-"@babel/helper-wrap-function@^7.16.7", "@babel/helper-wrap-function@^7.16.8":
+"@babel/helper-wrap-function@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/helper-wrap-function/-/helper-wrap-function-7.16.8.tgz#58afda087c4cd235de92f7ceedebca2c41274200"
   integrity sha512-8RpyRVIAW1RcDDGTA+GpPAwV22wXCfKOoM9bet6TLkGIFTkRQSkH1nMQ5Yet4MpoXe1ZwHPVtNasc2w0uZMqnw==
@@ -290,7 +290,7 @@
     "@babel/helper-skip-transparent-expression-wrappers" "^7.16.0"
     "@babel/plugin-proposal-optional-chaining" "^7.16.7"
 
-"@babel/plugin-proposal-async-generator-functions@^7.16.7", "@babel/plugin-proposal-async-generator-functions@^7.16.8":
+"@babel/plugin-proposal-async-generator-functions@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-async-generator-functions/-/plugin-proposal-async-generator-functions-7.16.8.tgz#3bdd1ebbe620804ea9416706cd67d60787504bc8"
   integrity sha512-71YHIvMuiuqWJQkebWJtdhQTfd4Q4mF76q2IX37uZPkG9+olBxsX+rH1vkhFto4UeJZ9dPY2s+mDvhDm1u2BGQ==
@@ -530,7 +530,7 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.16.7"
 
-"@babel/plugin-transform-async-to-generator@^7.16.7", "@babel/plugin-transform-async-to-generator@^7.16.8":
+"@babel/plugin-transform-async-to-generator@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-async-to-generator/-/plugin-transform-async-to-generator-7.16.8.tgz#b83dff4b970cf41f1b819f8b49cc0cfbaa53a808"
   integrity sha512-MtmUmTJQHCnyJVrScNzNlofQJ3dLFuobYn3mwOTKHnSCMtbNsqvF71GQmJfFjdrXSsAA7iysFmYWw4bXZ20hOg==
@@ -643,7 +643,7 @@
     "@babel/helper-plugin-utils" "^7.16.7"
     babel-plugin-dynamic-import-node "^2.3.3"
 
-"@babel/plugin-transform-modules-commonjs@^7.16.7", "@babel/plugin-transform-modules-commonjs@^7.16.8":
+"@babel/plugin-transform-modules-commonjs@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-modules-commonjs/-/plugin-transform-modules-commonjs-7.16.8.tgz#cdee19aae887b16b9d331009aa9a219af7c86afe"
   integrity sha512-oflKPvsLT2+uKQopesJt3ApiaIS2HW+hzHFcwRNtyDGieAeC/dIHZX8buJQ2J2X1rxGPy4eRcUijm3qcSPjYcA==
@@ -672,7 +672,7 @@
     "@babel/helper-module-transforms" "^7.16.7"
     "@babel/helper-plugin-utils" "^7.16.7"
 
-"@babel/plugin-transform-named-capturing-groups-regex@^7.16.7", "@babel/plugin-transform-named-capturing-groups-regex@^7.16.8":
+"@babel/plugin-transform-named-capturing-groups-regex@^7.16.8":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-named-capturing-groups-regex/-/plugin-transform-named-capturing-groups-regex-7.16.8.tgz#7f860e0e40d844a02c9dcf9d84965e7dfd666252"
   integrity sha512-j3Jw+n5PvpmhRR+mrgIh04puSANCk/T/UA3m3P1MjJkhlK906+ApHhDIqBQDdOgL/r1UYpz4GNclTXxyZrYGSw==
@@ -2129,14 +2129,6 @@ babel-plugin-polyfill-corejs2@^0.3.0:
     "@babel/helper-define-polyfill-provider" "^0.3.0"
     semver "^6.1.1"
 
-babel-plugin-polyfill-corejs3@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-polyfill-corejs3/-/babel-plugin-polyfill-corejs3-0.4.0.tgz#0b571f4cf3d67f911512f5c04842a7b8e8263087"
-  integrity sha512-YxFreYwUfglYKdLUGvIF2nJEsGwj+RhWSX/ije3D2vQPOXuyMLMtg/cCGMDpOA7Nd+MwlNdnGODbd2EwUZPlsw==
-  dependencies:
-    "@babel/helper-define-polyfill-provider" "^0.3.0"
-    core-js-compat "^3.18.0"
-
 babel-plugin-polyfill-corejs3@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-polyfill-corejs3/-/babel-plugin-polyfill-corejs3-0.5.0.tgz#f81371be3fe499d39e074e272a1ef86533f3d268"
@@ -2568,7 +2560,7 @@ browserify@^17.0.0:
     vm-browserify "^1.0.0"
     xtend "^4.0.0"
 
-browserslist@^4.0.0, browserslist@^4.14.5, browserslist@^4.16.0, browserslist@^4.17.5, browserslist@^4.17.6, browserslist@^4.19.1:
+browserslist@^4.0.0, browserslist@^4.14.5, browserslist@^4.16.0, browserslist@^4.17.5, browserslist@^4.19.1:
   version "4.19.1"
   resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.19.1.tgz#4ac0435b35ab655896c31d53018b6dd5e9e4c9a3"
   integrity sha512-u2tbbG5PdKRTUoctO3NBD8FQ5HdPh1ZXPHzp1rwaa5jTc+RV9/+RlWiAIKmjRPQF+xbGM9Kklj5bZQFa2s/38A==
@@ -3212,7 +3204,7 @@ copy-webpack-plugin@^10.2.0:
     schema-utils "^4.0.0"
     serialize-javascript "^6.0.0"
 
-core-js-compat@^3.18.0, core-js-compat@^3.19.1, core-js-compat@^3.20.0, core-js-compat@^3.20.2:
+core-js-compat@^3.20.0, core-js-compat@^3.20.2:
   version "3.20.2"
   resolved "https://registry.yarnpkg.com/core-js-compat/-/core-js-compat-3.20.2.tgz#d1ff6936c7330959b46b2e08b122a8b14e26140b"
   integrity sha512-qZEzVQ+5Qh6cROaTPFLNS4lkvQ6mBzE3R6A6EEpssj7Zr2egMHgsy4XapdifqJDGC9CBiNv7s+ejI96rLNQFdg==
@@ -5851,15 +5843,205 @@ hex-rgb@^5.0.0:
   resolved "https://registry.yarnpkg.com/hex-rgb/-/hex-rgb-5.0.0.tgz#e2c9eb6a37498d66c5a350a221ed4c2c7d1a92d6"
   integrity sha512-NQO+lgVUCtHxZ792FodgW0zflK+ozS9X9dwGp9XvvmPlH7pyxd588cn24TD3rmPm/N0AIRXF10Otah8yKqGw4w==
 
-highlight.js@^11.4.0:
+highlight.js@^11.3.1, highlight.js@^11.4.0:
   version "11.4.0"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.4.0.tgz#34ceadd49e1596ee5aba3d99346cdfd4845ee05a"
   integrity sha512-nawlpCBCSASs7EdvZOYOYVkJpGmAOKMYZgZtUqSRqodZE0GRVcFKwo1RcpeOemqh9hyttTdd5wDBwHkuSyUfnA==
+
+highlightjs-4d@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/highlightjs-4d/-/highlightjs-4d-1.0.6.tgz#2546a7c9711b139ddddc70d3a91d740d316ec9a9"
+  integrity sha512-CLLwv21UNx4T7lXL6+cjMMGUOvLwupCc9qPVrZNEHofsuWmvQTGmA0A2lmNNk1vgoWeTitaV7vsmOq58HDT6SQ==
+
+highlightjs-alan@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-alan/-/highlightjs-alan-0.0.2.tgz#c9f764356feea1d71501d25c395b1452506cb461"
+  integrity sha512-k5h0z9wBne1DMqJPjjVKKO1lzUA/v5px7992Rlw+Gw751hPQSkL8f9NpM5pa7gfw+kCdUalw9Ba2fTp51KSNEw==
+
+highlightjs-blade@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-blade/-/highlightjs-blade-0.1.0.tgz#dbc146b23f32fcf0560c81e2d387781a7baf5486"
+  integrity sha512-c0fbvyHhiL5wi9rnVZ/Su8qM7TE5JXU2T1Urm7qHkQDRp3BFcAASbleQFQC7bQskeZ/9cuJ3QUommcVPN2VKaQ==
+
+highlightjs-chaos@^0.0.10:
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/highlightjs-chaos/-/highlightjs-chaos-0.0.10.tgz#cdc3df9ce509096f90e6a35ebbbbab3168e7857d"
+  integrity sha512-ZHCbUOyIpWof4tViDxis411HqvOxbLeMM50K/49mmr0RPoIDMKW1/pQSs4c4iOsx004UtRprMKKStTvBcYs4Ug==
+
+"highlightjs-chapel@github:chapel-lang/highlightjs-chapel":
+  version "0.0.0"
+  resolved "https://codeload.github.com/chapel-lang/highlightjs-chapel/tar.gz/b1200f148e9e1a161f4416347fe53ae537e5b7bd"
+
+"highlightjs-cpcdos@github:SPinti-Software/highlightjs-cpcdos":
+  version "1.0.0"
+  resolved "https://codeload.github.com/SPinti-Software/highlightjs-cpcdos/tar.gz/6bebd4cb8bdb3e1e0cb750ef24d2b3fc27a4dee2"
+
+highlightjs-cshtml-razor@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-cshtml-razor/-/highlightjs-cshtml-razor-2.1.1.tgz#5f602ff7fa2cb3f8757addcbb7dc4d607a4699bb"
+  integrity sha512-EhJrk42Lp6UJyQTQBts4i8Hdd/eu3+3LPF5gg1xwNq+boGSyVbfFYD+AXSaP0u6YQfgQEYecQlqUPOi3hRlh0A==
+  dependencies:
+    minimist "^1.2.5"
+
+highlightjs-cypher@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-cypher/-/highlightjs-cypher-1.1.1.tgz#6feec1d951cff6f42e6541bafbe6d1d4eeda99d0"
+  integrity sha512-clBIGVAI4s/f+SLcoBN0Hf5rtt/xt8pA7qdFU/04IGZUQZTYmggq3zYo67zGZfMyPPY9ju0060Y5kVPoVIe45g==
+
+"highlightjs-dafny@github:ConsenSys/highlightjs-dafny":
+  version "1.0.0"
+  resolved "https://codeload.github.com/ConsenSys/highlightjs-dafny/tar.gz/139cea8870376da44880874987d7898373c0a74f"
+
+"highlightjs-dylan@github:highlightjs/highlightjs-dylan":
+  version "2.0.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-dylan/tar.gz/229571415a73b737d5c5fd6a934908eecc75ea18"
+
+highlightjs-eta@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-eta/-/highlightjs-eta-0.1.0.tgz#20734525e4c8bd2fdf93d8543f29d3902f6b7eb5"
+  integrity sha512-9qUw3NgtfzCSUz/uHBA8vZJfmqqxWnDMbGMF9XWdmzG9pN4GJgFCXQD89Wzerf4iMX+L0fjb6+3DGOQnj6Hfdw==
+
+"highlightjs-extempore@github:highlightjs/highlightjs-extempore":
+  version "1.1.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-extempore/tar.gz/bdb27b37c86c968371288062052e2a5ad4190a47"
+
+"highlightjs-gdscript@github:highlightjs/highlightjs-gdscript":
+  version "0.0.1"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-gdscript/tar.gz/cedd6babcfce48099d9393aea6978b905850b020"
+
+highlightjs-gf@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-gf/-/highlightjs-gf-1.0.1.tgz#3f43d3d6f54bd8baf0660c50ccb3cf4ae6d3ad7d"
+  integrity sha512-0SQsWarXLKiCwEpLChL7xOWusctsTyEXm6OL+vi4kpn1xm+k10OWeT2uiXBVUTPiZaItEE0uyBrVIEiXR8aCZA==
+
+highlightjs-graphql@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-graphql/-/highlightjs-graphql-1.0.2.tgz#841e26831e7da9f0a3d66f93e6ff98a0d1ad6f43"
+  integrity sha512-jShTftpKQDwMXc+7OHOpHXRYSweT08EO2YOIcLbwU00e9yuwJMYXGLF1eiDO0aUPeQU4/5EjAh5HtPt3ly7rvg==
+
+"highlightjs-gsql@github:TigerGraph-DevLabs/highlightjs-gsql":
+  version "0.0.1"
+  resolved "https://codeload.github.com/TigerGraph-DevLabs/highlightjs-gsql/tar.gz/10db7295a70455fcc181acf3c6346ee1ed0dfc23"
+  dependencies:
+    minimist "^1.2.5"
+
+"highlightjs-hlsl@github:highlightjs/highlightjs-hlsl":
+  version "0.1.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-hlsl/tar.gz/5c8ae7a5a25791f55039cda90f092a30b561187f"
+
+highlightjs-jolie@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/highlightjs-jolie/-/highlightjs-jolie-0.1.8.tgz#ce393463dd11641c741b600d4a9c8fe683367db5"
+  integrity sha512-ruvbry4xz3m8cPpxXyD3o3QEZWC1kuqdRBa9Fy9d+X2kY6ejfx0N0xVL2e5hjcwYdz6UId1sk3dEix3E51w0TQ==
+
+highlightjs-lean@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-lean/-/highlightjs-lean-1.1.0.tgz#1fc8f7ab1ef26dfd88fc410d3db449c162a50ceb"
+  integrity sha512-/PHUun4P7z/9BJKUTdx30Z78nRzyVyzTZxkK3QZVOHKtplIwH+EDvW+YhJRYYabukbvolOxsr4SzuHE0JdNafw==
 
 highlightjs-line-numbers.js@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/highlightjs-line-numbers.js/-/highlightjs-line-numbers.js-2.8.0.tgz#479ea8cff0c31fadc1578a66fa03e38b801f9ca6"
   integrity sha512-TEf1gw0c8mb8nan0QwliqS7obT4cpUd9hzsGzsZLweteNnWea/VIqy5/aQqsa5wnz9lnvmtAkS1ZtDTjB/goYQ==
+
+highlightjs-lox@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/highlightjs-lox/-/highlightjs-lox-2.0.6.tgz#1c6138c82d8120ca8e74416812ef8e6a31e21527"
+  integrity sha512-scKJJYAb8xVUT/R2oq1XwewrWnq33+DvLwHkVwySxDdEIITMilfA2RfNkzu0vIm+Vn45VMhgS6lMsUd7HX9jgg==
+  dependencies:
+    highlight.js "^11.3.1"
+
+"highlightjs-mirc@github:highlightjs/highlightjs-mirc":
+  version "0.0.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-mirc/tar.gz/1a7f9eeb575b1f109639849fd5513fb7ad21c9e6"
+
+highlightjs-modelica@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-modelica/-/highlightjs-modelica-1.0.0.tgz#b08121564b57fa32edc2d16e6dd35b72dfe0d333"
+  integrity sha512-tHo1PjT+yikocDmfHCytrh+2RLsfcA5MBIdorwqIH2rvZ4ojue45nL50vpGzfItZA/t3jmQHgu6cC1N4A8Ao1g==
+
+"highlightjs-never@github:never-lang/highlightjs-never":
+  version "0.0.0"
+  resolved "https://codeload.github.com/never-lang/highlightjs-never/tar.gz/f708d44b0c8c1b415fe87e31bc63a6ce8046df8c"
+
+highlightjs-octave@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-octave/-/highlightjs-octave-0.1.0.tgz#d6fecf3e0dab2a623bcf394d98cdb5fc4be6f2b9"
+  integrity sha512-pThesT4PzUP8ExMMwUHAEn2XR7hJ2GofRFsxcTwvz1rjJ3BOo7i52JU1eeNbmOIjifBn9A2hanAqRb8afC/KNw==
+
+highlightjs-oz@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-oz/-/highlightjs-oz-0.0.3.tgz#e6d476367a560a00c0e9c02499428e1deacf0675"
+  integrity sha512-/xO+LPOo0s7/DP982tLx/XGQnIZo+xNgvO1k/tFhySdeGAfY+M4V4wOkBblmOkrHBIB9V2s1EIZgp0eFTXNbww==
+
+highlightjs-qsharp@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-qsharp/-/highlightjs-qsharp-1.0.2.tgz#4f3c65cc91b45f46f47abe93971e4a05826f0210"
+  integrity sha512-jqV0AeZ8wzEeajKslloHSWxr1ulug1aeq+nq/MLLTZ0jw5SJCoq1xlo4rB8JU26XnM1g9Z7Tx4j4c2weeDk2Cg==
+
+highlightjs-redbol@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-redbol/-/highlightjs-redbol-1.0.3.tgz#d36e6cfcbc07247cee6e39bf952944ec449b1582"
+  integrity sha512-3Y8dAo9J9wLVlweDFd3SD8P28Js1zzUqEDvV/Wl8l+po1VO65towB+jB39Ch2JiMnkwb+OyXIc1KP0BvZDF1yw==
+  dependencies:
+    highlightjs "^9.10.0"
+
+"highlightjs-robot@github:highlightjs/highlightjs-robot":
+  version "1.0.6"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-robot/tar.gz/a02d2c1eeba3c3a0ab3fdfe4d20157e1c1eaaad4"
+
+highlightjs-robots-txt@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-robots-txt/-/highlightjs-robots-txt-0.9.1.tgz#7f28c92500804cd8af21f8c70f2bedeb2d4af6da"
+  integrity sha512-xuFyQY2zGPm+irqKaWkdpSfOsUocFovdPsDadRBLXaQViyvwPvDulK+81TYxVzlFTIRorDFopSAarWiu+L37Bg==
+
+highlightjs-rpm-specfile@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-rpm-specfile/-/highlightjs-rpm-specfile-1.0.0.tgz#8d1818dfde096c7eab94d4f6ea71291212008bff"
+  integrity sha512-zezqMRVHjo2MIvk9W/esBS2aU5vi5zDy4oP5AdTPMrZKQK4ourH1DTm8xnfrNkLgivyTxT/Hx6kP7oo5Zp98xQ==
+
+highlightjs-sap-abap@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-sap-abap/-/highlightjs-sap-abap-0.2.0.tgz#d5291bf777deb7c297683f7dc87c02c8d108cc5b"
+  integrity sha512-vUwYBIMB+BmlPKjlHeEiQK8M1GeQ2VOtiaQo778kZ8N+kh+Q3gQ9jd1wbFNOAgbkLnpOrQrsxypVuJsZIIHoqQ==
+
+highlightjs-solidity@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-2.0.3.tgz#c89b6eca7d462f849acfb3a94c18f7db2b6d0c69"
+  integrity sha512-tjFm5dtIE61VQBzjlZmkCtY5fLs3CaEABbVuUNyXeW+UuOCsxMg3MsPFy0kCelHP74hPpkoqDejLrbnV1axAIw==
+
+highlightjs-svelte@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/highlightjs-svelte/-/highlightjs-svelte-1.0.6.tgz#e8bfc616478f8acecdef73e7e15a65b083c1ef40"
+  integrity sha512-aXuBPz8df3sOXg90q8rRcBLyxIR8ozPU39a6tJ2rpJUjjd9brRIr55aC0IccW4gsPhQxZ+B3rFugdXsg9/ckDw==
+
+"highlightjs-terraform@github:highlightjs/highlightjs-terraform":
+  version "1.0.6"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-terraform/tar.gz/778a28720b4b9295a639aa25308f9294c9029677"
+
+highlightjs-xsharp@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-xsharp/-/highlightjs-xsharp-1.0.0.tgz#e00431b1885cc0b7fe10bceb55cdc55028fd7099"
+  integrity sha512-K5MQuzs0Fr1GlW3lbjL0I/WKF/pqu1LYLciJmKiBD63w23Keg5iyY+/ZOa0WC1EOEn4Y1WnUXxM0f73DudP8/Q==
+
+highlightjs-zenscript@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-zenscript/-/highlightjs-zenscript-2.0.0.tgz#bd5f8a698cabb5359a9adedf516104bf4e3ab93c"
+  integrity sha512-e5frdS5T1y0lrEJF6jibEDKA68637kBEX7f1yHPhTUsjU/IgwsT+geG//t+WTZWK2Gx6vg729I27hKJcwC/HFw==
+
+highlightjs-zig@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-zig/-/highlightjs-zig-1.0.2.tgz#ced413367dfce465283a53892bd9d889bca620cc"
+  integrity sha512-ZPSQfyiUMmux685sTNzTXuvXAXH6Gqzc+WSRzhYiknCRELjma1FOdTJ/zs8L9KutmX+YOtdlkmS+NypOxInpqA==
+
+highlightjs@^9.10.0:
+  version "9.16.2"
+  resolved "https://registry.yarnpkg.com/highlightjs/-/highlightjs-9.16.2.tgz#07ea6cc7c93340fc440734fb7abf28558f1f0fe1"
+  integrity sha512-FK1vmMj8BbEipEy8DLIvp71t5UsC7n2D6En/UfM/91PCwmOpj6f2iu0Y0coRC62KSRHHC+dquM2xMULV/X7NFg==
+
+"hightlightjs-papyrus@github:Pickysaurus/highlightjs-papyrus":
+  version "0.0.4"
+  resolved "https://codeload.github.com/Pickysaurus/highlightjs-papyrus/tar.gz/c6d71811fc5aef47769d9a5bd2e21822d8e58f4f"
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
