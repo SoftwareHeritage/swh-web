@@ -330,6 +330,33 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should not add link to browse an origin when there is no visit status', function() {
+    const originUrl = 'https://git.example.org/example.git';
+    const saveRequestData = genOriginSaveResponse({
+      saveRequestStatus: 'accepted',
+      originUrl: originUrl,
+      saveTaskStatus: 'succeeded',
+      visitDate: null,
+      visitStatus: null
+    });
+    const saveRequestsListData = {
+      'recordsTotal': 1,
+      'draw': 2,
+      'recordsFiltered': 1,
+      'data': [saveRequestData]
+    };
+    cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
+      .as('saveRequestsList');
+    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.wait('@saveRequestsList');
+    cy.get('tbody tr').then(rows => {
+      const firstRowCells = rows[0].cells;
+      const tooltip = 'origin was successfully loaded, waiting for data to be available in database';
+      const expectedContent = `<span title="${tooltip}">${originUrl}</span>`;
+      expect($(firstRowCells[2]).html()).to.have.string(expectedContent);
+    });
+  });
+
   it('should display/close task info popover when clicking on the info button', function() {
     cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
     cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
