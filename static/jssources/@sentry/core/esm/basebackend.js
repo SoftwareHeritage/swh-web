@@ -1,4 +1,4 @@
-import { logger, SentryError } from '@sentry/utils';
+import { isDebugBuild, logger, SentryError } from '@sentry/utils';
 import { NoopTransport } from './transports/noop';
 /**
  * This is the base implemention of a Backend.
@@ -31,7 +31,9 @@ var BaseBackend = /** @class */ (function () {
      */
     BaseBackend.prototype.sendEvent = function (event) {
         void this._transport.sendEvent(event).then(null, function (reason) {
-            logger.error("Error while sending event: " + reason);
+            if (isDebugBuild()) {
+                logger.error("Error while sending event: " + reason);
+            }
         });
     };
     /**
@@ -39,11 +41,15 @@ var BaseBackend = /** @class */ (function () {
      */
     BaseBackend.prototype.sendSession = function (session) {
         if (!this._transport.sendSession) {
-            logger.warn("Dropping session because custom transport doesn't implement sendSession");
+            if (isDebugBuild()) {
+                logger.warn("Dropping session because custom transport doesn't implement sendSession");
+            }
             return;
         }
         void this._transport.sendSession(session).then(null, function (reason) {
-            logger.error("Error while sending session: " + reason);
+            if (isDebugBuild()) {
+                logger.error("Error while sending session: " + reason);
+            }
         });
     };
     /**

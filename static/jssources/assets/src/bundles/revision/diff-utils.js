@@ -364,7 +364,7 @@ export async function computeDiff(diffUrl, diffId) {
   } else {
 
     // prepare code highlighting
-    $(`.${diffId}`).removeClass('nohighlight');
+    $(`.${diffId}`).removeClass('plaintext');
     $(`.${diffId}`).addClass(data.language);
 
     // set unified diff text

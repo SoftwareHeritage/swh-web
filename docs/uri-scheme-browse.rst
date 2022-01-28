@@ -68,7 +68,7 @@ Typing:
   principle of least surprise. At the very minimum it is possible to
   enter timestamps as:
 
-  - ISO 8601 timestamps (see for instance the output of `date -I`, `date -Is`)
+  - ISO 8601 timestamps (see for instance the output of ``date -I``, ``date -Is``)
   - YYYY[MM[DD[HH[MM[SS]]]]] ad-hoc format
   - YYYY[-MM[-DD[ HH:[MM:[SS:]]]]] ad-hoc format
 

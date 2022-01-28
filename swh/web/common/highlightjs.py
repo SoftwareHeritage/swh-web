@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,8 +28,10 @@ def _hljs_languages():
 # languages aliases defined in highlight.js
 @functools.lru_cache()
 def _hljs_languages_aliases():
+    language_aliases = _hljs_languages_data()["languages_aliases"]
+    language_aliases.pop("robots.txt", None)
     return {
-        **_hljs_languages_data()["languages_aliases"],
+        **language_aliases,
         "ml": "ocaml",
         "bsl": "1c",
         "ep": "mojolicious",
@@ -39,6 +41,16 @@ def _hljs_languages_aliases():
         "rsc": "routeros",
         "s": "armasm",
         "sl": "rsl",
+        "4dm": "4d",
+        "kaos": "chaos",
+        "dfy": "dafny",
+        "ejs": "eta",
+        "nev": "never",
+        "m": "octave",
+        "shader": "hlsl",
+        "fx": "hlsl",
+        "prg": "xsharp",
+        "xs": "xsharp",
     }
 
 
@@ -66,20 +78,27 @@ _filename_to_hljs_language = {
     "dockerfile": "docker",
     "nginx.conf": "nginx",
     "pf.conf": "pf",
+    "robots.txt": "robots-txt",
 }
 
 
 # function to fill the above dictionaries
 def _init_pygments_to_hljs_map():
     if len(_pygments_lexer_to_hljs_language) == 0:
+        hljs_languages = _hljs_languages()
+        hljs_languages_aliases = _hljs_languages_aliases()
         for lexer in get_all_lexers():
             lexer_name = lexer[0]
             lang_aliases = lexer[1]
             lang_mime_types = lexer[3]
             lang = None
             for lang_alias in lang_aliases:
-                if lang_alias in _hljs_languages():
+                if lang_alias in hljs_languages:
                     lang = lang_alias
+                    _pygments_lexer_to_hljs_language[lexer_name] = lang_alias
+                    break
+                if lang_alias in hljs_languages_aliases:
+                    lang = hljs_languages_aliases[lang_alias]
                     _pygments_lexer_to_hljs_language[lexer_name] = lang_alias
                     break
 

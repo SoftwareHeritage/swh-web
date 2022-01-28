@@ -8,12 +8,14 @@ import { logger } from '@sentry/utils';
  * @param options Options to pass to the client.
  */
 export function initAndBind(clientClass, options) {
-    var _a;
     if (options.debug === true) {
         logger.enable();
     }
     var hub = getCurrentHub();
-    (_a = hub.getScope()) === null || _a === void 0 ? void 0 : _a.update(options.initialScope);
+    var scope = hub.getScope();
+    if (scope) {
+        scope.update(options.initialScope);
+    }
     var client = new clientClass(options);
     hub.bindClient(client);
 }

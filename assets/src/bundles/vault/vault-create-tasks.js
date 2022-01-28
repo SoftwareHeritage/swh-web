@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2019  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -15,6 +15,13 @@ const alertStyle = {
   'bottom': '1rem',
   'z-index': '100000'
 };
+
+function vaultModalHandleEnterKey(event) {
+  if (event.keyCode === 13) {
+    event.preventDefault();
+    $('.modal.show').last().find('button:contains("Ok")').trigger('click');
+  }
+}
 
 export async function vaultRequest(objectType, swhid) {
   let vaultUrl;
@@ -32,11 +39,15 @@ export async function vaultRequest(objectType, swhid) {
     // if last cooking has failed, remove previous task info from localStorage
     // in order to force the recooking of the object
     swh.vault.removeCookingTaskInfo([swhid]);
-    $(`#vault-cook-${objectType}-modal`).modal('show');
+    const vaultModalId = `#vault-cook-${objectType}-modal`;
+    $(vaultModalId).modal('show');
+    $('body').on('keyup', vaultModalId, vaultModalHandleEnterKey);
     // object has been cooked and should be in the vault cache,
     // it will be asked to cook it again if it is not
   } else if (data.status === 'done') {
-    $(`#vault-fetch-${objectType}-modal`).modal('show');
+    const vaultModalId = `#vault-fetch-${objectType}-modal`;
+    $(vaultModalId).modal('show');
+    $('body').on('keyup', vaultModalId, vaultModalHandleEnterKey);
   } else {
     const cookingServiceDownAlert =
           $(htmlAlert('danger',
@@ -82,7 +93,9 @@ async function addVaultCookingTask(objectType, cookingTask) {
       vaultCookingTasks.push(cookingTask);
       localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
       $('#vault-cook-directory-modal').modal('hide');
+      $('body').off('keyup', '#vault-cook-directory-modal', vaultModalHandleEnterKey);
       $('#vault-cook-revision-modal').modal('hide');
+      $('body').off('keyup', '#vault-cook-revision-modal', vaultModalHandleEnterKey);
       const cookingTaskCreatedAlert =
           $(htmlAlert('success',
                       'Archive cooking request successfully submitted.<br/>' +
@@ -93,7 +106,9 @@ async function addVaultCookingTask(objectType, cookingTask) {
       $('body').append(cookingTaskCreatedAlert);
     } catch (_) {
       $('#vault-cook-directory-modal').modal('hide');
+      $('body').off('keyup', '#vault-cook-directory-modal', vaultModalHandleEnterKey);
       $('#vault-cook-revision-modal').modal('hide');
+      $('body').off('keyup', '#vault-cook-revision-modal', vaultModalHandleEnterKey);
       const cookingTaskFailedAlert =
           $(htmlAlert('danger',
                       'Archive cooking request submission failed.',
@@ -117,11 +132,13 @@ export function cookDirectoryArchive(swhid) {
 
   } else {
     $('#invalid-email-modal').modal('show');
+    $('body').on('keyup', '#invalid-email-modal', vaultModalHandleEnterKey);
   }
 }
 
 export async function fetchDirectoryArchive(directorySwhid) {
   $('#vault-fetch-directory-modal').modal('hide');
+  $('body').off('keyup', '#vault-cook-revision-modal', vaultModalHandleEnterKey);
   const vaultUrl = Urls.api_1_vault_cook_flat(directorySwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
@@ -140,11 +157,13 @@ export function cookRevisionArchive(revisionId) {
     addVaultCookingTask('revision', cookingTask);
   } else {
     $('#invalid-email-modal').modal('show');
+    $('body').on('keyup', '#invalid-email-modal', vaultModalHandleEnterKey);
   }
 }
 
 export async function fetchRevisionArchive(revisionSwhid) {
-  $('#vault-fetch-directory-modal').modal('hide');
+  $('#vault-fetch-revision-modal').modal('hide');
+  $('body').off('keyup', '#vault-fetch-revision-modal', vaultModalHandleEnterKey);
   const vaultUrl = Urls.api_1_vault_cook_git_bare(revisionSwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();

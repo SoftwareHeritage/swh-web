@@ -1,14 +1,11 @@
 import { __assign, __read, __values } from "tslib";
-import { API } from '@sentry/core';
-import { Status, } from '@sentry/types';
-import { dateTimestampInSeconds, getGlobalObject, logger, parseRetryAfterHeader, PromiseBuffer, SentryError, } from '@sentry/utils';
+import { eventToSentryRequest, getEnvelopeEndpointWithUrlEncodedAuth, getStoreEndpointWithUrlEncodedAuth, initAPIDetails, sessionToSentryRequest, } from '@sentry/core';
+import { dateTimestampInSeconds, dsnToString, eventStatusFromHttpCode, getGlobalObject, isDebugBuild, logger, makePromiseBuffer, parseRetryAfterHeader, } from '@sentry/utils';
 import { sendReport } from './utils';
-var CATEGORY_MAPPING = {
-    event: 'error',
-    transaction: 'transaction',
-    session: 'session',
-    attachment: 'attachment',
-};
+function requestTypeToCategory(ty) {
+    var tyStr = ty;
+    return tyStr === 'event' ? 'error' : tyStr;
+}
 var global = getGlobalObject();
 /** Base Transport class implementation */
 var BaseTransport = /** @class */ (function () {
@@ -16,13 +13,13 @@ var BaseTransport = /** @class */ (function () {
         var _this = this;
         this.options = options;
         /** A simple buffer holding all requests. */
-        this._buffer = new PromiseBuffer(30);
+        this._buffer = makePromiseBuffer(30);
         /** Locks transport after receiving rate limits in a response */
         this._rateLimits = {};
         this._outcomes = {};
-        this._api = new API(options.dsn, options._metadata, options.tunnel);
+        this._api = initAPIDetails(options.dsn, options._metadata, options.tunnel);
         // eslint-disable-next-line deprecation/deprecation
-        this.url = this._api.getStoreEndpointWithUrlEncodedAuth();
+        this.url = getStoreEndpointWithUrlEncodedAuth(this._api.dsn);
         if (this.options.sendClientReports && global.document) {
             global.document.addEventListener('visibilitychange', function () {
                 if (global.document.visibilityState === 'hidden') {
@@ -34,8 +31,14 @@ var BaseTransport = /** @class */ (function () {
     /**
      * @inheritDoc
      */
-    BaseTransport.prototype.sendEvent = function (_) {
-        throw new SentryError('Transport Class has to implement `sendEvent` method');
+    BaseTransport.prototype.sendEvent = function (event) {
+        return this._sendRequest(eventToSentryRequest(event, this._api), event);
+    };
+    /**
+     * @inheritDoc
+     */
+    BaseTransport.prototype.sendSession = function (session) {
+        return this._sendRequest(sessionToSentryRequest(session, this._api), session);
     };
     /**
      * @inheritDoc
@@ -56,7 +59,7 @@ var BaseTransport = /** @class */ (function () {
         // We could use nested maps, but it's much easier to read and type this way.
         // A correct type for map-based implementation if we want to go that route
         // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
-        var key = CATEGORY_MAPPING[category] + ":" + reason;
+        var key = requestTypeToCategory(category) + ":" + reason;
         logger.log("Adding outcome: " + key);
         this._outcomes[key] = (_a = this._outcomes[key], (_a !== null && _a !== void 0 ? _a : 0)) + 1;
     };
@@ -75,9 +78,9 @@ var BaseTransport = /** @class */ (function () {
             return;
         }
         logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
-        var url = this._api.getEnvelopeEndpointWithUrlEncodedAuth();
+        var url = getEnvelopeEndpointWithUrlEncodedAuth(this._api.dsn, this._api.tunnel);
         // Envelope header is required to be at least an empty object
-        var envelopeHeader = JSON.stringify(__assign({}, (this.options.tunnel && { dsn: this._api.getDsn().toString() })));
+        var envelopeHeader = JSON.stringify(__assign({}, (this._api.tunnel && { dsn: dsnToString(this._api.dsn) })));
         var itemHeaders = JSON.stringify({
             type: 'client_report',
         });
@@ -105,15 +108,16 @@ var BaseTransport = /** @class */ (function () {
      */
     BaseTransport.prototype._handleResponse = function (_a) {
         var requestType = _a.requestType, response = _a.response, headers = _a.headers, resolve = _a.resolve, reject = _a.reject;
-        var status = Status.fromHttpCode(response.status);
+        var status = eventStatusFromHttpCode(response.status);
         /**
          * "The name is case-insensitive."
          * https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
          */
         var limited = this._handleRateLimit(headers);
-        if (limited)
+        if (limited && isDebugBuild()) {
             logger.warn("Too many " + requestType + " requests, backing off until: " + this._disabledUntil(requestType));
-        if (status === Status.Success) {
+        }
+        if (status === 'success') {
             resolve({ status: status });
             return;
         }
@@ -123,7 +127,7 @@ var BaseTransport = /** @class */ (function () {
      * Gets the time that given category is disabled until for rate limiting
      */
     BaseTransport.prototype._disabledUntil = function (requestType) {
-        var category = CATEGORY_MAPPING[requestType];
+        var category = requestTypeToCategory(requestType);
         return this._rateLimits[category] || this._rateLimits.all;
     };
     /**

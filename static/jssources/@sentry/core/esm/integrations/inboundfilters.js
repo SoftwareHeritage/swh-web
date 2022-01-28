@@ -1,6 +1,6 @@
 import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
-import { getEventDescription, isMatchingPattern, logger } from '@sentry/utils';
+import { getEventDescription, isDebugBuild, isMatchingPattern, logger } from '@sentry/utils';
 // "Script error." is hard coded into browsers for errors that it can't read.
 // this is the result of a script being pulled in from an external domain and CORS.
 var DEFAULT_IGNORE_ERRORS = [/^Script error\.?$/, /^Javascript error: Script error\.? on line 0$/];
@@ -44,19 +44,27 @@ var InboundFilters = /** @class */ (function () {
     /** JSDoc */
     InboundFilters.prototype._shouldDropEvent = function (event, options) {
         if (this._isSentryError(event, options)) {
-            logger.warn("Event dropped due to being internal Sentry Error.\nEvent: " + getEventDescription(event));
+            if (isDebugBuild()) {
+                logger.warn("Event dropped due to being internal Sentry Error.\nEvent: " + getEventDescription(event));
+            }
             return true;
         }
         if (this._isIgnoredError(event, options)) {
-            logger.warn("Event dropped due to being matched by `ignoreErrors` option.\nEvent: " + getEventDescription(event));
+            if (isDebugBuild()) {
+                logger.warn("Event dropped due to being matched by `ignoreErrors` option.\nEvent: " + getEventDescription(event));
+            }
             return true;
         }
         if (this._isDeniedUrl(event, options)) {
-            logger.warn("Event dropped due to being matched by `denyUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+            if (isDebugBuild()) {
+                logger.warn("Event dropped due to being matched by `denyUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+            }
             return true;
         }
         if (!this._isAllowedUrl(event, options)) {
-            logger.warn("Event dropped due to not being matched by `allowUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+            if (isDebugBuild()) {
+                logger.warn("Event dropped due to not being matched by `allowUrls` option.\nEvent: " + getEventDescription(event) + ".\nUrl: " + this._getEventFilterUrl(event));
+            }
             return true;
         }
         return false;
@@ -67,16 +75,14 @@ var InboundFilters = /** @class */ (function () {
             return false;
         }
         try {
-            return ((event &&
-                event.exception &&
-                event.exception.values &&
-                event.exception.values[0] &&
-                event.exception.values[0].type === 'SentryError') ||
-                false);
+            // @ts-ignore can't be a sentry error if undefined
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            return event.exception.values[0].type === 'SentryError';
         }
-        catch (_oO) {
-            return false;
+        catch (e) {
+            // ignore
         }
+        return false;
     };
     /** JSDoc */
     InboundFilters.prototype._isIgnoredError = function (event, options) {
@@ -127,7 +133,9 @@ var InboundFilters = /** @class */ (function () {
                 return ["" + value, type + ": " + value];
             }
             catch (oO) {
-                logger.error("Cannot extract message for event " + getEventDescription(event));
+                if (isDebugBuild()) {
+                    logger.error("Cannot extract message for event " + getEventDescription(event));
+                }
                 return [];
             }
         }
@@ -136,10 +144,9 @@ var InboundFilters = /** @class */ (function () {
     /** JSDoc */
     InboundFilters.prototype._getLastValidUrl = function (frames) {
         if (frames === void 0) { frames = []; }
-        var _a, _b;
         for (var i = frames.length - 1; i >= 0; i--) {
             var frame = frames[i];
-            if (((_a = frame) === null || _a === void 0 ? void 0 : _a.filename) !== '<anonymous>' && ((_b = frame) === null || _b === void 0 ? void 0 : _b.filename) !== '[native code]') {
+            if (frame && frame.filename !== '<anonymous>' && frame.filename !== '[native code]') {
                 return frame.filename || null;
             }
         }
@@ -149,17 +156,22 @@ var InboundFilters = /** @class */ (function () {
     InboundFilters.prototype._getEventFilterUrl = function (event) {
         try {
             if (event.stacktrace) {
-                var frames_1 = event.stacktrace.frames;
-                return this._getLastValidUrl(frames_1);
+                return this._getLastValidUrl(event.stacktrace.frames);
             }
-            if (event.exception) {
-                var frames_2 = event.exception.values && event.exception.values[0].stacktrace && event.exception.values[0].stacktrace.frames;
-                return this._getLastValidUrl(frames_2);
+            var frames_1;
+            try {
+                // @ts-ignore we only care about frames if the whole thing here is defined
+                frames_1 = event.exception.values[0].stacktrace.frames;
             }
-            return null;
+            catch (e) {
+                // ignore
+            }
+            return frames_1 ? this._getLastValidUrl(frames_1) : null;
         }
         catch (oO) {
-            logger.error("Cannot extract url for event " + getEventDescription(event));
+            if (isDebugBuild()) {
+                logger.error("Cannot extract url for event " + getEventDescription(event));
+            }
             return null;
         }
     };

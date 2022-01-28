@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2021  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -323,9 +323,8 @@ describe('Vault Cooking User Interface Tests', function() {
       const browseRevisionUrl = swhIdsContext.revision.swhid_url;
 
       // Create a vault cooking task through the GUI
-      cy.get('.modal-dialog')
-        .contains('button:visible', 'Ok')
-        .click();
+      cy.get('.modal.show')
+        .type('{enter}');
 
       cy.wait('@createVaultCookingTask');
 

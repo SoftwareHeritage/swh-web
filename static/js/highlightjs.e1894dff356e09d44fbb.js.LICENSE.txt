@@ -1,0 +1,10 @@
+/*! `blade` grammar compiled for Highlight.js 11.4.0 */
+
+/*! `gsql` grammar compiled for Highlight.js 11.3.1 */
+
+/**
+ * @name Lox
+ * @author jaacko-torus <jaacko.torus@gmail.com> (https://github.com/jaacko-torus)
+ * @website http://craftinginterpreters.com/
+ * @license MIT
+ */

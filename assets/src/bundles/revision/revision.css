@@ -28,7 +28,7 @@ span.no-nl-marker svg {
 }
 
 span.no-nl-marker svg path {
-    fill: currentColor;
+    fill: currentcolor;
 }
 
 .swh-revision-log-entry-id {
