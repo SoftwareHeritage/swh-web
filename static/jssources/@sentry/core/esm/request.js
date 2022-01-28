@@ -1,4 +1,6 @@
-import { __assign, __read, __rest, __spread } from "tslib";
+import { __assign, __read, __spread } from "tslib";
+import { dsnToString, normalize } from '@sentry/utils';
+import { getEnvelopeEndpointWithUrlEncodedAuth, getStoreEndpointWithUrlEncodedAuth } from './api';
 /** Extract sdk info from from the API metadata */
 function getSdkMetadataForEnvelopeHeader(api) {
     if (!api.metadata || !api.metadata.sdk) {
@@ -25,7 +27,7 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
 /** Creates a SentryRequest from a Session. */
 export function sessionToSentryRequest(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
-    var envelopeHeaders = JSON.stringify(__assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (api.forceEnvelope() && { dsn: api.getDsn().toString() })));
+    var envelopeHeaders = JSON.stringify(__assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) })));
     // I know this is hacky but we don't want to add `session` to request type since it's never rate limited
     var type = 'aggregates' in session ? 'sessions' : 'session';
     var itemHeaders = JSON.stringify({
@@ -34,26 +36,70 @@ export function sessionToSentryRequest(session, api) {
     return {
         body: envelopeHeaders + "\n" + itemHeaders + "\n" + JSON.stringify(session),
         type: type,
-        url: api.getEnvelopeEndpointWithUrlEncodedAuth(),
+        url: getEnvelopeEndpointWithUrlEncodedAuth(api.dsn, api.tunnel),
     };
 }
 /** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var eventType = event.type || 'event';
-    var useEnvelope = eventType === 'transaction' || api.forceEnvelope();
-    var _a = event.debug_meta || {}, transactionSampling = _a.transactionSampling, metadata = __rest(_a, ["transactionSampling"]);
-    var _b = transactionSampling || {}, samplingMethod = _b.method, sampleRate = _b.rate;
-    if (Object.keys(metadata).length === 0) {
-        delete event.debug_meta;
+    var useEnvelope = eventType === 'transaction' || !!api.tunnel;
+    var transactionSampling = (event.sdkProcessingMetadata || {}).transactionSampling;
+    var _a = transactionSampling || {}, samplingMethod = _a.method, sampleRate = _a.rate;
+    // TODO: Below is a temporary hack in order to debug a serialization error - see
+    // https://github.com/getsentry/sentry-javascript/issues/2809 and
+    // https://github.com/getsentry/sentry-javascript/pull/4425. TL;DR: even though we normalize all events (which should
+    // prevent this), something is causing `JSON.stringify` to throw a circular reference error.
+    //
+    // When it's time to remove it:
+    // 1. Delete everything between here and where the request object `req` is created, EXCEPT the line deleting
+    //    `sdkProcessingMetadata`
+    // 2. Restore the original version of the request body, which is commented out
+    // 3. Search for `skippedNormalization` and pull out the companion hack in the browser playwright tests
+    enhanceEventWithSdkInfo(event, api.metadata.sdk);
+    event.tags = event.tags || {};
+    event.extra = event.extra || {};
+    // In theory, all events should be marked as having gone through normalization and so
+    // we should never set this tag
+    if (!(event.sdkProcessingMetadata && event.sdkProcessingMetadata.baseClientNormalized)) {
+        event.tags.skippedNormalization = true;
     }
-    else {
-        event.debug_meta = metadata;
+    // prevent this data from being sent to sentry
+    // TODO: This is NOT part of the hack - DO NOT DELETE
+    delete event.sdkProcessingMetadata;
+    var body;
+    try {
+        // 99.9% of events should get through just fine - no change in behavior for them
+        body = JSON.stringify(event);
+    }
+    catch (err) {
+        // Record data about the error without replacing original event data, then force renormalization
+        event.tags.JSONStringifyError = true;
+        event.extra.JSONStringifyError = err;
+        try {
+            body = JSON.stringify(normalize(event));
+        }
+        catch (newErr) {
+            // At this point even renormalization hasn't worked, meaning something about the event data has gone very wrong.
+            // Time to cut our losses and record only the new error. With luck, even in the problematic cases we're trying to
+            // debug with this hack, we won't ever land here.
+            var innerErr = newErr;
+            body = JSON.stringify({
+                message: 'JSON.stringify error after renormalization',
+                // setting `extra: { innerErr }` here for some reason results in an empty object, so unpack manually
+                extra: { message: innerErr.message, stack: innerErr.stack },
+            });
+        }
     }
     var req = {
-        body: JSON.stringify(sdkInfo ? enhanceEventWithSdkInfo(event, api.metadata.sdk) : event),
+        // this is the relevant line of code before the hack was added, to make it easy to undo said hack once we've solved
+        // the mystery
+        // body: JSON.stringify(sdkInfo ? enhanceEventWithSdkInfo(event, api.metadata.sdk) : event),
+        body: body,
         type: eventType,
-        url: useEnvelope ? api.getEnvelopeEndpointWithUrlEncodedAuth() : api.getStoreEndpointWithUrlEncodedAuth(),
+        url: useEnvelope
+            ? getEnvelopeEndpointWithUrlEncodedAuth(api.dsn, api.tunnel)
+            : getStoreEndpointWithUrlEncodedAuth(api.dsn),
     };
     // https://develop.sentry.dev/sdk/envelopes/
     // Since we don't need to manipulate envelopes nor store them, there is no
@@ -61,7 +107,7 @@ export function eventToSentryRequest(event, api) {
     // deserialization. Instead, we only implement a minimal subset of the spec to
     // serialize events inline here.
     if (useEnvelope) {
-        var envelopeHeaders = JSON.stringify(__assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (api.forceEnvelope() && { dsn: api.getDsn().toString() })));
+        var envelopeHeaders = JSON.stringify(__assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) })));
         var itemHeaders = JSON.stringify({
             type: eventType,
             // TODO: Right now, sampleRate may or may not be defined (it won't be in the cases of inheritance and

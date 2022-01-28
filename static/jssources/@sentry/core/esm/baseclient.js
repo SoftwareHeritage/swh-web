@@ -1,8 +1,7 @@
 import { __assign, __read, __spread, __values } from "tslib";
 /* eslint-disable max-lines */
 import { Scope } from '@sentry/hub';
-import { Outcome, SessionStatus, } from '@sentry/types';
-import { checkOrSetAlreadyCaught, dateTimestampInSeconds, Dsn, isPlainObject, isPrimitive, isThenable, logger, normalize, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
+import { checkOrSetAlreadyCaught, dateTimestampInSeconds, isDebugBuild, isPlainObject, isPrimitive, isThenable, logger, makeDsn, normalize, rejectedSyncPromise, resolvedSyncPromise, SentryError, SyncPromise, truncate, uuid4, } from '@sentry/utils';
 import { setupIntegrations } from './integration';
 var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
 /**
@@ -52,7 +51,7 @@ var BaseClient = /** @class */ (function () {
         this._backend = new backendClass(options);
         this._options = options;
         if (options.dsn) {
-            this._dsn = new Dsn(options.dsn);
+            this._dsn = makeDsn(options.dsn);
         }
     }
     /**
@@ -95,9 +94,8 @@ var BaseClient = /** @class */ (function () {
      * @inheritDoc
      */
     BaseClient.prototype.captureEvent = function (event, hint, scope) {
-        var _a;
         // ensure we haven't captured this very object before
-        if (((_a = hint) === null || _a === void 0 ? void 0 : _a.originalException) && checkOrSetAlreadyCaught(hint.originalException)) {
+        if (hint && hint.originalException && checkOrSetAlreadyCaught(hint.originalException)) {
             logger.log(ALREADY_SEEN_ERROR);
             return;
         }
@@ -112,11 +110,15 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype.captureSession = function (session) {
         if (!this._isEnabled()) {
-            logger.warn('SDK not enabled, will not capture session.');
+            if (isDebugBuild()) {
+                logger.warn('SDK not enabled, will not capture session.');
+            }
             return;
         }
         if (!(typeof session.release === 'string')) {
-            logger.warn('Discarded session because of missing or non-string release');
+            if (isDebugBuild()) {
+                logger.warn('Discarded session because of missing or non-string release');
+            }
         }
         else {
             this._sendSession(session);
@@ -212,10 +214,10 @@ var BaseClient = /** @class */ (function () {
         // A session is updated and that session update is sent in only one of the two following scenarios:
         // 1. Session with non terminal status and 0 errors + an error occurred -> Will set error count to 1 and send update
         // 2. Session with non terminal status and 1 error + a crash occurred -> Will set status crashed and send update
-        var sessionNonTerminal = session.status === SessionStatus.Ok;
+        var sessionNonTerminal = session.status === 'ok';
         var shouldUpdateAndSend = (sessionNonTerminal && session.errors === 0) || (sessionNonTerminal && crashed);
         if (shouldUpdateAndSend) {
-            session.update(__assign(__assign({}, (crashed && { status: SessionStatus.Crashed })), { errors: session.errors || Number(errored || crashed) }));
+            session.update(__assign(__assign({}, (crashed && { status: 'crashed' })), { errors: session.errors || Number(errored || crashed) }));
             this.captureSession(session);
         }
     };
@@ -288,7 +290,7 @@ var BaseClient = /** @class */ (function () {
             finalScope = Scope.clone(finalScope).update(hint.captureContext);
         }
         // We prepare the result here with a resolved Event.
-        var result = SyncPromise.resolve(prepared);
+        var result = resolvedSyncPromise(prepared);
         // This should be the last thing called, since we want that
         // {@link Hub.addEventProcessor} gets the finished prepared event.
         if (finalScope) {
@@ -338,10 +340,7 @@ var BaseClient = /** @class */ (function () {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             normalized.contexts.trace = event.contexts.trace;
         }
-        var _a = this.getOptions()._experiments, _experiments = _a === void 0 ? {} : _a;
-        if (_experiments.ensureNoCircularStructures) {
-            return normalize(normalized);
-        }
+        event.sdkProcessingMetadata = __assign(__assign({}, event.sdkProcessingMetadata), { baseClientNormalized: true });
         return normalized;
     };
     /**
@@ -421,26 +420,29 @@ var BaseClient = /** @class */ (function () {
      */
     BaseClient.prototype._processEvent = function (event, hint, scope) {
         var _this = this;
-        var _a, _b;
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        var _c = this.getOptions(), beforeSend = _c.beforeSend, sampleRate = _c.sampleRate;
+        var _a = this.getOptions(), beforeSend = _a.beforeSend, sampleRate = _a.sampleRate;
         var transport = this.getTransport();
+        function recordLostEvent(outcome, category) {
+            if (transport.recordLostEvent) {
+                transport.recordLostEvent(outcome, category);
+            }
+        }
         if (!this._isEnabled()) {
-            return SyncPromise.reject(new SentryError('SDK not enabled, will not capture event.'));
+            return rejectedSyncPromise(new SentryError('SDK not enabled, will not capture event.'));
         }
         var isTransaction = event.type === 'transaction';
         // 1.0 === 100% events are sent
         // 0.0 === 0% events are sent
         // Sampling for transaction happens somewhere else
         if (!isTransaction && typeof sampleRate === 'number' && Math.random() > sampleRate) {
-            (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.SampleRate, 'event');
-            return SyncPromise.reject(new SentryError("Discarding event because it's not included in the random sample (sampling rate = " + sampleRate + ")"));
+            recordLostEvent('sample_rate', 'event');
+            return rejectedSyncPromise(new SentryError("Discarding event because it's not included in the random sample (sampling rate = " + sampleRate + ")"));
         }
         return this._prepareEvent(event, scope, hint)
             .then(function (prepared) {
-            var _a, _b;
             if (prepared === null) {
-                (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.EventProcessor, event.type || 'event');
+                recordLostEvent('event_processor', event.type || 'event');
                 throw new SentryError('An event processor returned null, will not send event.');
             }
             var isInternalException = hint && hint.data && hint.data.__sentry__ === true;
@@ -448,12 +450,11 @@ var BaseClient = /** @class */ (function () {
                 return prepared;
             }
             var beforeSendResult = beforeSend(prepared, hint);
-            return _this._ensureBeforeSendRv(beforeSendResult);
+            return _ensureBeforeSendRv(beforeSendResult);
         })
             .then(function (processedEvent) {
-            var _a, _b;
             if (processedEvent === null) {
-                (_b = (_a = transport).recordLostEvent) === null || _b === void 0 ? void 0 : _b.call(_a, Outcome.BeforeSend, event.type || 'event');
+                recordLostEvent('before_send', event.type || 'event');
                 throw new SentryError('`beforeSend` returned `null`, will not send event.');
             }
             var session = scope && scope.getSession && scope.getSession();
@@ -490,27 +491,27 @@ var BaseClient = /** @class */ (function () {
             return reason;
         });
     };
-    /**
-     * Verifies that return value of configured `beforeSend` is of expected type.
-     */
-    BaseClient.prototype._ensureBeforeSendRv = function (rv) {
-        var nullErr = '`beforeSend` method has to return `null` or a valid event.';
-        if (isThenable(rv)) {
-            return rv.then(function (event) {
-                if (!(isPlainObject(event) || event === null)) {
-                    throw new SentryError(nullErr);
-                }
-                return event;
-            }, function (e) {
-                throw new SentryError("beforeSend rejected with " + e);
-            });
-        }
-        else if (!(isPlainObject(rv) || rv === null)) {
-            throw new SentryError(nullErr);
-        }
-        return rv;
-    };
     return BaseClient;
 }());
 export { BaseClient };
+/**
+ * Verifies that return value of configured `beforeSend` is of expected type.
+ */
+function _ensureBeforeSendRv(rv) {
+    var nullErr = '`beforeSend` method has to return `null` or a valid event.';
+    if (isThenable(rv)) {
+        return rv.then(function (event) {
+            if (!(isPlainObject(event) || event === null)) {
+                throw new SentryError(nullErr);
+            }
+            return event;
+        }, function (e) {
+            throw new SentryError("beforeSend rejected with " + e);
+        });
+    }
+    else if (!(isPlainObject(rv) || rv === null)) {
+        throw new SentryError(nullErr);
+    }
+    return rv;
+}
 //# sourceMappingURL=baseclient.js.map

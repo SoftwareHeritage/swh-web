@@ -101,7 +101,7 @@ def _contents_diff(request, from_query_string, to_query_string):
     content_to_lines = []
     force = request.GET.get("force", "false")
     path = request.GET.get("path", None)
-    language = "nohighlight"
+    language = "plaintext"
 
     force = bool(strtobool(force))
 
@@ -140,10 +140,10 @@ def _contents_diff(request, from_query_string, to_query_string):
 
             if not text_diff:
                 diff_str = "Diffs are not generated for non textual content"
-                language = "nohighlight"
+                language = "plaintext"
             elif not force and diff_size > _auto_diff_size_limit:
                 diff_str = "Large diffs are not automatically computed"
-                language = "nohighlight"
+                language = "plaintext"
             else:
                 if content_from:
                     content_from_lines = (

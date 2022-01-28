@@ -1,7 +1,7 @@
 import { __values } from "tslib";
 import { htmlTreeAsString } from './browser';
 import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
-import { Memo } from './memo';
+import { memoBuilder } from './memo';
 import { getFunctionName } from './stacktrace';
 import { truncate } from './string';
 /**
@@ -25,13 +25,7 @@ export function fill(source, name, replacementFactory) {
     // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
     if (typeof wrapped === 'function') {
         try {
-            wrapped.prototype = wrapped.prototype || {};
-            Object.defineProperties(wrapped, {
-                __sentry_original__: {
-                    enumerable: false,
-                    value: original,
-                },
-            });
+            markFunctionWrapped(wrapped, original);
         }
         catch (_Oo) {
             // This can throw if multiple fill happens on a global object like XMLHttpRequest
@@ -39,6 +33,41 @@ export function fill(source, name, replacementFactory) {
         }
     }
     source[name] = wrapped;
+}
+/**
+ * Defines a non enumerable property.  This creates a non enumerable property on an object.
+ *
+ * @param func The function to set a property to
+ * @param name the name of the special sentry property
+ * @param value the property to define
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function addNonEnumerableProperty(func, name, value) {
+    Object.defineProperty(func, name, {
+        value: value,
+    });
+}
+/**
+ * Remembers the original function on the wrapped function and
+ * patches up the prototype.
+ *
+ * @param wrapped the wrapper function
+ * @param original the original function that gets wrapped
+ */
+export function markFunctionWrapped(wrapped, original) {
+    var proto = original.prototype || {};
+    wrapped.prototype = original.prototype = proto;
+    addNonEnumerableProperty(wrapped, '__sentry_original__', original);
+}
+/**
+ * This extracts the original function if available.  See
+ * `markFunctionWrapped` for more information.
+ *
+ * @param func the function to unwrap
+ * @returns the unwrapped version of the function if available.
+ */
+export function getOriginalFunction(func) {
+    return func.__sentry_original__;
 }
 /**
  * Encodes given object into url-friendly format
@@ -140,11 +169,11 @@ maxSize) {
  *  unchanged.
  */
 function serializeValue(value) {
-    var type = Object.prototype.toString.call(value);
     // Node.js REPL notation
     if (typeof value === 'string') {
         return value;
     }
+    var type = Object.prototype.toString.call(value);
     if (type === '[object Object]') {
         return '[Object]';
     }
@@ -216,8 +245,8 @@ function normalizeValue(value, key) {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function walk(key, value, depth, memo) {
     if (depth === void 0) { depth = +Infinity; }
-    if (memo === void 0) { memo = new Memo(); }
-    // If we reach the maximum depth, serialize whatever has left
+    if (memo === void 0) { memo = memoBuilder(); }
+    // If we reach the maximum depth, serialize whatever is left
     if (depth === 0) {
         return serializeValue(value);
     }
@@ -227,17 +256,18 @@ export function walk(key, value, depth, memo) {
         return value.toJSON();
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-    // If normalized value is a primitive, there are no branches left to walk, so we can just bail out, as theres no point in going down that branch any further
+    // If normalized value is a primitive, there are no branches left to walk, so bail out
     var normalized = normalizeValue(value, key);
     if (isPrimitive(normalized)) {
         return normalized;
     }
-    // Create source that we will use for next itterations, either objectified error object (Error type with extracted keys:value pairs) or the input itself
+    // Create source that we will use for the next iteration. It will either be an objectified error object (`Error` type
+    // with extracted key:value pairs) or the input itself.
     var source = getWalkSource(value);
     // Create an accumulator that will act as a parent for all future itterations of that branch
     var acc = Array.isArray(value) ? [] : {};
     // If we already walked that branch, bail out, as it's circular reference
-    if (memo.memoize(value)) {
+    if (memo[0](value)) {
         return '[Circular ~]';
     }
     // Walk all keys of the source
@@ -250,7 +280,7 @@ export function walk(key, value, depth, memo) {
         acc[innerKey] = walk(innerKey, source[innerKey], depth - 1, memo);
     }
     // Once walked through all the branches, remove the parent from memo storage
-    memo.unmemoize(value);
+    memo[1](value);
     // Return accumulated values
     return acc;
 }

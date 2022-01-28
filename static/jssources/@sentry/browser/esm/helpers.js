@@ -1,6 +1,6 @@
 import { __assign } from "tslib";
-import { API, captureException, withScope } from '@sentry/core';
-import { addExceptionMechanism, addExceptionTypeValue, getGlobalObject, logger } from '@sentry/utils';
+import { captureException, getReportDialogEndpoint, withScope } from '@sentry/core';
+import { addExceptionMechanism, addExceptionTypeValue, addNonEnumerableProperty, getGlobalObject, getOriginalFunction, isDebugBuild, logger, markFunctionWrapped, } from '@sentry/utils';
 var global = getGlobalObject();
 var ignoreOnError = 0;
 /**
@@ -28,18 +28,26 @@ export function ignoreNextOnError() {
  * @hidden
  */
 export function wrap(fn, options, before) {
+    // for future readers what this does is wrap a function and then create
+    // a bi-directional wrapping between them.
+    //
+    // example: wrapped = wrap(original);
+    //  original.__sentry_wrapped__ -> wrapped
+    //  wrapped.__sentry_original__ -> original
     if (options === void 0) { options = {}; }
     if (typeof fn !== 'function') {
         return fn;
     }
     try {
-        // We don't wanna wrap it twice
-        if (fn.__sentry__) {
-            return fn;
+        // if we're dealing with a function that was previously wrapped, return
+        // the original wrapper.
+        var wrapper = fn.__sentry_wrapped__;
+        if (wrapper) {
+            return wrapper;
         }
-        // If this has already been wrapped in the past, return that wrapped function
-        if (fn.__sentry_wrapped__) {
-            return fn.__sentry_wrapped__;
+        // We don't wanna wrap it twice
+        if (getOriginalFunction(fn)) {
+            return fn;
         }
     }
     catch (e) {
@@ -58,14 +66,6 @@ export function wrap(fn, options, before) {
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             var wrappedArguments = args.map(function (arg) { return wrap(arg, options); });
-            if (fn.handleEvent) {
-                // Attempt to invoke user-land function
-                // NOTE: If you are a Sentry user, and you are seeing this stack frame, it
-                //       means the sentry.javascript SDK caught an error invoking your application code. This
-                //       is expected behavior and NOT indicative of a bug with sentry.javascript.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                return fn.handleEvent.apply(this, wrappedArguments);
-            }
             // Attempt to invoke user-land function
             // NOTE: If you are a Sentry user, and you are seeing this stack frame, it
             //       means the sentry.javascript SDK caught an error invoking your application code. This
@@ -76,13 +76,12 @@ export function wrap(fn, options, before) {
             ignoreNextOnError();
             withScope(function (scope) {
                 scope.addEventProcessor(function (event) {
-                    var processedEvent = __assign({}, event);
                     if (options.mechanism) {
-                        addExceptionTypeValue(processedEvent, undefined, undefined);
-                        addExceptionMechanism(processedEvent, options.mechanism);
+                        addExceptionTypeValue(event, undefined, undefined);
+                        addExceptionMechanism(event, options.mechanism);
                     }
-                    processedEvent.extra = __assign(__assign({}, processedEvent.extra), { arguments: args });
-                    return processedEvent;
+                    event.extra = __assign(__assign({}, event.extra), { arguments: args });
+                    return event;
                 });
                 captureException(ex);
             });
@@ -100,24 +99,10 @@ export function wrap(fn, options, before) {
         }
     }
     catch (_oO) { } // eslint-disable-line no-empty
-    fn.prototype = fn.prototype || {};
-    sentryWrapped.prototype = fn.prototype;
-    Object.defineProperty(fn, '__sentry_wrapped__', {
-        enumerable: false,
-        value: sentryWrapped,
-    });
     // Signal that this function has been wrapped/filled already
     // for both debugging and to prevent it to being wrapped/filled twice
-    Object.defineProperties(sentryWrapped, {
-        __sentry__: {
-            enumerable: false,
-            value: true,
-        },
-        __sentry_original__: {
-            enumerable: false,
-            value: fn,
-        },
-    });
+    markFunctionWrapped(sentryWrapped, fn);
+    addNonEnumerableProperty(fn, '__sentry_wrapped__', sentryWrapped);
     // Restore original function name (not all browsers allow that)
     try {
         var descriptor = Object.getOwnPropertyDescriptor(sentryWrapped, 'name');
@@ -143,16 +128,20 @@ export function injectReportDialog(options) {
         return;
     }
     if (!options.eventId) {
-        logger.error("Missing eventId option in showReportDialog call");
+        if (isDebugBuild()) {
+            logger.error("Missing eventId option in showReportDialog call");
+        }
         return;
     }
     if (!options.dsn) {
-        logger.error("Missing dsn option in showReportDialog call");
+        if (isDebugBuild()) {
+            logger.error("Missing dsn option in showReportDialog call");
+        }
         return;
     }
     var script = global.document.createElement('script');
     script.async = true;
-    script.src = new API(options.dsn).getReportDialogEndpoint(options);
+    script.src = getReportDialogEndpoint(options.dsn, options);
     if (options.onLoad) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         script.onload = options.onLoad;
