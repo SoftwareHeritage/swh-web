@@ -43,7 +43,7 @@ export function captureException(exception, captureContext) {
  * Captures a message event and sends it to Sentry.
  *
  * @param message The message to send to Sentry.
- * @param level Define the level of the message.
+ * @param Severity Define the level of the message.
  * @returns The generated eventId.
  */
 export function captureMessage(message, captureContext) {

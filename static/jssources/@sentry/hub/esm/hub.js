@@ -1,6 +1,4 @@
 import { __assign, __read, __spread } from "tslib";
-/* eslint-disable max-lines */
-import { SessionStatus, } from '@sentry/types';
 import { consoleSandbox, dateTimestampInSeconds, getGlobalObject, isNodeEnv, logger, uuid4 } from '@sentry/utils';
 import { Scope } from './scope';
 import { Session } from './session';
@@ -316,11 +314,17 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.endSession = function () {
-        var _a, _b, _c, _d, _e;
-        (_c = (_b = (_a = this.getStackTop()) === null || _a === void 0 ? void 0 : _a.scope) === null || _b === void 0 ? void 0 : _b.getSession()) === null || _c === void 0 ? void 0 : _c.close();
+        var layer = this.getStackTop();
+        var scope = layer && layer.scope;
+        var session = scope && scope.getSession();
+        if (session) {
+            session.close();
+        }
         this._sendSessionUpdate();
         // the session is over; take it off of the scope
-        (_e = (_d = this.getStackTop()) === null || _d === void 0 ? void 0 : _d.scope) === null || _e === void 0 ? void 0 : _e.setSession();
+        if (scope) {
+            scope.setSession();
+        }
     };
     /**
      * @inheritDoc
@@ -336,8 +340,8 @@ var Hub = /** @class */ (function () {
         if (scope) {
             // End existing session if there's one
             var currentSession = scope.getSession && scope.getSession();
-            if (currentSession && currentSession.status === SessionStatus.Ok) {
-                currentSession.update({ status: SessionStatus.Exited });
+            if (currentSession && currentSession.status === 'ok') {
+                currentSession.update({ status: 'exited' });
             }
             this.endSession();
             // Afterwards we set the new session on the scope
@@ -461,9 +465,9 @@ export function getActiveDomain() {
  * @returns discovered hub
  */
 function getHubFromActiveDomain(registry) {
-    var _a, _b, _c;
     try {
-        var activeDomain = (_c = (_b = (_a = getMainCarrier().__SENTRY__) === null || _a === void 0 ? void 0 : _a.extensions) === null || _b === void 0 ? void 0 : _b.domain) === null || _c === void 0 ? void 0 : _c.active;
+        var sentry = getMainCarrier().__SENTRY__;
+        var activeDomain = sentry && sentry.extensions && sentry.extensions.domain && sentry.extensions.domain.active;
         // If there's no active domain, just return global hub
         if (!activeDomain) {
             return getHubFromCarrier(registry);

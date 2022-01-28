@@ -1,6 +1,6 @@
 import { __assign } from "tslib";
 import { getCurrentHub, initAndBind, Integrations as CoreIntegrations } from '@sentry/core';
-import { addInstrumentationHandler, getGlobalObject, logger, SyncPromise } from '@sentry/utils';
+import { addInstrumentationHandler, getGlobalObject, isDebugBuild, logger, resolvedSyncPromise } from '@sentry/utils';
 import { BrowserClient } from './client';
 import { wrap as internalWrap } from './helpers';
 import { Breadcrumbs, Dedupe, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
@@ -149,8 +149,10 @@ export function flush(timeout) {
     if (client) {
         return client.flush(timeout);
     }
-    logger.warn('Cannot flush events. No client defined.');
-    return SyncPromise.resolve(false);
+    if (isDebugBuild()) {
+        logger.warn('Cannot flush events. No client defined.');
+    }
+    return resolvedSyncPromise(false);
 }
 /**
  * Call `close()` on the current client, if there is one. See {@link Client.close}.
@@ -165,8 +167,10 @@ export function close(timeout) {
     if (client) {
         return client.close(timeout);
     }
-    logger.warn('Cannot flush events and disable SDK. No client defined.');
-    return SyncPromise.resolve(false);
+    if (isDebugBuild()) {
+        logger.warn('Cannot flush events and disable SDK. No client defined.');
+    }
+    return resolvedSyncPromise(false);
 }
 /**
  * Wrap code within a try/catch block so the SDK is able to capture errors.
@@ -179,6 +183,10 @@ export function close(timeout) {
 export function wrap(fn) {
     return internalWrap(fn)();
 }
+function startSessionOnHub(hub) {
+    hub.startSession({ ignoreDuration: true });
+    hub.captureSession();
+}
 /**
  * Enable automatic Session Tracking for the initial page load.
  */
@@ -186,7 +194,9 @@ function startSessionTracking() {
     var window = getGlobalObject();
     var document = window.document;
     if (typeof document === 'undefined') {
-        logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
+        if (isDebugBuild()) {
+            logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
+        }
         return;
     }
     var hub = getCurrentHub();
@@ -196,27 +206,21 @@ function startSessionTracking() {
     // https://github.com/getsentry/sentry-javascript/issues/3207 and
     // https://github.com/getsentry/sentry-javascript/issues/3234 and
     // https://github.com/getsentry/sentry-javascript/issues/3278.
-    if (typeof hub.startSession !== 'function' || typeof hub.captureSession !== 'function') {
+    if (!hub.captureSession) {
         return;
     }
     // The session duration for browser sessions does not track a meaningful
     // concept that can be used as a metric.
     // Automatically captured sessions are akin to page views, and thus we
     // discard their duration.
-    hub.startSession({ ignoreDuration: true });
-    hub.captureSession();
+    startSessionOnHub(hub);
     // We want to create a session for every navigation as well
-    addInstrumentationHandler({
-        callback: function (_a) {
-            var from = _a.from, to = _a.to;
-            // Don't create an additional session for the initial route or if the location did not change
-            if (from === undefined || from === to) {
-                return;
-            }
-            hub.startSession({ ignoreDuration: true });
-            hub.captureSession();
-        },
-        type: 'history',
+    addInstrumentationHandler('history', function (_a) {
+        var from = _a.from, to = _a.to;
+        // Don't create an additional session for the initial route or if the location did not change
+        if (!(from === undefined || from === to)) {
+            startSessionOnHub(getCurrentHub());
+        }
     });
 }
 //# sourceMappingURL=sdk.js.map

@@ -180,11 +180,16 @@ export function initOriginSave() {
                 let html = '';
                 const sanitizedURL = $.fn.dataTable.render.text().display(data);
                 if (row.save_task_status === 'succeeded') {
-                  let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(sanitizedURL)}`;
-                  if (row.visit_date) {
-                    browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
+                  if (row.visit_status === 'full' || row.visit_status === 'partial') {
+                    let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(sanitizedURL)}`;
+                    if (row.visit_date) {
+                      browseOriginUrl += `&amp;timestamp=${encodeURIComponent(row.visit_date)}`;
+                    }
+                    html += `<a href="${browseOriginUrl}">${sanitizedURL}</a>`;
+                  } else {
+                    const tooltip = 'origin was successfully loaded, waiting for data to be available in database';
+                    html += `<span title="${tooltip}">${sanitizedURL}</span>`;
                   }
-                  html += `<a href="${browseOriginUrl}">${sanitizedURL}</a>`;
                 } else {
                   html += sanitizedURL;
                 }

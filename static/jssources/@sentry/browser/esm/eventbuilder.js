@@ -1,10 +1,10 @@
 import { __assign } from "tslib";
 import { Severity } from '@sentry/types';
-import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, SyncPromise, } from '@sentry/utils';
+import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, resolvedSyncPromise, } from '@sentry/utils';
 import { eventFromPlainObject, eventFromStacktrace, prepareFramesForEvent } from './parsers';
 import { computeStackTrace } from './tracekit';
 /**
- * Builds and Event from a Exception
+ * Creates an {@link Event} from all inputs to `captureException` and non-primitive inputs to `captureMessage`.
  * @hidden
  */
 export function eventFromException(options, exception, hint) {
@@ -17,7 +17,7 @@ export function eventFromException(options, exception, hint) {
     if (hint && hint.event_id) {
         event.event_id = hint.event_id;
     }
-    return SyncPromise.resolve(event);
+    return resolvedSyncPromise(event);
 }
 /**
  * Builds and Event from a Message
@@ -33,7 +33,7 @@ export function eventFromMessage(options, message, level, hint) {
     if (hint && hint.event_id) {
         event.event_id = hint.event_id;
     }
-    return SyncPromise.resolve(event);
+    return resolvedSyncPromise(event);
 }
 /**
  * @hidden
@@ -78,11 +78,11 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
         return event;
     }
     if (isPlainObject(exception) || isEvent(exception)) {
-        // If it is plain Object or Event, serialize it manually and extract options
-        // This will allow us to group events based on top-level keys
-        // which is much better than creating new group when any key/value change
+        // If it's a plain object or an instance of `Event` (the built-in JS kind, not this SDK's `Event` type), serialize
+        // it manually. This will allow us to group events based on top-level keys which is much better than creating a new
+        // group on any key/value change.
         var objectException = exception;
-        event = eventFromPlainObject(objectException, syntheticException, options.rejection);
+        event = eventFromPlainObject(objectException, syntheticException, options.isRejection);
         addExceptionMechanism(event, {
             synthetic: true,
         });

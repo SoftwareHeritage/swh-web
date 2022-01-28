@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -131,16 +131,6 @@ class GenerateWebLabelsPlugin {
           // init source file metadata
           const srcFileData = {'id': this.cleanupPath(srcFilePath)};
 
-          // find and parse the corresponding package.json file
-          let packageJsonPath;
-          const nodeModule = srcFilePath.startsWith('./node_modules/');
-          if (nodeModule) {
-            packageJsonPath = this.findPackageJsonPath(srcFilePath);
-          } else {
-            packageJsonPath = './package.json';
-          }
-          const packageJson = this.parsePackageJson(packageJsonPath);
-
           // extract license information, overriding it if needed
           let licenseOverridden = false;
           let licenseFilePath;
@@ -162,6 +152,16 @@ class GenerateWebLabelsPlugin {
           }
 
           if (!licenseOverridden) {
+            // find and parse the corresponding package.json file
+            let packageJsonPath;
+            const nodeModule = srcFilePath.startsWith('./node_modules/');
+            if (nodeModule) {
+              packageJsonPath = this.findPackageJsonPath(srcFilePath);
+            } else {
+              packageJsonPath = './package.json';
+            }
+            const packageJson = this.parsePackageJson(packageJsonPath);
+
             srcFileData['licenses'] = this.extractLicenseInformation(packageJson);
             const licenseDir = path.join(...packageJsonPath.split('/').slice(0, -1));
             licenseFilePath = this.findLicenseFile(licenseDir);

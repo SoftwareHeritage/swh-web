@@ -226,7 +226,7 @@ def prepare_content_for_display(content_data, mime_type, path):
         language = highlightjs.get_hljs_language_from_mime_type(mime_type)
 
     if language is None:
-        language = "nohighlight"
+        language = "plaintext"
 
     if mime_type.startswith("image/"):
         if mime_type in browsers_supported_image_mimes:

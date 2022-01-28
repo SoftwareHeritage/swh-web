@@ -152,6 +152,10 @@ module.exports = {
     ]
   },
   stats: 'errors-warnings',
+  snapshot: {
+    // fix webpack warning related to missing package.json file
+    managedPaths: [/^highlightjs-/]
+  },
   // module import configuration
   module: {
     rules: [
@@ -379,6 +383,18 @@ module.exports = {
         './assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
           'spdxLicenseExpression': 'GPL-3.0',
           'licenseFilePath': './assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
+        },
+        './node_modules/highlightjs-chapel/dist/chapel.min.js': {
+          'spdxLicenseExpression': 'BSD-3-Clause',
+          'licenseFilePath': './node_modules/highlightjs-chapel/LICENSE'
+        },
+        './node_modules/highlightjs-mirc/mirc.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './node_modules/highlightjs-mirc/LICENSE'
+        },
+        './node_modules/highlightjs-never/dist/never.min.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './node_modules/highlightjs-never/LICENSE'
         }
       },
       additionalScripts: Object.assign(

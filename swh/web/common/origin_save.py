@@ -806,19 +806,14 @@ def get_save_origin_task_info(
         results = json.loads(response.text)
         if results["hits"]["total"]["value"] >= 1:
             task_run_info = results["hits"]["hits"][-1]["_source"]
-            if "swh_logging_args_runtime" in task_run_info:
-                duration = task_run_info["swh_logging_args_runtime"]
-                task_info["duration"] = duration
-            if "message" in task_run_info:
-                task_info["message"] = task_run_info["message"]
-            if "swh_logging_args_name" in task_run_info:
-                task_info["name"] = task_run_info["swh_logging_args_name"]
-            elif "swh_task_name" in task_run_info:
-                task_info["name"] = task_run_info["swh_task_name"]
-            if "hostname" in task_run_info:
-                task_info["worker"] = task_run_info["hostname"]
-            elif "host" in task_run_info:
-                task_info["worker"] = task_run_info["host"]
+            journald_custom = task_run_info.get("journald", {}).get("custom", {})
+            task_info["duration"] = journald_custom.get(
+                "swh_logging_args_runtime", "not available"
+            )
+            task_info["message"] = task_run_info.get("message", "not available")
+            task_info["name"] = journald_custom.get("swh_task_name", "not available")
+            task_info["worker"] = task_run_info.get("host", {}).get("hostname")
+
     except Exception as exc:
         logger.warning("Request to Elasticsearch failed\n%s", exc)
         sentry_sdk.capture_exception(exc)

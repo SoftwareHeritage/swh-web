@@ -1,6 +1,4 @@
 import { __extends } from "tslib";
-import { eventToSentryRequest, sessionToSentryRequest } from '@sentry/core';
-import { Outcome } from '@sentry/types';
 import { SentryError, supportsReferrerPolicy, SyncPromise } from '@sentry/utils';
 import { BaseTransport } from './base';
 import { getNativeFetchImplementation } from './utils';
@@ -14,25 +12,13 @@ var FetchTransport = /** @class */ (function (_super) {
         return _this;
     }
     /**
-     * @inheritDoc
-     */
-    FetchTransport.prototype.sendEvent = function (event) {
-        return this._sendRequest(eventToSentryRequest(event, this._api), event);
-    };
-    /**
-     * @inheritDoc
-     */
-    FetchTransport.prototype.sendSession = function (session) {
-        return this._sendRequest(sessionToSentryRequest(session, this._api), session);
-    };
-    /**
      * @param sentryRequest Prepared SentryRequest to be delivered
      * @param originalPayload Original payload used to create SentryRequest
      */
     FetchTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
         var _this = this;
         if (this._isRateLimited(sentryRequest.type)) {
-            this.recordLostEvent(Outcome.RateLimitBackoff, sentryRequest.type);
+            this.recordLostEvent('ratelimit_backoff', sentryRequest.type);
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
@@ -43,9 +29,9 @@ var FetchTransport = /** @class */ (function (_super) {
         var options = {
             body: sentryRequest.body,
             method: 'POST',
-            // Despite all stars in the sky saying that Edge supports old draft syntax, aka 'never', 'always', 'origin' and 'default
-            // https://caniuse.com/#feat=referrer-policy
-            // It doesn't. And it throw exception instead of ignoring this parameter...
+            // Despite all stars in the sky saying that Edge supports old draft syntax, aka 'never', 'always', 'origin' and 'default'
+            // (see https://caniuse.com/#feat=referrer-policy),
+            // it doesn't. And it throws an exception instead of ignoring this parameter...
             // REF: https://github.com/getsentry/raven-js/issues/1233
             referrerPolicy: (supportsReferrerPolicy() ? 'origin' : ''),
         };
@@ -78,10 +64,10 @@ var FetchTransport = /** @class */ (function (_super) {
             .then(undefined, function (reason) {
             // It's either buffer rejection or any other xhr/fetch error, which are treated as NetworkError.
             if (reason instanceof SentryError) {
-                _this.recordLostEvent(Outcome.QueueOverflow, sentryRequest.type);
+                _this.recordLostEvent('queue_overflow', sentryRequest.type);
             }
             else {
-                _this.recordLostEvent(Outcome.NetworkError, sentryRequest.type);
+                _this.recordLostEvent('network_error', sentryRequest.type);
             }
             throw reason;
         });

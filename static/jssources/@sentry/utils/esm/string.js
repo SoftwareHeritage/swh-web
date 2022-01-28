@@ -23,30 +23,30 @@ export function truncate(str, max) {
  */
 export function snipLine(line, colno) {
     var newLine = line;
-    var ll = newLine.length;
-    if (ll <= 150) {
+    var lineLength = newLine.length;
+    if (lineLength <= 150) {
         return newLine;
     }
-    if (colno > ll) {
+    if (colno > lineLength) {
         // eslint-disable-next-line no-param-reassign
-        colno = ll;
+        colno = lineLength;
     }
     var start = Math.max(colno - 60, 0);
     if (start < 5) {
         start = 0;
     }
-    var end = Math.min(start + 140, ll);
-    if (end > ll - 5) {
-        end = ll;
+    var end = Math.min(start + 140, lineLength);
+    if (end > lineLength - 5) {
+        end = lineLength;
     }
-    if (end === ll) {
+    if (end === lineLength) {
         start = Math.max(end - 140, 0);
     }
     newLine = newLine.slice(start, end);
     if (start > 0) {
         newLine = "'{snip} " + newLine;
     }
-    if (end < ll) {
+    if (end < lineLength) {
         newLine += ' {snip}';
     }
     return newLine;

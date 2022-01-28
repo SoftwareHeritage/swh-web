@@ -1,5 +1,6 @@
 import { __assign } from "tslib";
 import { getGlobalObject } from './global';
+import { addNonEnumerableProperty } from './object';
 import { snipLine } from './string';
 /**
  * UUID4 generator
@@ -62,22 +63,26 @@ export function parseUrl(url) {
         relative: match[5] + query + fragment,
     };
 }
+function getFirstException(event) {
+    return event.exception && event.exception.values ? event.exception.values[0] : undefined;
+}
 /**
  * Extracts either message or type+value from an event that can be used for user-facing logs
  * @returns event's description
  */
 export function getEventDescription(event) {
-    if (event.message) {
-        return event.message;
+    var message = event.message, eventId = event.event_id;
+    if (message) {
+        return message;
     }
-    if (event.exception && event.exception.values && event.exception.values[0]) {
-        var exception = event.exception.values[0];
-        if (exception.type && exception.value) {
-            return exception.type + ": " + exception.value;
+    var firstException = getFirstException(event);
+    if (firstException) {
+        if (firstException.type && firstException.value) {
+            return firstException.type + ": " + firstException.value;
         }
-        return exception.type || exception.value || event.event_id || '<unknown>';
+        return firstException.type || firstException.value || eventId || '<unknown>';
     }
-    return event.event_id || '<unknown>';
+    return eventId || '<unknown>';
 }
 /**
  * Adds exception values, type and value to an synthetic Exception.
@@ -87,11 +92,15 @@ export function getEventDescription(event) {
  * @hidden
  */
 export function addExceptionTypeValue(event, value, type) {
-    event.exception = event.exception || {};
-    event.exception.values = event.exception.values || [];
-    event.exception.values[0] = event.exception.values[0] || {};
-    event.exception.values[0].value = event.exception.values[0].value || value || '';
-    event.exception.values[0].type = event.exception.values[0].type || type || 'Error';
+    var exception = (event.exception = event.exception || {});
+    var values = (exception.values = exception.values || []);
+    var firstException = (values[0] = values[0] || {});
+    if (!firstException.value) {
+        firstException.value = value || '';
+    }
+    if (!firstException.type) {
+        firstException.type = type || 'Error';
+    }
 }
 /**
  * Adds exception mechanism data to a given event. Uses defaults if the second parameter is not passed.
@@ -101,17 +110,16 @@ export function addExceptionTypeValue(event, value, type) {
  * @hidden
  */
 export function addExceptionMechanism(event, newMechanism) {
-    var _a;
-    if (!event.exception || !event.exception.values) {
+    var firstException = getFirstException(event);
+    if (!firstException) {
         return;
     }
-    var exceptionValue0 = event.exception.values[0];
     var defaultMechanism = { type: 'generic', handled: true };
-    var currentMechanism = exceptionValue0.mechanism;
-    exceptionValue0.mechanism = __assign(__assign(__assign({}, defaultMechanism), currentMechanism), newMechanism);
+    var currentMechanism = firstException.mechanism;
+    firstException.mechanism = __assign(__assign(__assign({}, defaultMechanism), currentMechanism), newMechanism);
     if (newMechanism && 'data' in newMechanism) {
-        var mergedData = __assign(__assign({}, (_a = currentMechanism) === null || _a === void 0 ? void 0 : _a.data), newMechanism.data);
-        exceptionValue0.mechanism.data = mergedData;
+        var mergedData = __assign(__assign({}, (currentMechanism && currentMechanism.data)), newMechanism.data);
+        firstException.mechanism.data = mergedData;
     }
 }
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -205,17 +213,14 @@ export function stripUrlQueryAndFragment(urlPath) {
  * @returns `true` if the exception has already been captured, `false` if not (with the side effect of marking it seen)
  */
 export function checkOrSetAlreadyCaught(exception) {
-    var _a;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if ((_a = exception) === null || _a === void 0 ? void 0 : _a.__sentry_captured__) {
+    if (exception && exception.__sentry_captured__) {
         return true;
     }
     try {
         // set it this way rather than by assignment so that it's not ennumerable and therefore isn't recorded by the
         // `ExtraErrorData` integration
-        Object.defineProperty(exception, '__sentry_captured__', {
-            value: true,
-        });
+        addNonEnumerableProperty(exception, '__sentry_captured__', true);
     }
     catch (err) {
         // `exception` is a primitive, so we can't mark it seen

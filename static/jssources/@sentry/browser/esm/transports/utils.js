@@ -1,4 +1,4 @@
-import { forget, getGlobalObject, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
+import { forget, getGlobalObject, isDebugBuild, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
 var global = getGlobalObject();
 var cachedFetchImpl;
 /**
@@ -40,7 +40,6 @@ var cachedFetchImpl;
  * Safari:  resource blocked by content blocker
  */
 export function getNativeFetchImplementation() {
-    var _a, _b;
     if (cachedFetchImpl) {
         return cachedFetchImpl;
     }
@@ -52,18 +51,21 @@ export function getNativeFetchImplementation() {
     var document = global.document;
     var fetchImpl = global.fetch;
     // eslint-disable-next-line deprecation/deprecation
-    if (typeof ((_a = document) === null || _a === void 0 ? void 0 : _a.createElement) === "function") {
+    if (document && typeof document.createElement === "function") {
         try {
             var sandbox = document.createElement('iframe');
             sandbox.hidden = true;
             document.head.appendChild(sandbox);
-            if ((_b = sandbox.contentWindow) === null || _b === void 0 ? void 0 : _b.fetch) {
-                fetchImpl = sandbox.contentWindow.fetch;
+            var contentWindow = sandbox.contentWindow;
+            if (contentWindow && contentWindow.fetch) {
+                fetchImpl = contentWindow.fetch;
             }
             document.head.removeChild(sandbox);
         }
         catch (e) {
-            logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
+            if (isDebugBuild()) {
+                logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
+            }
         }
     }
     return (cachedFetchImpl = fetchImpl.bind(global));
