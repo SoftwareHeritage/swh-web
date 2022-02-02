@@ -245,7 +245,7 @@ a.dropdown-left::before {
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
-    margin-top: 90px;
+    margin-top: 30px;
     justify-content: normal;
     flex-wrap: nowrap;
     height: 72px;
@@ -351,7 +351,7 @@ a.dropdown-left::before {
 }
 
 .main-sidebar {
-    margin-top: 90px;
+    margin-top: 30px;
 }
 
 .content-wrapper {
@@ -741,7 +741,7 @@ div.d3-tooltip {
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 115px;
+    top: 55px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
