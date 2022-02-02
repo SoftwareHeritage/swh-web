@@ -20,15 +20,15 @@ describe('Test top-bar', function() {
       .and('have.attr', 'href');
   });
 
-  // it('should show donate button on lg screen', function() {
-  //   cy.get('.swh-donate-link')
-  //     .should('be.visible');
-  // });
-  // it('should hide donate button on sm screen', function() {
-  //   cy.viewport(600, 800);
-  //   cy.get('.swh-donate-link')
-  //     .should('not.be.visible');
-  // });
+  it('should show donate button on lg screen', function() {
+    cy.get('.swh-donate-link')
+      .should('be.visible');
+  });
+  it('should hide donate button on sm screen', function() {
+    cy.viewport(600, 800);
+    cy.get('.swh-donate-link')
+      .should('not.be.visible');
+  });
   it('should hide full width switch on small screens', function() {
     cy.viewport(360, 740);
     cy.get('#swh-full-width-switch-container')
