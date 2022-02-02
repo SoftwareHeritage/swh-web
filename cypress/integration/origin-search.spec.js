@@ -500,7 +500,7 @@ describe('Test origin-search', function() {
 
       cy.wait('@resolveSWHID');
 
-      cy.xhrShouldBeCalled('resolveSWHID', 2);
+      cy.xhrShouldBeCalled('resolveSWHID', 1);
       cy.xhrShouldBeCalled('searchOrigin', 0);
     });
   });
