@@ -6,9 +6,9 @@
 from datetime import timedelta
 
 from hypothesis import given
+import iso8601
 import pytest
 
-from swh.model.hashutil import hash_to_hex
 from swh.model.model import OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
 from swh.web.common.exc import NotFoundExc
@@ -17,128 +17,97 @@ from swh.web.common.typing import OriginInfo
 from swh.web.tests.strategies import new_origin, new_snapshots
 
 
-@given(new_snapshots(3))
-def test_get_origin_visits(mocker, snapshots):
-    mock_archive = mocker.patch("swh.web.common.archive")
-    mock_archive.MAX_LIMIT = 2
+@given(new_origin(), new_snapshots(3))
+def test_get_origin_visits(mocker, archive_data, new_origin, new_snapshots):
+    from swh.web.common import archive
 
-    def _lookup_origin_visits(*args, **kwargs):
-        if kwargs["last_visit"] is None:
-            return [
-                {
-                    "visit": 1,
-                    "date": "2017-05-06T00:59:10+00:00",
-                    "status": "full",
-                    "snapshot": hash_to_hex(snapshots[0].id),
-                    "type": "git",
-                },
-                {
-                    "visit": 2,
-                    "date": "2017-08-06T00:59:10+00:00",
-                    "status": "full",
-                    "snapshot": hash_to_hex(snapshots[1].id),
-                    "type": "git",
-                },
-            ]
-        else:
-            return [
-                {
-                    "visit": 3,
-                    "date": "2017-09-06T00:59:10+00:00",
-                    "status": "full",
-                    "snapshot": hash_to_hex(snapshots[2].id),
-                    "type": "git",
-                }
-            ]
+    mocker.patch.object(archive, "MAX_LIMIT", 2)
 
-    mock_archive.lookup_origin_visits.side_effect = _lookup_origin_visits
+    archive_data.origin_add([new_origin])
+    archive_data.snapshot_add(new_snapshots)
+    for i, snapshot in enumerate(new_snapshots):
+        visit_date = now() + timedelta(days=i * 10)
+        visit = archive_data.origin_visit_add(
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+        )[0]
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full",
+            snapshot=snapshot.id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
 
-    origin_info = {
-        "url": "https://github.com/foo/bar",
-    }
+    origin_visits = get_origin_visits(new_origin.to_dict())
 
-    origin_visits = get_origin_visits(origin_info)
-
-    assert len(origin_visits) == 3
+    assert len(origin_visits) == len(new_snapshots)
 
 
-@given(new_snapshots(5))
-def test_get_origin_visit(mocker, snapshots):
-    mock_origin_visits = mocker.patch("swh.web.common.origin_visits.get_origin_visits")
-    origin_info = {
-        "url": "https://github.com/foo/bar",
-    }
-    visits = [
-        {
-            "status": "full",
-            "date": "2015-07-09T21:09:24+00:00",
-            "visit": 1,
-            "origin": "https://github.com/foo/bar",
-            "type": "git",
-            "snapshot": hash_to_hex(snapshots[0].id),
-        },
-        {
-            "status": "full",
-            "date": "2016-02-23T18:05:23.312045+00:00",
-            "visit": 2,
-            "origin": "https://github.com/foo/bar",
-            "type": "git",
-            "snapshot": hash_to_hex(snapshots[1].id),
-        },
-        {
-            "status": "full",
-            "date": "2016-03-28T01:35:06.554111+00:00",
-            "visit": 3,
-            "origin": "https://github.com/foo/bar",
-            "type": "git",
-            "snapshot": hash_to_hex(snapshots[2].id),
-        },
-        {
-            "status": "full",
-            "date": "2016-06-18T01:22:24.808485+00:00",
-            "visit": 4,
-            "origin": "https://github.com/foo/bar",
-            "type": "git",
-            "snapshot": hash_to_hex(snapshots[3].id),
-        },
-        {
-            "status": "full",
-            "date": "2016-08-14T12:10:00.536702+00:00",
-            "visit": 5,
-            "origin": "https://github.com/foo/bar",
-            "type": "git",
-            "snapshot": hash_to_hex(snapshots[4].id),
-        },
-    ]
-    mock_origin_visits.return_value = visits
+@given(new_origin(), new_snapshots(5))
+def test_get_origin_visit(archive_data, new_origin, new_snapshots):
 
-    visit_id = 12
+    archive_data.origin_add([new_origin])
+    archive_data.snapshot_add(new_snapshots)
+    visits = []
+    for i, visit_date in enumerate(
+        map(
+            iso8601.parse_date,
+            [
+                "2015-07-09T21:09:24+00:00",
+                "2016-02-23T18:05:23.312045+00:00",
+                "2016-03-28T01:35:06.554111+00:00",
+                "2016-06-18T01:22:24.808485+00:00",
+                "2016-08-14T12:10:00.536702+00:00",
+            ],
+        )
+    ):
+        visit = archive_data.origin_visit_add(
+            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+        )[0]
+        visits.append(visit)
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full",
+            snapshot=new_snapshots[i].id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
+
+    origin_info = new_origin.to_dict()
+
+    visit_id = visits[-1].visit + 1
     with pytest.raises(NotFoundExc) as e:
         visit = get_origin_visit(origin_info, visit_id=visit_id)
 
     assert e.match("Visit with id %s" % visit_id)
     assert e.match("url %s" % origin_info["url"])
 
-    visit = get_origin_visit(origin_info, visit_id=2)
-    assert visit == visits[1]
+    visit_id = visits[1].visit
+    visit = get_origin_visit(origin_info, visit_id=visit_id)
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
     visit = get_origin_visit(origin_info, visit_ts="2016-02-23T18:05:23.312045+00:00")
-    assert visit == visits[1]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
     visit = get_origin_visit(origin_info, visit_ts="2016-02-20")
-    assert visit == visits[1]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
+    visit_id = visits[3].visit
     visit = get_origin_visit(origin_info, visit_ts="2016-06-18T01:22")
-    assert visit == visits[3]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
     visit = get_origin_visit(origin_info, visit_ts="2016-06-18 01:22")
-    assert visit == visits[3]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
+    visit_id = visits[0].visit
     visit = get_origin_visit(origin_info, visit_ts="2014-01-01")
-    assert visit == visits[0]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
+    visit_id = visits[-1].visit
     visit = get_origin_visit(origin_info, visit_ts="2018-01-01")
-    assert visit == visits[-1]
+    assert visit == archive_data.origin_visit_get_by(new_origin.url, visit_id=visit_id)
 
 
 @given(new_origin(), new_snapshots(6))
