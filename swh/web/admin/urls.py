@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 
 from swh.web.admin.adminurls import AdminUrls
 import swh.web.admin.deposit  # noqa
+import swh.web.admin.mailmap  # noqa
 import swh.web.admin.origin_save  # noqa
 from swh.web.config import is_feature_enabled
 

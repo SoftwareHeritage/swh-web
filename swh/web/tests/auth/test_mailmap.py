@@ -16,19 +16,12 @@ from django.db import transaction
 
 from swh.model.model import Person
 from swh.web.auth.models import UserMailmap, UserMailmapEvent
-from swh.web.auth.utils import MAILMAP_PERMISSION
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import (
     check_api_post_response,
     check_http_get_response,
-    create_django_permission,
+    check_http_post_response,
 )
-
-
-@pytest.fixture
-def mailmap_user(regular_user):
-    regular_user.user_permissions.add(create_django_permission(MAILMAP_PERMISSION))
-    return regular_user
 
 
 @pytest.mark.django_db(transaction=True)
@@ -39,172 +32,332 @@ def test_mailmap_endpoints_anonymous_user(api_client, view_name):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
-    api_client.force_login(mailmap_user)
+def test_mailmap_endpoints_user_with_permission(
+    api_client, mailmap_user, mailmap_admin
+):
 
-    request_data = {"from_email": "bar@example.org", "display_name": "bar"}
+    for user, name in ((mailmap_user, "bar"), (mailmap_admin, "baz")):
 
-    for view_name in ("profile-mailmap-add", "profile-mailmap-update"):
-        url = reverse(view_name)
+        UserMailmapEvent.objects.all().delete()
+
+        api_client.force_login(user)
+
+        request_data = {"from_email": f"{name}@example.org", "display_name": name}
+
+        for view_name in ("profile-mailmap-add", "profile-mailmap-update"):
+            url = reverse(view_name)
+            check_api_post_response(
+                api_client, url, data=request_data, status_code=200,
+            )
+
+        # FIXME: use check_api_get_responses; currently this crashes without
+        # content_type="application/json"
+        resp = check_http_get_response(
+            api_client,
+            reverse("profile-mailmap-list"),
+            status_code=200,
+            content_type="application/json",
+        ).data
+        assert len(resp) == 1
+        assert resp[0]["from_email"] == f"{name}@example.org"
+        assert resp[0]["display_name"] == name
+
+        events = UserMailmapEvent.objects.order_by("timestamp").all()
+        assert len(events) == 2
+        assert events[0].request_type == "add"
+        assert json.loads(events[0].request) == request_data
+        assert events[1].request_type == "update"
+        assert json.loads(events[1].request) == request_data
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mailmap_add_duplicate(api_client, mailmap_user, mailmap_admin):
+
+    for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
+
+        api_client.force_login(user)
+
         check_api_post_response(
-            api_client, url, data=request_data, status_code=200,
+            api_client,
+            reverse("profile-mailmap-add"),
+            data={"from_email": f"{name}@example.org", "display_name": name},
+            status_code=200,
+        )
+        check_api_post_response(
+            api_client,
+            reverse("profile-mailmap-add"),
+            data={"from_email": f"{name}@example.org", "display_name": name},
+            status_code=400,
         )
 
-    # FIXME: use check_api_get_responses; currently this crashes without
-    # content_type="application/json"
-    resp = check_http_get_response(
-        api_client,
-        reverse("profile-mailmap-list"),
-        status_code=200,
-        content_type="application/json",
-    ).data
-    assert len(resp) == 1
-    assert resp[0]["from_email"] == "bar@example.org"
-    assert resp[0]["display_name"] == "bar"
 
-    events = UserMailmapEvent.objects.order_by("timestamp").all()
-    assert len(events) == 2
-    assert events[0].request_type == "add"
-    assert json.loads(events[0].request) == request_data
-    assert events[1].request_type == "update"
-    assert json.loads(events[1].request) == request_data
+@pytest.mark.django_db(transaction=True)
+def test_mailmap_add_full(api_client, mailmap_user, mailmap_admin):
+
+    for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
+
+        api_client.force_login(user)
+
+        UserMailmapEvent.objects.all().delete()
+
+        request_data = {
+            "from_email": f"{name}@example.org",
+            "from_email_verified": True,
+            "from_email_verification_request_date": "2021-02-07T14:04:15Z",
+            "display_name": name,
+            "display_name_activated": True,
+            "to_email": "baz@example.org",
+            "to_email_verified": True,
+            "to_email_verification_request_date": "2021-02-07T15:54:59Z",
+        }
+
+        check_api_post_response(
+            api_client,
+            reverse("profile-mailmap-add"),
+            data=request_data,
+            status_code=200,
+        )
+
+        resp = check_http_get_response(
+            api_client,
+            reverse("profile-mailmap-list"),
+            status_code=200,
+            content_type="application/json",
+        ).data
+        assert len(resp) == 1
+        assert resp[0].items() >= request_data.items()
+
+        events = UserMailmapEvent.objects.all()
+        assert len(events) == 1
+        assert events[0].request_type == "add"
+        assert json.loads(events[0].request) == request_data
+        assert events[0].successful
 
 
 @pytest.mark.django_db(transaction=True)
-def test_mailmap_add_duplicate(api_client, mailmap_user):
-    api_client.force_login(mailmap_user)
+def test_mailmap_endpoints_error_response(api_client, mailmap_user, mailmap_admin):
 
-    check_api_post_response(
-        api_client,
-        reverse("profile-mailmap-add"),
-        data={"from_email": "foo@example.org", "display_name": "bar"},
-        status_code=200,
-    )
-    check_api_post_response(
-        api_client,
-        reverse("profile-mailmap-add"),
-        data={"from_email": "foo@example.org", "display_name": "baz"},
-        status_code=400,
-    )
+    for user in (mailmap_user, mailmap_admin):
 
+        api_client.force_login(user)
 
-@pytest.mark.django_db(transaction=True)
-def test_mailmap_add_full(api_client, mailmap_user):
-    api_client.force_login(mailmap_user)
+        UserMailmapEvent.objects.all().delete()
 
-    request_data = {
-        "from_email": "foo@example.org",
-        "from_email_verified": True,
-        "from_email_verification_request_date": "2021-02-07T14:04:15Z",
-        "display_name": "bar",
-        "display_name_activated": True,
-        "to_email": "bar@example.org",
-        "to_email_verified": True,
-        "to_email_verification_request_date": "2021-02-07T15:54:59Z",
-    }
+        url = reverse("profile-mailmap-add")
+        resp = check_api_post_response(api_client, url, status_code=400)
+        assert b"from_email" in resp.content
 
-    check_api_post_response(
-        api_client, reverse("profile-mailmap-add"), data=request_data, status_code=200,
-    )
+        url = reverse("profile-mailmap-update")
+        resp = check_api_post_response(api_client, url, status_code=400)
+        assert b"from_email" in resp.content
 
-    resp = check_http_get_response(
-        api_client,
-        reverse("profile-mailmap-list"),
-        status_code=200,
-        content_type="application/json",
-    ).data
-    assert len(resp) == 1
-    assert resp[0].items() >= request_data.items()
+        events = UserMailmapEvent.objects.order_by("timestamp").all()
+        assert len(events) == 2
 
-    events = UserMailmapEvent.objects.all()
-    assert len(events) == 1
-    assert events[0].request_type == "add"
-    assert json.loads(events[0].request) == request_data
-    assert events[0].successful
+        assert events[0].request_type == "add"
+        assert json.loads(events[0].request) == {}
+        assert not events[0].successful
+
+        assert events[1].request_type == "update"
+        assert json.loads(events[1].request) == {}
+        assert not events[1].successful
 
 
 @pytest.mark.django_db(transaction=True)
-def test_mailmap_endpoints_error_response(api_client, mailmap_user):
-    api_client.force_login(mailmap_user)
+def test_mailmap_update(api_client, mailmap_user, mailmap_admin):
 
-    url = reverse("profile-mailmap-add")
-    resp = check_api_post_response(api_client, url, status_code=400)
-    assert b"from_email" in resp.content
+    for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
 
-    url = reverse("profile-mailmap-update")
-    resp = check_api_post_response(api_client, url, status_code=400)
-    assert b"from_email" in resp.content
+        api_client.force_login(user)
 
-    events = UserMailmapEvent.objects.order_by("timestamp").all()
-    assert len(events) == 2
+        UserMailmapEvent.objects.all().delete()
 
-    assert events[0].request_type == "add"
-    assert json.loads(events[0].request) == {}
-    assert not events[0].successful
+        before_add = datetime.datetime.now(tz=datetime.timezone.utc)
 
-    assert events[1].request_type == "update"
-    assert json.loads(events[1].request) == {}
-    assert not events[1].successful
+        check_api_post_response(
+            api_client,
+            reverse("profile-mailmap-add"),
+            data={
+                "from_email": f"{name}1@example.org",
+                "display_name": "Display Name 1",
+            },
+            status_code=200,
+        )
+        check_api_post_response(
+            api_client,
+            reverse("profile-mailmap-add"),
+            data={
+                "from_email": f"{name}2@example.org",
+                "display_name": "Display Name 2",
+            },
+            status_code=200,
+        )
+        after_add = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        user_id = None if user == mailmap_admin else str(user.id)
+
+        mailmaps = list(
+            UserMailmap.objects.filter(user_id=user_id).order_by("from_email").all()
+        )
+        assert len(mailmaps) == 2, mailmaps
+
+        assert mailmaps[0].from_email == f"{name}1@example.org", mailmaps
+        assert mailmaps[0].display_name == "Display Name 1", mailmaps
+        assert before_add <= mailmaps[0].last_update_date <= after_add
+
+        assert mailmaps[1].from_email == f"{name}2@example.org", mailmaps
+        assert mailmaps[1].display_name == "Display Name 2", mailmaps
+        assert before_add <= mailmaps[0].last_update_date <= after_add
+
+        before_update = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        check_api_post_response(
+            api_client,
+            reverse("profile-mailmap-update"),
+            data={
+                "from_email": f"{name}1@example.org",
+                "display_name": "Display Name 1b",
+            },
+            status_code=200,
+        )
+
+        after_update = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        mailmaps = list(
+            UserMailmap.objects.filter(user_id=user_id).order_by("from_email").all()
+        )
+        assert len(mailmaps) == 2, mailmaps
+
+        assert mailmaps[0].from_email == f"{name}1@example.org", mailmaps
+        assert mailmaps[0].display_name == "Display Name 1b", mailmaps
+        assert before_update <= mailmaps[0].last_update_date <= after_update
+
+        assert mailmaps[1].from_email == f"{name}2@example.org", mailmaps
+        assert mailmaps[1].display_name == "Display Name 2", mailmaps
+        assert before_add <= mailmaps[1].last_update_date <= after_add
+
+        events = UserMailmapEvent.objects.order_by("timestamp").all()
+        assert len(events) == 3
+        assert events[0].request_type == "add"
+        assert events[1].request_type == "add"
+        assert events[2].request_type == "update"
 
 
 @pytest.mark.django_db(transaction=True)
-def test_mailmap_update(api_client, mailmap_user):
-    api_client.force_login(mailmap_user)
-
-    before_add = datetime.datetime.now(tz=datetime.timezone.utc)
-
-    check_api_post_response(
-        api_client,
-        reverse("profile-mailmap-add"),
-        data={"from_email": "orig1@example.org", "display_name": "Display Name 1"},
-        status_code=200,
-    )
-    check_api_post_response(
-        api_client,
-        reverse("profile-mailmap-add"),
-        data={"from_email": "orig2@example.org", "display_name": "Display Name 2"},
-        status_code=200,
-    )
-    after_add = datetime.datetime.now(tz=datetime.timezone.utc)
-
-    mailmaps = list(UserMailmap.objects.order_by("from_email").all())
-    assert len(mailmaps) == 2, mailmaps
-
-    assert mailmaps[0].from_email == "orig1@example.org", mailmaps
-    assert mailmaps[0].display_name == "Display Name 1", mailmaps
-    assert before_add <= mailmaps[0].last_update_date <= after_add
-
-    assert mailmaps[1].from_email == "orig2@example.org", mailmaps
-    assert mailmaps[1].display_name == "Display Name 2", mailmaps
-    assert before_add <= mailmaps[0].last_update_date <= after_add
-
-    before_update = datetime.datetime.now(tz=datetime.timezone.utc)
-
+def test_mailmap_update_from_email_not_found(api_client, mailmap_admin):
+    api_client.force_login(mailmap_admin)
     check_api_post_response(
         api_client,
         reverse("profile-mailmap-update"),
-        data={"from_email": "orig1@example.org", "display_name": "Display Name 1b"},
-        status_code=200,
+        data={"from_email": "invalid@example.org", "display_name": "Display Name",},
+        status_code=404,
     )
 
-    after_update = datetime.datetime.now(tz=datetime.timezone.utc)
 
-    mailmaps = list(UserMailmap.objects.order_by("from_email").all())
-    assert len(mailmaps) == 2, mailmaps
+NB_MAILMAPS = 20
+MM_PER_PAGE = 10
 
-    assert mailmaps[0].from_email == "orig1@example.org", mailmaps
-    assert mailmaps[0].display_name == "Display Name 1b", mailmaps
-    assert before_update <= mailmaps[0].last_update_date <= after_update
 
-    assert mailmaps[1].from_email == "orig2@example.org", mailmaps
-    assert mailmaps[1].display_name == "Display Name 2", mailmaps
-    assert before_add <= mailmaps[1].last_update_date <= after_add
+def _create_mailmaps(client):
+    mailmaps = []
+    for i in range(NB_MAILMAPS):
+        resp = check_http_post_response(
+            client,
+            reverse("profile-mailmap-add"),
+            data={
+                "from_email": f"user{i:02d}@example.org",
+                "display_name": f"User {i:02d}",
+            },
+            status_code=200,
+        )
+        mailmaps.append(json.loads(resp.content))
+    return mailmaps
 
-    events = UserMailmapEvent.objects.order_by("timestamp").all()
-    assert len(events) == 3
-    assert events[0].request_type == "add"
-    assert events[1].request_type == "add"
-    assert events[2].request_type == "update"
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_mailmap_list_datatables_no_parameters(client, mailmap_admin):
+    client.force_login(mailmap_admin)
+    mailmaps = _create_mailmaps(client)
+
+    url = reverse("profile-mailmap-list-datatables")
+
+    resp = check_http_get_response(client, url, status_code=200)
+    mailmap_data = json.loads(resp.content)
+
+    assert mailmap_data["recordsTotal"] == NB_MAILMAPS
+    assert mailmap_data["recordsFiltered"] == NB_MAILMAPS
+
+    # mailmaps sorted by ascending from_email by default
+    for i in range(10):
+        assert mailmap_data["data"][i]["from_email"] == mailmaps[i]["from_email"]
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.parametrize("sort_direction", ["asc", "desc"])
+def test_mailmap_list_datatables_ordering(client, mailmap_admin, sort_direction):
+    client.force_login(mailmap_admin)
+    mailmaps = _create_mailmaps(client)
+    mailmaps_sorted = list(sorted(mailmaps, key=lambda d: d["display_name"]))
+    all_display_names = [mm["display_name"] for mm in mailmaps_sorted]
+    if sort_direction == "desc":
+        all_display_names = list(reversed(all_display_names))
+
+    for i in range(NB_MAILMAPS // MM_PER_PAGE):
+        url = reverse(
+            "profile-mailmap-list-datatables",
+            query_params={
+                "draw": i,
+                "length": MM_PER_PAGE,
+                "start": i * MM_PER_PAGE,
+                "order[0][column]": 2,
+                "order[0][dir]": sort_direction,
+                "columns[2][name]": "display_name",
+            },
+        )
+
+        resp = check_http_get_response(client, url, status_code=200)
+        data = json.loads(resp.content)
+
+        assert data["draw"] == i
+        assert data["recordsFiltered"] == NB_MAILMAPS
+        assert data["recordsTotal"] == NB_MAILMAPS
+        assert len(data["data"]) == MM_PER_PAGE
+
+        display_names = [mm["display_name"] for mm in data["data"]]
+
+        expected_display_names = all_display_names[
+            i * MM_PER_PAGE : (i + 1) * MM_PER_PAGE
+        ]
+        assert display_names == expected_display_names
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_mailmap_list_datatables_search(client, mailmap_admin):
+    client.force_login(mailmap_admin)
+    _create_mailmaps(client)
+
+    search_value = "user1"
+
+    url = reverse(
+        "profile-mailmap-list-datatables",
+        query_params={
+            "draw": 1,
+            "length": MM_PER_PAGE,
+            "start": 0,
+            "search[value]": search_value,
+        },
+    )
+
+    resp = check_http_get_response(client, url, status_code=200)
+    data = json.loads(resp.content)
+
+    assert data["draw"] == 1
+    assert data["recordsFiltered"] == MM_PER_PAGE
+    assert data["recordsTotal"] == NB_MAILMAPS
+    assert len(data["data"]) == MM_PER_PAGE
+
+    for mailmap in data["data"]:
+        assert search_value in mailmap["from_email"]
 
 
 def populate_mailmap():

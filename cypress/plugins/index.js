@@ -7,6 +7,7 @@
 
 const axios = require('axios');
 const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 
 async function httpGet(url) {
   const response = await axios.get(url);
@@ -31,6 +32,10 @@ async function getMetadataForOrigin(originUrl, baseUrl) {
     'snapshot': lastOriginSnapshot.id
   };
 };
+
+function getDatabase() {
+  return new sqlite3.Database('./swh-web-test.sqlite3');
+}
 
 module.exports = (on, config) => {
   require('@cypress/code-coverage/task')(on, config);
@@ -124,6 +129,23 @@ module.exports = (on, config) => {
         global.swhTestsData = swhTestsData;
       }
       return global.swhTestsData;
+    },
+    'db:user_mailmap:delete': () => {
+      const db = getDatabase();
+      db.serialize(function() {
+        db.run('DELETE FROM user_mailmap');
+        db.run('DELETE FROM user_mailmap_event');
+      });
+      db.close();
+      return true;
+    },
+    'db:user_mailmap:mark_processed': () => {
+      const db = getDatabase();
+      db.serialize(function() {
+        db.run('UPDATE user_mailmap SET mailmap_last_processing_date=datetime("now", "+1 hour")');
+      });
+      db.close();
+      return true;
     }
   });
   return config;

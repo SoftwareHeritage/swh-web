@@ -84,6 +84,9 @@ function mockCostlyRequests() {
     body: ''
   }).as('swhCoverageWidget');
 }
+Cypress.Commands.add('mailmapAdminLogin', () => {
+  return loginUser('mailmap-admin', 'mailmap-admin');
+});
 
 before(function() {
 

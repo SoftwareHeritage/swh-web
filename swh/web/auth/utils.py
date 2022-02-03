@@ -11,7 +11,10 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+from django.contrib.auth.decorators import user_passes_test
 from django.http.request import HttpRequest
+
+from swh.web.common.exc import ForbiddenExc
 
 OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 
@@ -20,6 +23,7 @@ API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
 ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
 MAILMAP_PERMISSION = "swh.web.mailmap"
 ADD_FORGE_MODERATOR_PERMISSION = "swh.web.add_forge_now.moderator"
+MAILMAP_ADMIN_PERMISSION = "swh.web.admin.mailmap"
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:
@@ -96,3 +100,16 @@ def privileged_user(request: HttpRequest, permissions: List[str] = []) -> bool:
     return user.is_authenticated and (
         user.is_staff or any([user.has_perm(perm) for perm in permissions])
     )
+
+
+def any_permission_required(*perms):
+    """View decorator granting access to it if user has at least one
+    permission among those passed as parameters.
+    """
+
+    def check_perms(user):
+        if any(user.has_perm(perm) for perm in perms):
+            return True
+        raise ForbiddenExc
+
+    return user_passes_test(check_perms)
