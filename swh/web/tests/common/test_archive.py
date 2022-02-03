@@ -1,14 +1,15 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
+import datetime
 import hashlib
 import itertools
 import random
 
-from hypothesis import given
+from hypothesis import given, settings
 import pytest
 
 from swh.model.from_disk import DentryPerms
@@ -18,6 +19,7 @@ from swh.model.model import (
     DirectoryEntry,
     Origin,
     OriginVisit,
+    OriginVisitStatus,
     Revision,
     Snapshot,
     SnapshotBranch,
@@ -205,6 +207,74 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     expected_visit = dict(archive_data.origin_visit_get_by(new_origin.url, visit))
 
     assert actual_origin_visit == expected_visit
+
+
+@given(new_origin(), visit_dates())
+@settings(max_examples=1)
+def test_origin_visit_find_by_date_no_result(archive_data, new_origin, visit_dates):
+    """No visit registered in storage for an origin should return no visit"""
+    archive_data.origin_add([new_origin])
+
+    for visit_date in visit_dates:
+        # No visit yet, so nothing will get returned
+        actual_origin_visit_status = archive.origin_visit_find_by_date(
+            new_origin.url, visit_date
+        )
+        assert actual_origin_visit_status is None
+
+
+@settings(max_examples=1)
+@given(new_origin(), visit_dates())
+def test_origin_visit_find_by_date_with_status(
+    subtest, archive_data, new_origin, visit_dates
+):
+    """More exhaustive checks with visits with statuses"""
+    archive_data.origin_add([new_origin])
+    # Add some visits
+    visits = archive_data.origin_visit_add(
+        [
+            OriginVisit(origin=new_origin.url, date=ts, type="git",)
+            for ts in sorted(visit_dates)
+        ]
+    )
+    # Then finalize some visits
+    # ovss = archive.lookup_origin_visits(new_origin.url, visit_date)
+    all_statuses = ["not_found", "failed", "partial", "full"]
+    # Add visit status on most recent visit
+    visit = visits[-1]
+    visit_statuses = [
+        OriginVisitStatus(
+            origin=new_origin.url,
+            visit=visit.visit,
+            date=visit.date + datetime.timedelta(days=offset_day),
+            type=visit.type,
+            status=status,
+            snapshot=None,
+        )
+        for (offset_day, status) in enumerate(all_statuses)
+    ]
+    archive_data.origin_visit_status_add(visit_statuses)
+
+    last_visit = max(visits, key=lambda v: v.date)
+
+    # visit_date = max(ovs.date for ovs in visit_statuses)
+    expected_visit_status = archive.lookup_origin_visit(new_origin.url, visit.visit)
+
+    for offset_min in [-1, 0, 1]:
+        visit_date = last_visit.date + datetime.timedelta(minutes=offset_min)
+
+        if offset_min == -1:
+            assert last_visit.date > visit_date
+        if offset_min == 0:
+            assert last_visit.date == visit_date
+        if offset_min == 1:
+            assert last_visit.date < visit_date
+
+        actual_origin_visit_status = archive.origin_visit_find_by_date(
+            new_origin.url, visit_date
+        )
+        assert actual_origin_visit_status == expected_visit_status
+        assert actual_origin_visit_status["status"] == "full"
 
 
 @given(new_origin())
