@@ -1604,12 +1604,17 @@ swh/web/api/views/utils.py
 swh/web/api/views/vault.py
 swh/web/auth/__init__.py
 swh/web/auth/apps.py
+swh/web/auth/mailmap.py
 swh/web/auth/models.py
 swh/web/auth/utils.py
 swh/web/auth/views.py
+swh/web/auth/management/__init__.py
+swh/web/auth/management/commands/__init__.py
+swh/web/auth/management/commands/sync_mailmaps.py
 swh/web/auth/migrations/0001_initial.py
 swh/web/auth/migrations/0002_remove_stored_tokens.py
 swh/web/auth/migrations/0003_delete_oidcuser.py
+swh/web/auth/migrations/0004_usermailmap.py
 swh/web/auth/migrations/__init__.py
 swh/web/browse/__init__.py
 swh/web/browse/browseurls.py
@@ -1756,6 +1761,7 @@ swh/web/tests/api/views/test_stat.py
 swh/web/tests/api/views/test_vault.py
 swh/web/tests/api/views/utils.py
 swh/web/tests/auth/__init__.py
+swh/web/tests/auth/test_mailmap.py
 swh/web/tests/auth/test_utils.py
 swh/web/tests/auth/test_views.py
 swh/web/tests/browse/__init__.py

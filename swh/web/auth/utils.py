@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,6 +18,7 @@ OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
 ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
+MAILMAP_PERMISSION = "swh.web.mailmap"
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:
