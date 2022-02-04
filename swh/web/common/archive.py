@@ -703,7 +703,7 @@ def lookup_revision_log(rev_sha1_git, limit):
     """
     lookup_revision(rev_sha1_git)
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
-    revision_entries = storage.revision_log([sha1_git_bin], limit)
+    revision_entries = storage.revision_log([sha1_git_bin], limit=limit)
     return map(converters.from_revision, revision_entries)
 
 
@@ -808,7 +808,7 @@ def lookup_revision_with_context(
     else:
         sha1_git_root_bin = sha1_git_root["id"]
 
-    revision_log = storage.revision_log([sha1_git_root_bin], limit)
+    revision_log = storage.revision_log([sha1_git_root_bin], limit=limit)
 
     parents: Dict[str, List[str]] = {}
     children = defaultdict(list)
