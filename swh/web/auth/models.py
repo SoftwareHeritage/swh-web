@@ -20,6 +20,26 @@ class OIDCUserOfflineTokens(models.Model):
         db_table = "oidc_user_offline_tokens"
 
 
+class UserMailmapManager(models.Manager):
+    """A queryset manager which defers all :class:`models.DateTimeField` fields, to avoid
+    resetting them to an old value involuntarily."""
+
+    @classmethod
+    def deferred_fields(cls):
+        try:
+            return cls._deferred_fields
+        except AttributeError:
+            cls._deferred_fields = [
+                field.name
+                for field in UserMailmap._meta.get_fields()
+                if isinstance(field, models.DateTimeField) and not field.auto_now
+            ]
+            return cls._deferred_fields
+
+    def get_queryset(self):
+        return super().get_queryset().defer(*self.deferred_fields())
+
+
 class UserMailmap(models.Model):
     """
     Model storing mailmap settings submitted by users.
@@ -61,3 +81,13 @@ class UserMailmap(models.Model):
     class Meta:
         app_label = "swh_web_auth"
         db_table = "user_mailmap"
+
+    # Defer _date fields by default to avoid updating them by mistake
+    objects = UserMailmapManager()
+
+    @property
+    def full_display_name(self) -> str:
+        if self.to_email is not None and self.to_email_verified:
+            return "%s <%s>" % (self.display_name, self.to_email)
+        else:
+            return self.display_name
