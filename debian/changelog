@@ -1,3 +1,13 @@
+swh-web (0.0.356-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.356     - (tagged by Nicolas Dandrimont
+    <nicolas@dandrimont.eu> on 2022-02-04 21:23:45 +0100)
+  * Upstream changes:     - Release swh.web 0.0.356     - Introduce a
+    new mailmap feature     - Pin pytest to <7.0.0     - Use kwargs for
+    revision_log
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 04 Feb 2022 20:46:57 +0000
+
 swh-web (0.0.355-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.355     - (tagged by Antoine Lambert
