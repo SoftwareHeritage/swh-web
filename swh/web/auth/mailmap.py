@@ -4,7 +4,13 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
-from django.http.response import HttpResponse, HttpResponseForbidden
+from django.db.models import Q
+from django.http.response import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -37,10 +43,28 @@ def profile_update_mailmap(request: Request) -> HttpResponse:
     if not request.user.has_perm(MAILMAP_PERMISSION):
         return HttpResponseForbidden()
 
-    UserMailmap.objects.update(user_id=str(request.user.id), **request.data)
-    mm = UserMailmap.objects.get(
-        user_id=str(request.user.id), from_email=request.data.get("from_email")
-    )
+    try:
+        from_email = request.data.pop("from_email")
+    except KeyError:
+        return HttpResponseBadRequest("Missing from_email value")
+
+    user_id = str(request.user.id)
+
+    try:
+        to_update = (
+            UserMailmap.objects.filter(Q(user_id__isnull=True) | Q(user_id=user_id))
+            .filter(from_email=from_email)
+            .get()
+        )
+    except UserMailmap.DoesNotExist:
+        return HttpResponseNotFound()
+
+    for attr, value in request.data.items():
+        setattr(to_update, attr, value)
+
+    to_update.save()
+
+    mm = UserMailmap.objects.get(user_id=user_id, from_email=from_email)
     return Response(UserMailmapSerializer(mm).data)
 
 
