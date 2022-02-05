@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 from io import StringIO
 from typing import Dict
 
@@ -48,10 +49,67 @@ def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_endpoints_error_response(api_client, mailmap_user):
     api_client.force_login(mailmap_user)
-    for view_name in ("profile-mailmap-add", "profile-mailmap-update"):
-        url = reverse(view_name)
-        resp = check_api_post_response(api_client, url, status_code=500)
-        assert "exception" in resp.data
+
+    url = reverse("profile-mailmap-add")
+    resp = check_api_post_response(api_client, url, status_code=500)
+    assert "exception" in resp.data
+
+    url = reverse("profile-mailmap-update")
+    resp = check_api_post_response(api_client, url, status_code=400)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mailmap_update(api_client, mailmap_user):
+    api_client.force_login(mailmap_user)
+
+    before_add = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    check_api_post_response(
+        api_client,
+        reverse("profile-mailmap-add"),
+        data={"from_email": "orig1@example.org", "display_name": "Display Name 1"},
+        status_code=200,
+    )
+    check_api_post_response(
+        api_client,
+        reverse("profile-mailmap-add"),
+        data={"from_email": "orig2@example.org", "display_name": "Display Name 2"},
+        status_code=200,
+    )
+    after_add = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    mailmaps = list(UserMailmap.objects.order_by("from_email").all())
+    assert len(mailmaps) == 2, mailmaps
+
+    assert mailmaps[0].from_email == "orig1@example.org", mailmaps
+    assert mailmaps[0].display_name == "Display Name 1", mailmaps
+    assert before_add <= mailmaps[0].last_update_date <= after_add
+
+    assert mailmaps[1].from_email == "orig2@example.org", mailmaps
+    assert mailmaps[1].display_name == "Display Name 2", mailmaps
+    assert before_add <= mailmaps[0].last_update_date <= after_add
+
+    before_update = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    check_api_post_response(
+        api_client,
+        reverse("profile-mailmap-update"),
+        data={"from_email": "orig1@example.org", "display_name": "Display Name 1b"},
+        status_code=200,
+    )
+
+    after_update = datetime.datetime.now(tz=datetime.timezone.utc)
+
+    mailmaps = list(UserMailmap.objects.order_by("from_email").all())
+    assert len(mailmaps) == 2, mailmaps
+
+    assert mailmaps[0].from_email == "orig1@example.org", mailmaps
+    assert mailmaps[0].display_name == "Display Name 1b", mailmaps
+    assert before_update <= mailmaps[0].last_update_date <= after_update
+
+    assert mailmaps[1].from_email == "orig2@example.org", mailmaps
+    assert mailmaps[1].display_name == "Display Name 2", mailmaps
+    assert before_add <= mailmaps[1].last_update_date <= after_add
 
 
 def populate_mailmap():
