@@ -5,7 +5,7 @@
 
 from datetime import timedelta
 
-from hypothesis import given
+from hypothesis import given, settings
 import iso8601
 import pytest
 
@@ -17,6 +17,7 @@ from swh.web.common.typing import OriginInfo
 from swh.web.tests.strategies import new_origin, new_snapshots
 
 
+@settings(max_examples=1)
 @given(new_origin(), new_snapshots(3))
 def test_get_origin_visits(mocker, archive_data, new_origin, new_snapshots):
     from swh.web.common import archive
