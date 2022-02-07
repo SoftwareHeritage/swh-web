@@ -91,3 +91,33 @@ class UserMailmap(models.Model):
             return "%s <%s>" % (self.display_name, self.to_email)
         else:
             return self.display_name
+
+
+class UserMailmapEvent(models.Model):
+    """
+    Represents an update to a mailmap object
+    """
+
+    timestamp = models.DateTimeField(auto_now=True, null=False)
+    """Timestamp of the moment the event was submitted"""
+
+    user_id = models.CharField(max_length=50, null=False)
+    """User id from Keycloak of the user who changed the mailmap.
+    (Not necessarily the one who the mail belongs to.)"""
+
+    request_type = models.CharField(max_length=50, null=False)
+    """Either ``add`` or ``update``."""
+
+    request = models.TextField(null=False)
+    """JSON dump of the request received."""
+
+    successful = models.BooleanField(default=False, null=False)
+    """If False, then the request failed or crashed before completing,
+    and may or may not have altered the database's state."""
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+        ]
+        app_label = "swh_web_auth"
+        db_table = "user_mailmap_event"

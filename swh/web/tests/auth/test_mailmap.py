@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import datetime
+import json
 from io import StringIO
 from typing import Dict
 
@@ -14,7 +15,7 @@ from django.core.management import call_command
 from django.db import transaction
 
 from swh.model.model import Person
-from swh.web.auth.models import UserMailmap
+from swh.web.auth.models import UserMailmap, UserMailmapEvent
 from swh.web.auth.utils import MAILMAP_PERMISSION
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import (
@@ -40,13 +41,13 @@ def test_mailmap_endpoints_anonymous_user(api_client, view_name):
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
     api_client.force_login(mailmap_user)
+
+    request_data = {"from_email": "bar@example.org", "display_name": "bar"}
+
     for view_name in ("profile-mailmap-add", "profile-mailmap-update"):
         url = reverse(view_name)
         check_api_post_response(
-            api_client,
-            url,
-            data={"from_email": "bar@example.org", "display_name": "bar"},
-            status_code=200,
+            api_client, url, data=request_data, status_code=200,
         )
 
     # FIXME: use check_api_get_responses; currently this crashes without
@@ -60,6 +61,13 @@ def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
     assert len(resp) == 1
     assert resp[0]["from_email"] == "bar@example.org"
     assert resp[0]["display_name"] == "bar"
+
+    events = UserMailmapEvent.objects.order_by("timestamp").all()
+    assert len(events) == 2
+    assert events[0].request_type == "add"
+    assert json.loads(events[0].request) == request_data
+    assert events[1].request_type == "update"
+    assert json.loads(events[1].request) == request_data
 
 
 @pytest.mark.django_db(transaction=True)
@@ -108,6 +116,12 @@ def test_mailmap_add_full(api_client, mailmap_user):
     assert len(resp) == 1
     assert resp[0].items() >= request_data.items()
 
+    events = UserMailmapEvent.objects.all()
+    assert len(events) == 1
+    assert events[0].request_type == "add"
+    assert json.loads(events[0].request) == request_data
+    assert events[0].successful
+
 
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_endpoints_error_response(api_client, mailmap_user):
@@ -120,6 +134,17 @@ def test_mailmap_endpoints_error_response(api_client, mailmap_user):
     url = reverse("profile-mailmap-update")
     resp = check_api_post_response(api_client, url, status_code=400)
     assert b"from_email" in resp.content
+
+    events = UserMailmapEvent.objects.order_by("timestamp").all()
+    assert len(events) == 2
+
+    assert events[0].request_type == "add"
+    assert json.loads(events[0].request) == {}
+    assert not events[0].successful
+
+    assert events[1].request_type == "update"
+    assert json.loads(events[1].request) == {}
+    assert not events[1].successful
 
 
 @pytest.mark.django_db(transaction=True)
@@ -174,6 +199,12 @@ def test_mailmap_update(api_client, mailmap_user):
     assert mailmaps[1].from_email == "orig2@example.org", mailmaps
     assert mailmaps[1].display_name == "Display Name 2", mailmaps
     assert before_add <= mailmaps[1].last_update_date <= after_add
+
+    events = UserMailmapEvent.objects.order_by("timestamp").all()
+    assert len(events) == 3
+    assert events[0].request_type == "add"
+    assert events[1].request_type == "add"
+    assert events[2].request_type == "update"
 
 
 def populate_mailmap():
