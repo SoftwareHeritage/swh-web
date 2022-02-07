@@ -57,8 +57,11 @@ def profile_add_mailmap(request: Request) -> HttpResponse:
         UserMailmap.objects.create(
             user_id=str(request.user.id), from_email=from_email, **request.data
         )
-    except IntegrityError:
-        return HttpResponseBadRequest("This 'from_email' already exists.")
+    except IntegrityError as e:
+        if "user_mailmap_from_email_key" in e.args[0]:
+            return HttpResponseBadRequest("This 'from_email' already exists.")
+        else:
+            raise
 
     event.successful = True
     event.save()
