@@ -85,11 +85,12 @@ def test_mailmap_endpoints_error_response(api_client, mailmap_user):
     api_client.force_login(mailmap_user)
 
     url = reverse("profile-mailmap-add")
-    resp = check_api_post_response(api_client, url, status_code=500)
-    assert "exception" in resp.data
+    resp = check_api_post_response(api_client, url, status_code=400)
+    assert b"from_email" in resp.content
 
     url = reverse("profile-mailmap-update")
     resp = check_api_post_response(api_client, url, status_code=400)
+    assert b"from_email" in resp.content
 
 
 @pytest.mark.django_db(transaction=True)

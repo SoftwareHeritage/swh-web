@@ -41,12 +41,18 @@ def profile_add_mailmap(request: Request) -> HttpResponse:
     if not request.user.has_perm(MAILMAP_PERMISSION):
         return HttpResponseForbidden()
 
+    from_email = request.data.pop("from_email", None)
+    if not from_email:
+        return HttpResponseBadRequest("'from_email' must be provided and non-empty.")
+
     try:
-        UserMailmap.objects.create(user_id=str(request.user.id), **request.data)
+        UserMailmap.objects.create(
+            user_id=str(request.user.id), from_email=from_email, **request.data
+        )
     except IntegrityError:
         return HttpResponseBadRequest("This 'from_email' already exists.")
     mm = UserMailmap.objects.get(
-        user_id=str(request.user.id), from_email=request.data.get("from_email")
+        user_id=str(request.user.id), from_email=from_email
     )
     return Response(UserMailmapSerializer(mm).data)
 
@@ -56,10 +62,9 @@ def profile_update_mailmap(request: Request) -> HttpResponse:
     if not request.user.has_perm(MAILMAP_PERMISSION):
         return HttpResponseForbidden()
 
-    try:
-        from_email = request.data.pop("from_email")
-    except KeyError:
-        return HttpResponseBadRequest("Missing from_email value")
+    from_email = request.data.pop("from_email", None)
+    if not from_email:
+        return HttpResponseBadRequest("'from_email' must be provided and non-empty.")
 
     user_id = str(request.user.id)
 
