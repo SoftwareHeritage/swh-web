@@ -81,6 +81,35 @@ def test_mailmap_add_duplicate(api_client, mailmap_user):
 
 
 @pytest.mark.django_db(transaction=True)
+def test_mailmap_add_full(api_client, mailmap_user):
+    api_client.force_login(mailmap_user)
+
+    request_data = {
+        "from_email": "foo@example.org",
+        "from_email_verified": True,
+        "from_email_verification_request_date": "2021-02-07T14:04:15Z",
+        "display_name": "bar",
+        "display_name_activated": True,
+        "to_email": "bar@example.org",
+        "to_email_verified": True,
+        "to_email_verification_request_date": "2021-02-07T15:54:59Z",
+    }
+
+    check_api_post_response(
+        api_client, reverse("profile-mailmap-add"), data=request_data, status_code=200,
+    )
+
+    resp = check_http_get_response(
+        api_client,
+        reverse("profile-mailmap-list"),
+        status_code=200,
+        content_type="application/json",
+    ).data
+    assert len(resp) == 1
+    assert resp[0].items() >= request_data.items()
+
+
+@pytest.mark.django_db(transaction=True)
 def test_mailmap_endpoints_error_response(api_client, mailmap_user):
     api_client.force_login(mailmap_user)
 
