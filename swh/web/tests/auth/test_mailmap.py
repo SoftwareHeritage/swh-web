@@ -55,11 +55,29 @@ def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
         api_client,
         reverse("profile-mailmap-list"),
         status_code=200,
-        content_type="application/json"
+        content_type="application/json",
     ).data
     assert len(resp) == 1
     assert resp[0]["from_email"] == "bar@example.org"
     assert resp[0]["display_name"] == "bar"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_mailmap_add_duplicate(api_client, mailmap_user):
+    api_client.force_login(mailmap_user)
+
+    check_api_post_response(
+        api_client,
+        reverse("profile-mailmap-add"),
+        data={"from_email": "foo@example.org", "display_name": "bar"},
+        status_code=200,
+    )
+    check_api_post_response(
+        api_client,
+        reverse("profile-mailmap-add"),
+        data={"from_email": "foo@example.org", "display_name": "baz"},
+        status_code=400,
+    )
 
 
 @pytest.mark.django_db(transaction=True)

@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
+from django.db import IntegrityError
 from django.db.models import Q
 from django.http.response import (
     HttpResponse,
@@ -40,7 +41,10 @@ def profile_add_mailmap(request: Request) -> HttpResponse:
     if not request.user.has_perm(MAILMAP_PERMISSION):
         return HttpResponseForbidden()
 
-    UserMailmap.objects.create(user_id=str(request.user.id), **request.data)
+    try:
+        UserMailmap.objects.create(user_id=str(request.user.id), **request.data)
+    except IntegrityError:
+        return HttpResponseBadRequest("This 'from_email' already exists.")
     mm = UserMailmap.objects.get(
         user_id=str(request.user.id), from_email=request.data.get("from_email")
     )
