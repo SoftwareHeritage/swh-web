@@ -17,7 +17,11 @@ from swh.model.model import Person
 from swh.web.auth.models import UserMailmap
 from swh.web.auth.utils import MAILMAP_PERMISSION
 from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_api_post_response, create_django_permission
+from swh.web.tests.utils import (
+    check_api_post_response,
+    check_http_get_response,
+    create_django_permission,
+)
 
 
 @pytest.fixture
@@ -44,6 +48,18 @@ def test_mailmap_endpoints_user_with_permission(api_client, mailmap_user):
             data={"from_email": "bar@example.org", "display_name": "bar"},
             status_code=200,
         )
+
+    # FIXME: use check_api_get_responses; currently this crashes without
+    # content_type="application/json"
+    resp = check_http_get_response(
+        api_client,
+        reverse("profile-mailmap-list"),
+        status_code=200,
+        content_type="application/json"
+    ).data
+    assert len(resp) == 1
+    assert resp[0]["from_email"] == "bar@example.org"
+    assert resp[0]["display_name"] == "bar"
 
 
 @pytest.mark.django_db(transaction=True)
