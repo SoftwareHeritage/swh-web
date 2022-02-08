@@ -129,8 +129,7 @@ describe('Vault Cooking User Interface Tests', function() {
       statusCode: 500
     }).as('checkVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Check error alert is displayed
     cy.get('.alert-danger')
@@ -155,6 +154,9 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
+      .click();
+
+    cy.contains('button', 'as tarball')
       .click();
 
     // Create a vault cooking task through the GUI
@@ -227,6 +229,9 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
+      .click();
+
+    cy.contains('button', 'as tarball')
       .click();
 
     cy.window().then(win => {
@@ -393,6 +398,9 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.contains('button', 'Download')
       .click();
 
+    cy.contains('button', 'as tarball')
+      .click();
+
     // Create a vault cooking task through the GUI
     cy.get('.modal-dialog')
         .contains('button:visible', 'Ok')
@@ -421,10 +429,7 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('createVaultCookingTask');
 
     // Open vault cook directory modal
-    cy.contains('button', 'Download')
-      .click();
-
-    cy.wait('@checkVaultCookingTask');
+    checkVaultCookingTask('as tarball');
 
     // Create a vault cooking task through the GUI and fill email input
     cy.get('#vault-cook-directory-modal input[type="email"]')
@@ -518,6 +523,9 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.contains('button', 'Download')
       .click();
 
+    cy.contains('button', 'as tarball')
+      .click();
+
     // Start archive download through the GUI
     cy.get('.modal-dialog')
       .contains('button:visible', 'Ok')
@@ -569,6 +577,9 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('checkVaultCookingTask');
 
     cy.contains('button', 'Download')
+      .click();
+
+    cy.contains('button', 'as tarball')
       .click();
 
     // Check that recooking the directory is offered to user
