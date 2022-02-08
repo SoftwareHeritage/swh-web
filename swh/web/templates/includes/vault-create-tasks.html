@@ -8,33 +8,26 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if vault_cooking %}
-  {% if user.is_authenticated  and user.is_staff or "swh.vault.git_bare.ui" in user.get_all_permissions %}
-    <div class="btn-group">
-      <button class="btn btn-default btn-sm dropdown-toggle swh-vault-download" type="button" data-toggle="dropdown">
-        <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>
-        Download
-      </button>
-      <div class="dropdown-menu swh-vault-menu">
-        {% if vault_cooking.directory_context %}
-          <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('directory', '{{ vault_cooking.directory_swhid }}')">
-            <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
-            as tarball
-          </button>
-        {% endif %}
-        {% if vault_cooking.revision_context %}
-          <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('revision', '{{ vault_cooking.revision_swhid }}')">
-            <i class="{{ swh_object_icons.revision }} mdi-fw" aria-hidden="true"></i>
-            as git
-          </button>
-        {% endif %}
-      </div>
-    </div>
-  {% else %}
-    <button class="btn btn-default btn-sm swh-vault-download" type="button" onclick="swh.vault.vaultRequest('directory', '{{ vault_cooking.directory_swhid }}')">
+  <div class="btn-group">
+    <button class="btn btn-default btn-sm dropdown-toggle swh-vault-download" type="button" data-toggle="dropdown">
       <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>
       Download
     </button>
-  {% endif %}
+    <div class="dropdown-menu swh-vault-menu">
+      {% if vault_cooking.directory_context %}
+        <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('directory', '{{ vault_cooking.directory_swhid }}')">
+          <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
+          as tarball
+        </button>
+      {% endif %}
+      {% if vault_cooking.revision_context %}
+        <button class="dropdown-item" type="button" tabindex="-1" onclick="swh.vault.vaultRequest('revision', '{{ vault_cooking.revision_swhid }}')">
+          <i class="{{ swh_object_icons.revision }} mdi-fw" aria-hidden="true"></i>
+          as git
+        </button>
+      {% endif %}
+    </div>
+  </div>
 
 
   <!-- modals related to the creation of vault cooking tasks -->
