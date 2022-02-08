@@ -404,10 +404,10 @@ def api_vault_cook_git_bare(request, swhid):
     .. http:get:: /api/1/vault/git-bare/(swhid)/
     .. http:post:: /api/1/vault/git-bare/(swhid)/
 
-        Request the cooking of a git-bare archive for a revision or check
-        its cooking status.
+        Request the cooking of a git-bare archive for a revision/release
+        object, or check its cooking status.
 
-        That endpoint enables to create a vault cooking task for a revision
+        That endpoint enables to create a vault cooking task for an object
         through a POST request or check the status of a previously created one
         through a GET request.
 
@@ -415,17 +415,18 @@ def api_vault_cook_git_bare(request, swhid):
         can be downloaded using the dedicated endpoint
         :http:get:`/api/1/vault/git-bare/(swhid)/raw/`.
 
-        Then to import the revision in the current directory, use::
+        Then to import the object in the current directory, use::
 
             $ tar -xf path/to/swh_1_rev_*.git.tar
             $ git clone swh:1:rev:*.git new_repository
 
-        (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
+        (replace ``swh:1:rev:*`` with the SWHID of the requested object)
 
         This will create a directory called ``new_repository``, which is a git
         repository containing the requested objects.
 
-        :param string swhid: the revision's permanent identifier
+        :param string swhid: the object's permanent identifier, which should start
+            with ``swh:1:rev:`` or ``swh:1:rel:``.
 
         :query string email: e-mail to notify when the git-bare archive is ready
 
@@ -441,12 +442,12 @@ def api_vault_cook_git_bare(request, swhid):
         :>json string swhid: the identifier of the object to cook
 
         :statuscode 200: no error
-        :statuscode 404: requested directory did not receive any cooking
+        :statuscode 404: requested object did not receive any cooking
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
     swhid = CoreSWHID.from_string(swhid)
-    if swhid.object_type == ObjectType.REVISION:
+    if swhid.object_type in (ObjectType.REVISION, ObjectType.RELEASE):
         res = _dispatch_cook_progress(request, "git_bare", swhid)
         res["fetch_url"] = reverse(
             "api-1-vault-fetch-git-bare",
@@ -465,7 +466,9 @@ def api_vault_cook_git_bare(request, swhid):
             "Use `/api/1/vault/flat/` to cook directories, as flat bundles."
         )
     else:
-        raise BadInputExc("Only revisions can be cooked as 'git-bare' bundles.")
+        raise BadInputExc(
+            "Only revisions and releases can be cooked as 'git-bare' bundles."
+        )
 
 
 @api_route(

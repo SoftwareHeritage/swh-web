@@ -21,13 +21,14 @@ from swh.web.tests.utils import (
 # Current API:
 
 
-def test_api_vault_cook(api_client, mocker, directory, revision):
+def test_api_vault_cook(api_client, mocker, directory, revision, release):
     mock_archive = mocker.patch("swh.web.api.views.vault.archive")
 
     for bundle_type, swhid, content_type, in (
         ("flat", f"swh:1:dir:{directory}", "application/gzip"),
         ("gitfast", f"swh:1:rev:{revision}", "application/gzip"),
         ("git_bare", f"swh:1:rev:{revision}", "application/x-tar"),
+        ("git_bare", f"swh:1:rel:{release}", "application/x-tar"),
     ):
         swhid = CoreSWHID.from_string(swhid)
 
@@ -154,7 +155,6 @@ def test_api_vault_cook_error_content(api_client, mocker, bundle_type):
         ("gitfast", "rel", False),
         ("gitfast", "snp", False),
         ("git_bare", "dir", True),
-        ("git_bare", "rel", False),
         ("git_bare", "snp", False),
     ],
 )
