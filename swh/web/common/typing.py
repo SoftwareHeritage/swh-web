@@ -71,7 +71,7 @@ class SnapshotReleaseInfo(TypedDict):
     date: str
     """release date"""
     directory: Optional[str]
-    """optional directory associatd to the release"""
+    """optional directory associated to the release"""
     id: str
     """release identifier"""
     message: str

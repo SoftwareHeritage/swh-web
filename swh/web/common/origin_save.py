@@ -408,7 +408,7 @@ def create_save_origin_request(
 ) -> SaveOriginRequestInfo:
     """Create a loading task to save a software origin into the archive.
 
-    This function aims to create a software origin loading task trough the use of the
+    This function aims to create a software origin loading task through the use of the
     swh-scheduler component.
 
     First, some checks are performed to see if the visit type and origin url are valid
