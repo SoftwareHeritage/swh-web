@@ -2,27 +2,33 @@ exclude: "^swh/web/tests/resources/"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v4.1.0
     hooks:
       - id: trailing-whitespace
       - id: check-json
       - id: check-yaml
 
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 4.0.1
     hooks:
       - id: flake8
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v1.16.0
+    rev: v2.1.0
     hooks:
       - id: codespell
+        name: Check source code spelling
         exclude: >
           (?x)^(
               cypress/integration/directory.spec.js|
               yarn.lock|
               package.json
           )$
+        args: [-L edn]
+        stages: [commit]
+      - id: codespell
+        name: Check commit message spelling
+        stages: [commit-msg]
 
   - repo: local
     hooks:
@@ -33,9 +39,6 @@ repos:
         pass_filenames: false
         language: system
         types: [python]
-
-  - repo: local
-    hooks:
       - id: eslint
         name: eslint
         entry: node_modules/.bin/eslint -c assets/config/.eslintrc
@@ -43,7 +46,7 @@ repos:
         types: [javascript]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.5.2
+    rev: 5.10.1
     hooks:
       - id: isort
 
@@ -51,13 +54,3 @@ repos:
     rev: 19.10b0
     hooks:
       - id: black
-# unfortunately, we are far from being able to enable this...
-# - repo: https://github.com/PyCQA/pydocstyle.git
-#   rev: 4.0.0
-#   hooks:
-#   - id: pydocstyle
-#     name: pydocstyle
-#     description: pydocstyle is a static analysis tool for checking compliance with Python docstring conventions.
-#     entry: pydocstyle --convention=google
-#     language: python
-#     types: [python]
