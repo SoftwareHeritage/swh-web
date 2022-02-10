@@ -42,40 +42,42 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
     cache_entry_id = "origin_visits_%s" % origin_url
     cache_entry = cache.get(cache_entry_id)
 
+    last_visit = 0
+    origin_visits = []
+    new_visits = []
+    per_page = archive.MAX_LIMIT
     if cache_entry:
+        origin_visits = cache_entry
         last_visit = cache_entry[-1]["visit"]
         new_visits = list(
-            archive.lookup_origin_visits(origin_url, last_visit=last_visit)
+            archive.lookup_origin_visits(
+                origin_url, last_visit=last_visit, per_page=per_page
+            )
         )
+        last_visit += len(new_visits)
         if not new_visits:
             last_snp = archive.lookup_latest_origin_snapshot(origin_url)
             if not last_snp or last_snp["id"] == cache_entry[-1]["snapshot"]:
                 return cache_entry
 
-    origin_visits = []
-
-    per_page = archive.MAX_LIMIT
-    last_visit = None
+    # get new visits that we did not retrieve yet
     while 1:
         visits = list(
             archive.lookup_origin_visits(
                 origin_url, last_visit=last_visit, per_page=per_page
             )
         )
-        origin_visits += visits
+        new_visits += visits
         if len(visits) < per_page:
             break
-        else:
-            if not last_visit:
-                last_visit = per_page
-            else:
-                last_visit += per_page
+        last_visit += per_page
 
     def _visit_sort_key(visit):
         ts = parse_iso8601_date_to_utc(visit["date"]).timestamp()
         return ts + (float(visit["visit"]) / 10e3)
 
-    origin_visits = sorted(origin_visits, key=lambda v: _visit_sort_key(v))
+    # cache entry is already sorted with oldest visits
+    origin_visits += sorted(new_visits, key=lambda v: _visit_sort_key(v))
 
     cache.set(cache_entry_id, origin_visits)
 
