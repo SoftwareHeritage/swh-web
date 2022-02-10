@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -1050,7 +1050,10 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
         origin: origin concerned by the visit
         visit_id: the visit identifier to lookup
 
-    Yields:
+    Raises:
+        NotFoundExc if no origin visit matching the criteria is found
+
+    Returns:
        The dict origin_visit concerned
 
     """
@@ -1066,7 +1069,7 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
 def lookup_snapshot_sizes(
     snapshot_id: str, branch_name_exclude_prefix: Optional[str] = "refs/pull/"
 ) -> Dict[str, int]:
-    """Count the number of branches in the snapshot with the given id
+    """Count the number of branches in the snapshot with the given id.
 
     Args:
         snapshot_id (str): sha1 identifier of the snapshot

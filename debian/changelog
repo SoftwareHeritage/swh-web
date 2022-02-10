@@ -1,8 +1,17 @@
-swh-web (0.0.356-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.367-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.367     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2022-02-10 14:36:43 +0100)
+  * Upstream changes:     - v0.0.367     - * mailmap: make the update
+    view only update a single object     - * templates/origin-visits:
+    Prefer to show all visits by default     - * package.json: Upgrade
+    dependencies     - * mailmaps: Add an endpoint to fetch the list
+    - * mailmaps: Return a proper error in case of duplicate from_email
+    - * mailmaps: Make error handling more robust when 'from_email' is
+    missing/empty.     - * mailmaps: Add table UserMailmapEvent     - *
+    Add a permission to get the option to use the search QL
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 04 Feb 2022 20:54:29 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 10 Feb 2022 13:58:08 +0000
 
 swh-web (0.0.356-1~swh1) unstable-swh; urgency=medium
 

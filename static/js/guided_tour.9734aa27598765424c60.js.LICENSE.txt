@@ -1,9 +1,0 @@
-/*!
- * Intro.js v4.3.0
- * https://introjs.com
- *
- * Copyright (C) 2012-2021 Afshin Mehrabani (@afshinmeh).
- * https://raw.githubusercontent.com/usablica/intro.js/master/license.md
- *
- * Date: Sat, 06 Nov 2021 14:22:05 GMT
- */
