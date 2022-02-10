@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import * as introJs from 'intro.js';
+import introJs from 'intro.js';
 import 'intro.js/introjs.css';
 import './swh-introjs.css';
 import guidedTourSteps from './guided-tour-steps.yaml';

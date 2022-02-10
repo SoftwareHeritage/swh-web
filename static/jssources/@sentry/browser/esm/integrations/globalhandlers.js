@@ -67,6 +67,7 @@ function _installGlobalOnErrorHandler() {
                 attachStacktrace: attachStacktrace,
                 isRejection: false,
             }), url, line, column);
+        event.level = Severity.Error;
         addMechanismAndCapture(hub, error, event, 'onerror');
     });
 }
