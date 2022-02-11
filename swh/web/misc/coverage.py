@@ -281,7 +281,7 @@ def _get_nixguix_origins_count(origin_url: str) -> int:
     snapshot = archive.lookup_latest_origin_snapshot(origin_url)
     if snapshot:
         snapshot_sizes = archive.lookup_snapshot_sizes(snapshot["id"])
-        return snapshot_sizes["revision"]
+        return snapshot_sizes["release"]
     else:
         return 0
 
