@@ -4,8 +4,8 @@
 # See top-level LICENSE file for more information
 
 import datetime
-import json
 from io import StringIO
+import json
 from typing import Dict
 
 from psycopg2.extras import execute_values
