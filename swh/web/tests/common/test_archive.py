@@ -26,6 +26,7 @@ from swh.model.model import (
     TargetType,
 )
 from swh.model.swhids import ObjectType
+from swh.storage.utils import now
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
@@ -224,57 +225,46 @@ def test_origin_visit_find_by_date_no_result(archive_data, new_origin, visit_dat
 
 
 @settings(max_examples=1)
-@given(new_origin(), visit_dates())
-def test_origin_visit_find_by_date_with_status(
-    subtest, archive_data, new_origin, visit_dates
-):
-    """More exhaustive checks with visits with statuses"""
+@given(new_origin())
+def test_origin_visit_find_by_date(archive_data, new_origin):
+    # Add origin and two visits
     archive_data.origin_add([new_origin])
-    # Add some visits
+
+    pivot_date = now()
+    # First visit one hour before pivot date
+    first_visit_date = pivot_date - datetime.timedelta(hours=1)
+    # Second visit two hours after pivot date
+    second_visit_date = pivot_date + datetime.timedelta(hours=2)
     visits = archive_data.origin_visit_add(
         [
-            OriginVisit(origin=new_origin.url, date=ts, type="git",)
-            for ts in sorted(visit_dates)
+            OriginVisit(origin=new_origin.url, date=visit_date, type="git",)
+            for visit_date in [first_visit_date, second_visit_date]
         ]
     )
-    # Then finalize some visits
-    # ovss = archive.lookup_origin_visits(new_origin.url, visit_date)
-    all_statuses = ["not_found", "failed", "partial", "full"]
-    # Add visit status on most recent visit
-    visit = visits[-1]
-    visit_statuses = [
-        OriginVisitStatus(
-            origin=new_origin.url,
-            visit=visit.visit,
-            date=visit.date + datetime.timedelta(days=offset_day),
-            type=visit.type,
-            status=status,
-            snapshot=None,
+
+    # Finalize visits
+    visit_statuses = []
+    for visit in visits:
+        visit_statuses.append(
+            OriginVisitStatus(
+                origin=new_origin.url,
+                visit=visit.visit,
+                date=visit.date + datetime.timedelta(hours=1),
+                type=visit.type,
+                status="full",
+                snapshot=None,
+            )
         )
-        for (offset_day, status) in enumerate(all_statuses)
-    ]
     archive_data.origin_visit_status_add(visit_statuses)
 
-    last_visit = max(visits, key=lambda v: v.date)
-
-    # visit_date = max(ovs.date for ovs in visit_statuses)
-    expected_visit_status = archive.lookup_origin_visit(new_origin.url, visit.visit)
-
-    for offset_min in [-1, 0, 1]:
-        visit_date = last_visit.date + datetime.timedelta(minutes=offset_min)
-
-        if offset_min == -1:
-            assert last_visit.date > visit_date
-        if offset_min == 0:
-            assert last_visit.date == visit_date
-        if offset_min == 1:
-            assert last_visit.date < visit_date
-
-        actual_origin_visit_status = archive.origin_visit_find_by_date(
-            new_origin.url, visit_date
-        )
-        assert actual_origin_visit_status == expected_visit_status
-        assert actual_origin_visit_status["status"] == "full"
+    # Check correct visit is returned when searching by date
+    for search_date, expected_visit in [
+        (first_visit_date, 1),
+        (pivot_date, 2),
+        (second_visit_date, 2),
+    ]:
+        origin_visit = archive.origin_visit_find_by_date(new_origin.url, search_date)
+        assert origin_visit["visit"] == expected_visit
 
 
 @given(new_origin())
