@@ -1,3 +1,11 @@
+swh-web (0.0.368-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.368     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2022-02-11 11:38:04 +0100)
+  * Upstream changes:     - version 0.0.368
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 11 Feb 2022 11:26:56 +0000
+
 swh-web (0.0.367-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.367     - (tagged by Valentin Lorentz
