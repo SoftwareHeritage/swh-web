@@ -1,14 +1,15 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from collections import defaultdict
+import datetime
 import hashlib
 import itertools
 import random
 
-from hypothesis import given
+from hypothesis import given, settings
 import pytest
 
 from swh.model.from_disk import DentryPerms
@@ -18,12 +19,14 @@ from swh.model.model import (
     DirectoryEntry,
     Origin,
     OriginVisit,
+    OriginVisitStatus,
     Revision,
     Snapshot,
     SnapshotBranch,
     TargetType,
 )
 from swh.model.swhids import ObjectType
+from swh.storage.utils import now
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
@@ -205,6 +208,63 @@ def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     expected_visit = dict(archive_data.origin_visit_get_by(new_origin.url, visit))
 
     assert actual_origin_visit == expected_visit
+
+
+@given(new_origin(), visit_dates())
+@settings(max_examples=1)
+def test_origin_visit_find_by_date_no_result(archive_data, new_origin, visit_dates):
+    """No visit registered in storage for an origin should return no visit"""
+    archive_data.origin_add([new_origin])
+
+    for visit_date in visit_dates:
+        # No visit yet, so nothing will get returned
+        actual_origin_visit_status = archive.origin_visit_find_by_date(
+            new_origin.url, visit_date
+        )
+        assert actual_origin_visit_status is None
+
+
+@settings(max_examples=1)
+@given(new_origin())
+def test_origin_visit_find_by_date(archive_data, new_origin):
+    # Add origin and two visits
+    archive_data.origin_add([new_origin])
+
+    pivot_date = now()
+    # First visit one hour before pivot date
+    first_visit_date = pivot_date - datetime.timedelta(hours=1)
+    # Second visit two hours after pivot date
+    second_visit_date = pivot_date + datetime.timedelta(hours=2)
+    visits = archive_data.origin_visit_add(
+        [
+            OriginVisit(origin=new_origin.url, date=visit_date, type="git",)
+            for visit_date in [first_visit_date, second_visit_date]
+        ]
+    )
+
+    # Finalize visits
+    visit_statuses = []
+    for visit in visits:
+        visit_statuses.append(
+            OriginVisitStatus(
+                origin=new_origin.url,
+                visit=visit.visit,
+                date=visit.date + datetime.timedelta(hours=1),
+                type=visit.type,
+                status="full",
+                snapshot=None,
+            )
+        )
+    archive_data.origin_visit_status_add(visit_statuses)
+
+    # Check correct visit is returned when searching by date
+    for search_date, expected_visit in [
+        (first_visit_date, 1),
+        (pivot_date, 2),
+        (second_visit_date, 2),
+    ]:
+        origin_visit = archive.origin_visit_find_by_date(new_origin.url, search_date)
+        assert origin_visit["visit"] == expected_visit
 
 
 @given(new_origin())

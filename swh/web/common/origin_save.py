@@ -1,9 +1,8 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from bisect import bisect_right
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from itertools import product
@@ -39,12 +38,7 @@ from swh.web.common.models import (
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.typing import (
-    OriginExistenceCheckInfo,
-    OriginInfo,
-    SaveOriginRequestInfo,
-)
+from swh.web.common.typing import OriginExistenceCheckInfo, SaveOriginRequestInfo
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 from swh.web.config import get_config, scheduler
 
@@ -285,16 +279,11 @@ def _get_visit_info_for_save_request(
     # as those requests to storage are expensive and associated loading task
     # surely ended up with errors
     if time_delta.days <= MAX_THRESHOLD_DAYS:
-        try:
-            origin_info = archive.lookup_origin(OriginInfo(url=save_request.origin_url))
-            origin_visits = get_origin_visits(origin_info)
-            visit_dates = [parse_iso8601_date_to_utc(v["date"]) for v in origin_visits]
-            i = bisect_right(visit_dates, save_request.request_date)
-            if i != len(visit_dates):
-                visit_date = visit_dates[i]
-                visit_status = origin_visits[i]["status"]
-        except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+        origin = save_request.origin_url
+        ovs = archive.origin_visit_find_by_date(origin, save_request.request_date)
+        if ovs:
+            visit_date = parse_iso8601_date_to_utc(ovs["date"])
+            visit_status = ovs["status"]
     return visit_date, visit_status
 
 
@@ -408,7 +397,7 @@ def create_save_origin_request(
 ) -> SaveOriginRequestInfo:
     """Create a loading task to save a software origin into the archive.
 
-    This function aims to create a software origin loading task trough the use of the
+    This function aims to create a software origin loading task through the use of the
     swh-scheduler component.
 
     First, some checks are performed to see if the visit type and origin url are valid

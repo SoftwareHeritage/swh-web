@@ -215,9 +215,6 @@ def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     _fill_scheduler_db(swh_scheduler)
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_save.get_origin_visits"
-    )
     # create a visit for the save request
     visit_date = datetime.now(tz=timezone.utc).isoformat()
     visit_info = OriginVisitInfo(
@@ -231,18 +228,18 @@ def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
         url="",
         visit=34,
     )
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     # check visit date has been correctly found
     sors = get_save_origin_requests(_visit_type, _origin_url)
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] == visit_date
-    mock_get_origin_visits.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called_once()
 
     # check visit is not searched again when it has been found
     get_save_origin_requests(_visit_type, _origin_url)
-    mock_get_origin_visits.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called_once()
 
     # check visit date are not searched for save requests older than
     # one month
@@ -263,7 +260,7 @@ def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     assert len(sors) == 2
     assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
     assert sors[0]["visit_date"] is None
-    mock_get_origin_visits.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called_once()
 
 
 def _get_save_origin_requests(
@@ -292,9 +289,6 @@ def _get_save_origin_requests(
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_save.get_origin_visits"
-    )
     # create a visit for the save request with status created
     visit_date = datetime.now(tz=timezone.utc).isoformat()
     visit_info = OriginVisitInfo(
@@ -308,10 +302,10 @@ def _get_save_origin_requests(
         url="",
         visit=34,
     )
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
-    mock_get_origin_visits.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called_once()
 
     return sors
 
@@ -587,9 +581,6 @@ def test_refresh_in_progress_save_request_statuses(
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_save.get_origin_visits"
-    )
     # create a visit for the save request with status created
     visit_date = datetime.now(tz=timezone.utc).isoformat()
     visit_info = OriginVisitInfo(
@@ -603,7 +594,7 @@ def test_refresh_in_progress_save_request_statuses(
         url="",
         visit=34,
     )
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     # make the scheduler return a running event
     _fill_scheduler_db(
@@ -616,7 +607,11 @@ def test_refresh_in_progress_save_request_statuses(
     # The visit is detected but still running
     sors = refresh_save_origin_request_statuses()
 
-    assert mock_get_origin_visits.called and mock_get_origin_visits.call_count == 1
+    assert (
+        mock_archive.origin_visit_find_by_date.called
+        and mock_archive.origin_visit_find_by_date.call_count == 1
+    )
+
     assert len(sors) == 1
 
     for sor in sors:
@@ -640,13 +635,16 @@ def test_refresh_in_progress_save_request_statuses(
     # (visit date and visit status in final state)
     visit_date = datetime.now(tz=timezone.utc).isoformat()
     visit_info.update({"date": visit_date, "status": VISIT_STATUS_FULL})
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     # Detected entry, this time it should be updated
     sors = refresh_save_origin_request_statuses()
     assert len(sors) == 1
 
-    assert mock_get_origin_visits.called and mock_get_origin_visits.call_count == 1 + 1
+    assert (
+        mock_archive.origin_visit_find_by_date.called
+        and mock_archive.origin_visit_find_by_date.call_count == 1 + 1
+    )
 
     for sor in sors:
         assert iso8601.parse_date(sor["save_request_date"]) >= date_pivot
@@ -687,9 +685,6 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
     )
     mock_archive = mocker.patch("swh.web.common.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_save.get_origin_visits"
-    )
     # create a visit for the save request with status created
     visit_date = datetime.now(tz=timezone.utc).isoformat()
     visit_info = OriginVisitInfo(
@@ -703,7 +698,7 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
         url="",
         visit=34,
     )
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     # no changes so refresh does detect the entry but does nothing
     sors = refresh_save_origin_request_statuses()
@@ -746,7 +741,7 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
         url="",
         visit=34,
     )
-    mock_get_origin_visits.return_value = [visit_info]
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     # Detected entry, this time it should be updated
     sors = refresh_save_origin_request_statuses()

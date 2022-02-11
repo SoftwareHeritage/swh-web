@@ -18,5 +18,7 @@ export var Severity;
     /** JSDoc */
     Severity["Critical"] = "critical";
 })(Severity || (Severity = {}));
+// TODO: in v7, these can disappear, because they now also exist in `@sentry/utils`. (Having them there rather than here
+// is nice because then it enforces the idea that only types are exported from `@sentry/types`.)
 export var SeverityLevels = ['fatal', 'error', 'warning', 'log', 'info', 'debug', 'critical'];
 //# sourceMappingURL=severity.js.map
