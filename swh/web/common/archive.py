@@ -2,8 +2,8 @@
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
-
 from collections import defaultdict
+import datetime
 import itertools
 import os
 import re
@@ -1063,6 +1063,33 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
         raise NotFoundExc(
             f"Origin {origin_url} or its visit with id {visit_id} not found!"
         )
+    return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
+
+
+def origin_visit_find_by_date(
+    origin_url: str, visit_date: datetime.datetime
+) -> Optional[OriginVisitInfo]:
+    """Retrieve origin visit status whose date is most recent than the provided visit_date.
+
+    Args:
+        origin_url: origin concerned by the visit
+        visit_date: provided visit date
+
+    Returns:
+       The dict origin_visit_status matching the criteria if any.
+
+    """
+    visit = storage.origin_visit_find_by_date(origin_url, visit_date)
+    if visit and visit.date < visit_date:
+        # when visit is anterior to the provided date, trying to find another one most
+        # recent
+        visits = storage.origin_visit_get(
+            origin_url, page_token=str(visit.visit), limit=1,
+        ).results
+        visit = visits[0] if visits else None
+    if not visit:
+        return None
+    visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)
     return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
