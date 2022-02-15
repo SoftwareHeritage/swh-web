@@ -120,7 +120,9 @@ _visit_type_task = {
     "hg": "load-hg",
     "svn": "load-svn",
     "cvs": "load-cvs",
+    "bzr": "load-bzr",
 }
+
 
 _visit_type_task_privileged = {
     "archives": "load-archive-files",
@@ -203,7 +205,7 @@ def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) ->
 
 
 _validate_url = URLValidator(
-    schemes=["http", "https", "svn", "git", "rsync", "pserver", "ssh"]
+    schemes=["http", "https", "svn", "git", "rsync", "pserver", "ssh", "bzr"]
 )
 
 

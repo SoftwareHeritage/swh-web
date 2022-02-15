@@ -340,6 +340,8 @@ export function initOriginSave() {
         const val = $(this).val();
         if (val && originUrl.includes(val)) {
           $(this).prop('selected', true);
+          // origin URL input need to be validated once new visit type set
+          validateSaveOriginUrl($('#swh-input-origin-url')[0]);
         }
       });
     });
@@ -364,7 +366,7 @@ export function validateSaveOriginUrl(input) {
   }
 
   if (validUrl) {
-    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:', 'rsync:', 'pserver:', 'ssh:'];
+    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:', 'rsync:', 'pserver:', 'ssh:', 'bzr:'];
     validUrl = (
       allowedProtocols.find(protocol => protocol === originUrl.protocol) !== undefined
     );

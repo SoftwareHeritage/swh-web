@@ -1142,6 +1142,21 @@ def swh_scheduler(swh_scheduler):
             "retry_delay": timedelta(hours=2),
         }
     )
+    # create load-bzr task type
+    swh_scheduler.create_task_type(
+        {
+            "type": "load-bzr",
+            "description": "Update a Bazaar repository",
+            "backend_name": "swh.loader.bzr.tasks.LoadBazaar",
+            "default_interval": timedelta(days=64),
+            "min_interval": timedelta(hours=12),
+            "max_interval": timedelta(days=64),
+            "backoff_factor": 2,
+            "max_queue_length": None,
+            "num_retries": 7,
+            "retry_delay": timedelta(hours=2),
+        }
+    )
 
     # add method to add load-archive-files task type during tests
     def add_load_archive_task_type():
