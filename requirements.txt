@@ -3,6 +3,7 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 beautifulsoup4
+chardet
 cryptography
 django < 3
 django-cors-headers

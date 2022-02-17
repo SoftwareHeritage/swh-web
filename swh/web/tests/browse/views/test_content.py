@@ -16,9 +16,9 @@ from swh.model.model import Release, Snapshot, SnapshotBranch, TargetType
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
-    _re_encode_content,
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
+    re_encode_content,
 )
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.identifiers import gen_swhid
@@ -632,7 +632,7 @@ def _process_content_for_display(archive_data, content):
 
     mime_type, encoding = get_mimetype_and_encoding_for_content(content_data["data"])
 
-    mime_type, encoding, content_data = _re_encode_content(
+    mime_type, encoding, content_data = re_encode_content(
         mime_type, encoding, content_data["data"]
     )
 
