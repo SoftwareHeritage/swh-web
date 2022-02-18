@@ -14,6 +14,10 @@ docutils
 htmlmin
 iso8601
 lxml
+# Fix 'ImportError: cannot import name 'soft_unicode' from 'markupsafe''
+# when running pytest
+# TODO: remove that dependency once pybadges depends on Jinja2 >=3
+markupsafe < 2.1.0
 prometheus-client
 pybadges >= 2.2.1
 pygments
