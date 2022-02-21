@@ -57,14 +57,10 @@ def urlize_header_links(text):
         The text as is otherwise.
 
     """
-    links = text.split(",")
-    ret = ""
-    for i, link in enumerate(links):
-        ret += re.sub(r"<(http.*)>", r'<<a href="\1">\1</a>>', link)
-        # add one link per line and align them
-        if i != len(links) - 1:
-            ret += "\n     "
-    return ret
+    ret = re.sub(
+        r'<(http[^<>]+)>; rel="([^,]+)"', r'<<a href="\1">\1</a>>; rel="\2"\n', text
+    ).replace("\n,", "\n")
+    return ret[:-1]
 
 
 @register.filter

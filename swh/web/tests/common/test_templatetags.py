@@ -3,6 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import pytest
+
+from swh.web.api.apiresponse import compute_link_header
 from swh.web.common.swh_templatetags import (
     docstring_display,
     urlize_header_links,
@@ -24,19 +27,30 @@ def test_urlize_email():
     assert urlize_links_and_mails(email) == expected_content
 
 
-def test_urlize_header_links():
+@pytest.mark.parametrize(
+    "next_link, prev_link",
+    [
+        ("https://example.org/api/1/abc/", "https://example.org/api/1/def/"),
+        ("https://example.org/api/1/0,5/", "https://example.org/api/1/5,10/"),
+    ],
+)
+def test_urlize_header_links(next_link, prev_link):
 
-    next_link = "https://example.com/api/1/abc/"
-    prev_link = "https://example.com/api/1/def/"
+    link_header = f'<{next_link}>; rel="next",<{prev_link}>; rel="previous"'
 
-    content = f'<{next_link}>; rel="next"\n<{prev_link}>; rel="prev"'
+    assert (
+        link_header
+        == compute_link_header(
+            {"headers": {"link-next": next_link, "link-prev": prev_link}}, options={}
+        )["Link"]
+    )
 
     expected_content = (
         f'<<a href="{next_link}">{next_link}</a>>; rel="next"\n'
-        f'<<a href="{prev_link}">{prev_link}</a>>; rel="prev"'
+        f'<<a href="{prev_link}">{prev_link}</a>>; rel="previous"'
     )
 
-    assert urlize_header_links(content) == expected_content
+    assert urlize_header_links(link_header) == expected_content
 
 
 def test_docstring_display():
