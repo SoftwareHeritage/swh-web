@@ -11,6 +11,7 @@ from swh.web.browse.utils import (
     gen_revision_link,
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
+    re_encode_content,
 )
 from swh.web.common.utils import reverse
 
@@ -87,3 +88,14 @@ def test_prepare_content_display_language_for_filename(path, expected_language):
         content_data=b"", mime_type="", path=path
     )
     assert content_display["language"] == expected_language
+
+
+def test_re_encode_content_for_shift_jis_encoding():
+    data = b"/* \x8a\xd6\x98A\x82\xcc\x95\xb6\x8e\x9a\x83R\x81[\x83h\x95\xcf\x8a\xb7 */"
+    mime_type, encoding = get_mimetype_and_encoding_for_content(data)
+
+    _, encoding, re_encoded_data = re_encode_content(mime_type, encoding, data)
+
+    assert encoding == "SHIFT_JIS"
+    assert data.decode(encoding) == re_encoded_data.decode("utf-8")
+    assert re_encoded_data.decode("utf-8") == "/* 関連の文字コード変換 */"

@@ -1,8 +1,7 @@
 import { __assign } from "tslib";
 import { Severity } from '@sentry/types';
 import { addExceptionMechanism, addExceptionTypeValue, isDOMError, isDOMException, isError, isErrorEvent, isEvent, isPlainObject, resolvedSyncPromise, } from '@sentry/utils';
-import { eventFromPlainObject, eventFromStacktrace, prepareFramesForEvent } from './parsers';
-import { computeStackTrace } from './tracekit';
+import { eventFromError, eventFromPlainObject, parseStackFrames } from './parsers';
 /**
  * Creates an {@link Event} from all inputs to `captureException` and non-primitive inputs to `captureMessage`.
  * @hidden
@@ -44,10 +43,7 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     if (isErrorEvent(exception) && exception.error) {
         // If it is an ErrorEvent with `error` property, extract it to get actual Error
         var errorEvent = exception;
-        // eslint-disable-next-line no-param-reassign
-        exception = errorEvent.error;
-        event = eventFromStacktrace(computeStackTrace(exception));
-        return event;
+        return eventFromError(errorEvent.error);
     }
     // If it is a `DOMError` (which is a legacy API, but still supported in some browsers) then we just extract the name
     // and message, as it doesn't provide anything else. According to the spec, all `DOMExceptions` should also be
@@ -59,7 +55,7 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     if (isDOMError(exception) || isDOMException(exception)) {
         var domException = exception;
         if ('stack' in exception) {
-            event = eventFromStacktrace(computeStackTrace(exception));
+            event = eventFromError(exception);
         }
         else {
             var name_1 = domException.name || (isDOMError(domException) ? 'DOMError' : 'DOMException');
@@ -74,8 +70,7 @@ export function eventFromUnknownInput(exception, syntheticException, options) {
     }
     if (isError(exception)) {
         // we have a real Error object, do nothing
-        event = eventFromStacktrace(computeStackTrace(exception));
-        return event;
+        return eventFromError(exception);
     }
     if (isPlainObject(exception) || isEvent(exception)) {
         // If it's a plain object or an instance of `Event` (the built-in JS kind, not this SDK's `Event` type), serialize
@@ -113,10 +108,8 @@ export function eventFromString(input, syntheticException, options) {
         message: input,
     };
     if (options.attachStacktrace && syntheticException) {
-        var stacktrace = computeStackTrace(syntheticException);
-        var frames_1 = prepareFramesForEvent(stacktrace.stack);
         event.stacktrace = {
-            frames: frames_1,
+            frames: parseStackFrames(syntheticException),
         };
     }
     return event;

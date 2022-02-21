@@ -1,8 +1,7 @@
 import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { isInstanceOf } from '@sentry/utils';
-import { exceptionFromStacktrace } from '../parsers';
-import { computeStackTrace } from '../tracekit';
+import { exceptionFromError } from '../parsers';
 var DEFAULT_KEY = 'cause';
 var DEFAULT_LIMIT = 5;
 /** Adds SDK info to an event. */
@@ -54,8 +53,7 @@ export function _walkErrorTree(limit, error, key, stack) {
     if (!isInstanceOf(error[key], Error) || stack.length + 1 >= limit) {
         return stack;
     }
-    var stacktrace = computeStackTrace(error[key]);
-    var exception = exceptionFromStacktrace(stacktrace);
+    var exception = exceptionFromError(error[key]);
     return _walkErrorTree(limit, error[key], key, __spread([exception], stack));
 }
 //# sourceMappingURL=linkederrors.js.map

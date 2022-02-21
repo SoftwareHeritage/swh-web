@@ -6,7 +6,9 @@
 import base64
 import stat
 import textwrap
+from typing import Tuple
 
+import chardet
 import magic
 import sentry_sdk
 
@@ -91,12 +93,30 @@ def get_mimetype_and_encoding_for_content(content):
 content_display_max_size = get_config()["content_display_max_size"]
 
 
-def _re_encode_content(mimetype, encoding, content_data):
-    # encode textual content to utf-8 if needed
-    if mimetype.startswith("text/"):
-        # probably a malformed UTF-8 content, re-encode it
-        # by replacing invalid chars with a substitution one
-        if encoding == "unknown-8bit":
+def re_encode_content(
+    mimetype: str, encoding: str, content_data: bytes
+) -> Tuple[str, str, bytes]:
+    """Try to re-encode textual content if it is not encoded to UTF-8
+    for proper display in the browse Web UI.
+
+    Args:
+        mimetype: content mimetype as detected by python-magic
+        encoding: content encoding as detected by python-magic
+        content_data: raw content bytes
+
+    Returns:
+        A tuple with 3 members: content mimetype, content encoding (possibly updated
+        after processing), content raw bytes (possibly reencoded to UTF-8)
+    """
+    if mimetype.startswith("text/") and encoding not in ("us-ascii", "utf-8"):
+        # first check if chardet detects an encoding with confidence
+        result = chardet.detect(content_data)
+        if result["confidence"] >= 0.9:
+            encoding = result["encoding"]
+            content_data = content_data.decode(encoding).encode("utf-8")
+        elif encoding == "unknown-8bit":
+            # probably a malformed UTF-8 content, re-encode it
+            # by replacing invalid chars with a substitution one
             content_data = content_data.decode("utf-8", "replace").encode("utf-8")
         elif encoding not in ["utf-8", "binary"]:
             content_data = content_data.decode(encoding, "replace").encode("utf-8")
@@ -176,7 +196,7 @@ def request_content(
                 )
 
             if re_encode:
-                mimetype, encoding, raw_data = _re_encode_content(
+                mimetype, encoding, raw_data = re_encode_content(
                     mimetype, encoding, content_data["raw_data"]
                 )
                 content_data["raw_data"] = raw_data
