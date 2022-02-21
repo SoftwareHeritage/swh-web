@@ -207,10 +207,8 @@ def api_origin_search(request, url_pattern):
     )
 
     if page_token is not None:
-        query_params = {}
-        query_params["limit"] = limit
+        query_params = {k: v for (k, v) in request.GET.dict().items()}
         query_params["page_token"] = page_token
-        query_params["visit_type"] = visit_type
 
         result["headers"] = {
             "link-next": reverse(

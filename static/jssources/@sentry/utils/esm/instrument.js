@@ -97,7 +97,7 @@ function instrumentConsole() {
         if (!(level in global.console)) {
             return;
         }
-        fill(global.console, level, function (originalConsoleLevel) {
+        fill(global.console, level, function (originalConsoleMethod) {
             return function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
@@ -105,8 +105,8 @@ function instrumentConsole() {
                 }
                 triggerHandlers('console', { args: args, level: level });
                 // this fails for some browsers. :(
-                if (originalConsoleLevel) {
-                    Function.prototype.apply.call(originalConsoleLevel, global.console, args);
+                if (originalConsoleMethod) {
+                    originalConsoleMethod.apply(global.console, args);
                 }
             };
         });
