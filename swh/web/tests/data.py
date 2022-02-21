@@ -37,9 +37,9 @@ from swh.storage.interface import Sha1
 from swh.storage.utils import now
 from swh.web import config
 from swh.web.browse.utils import (
-    _re_encode_content,
     get_mimetype_and_encoding_for_content,
     prepare_content_for_display,
+    re_encode_content,
 )
 from swh.web.common import archive
 
@@ -407,7 +407,7 @@ def _init_tests_data():
         cnt_data = storage.content_get_data(content.sha1)
         assert cnt_data is not None
         mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
-        _, _, cnt_data = _re_encode_content(mimetype, encoding, cnt_data)
+        _, _, cnt_data = re_encode_content(mimetype, encoding, cnt_data)
 
         content_display_data = prepare_content_for_display(cnt_data, mimetype, path)
 
