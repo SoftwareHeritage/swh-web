@@ -9,28 +9,15 @@ import os
 from random import randint
 import uuid
 
-import pytest
-
 from django.conf import settings
 from django.utils.html import escape
 
 from swh.scheduler.model import LastVisitStatus, ListedOrigin, OriginVisitStats
 from swh.web.common.utils import reverse
-from swh.web.misc.coverage import (
-    _get_deposits_netloc_counts,
-    _get_listers_metrics,
-    deposited_origins,
-    legacy_origins,
-    listed_origins,
-)
+from swh.web.config import SWH_WEB_SERVER_NAME
+from swh.web.misc.coverage import deposited_origins, legacy_origins, listed_origins
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_html_get_response
-
-
-@pytest.fixture(autouse=True)
-def clear_lru_caches():
-    _get_listers_metrics.cache_clear()
-    _get_deposits_netloc_counts.cache_clear()
+from swh.web.tests.utils import check_html_get_response, check_http_get_response
 
 
 def test_coverage_view_no_metrics(client, swh_scheduler):
@@ -50,9 +37,12 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
     that will be consumed by the archive coverage view, then check
     the HTML page gets rendered without errors.
     """
-    mocker.patch(
-        "swh.web.misc.coverage._get_nixguix_origins_count"
-    ).return_value = 30095
+
+    # mock calls to get nixguix origin counts
+    mock_archive = mocker.patch("swh.web.misc.coverage.archive")
+    mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
+    mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
+
     listers = []
     visit_types = ["git", "hg", "svn", "bzr", "svn"]
     for origins in listed_origins["origins"]:
@@ -134,3 +124,8 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
 
     for visit_type in visit_types:
         assert_contains(resp, f"<td>{visit_type}</td>")
+
+    # check request as in production with cache enabled
+    check_http_get_response(
+        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    )
