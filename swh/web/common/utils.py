@@ -29,7 +29,7 @@ from django.urls import reverse as django_reverse
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
-from swh.web.config import get_config, search
+from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -242,6 +242,31 @@ def get_client_ip(request):
     return ip
 
 
+def is_swh_web_development(request: HttpRequest) -> bool:
+    """Indicate if we are running a development version of swh-web.
+    """
+    site_base_url = request.build_absolute_uri("/")
+    return any(
+        host in site_base_url for host in ("localhost", "127.0.0.1", "testserver")
+    )
+
+
+def is_swh_web_staging(request: HttpRequest) -> bool:
+    """Indicate if we are running a staging version of swh-web.
+    """
+    config = get_config()
+    site_base_url = request.build_absolute_uri("/")
+    return any(
+        server_name in site_base_url for server_name in config["staging_server_names"]
+    )
+
+
+def is_swh_web_production(request: HttpRequest) -> bool:
+    """Indicate if we are running the public production version of swh-web.
+    """
+    return SWH_WEB_SERVER_NAME in request.build_absolute_uri("/")
+
+
 browsers_supported_image_mimes = set(
     [
         "image/gif",
@@ -269,7 +294,7 @@ def context_processor(request):
         # To avoid django.template.base.VariableDoesNotExist errors
         # when rendering templates when standard Django user is logged in.
         request.user.backend = "django.contrib.auth.backends.ModelBackend"
-    site_base_url = request.build_absolute_uri("/")
+
     return {
         "swh_object_icons": swh_object_icons,
         "available_languages": None,
@@ -277,16 +302,11 @@ def context_processor(request):
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
-        "site_base_url": site_base_url,
+        "site_base_url": request.build_absolute_uri("/"),
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
         "status": config["status"],
-        "swh_web_dev": "localhost" in site_base_url,
-        "swh_web_staging": any(
-            [
-                server_name in site_base_url
-                for server_name in config["staging_server_names"]
-            ]
-        ),
+        "swh_web_dev": is_swh_web_development(request),
+        "swh_web_staging": is_swh_web_staging(request),
         "swh_web_version": get_distribution("swh.web").version,
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
