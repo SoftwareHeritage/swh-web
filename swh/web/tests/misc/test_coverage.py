@@ -1,4 +1,4 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,7 @@
 from datetime import datetime, timezone
 from itertools import chain
 import os
-from random import choice, randint
+from random import randint
 import uuid
 
 import pytest
@@ -33,7 +33,7 @@ def clear_lru_caches():
     _get_deposits_netloc_counts.cache_clear()
 
 
-def test_coverage_view_no_metrics(client):
+def test_coverage_view_no_metrics(client, swh_scheduler):
     """
     Check coverage view can be rendered when scheduler metrics and deposits
     data are not available.
@@ -54,6 +54,7 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
         "swh.web.misc.coverage._get_nixguix_origins_count"
     ).return_value = 30095
     listers = []
+    visit_types = ["git", "hg", "svn", "bzr", "svn"]
     for origins in listed_origins["origins"]:
         # create some instances for each lister
         for instance in range(randint(1, 5)):
@@ -64,9 +65,8 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
             # record some sample listed origins
             _origins = []
             origin_visit_stats = []
-            for i in range(randint(3, 10)):
+            for i, visit_type in enumerate(visit_types):
                 url = str(uuid.uuid4())
-                visit_type = choice(["git", "hg", "svn"])
                 _origins.append(
                     ListedOrigin(
                         lister_id=lister.id,
@@ -124,10 +124,13 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
         assert_contains(resp, f'src="{logo_url}"')
 
         if "instances" in origins:
-            for visit_types in origins["instances"].values():
-                for data in visit_types.values():
+            for visit_types_ in origins["instances"].values():
+                for data in visit_types_.values():
                     if data["count"]:
                         assert_contains(resp, f'<a href="{escape(data["search_url"])}"')
         else:
             for search_url in origins["search_urls"].values():
                 assert_contains(resp, f'<a href="{escape(search_url)}"')
+
+    for visit_type in visit_types:
+        assert_contains(resp, f"<td>{visit_type}</td>")

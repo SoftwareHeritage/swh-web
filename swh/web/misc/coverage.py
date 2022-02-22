@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -17,6 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.common import archive
+from swh.web.common.origin_save import get_savable_visit_types
 from swh.web.common.utils import get_deposits_list, reverse
 from swh.web.config import scheduler
 
@@ -330,8 +331,11 @@ def _swh_coverage(request):
         origins["count"] = f"{count:,}"
         origins["instances"] = defaultdict(dict)
         for instance, metrics in listers_metrics[origins_type]:
-            # not yet in production
-            if metrics.visit_type in ("bzr", "cvs"):
+            # these types are available in staging/docker but not yet in production
+            if (
+                metrics.visit_type in ("bzr", "cvs")
+                and metrics.visit_type not in get_savable_visit_types()
+            ):
                 continue
             instance_count = metrics.origins_known - metrics.origins_never_visited
             origins["instances"][instance].update(
