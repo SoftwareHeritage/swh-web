@@ -14,10 +14,6 @@ docutils
 htmlmin
 iso8601
 lxml
-# Fix 'ImportError: cannot import name 'soft_unicode' from 'markupsafe''
-# when running pytest
-# TODO: remove that dependency once pybadges depends on Jinja2 >=3
-markupsafe < 2.1.0
 prometheus-client
 pybadges >= 2.2.1
 pygments
@@ -28,3 +24,13 @@ requests
 sentry-sdk
 typing-extensions
 psycopg2 < 2.9
+
+# TODO: remove dependencies below once pybadges depends on Jinja2 >=3
+
+# Fix "ImportError: cannot import name 'soft_unicode' from 'markupsafe'"
+# when running pytest
+markupsafe < 2.1.0
+# Fix "ImportError: cannot import name 'json' from 'itsdangerous'"
+# when running pytest after calling "./bin/install" from swh-environement
+# in empty venv
+flask >= 1.1.4
