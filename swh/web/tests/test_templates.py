@@ -11,7 +11,7 @@ import pytest
 
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.common.utils import reverse
-from swh.web.config import STAGING_SERVER_NAMES, get_config
+from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.utils import check_http_get_response, create_django_permission
 
@@ -20,14 +20,19 @@ swh_web_version = get_distribution("swh.web").version
 
 def test_layout_without_ribbon(client):
     url = reverse("swh-web-homepage")
-    resp = check_http_get_response(client, url, status_code=200)
+    resp = check_http_get_response(
+        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    )
     assert_not_contains(resp, "swh-corner-ribbon")
 
 
 def test_layout_with_staging_ribbon(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(
-        client, url, status_code=200, server_name=random.choice(STAGING_SERVER_NAMES),
+        client,
+        url,
+        status_code=200,
+        server_name=random.choice(SWH_WEB_STAGING_SERVER_NAMES),
     )
     assert_contains(resp, "swh-corner-ribbon")
     assert_contains(resp, f"Staging<br/>v{swh_web_version}")

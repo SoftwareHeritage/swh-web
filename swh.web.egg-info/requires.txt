@@ -10,7 +10,6 @@ docutils
 htmlmin
 iso8601
 lxml
-markupsafe<2.1.0
 prometheus-client
 pybadges>=2.2.1
 pygments
@@ -21,6 +20,8 @@ requests
 sentry-sdk
 typing-extensions
 psycopg2<2.9
+markupsafe<2.1.0
+flask>=1.1.4
 swh.auth[django]>=0.5.3
 swh.core>=0.0.95
 swh.counters>=0.5.1

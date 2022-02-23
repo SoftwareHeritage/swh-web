@@ -15,7 +15,7 @@ from django.urls.exceptions import NoReverseMatch
 
 from swh.web.common import utils
 from swh.web.common.exc import BadInputExc
-from swh.web.config import get_config
+from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
 
 
 def test_shorten_path_noop():
@@ -297,3 +297,20 @@ def test_origin_visit_types(mocker, backend):
     else:
         # see swh/web/tests/data.py for origins added for tests
         assert utils.origin_visit_types() == ["git", "tar"]
+
+
+@pytest.mark.parametrize("server_name", ["localhost", "127.0.0.1", "testserver"])
+def test_is_swh_web_development(request_factory, server_name):
+    request = request_factory.get("/", SERVER_NAME=server_name)
+    assert utils.is_swh_web_development(request)
+
+
+@pytest.mark.parametrize("server_name", SWH_WEB_STAGING_SERVER_NAMES)
+def test_is_swh_web_staging(request_factory, server_name):
+    request = request_factory.get("/", SERVER_NAME=server_name)
+    assert utils.is_swh_web_staging(request)
+
+
+def test_is_swh_web_production(request_factory):
+    request = request_factory.get("/", SERVER_NAME=SWH_WEB_SERVER_NAME)
+    assert utils.is_swh_web_production(request)

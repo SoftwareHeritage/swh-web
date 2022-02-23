@@ -1,23 +1,26 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from collections import Counter, defaultdict
-from functools import lru_cache
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
 
 import sentry_sdk
 
 from django.conf.urls import url
+from django.core.cache import cache
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.common import archive
-from swh.web.common.utils import get_deposits_list, reverse
+from swh.web.common.origin_save import get_savable_visit_types
+from swh.web.common.utils import get_deposits_list, is_swh_web_production, reverse
 from swh.web.config import scheduler
 
 _swh_arch_overview_doc = (
@@ -32,7 +35,7 @@ _swh_arch_overview_doc = (
 #
 # TODO: Store that list in a database table somewhere (swh-scheduler, swh-storage ?)
 #       and retrieve it dynamically
-listed_origins = {
+listed_origins: Dict[str, Any] = {
     "info": (
         "These software origins get continuously discovered and archived using "
         f'the <a href="{_swh_arch_overview_doc}#listers" target="_blank" '
@@ -153,7 +156,7 @@ listed_origins = {
     ],
 }
 
-legacy_origins = {
+legacy_origins: Dict[str, Any] = {
     "info": (
         "Discontinued hosting services. Those origins have been archived "
         "by Software Heritage."
@@ -191,7 +194,7 @@ legacy_origins = {
     ],
 }
 
-deposited_origins = {
+deposited_origins: Dict[str, Any] = {
     "info": (
         "These origins are directly pushed into the archive by trusted partners "
         f'using the <a href="{_swh_arch_overview_doc}#deposit" target="_blank" '
@@ -225,29 +228,37 @@ deposited_origins = {
     ],
 }
 
+_cache_timeout = 5 * 60
 
-@lru_cache()
-def _get_listers_metrics() -> Dict[str, List[Tuple[str, SchedulerMetrics]]]:
+
+def _get_listers_metrics(
+    cache_metrics: bool = False,
+) -> Dict[str, List[Tuple[str, SchedulerMetrics]]]:
     """Returns scheduler metrics in the following mapping:
     Dict[lister_name, List[Tuple[instance_name, SchedulerMetrics]]]
     as a lister instance has one SchedulerMetrics object per visit type.
     """
-    listers_metrics = defaultdict(list)
-    try:
-        listers = scheduler().get_listers()
-        scheduler_metrics = scheduler().get_metrics()
-        for lister in listers:
-            for metrics in filter(
-                lambda m: m.lister_id == lister.id, scheduler_metrics
-            ):
-                listers_metrics[lister.name].append((lister.instance_name, metrics))
-    except Exception as e:
-        sentry_sdk.capture_exception(e)
+    cache_key = "lister_metrics"
+    listers_metrics = cache.get(cache_key, {})
+    if not listers_metrics:
+        listers_metrics = defaultdict(list)
+        try:
+            listers = scheduler().get_listers()
+            scheduler_metrics = scheduler().get_metrics()
+            for lister in listers:
+                for metrics in filter(
+                    lambda m: m.lister_id == lister.id, scheduler_metrics
+                ):
+                    listers_metrics[lister.name].append((lister.instance_name, metrics))
+            if cache_metrics:
+                cache.set(cache_key, listers_metrics, timeout=_cache_timeout)
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+
     return listers_metrics
 
 
-@lru_cache()
-def _get_deposits_netloc_counts() -> Counter:
+def _get_deposits_netloc_counts(cache_counts: bool = False) -> Counter:
     """Return deposit counts per origin url network location.
     """
 
@@ -260,30 +271,42 @@ def _get_deposits_netloc_counts() -> Counter:
             netloc += "/" + parsed_url.path.split("/")[1]
         return netloc
 
-    netlocs = []
-    try:
-        deposits = get_deposits_list()
-        netlocs = [
-            _process_origin_url(d["origin_url"])
-            for d in deposits
-            if d["status"] == "done"
-        ]
-    except Exception as e:
-        sentry_sdk.capture_exception(e)
-    return Counter(netlocs)
+    cache_key = "deposits_netloc_counts"
+    deposits_netloc_counts = cache.get(cache_key, Counter())
+    if not deposits_netloc_counts:
+        netlocs = []
+        try:
+            deposits = get_deposits_list()
+            netlocs = [
+                _process_origin_url(d["origin_url"])
+                for d in deposits
+                if d["status"] == "done"
+            ]
+            deposits_netloc_counts = Counter(netlocs)
+            if cache_counts:
+                cache.set(cache_key, deposits_netloc_counts, timeout=_cache_timeout)
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+
+    return deposits_netloc_counts
 
 
-@lru_cache()
-def _get_nixguix_origins_count(origin_url: str) -> int:
+def _get_nixguix_origins_count(origin_url: str, cache_count: bool = False) -> int:
     """Returns number of archived tarballs for NixOS, aka the number
     of branches in a dedicated origin in the archive.
     """
-    snapshot = archive.lookup_latest_origin_snapshot(origin_url)
-    if snapshot:
-        snapshot_sizes = archive.lookup_snapshot_sizes(snapshot["id"])
-        return snapshot_sizes["release"]
-    else:
-        return 0
+    cache_key = f"nixguix_origins_count_{origin_url}"
+    nixguix_origins_count = cache.get(cache_key, 0)
+    if not nixguix_origins_count:
+        snapshot = archive.lookup_latest_origin_snapshot(origin_url)
+        if snapshot:
+            snapshot_sizes = archive.lookup_snapshot_sizes(snapshot["id"])
+            nixguix_origins_count = snapshot_sizes["release"]
+        else:
+            nixguix_origins_count = 0
+        if cache_count:
+            cache.set(cache_key, nixguix_origins_count, timeout=_cache_timeout)
+    return nixguix_origins_count
 
 
 def _search_url(query: str, visit_type: str) -> str:
@@ -300,8 +323,9 @@ def _search_url(query: str, visit_type: str) -> str:
 
 @xframe_options_exempt
 @never_cache
-def _swh_coverage(request):
-    listers_metrics = _get_listers_metrics()
+def _swh_coverage(request: HttpRequest) -> HttpResponse:
+    use_cache = is_swh_web_production(request)
+    listers_metrics = _get_listers_metrics(use_cache)
     for origins in listed_origins["origins"]:
         origins["instances"] = {}
         origins_type = origins["type"]
@@ -309,7 +333,8 @@ def _swh_coverage(request):
         # special processing for nixos/guix origins as there is no
         # scheduler metrics for those
         if origins_type in ("nixos", "guix"):
-            count = _get_nixguix_origins_count(origins["search_pattern"])
+            count = _get_nixguix_origins_count(origins["search_pattern"], use_cache)
+
             origins["count"] = f"{count:,}" if count else ""
             origins["instances"][origins_type] = {"nixguix": {"count": count}}
 
@@ -330,8 +355,11 @@ def _swh_coverage(request):
         origins["count"] = f"{count:,}"
         origins["instances"] = defaultdict(dict)
         for instance, metrics in listers_metrics[origins_type]:
-            # not yet in production
-            if metrics.visit_type in ("bzr", "cvs"):
+            # these types are available in staging/docker but not yet in production
+            if (
+                metrics.visit_type in ("bzr", "cvs")
+                and metrics.visit_type not in get_savable_visit_types()
+            ):
                 continue
             instance_count = metrics.origins_known - metrics.origins_never_visited
             origins["instances"][instance].update(
@@ -367,7 +395,8 @@ def _swh_coverage(request):
                 origins["search_pattern"], visit_type
             )
 
-    deposits_counts = _get_deposits_netloc_counts()
+    deposits_counts = _get_deposits_netloc_counts(use_cache)
+
     for origins in deposited_origins["origins"]:
         if origins["search_pattern"] in deposits_counts:
             origins["count"] = f"{deposits_counts[origins['search_pattern']]:,}"
