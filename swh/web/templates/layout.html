@@ -210,11 +210,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </a>
             </li>
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
-              {% if user.is_authenticated  and user.is_staff or "swh.ambassador" in user.get_all_permissions %}
-                <a href="#" class="nav-link swh-help-link" onclick="swh.guided_tour.guidedTourButtonClick(event)">
-              {% else %}
-                <a href="{% url 'browse-help' %}" class="nav-link swh-help-link">
-              {% endif %}
+              <a href="#" class="nav-link swh-help-link" onclick="swh.guided_tour.guidedTourButtonClick(event)">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
                 <p>Help</p>
               </a>
