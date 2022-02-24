@@ -24,7 +24,6 @@ describe('Guided Tour Tests', function() {
   };
 
   it('should start UI guided tour when clicking on help button', function() {
-    cy.ambassadorLogin();
     cy.visit('/');
     cy.get('.swh-help-link')
       .click();
@@ -34,7 +33,6 @@ describe('Guided Tour Tests', function() {
   });
 
   it('should change guided tour page after current page steps', function() {
-    cy.ambassadorLogin();
     cy.visit('/');
 
     cy.get('.swh-help-link')
@@ -52,7 +50,6 @@ describe('Guided Tour Tests', function() {
 
   it('should automatically open SWHIDs tab on second page of the guided tour', function() {
     const guidedTourPageIndex = 1;
-    cy.ambassadorLogin();
     cy.visit('/').window().then(win => {
       const guidedTour = win.swh.guided_tour.getGuidedTour();
       // jump to third guided tour page
@@ -71,7 +68,6 @@ describe('Guided Tour Tests', function() {
 
   it('should stay at step while line numbers not clicked on content view tour', function() {
     const guidedTourPageIndex = 2;
-    cy.ambassadorLogin();
     // jump to third guided tour page
     cy.visit('/').window().then(win => {
       const guidedTour = win.swh.guided_tour.getGuidedTour();
