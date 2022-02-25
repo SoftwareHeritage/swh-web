@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,6 +8,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 import urllib.parse
+from xml.etree import ElementTree
 
 from bs4 import BeautifulSoup
 from docutils.core import publish_parts
@@ -447,3 +448,69 @@ def redirect_to_new_route(request, new_route, permanent=True):
     request_path = resolve(request.path_info)
     args = {**request_path.kwargs, **request.GET.dict()}
     return redirect(reverse(new_route, query_params=args), permanent=permanent,)
+
+
+NAMESPACES = {
+    "swh": "https://www.softwareheritage.org/schema/2018/deposit",
+    "schema": "http://schema.org/",
+}
+
+
+def parse_swh_metadata_provenance(raw_metadata: str) -> Optional[str]:
+    """Parse swh metadata-provenance out of the raw metadata deposit. If found, returns the
+    value, None otherwise.
+
+    .. code-block:: xml
+
+         <swh:deposit>
+           <swh:metadata-provenance>
+             <schema:url>https://example.org/metadata/url</schema:url>
+           </swh:metadata-provenance>
+         </swh:deposit>
+
+    Args:
+        raw_metadata: raw metadata out of deposits received
+
+    Returns:
+        Either the metadata provenance url if any or None otherwise
+
+    """
+    metadata = ElementTree.fromstring(raw_metadata)
+    url = metadata.findtext(
+        "swh:deposit/swh:metadata-provenance/schema:url", namespaces=NAMESPACES,
+    )
+    return url or None
+
+
+def parse_swh_deposit_origin(raw_metadata: str) -> Optional[str]:
+    """Parses <swh:add_to_origin> and <swh:create_origin> from metadata document,
+    if any. They are mutually exclusive and tested as such in the deposit.
+
+    .. code-block:: xml
+
+       <swh:deposit>
+         <swh:create_origin>
+           <swh:origin url='https://example.org/repo/software123/'/>
+         </swh:reference>
+       </swh:deposit>
+
+    .. code-block:: xml
+
+       <swh:deposit>
+         <swh:add_to_origin>
+           <swh:origin url='https://example.org/repo/software123/'/>
+         </swh:add_to_origin>
+       </swh:deposit>
+
+    Returns:
+        The one not null if any, None otherwise
+
+    """
+    metadata = ElementTree.fromstring(raw_metadata)
+    for origin_tag in ["create_origin", "add_to_origin"]:
+        elt = metadata.find(
+            f"swh:deposit/swh:{origin_tag}/swh:origin[@url]", namespaces=NAMESPACES
+        )
+        if elt is not None:
+            return elt.attrib["url"]
+    return None
