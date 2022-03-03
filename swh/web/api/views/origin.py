@@ -6,6 +6,7 @@
 from distutils.util import strtobool
 from functools import partial
 
+from swh.search.exc import SearchQuerySyntaxError
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import (
@@ -194,17 +195,20 @@ def api_origin_search(request, url_pattern):
     with_visit = request.query_params.get("with_visit", "false")
     visit_type = request.query_params.get("visit_type")
 
-    (results, page_token) = api_lookup(
-        archive.search_origin,
-        url_pattern,
-        bool(strtobool(use_ql)),
-        limit,
-        bool(strtobool(with_visit)),
-        [visit_type] if visit_type else None,
-        page_token,
-        enrich_fn=enrich_origin_search_result,
-        request=request,
-    )
+    try:
+        (results, page_token) = api_lookup(
+            archive.search_origin,
+            url_pattern,
+            bool(strtobool(use_ql)),
+            limit,
+            bool(strtobool(with_visit)),
+            [visit_type] if visit_type else None,
+            page_token,
+            enrich_fn=enrich_origin_search_result,
+            request=request,
+        )
+    except SearchQuerySyntaxError as e:
+        raise BadInputExc(f"Syntax error in search query: {e.args[0]}")
 
     if page_token is not None:
         query_params = {k: v for (k, v) in request.GET.dict().items()}

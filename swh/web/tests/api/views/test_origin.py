@@ -12,6 +12,7 @@ import pytest
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
+from swh.search.exc import SearchQuerySyntaxError
 from swh.search.interface import PagedResult
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
@@ -557,7 +558,7 @@ def test_api_origin_search_use_ql(api_client, mocker):
         results=ORIGINS, next_page_token=None,
     )
 
-    query = "origin = 'github.com'"
+    query = "origin : 'github.com'"
 
     url = reverse(
         "api-1-origin-search",
@@ -566,6 +567,30 @@ def test_api_origin_search_use_ql(api_client, mocker):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
+
+    mock_archive_search.origin_search.assert_called_with(
+        query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
+    )
+
+
+def test_api_origin_search_ql_syntax_error(api_client, mocker):
+    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search.origin_search.side_effect = SearchQuerySyntaxError(
+        "Invalid syntax"
+    )
+
+    query = "this is not a valid query"
+
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": query},
+        query_params={"visit_type": "git", "use_ql": "true"},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=400)
+    assert rv.data == {
+        "exception": "BadInputExc",
+        "reason": "Syntax error in search query: Invalid syntax",
+    }
 
     mock_archive_search.origin_search.assert_called_with(
         query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
