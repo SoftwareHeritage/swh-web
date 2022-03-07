@@ -298,9 +298,9 @@ static/img/logos/pypi.png
 static/img/logos/sourceforge.png
 static/img/thirdParty/chosen-sprite.png
 static/img/thirdParty/chosen-sprite@2x.png
-static/js/admin.dd251562dae83eb019a5.js
-static/js/admin.dd251562dae83eb019a5.js.LICENSE.txt
-static/js/admin.dd251562dae83eb019a5.js.map
+static/js/admin.0e287033dc3e6bb21424.js
+static/js/admin.0e287033dc3e6bb21424.js.LICENSE.txt
+static/js/admin.0e287033dc3e6bb21424.js.map
 static/js/auth.7381ff7d9581af98cd05.js
 static/js/auth.7381ff7d9581af98cd05.js.LICENSE.txt
 static/js/auth.7381ff7d9581af98cd05.js.map
@@ -1951,6 +1951,10 @@ swh/web/tests/resources/contents/other/extensions/swh-logo.png
 swh/web/tests/resources/contents/other/extensions/swh-logo.webp
 swh/web/tests/resources/contents/other/extensions/swh-spinner.gif
 swh/web/tests/resources/contents/other/extensions/word2vec.ipynb
+swh/web/tests/resources/deposit/raw-metadata-add-to-origin.xml
+swh/web/tests/resources/deposit/raw-metadata-create-origin.xml
+swh/web/tests/resources/deposit/raw-metadata-no-swh.xml
+swh/web/tests/resources/deposit/raw-metadata-provenance.xml
 swh/web/tests/resources/http_esnode1.internal.softwareheritage.org/swh_workers-*__search
 swh/web/tests/resources/repos/highlightjs-line-numbers.js.zip
 swh/web/tests/resources/repos/highlightjs-line-numbers.js_visit2.zip

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom"
+       xmlns:codemeta="https://doi.org/10.5063/SCHEMA/CODEMETA-2.0"
+       xmlns:swh="https://www.softwareheritage.org/schema/2018/deposit">
+    <title>Awesome Compiler</title>
+    <id>urn:uuid:1225c695-cfb8-4ebb-daaaa-80da344efa6a</id>
+    <author>dudess</author>
+    <swh:deposit>
+      <swh:create_origin>
+        <swh:origin url="https://example.org/metadata/create-origin" />
+      </swh:create_origin>
+    </swh:deposit>
+</entry>
