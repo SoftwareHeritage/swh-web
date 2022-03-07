@@ -1,3 +1,13 @@
+swh-web (0.0.375-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.375     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2022-03-07 16:48:14
+    +0100)
+  * Upstream changes:     - v0.0.375     - deposit moderation view:
+    Improve deposit types visualization
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 07 Mar 2022 16:15:01 +0000
+
 swh-web (0.0.374-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.374     - (tagged by Antoine Lambert
