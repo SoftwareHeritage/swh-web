@@ -1,10 +1,10 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
-
 from base64 import b64encode
 import datetime
+from os.path import join
 from urllib.parse import quote
 
 import pytest
@@ -314,3 +314,44 @@ def test_is_swh_web_staging(request_factory, server_name):
 def test_is_swh_web_production(request_factory):
     request = request_factory.get("/", SERVER_NAME=SWH_WEB_SERVER_NAME)
     assert utils.is_swh_web_production(request)
+
+
+@pytest.mark.parametrize(
+    "raw_metadata_file,expected_url",
+    [
+        ("raw-metadata-provenance.xml", "https://example.org/metadata/provenance"),
+        ("raw-metadata-no-swh.xml", None),
+    ],
+)
+def test_parse_swh_provenance(datadir, raw_metadata_file, expected_url):
+    metadata_path = join(datadir, "deposit", raw_metadata_file)
+    with open(metadata_path, "r") as f:
+        raw_metadata = f.read()
+
+    actual_url = utils.parse_swh_metadata_provenance(raw_metadata)
+
+    assert actual_url == expected_url
+
+
+@pytest.mark.parametrize(
+    "raw_metadata_file,expected_url",
+    [
+        (
+            "raw-metadata-create-origin.xml",
+            "https://example.org/metadata/create-origin",
+        ),
+        (
+            "raw-metadata-add-to-origin.xml",
+            "https://example.org/metadata/add-to-origin",
+        ),
+        ("raw-metadata-no-swh.xml", None),
+    ],
+)
+def test_parse_swh_origins(datadir, raw_metadata_file, expected_url):
+    metadata_path = join(datadir, "deposit", raw_metadata_file)
+    with open(metadata_path, "r") as f:
+        raw_metadata = f.read()
+
+    actual_url = utils.parse_swh_deposit_origin(raw_metadata)
+
+    assert actual_url == expected_url

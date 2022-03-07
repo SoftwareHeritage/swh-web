@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2021  The Software Heritage developers
+ * Copyright (C) 2020-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -14,30 +14,36 @@ describe('Test admin deposit page', function() {
     responseDeposits = [
       {
         'id': 614,
+        'type': 'code',
         'external_id': 'ch-de-1',
         'reception_date': '2020-05-18T13:48:27Z',
         'status': 'done',
         'status_detail': null,
         'swhid': 'swh:1:dir:ef04a768',
-        'swhid_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/'
+        'swhid_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/',
+        'uri': 'https://w.s.o/c-d-1'
       },
       {
         'id': 613,
+        'type': 'code',
         'external_id': 'ch-de-2',
         'reception_date': '2020-05-18T11:20:16Z',
         'status': 'done',
         'status_detail': null,
         'swhid': 'swh:1:dir:181417fb',
-        'swhid_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/'
+        'swhid_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/',
+        'uri': 'https://w.s.o/c-d-2'
       },
       {
         'id': 612,
+        'type': 'code',
         'external_id': 'ch-de-3',
         'reception_date': '2020-05-18T11:20:16Z',
         'status': 'rejected',
         'status_detail': 'incomplete deposit!',
         'swhid': null,
-        'swhid_context': null
+        'swhid_context': null,
+        'uri': null
       }
     ];
     // those are computed from the
@@ -87,6 +93,8 @@ describe('Test admin deposit page', function() {
         assert.isNotNull(deposit);
         assert.isNotNull(responseDeposit);
         expect(deposit.id).to.be.equal(responseDeposit['id']);
+        expect(deposit.uri).to.be.equal(responseDeposit['uri']);
+        expect(deposit.type).to.be.equal(responseDeposit['type']);
         expect(deposit.external_id).to.be.equal(responseDeposit['external_id']);
         expect(deposit.status).to.be.equal(responseDeposit['status']);
         expect(deposit.status_detail).to.be.equal(responseDeposit['status_detail']);
