@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "swh.web.api",
     "swh.web.auth",
     "swh.web.browse",
+    "swh.web.add_forge_now",
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
