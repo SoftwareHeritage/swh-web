@@ -74,6 +74,7 @@ def check_http_post_response(
     url: str,
     status_code: int,
     content_type: str = "*/*",
+    request_content_type="application/json",
     data: Optional[Dict[str, Any]] = None,
     http_origin: Optional[str] = None,
 ) -> HttpResponse:
@@ -84,6 +85,7 @@ def check_http_post_response(
         url: URL to check response
         status_code: expected HTTP status code
         content_type: expected response content type
+        request_content_type: content type of request body
         data: optional POST data
 
     Returns:
@@ -93,7 +95,7 @@ def check_http_post_response(
         response=client.post(
             url,
             data=data,
-            content_type="application/json",
+            content_type=request_content_type,
             HTTP_ACCEPT=content_type,
             HTTP_ORIGIN=http_origin,
         ),
