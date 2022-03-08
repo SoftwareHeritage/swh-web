@@ -88,6 +88,7 @@ urlpatterns = [
     ),
 ]
 
+
 FORGE_TYPES = [
     ("cgit", "cgit"),
     ("gitlab", "gitlab"),
@@ -98,14 +99,22 @@ FORGE_TYPES = [
 
 class RequestForm(forms.Form):
     forge_type = forms.ChoiceField(choices=FORGE_TYPES)
-    forge_url = forms.CharField(label="Forge contact name", max_length=100)
-    forge_contact_email = forms.CharField(label="Forge contact email", max_length=100)
+    forge_type.widget.attrs.update({"class": "form-control"})
+    forge_url = forms.CharField(label="Forge contact name", max_length=200)
+    forge_url.widget.attrs.update({"class": "form-control"})
+    forge_contact_email = forms.EmailField(label="Forge contact email", max_length=100)
+    forge_contact_email.widget.attrs.update({"class": "form-control"})
     forge_contact_name = forms.CharField(label="Forge contact name", max_length=100)
-    forge_contact_comment = forms.CharField(label="Comment", max_length=100)
+    forge_contact_name.widget.attrs.update({"class": "form-control"})
+    forge_contact_comment = forms.CharField(label="Comment", widget=forms.Textarea)
+    forge_contact_comment.widget.attrs.update({"class": "form-control", "rows": "3"})
 
 
-def submit_request(request):
+def create_request(request):
     request_form = RequestForm()
+    existing = AddForgeRequest.objects.all()
     return render(
-        request, "add_forge_now/submit-request.html", {"request_form": request_form}
+        request,
+        "add_forge_now/create-request.html",
+        {"request_form": request_form, "existing": existing},
     )
