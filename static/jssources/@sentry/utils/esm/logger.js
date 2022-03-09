@@ -1,3 +1,4 @@
+import { __read, __spread } from "tslib";
 import { getGlobalObject } from './global';
 // TODO: Implement different loggers for different environments
 var global = getGlobalObject();
@@ -59,7 +60,8 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.log(PREFIX + "[Log]: " + args.join(' '));
+            var _a;
+            (_a = global.console).log.apply(_a, __spread([PREFIX + "[Log]:"], args));
         });
     };
     /** JSDoc */
@@ -72,7 +74,8 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.warn(PREFIX + "[Warn]: " + args.join(' '));
+            var _a;
+            (_a = global.console).warn.apply(_a, __spread([PREFIX + "[Warn]:"], args));
         });
     };
     /** JSDoc */
@@ -85,7 +88,8 @@ var Logger = /** @class */ (function () {
             return;
         }
         consoleSandbox(function () {
-            global.console.error(PREFIX + "[Error]: " + args.join(' '));
+            var _a;
+            (_a = global.console).error.apply(_a, __spread([PREFIX + "[Error]:"], args));
         });
     };
     return Logger;

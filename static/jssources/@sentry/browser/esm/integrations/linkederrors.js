@@ -1,7 +1,7 @@
 import { __read, __spread } from "tslib";
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { isInstanceOf } from '@sentry/utils';
-import { exceptionFromError } from '../parsers';
+import { exceptionFromError } from '../eventbuilder';
 var DEFAULT_KEY = 'cause';
 var DEFAULT_LIMIT = 5;
 /** Adds SDK info to an event. */

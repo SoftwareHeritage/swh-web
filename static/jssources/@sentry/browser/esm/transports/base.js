@@ -1,6 +1,6 @@
-import { __assign, __read, __values } from "tslib";
+import { __read, __values } from "tslib";
 import { eventToSentryRequest, getEnvelopeEndpointWithUrlEncodedAuth, getStoreEndpointWithUrlEncodedAuth, initAPIDetails, sessionToSentryRequest, } from '@sentry/core';
-import { dateTimestampInSeconds, dsnToString, eventStatusFromHttpCode, getGlobalObject, isDebugBuild, logger, makePromiseBuffer, parseRetryAfterHeader, } from '@sentry/utils';
+import { createClientReportEnvelope, dsnToString, eventStatusFromHttpCode, getGlobalObject, isDebugBuild, logger, makePromiseBuffer, parseRetryAfterHeader, serializeEnvelope, } from '@sentry/utils';
 import { sendReport } from './utils';
 function requestTypeToCategory(ty) {
     var tyStr = ty;
@@ -79,25 +79,18 @@ var BaseTransport = /** @class */ (function () {
         }
         logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
         var url = getEnvelopeEndpointWithUrlEncodedAuth(this._api.dsn, this._api.tunnel);
-        // Envelope header is required to be at least an empty object
-        var envelopeHeader = JSON.stringify(__assign({}, (this._api.tunnel && { dsn: dsnToString(this._api.dsn) })));
-        var itemHeaders = JSON.stringify({
-            type: 'client_report',
+        var discardedEvents = Object.keys(outcomes).map(function (key) {
+            var _a = __read(key.split(':'), 2), category = _a[0], reason = _a[1];
+            return {
+                reason: reason,
+                category: category,
+                quantity: outcomes[key],
+            };
+            // TODO: Improve types on discarded_events to get rid of cast
         });
-        var item = JSON.stringify({
-            timestamp: dateTimestampInSeconds(),
-            discarded_events: Object.keys(outcomes).map(function (key) {
-                var _a = __read(key.split(':'), 2), category = _a[0], reason = _a[1];
-                return {
-                    reason: reason,
-                    category: category,
-                    quantity: outcomes[key],
-                };
-            }),
-        });
-        var envelope = envelopeHeader + "\n" + itemHeaders + "\n" + item;
+        var envelope = createClientReportEnvelope(discardedEvents, this._api.tunnel && dsnToString(this._api.dsn));
         try {
-            sendReport(url, envelope);
+            sendReport(url, serializeEnvelope(envelope));
         }
         catch (e) {
             logger.error(e);
@@ -186,7 +179,7 @@ var BaseTransport = /** @class */ (function () {
             return true;
         }
         else if (raHeader) {
-            this._rateLimits.all = new Date(now + parseRetryAfterHeader(now, raHeader));
+            this._rateLimits.all = new Date(now + parseRetryAfterHeader(raHeader, now));
             return true;
         }
         return false;
