@@ -15,6 +15,7 @@ from swh.web.add_forge_now.models import Request
 from swh.web.api.views.add_forge_now import MODERATOR_ROLE
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import (
+    check_api_get_responses,
     check_api_post_response,
     check_http_post_response,
     create_django_permission,
@@ -265,3 +266,121 @@ def test_add_forge_request_update_status_concurrent(
     )
     thread.join()
     assert worker_ended
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_anonymous(api_client, regular_user):
+    url = reverse("api-1-add-forge-request-list")
+
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    assert resp.data == []
+
+    _create_add_forge_request(api_client, regular_user)
+
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    add_forge_request = {
+        "forge_url": ADD_FORGE_DATA["forge_url"],
+        "forge_type": ADD_FORGE_DATA["forge_type"],
+        "status": "PENDING",
+        "submission_date": resp.data[0]["submission_date"],
+    }
+
+    assert resp.data == [add_forge_request]
+
+    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    other_forge_request = {
+        "forge_url": ADD_OTHER_FORGE_DATA["forge_url"],
+        "forge_type": ADD_OTHER_FORGE_DATA["forge_type"],
+        "status": "PENDING",
+        "submission_date": resp.data[0]["submission_date"],
+    }
+
+    assert resp.data == [other_forge_request, add_forge_request]
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_moderator(api_client, regular_user, moderator_user):
+    url = reverse("api-1-add-forge-request-list")
+
+    _create_add_forge_request(api_client, regular_user)
+    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+
+    api_client.force_login(moderator_user)
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    add_forge_request = {
+        **ADD_FORGE_DATA,
+        "status": "PENDING",
+        "submission_date": resp.data[1]["submission_date"],
+        "submitter_name": regular_user.username,
+        "submitter_email": regular_user.email,
+        "id": 1,
+    }
+
+    other_forge_request = {
+        **ADD_OTHER_FORGE_DATA,
+        "status": "PENDING",
+        "submission_date": resp.data[0]["submission_date"],
+        "submitter_name": regular_user.username,
+        "submitter_email": regular_user.email,
+        "id": 2,
+    }
+
+    assert resp.data == [other_forge_request, add_forge_request]
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_pagination(
+    api_client, regular_user, api_request_factory
+):
+    _create_add_forge_request(api_client, regular_user)
+    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+
+    url = reverse("api-1-add-forge-request-list", query_params={"per_page": 1})
+
+    resp = check_api_get_responses(api_client, url, 200)
+
+    assert len(resp.data) == 1
+
+    request = api_request_factory.get(url)
+
+    next_url = reverse(
+        "api-1-add-forge-request-list",
+        query_params={"page": 2, "per_page": 1},
+        request=request,
+    )
+
+    assert resp["Link"] == f'<{next_url}>; rel="next"'
+
+    resp = check_api_get_responses(api_client, next_url, 200)
+
+    assert len(resp.data) == 1
+
+    prev_url = reverse(
+        "api-1-add-forge-request-list",
+        query_params={"page": 1, "per_page": 1},
+        request=request,
+    )
+
+    assert resp["Link"] == f'<{prev_url}>; rel="previous"'
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_submitter_filtering(
+    api_client, regular_user, regular_user2
+):
+    _create_add_forge_request(api_client, regular_user)
+    _create_add_forge_request(api_client, regular_user2, data=ADD_OTHER_FORGE_DATA)
+
+    api_client.force_login(regular_user)
+    url = reverse(
+        "api-1-add-forge-request-list", query_params={"user_requests_only": 1}
+    )
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    assert len(resp.data) == 1
