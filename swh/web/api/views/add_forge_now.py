@@ -7,6 +7,7 @@ import json
 from typing import Union
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.forms import CharField, ModelForm
 from django.http import HttpResponseBadRequest
@@ -23,6 +24,7 @@ from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStat
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc
+from swh.web.common.utils import reverse
 
 MODERATOR_ROLE = "swh.web.add_forge_now.moderator"
 
@@ -224,3 +226,65 @@ def api_add_forge_request_update(
 
     data = AddForgeNowRequestSerializer(add_forge_request).data
     return Response(data=data, status=200)
+
+
+@api_route(
+    r"/add-forge/request/list", "api-1-add-forge-request-list", methods=["GET"],
+)
+@api_doc("/add-forge/request/list")
+@format_docstring()
+def api_add_forge_request_list(request: Union[HttpRequest, Request]):
+    """
+    .. http:get:: /api/1/add-forge/request/list/
+
+        List requests to add forges to the list of those crawled regularly
+        by Software Heritage.
+
+        {common_headers}
+        {resheader_link}
+
+        :query int page: optional page number
+        :query int per_page: optional number of elements per page (bounded to 1000)
+
+        :statuscode 200: always
+    """
+
+    add_forge_requests = AddForgeRequest.objects.order_by("-id")
+
+    if (
+        int(request.GET.get("user_requests_only", "0"))
+        and request.user.is_authenticated
+    ):
+        add_forge_requests = add_forge_requests.filter(
+            submitter_name=request.user.username
+        )
+
+    page_num = int(request.GET.get("page", 1))
+    per_page = int(request.GET.get("per_page", 10))
+    per_page = min(per_page, 1000)
+
+    paginator = Paginator(add_forge_requests, per_page)
+    page = paginator.page(page_num)
+
+    if request.user.has_perm(MODERATOR_ROLE):
+        results = AddForgeNowRequestSerializer(page.object_list, many=True).data
+    else:
+        results = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
+
+    response = {"results": results, "headers": {}}
+
+    if page.has_previous():
+        response["headers"]["link-prev"] = reverse(
+            "api-1-add-forge-request-list",
+            query_params={"page": page.previous_page_number(), "per_page": per_page},
+            request=request,
+        )
+
+    if page.has_next():
+        response["headers"]["link-next"] = reverse(
+            "api-1-add-forge-request-list",
+            query_params={"page": page.next_page_number(), "per_page": per_page},
+            request=request,
+        )
+
+    return response
