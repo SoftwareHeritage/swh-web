@@ -3,7 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from __future__ import annotations
+
 import enum
+from typing import List
 
 from django.db import models
 
@@ -29,6 +32,30 @@ class RequestStatus(enum.Enum):
     @classmethod
     def choices(cls):
         return tuple((variant.name, variant.value) for variant in cls)
+
+    def allowed_next_statuses(self) -> List[RequestStatus]:
+        next_statuses = {
+            self.PENDING: [self.WAITING_FOR_FEEDBACK, self.REJECTED, self.SUSPENDED],
+            self.WAITING_FOR_FEEDBACK: [self.FEEDBACK_TO_HANDLE],
+            self.FEEDBACK_TO_HANDLE: [
+                self.WAITING_FOR_FEEDBACK,
+                self.ACCEPTED,
+                self.REJECTED,
+                self.SUSPENDED,
+            ],
+            self.ACCEPTED: [self.SCHEDULED],
+            self.SCHEDULED: [
+                self.FIRST_LISTING_DONE,
+                # in case of race condition between lister and loader:
+                self.FIRST_ORIGIN_LOADED,
+            ],
+            self.FIRST_LISTING_DONE: [self.FIRST_ORIGIN_LOADED],
+            self.FIRST_ORIGIN_LOADED: [],
+            self.REJECTED: [],
+            self.SUSPENDED: [self.PENDING],
+            self.DENIED: [],
+        }
+        return next_statuses[self]  # type: ignore
 
 
 class RequestActorRole(enum.Enum):
