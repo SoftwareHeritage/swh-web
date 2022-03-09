@@ -7,7 +7,9 @@ import json
 from typing import Union
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import ModelForm
+from django.db import transaction
+from django.forms import CharField, ModelForm
+from django.http import HttpResponseBadRequest
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden
 from rest_framework import serializers
@@ -15,9 +17,20 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from swh.web.add_forge_now.models import Request as AddForgeRequest
+from swh.web.add_forge_now.models import RequestActorRole as AddForgeNowRequestActorRole
+from swh.web.add_forge_now.models import RequestHistory as AddForgeNowRequestHistory
+from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStatus
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common.exc import BadInputExc
+
+MODERATOR_ROLE = "swh.web.add_forge_now.moderator"
+
+
+def _block_while_testing():
+    """Replaced by tests to check concurrency behavior
+    """
+    pass
 
 
 class AddForgeNowRequestForm(ModelForm):
@@ -32,10 +45,27 @@ class AddForgeNowRequestForm(ModelForm):
         )
 
 
+class AddForgeNowRequestHistoryForm(ModelForm):
+    new_status = CharField(max_length=200, required=False,)
+
+    class Meta:
+        model = AddForgeNowRequestHistory
+        fields = ("text", "new_status")
+
+
 class AddForgeNowRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = AddForgeRequest
         fields = "__all__"
+
+
+class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
+    """Serializes AddForgeRequest without private fields.
+    """
+
+    class Meta:
+        model = AddForgeRequest
+        fields = ("forge_url", "forge_type", "status", "submission_date")
 
 
 @api_route(
@@ -106,3 +136,91 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
     data = AddForgeNowRequestSerializer(add_forge_request).data
 
     return Response(data=data, status=201)
+
+
+@api_route(
+    r"/add-forge/request/(?P<id>[0-9]+)/update/",
+    "api-1-add-forge-request-update",
+    methods=["POST"],
+)
+@api_doc("/add-forge/request/update", tags=["hidden"])
+@format_docstring()
+@transaction.atomic
+def api_add_forge_request_update(
+    request: Union[HttpRequest, Request], id: int
+) -> HttpResponse:
+    """
+    .. http:post:: /api/1/add-forge/request/update/
+
+        Update a request to add a forge to the list of those crawled regularly
+        by Software Heritage.
+
+        .. warning::
+            That endpoint is not publicly available and requires authentication
+            in order to be able to request it.
+
+        {common_headers}
+
+        :<json string text: comment about new request status
+        :<json string new_status: the new request status
+
+        :statuscode 200: request successfully updated
+        :statuscode 400: missing or invalid field values
+        :statuscode 403: user is not a moderator
+    """
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden(
+            "You must be authenticated to update a new add-forge request"
+        )
+
+    if not request.user.has_perm(MODERATOR_ROLE):
+        return HttpResponseForbidden("You are not a moderator")
+
+    add_forge_request = (
+        AddForgeRequest.objects.filter(id=id).select_for_update().first()
+    )
+
+    if add_forge_request is None:
+        return HttpResponseBadRequest("Invalid request id")
+
+    request_history = AddForgeNowRequestHistory()
+    request_history.request = add_forge_request
+
+    if isinstance(request, Request):
+        # request submitted with request body in JSON (goes through DRF)
+        form = AddForgeNowRequestHistoryForm(request.data, instance=request_history)
+    else:
+        # request submitted with request body in form encoded format
+        # (directly handled by Django)
+        form = AddForgeNowRequestHistoryForm(request.POST, instance=request_history)
+
+    if form.errors:
+        raise BadInputExc(json.dumps(form.errors))
+
+    new_status_str = form["new_status"].value()
+    if new_status_str is not None:
+        new_status = AddForgeNowRequestStatus[new_status_str]
+        current_status = AddForgeNowRequestStatus[add_forge_request.status]
+        if new_status not in current_status.allowed_next_statuses():
+            raise BadInputExc(
+                f"New request status {new_status} cannot be reached "
+                f"from current status {add_forge_request.status}"
+            )
+
+    _block_while_testing()
+
+    request_history.actor = request.user.username
+    request_history.actor_role = AddForgeNowRequestActorRole.MODERATOR.name
+    form.save(commit=False)
+
+    if request_history.new_status == "":
+        request_history.new_status = None
+
+    request_history.save()
+
+    if request_history.new_status is not None:
+        add_forge_request.status = request_history.new_status
+        add_forge_request.save()
+
+    data = AddForgeNowRequestSerializer(add_forge_request).data
+    return Response(data=data, status=200)
