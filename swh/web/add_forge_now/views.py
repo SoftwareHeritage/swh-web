@@ -118,3 +118,11 @@ def create_request(request):
         "add_forge_now/create-request.html",
         {"request_form": request_form, "existing": existing},
     )
+
+
+def moderation_dashboard(request):
+    """Moderation dashboard to allow listing current requests.
+
+    """
+    existing = AddForgeRequest.objects.all()
+    return render(request, "add_forge_now/moderation.html", {"existing": existing},)

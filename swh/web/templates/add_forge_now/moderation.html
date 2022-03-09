@@ -1,0 +1,53 @@
+{% extends "../layout.html" %}
+
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block header %}
+{% render_bundle 'add_forge' %}
+{% endblock %}
+
+{% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
+
+{% block navbar-content %}
+<h4>Add forge now moderation</h4>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-12 offset-md-1">
+  <div id="swh-add-forge-requests-list">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Type</th>
+          <th scope="col">URL</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for each in existing %}
+        <tr>
+          <td>{{ each.submission_date }}</td>
+          <td>{{ each.forge_type }}</td>
+          <td>{{ each.forge_url }}</td>
+          <td>{{ each.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  /* swh.add_forge.initAddForge() */
+</script>
+
+{% endblock %}
