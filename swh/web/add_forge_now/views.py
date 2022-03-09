@@ -126,3 +126,21 @@ def moderation_dashboard(request):
     """
     existing = AddForgeRequest.objects.all()
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
+
+
+def request_dashboard(request, request_id):
+    """Moderation dashboard to allow listing current requests.
+
+    Args:
+        request: actual user query
+        request_id: The add forge now request url (for now?)
+
+    Return:
+        Template response to moderate the request
+
+    """
+    existing = AddForgeRequest.objects.get(forge_url=request_id)
+
+    return render(
+        request, "add_forge_now/request-dashboard.html", {"existing": existing},
+    )
