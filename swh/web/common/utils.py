@@ -373,6 +373,8 @@ def rst_to_html(rst: str) -> str:
         "initial_header_level": 2,
         "halt_level": 4,
         "traceback": True,
+        "file_insertion_enabled": False,
+        "raw_enabled": False,
     }
     pp = publish_parts(rst, writer=_HTML_WRITER, settings_overrides=settings)
     return f'<div class="swh-rst">{pp["html_body"]}</div>'

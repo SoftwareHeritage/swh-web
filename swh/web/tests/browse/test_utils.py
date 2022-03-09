@@ -1,19 +1,24 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import re
+
 import pytest
 
+from swh.model.model import Content
 from swh.web.browse.utils import (
     gen_link,
     gen_person_mail_link,
     gen_revision_link,
     get_mimetype_and_encoding_for_content,
+    get_readme_to_display,
     prepare_content_for_display,
     re_encode_content,
 )
 from swh.web.common.utils import reverse
+from swh.web.tests.data import get_tests_data
 
 
 def test_get_mimetype_and_encoding_for_content():
@@ -99,3 +104,41 @@ def test_re_encode_content_for_shift_jis_encoding():
     assert encoding == "SHIFT_JIS"
     assert data.decode(encoding) == re_encoded_data.decode("utf-8")
     assert re_encoded_data.decode("utf-8") == "/* 関連の文字コード変換 */"
+
+
+@pytest.mark.parametrize(
+    "input_,expected_output",
+    [
+        (b"foo bar", "<p>foo bar</p>"),
+        (b"foo *bar* baz", "<p>foo <em>bar</em> baz</p>"),
+        (
+            b".. raw:: html\n\n   <script>foo</script>",
+            "&lt;script&gt;foo&lt;/script&gt;",
+        ),
+    ],
+)
+def test_rst_readme(input_, expected_output):
+    content = Content.from_data(input_)
+    storage = get_tests_data()["storage"]
+    storage.content_add([content])
+    assert re.search(
+        expected_output, get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+    )
+
+
+def test_rst_readme_no_leak():
+    input_ = b".. include:: /etc/passwd"
+    content = Content.from_data(input_)
+    storage = get_tests_data()["storage"]
+    storage.content_add([content])
+    assert "root:" not in get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+
+
+def test_rst_readme_no_xss():
+    input_ = b".. raw:: html\n\n   <script>foo</script>"
+    content = Content.from_data(input_)
+    storage = get_tests_data()["storage"]
+    storage.content_add([content])
+    assert (
+        "<script>" not in get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+    )

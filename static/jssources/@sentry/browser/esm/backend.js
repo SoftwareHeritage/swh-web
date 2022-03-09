@@ -17,14 +17,14 @@ var BrowserBackend = /** @class */ (function (_super) {
      * @inheritDoc
      */
     BrowserBackend.prototype.eventFromException = function (exception, hint) {
-        return eventFromException(this._options, exception, hint);
+        return eventFromException(exception, hint, this._options.attachStacktrace);
     };
     /**
      * @inheritDoc
      */
     BrowserBackend.prototype.eventFromMessage = function (message, level, hint) {
         if (level === void 0) { level = Severity.Info; }
-        return eventFromMessage(this._options, message, level, hint);
+        return eventFromMessage(message, level, hint, this._options.attachStacktrace);
     };
     /**
      * @inheritDoc

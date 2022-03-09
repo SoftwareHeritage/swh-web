@@ -17,7 +17,7 @@ var Dedupe = /** @class */ (function () {
                 // Juuust in case something goes wrong
                 try {
                     if (_shouldDropEvent(currentEvent, self._previousEvent)) {
-                        logger.warn("Event dropped due to being a duplicate of previously captured event.");
+                        logger.warn('Event dropped due to being a duplicate of previously captured event.');
                         return null;
                     }
                 }

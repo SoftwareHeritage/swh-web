@@ -32,7 +32,7 @@ var BaseBackend = /** @class */ (function () {
     BaseBackend.prototype.sendEvent = function (event) {
         void this._transport.sendEvent(event).then(null, function (reason) {
             if (isDebugBuild()) {
-                logger.error("Error while sending event: " + reason);
+                logger.error('Error while sending event:', reason);
             }
         });
     };
@@ -48,7 +48,7 @@ var BaseBackend = /** @class */ (function () {
         }
         void this._transport.sendSession(session).then(null, function (reason) {
             if (isDebugBuild()) {
-                logger.error("Error while sending session: " + reason);
+                logger.error('Error while sending session:', reason);
             }
         });
     };
