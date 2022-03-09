@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "swh.web.common",
+    "swh.web.inbound_email",
     "swh.web.api",
     "swh.web.auth",
     "swh.web.browse",
