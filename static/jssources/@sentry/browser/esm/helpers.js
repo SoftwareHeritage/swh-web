@@ -129,13 +129,13 @@ export function injectReportDialog(options) {
     }
     if (!options.eventId) {
         if (isDebugBuild()) {
-            logger.error("Missing eventId option in showReportDialog call");
+            logger.error('Missing eventId option in showReportDialog call');
         }
         return;
     }
     if (!options.dsn) {
         if (isDebugBuild()) {
-            logger.error("Missing dsn option in showReportDialog call");
+            logger.error('Missing dsn option in showReportDialog call');
         }
         return;
     }

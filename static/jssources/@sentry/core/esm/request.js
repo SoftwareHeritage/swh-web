@@ -1,5 +1,5 @@
 import { __assign, __read, __spread } from "tslib";
-import { dsnToString, normalize } from '@sentry/utils';
+import { createEnvelope, dsnToString, normalize, serializeEnvelope } from '@sentry/utils';
 import { getEnvelopeEndpointWithUrlEncodedAuth, getStoreEndpointWithUrlEncodedAuth } from './api';
 /** Extract sdk info from from the API metadata */
 function getSdkMetadataForEnvelopeHeader(api) {
@@ -27,14 +27,14 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
 /** Creates a SentryRequest from a Session. */
 export function sessionToSentryRequest(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
-    var envelopeHeaders = JSON.stringify(__assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) })));
-    // I know this is hacky but we don't want to add `session` to request type since it's never rate limited
+    var envelopeHeaders = __assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) }));
+    // I know this is hacky but we don't want to add `sessions` to request type since it's never rate limited
     var type = 'aggregates' in session ? 'sessions' : 'session';
-    var itemHeaders = JSON.stringify({
-        type: type,
-    });
+    // TODO (v7) Have to cast type because envelope items do not accept a `SentryRequestType`
+    var envelopeItem = [{ type: type }, session];
+    var envelope = createEnvelope(envelopeHeaders, [envelopeItem]);
     return {
-        body: envelopeHeaders + "\n" + itemHeaders + "\n" + JSON.stringify(session),
+        body: serializeEnvelope(envelope),
         type: type,
         url: getEnvelopeEndpointWithUrlEncodedAuth(api.dsn, api.tunnel),
     };
@@ -112,19 +112,16 @@ export function eventToSentryRequest(event, api) {
     // deserialization. Instead, we only implement a minimal subset of the spec to
     // serialize events inline here.
     if (useEnvelope) {
-        var envelopeHeaders = JSON.stringify(__assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) })));
-        var itemHeaders = JSON.stringify({
-            type: eventType,
-            // TODO: Right now, sampleRate may or may not be defined (it won't be in the cases of inheritance and
-            // explicitly-set sampling decisions). Are we good with that?
-            sample_rates: [{ id: samplingMethod, rate: sampleRate }],
-        });
-        // The trailing newline is optional. We intentionally don't send it to avoid
-        // sending unnecessary bytes.
-        //
-        // const envelope = `${envelopeHeaders}\n${itemHeaders}\n${req.body}\n`;
-        var envelope = envelopeHeaders + "\n" + itemHeaders + "\n" + req.body;
-        req.body = envelope;
+        var envelopeHeaders = __assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) }));
+        var eventItem = [
+            {
+                type: eventType,
+                sample_rates: [{ id: samplingMethod, rate: sampleRate }],
+            },
+            req.body,
+        ];
+        var envelope = createEnvelope(envelopeHeaders, [eventItem]);
+        req.body = serializeEnvelope(envelope);
     }
     return req;
 }

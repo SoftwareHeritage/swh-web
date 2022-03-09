@@ -63,10 +63,7 @@ function _installGlobalOnErrorHandler() {
         }
         var event = error === undefined && isString(msg)
             ? _eventFromIncompleteOnError(msg, url, line, column)
-            : _enhanceEventWithInitialFrame(eventFromUnknownInput(error || msg, undefined, {
-                attachStacktrace: attachStacktrace,
-                isRejection: false,
-            }), url, line, column);
+            : _enhanceEventWithInitialFrame(eventFromUnknownInput(error || msg, undefined, attachStacktrace, false), url, line, column);
         event.level = Severity.Error;
         addMechanismAndCapture(hub, error, event, 'onerror');
     });
@@ -105,10 +102,7 @@ function _installGlobalOnUnhandledRejectionHandler() {
         }
         var event = isPrimitive(error)
             ? _eventFromRejectionWithPrimitive(error)
-            : eventFromUnknownInput(error, undefined, {
-                attachStacktrace: attachStacktrace,
-                isRejection: true,
-            });
+            : eventFromUnknownInput(error, undefined, attachStacktrace, true);
         event.level = Severity.Error;
         addMechanismAndCapture(hub, error, event, 'onunhandledrejection');
         return;

@@ -97,7 +97,7 @@ export function supportsNativeFetch() {
     var result = false;
     var doc = global.document;
     // eslint-disable-next-line deprecation/deprecation
-    if (doc && typeof doc.createElement === "function") {
+    if (doc && typeof doc.createElement === 'function') {
         try {
             var sandbox = doc.createElement('iframe');
             sandbox.hidden = true;

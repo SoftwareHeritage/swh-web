@@ -110,7 +110,7 @@ var Hub = /** @class */ (function () {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     Hub.prototype.captureException = function (exception, hint) {
-        var eventId = (this._lastEventId = uuid4());
+        var eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
         var finalHint = hint;
         // If there's no explicit hint provided, mimic the same thing that would happen
         // in the minimal itself to create a consistent behavior.
@@ -136,7 +136,7 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.captureMessage = function (message, level, hint) {
-        var eventId = (this._lastEventId = uuid4());
+        var eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
         var finalHint = hint;
         // If there's no explicit hint provided, mimic the same thing that would happen
         // in the minimal itself to create a consistent behavior.
@@ -162,7 +162,7 @@ var Hub = /** @class */ (function () {
      * @inheritDoc
      */
     Hub.prototype.captureEvent = function (event, hint) {
-        var eventId = uuid4();
+        var eventId = hint && hint.event_id ? hint.event_id : uuid4();
         if (event.type !== 'transaction') {
             this._lastEventId = eventId;
         }

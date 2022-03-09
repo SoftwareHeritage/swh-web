@@ -1,4 +1,4 @@
-import { __values } from "tslib";
+import { __read, __values } from "tslib";
 import { htmlTreeAsString } from './browser';
 import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
 import { memoBuilder } from './memo';
@@ -182,19 +182,19 @@ function serializeValue(value) {
     if (type === '[object Array]') {
         return '[Array]';
     }
-    var normalized = normalizeValue(value);
-    return isPrimitive(normalized) ? normalized : type;
+    // `makeSerializable` provides a string representation of certain non-serializable values. For all others, it's a
+    // pass-through.
+    var serializable = makeSerializable(value);
+    return isPrimitive(serializable) ? serializable : type;
 }
 /**
- * normalizeValue()
+ * makeSerializable()
  *
- * Takes unserializable input and make it serializable friendly
+ * Takes unserializable input and make it serializer-friendly.
  *
- * - translates undefined/NaN values to "[undefined]"/"[NaN]" respectively,
- * - serializes Error objects
- * - filter global objects
+ * Handles globals, functions, `undefined`, `NaN`, and other non-serializable values.
  */
-function normalizeValue(value, key) {
+function makeSerializable(value, key) {
     if (key === 'domain' && value && typeof value === 'object' && value._events) {
         return '[Domain]';
     }
@@ -248,6 +248,7 @@ function normalizeValue(value, key) {
 export function walk(key, value, depth, memo) {
     if (depth === void 0) { depth = +Infinity; }
     if (memo === void 0) { memo = memoBuilder(); }
+    var _a = __read(memo, 2), memoize = _a[0], unmemoize = _a[1];
     // If we reach the maximum depth, serialize whatever is left
     if (depth === 0) {
         return serializeValue(value);
@@ -258,10 +259,12 @@ export function walk(key, value, depth, memo) {
         return value.toJSON();
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-    // If normalized value is a primitive, there are no branches left to walk, so bail out
-    var normalized = normalizeValue(value, key);
-    if (isPrimitive(normalized)) {
-        return normalized;
+    // `makeSerializable` provides a string representation of certain non-serializable values. For all others, it's a
+    // pass-through. If what comes back is a primitive (either because it's been stringified or because it was primitive
+    // all along), we're done.
+    var serializable = makeSerializable(value, key);
+    if (isPrimitive(serializable)) {
+        return serializable;
     }
     // Create source that we will use for the next iteration. It will either be an objectified error object (`Error` type
     // with extracted key:value pairs) or the input itself.
@@ -269,7 +272,7 @@ export function walk(key, value, depth, memo) {
     // Create an accumulator that will act as a parent for all future itterations of that branch
     var acc = Array.isArray(value) ? [] : {};
     // If we already walked that branch, bail out, as it's circular reference
-    if (memo[0](value)) {
+    if (memoize(value)) {
         return '[Circular ~]';
     }
     // Walk all keys of the source
@@ -279,10 +282,11 @@ export function walk(key, value, depth, memo) {
             continue;
         }
         // Recursively walk through all the child nodes
-        acc[innerKey] = walk(innerKey, source[innerKey], depth - 1, memo);
+        var innerValue = source[innerKey];
+        acc[innerKey] = walk(innerKey, innerValue, depth - 1, memo);
     }
     // Once walked through all the branches, remove the parent from memo storage
-    memo[1](value);
+    unmemoize(value);
     // Return accumulated values
     return acc;
 }
@@ -301,7 +305,8 @@ export function walk(key, value, depth, memo) {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function normalize(input, depth) {
     try {
-        return JSON.parse(JSON.stringify(input, function (key, value) { return walk(key, value, depth); }));
+        // since we're at the outermost level, there is no key
+        return walk('', input, depth);
     }
     catch (_oO) {
         return '**non-serializable**';
