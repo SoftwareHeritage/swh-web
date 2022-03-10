@@ -23,31 +23,23 @@ See top-level LICENSE file for more information
 {% block content %}
 <div class="col-md-8 offset-md-1">
   <div id="swh-add-forge-requests-list">
-    <table class="table table-striped">
+    <table id="swh-add-forge-now-moderation-list" class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th scope="col">Date</th>
-          <th scope="col">Type</th>
-          <th scope="col">URL</th>
-          <th scope="col">Status</th>
+          <th scope="col">submission_date</th>
+          <th scope="col">forge_type</th>
+          <th scope="col">forge_url</th>
+          <th scope="col">status</th>
         </tr>
       </thead>
-      <tbody>
-        {% for each in existing %}
-        <tr class="clickable" onclick="window.location='/forge/request/{{ each.forge_url }}';" style="cursor: pointer;">
-          <td>{{ each.submission_date }}</td>
-          <td>{{ each.forge_type }}</td>
-          <td>{{ each.forge_url }}</td>
-          <td>{{ each.status }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
     </table>
+    <div id="swh-add-forge-now-moderation-list-error"></div>
   </div>
 </div>
 
 <script>
-  /* swh.add_forge.initAddForge() */
+  swh.add_forge.initAddForge()
+  swh.add_forge.populateModerationList();
 </script>
 
 {% endblock %}
