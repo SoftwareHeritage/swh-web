@@ -61,6 +61,7 @@ class RequestStatus(enum.Enum):
 class RequestActorRole(enum.Enum):
     MODERATOR = "moderator"
     SUBMITTER = "submitter"
+    FORGE_ADMIN = "forge admin"
 
     @classmethod
     def choices(cls):
