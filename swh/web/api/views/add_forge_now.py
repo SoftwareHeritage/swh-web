@@ -67,7 +67,19 @@ class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AddForgeRequest
-        fields = ("forge_url", "forge_type", "status", "submission_date")
+        fields = ("id", "forge_url", "forge_type", "status", "submission_date")
+
+
+class AddForgeNowRequestHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AddForgeNowRequestHistory
+        exclude = ("request",)
+
+
+class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AddForgeNowRequestHistory
+        fields = ("id", "date", "new_status", "actor_role")
 
 
 @api_route(
@@ -75,6 +87,7 @@ class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
 )
 @api_doc("/add-forge/request/create")
 @format_docstring()
+@transaction.atomic
 def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpResponse:
     """
     .. http:post:: /api/1/add-forge/request/create/
@@ -134,6 +147,13 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
     add_forge_request.submitter_email = request.user.email
 
     form.save()
+
+    request_history = AddForgeNowRequestHistory()
+    request_history.request = add_forge_request
+    request_history.new_status = AddForgeNowRequestStatus.PENDING.name
+    request_history.actor = request.user.username
+    request_history.actor_role = AddForgeNowRequestActorRole.SUBMITTER.name
+    request_history.save()
 
     data = AddForgeNowRequestSerializer(add_forge_request).data
 
@@ -288,3 +308,45 @@ def api_add_forge_request_list(request: Union[HttpRequest, Request]):
         )
 
     return response
+
+
+@api_route(
+    r"/add-forge/request/(?P<id>[0-9]+)/get",
+    "api-1-add-forge-request-get",
+    methods=["GET"],
+)
+@api_doc("/add-forge/request/get")
+@format_docstring()
+def api_add_forge_request_get(request: Request, id: int):
+    """
+    .. http:get:: /api/1/add-forge/request/get/
+
+        Return all details about an add-forge request.
+
+        {common_headers}
+
+        :param int id: add-forge request identifier
+
+        :statuscode 200: request details successfully returned
+        :statuscode 400: request identifier does not exist
+    """
+
+    try:
+        add_forge_request = AddForgeRequest.objects.get(id=id)
+    except ObjectDoesNotExist:
+        raise BadInputExc("Request id does not exist")
+
+    request_history = AddForgeNowRequestHistory.objects.filter(
+        request=add_forge_request
+    ).order_by("id")
+
+    if request.user.is_authenticated and request.user.has_perm(MODERATOR_ROLE):
+        data = AddForgeNowRequestSerializer(add_forge_request).data
+        history = AddForgeNowRequestHistorySerializer(request_history, many=True).data
+    else:
+        data = AddForgeNowRequestPublicSerializer(add_forge_request).data
+        history = AddForgeNowRequestHistoryPublicSerializer(
+            request_history, many=True
+        ).data
+
+    return {"request": data, "history": history}
