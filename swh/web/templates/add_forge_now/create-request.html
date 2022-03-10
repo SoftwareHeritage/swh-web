@@ -46,7 +46,8 @@ See top-level LICENSE file for more information
         {% if not user.is_authenticated %}
         <h3>
           <p class="text-warning">
-            You must be logged in to submit an add forge request. Please <a href="fsdf" class="link-info">log in here</a>
+            You must be logged in to submit an add forge request. Please
+            <a href="{% url 'login' %}" class="link-info">log in here</a>
           </p>
         </h3>
         {% else %}
