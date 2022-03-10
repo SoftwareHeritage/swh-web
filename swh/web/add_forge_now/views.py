@@ -9,17 +9,17 @@ from django import forms
 from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import Http404
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
 
+from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
 from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
-
-from .models import Request as AddForgeRequest
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -88,7 +88,6 @@ urlpatterns = [
     ),
 ]
 
-
 FORGE_TYPES = [
     ("cgit", "cgit"),
     ("gitlab", "gitlab"),
@@ -110,6 +109,16 @@ class RequestForm(forms.Form):
     forge_contact_comment.widget.attrs.update({"class": "form-control", "rows": "3"})
 
 
+def can_view_forge_request(user, forge_request):
+    """
+    """
+    return True
+
+
+def can_edit_forge_request(user):
+    return False
+
+
 def create_request(request):
     request_form = RequestForm()
     existing = AddForgeRequest.objects.all()
@@ -124,6 +133,8 @@ def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
     """
+    if not request.user.is_superuser:
+        raise Http404
     existing = AddForgeRequest.objects.all()
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
 
@@ -139,8 +150,25 @@ def request_dashboard(request, request_id):
         Template response to moderate the request
 
     """
-    existing = AddForgeRequest.objects.get(forge_url=request_id)
+
+    forge_request = AddForgeRequest.objects.get(forge_url=request_id)
+    # if not request.user.is_superuser and
+    # not request.user.email == forge_request.submitter_email:
+    #     raise Http404
+    # forge_request_history = RequestHistory.objects.get(request=forge_request)
+    forge_request_history = [
+        {"date": "2022/03/10 15:44", "text": "submitted"},
+        {"date": "2022/03/10 15:44", "text": "submitted"},
+        {"date": "2022/03/10 15:44", "text": "submitted"},
+    ]
+    is_moderator = request.user.is_superuser
 
     return render(
-        request, "add_forge_now/request-dashboard.html", {"existing": existing},
+        request,
+        "add_forge_now/request-dashboard.html",
+        {
+            "forge_request": forge_request,
+            "request_history": forge_request_history,
+            "is_moderator": is_moderator,
+        },
     )

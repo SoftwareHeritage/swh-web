@@ -21,7 +21,7 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block content %}
-<div class="col-md-12 offset-md-1">
+<div class="col-md-8 offset-md-1">
   <div id="swh-add-forge-requests-list">
     <table class="table table-striped">
       <thead>
@@ -34,7 +34,7 @@ See top-level LICENSE file for more information
       </thead>
       <tbody>
         {% for each in existing %}
-        <tr>
+        <tr class="clickable" onclick="window.location='/forge/request/{{ each.forge_url }}';" style="cursor: pointer;">
           <td>{{ each.submission_date }}</td>
           <td>{{ each.forge_type }}</td>
           <td>{{ each.forge_url }}</td>
