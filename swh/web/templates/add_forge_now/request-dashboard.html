@@ -90,7 +90,8 @@ See top-level LICENSE file for more information
 
     <div class="row">
       <div class="form-group col-md-12">
-        <form method="POST" action="api/1/add-forge/request/{{request_id}}/update/"
+        <form method="POST"
+              action="{% url 'api-1-add-forge-request-update' request_id %}"
               style="padding-top: 5px;" id="updateRequestForm">
           {% csrf_token %}
           <div class="form-row">

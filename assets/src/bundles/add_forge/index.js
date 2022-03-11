@@ -183,23 +183,53 @@ export function populateRequestDetails(requestId) {
 export function populateRequestHistory() {
 }
 
-export function populateDecisionSelectOption(status) {
-  if (status === 'PENDING') {
+export function populateDecisionSelectOption(currentStatus) {
+  const nextStatusesFor = {
+    'PENDING': ['WAITING_FOR_FEEDBACK', 'REJECTED', 'SUSPENDED'],
+    'WAITING_FOR_FEEDBACK': ['FEEDBACK_TO_HANDLE'],
+    'FEEDBACK_TO_HANDLE': [
+      'WAITING_FOR_FEEDBACK',
+      'ACCEPTED',
+      'REJECTED',
+      'SUSPENDED'
+    ],
+    'ACCEPTED': ['SCHEDULED'],
+    'SCHEDULED': [
+      'FIRST_LISTING_DONE',
+      'FIRST_ORIGIN_LOADED'
+    ],
+    'FIRST_LISTING_DONE': ['FIRST_ORIGIN_LOADED'],
+    'FIRST_ORIGIN_LOADED': [],
+    'REJECTED': [],
+    'SUSPENDED': ['PENDING'],
+    'DENIED': []
+  };
+
+  const statusLabel = {
+    'PENDING': 'pending',
+    'WAITING_FOR_FEEDBACK': 'waiting for feedback',
+    'FEEDBACK_TO_HANDLE': 'feedback to handle',
+    'ACCEPTED': 'accepted',
+    'SCHEDULED': 'scheduled',
+    'FIRST_LISTING_DONE': 'first listing done',
+    'FIRST_ORIGIN_LOADED': 'first origin loaded',
+    'REJECTED': 'rejected',
+    'SUSPENDED': 'suspended',
+    'DENIED': 'denied'
+  };
+
+  // Determine the possible next status out of the current one
+  const nextStatuses = nextStatusesFor[currentStatus];
+
+  function addStatusOption(status, index) {
+    // Push the next possible status option
+    const label = statusLabel[status];
     $('#decisionOptions').append(
-      '<option value="SUSPEND">Suspend</option>',
-      '<option value="REJECT">Reject</option>'
-    );
-  } else { // FIX ME add other checks
-    $('#decisionOptions').append(
-      '<option value="SUSPEND">Suspend</option>',
-      '<option value="REJECT">Reject</option>',
-      '<option value="DENY">Deny</option>',
-      '<option value="ACCEPT">Accept</option>'
+      `<option value="${status}">${label}</option>`
     );
   }
-  // FIXME, remove all options in terminal state
-  // $('select').children().remove();
-  // $('select').append('<option id="foo">You can't</option>');
+
+  nextStatuses.forEach(addStatusOption);
 }
 
 export function updateForgeRequest() {
