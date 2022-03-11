@@ -5,6 +5,8 @@
 
 from typing import Any, Dict
 
+# from functools import wraps
+
 from django import forms
 from django.conf.urls import url
 from django.core.paginator import Paginator
@@ -109,14 +111,22 @@ class RequestForm(forms.Form):
     forge_contact_comment.widget.attrs.update({"class": "form-control", "rows": "3"})
 
 
-def can_view_forge_request(user, forge_request):
-    """
-    """
-    return True
+class RequestUpdateForm(forms.Form):
+    new_status = forms.ChoiceField(choices=[])
+    new_status.widget.attrs.update({"class": "form-control", "id": "decisionOptions"})
+    text = forms.CharField(label="Comment", widget=forms.Textarea)
+    text.widget.attrs.update({"class": "form-control", "rows": "3"})
 
 
-def can_edit_forge_request(user):
-    return False
+# def moderator_access(f):
+#     """
+#     """
+#     @wraps(f)
+#     def is_moderator(request, *args, **kws):
+#         if not request.user.is_superuser:
+#             raise Http404
+#         return f(request, *args, **kws)
+#     return moderator_access
 
 
 def create_request(request):
@@ -129,16 +139,18 @@ def create_request(request):
     )
 
 
+# @moderator_access
 def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
     """
     if not request.user.is_superuser:
-        raise Http404
+        raise Http404("Page does not exist")
     existing = AddForgeRequest.objects.all()
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
 
 
+# @moderator_access
 def request_dashboard(request, request_id):
     """Moderation dashboard to allow listing current requests.
 
@@ -151,24 +163,17 @@ def request_dashboard(request, request_id):
 
     """
 
-    forge_request = AddForgeRequest.objects.get(forge_url=request_id)
-    # if not request.user.is_superuser and
-    # not request.user.email == forge_request.submitter_email:
-    #     raise Http404
-    # forge_request_history = RequestHistory.objects.get(request=forge_request)
-    forge_request_history = [
-        {"date": "2022/03/10 15:44", "text": "submitted"},
-        {"date": "2022/03/10 15:44", "text": "submitted"},
-        {"date": "2022/03/10 15:44", "text": "submitted"},
-    ]
-    is_moderator = request.user.is_superuser
-
+    # forge_request = AddForgeRequest.objects.get(forge_url=request_id)
+    # forge_request_history = [
+    #     {"date": "2022/03/10 15:44", "text": "submitted"},
+    #     {"date": "2022/03/10 15:44", "text": "submitted"},
+    #     {"date": "2022/03/10 15:44", "text": "submitted"},
+    # ]
+    if not request.user.is_superuser:
+        raise Http404("Page does not exist")
+    request_update_form = RequestUpdateForm()
     return render(
         request,
         "add_forge_now/request-dashboard.html",
-        {
-            "forge_request": forge_request,
-            "request_history": forge_request_history,
-            "is_moderator": is_moderator,
-        },
+        {"request_id": request_id, "request_update_form": request_update_form},
     )

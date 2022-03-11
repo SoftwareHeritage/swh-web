@@ -34,25 +34,25 @@ See top-level LICENSE file for more information
             <div>
               <h6 class="my-0">Status</h6>
             </div>
-            <span class="text-muted">{{ forge_request.status }}</span>
+            <span class="text-muted" id="requestStatus"></span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-condensed">
             <div>
               <h6 class="my-0">Type</h6>
             </div>
-            <span class="text-muted">{{ forge_request.forge_type }}</span>
+            <span class="text-muted" id="requestType"></span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-condensed">
             <div>
               <h6 class="my-0">Forge URL</h6>
             </div>
-            <span class="text-muted">{{ forge_request.forge_url }}</span>
+            <span class="text-muted" id="requestURL"></span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-condensed">
             <div>
               <h6 class="my-0">Forge contact email</h6>
             </div>
-            <span>{{ forge_request.forge_contact_email }}</span>
+            <span id="requestEmail"></span>
           </li>
         </ul>
       </div>
@@ -79,44 +79,54 @@ See top-level LICENSE file for more information
       </div>
     </div>
 
-    {% if is_moderator %}
-    {% if forge_request.status == "PENDING" %}
-
     <div class="row">
       <div class="form-group col-md-12">
-        <button type="button" class="btn btn-secondary float-right" href="mailto:test.com">
-          Send message to forge</button>
+        <a href="mailto:some@email.com?subject=test subject&body=mail body"
+           target="_blank" class="btn btn-secondary float-right">
+          Send message to forge
+        </a>
       </div>
     </div>
 
     <div class="row">
       <div class="form-group col-md-12">
-        <form style="padding-top: 5px;">
-          <div class="form-group col-md-6">
-            <select class="form-control form-control-lg" required>
-              <option selected>Select your decision</option>
-              <option value="1">Suspend</option>
-              <option value="2">Reject</option>
-              <option value="3">Deny</option>
-              <option value="3">Accept</option>
-            </select>
+        <form method="POST" action="api/1/add-forge/request/{{request_id}}/update/"
+              style="padding-top: 5px;" id="updateRequestForm">
+          {% csrf_token %}
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <h6><span class="text-muted">Choose your decision</span></h6>
+              {{request_update_form.new_status}}
+            </div>
           </div>
 
-          <div class="form-group">
-            <h6><span class="text-muted">Comment</span></h6>
-            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-            <small id="emailHelp" class="form-text text-muted">Enter any comment related to your decision.</small>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <h6><span class="text-muted">Comment</span></h6>
+              {{request_update_form.text}}
+              <small id="emailHelp" class="form-text text-muted">Enter any comment related to your decision.</small>
+            </div>
           </div>
           <div class="form-group col-md-6">
             <button type="submit" class="btn btn-secondary mb-2">Submit your decision</button>
           </div>
+
+          <div class="form-row">
+            <div class="col-md-12">
+              <h3 class="text-center">
+                <span id="userMessage" class="badge"></span>
+              </h3>
+            </div>
+          </div>
         </form>
       </div>
     </div>
-    {% else %} <!-- When request status is not pending -->
-    {% endif %}
-
-    {% endif %}
   </div>
 </div>
+
+<script>
+  swh.add_forge.initAddForge()
+  swh.add_forge.populateRequestDetails("{{ request_id }}");
+  swh.add_forge.populateRequestHistory();
+</script>
 {% endblock %}

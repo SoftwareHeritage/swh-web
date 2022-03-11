@@ -37,7 +37,7 @@ See top-level LICENSE file for more information
 
   <div class="col-md-8">
     <ul class="nav nav-tabs">
-      <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-add-forge-requests-list-tab" href="#swh-add-forge-submit-request">Submit a Request</a></li>
+      <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-add-forge-tab" href="#swh-add-forge-submit-request">Submit a Request</a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" id="swh-add-forge-requests-list-tab" href="#swh-add-forge-requests-list">Browse Requests</a></li>
     </ul>
 
@@ -47,75 +47,10 @@ See top-level LICENSE file for more information
         <h3>
           <p class="text-warning">
             You must be logged in to submit an add forge request. Please
-            <a href="{% url 'login' %}" class="link-info">log in here</a>
+            <a href="{% url 'login' %}?next={% url 'forge-add' %}" class="link-info">log in here</a>
           </p>
         </h3>
         {% else %}
-        <p style="margin-top: 1rem;">A "Add forge now" request takes the following parameters:</p>
-        <ul>
-          <li><b>Forge type:</b> the type of supported forge the software archive is able to list.
-            Currently, the supported types are:
-            <ul>
-              <li><code>cgit</code>, for <a href="https://git.zx2c4.com/cgit/">cgit</a> instances</li>
-              <li><code>gitlab</code>, for <a href="https://about.gitlab.com/install/">gitlab</a> instances</li>
-              <li><code>heptapod</code>, for <a href="https://heptapod.net/">heptapod</a> instances</li>
-            </ul>
-          </li>
-          <li><b>Forge url:</b> the url of the remote forge to list.<br/>
-          </li>
-          <li><b>Forge contact email:</b> the email of the fogre’s administrator.<br />
-          </li>
-          <li><b>Forge contact name:</b> the name of the fogre’s administrator.<br />
-          </li>
-          <li><b>Comment:</b> if you wish to leave a comment regarding your request.<br />
-          </li>
-        </ul>
-        <a class="link-info" data-toggle="collapse" href="#swh-forge-add-request-help" role="button" aria-expanded="false">
-          <h6>For more information<h6>
-        </a>
-        <div id="swh-forge-add-request-help" class="collapse tab-pane active">
-          <p>
-            Once submitted, your "add forge" request can either be:
-          </p>
-          <ul>
-            <li><b>Pending:</b> the request was submitted and is waiting for a moderator
-            to check its validity.</li>
-
-            <li><b>Waiting for feedback:</b> the request was processed by a moderator
-            and the forge was contacted, the request is waiting for feedback from the
-            forge.</li>
-
-            <li><b>Feedback to handle:</b> the forge has responded to the request and
-            there is feedback to handle for the request.</li>
-
-            <li><b>Accepted:</b> the request has been accepted and waiting to be
-            scheduled.</li>
-
-            <li><b>Scheduled:</b> the request has been scheduled is considered
-            done.</li>
-
-            <li><b>First listing done:</b> The first listing of the forge is
-            completed.</li>
-
-            <li><b>First origin loaded:</b> The first origin or repository processed by
-            loader and archived (using a search query).</li>
-
-            <li><b>Rejected:</b> the request is not a valid request and is rejected by a
-            Software Heritage moderator.</li>
-
-            <li><b>Denied:</b> the forge has requested not to archive the forge.</li>
-
-            <li><b>Suspended:</b> the request is for a forge with a non supported
-            VCS.</li>
-          </ul>
-          <p>
-            Once a add request has been submitted, you can follow its current status in
-            the <a id="swh-show-forge-add-requests-list"
-            href="#swh-add-forge-requests-list">submitted requests list</a>. This
-            process is depending on human interactions and might take a few days to be
-            handled (it primarily depends on the response time of the forge).
-          </p>
-        </div>
 
         <form method="POST" action="{% url 'api-1-add-forge-request-create' %}"
               id="requestForm" class="collapse {% if user.is_authenticated %} show {% endif %}">
@@ -124,11 +59,17 @@ See top-level LICENSE file for more information
             <div class="form-group col-md-5">
               <label for="swh-input-forge-type">Forge type</label>
               {{ request_form.forge_type }}
+              <small class="form-text text-muted">
+                <a data-toggle="collapse" href="#swh-forge-types-help" >Forge types supported</a>in software archive.
+              </small>
             </div>
 
             <div class="form-group col-md-7">
               <label for="swh-input-forge-url">Forge url</label>
               {{ request_form.forge_url }}
+              <small class="form-text text-muted">
+                Remote URL of the forge to list.
+              </small>
             </div>
           </div>
 
@@ -136,20 +77,26 @@ See top-level LICENSE file for more information
             <div class="form-group col-md-5">
               <label for="swh-input-forge-contact-name">Forge contact name</label>
               {{ request_form.forge_contact_name }}
+              <small class="form-text text-muted">
+                Name of the Forge administrator.
+              </small>
             </div>
 
             <div class="form-group col-md-7">
               <label for="swh-input-forge-contact-email">Forge contact email</label>
               {{ request_form.forge_contact_email }}
+              <small class="form-text text-muted">
+                Email of the fogre administrator. The given email address will not be used for any purpose outside the “add forge now” process.
+              </small>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="">
-                <label for="flexCheckDefault">
-                  I accept to be added with my username in the communication with the forge
+                <input class="form-check-input" type="checkbox" value="" id="concentToIncude">
+                <label for="concentToIncude">
+                  I concent to adde my username in the communication with the forge
                 </label>
               </div>
             </div>
@@ -159,6 +106,9 @@ See top-level LICENSE file for more information
             <div class="form-group col-md-12">
               <label for="swh-input-forge-comment">Comment</label>
               {{ request_form.forge_contact_comment }}
+              <small class="form-text text-muted">
+                If you wish to leave a comment regarding your request.
+              </small>
             </div>
           </div>
 
@@ -176,37 +126,98 @@ See top-level LICENSE file for more information
             </div>
           </div>
         </form>
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <a data-toggle="collapse" href="#swh-forge-add-request-help" role="button" aria-expanded="false" class="text-primary">
+              For more information
+            </a>
+          </div>
+          <div id="swh-forge-add-request-help" class="collapse panel-body">
+            <p>
+              Once submitted, your "add forge" request can either be:
+            </p>
+            <ul>
+              <li>
+                <b>Pending:</b>
+                the request was submitted and is waiting for a moderator
+                to check its validity.
+              </li>
+
+              <li>
+                <b>Waiting for feedback:</b>
+                the request was processed by a moderator
+                and the forge was contacted, the request is waiting for feedback from the
+                forge.
+              </li>
+
+              <li>
+                <b>Feedback to handle:</b>
+                the forge has responded to the request and
+                there is feedback to handle for the request.</li>
+
+              <li>
+                <b>Accepted:</b>
+                the request has been accepted and waiting to be
+                scheduled.
+              </li>
+
+              <li>
+                <b>Scheduled:</b>
+                the request has been scheduled is considered
+                done.
+              </li>
+
+              <li>
+                <b>First listing done:</b>
+                The first listing of the forge is
+                completed.
+              </li>
+
+              <li>
+                <b>First origin loaded:</b>
+                The first origin or repository processed by
+                loader and archived (using a search query).
+              </li>
+
+              <li><b>Rejected:</b> the request is not a valid request and is rejected by a
+                Software Heritage moderator.</li>
+
+              <li><b>Denied:</b> the forge has requested not to archive the forge.</li>
+
+              <li><b>Suspended:</b> the request is for a forge with a non supported
+                VCS.</li>
+            </ul>
+            <p>
+              Once a add request has been submitted, you can follow its current status in
+              the <a id="swh-show-forge-add-requests-list"
+                     href="#swh-add-forge-requests-list">submitted requests list</a>. This
+              process is depending on human interactions and might take a few days to be
+              handled (it primarily depends on the response time of the forge).
+            </p>
+          </div>
+        </div>
         {% endif %}
       </div>
-
-      <div id="swh-add-forge-requests-list" class="tab-pane">
-        <table class="table table-striped">
+      <div id="swh-add-forge-requests-list" class="tab-pane fade show">
+        <table id="add-forge-request-browse" class="table swh-table swh-table-striped" style="width: 100%;">
           <thead>
             <tr>
-              <th scope="col">Date</th>
-              <th scope="col">Type</th>
-              <th scope="col">URL</th>
-              <th scope="col">Status</th>
+              <th>Submission date</th>
+              <th>Forge type</th>
+              <th>Forge URL</th>
+              <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-            {% for each in existing %}
-            <tr>
-              <td>{{ each.submission_date }}</td>
-              <td>{{ each.forge_type }}</td>
-              <td>{{ each.forge_url }}</td>
-              <td>{{ each.status }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
         </table>
+        <div id="add-forge-browse-request-error"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  swh.add_forge.initAddForge()
+  swh.add_forge.initAddForge();
+  swh.add_forge.populateRequesBrowseList();   // FIXME, make this on tab click event
 </script>
 
 {% endblock %}
