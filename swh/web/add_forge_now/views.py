@@ -7,6 +7,8 @@ from typing import Any, Dict
 
 # from functools import wraps
 
+from typing import List
+
 from django import forms
 from django.conf.urls import url
 from django.core.paginator import Paginator
@@ -90,16 +92,17 @@ urlpatterns = [
     ),
 ]
 
-FORGE_TYPES = [
-    ("cgit", "cgit"),
-    ("gitlab", "gitlab"),
-    ("heptapod", "heptapod"),
-    ("gitea", "gitea"),
+FORGE_TYPES: List[str] = [
+    "bitbucket",
+    "cgit",
+    "gitlab",
+    "gitea",
+    "heptapod",
 ]
 
 
 class RequestForm(forms.Form):
-    forge_type = forms.ChoiceField(choices=FORGE_TYPES)
+    forge_type = forms.ChoiceField(choices=[(name, name) for name in FORGE_TYPES])
     forge_type.widget.attrs.update({"class": "form-control"})
     forge_url = forms.CharField(label="Forge contact name", max_length=200)
     forge_url.widget.attrs.update({"class": "form-control"})
