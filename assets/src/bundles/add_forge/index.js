@@ -16,12 +16,15 @@ export function initAddForge() {
         type: $(this).attr('method'),
         url: $(this).attr('action'),
         success: function(response) {
+          $('#userMessageDetail').empty();
           $('#userMessage').text('Your request has been submitted');
           $('#userMessage').removeClass('badge-danger');
           $('#userMessage').addClass('badge-success');
         },
-        error: function(request, status, error) {
-          $('#userMessage').text('Sorry following error happened, ' + error);
+        error: function(response, status, error) {
+          console.log(response);
+          $('#userMessage').text('Sorry; an error occurred');
+          $('#userMessageDetail').text(response.responseText);
           $('#userMessage').removeClass('badge-success');
           $('#userMessage').addClass('badge-danger');
         }

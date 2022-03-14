@@ -3,11 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict
-
-# from functools import wraps
-
-from typing import List
+from typing import Any, Dict, List
 
 from django import forms
 from django.conf.urls import url
@@ -101,48 +97,27 @@ FORGE_TYPES: List[str] = [
 ]
 
 
-class RequestForm(forms.Form):
-    forge_type = forms.ChoiceField(choices=[(name, name) for name in FORGE_TYPES])
-    forge_type.widget.attrs.update({"class": "form-control"})
-    forge_url = forms.CharField(label="Forge contact name", max_length=200)
-    forge_url.widget.attrs.update({"class": "form-control"})
-    forge_contact_email = forms.EmailField(label="Forge contact email", max_length=100)
-    forge_contact_email.widget.attrs.update({"class": "form-control"})
-    forge_contact_name = forms.CharField(label="Forge contact name", max_length=100)
-    forge_contact_name.widget.attrs.update({"class": "form-control"})
-    forge_contact_comment = forms.CharField(label="Comment", widget=forms.Textarea)
-    forge_contact_comment.widget.attrs.update({"class": "form-control", "rows": "3"})
-
-
 class RequestUpdateForm(forms.Form):
+    """Form for moderators to update an 'add_forge_now' request
+
+    """
+
     new_status = forms.ChoiceField(choices=[])
     new_status.widget.attrs.update({"class": "form-control", "id": "decisionOptions"})
     text = forms.CharField(label="Comment", widget=forms.Textarea)
     text.widget.attrs.update({"class": "form-control", "rows": "3"})
 
 
-# def moderator_access(f):
-#     """
-#     """
-#     @wraps(f)
-#     def is_moderator(request, *args, **kws):
-#         if not request.user.is_superuser:
-#             raise Http404
-#         return f(request, *args, **kws)
-#     return moderator_access
-
-
 def create_request(request):
-    request_form = RequestForm()
-    existing = AddForgeRequest.objects.all()
+    """View to create a new 'add_forge_now' request.
+
+    """
+
     return render(
-        request,
-        "add_forge_now/create-request.html",
-        {"request_form": request_form, "existing": existing},
+        request, "add_forge_now/create-request.html", {"forge_types": FORGE_TYPES},
     )
 
 
-# @moderator_access
 def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
@@ -153,7 +128,6 @@ def moderation_dashboard(request):
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
 
 
-# @moderator_access
 def request_dashboard(request, request_id):
     """Moderation dashboard to allow listing current requests.
 
@@ -166,12 +140,6 @@ def request_dashboard(request, request_id):
 
     """
 
-    # forge_request = AddForgeRequest.objects.get(forge_url=request_id)
-    # forge_request_history = [
-    #     {"date": "2022/03/10 15:44", "text": "submitted"},
-    #     {"date": "2022/03/10 15:44", "text": "submitted"},
-    #     {"date": "2022/03/10 15:44", "text": "submitted"},
-    # ]
     if not request.user.is_superuser:
         raise Http404("Page does not exist")
     request_update_form = RequestUpdateForm()
