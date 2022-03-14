@@ -62,7 +62,7 @@ See top-level LICENSE file for more information
           <div class="form-row">
             <div class="form-group col-md-5">
               <label for="swh-input-forge-type">Forge type</label>
-              <select class="form-control" id="swh-input-forge-type" name="forge_type">
+              <select class="form-control" id="swh-input-forge-type" name="forge_type" autofocus>
                 {% for each in forge_types %}
                 <option value={{ each }}>{{ each}}</option>
                 {% endfor %}
@@ -148,60 +148,60 @@ See top-level LICENSE file for more information
             </p>
             <ul>
               <li>
-                <b>Pending:</b>
+                <strong>Pending:</strong>
                 the request was submitted and is waiting for a moderator
                 to check its validity.
               </li>
 
               <li>
-                <b>Waiting for feedback:</b>
+                <strong>Waiting for feedback:</strong>
                 the request was processed by a moderator
                 and the forge was contacted, the request is waiting for feedback from the
                 forge.
               </li>
 
               <li>
-                <b>Feedback to handle:</b>
+                <strong>Feedback to handle:</strong>
                 the forge has responded to the request and
                 there is feedback to handle for the request.</li>
 
               <li>
-                <b>Accepted:</b>
+                <strong>Accepted:</strong>
                 the request has been accepted and waiting to be
                 scheduled.
               </li>
 
               <li>
-                <b>Scheduled:</b>
+                <strong>Scheduled:</strong>
                 the request has been scheduled is considered
                 done.
               </li>
 
               <li>
-                <b>First listing done:</b>
+                <strong>First listing done:</strong>
                 The first listing of the forge is
                 completed.
               </li>
 
               <li>
-                <b>First origin loaded:</b>
+                <strong>First origin loaded:</strong>
                 The first origin or repository processed by
                 loader and archived (using a search query).
               </li>
 
-              <li><b>Rejected:</b> the request is not a valid request and is rejected by a
+              <li><strong>Rejected:</strong> the request is not a valid request and is rejected by a
                 Software Heritage moderator.</li>
 
-              <li><b>Denied:</b> the forge has requested not to archive the forge.</li>
+              <li><strong>Denied:</strong> the forge has requested not to archive the forge.</li>
 
-              <li><b>Suspended:</b> the request is for a forge with a non supported
+              <li><strong>Suspended:</strong> the request is for a forge with a non supported
                 VCS.</li>
             </ul>
             <p>
               Once a add request has been submitted, you can follow its current status in
-              the <a id="swh-show-forge-add-requests-list"
-                     href="#swh-add-forge-requests-list">submitted requests list</a>. This
-              process is depending on human interactions and might take a few days to be
+              the <a id="swh-show-forge-add-requests-list" href="#swh-add-forge-requests-list">
+                submitted requests list
+              </a>. This process is depending on human interactions and might take a few days to be
               handled (it primarily depends on the response time of the forge).
             </p>
           </div>
