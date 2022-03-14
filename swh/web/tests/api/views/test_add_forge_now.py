@@ -387,6 +387,150 @@ def test_add_forge_request_list_submitter_filtering(
     assert len(resp.data) == 1
 
 
+NB_FORGE_TYPE = 2
+NB_FORGES_PER_TYPE = 20
+
+
+def _create_add_forge_requests(api_client, regular_user, regular_user2):
+    requests = []
+    for i in range(NB_FORGES_PER_TYPE):
+        request = {
+            "forge_type": "gitlab",
+            "forge_url": f"https://gitlab.example{i:02d}.org",
+            "forge_contact_email": f"admin@gitlab.example{i:02d}.org",
+            "forge_contact_name": f"gitlab.example{i:02d}.org admin",
+            "forge_contact_comment": "user marked as owner in forge members",
+        }
+        _create_add_forge_request(
+            api_client, regular_user, data=request,
+        )
+        requests.append(request)
+
+        request = {
+            "forge_type": "gitea",
+            "forge_url": f"https://gitea.example{i:02d}.org",
+            "forge_contact_email": f"admin@gitea.example{i:02d}.org",
+            "forge_contact_name": f"gitea.example{i:02d}.org admin",
+            "forge_contact_comment": "user marked as owner in forge members",
+        }
+        _create_add_forge_request(
+            api_client, regular_user2, data=request,
+        )
+        requests.append(request)
+    return requests
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_datatables(
+    api_client, regular_user, regular_user2, moderator_user
+):
+    _create_add_forge_requests(api_client, regular_user, regular_user2)
+
+    length = 10
+
+    url = reverse(
+        "api-1-add-forge-request-list",
+        query_params={"draw": 1, "length": length, "start": 0},
+    )
+
+    api_client.force_login(regular_user)
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    assert resp.data["draw"] == 1
+    assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert len(resp.data["data"]) == length
+    # default ordering is by descending id
+    assert resp.data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert (
+        resp.data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
+    )
+    assert "submitter_name" not in resp.data["data"][0]
+
+    api_client.force_login(moderator_user)
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    assert resp.data["draw"] == 1
+    assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert len(resp.data["data"]) == length
+    # default ordering is by descending id
+    assert resp.data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert (
+        resp.data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
+    )
+    assert "submitter_name" in resp.data["data"][0]
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_datatables_ordering(
+    api_client, regular_user, regular_user2, moderator_user
+):
+    requests = _create_add_forge_requests(api_client, regular_user, regular_user2)
+    requests_sorted = list(sorted(requests, key=lambda d: d["forge_url"]))
+    forge_urls_asc = [request["forge_url"] for request in requests_sorted]
+    forge_urls_desc = list(reversed(forge_urls_asc))
+
+    length = 10
+
+    for direction in ("asc", "desc"):
+        for i in range(4):
+            url = reverse(
+                "api-1-add-forge-request-list",
+                query_params={
+                    "draw": 1,
+                    "length": length,
+                    "start": i * length,
+                    "order[0][column]": 2,
+                    "order[0][dir]": direction,
+                    "columns[2][name]": "forge_url",
+                },
+            )
+
+            api_client.force_login(regular_user)
+            resp = check_api_get_responses(api_client, url, status_code=200)
+
+            assert resp.data["draw"] == 1
+            assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+            assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+            assert len(resp.data["data"]) == length
+
+            page_forge_urls = [request["forge_url"] for request in resp.data["data"]]
+            if direction == "asc":
+                expected_forge_urls = forge_urls_asc[i * length : (i + 1) * length]
+            else:
+                expected_forge_urls = forge_urls_desc[i * length : (i + 1) * length]
+            assert page_forge_urls == expected_forge_urls
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_list_datatables_search(
+    api_client, regular_user, regular_user2, moderator_user
+):
+    _create_add_forge_requests(api_client, regular_user, regular_user2)
+
+    url = reverse(
+        "api-1-add-forge-request-list",
+        query_params={
+            "draw": 1,
+            "length": NB_FORGES_PER_TYPE,
+            "start": 0,
+            "search[value]": "gitlab",
+        },
+    )
+
+    api_client.force_login(regular_user)
+    resp = check_api_get_responses(api_client, url, status_code=200)
+
+    assert resp.data["draw"] == 1
+    assert resp.data["recordsFiltered"] == NB_FORGES_PER_TYPE
+    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
+    assert len(resp.data["data"]) == NB_FORGES_PER_TYPE
+
+    page_forge_type = [request["forge_type"] for request in resp.data["data"]]
+    assert page_forge_type == ["gitlab"] * NB_FORGES_PER_TYPE
+
+
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 def test_add_forge_request_get(api_client, regular_user, moderator_user):
     resp = _create_add_forge_request(api_client, regular_user)

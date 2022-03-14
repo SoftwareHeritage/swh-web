@@ -4,11 +4,12 @@
 # See top-level LICENSE file for more information
 
 import json
-from typing import Union
+from typing import Any, Dict, Union
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
 from django.forms import CharField, ModelForm
 from django.http import HttpResponseBadRequest
 from django.http.request import HttpRequest
@@ -269,7 +270,45 @@ def api_add_forge_request_list(request: Union[HttpRequest, Request]):
         :statuscode 200: always
     """
 
-    add_forge_requests = AddForgeRequest.objects.order_by("-id")
+    datatables = int(request.GET.get("draw", 0))
+
+    if datatables:
+        # datatables request handling
+        add_forge_requests = AddForgeRequest.objects.all()
+
+        table_data: Dict[str, Any] = {}
+        table_data["recordsTotal"] = add_forge_requests.count()
+        table_data["draw"] = int(request.GET["draw"])
+
+        search_value = request.GET.get("search[value]")
+
+        column_order = request.GET.get("order[0][column]")
+        field_order = request.GET.get(f"columns[{column_order}][name]")
+        order_dir = request.GET.get("order[0][dir]")
+
+        if field_order:
+            if order_dir == "desc":
+                field_order = "-" + field_order
+            add_forge_requests = add_forge_requests.order_by(field_order)
+        else:
+            add_forge_requests = add_forge_requests.order_by("-id")
+
+        per_page = int(request.GET["length"])
+        page_num = int(request.GET["start"]) // per_page + 1
+
+        if search_value:
+            add_forge_requests = add_forge_requests.filter(
+                Q(forge_type__icontains=search_value)
+                | Q(forge_url__icontains=search_value)
+                | Q(status__icontains=search_value)
+            )
+    else:
+        # standard Web API request handling
+        add_forge_requests = AddForgeRequest.objects.order_by("-id")
+
+        page_num = int(request.GET.get("page", 1))
+        per_page = int(request.GET.get("per_page", 10))
+        per_page = min(per_page, 1000)
 
     if (
         int(request.GET.get("user_requests_only", "0"))
@@ -279,35 +318,43 @@ def api_add_forge_request_list(request: Union[HttpRequest, Request]):
             submitter_name=request.user.username
         )
 
-    page_num = int(request.GET.get("page", 1))
-    per_page = int(request.GET.get("per_page", 10))
-    per_page = min(per_page, 1000)
-
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
     if request.user.has_perm(MODERATOR_ROLE):
-        results = AddForgeNowRequestSerializer(page.object_list, many=True).data
+        requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
-        results = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
+        requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
 
-    response = {"results": results, "headers": {}}
+    results = [dict(request) for request in requests]
 
-    if page.has_previous():
-        response["headers"]["link-prev"] = reverse(
-            "api-1-add-forge-request-list",
-            query_params={"page": page.previous_page_number(), "per_page": per_page},
-            request=request,
-        )
+    if datatables:
+        # datatables response
+        table_data["recordsFiltered"] = add_forge_requests.count()
+        table_data["data"] = results
+        return table_data
+    else:
+        # standard Web API response
+        response: Dict[str, Any] = {"results": results, "headers": {}}
 
-    if page.has_next():
-        response["headers"]["link-next"] = reverse(
-            "api-1-add-forge-request-list",
-            query_params={"page": page.next_page_number(), "per_page": per_page},
-            request=request,
-        )
+        if page.has_previous():
+            response["headers"]["link-prev"] = reverse(
+                "api-1-add-forge-request-list",
+                query_params={
+                    "page": page.previous_page_number(),
+                    "per_page": per_page,
+                },
+                request=request,
+            )
 
-    return response
+        if page.has_next():
+            response["headers"]["link-next"] = reverse(
+                "api-1-add-forge-request-list",
+                query_params={"page": page.next_page_number(), "per_page": per_page},
+                request=request,
+            )
+
+        return response
 
 
 @api_route(
