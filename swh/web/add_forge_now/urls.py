@@ -7,13 +7,15 @@
 from django.conf.urls import url
 
 from swh.web.add_forge_now import views
+from swh.web.admin.adminurls import AdminUrls
 
 urlpatterns = [
     url(r"^add/$", views.create_request, name="forge-add"),
-    url(r"^moderation/$", views.moderation_dashboard, name="moderation-forge-add"),
     url(
         r"^request/(?P<request_id>.+)/$",
         views.request_dashboard,
         name="request-dashboard-forge-add",
     ),
 ]
+
+urlpatterns += AdminUrls.get_url_patterns()

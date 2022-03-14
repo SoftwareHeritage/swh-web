@@ -6,7 +6,9 @@
 from typing import Any, Dict, List
 
 from django import forms
+from django.conf import settings
 from django.conf.urls import url
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
@@ -15,6 +17,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from swh.web.add_forge_now.models import Request as AddForgeRequest
+from swh.web.admin.adminurls import admin_route
 from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
@@ -118,6 +121,10 @@ def create_request(request):
     )
 
 
+@admin_route(
+    r"moderation/", view_name="moderation-forge-add",
+)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
