@@ -112,15 +112,12 @@ export function populateModerationList() {
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {
-        'url': Urls.api_1_add_forge_request_list(),
-        'dataSrc': function(data) {
-          return data;
-        }
+        'url': Urls.api_1_add_forge_request_list()
       },
       columns: [
         {
           data: 'id',
-          name: 'request_id',
+          name: 'id',
           render: function(fieldData, type, row, meta) {
             return ''.concat('<a href="/forge/request/', fieldData, '">', fieldData, '</a>');
           }
