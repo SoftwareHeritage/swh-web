@@ -11,11 +11,6 @@ from swh.web.admin.adminurls import AdminUrls
 
 urlpatterns = [
     url(r"^add/$", views.create_request, name="forge-add"),
-    url(
-        r"^request/(?P<request_id>.+)/$",
-        views.request_dashboard,
-        name="request-dashboard-forge-add",
-    ),
 ]
 
 urlpatterns += AdminUrls.get_url_patterns()

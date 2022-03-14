@@ -135,6 +135,10 @@ def moderation_dashboard(request):
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
 
 
+@admin_route(
+    r"request/(?P<request_id>.+)/", view_name="request-dashboard-forge-add",
+)
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def request_dashboard(request, request_id):
     """Moderation dashboard to allow listing current requests.
 
