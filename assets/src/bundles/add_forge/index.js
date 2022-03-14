@@ -7,7 +7,6 @@
 
 export function initAddForge() {
   $(document).ready(() => {
-    // populateRequests
     $('#requestForm').submit(function(event) {
       event.preventDefault();
 
@@ -22,7 +21,6 @@ export function initAddForge() {
           $('#userMessage').addClass('badge-success');
         },
         error: function(response, status, error) {
-          console.log(response);
           $('#userMessage').text('Sorry; an error occurred');
           $('#userMessageDetail').text(response.responseText);
           $('#userMessage').removeClass('badge-success');
@@ -36,7 +34,6 @@ export function initAddForge() {
 
       $.ajax({
         data: $(this).serialize(),
-        // header:
         type: $(this).attr('method'),
         url: $(this).attr('action'),
         success: function(response) {
@@ -50,6 +47,10 @@ export function initAddForge() {
           $('#userMessage').addClass('badge-danger');
         }
       });
+    });
+
+    $('#contactForgeAdmin').click((event) => {
+      contactForgeAdmin(event);
     });
 
     $('#swh-add-forge-requests-list-tab').click((event) => {
@@ -69,19 +70,8 @@ export function populateRequesBrowseList() {
       retrieve: true,
       searching: false,
       info: false,
-      // let's define the order of table options display
-      // f: (f)ilter
-      // l: (l)ength changing
-      // r: p(r)ocessing
-      // t: (t)able
-      // i: (i)nfo
-      // p: (p)agination
-      // see https://datatables.net/examples/basic_init/dom.html
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
-      // div#list-exclude is a custom filter added next to dataTable
-      // initialization below through js dom manipulation, see
-      // https://datatables.net/examples/advanced_init/dom_toolbar.html
       ajax: {
         'url': Urls.api_1_add_forge_request_list(),
         'dataSrc': function(data) {
@@ -119,19 +109,8 @@ export function populateModerationList() {
       processing: true,
       searching: false,
       info: false,
-      // let's define the order of table options display
-      // f: (f)ilter
-      // l: (l)ength changing
-      // r: p(r)ocessing
-      // t: (t)able
-      // i: (i)nfo
-      // p: (p)agination
-      // see https://datatables.net/examples/basic_init/dom.html
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
-      // div#list-exclude is a custom filter added next to dataTable
-      // initialization below through js dom manipulation, see
-      // https://datatables.net/examples/advanced_init/dom_toolbar.html
       ajax: {
         'url': Urls.api_1_add_forge_request_list(),
         'dataSrc': function(data) {
@@ -175,7 +154,9 @@ export function populateRequestDetails(requestId) {
       $('#requestType').text(data.request.forge_type);
       $('#requestURL').text(data.request.forge_url);
       $('#requestEmail').text(data.request.forge_contact_email);
+      // $('#requestEmail').(data.request.forge_contact_email);
 
+      populateRequestHistory(data.history);
       populateDecisionSelectOption(data.request.status);
     })
     .catch(error => {
@@ -183,7 +164,15 @@ export function populateRequestDetails(requestId) {
     });
 }
 
-export function populateRequestHistory() {
+export function populateRequestHistory(history) {
+  const parent = $('#swh-request-history');
+  history.forEach((each) => {
+    parent.append(
+      `<li class="list-group-item d-flex justify-content-between lh-condensed">
+       On ${each.date} by ${each.actor} (${each.actor_role})
+       New status: ${each.new_status}</li>`
+    );
+  });
 }
 
 export function populateDecisionSelectOption(currentStatus) {
@@ -236,4 +225,12 @@ export function populateDecisionSelectOption(currentStatus) {
 }
 
 export function updateForgeRequest() {
+}
+
+function contactForgeAdmin(event) {
+  // Open the mailclient with pre-filled text
+  const mailTo = $('#contactForgeAdmin').attr('emailTo');
+  const subject = $('#contactForgeAdmin').attr('emailSubject');
+  const emailText = $('#swh-input-forge-comment').val();
+  window.location = `mailto: ${mailTo}?subject=${subject}&body=${emailText}`;
 }

@@ -62,29 +62,37 @@ See top-level LICENSE file for more information
         <h6 class="d-flex justify-content-between align-items-center mb-3">
           <span class="text-muted">Request History</span>
         </h6>
-        <ul class="list-group mb-3" style="height: 100%;">
-          {% for each in request_history %}
-          <li class="list-group-item d-flex justify-content-between lh-condensed">
-            <div>
-              <h6 class="my-0">{{ each.date }}</h6>
-            </div>
+        <ul class="list-group mb-3" style="height: 100%;" id="swh-request-history">
+          <!-- <li class="list-group-item d-flex justify-content-between lh-condensed"> -->
+          <!--   <div> -->
+          <!--     <h6 class="my-0"> Date</h6> -->
+          <!--   </div> -->
 
-            <div>
-              <span class="text-muted">Moderator</span>
-            </div>
-            <span class="text-muted">{{ each.text }}</span>
-          </li>
-          {% endfor %}
+          <!--   <div> -->
+          <!--     <span class="text-muted">Moderator</span> -->
+          <!--   </div> -->
+          <!--   <span class="text-muted">kkk</span> -->
+          <!-- </li> -->
         </ul>
       </div>
     </div>
 
     <div class="row">
+      <h6 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Message Forge administrator (Editable)</span>
+      </h6>
       <div class="form-group col-md-12">
-        <a href="mailto:some@email.com?subject=test subject&body=mail body"
-           target="_blank" class="btn btn-secondary float-right">
+        <textarea class="form-control" id="swh-input-forge-comment"
+                  name="forge_contact_comment" rows="3">Default Message..</textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group col-md-12">
+        <button class="btn btn-default float-right" id="contactForgeAdmin"
+                emailTo="test@test" emailSubject="From SWH moderator">
           Send message to forge
-        </a>
+        </button>
       </div>
     </div>
 
@@ -128,6 +136,5 @@ See top-level LICENSE file for more information
 <script>
   swh.add_forge.initAddForge()
   swh.add_forge.populateRequestDetails("{{ request_id }}");
-  swh.add_forge.populateRequestHistory();
 </script>
 {% endblock %}
