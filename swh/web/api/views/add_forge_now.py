@@ -9,7 +9,6 @@ from typing import Any, Dict, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
 from django.forms import CharField, ModelForm
 from django.http import HttpResponseBadRequest
 from django.http.request import HttpRequest
@@ -24,10 +23,9 @@ from swh.web.add_forge_now.models import RequestHistory as AddForgeNowRequestHis
 from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStatus
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import reverse
-
-MODERATOR_ROLE = "swh.web.add_forge_now.moderator"
 
 
 def _block_while_testing():
@@ -196,7 +194,7 @@ def api_add_forge_request_update(
             "You must be authenticated to update a new add-forge request"
         )
 
-    if not request.user.has_perm(MODERATOR_ROLE):
+    if not request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
         return HttpResponseForbidden("You are not a moderator")
 
     add_forge_request = (
@@ -254,7 +252,7 @@ def api_add_forge_request_update(
 )
 @api_doc("/add-forge/request/list")
 @format_docstring()
-def api_add_forge_request_list(request: Union[HttpRequest, Request]):
+def api_add_forge_request_list(request: Request):
     """
     .. http:get:: /api/1/add-forge/request/list/
 
@@ -270,45 +268,11 @@ def api_add_forge_request_list(request: Union[HttpRequest, Request]):
         :statuscode 200: always
     """
 
-    datatables = int(request.GET.get("draw", 0))
+    add_forge_requests = AddForgeRequest.objects.order_by("-id")
 
-    if datatables:
-        # datatables request handling
-        add_forge_requests = AddForgeRequest.objects.all()
-
-        table_data: Dict[str, Any] = {}
-        table_data["recordsTotal"] = add_forge_requests.count()
-        table_data["draw"] = int(request.GET["draw"])
-
-        search_value = request.GET.get("search[value]")
-
-        column_order = request.GET.get("order[0][column]")
-        field_order = request.GET.get(f"columns[{column_order}][name]")
-        order_dir = request.GET.get("order[0][dir]")
-
-        if field_order:
-            if order_dir == "desc":
-                field_order = "-" + field_order
-            add_forge_requests = add_forge_requests.order_by(field_order)
-        else:
-            add_forge_requests = add_forge_requests.order_by("-id")
-
-        per_page = int(request.GET["length"])
-        page_num = int(request.GET["start"]) // per_page + 1
-
-        if search_value:
-            add_forge_requests = add_forge_requests.filter(
-                Q(forge_type__icontains=search_value)
-                | Q(forge_url__icontains=search_value)
-                | Q(status__icontains=search_value)
-            )
-    else:
-        # standard Web API request handling
-        add_forge_requests = AddForgeRequest.objects.order_by("-id")
-
-        page_num = int(request.GET.get("page", 1))
-        per_page = int(request.GET.get("per_page", 10))
-        per_page = min(per_page, 1000)
+    page_num = int(request.GET.get("page", 1))
+    per_page = int(request.GET.get("per_page", 10))
+    per_page = min(per_page, 1000)
 
     if (
         int(request.GET.get("user_requests_only", "0"))
@@ -321,40 +285,30 @@ def api_add_forge_request_list(request: Union[HttpRequest, Request]):
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
-    if request.user.has_perm(MODERATOR_ROLE):
+    if request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
         requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
 
     results = [dict(request) for request in requests]
 
-    if datatables:
-        # datatables response
-        table_data["recordsFiltered"] = add_forge_requests.count()
-        table_data["data"] = results
-        return table_data
-    else:
-        # standard Web API response
-        response: Dict[str, Any] = {"results": results, "headers": {}}
+    response: Dict[str, Any] = {"results": results, "headers": {}}
 
-        if page.has_previous():
-            response["headers"]["link-prev"] = reverse(
-                "api-1-add-forge-request-list",
-                query_params={
-                    "page": page.previous_page_number(),
-                    "per_page": per_page,
-                },
-                request=request,
-            )
+    if page.has_previous():
+        response["headers"]["link-prev"] = reverse(
+            "api-1-add-forge-request-list",
+            query_params={"page": page.previous_page_number(), "per_page": per_page,},
+            request=request,
+        )
 
-        if page.has_next():
-            response["headers"]["link-next"] = reverse(
-                "api-1-add-forge-request-list",
-                query_params={"page": page.next_page_number(), "per_page": per_page},
-                request=request,
-            )
+    if page.has_next():
+        response["headers"]["link-next"] = reverse(
+            "api-1-add-forge-request-list",
+            query_params={"page": page.next_page_number(), "per_page": per_page},
+            request=request,
+        )
 
-        return response
+    return response
 
 
 @api_route(
@@ -387,7 +341,9 @@ def api_add_forge_request_get(request: Request, id: int):
         request=add_forge_request
     ).order_by("id")
 
-    if request.user.is_authenticated and request.user.has_perm(MODERATOR_ROLE):
+    if request.user.is_authenticated and request.user.has_perm(
+        ADD_FORGE_MODERATOR_PERMISSION
+    ):
         data = AddForgeNowRequestSerializer(add_forge_request).data
         history = AddForgeNowRequestHistorySerializer(request_history, many=True).data
     else:

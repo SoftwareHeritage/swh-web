@@ -12,13 +12,11 @@ import iso8601
 import pytest
 
 from swh.web.add_forge_now.models import Request
-from swh.web.api.views.add_forge_now import MODERATOR_ROLE
 from swh.web.common.utils import reverse
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_response,
     check_http_post_response,
-    create_django_permission,
 )
 
 
@@ -132,12 +130,6 @@ def test_add_forge_request_create_duplicate(api_client, regular_user):
     assert len(requests) == 1
 
 
-@pytest.fixture
-def moderator_user(regular_user2):
-    regular_user2.user_permissions.add(create_django_permission(MODERATOR_ROLE))
-    return regular_user2
-
-
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 def test_add_forge_request_update_anonymous_user(api_client):
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
@@ -152,34 +144,34 @@ def test_add_forge_request_update_regular_user(api_client, regular_user):
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_update_non_existent(api_client, moderator_user):
-    api_client.force_login(moderator_user)
+def test_add_forge_request_update_non_existent(api_client, add_forge_moderator):
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
     check_api_post_response(api_client, url, status_code=400)
 
 
-def _create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA):
+def create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
     return check_api_post_response(api_client, url, data=data, status_code=201,)
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_update_empty(api_client, regular_user, moderator_user):
-    _create_add_forge_request(api_client, regular_user)
+def test_add_forge_request_update_empty(api_client, regular_user, add_forge_moderator):
+    create_add_forge_request(api_client, regular_user)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
     check_api_post_response(api_client, url, status_code=400)
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 def test_add_forge_request_update_missing_field(
-    api_client, regular_user, moderator_user
+    api_client, regular_user, add_forge_moderator
 ):
-    _create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
     check_api_post_response(api_client, url, data={}, status_code=400)
     check_api_post_response(
@@ -188,10 +180,10 @@ def test_add_forge_request_update_missing_field(
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_update(api_client, regular_user, moderator_user):
-    _create_add_forge_request(api_client, regular_user)
+def test_add_forge_request_update(api_client, regular_user, add_forge_moderator):
+    create_add_forge_request(api_client, regular_user)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
 
     check_api_post_response(
@@ -208,11 +200,11 @@ def test_add_forge_request_update(api_client, regular_user, moderator_user):
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 def test_add_forge_request_update_invalid_new_status(
-    api_client, regular_user, moderator_user
+    api_client, regular_user, add_forge_moderator
 ):
-    _create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
     check_api_post_response(
         api_client,
@@ -224,7 +216,7 @@ def test_add_forge_request_update_invalid_new_status(
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 def test_add_forge_request_update_status_concurrent(
-    api_client, regular_user, moderator_user, mocker
+    api_client, regular_user, add_forge_moderator, mocker
 ):
 
     _block_while_testing = mocker.patch(
@@ -232,9 +224,9 @@ def test_add_forge_request_update_status_concurrent(
     )
     _block_while_testing.side_effect = lambda: time.sleep(1)
 
-    _create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
 
     worker_ended = False
@@ -275,7 +267,7 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
 
     assert resp.data == []
 
-    _create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user)
 
     resp = check_api_get_responses(api_client, url, status_code=200)
 
@@ -289,7 +281,7 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
 
     assert resp.data == [add_forge_request]
 
-    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
 
     resp = check_api_get_responses(api_client, url, status_code=200)
 
@@ -305,13 +297,15 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_list_moderator(api_client, regular_user, moderator_user):
+def test_add_forge_request_list_moderator(
+    api_client, regular_user, add_forge_moderator
+):
     url = reverse("api-1-add-forge-request-list")
 
-    _create_add_forge_request(api_client, regular_user)
-    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     resp = check_api_get_responses(api_client, url, status_code=200)
 
     add_forge_request = {
@@ -339,8 +333,8 @@ def test_add_forge_request_list_moderator(api_client, regular_user, moderator_us
 def test_add_forge_request_list_pagination(
     api_client, regular_user, api_request_factory
 ):
-    _create_add_forge_request(api_client, regular_user)
-    _create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
 
     url = reverse("api-1-add-forge-request-list", query_params={"per_page": 1})
 
@@ -375,8 +369,8 @@ def test_add_forge_request_list_pagination(
 def test_add_forge_request_list_submitter_filtering(
     api_client, regular_user, regular_user2
 ):
-    _create_add_forge_request(api_client, regular_user)
-    _create_add_forge_request(api_client, regular_user2, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user)
+    create_add_forge_request(api_client, regular_user2, data=ADD_OTHER_FORGE_DATA)
 
     api_client.force_login(regular_user)
     url = reverse(
@@ -387,159 +381,15 @@ def test_add_forge_request_list_submitter_filtering(
     assert len(resp.data) == 1
 
 
-NB_FORGE_TYPE = 2
-NB_FORGES_PER_TYPE = 20
-
-
-def _create_add_forge_requests(api_client, regular_user, regular_user2):
-    requests = []
-    for i in range(NB_FORGES_PER_TYPE):
-        request = {
-            "forge_type": "gitlab",
-            "forge_url": f"https://gitlab.example{i:02d}.org",
-            "forge_contact_email": f"admin@gitlab.example{i:02d}.org",
-            "forge_contact_name": f"gitlab.example{i:02d}.org admin",
-            "forge_contact_comment": "user marked as owner in forge members",
-        }
-        _create_add_forge_request(
-            api_client, regular_user, data=request,
-        )
-        requests.append(request)
-
-        request = {
-            "forge_type": "gitea",
-            "forge_url": f"https://gitea.example{i:02d}.org",
-            "forge_contact_email": f"admin@gitea.example{i:02d}.org",
-            "forge_contact_name": f"gitea.example{i:02d}.org admin",
-            "forge_contact_comment": "user marked as owner in forge members",
-        }
-        _create_add_forge_request(
-            api_client, regular_user2, data=request,
-        )
-        requests.append(request)
-    return requests
-
-
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_list_datatables(
-    api_client, regular_user, regular_user2, moderator_user
-):
-    _create_add_forge_requests(api_client, regular_user, regular_user2)
-
-    length = 10
-
-    url = reverse(
-        "api-1-add-forge-request-list",
-        query_params={"draw": 1, "length": length, "start": 0},
-    )
-
-    api_client.force_login(regular_user)
-    resp = check_api_get_responses(api_client, url, status_code=200)
-
-    assert resp.data["draw"] == 1
-    assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert len(resp.data["data"]) == length
-    # default ordering is by descending id
-    assert resp.data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert (
-        resp.data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
-    )
-    assert "submitter_name" not in resp.data["data"][0]
-
-    api_client.force_login(moderator_user)
-    resp = check_api_get_responses(api_client, url, status_code=200)
-
-    assert resp.data["draw"] == 1
-    assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert len(resp.data["data"]) == length
-    # default ordering is by descending id
-    assert resp.data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert (
-        resp.data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
-    )
-    assert "submitter_name" in resp.data["data"][0]
-
-
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_list_datatables_ordering(
-    api_client, regular_user, regular_user2, moderator_user
-):
-    requests = _create_add_forge_requests(api_client, regular_user, regular_user2)
-    requests_sorted = list(sorted(requests, key=lambda d: d["forge_url"]))
-    forge_urls_asc = [request["forge_url"] for request in requests_sorted]
-    forge_urls_desc = list(reversed(forge_urls_asc))
-
-    length = 10
-
-    for direction in ("asc", "desc"):
-        for i in range(4):
-            url = reverse(
-                "api-1-add-forge-request-list",
-                query_params={
-                    "draw": 1,
-                    "length": length,
-                    "start": i * length,
-                    "order[0][column]": 2,
-                    "order[0][dir]": direction,
-                    "columns[2][name]": "forge_url",
-                },
-            )
-
-            api_client.force_login(regular_user)
-            resp = check_api_get_responses(api_client, url, status_code=200)
-
-            assert resp.data["draw"] == 1
-            assert resp.data["recordsFiltered"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-            assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-            assert len(resp.data["data"]) == length
-
-            page_forge_urls = [request["forge_url"] for request in resp.data["data"]]
-            if direction == "asc":
-                expected_forge_urls = forge_urls_asc[i * length : (i + 1) * length]
-            else:
-                expected_forge_urls = forge_urls_desc[i * length : (i + 1) * length]
-            assert page_forge_urls == expected_forge_urls
-
-
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_list_datatables_search(
-    api_client, regular_user, regular_user2, moderator_user
-):
-    _create_add_forge_requests(api_client, regular_user, regular_user2)
-
-    url = reverse(
-        "api-1-add-forge-request-list",
-        query_params={
-            "draw": 1,
-            "length": NB_FORGES_PER_TYPE,
-            "start": 0,
-            "search[value]": "gitlab",
-        },
-    )
-
-    api_client.force_login(regular_user)
-    resp = check_api_get_responses(api_client, url, status_code=200)
-
-    assert resp.data["draw"] == 1
-    assert resp.data["recordsFiltered"] == NB_FORGES_PER_TYPE
-    assert resp.data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert len(resp.data["data"]) == NB_FORGES_PER_TYPE
-
-    page_forge_type = [request["forge_type"] for request in resp.data["data"]]
-    assert page_forge_type == ["gitlab"] * NB_FORGES_PER_TYPE
-
-
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_get(api_client, regular_user, moderator_user):
-    resp = _create_add_forge_request(api_client, regular_user)
+def test_add_forge_request_get(api_client, regular_user, add_forge_moderator):
+    resp = create_add_forge_request(api_client, regular_user)
 
     submission_date = resp.data["submission_date"]
 
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     check_api_post_response(
         api_client,
         url,
@@ -578,14 +428,14 @@ def test_add_forge_request_get(api_client, regular_user, moderator_user):
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_get_moderator(api_client, regular_user, moderator_user):
-    resp = _create_add_forge_request(api_client, regular_user)
+def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_moderator):
+    resp = create_add_forge_request(api_client, regular_user)
 
     submission_date = resp.data["submission_date"]
 
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
 
-    api_client.force_login(moderator_user)
+    api_client.force_login(add_forge_moderator)
     check_api_post_response(
         api_client,
         url,
@@ -618,7 +468,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, moderator_use
             {
                 "id": 2,
                 "text": "waiting for message",
-                "actor": moderator_user.username,
+                "actor": add_forge_moderator.username,
                 "actor_role": "MODERATOR",
                 "date": resp.data["history"][1]["date"],
                 "new_status": "WAITING_FOR_FEEDBACK",
