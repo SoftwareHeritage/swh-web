@@ -76,27 +76,27 @@ describe('Test add-forge-request creation', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Forge type');
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Forge URL');
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Forge contact name');
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Forge contact email');
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Forge contact email');
 
-    cy.get('#requestForm')
+    cy.get('#requestCreateForm')
       .children()
       .contains('Submit Add Request');
   });
@@ -113,32 +113,11 @@ describe('Test add-forge-request creation', function() {
       .should('not.be.visible');
   });
 
-  it('should show success message on form submit', function() {
-    cy.userLogin();
-    cy.visit(this.addForgeNowUrl);
-    populateForm('cgit', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestForm').submit();
-
-    cy.get('#userMessage')
-      .should('have.class', 'badge-success');
-  });
-
-  it('should show error message on conflict', function() {
+  it('should should update browse list on successful submission', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestForm').submit();
-
-    cy.get('#userMessage')
-      .should('have.class', 'badge-danger')
-      .should('contain', 'Sorry; an error occurred');
-  });
-
-  it('should should update broswse list on successul submission', function() {
-    cy.userLogin();
-    cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestForm').submit();
+    cy.get('#requestCreateForm').submit();
 
     // Change tab
     cy.get('#swh-add-forge-requests-list-tab').click();
@@ -149,5 +128,18 @@ describe('Test add-forge-request creation', function() {
     cy.get('#add-forge-request-browse')
       .should('be.visible')
       .contains('PENDING');
+  });
+
+  it('should show error message on conflict', function() {
+    cy.userLogin();
+    cy.visit(this.addForgeNowUrl);
+    populateForm('bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
+    cy.get('#requestCreateForm').submit();
+
+    cy.get('#requestCreateForm').submit(); // Submitting the same data again
+
+    cy.get('#userMessage')
+      .should('have.class', 'badge-danger')
+      .should('contain', 'Sorry; an error occurred');
   });
 });

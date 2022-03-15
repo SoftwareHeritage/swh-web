@@ -57,7 +57,7 @@ See top-level LICENSE file for more information
         {% else %}
 
         <form method="POST" action="{% url 'api-1-add-forge-request-create' %}"
-              id="requestForm" class="collapse {% if user.is_authenticated %} show {% endif %}">
+              id="requestCreateForm" class="collapse {% if user.is_authenticated %} show {% endif %}">
           {% csrf_token %}
           <div class="form-row">
             <div class="form-group col-md-5">

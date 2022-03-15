@@ -6,8 +6,7 @@
  */
 
 export function onCreateRequestPageLoad() {
-  $('#requestForm').submit(function(event) {
-    event.preventDefault();
+  $('#requestCreateForm').submit(function(event) {
     $.ajax({
       data: $(this).serialize(),
       type: $(this).attr('method'),
@@ -17,15 +16,17 @@ export function onCreateRequestPageLoad() {
         $('#userMessage').text('Your request has been submitted');
         $('#userMessage').removeClass('badge-danger');
         $('#userMessage').addClass('badge-success');
-        populateRequesBrowseList();
+        populateRequesBrowseList(); // Update the listing
       },
       error: function(response, status, error) {
+        $('#userMessageDetail').empty();
         $('#userMessage').text('Sorry; an error occurred');
         $('#userMessageDetail').text(response.responseText);
         $('#userMessage').removeClass('badge-success');
         $('#userMessage').addClass('badge-danger');
       }
     });
+    event.preventDefault();
   });
   populateRequesBrowseList(); // Load existing requests
 }
@@ -45,7 +46,7 @@ export async function populateRequesBrowseList() {
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {
-        'url': Urls.api_1_add_forge_request_list()
+        'url': Urls.add_forge_request_list_datatables()
       },
       columns: [
         {
