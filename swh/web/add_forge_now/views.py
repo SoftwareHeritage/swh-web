@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
@@ -121,10 +121,14 @@ def create_request(request):
     )
 
 
+def _can_access_moderation(user):
+    return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)
+
+
 @admin_route(
     r"moderation/", view_name="moderation-forge-add",
 )
-@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
+@user_passes_test(_can_access_moderation, login_url=settings.LOGIN_URL)
 def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
@@ -138,7 +142,7 @@ def moderation_dashboard(request):
 @admin_route(
     r"request/(?P<request_id>.+)/", view_name="request-dashboard-forge-add",
 )
-@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
+@user_passes_test(_can_access_moderation, login_url=settings.LOGIN_URL)
 def request_dashboard(request, request_id):
     """Moderation dashboard to allow listing current requests.
 
