@@ -5,11 +5,13 @@
 
 from typing import Any, Dict
 
+from django import forms
 from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
+from django.shortcuts import render
 
 from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
@@ -85,3 +87,25 @@ urlpatterns = [
         name="add-forge-request-list-datatables",
     ),
 ]
+
+FORGE_TYPES = [
+    ("cgit", "cgit"),
+    ("gitlab", "gitlab"),
+    ("heptapod", "heptapod"),
+    ("gitea", "gitea"),
+]
+
+
+class RequestForm(forms.Form):
+    forge_type = forms.ChoiceField(choices=FORGE_TYPES)
+    forge_url = forms.CharField(label="Forge contact name", max_length=100)
+    forge_contact_email = forms.CharField(label="Forge contact email", max_length=100)
+    forge_contact_name = forms.CharField(label="Forge contact name", max_length=100)
+    forge_contact_comment = forms.CharField(label="Comment", max_length=100)
+
+
+def submit_request(request):
+    request_form = RequestForm()
+    return render(
+        request, "add_forge_now/submit-request.html", {"request_form": request_form}
+    )

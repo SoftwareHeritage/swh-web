@@ -63,6 +63,7 @@ urlpatterns = [
     url(r"^", include("swh.web.add_forge_now.views")),
     url(r"^", include("swh.web.auth.views")),
     url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
+    url(r"^forge/", include("swh.web.add_forge_now.urls")),
 ]
 
 
