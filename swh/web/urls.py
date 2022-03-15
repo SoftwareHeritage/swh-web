@@ -60,6 +60,7 @@ urlpatterns = [
         name="browse-swhid",
     ),
     url(r"^", include("swh.web.misc.urls")),
+    url(r"^", include("swh.web.add_forge_now.views")),
     url(r"^", include("swh.web.auth.views")),
     url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
 ]

@@ -19,6 +19,7 @@ SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
 ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
 MAILMAP_PERMISSION = "swh.web.mailmap"
+ADD_FORGE_MODERATOR_PERMISSION = "swh.web.add_forge_now.moderator"
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:
