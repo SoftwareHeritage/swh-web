@@ -51,7 +51,7 @@ See top-level LICENSE file for more information
         <h3>
           <p class="text-primary">
             You must be logged in to submit an add forge request. Please
-            <a href="{% url 'login' %}?next={% url 'forge-add' %}" class="link-primary">log in here</a>
+            <a id="loginLink" href="{% url 'login' %}?next={% url 'forge-add' %}" class="link-primary">log in here</a>
           </p>
         </h3>
         {% else %}
@@ -121,7 +121,7 @@ See top-level LICENSE file for more information
 
           <div class="form-row">
             <div class="col-md-12">
-              <input type="submit" value="Submit Add Request" class="btn btn-default float-right">
+              <input id="swh-input-form-submit" type="submit" value="Submit Add Request" class="btn btn-default float-right">
             </div>
           </div>
 

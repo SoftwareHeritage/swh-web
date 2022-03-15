@@ -8,7 +8,6 @@
 export function onCreateRequestPageLoad() {
   $('#requestForm').submit(function(event) {
     event.preventDefault();
-
     $.ajax({
       data: $(this).serialize(),
       type: $(this).attr('method'),
@@ -18,6 +17,7 @@ export function onCreateRequestPageLoad() {
         $('#userMessage').text('Your request has been submitted');
         $('#userMessage').removeClass('badge-danger');
         $('#userMessage').addClass('badge-success');
+        populateRequesBrowseList();
       },
       error: function(response, status, error) {
         $('#userMessage').text('Sorry; an error occurred');
