@@ -58,6 +58,23 @@ Cypress.Commands.add('ambassadorLogin', () => {
   return loginUser('ambassador', 'ambassador');
 });
 
+function mockSwhStatusRequest() {
+  cy.intercept('https://status.softwareheritage.org/**', {
+    body: {
+      'result': {
+        'status': [
+          {
+            'id': '5f7c4c567f50b304c1e7bd5f',
+            'name': 'Save Code Now',
+            'updated': '2020-11-30T13:51:21.151Z',
+            'status': 'Operational',
+            'status_code': 100
+          }
+        ]
+      }
+    }}).as('swhPlatformStatus');
+}
+
 before(function() {
   this.unarchivedRepo = {
     url: 'https://github.com/SoftwareHeritage/swh-web',
@@ -98,6 +115,8 @@ before(function() {
       directory: '5b61d50ef35ca9a4618a3572bde947b8cccf71ad'
     }
   }];
+
+  mockSwhStatusRequest();
 
   const getMetadataForOrigin = async originUrl => {
     const originVisitsApiUrl = this.Urls.api_1_origin_visits(originUrl);
@@ -155,4 +174,8 @@ before(function() {
 
     }
   });
+});
+
+beforeEach(function() {
+  mockSwhStatusRequest();
 });
