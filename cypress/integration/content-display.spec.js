@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -60,7 +60,10 @@ describe('Test File Rendering', function() {
   });
 
   it('should have correct url to raw file', function() {
-    cy.get(`a[href='${origin.content[0].rawFilePath}']`)
+    const content = origin.content[0];
+    const rawFileUrl = this.Urls.browse_content_raw(`sha1_git:${content.sha1git}`) +
+      `?filename=${encodeURIComponent(content.name)}`;
+    cy.get(`a[href='${rawFileUrl}']`)
       .should('be.visible');
   });
 });
