@@ -751,4 +751,24 @@ describe('Origin Save Tests', function() {
 
   });
 
+  it('should switch tabs when playing with browser history', function() {
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
+    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
+
+    cy.get('#swh-origin-save-request-help-tab')
+      .should('have.class', 'active');
+
+    cy.get('#swh-origin-save-requests-list-tab')
+      .click()
+      .should('have.class', 'active');
+
+    cy.go('back')
+      .get('#swh-origin-save-request-help-tab')
+      .should('have.class', 'active');
+
+    cy.go('forward')
+      .get('#swh-origin-save-requests-list-tab')
+      .should('have.class', 'active');
+  });
+
 });
