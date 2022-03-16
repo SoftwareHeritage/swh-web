@@ -22,7 +22,7 @@ export async function populateModerationList() {
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {
-        'url': Urls.api_1_add_forge_request_list()
+        'url': Urls.add_forge_request_list_datatables()
       },
       columns: [
         {

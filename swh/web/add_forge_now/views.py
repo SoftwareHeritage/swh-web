@@ -11,7 +11,6 @@ from django.conf.urls import url
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import Http404
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -133,8 +132,6 @@ def moderation_dashboard(request):
     """Moderation dashboard to allow listing current requests.
 
     """
-    if not request.user.is_superuser:
-        raise Http404("Page does not exist")
     existing = AddForgeRequest.objects.all()
     return render(request, "add_forge_now/moderation.html", {"existing": existing},)
 
@@ -155,8 +152,6 @@ def request_dashboard(request, request_id):
 
     """
 
-    if not request.user.is_superuser:
-        raise Http404("Page does not exist")
     request_update_form = RequestUpdateForm()
     return render(
         request,
