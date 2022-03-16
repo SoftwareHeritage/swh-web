@@ -56,7 +56,7 @@ Cypress.Commands.add('ambassadorLogin', () => {
   return loginUser('ambassador', 'ambassador');
 });
 
-function mockSwhStatusRequest() {
+function mockCostlyRequests() {
   cy.intercept('https://status.softwareheritage.org/**', {
     body: {
       'result': {
@@ -71,11 +71,15 @@ function mockSwhStatusRequest() {
         ]
       }
     }}).as('swhPlatformStatus');
+
+  cy.intercept('/coverage', {
+    body: ''
+  }).as('swhCoverageWidget');
 }
 
 before(function() {
 
-  mockSwhStatusRequest();
+  mockCostlyRequests();
 
   cy.task('getSwhTestsData').then(testsData => {
     Object.assign(this, testsData);
@@ -87,5 +91,5 @@ before(function() {
 });
 
 beforeEach(function() {
-  mockSwhStatusRequest();
+  mockCostlyRequests();
 });

@@ -115,7 +115,7 @@ module.exports = {
     static: {
       directory: path.resolve('./'),
       watch: {
-        ignored: /(node_modules|.tox|.mypy)/
+        ignored: /(node_modules|.tox|.mypy|.*.sqlite3)/
       }
     },
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
