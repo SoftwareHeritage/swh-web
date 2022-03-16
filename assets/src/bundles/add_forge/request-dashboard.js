@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {handleFetchError, csrfPost} from 'utils/functions';
+
 export function onRequestDashboardLoad(requestId) {
   populateRequestDetails(requestId);
 
@@ -12,26 +14,23 @@ export function onRequestDashboardLoad(requestId) {
     contactForgeAdmin(event);
   });
 
-  $('#updateRequestForm').submit(function(event) {
+  $('#updateRequestForm').submit(async function(event) {
     event.preventDefault();
-    $.ajax({
-      data: $(this).serialize(),
-      type: $(this).attr('method'),
-      url: $(this).attr('action'),
-      success: function(response) {
-        $('#userMessage').text('The request status has been updated ');
-        $('#userMessage').removeClass('badge-danger');
-        $('#userMessage').addClass('badge-success');
-
-        populateRequestDetails(requestId); // FIXME, this is not upating the options list; maybe we should clear everything before re-populating
-      },
-      error: function(request, status, error) {
-        // FIXME, show error response from server
-        $('#userMessage').text('Sorry following error happened, ' + error);
-        $('#userMessage').removeClass('badge-success');
-        $('#userMessage').addClass('badge-danger');
-      }
-    });
+    try {
+      const response = await csrfPost($(this).attr('action'),
+                                      {'Content-Type': 'application/x-www-form-urlencoded'},
+                                      $(this).serialize());
+      handleFetchError(response);
+      $('#userMessage').text('The request status has been updated ');
+      $('#userMessage').removeClass('badge-danger');
+      $('#userMessage').addClass('badge-success');
+      populateRequestDetails(requestId); // FIXME, this is not updating the options list; maybe we should clear everything before re-populating
+    } catch (response) {
+      // const responseText = await response.json();
+      $('#userMessage').text('Sorry; Updating the request failed');
+      $('#userMessage').removeClass('badge-success');
+      $('#userMessage').addClass('badge-danger');
+    }
   });
 }
 
