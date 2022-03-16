@@ -731,7 +731,9 @@ describe('Origin Save Tests', function() {
 
     for (const originUrl of ['https://github.com/BiC-MnI/MnI_AuToReG',
                              'https://github.com/BiC-MnI/MnI_AuToReG.git',
-                             'https://github.com/BiC-MnI/MnI_AuToReG/']) {
+                             'https://github.com/BiC-MnI/MnI_AuToReG/',
+                             'https://BiC-MnI.github.io/MnI_AuToReG/'
+    ]) {
 
       // enter non canonical URL of github repo
       cy.get('#swh-input-origin-url')
