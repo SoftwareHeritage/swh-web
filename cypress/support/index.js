@@ -60,6 +60,10 @@ Cypress.Commands.add('depositLogin', () => {
   return loginUser('deposit', 'deposit');
 });
 
+Cypress.Commands.add('addForgeModeratorLogin', () => {
+  return loginUser('add-forge-moderator', 'add-forge-moderator');
+});
+
 function mockCostlyRequests() {
   cy.intercept('https://status.softwareheritage.org/**', {
     body: {
