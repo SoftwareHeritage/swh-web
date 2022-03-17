@@ -24,7 +24,7 @@ export function onRequestDashboardLoad(requestId) {
       $('#userMessage').text('The request status has been updated ');
       $('#userMessage').removeClass('badge-danger');
       $('#userMessage').addClass('badge-success');
-      populateRequestDetails(requestId); // FIXME, this is not updating the options list; maybe we should clear everything before re-populating
+      populateRequestDetails(requestId);
     } catch (response) {
       // const responseText = await response.json();
       $('#userMessage').text('Sorry; Updating the request failed');
@@ -107,7 +107,8 @@ export function populateDecisionSelectOption(currentStatus) {
       `<option value="${status}">${label}</option>`
     );
   }
-
+  // Remove all the options and add ones
+  $('#decisionOptions').children().remove();
   nextStatuses.forEach(addStatusOption);
 }
 
