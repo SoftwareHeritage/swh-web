@@ -7,7 +7,7 @@
 
 const defaultRedirect = '/admin/login/';
 
-let moderationForgeAddUrl;
+let moderationAddForgeUrl;
 let listAddForgeRequestsUrl;
 
 function logout() {
@@ -17,12 +17,12 @@ function logout() {
 
 describe('Test moderation Login/logout', function() {
   before(function() {
-    moderationForgeAddUrl = this.Urls.moderation_forge_add();
+    moderationAddForgeUrl = this.Urls.moderation_forge_add();
     listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
   });
 
   it('should redirect to default page', function() {
-    cy.visit(moderationForgeAddUrl)
+    cy.visit(moderationAddForgeUrl)
       .get('input[name="username"]')
       .type('admin')
       .get('input[name="password"]')
@@ -31,57 +31,57 @@ describe('Test moderation Login/logout', function() {
       .submit();
 
     cy.location('pathname')
-      .should('be.equal', defaultRedirect);
+      .should('be.equal', moderationAddForgeUrl);
   });
 
   it('should redirect to correct page after login', function() {
-    cy.visit(moderationForgeAddUrl)
+    cy.visit(moderationAddForgeUrl)
       .location('pathname')
-      .should('be.equal', '/admin/login/');
+      .should('be.equal', defaultRedirect);
 
     cy.adminLogin();
-    cy.visit(moderationForgeAddUrl)
+    cy.visit(moderationAddForgeUrl)
       .location('pathname')
-      .should('be.equal', moderationForgeAddUrl);
+      .should('be.equal', moderationAddForgeUrl);
 
     logout();
   });
 
   it('should not display moderation link in sidebar when anonymous', function() {
-    cy.visit(moderationForgeAddUrl);
-    cy.get(`.sidebar a[href="${moderationForgeAddUrl}"]`)
+    cy.visit(moderationAddForgeUrl);
+    cy.get(`.sidebar a[href="${moderationAddForgeUrl}"]`)
       .should('not.exist');
   });
 
   it('should not display moderation link when connected as unprivileged user', function() {
     cy.userLogin();
-    cy.visit(moderationForgeAddUrl);
+    cy.visit(moderationAddForgeUrl);
 
-    cy.get(`.sidebar a[href="${moderationForgeAddUrl}"]`)
+    cy.get(`.sidebar a[href="${moderationAddForgeUrl}"]`)
       .should('not.exist');
 
   });
 
   it('should display moderation link in sidebar when connected as staff member', function() {
     cy.adminLogin();
-    cy.visit(moderationForgeAddUrl);
+    cy.visit(moderationAddForgeUrl);
 
-    cy.get(`.sidebar a[href="${moderationForgeAddUrl}"]`)
+    cy.get(`.sidebar a[href="${moderationAddForgeUrl}"]`)
       .should('exist');
   });
 
   it('should display moderation link in sidebar when connected as privileged user', function() {
     cy.moderatorLogin();
-    cy.visit(moderationForgeAddUrl);
+    cy.visit(moderationAddForgeUrl);
 
-    cy.get(`.sidebar a[href="${moderationForgeAddUrl}"]`)
+    cy.get(`.sidebar a[href="${moderationAddForgeUrl}"]`)
       .should('exist');
   });
 
   it('should list add-forge-now requests', function() {
     cy.intercept(`${listAddForgeRequestsUrl}**`, {fixture: 'add-forge-now-requests'}).as('listRequests');
     cy.moderatorLogin();
-    cy.visit(moderationForgeAddUrl);
+    cy.visit(moderationAddForgeUrl);
 
     cy.wait('@listRequests');
     cy.get('tbody tr').then(rows => {
