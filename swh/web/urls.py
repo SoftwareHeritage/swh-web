@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,7 +28,7 @@ from swh.web.common.exc import (
     swh_handle500,
 )
 from swh.web.common.utils import origin_visit_types
-from swh.web.config import get_config
+from swh.web.config import get_config, is_feature_enabled
 
 swh_web_config = get_config()
 
@@ -60,10 +60,12 @@ urlpatterns = [
         name="browse-swhid",
     ),
     url(r"^", include("swh.web.misc.urls")),
-    url(r"^", include("swh.web.add_forge_now.views")),
     url(r"^", include("swh.web.auth.views")),
     url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
 ]
+
+if is_feature_enabled("add_forge_now"):
+    urlpatterns += (url(r"^", include("swh.web.add_forge_now.views")),)
 
 
 # allow to serve assets through django staticfiles

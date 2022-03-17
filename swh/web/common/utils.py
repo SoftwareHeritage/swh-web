@@ -315,6 +315,7 @@ def context_processor(request):
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
+        "FEATURES": get_config()["features"],
     }
 
 
