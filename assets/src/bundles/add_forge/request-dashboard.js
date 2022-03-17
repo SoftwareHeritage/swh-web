@@ -48,7 +48,9 @@ async function populateRequestDetails(requestId) {
     populateRequestHistory(data.history);
     populateDecisionSelectOption(data.request.status);
   } catch (response) {
-    console.log(response);
+    alert(11);
+    $('#fetchError').removeClass('d-done');
+    $('#requestDetails').addClass('d-done');
   }
 }
 
