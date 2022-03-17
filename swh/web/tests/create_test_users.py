@@ -7,7 +7,11 @@ from typing import Dict, List, Tuple
 
 from django.contrib.auth import get_user_model
 
-from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION, SWH_AMBASSADOR_PERMISSION
+from swh.web.auth.utils import (
+    ADD_FORGE_MODERATOR_PERMISSION,
+    ADMIN_LIST_DEPOSIT_PERMISSION,
+    SWH_AMBASSADOR_PERMISSION,
+)
 from swh.web.tests.utils import create_django_permission
 
 User = get_user_model()
@@ -21,6 +25,11 @@ users: Dict[str, Tuple[str, str, List[str]]] = {
         [SWH_AMBASSADOR_PERMISSION],
     ),
     "deposit": ("deposit", "deposit@example.org", [ADMIN_LIST_DEPOSIT_PERMISSION],),
+    "add-forge-moderator": (
+        "add-forge-moderator",
+        "moderator@example.org",
+        [ADD_FORGE_MODERATOR_PERMISSION],
+    ),
 }
 
 

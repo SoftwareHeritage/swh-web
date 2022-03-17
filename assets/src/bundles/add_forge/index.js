@@ -8,3 +8,4 @@
 // bundle for add forge views
 
 export * from './create-request';
+export * from './moderation-dashboard';

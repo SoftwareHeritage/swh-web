@@ -231,6 +231,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   </a>
                 </li>
               {% endif %}
+              {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-forge-add-moderation-item" title="Add forge now moderation">
+                  <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-forge-add-moderation-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                  </a>
+                </li>
+              {% endif %}
               {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
               <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
                 <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">

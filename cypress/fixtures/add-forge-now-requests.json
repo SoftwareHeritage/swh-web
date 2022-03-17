@@ -1,0 +1,79 @@
+{
+  "recordsTotal": 6,
+  "draw": 1,
+  "recordsFiltered": 6,
+  "data": [
+    {
+      "id": 1,
+      "status": "PENDING",
+      "submission_date": "2022-03-09T14:06:09.092714Z",
+      "submitter_name": "user",
+      "submitter_email": "user@example.org",
+      "forge_type": "cgit",
+      "forge_url": "cgit.org",
+      "forge_contact_email": "cgit@cgit.org",
+      "forge_contact_name": "cgit",
+      "forge_contact_comment": "please"
+    },
+    {
+      "id": 2,
+      "status": "PENDING",
+      "submission_date": "2022-03-09T14:07:01.442033Z",
+      "submitter_name": "user",
+      "submitter_email": "user@example.org",
+      "forge_type": "cgit",
+      "forge_url": "cgit2.org",
+      "forge_contact_email": "cgit2@cgit.org",
+      "forge_contact_name": "cgit2",
+      "forge_contact_comment": "please"
+    },
+    {
+      "id": 3,
+      "status": "ACCEPTED",
+      "submission_date": "2022-03-11T14:53:58.576374Z",
+      "submitter_name": "admin",
+      "submitter_email": "admin@example.org",
+      "forge_type": "gitlab",
+      "forge_url": "https://gitlab-stuff.org",
+      "forge_contact_email": "admin@gitlab-stuff.org",
+      "forge_contact_name": "admin",
+      "forge_contact_comment": "hello"
+    },
+    {
+      "id": 4,
+      "status": "PENDING",
+      "submission_date": "2022-03-15T08:53:29.845342Z",
+      "submitter_name": "admin",
+      "submitter_email": "admin@example.org",
+      "forge_type": "gitlab",
+      "forge_url": "https://gitlab.com/blah/dot-files",
+      "forge_contact_email": "blah@org.org",
+      "forge_contact_name": "blah",
+      "forge_contact_comment": "blah"
+    },
+    {
+      "id": 5,
+      "status": "PENDING",
+      "submission_date": "2022-03-15T08:54:58.254710Z",
+      "submitter_name": "admin",
+      "submitter_email": "admin@example.org",
+      "forge_type": "heptapod",
+      "forge_url": "heptapod0",
+      "forge_contact_email": "pod@hepta.org",
+      "forge_contact_name": "hepta",
+      "forge_contact_comment": "heh"
+    },
+    {
+      "id": 6,
+      "status": "PENDING",
+      "submission_date": "2022-03-15T08:55:16.984753Z",
+      "submitter_name": "admin",
+      "submitter_email": "admin@example.org",
+      "forge_type": "heptapod",
+      "forge_url": "heptapod1",
+      "forge_contact_email": "pod@hepta1.org",
+      "forge_contact_name": "hepta1",
+      "forge_contact_comment": "hi"
+    }
+  ]
+}
