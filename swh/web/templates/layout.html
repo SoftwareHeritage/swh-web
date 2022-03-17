@@ -209,12 +209,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Save code now</p>
               </a>
             </li>
+            {% if FEATURES.add_forge_now %}
             <li class="nav-item swh-origin-save-item" title="Request adding a new forge listing">
               <a href="{% url 'forge-add' %}" class="nav-link swh-forge-add-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
                 <p>Add forge now</p>
               </a>
             </li>
+            {% endif %}
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
               <a href="#" class="nav-link swh-help-link" onclick="swh.guided_tour.guidedTourButtonClick(event)">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
@@ -231,13 +233,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   </a>
                 </li>
               {% endif %}
-              {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
+              {% if FEATURES.add_forge_now %}
+                {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
                 <li class="nav-item swh-forge-add-moderation-item" title="Add forge now moderation">
                   <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-forge-add-moderation-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
                     <p>Add forge now</p>
                   </a>
                 </li>
+                {% endif %}
               {% endif %}
               {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
               <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
