@@ -3,21 +3,21 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
+from django.shortcuts import render
 
+from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
 from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
-
-from .models import Request as AddForgeRequest
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -78,10 +78,30 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
     return JsonResponse(table_data)
 
 
+FORGE_TYPES: List[str] = [
+    "bitbucket",
+    "cgit",
+    "gitlab",
+    "gitea",
+    "heptapod",
+]
+
+
+def create_request(request):
+    """View to create a new 'add_forge_now' request.
+
+    """
+
+    return render(
+        request, "add_forge_now/create-request.html", {"forge_types": FORGE_TYPES},
+    )
+
+
 urlpatterns = [
     url(
         r"^add-forge/request/list/datatables$",
         add_forge_request_list_datatables,
         name="add-forge-request-list-datatables",
     ),
+    url(r"^add-forge/request/create$", create_request, name="forge-add"),
 ]
