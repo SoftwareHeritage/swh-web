@@ -35,22 +35,21 @@ export function onRequestDashboardLoad(requestId) {
 }
 
 async function populateRequestDetails(requestId) {
-  fetch(Urls.api_1_add_forge_request_get(requestId))
-    .then(response => response.json())
-    .then(data => {
-      $('#requestStatus').text(data.request.status);
-      $('#requestType').text(data.request.forge_type);
-      $('#requestURL').text(data.request.forge_url);
-      $('#requestEmail').text(data.request.forge_contact_email);
-      // FIXME, set the correct email address in send button
-      // $('#requestEmail').(data.request.forge_contact_email);
-      populateRequestHistory(data.history);
-      populateDecisionSelectOption(data.request.status);
-    })
-    .catch(error => {
-      // FIXME, handle error case
-      console.log(error);
-    });
+  try {
+    const response = await fetch(Urls.api_1_add_forge_request_get(requestId));
+    handleFetchError(response);
+    const data = await response.json();
+    $('#requestStatus').text(data.request.status);
+    $('#requestType').text(data.request.forge_type);
+    $('#requestURL').text(data.request.forge_url);
+    $('#requestEmail').text(data.request.forge_contact_email);
+    // FIXME, set the correct email address in send button
+    // $('#requestEmail').(data.request.forge_contact_email);
+    populateRequestHistory(data.history);
+    populateDecisionSelectOption(data.request.status);
+  } catch (response) {
+    console.log(response);
+  }
 }
 
 function populateRequestHistory(history) {
