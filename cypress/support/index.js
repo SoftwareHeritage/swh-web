@@ -56,6 +56,10 @@ Cypress.Commands.add('ambassadorLogin', () => {
   return loginUser('ambassador', 'ambassador');
 });
 
+Cypress.Commands.add('depositLogin', () => {
+  return loginUser('deposit', 'deposit');
+});
+
 function mockCostlyRequests() {
   cy.intercept('https://status.softwareheritage.org/**', {
     body: {
