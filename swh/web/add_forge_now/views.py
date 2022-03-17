@@ -99,17 +99,6 @@ FORGE_TYPES: List[str] = [
 ]
 
 
-class RequestUpdateForm(forms.Form):
-    """Form for moderators to update an 'add_forge_now' request
-
-    """
-
-    new_status = forms.ChoiceField(choices=[])
-    new_status.widget.attrs.update({"class": "form-control", "id": "decisionOptions"})
-    text = forms.CharField(label="Comment", widget=forms.Textarea)
-    text.widget.attrs.update({"class": "form-control", "rows": "3"})
-
-
 def create_request(request):
     """View to create a new 'add_forge_now' request.
 
@@ -152,9 +141,8 @@ def request_dashboard(request, request_id):
 
     """
 
-    request_update_form = RequestUpdateForm()
     return render(
         request,
         "add_forge_now/request-dashboard.html",
-        {"request_id": request_id, "request_update_form": request_update_form},
+        {"request_id": request_id},
     )
