@@ -5,8 +5,6 @@
  * See top-level LICENSE file for more information
  */
 
-
-let forgeAddRequest;
 const requestId = 1;
 
 describe('Test add forge now request dashboard load', function() {
@@ -73,7 +71,7 @@ describe('Test add forge now request dashboard load', function() {
   //   // make sure the email address is right
   // });
 
-  it('should load possbile next status', function() {
+  it('should load possible next status', function() {
     // 3 possible status for a request in pending state
     cy.get('#decisionOptions')
       .children()
@@ -83,6 +81,6 @@ describe('Test add forge now request dashboard load', function() {
   it('should update the forge request', function() {
   });
 
-  it('should update cahnge the request details', function() {
+  it('should update change the request details', function() {
   });
 });
