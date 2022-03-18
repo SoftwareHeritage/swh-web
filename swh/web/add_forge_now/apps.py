@@ -7,4 +7,5 @@ from django.apps import AppConfig
 
 
 class AddForgeNowConfig(AppConfig):
-    name = "add_forge_now"
+    name = "swh.web.add_forge_now"
+    label = "swh_web_add_forge_now"
