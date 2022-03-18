@@ -8,8 +8,53 @@
 // data to use as request query response
 let responseDeposits;
 let expectedOrigins;
+let depositModerationUrl;
+let depositListUrl;
+
+describe('Test moderation deposit Login/logout', function() {
+  before(function() {
+    depositModerationUrl = this.Urls.admin_deposit();
+  });
+
+  it('should not display deposit moderation link in sidebar when anonymous', function() {
+    cy.visit(depositModerationUrl);
+    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+      .should('not.exist');
+  });
+
+  it('should not display deposit moderation link when connected as unprivileged user', function() {
+    cy.userLogin();
+    cy.visit(depositModerationUrl);
+
+    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+      .should('not.exist');
+
+  });
+
+  it('should display deposit moderation link in sidebar when connected as privileged user', function() {
+    cy.depositLogin();
+    cy.visit(depositModerationUrl);
+
+    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+      .should('exist');
+  });
+
+  it('should display deposit moderation link in sidebar when connected as staff member', function() {
+    cy.adminLogin();
+    cy.visit(depositModerationUrl);
+
+    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+      .should('exist');
+  });
+
+});
 
 describe('Test admin deposit page', function() {
+  before(function() {
+    depositModerationUrl = this.Urls.admin_deposit();
+    depositListUrl = this.Urls.admin_deposit_list();
+  });
+
   beforeEach(() => {
     responseDeposits = [
       {
@@ -59,7 +104,7 @@ describe('Test admin deposit page', function() {
     cy.adminLogin();
 
     const testDeposits = responseDeposits;
-    cy.intercept(`${this.Urls.admin_deposit_list()}**`, {
+    cy.intercept(`${depositListUrl}**`, {
       body: {
         'draw': 10,
         'recordsTotal': testDeposits.length,
@@ -68,11 +113,10 @@ describe('Test admin deposit page', function() {
       }
     }).as('listDeposits');
 
-    cy.visit(this.Urls.admin_deposit());
+    cy.visit(depositModerationUrl);
 
     cy.location('pathname')
-      .should('be.equal', this.Urls.admin_deposit());
-    cy.url().should('include', '/admin/deposit');
+      .should('be.equal', depositModerationUrl);
 
     cy.get('#swh-admin-deposit-list')
       .should('exist');

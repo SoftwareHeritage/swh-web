@@ -446,7 +446,7 @@ def api_origin_visit(request, visit_id, origin_url):
 
 
 @api_route(
-    r"/origin/(?P<origin_url>.+)" "/intrinsic-metadata", "api-origin-intrinsic-metadata"
+    r"/origin/(?P<origin_url>.+)/intrinsic-metadata/", "api-origin-intrinsic-metadata"
 )
 @api_doc("/origin/intrinsic-metadata/")
 @format_docstring()

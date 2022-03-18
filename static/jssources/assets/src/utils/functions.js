@@ -100,6 +100,14 @@ export async function isArchivedOrigin(originPath) {
   }
 }
 
+async function getCanonicalGithubOriginURL(ownerRepo) {
+  const ghApiResponse = await fetch(`https://api.github.com/repos/${ownerRepo}`);
+  if (ghApiResponse.ok && ghApiResponse.status === 200) {
+    const ghApiResponseData = await ghApiResponse.json();
+    return ghApiResponseData.html_url;
+  }
+}
+
 export async function getCanonicalOriginURL(originUrl) {
   let originUrlLower = originUrl.toLowerCase();
   // github.com URL processing
@@ -116,11 +124,22 @@ export async function getCanonicalOriginURL(originUrl) {
     // extract {owner}/{repo}
     const ownerRepo = originUrlLower.replace(ghUrlRegex, '');
     // fetch canonical URL from github Web API
-    const ghApiResponse = await fetch(`https://api.github.com/repos/${ownerRepo}`);
-    if (ghApiResponse.ok && ghApiResponse.status === 200) {
-      const ghApiResponseData = await ghApiResponse.json();
-      return ghApiResponseData.html_url;
+    const url = getCanonicalGithubOriginURL(ownerRepo);
+    if (url) {
+      return url;
     }
   }
+
+  const ghpagesUrlRegex = /^http[s]*:\/\/(?<owner>[^/]+).github.io\/(?<repo>[^/]+)\/?.*/;
+  const parsedUrl = originUrlLower.match(ghpagesUrlRegex);
+  if (parsedUrl) {
+    const ownerRepo = `${parsedUrl.groups.owner}/${parsedUrl.groups.repo}`;
+    // fetch canonical URL from github Web API
+    const url = getCanonicalGithubOriginURL(ownerRepo);
+    if (url) {
+      return url;
+    }
+  }
+
   return originUrl;
 }

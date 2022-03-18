@@ -70,10 +70,10 @@ def mock_view_scope3(request):
 
 
 urlpatterns += [
-    url(r"^scope1_class$", MockViewScope1.as_view()),
-    url(r"^scope2_func$", mock_view_scope2),
-    url(r"^scope3_class$", MockViewScope3.as_view()),
-    url(r"^scope3_func$", mock_view_scope3),
+    url(r"^scope1_class/$", MockViewScope1.as_view()),
+    url(r"^scope2_func/$", mock_view_scope2),
+    url(r"^scope3_class/$", MockViewScope3.as_view()),
+    url(r"^scope3_func/$", mock_view_scope3),
 ]
 
 
@@ -95,19 +95,19 @@ def test_scope1_requests_are_throttled(api_client):
     Ensure request rate is limited in scope1
     """
     for i in range(scope1_limiter_rate):
-        response = api_client.get("/scope1_class")
+        response = api_client.get("/scope1_class/")
         check_response(response, 200, scope1_limiter_rate, scope1_limiter_rate - i - 1)
 
-    response = api_client.get("/scope1_class")
+    response = api_client.get("/scope1_class/")
     check_response(response, 429, scope1_limiter_rate, 0)
 
     for i in range(scope1_limiter_rate_post):
-        response = api_client.post("/scope1_class")
+        response = api_client.post("/scope1_class/")
         check_response(
             response, 200, scope1_limiter_rate_post, scope1_limiter_rate_post - i - 1
         )
 
-    response = api_client.post("/scope1_class")
+    response = api_client.post("/scope1_class/")
     check_response(response, 429, scope1_limiter_rate_post, 0)
 
 
@@ -117,19 +117,19 @@ def test_scope2_requests_are_throttled(api_client):
     Ensure request rate is limited in scope2
     """
     for i in range(scope2_limiter_rate):
-        response = api_client.get("/scope2_func")
+        response = api_client.get("/scope2_func/")
         check_response(response, 200, scope2_limiter_rate, scope2_limiter_rate - i - 1)
 
-    response = api_client.get("/scope2_func")
+    response = api_client.get("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate, 0)
 
     for i in range(scope2_limiter_rate_post):
-        response = api_client.post("/scope2_func")
+        response = api_client.post("/scope2_func/")
         check_response(
             response, 200, scope2_limiter_rate_post, scope2_limiter_rate_post - i - 1
         )
 
-    response = api_client.post("/scope2_func")
+    response = api_client.post("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate_post, 0)
 
 
@@ -140,19 +140,19 @@ def test_scope3_requests_are_throttled_exempted(api_client):
     requests coming from localhost are exempted from rate limit.
     """
     for _ in range(scope3_limiter_rate + 1):
-        response = api_client.get("/scope3_class")
+        response = api_client.get("/scope3_class/")
         check_response(response, 200)
 
     for _ in range(scope3_limiter_rate_post + 1):
-        response = api_client.post("/scope3_class")
+        response = api_client.post("/scope3_class/")
         check_response(response, 200)
 
     for _ in range(scope3_limiter_rate + 1):
-        response = api_client.get("/scope3_func")
+        response = api_client.get("/scope3_func/")
         check_response(response, 200)
 
     for _ in range(scope3_limiter_rate_post + 1):
-        response = api_client.post("/scope3_func")
+        response = api_client.post("/scope3_func/")
         check_response(response, 200)
 
 
@@ -163,11 +163,11 @@ def test_staff_users_are_not_rate_limited(api_client, staff_user):
     api_client.force_login(staff_user)
 
     for _ in range(scope2_limiter_rate + 1):
-        response = api_client.get("/scope2_func")
+        response = api_client.get("/scope2_func/")
         check_response(response, 200)
 
     for _ in range(scope2_limiter_rate_post + 1):
-        response = api_client.post("/scope2_func")
+        response = api_client.post("/scope2_func/")
         check_response(response, 200)
 
 
@@ -182,12 +182,12 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
     )
 
     for i in range(scope2_limiter_rate_user):
-        response = api_client.get("/scope2_func")
+        response = api_client.get("/scope2_func/")
         check_response(
             response, 200, scope2_limiter_rate_user, scope2_limiter_rate_user - i - 1
         )
 
-    response = api_client.get("/scope2_func")
+    response = api_client.get("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate_user, 0)
 
     scope2_limiter_rate_post_user = (
@@ -195,7 +195,7 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
     )
 
     for i in range(scope2_limiter_rate_post_user):
-        response = api_client.post("/scope2_func")
+        response = api_client.post("/scope2_func/")
         check_response(
             response,
             200,
@@ -203,7 +203,7 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
             scope2_limiter_rate_post_user - i - 1,
         )
 
-    response = api_client.post("/scope2_func")
+    response = api_client.post("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate_post_user, 0)
 
 
@@ -222,9 +222,9 @@ def test_users_with_throttling_exempted_perm_are_not_rate_limited(
     api_client.force_login(regular_user)
 
     for _ in range(scope2_limiter_rate + 1):
-        response = api_client.get("/scope2_func")
+        response = api_client.get("/scope2_func/")
         check_response(response, 200)
 
     for _ in range(scope2_limiter_rate_post + 1):
-        response = api_client.post("/scope2_func")
+        response = api_client.post("/scope2_func/")
         check_response(response, 200)

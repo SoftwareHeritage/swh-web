@@ -74,6 +74,7 @@ def check_http_post_response(
     url: str,
     status_code: int,
     content_type: str = "*/*",
+    request_content_type="application/json",
     data: Optional[Dict[str, Any]] = None,
     http_origin: Optional[str] = None,
 ) -> HttpResponse:
@@ -84,6 +85,7 @@ def check_http_post_response(
         url: URL to check response
         status_code: expected HTTP status code
         content_type: expected response content type
+        request_content_type: content type of request body
         data: optional POST data
 
     Returns:
@@ -93,7 +95,7 @@ def check_http_post_response(
         response=client.post(
             url,
             data=data,
-            content_type="application/json",
+            content_type=request_content_type,
             HTTP_ACCEPT=content_type,
             HTTP_ORIGIN=http_origin,
         ),
@@ -225,7 +227,13 @@ def create_django_permission(perm_name: str) -> Permission:
     perm_splitted = perm_name.split(".")
     app_label = ".".join(perm_splitted[:-1])
     perm_name = perm_splitted[-1]
-    content_type = ContentType.objects.create(app_label=app_label, model="dummy")
+    content_type = ContentType.objects.create(
+        id=1000 + ContentType.objects.count(), app_label=app_label, model="dummy"
+    )
+
     return Permission.objects.create(
-        codename=perm_name, name=perm_name, content_type=content_type,
+        codename=perm_name,
+        name=perm_name,
+        content_type=content_type,
+        id=1000 + Permission.objects.count(),
     )

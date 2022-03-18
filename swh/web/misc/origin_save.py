@@ -92,7 +92,7 @@ urlpatterns = [
         name="origin-save-requests-list",
     ),
     url(
-        r"^save/task/info/(?P<save_request_id>.+)/",
+        r"^save/task/info/(?P<save_request_id>.+)/$",
         _save_origin_task_info,
         name="origin-save-task-info",
     ),
