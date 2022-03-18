@@ -28,3 +28,19 @@ def add_forge_now_requests_moderation_dashboard(request):
         "add_forge_now/requests-moderation.html",
         {"heading": "Add forge now requests moderation"},
     )
+
+
+@admin_route(
+    r"add-forge/request/(?P<request_id>(\d)+)/",
+    view_name="add-forge-now-request-dashboard",
+)
+@user_passes_test(_can_access_moderation, login_url=settings.LOGIN_URL)
+def add_forge_now_request_dashboard(request, request_id):
+    """Moderation dashboard to allow listing current requests.
+
+    """
+    return render(
+        request,
+        "add_forge_now/request-dashboard.html",
+        {"request_id": request_id, "heading": "Add forge now request dashboard"},
+    )

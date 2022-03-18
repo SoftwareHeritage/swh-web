@@ -9,3 +9,4 @@
 
 export * from './create-request';
 export * from './moderation-dashboard';
+export * from './request-dashboard';
