@@ -82,7 +82,7 @@ class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
 
 
 @api_route(
-    r"/add-forge/request/create", "api-1-add-forge-request-create", methods=["POST"],
+    r"/add-forge/request/create/", "api-1-add-forge-request-create", methods=["POST"],
 )
 @api_doc("/add-forge/request/create")
 @format_docstring()
@@ -248,7 +248,7 @@ def api_add_forge_request_update(
 
 
 @api_route(
-    r"/add-forge/request/list", "api-1-add-forge-request-list", methods=["GET"],
+    r"/add-forge/request/list/", "api-1-add-forge-request-list", methods=["GET"],
 )
 @api_doc("/add-forge/request/list")
 @format_docstring()
@@ -312,7 +312,7 @@ def api_add_forge_request_list(request: Request):
 
 
 @api_route(
-    r"/add-forge/request/(?P<id>[0-9]+)/get",
+    r"/add-forge/request/(?P<id>[0-9]+)/get/",
     "api-1-add-forge-request-get",
     methods=["GET"],
 )

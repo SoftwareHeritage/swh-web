@@ -99,9 +99,9 @@ def create_request(request):
 
 urlpatterns = [
     url(
-        r"^add-forge/request/list/datatables$",
+        r"^add-forge/request/list/datatables/$",
         add_forge_request_list_datatables,
         name="add-forge-request-list-datatables",
     ),
-    url(r"^add-forge/request/create$", create_request, name="forge-add"),
+    url(r"^add-forge/request/create/$", create_request, name="forge-add"),
 ]

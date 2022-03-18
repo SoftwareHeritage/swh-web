@@ -43,7 +43,7 @@ def _default_view(request):
 
 urlpatterns = [
     url(r"^admin/", include("swh.web.admin.urls")),
-    url(r"^favicon\.ico$", favicon_view),
+    url(r"^favicon\.ico/$", favicon_view),
     url(r"^api/", include("swh.web.api.urls")),
     url(r"^browse/", include("swh.web.browse.urls")),
     url(r"^$", _default_view, name="swh-web-homepage"),
@@ -76,7 +76,7 @@ def insecure_serve(request, path, **kwargs):
 
 # enable to serve compressed assets through django development server
 if swh_web_config["serve_assets"]:
-    static_pattern = r"^%s(?P<path>.*)$" % settings.STATIC_URL[1:]
+    static_pattern = r"^%s(?P<path>.*)/$" % settings.STATIC_URL[1:]
     urlpatterns.append(url(static_pattern, insecure_serve))
 
 

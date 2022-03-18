@@ -330,7 +330,7 @@ def swhid_iframe(request, swhid: str):
 
 urlpatterns = [
     url(
-        r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)$",
+        r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
         swhid_iframe,
         name="swhid-iframe",
     ),
