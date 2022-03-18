@@ -36,7 +36,7 @@ from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
-from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
+from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION, OIDC_SWH_WEB_CLIENT_ID
 from swh.web.common import converters
 from swh.web.common.origin_save import get_scheduler_load_task_types
 from swh.web.common.typing import OriginVisitInfo
@@ -49,6 +49,7 @@ from swh.web.tests.data import (
     random_sha1,
     random_sha256,
 )
+from swh.web.tests.utils import create_django_permission
 
 # Used to skip some tests
 ctags_json_missing = (
@@ -1214,3 +1215,12 @@ def regular_user():
 @pytest.fixture
 def regular_user2():
     return User.objects.create_user(username="janedoe", password="")
+
+
+@pytest.fixture
+def add_forge_moderator():
+    moderator = User.objects.create_user(username="add-forge moderator", password="")
+    moderator.user_permissions.add(
+        create_django_permission(ADD_FORGE_MODERATOR_PERMISSION)
+    )
+    return moderator

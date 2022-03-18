@@ -109,10 +109,10 @@ def profile_update_mailmap(request: Request) -> HttpResponse:
 
 
 urlpatterns = [
-    url(r"^profile/mailmap/list$", profile_list_mailmap, name="profile-mailmap-list",),
-    url(r"^profile/mailmap/add$", profile_add_mailmap, name="profile-mailmap-add",),
+    url(r"^profile/mailmap/list/$", profile_list_mailmap, name="profile-mailmap-list",),
+    url(r"^profile/mailmap/add/$", profile_add_mailmap, name="profile-mailmap-add",),
     url(
-        r"^profile/mailmap/update$",
+        r"^profile/mailmap/update/$",
         profile_update_mailmap,
         name="profile-mailmap-update",
     ),

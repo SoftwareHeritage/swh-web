@@ -127,6 +127,7 @@ DEFAULT_CONFIG = {
     "staging_server_names": ("list", SWH_WEB_STAGING_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),
     "give": ("dict", {"public_key": "", "token": ""}),
+    "features": ("dict", {"add_forge_now": True}),
 }
 
 swhweb_config: Dict[str, Any] = {}
@@ -207,3 +208,11 @@ def counters():
 
     """
     return get_config()["counters"]
+
+
+def is_feature_enabled(feature_name: str) -> bool:
+    """Determine whether a feature is enabled or not. If feature_name is not found at all,
+    it's considered disabled.
+
+    """
+    return get_config()["features"].get(feature_name, False)

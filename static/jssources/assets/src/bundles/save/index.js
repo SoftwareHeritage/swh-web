@@ -350,6 +350,14 @@ export function initOriginSave() {
       $('.nav-tabs a[href="#swh-origin-save-requests-list"]').tab('show');
     }
 
+    $(window).on('hashchange', () => {
+      if (window.location.hash === '#requests') {
+        $('.nav-tabs a[href="#swh-origin-save-requests-list"]').tab('show');
+      } else {
+        $('.nav-tabs a[href="#swh-origin-save-requests-create"]').tab('show');
+      }
+    });
+
   });
 
 }

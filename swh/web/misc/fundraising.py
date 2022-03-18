@@ -58,5 +58,5 @@ def fundraising_banner(request):
 
 
 urlpatterns = [
-    url(r"^fundraising/banner", fundraising_banner, name="swh-fundraising-banner"),
+    url(r"^fundraising/banner/$", fundraising_banner, name="swh-fundraising-banner"),
 ]

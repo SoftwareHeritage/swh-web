@@ -26,7 +26,6 @@ import 'highlightjs-eta/dist/eta.min';
 import 'highlightjs-extempore/dist/extempore.min';
 import 'highlightjs-gdscript/dist/gdscript.min';
 import 'highlightjs-gf/dist/gf.min';
-import * as hljsDefineGraphQL from 'highlightjs-graphql';
 import 'highlightjs-gsql/dist/gsql.min';
 import 'highlightjs-hlsl/dist/hlsl.min';
 import 'highlightjs-jolie/dist/jolie.min';
@@ -67,7 +66,6 @@ hljs.lineNumbersElementSync = function(elt) {
   elt.innerHTML = hljs.lineNumbersValue(elt.innerHTML);
 };
 
-hljsDefineGraphQL(hljs);
 hljs.registerLanguage('lean', hljsDefineLean);
 hljs.registerLanguage('lox', hljsDefineLox);
 hljs.registerLanguage('mirc', window.hljsDefineMIRC);

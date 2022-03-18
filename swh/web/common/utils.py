@@ -27,7 +27,10 @@ from django.shortcuts import redirect
 from django.urls import resolve
 from django.urls import reverse as django_reverse
 
-from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
+from swh.web.auth.utils import (
+    ADD_FORGE_MODERATOR_PERMISSION,
+    ADMIN_LIST_DEPOSIT_PERMISSION,
+)
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
 from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
@@ -311,6 +314,8 @@ def context_processor(request):
         "swh_web_version": get_distribution("swh.web").version,
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
+        "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
+        "FEATURES": get_config()["features"],
     }
 
 
