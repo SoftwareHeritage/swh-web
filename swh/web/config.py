@@ -127,7 +127,7 @@ DEFAULT_CONFIG = {
     "staging_server_names": ("list", SWH_WEB_STAGING_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),
     "give": ("dict", {"public_key": "", "token": ""}),
-    "features": ("dict", {"add_forge_now": False}),
+    "features": ("dict", {"add_forge_now": True}),
 }
 
 swhweb_config: Dict[str, Any] = {}

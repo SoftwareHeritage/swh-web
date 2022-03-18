@@ -9,15 +9,8 @@ Django development settings for swh-web.
 
 from django.core.cache import cache
 
-from swh.web.config import get_config
-
 from .common import *  # noqa
 from .common import MIDDLEWARE
-
-swh_web_config = get_config()
-swh_web_config.update(
-    {"features": {"add_forge_now": True,},}
-)
 
 MIDDLEWARE += ["swh.web.common.middlewares.HtmlPrettifyMiddleware"]
 

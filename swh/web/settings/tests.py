@@ -81,7 +81,6 @@ swh_web_config.update(
             "server_url": "http://localhost:8080/auth/" if _pytest else "",
             "realm_name": "SoftwareHeritage",
         },
-        "features": {"add_forge_now": True,},
     }
 )
 
