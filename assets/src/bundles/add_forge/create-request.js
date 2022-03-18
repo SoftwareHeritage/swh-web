@@ -23,11 +23,32 @@ export function onCreateRequestPageLoad() {
         $('#userMessage').removeClass('badge-danger');
         $('#userMessage').addClass('badge-success');
         requestBrowseTable.draw(); // redraw the table to update the list
-      } catch (response) {
-        const responseText = await response.json();
+      } catch (errorResponse) {
         $('#userMessageDetail').empty();
-        $('#userMessage').text('Sorry; an error occurred');
-        $('#userMessageDetail').text(responseText.substring(0, 500));
+
+        let errorMessage;
+        let errorMessageDetail = '';
+        const errorData = await errorResponse.json();
+        // if (errorResponse.content_type === 'text/plain') { // does not work?
+        if (errorResponse.status === 409) {
+          errorMessage = errorData;
+        } else { // assuming json response
+          // const exception = errorData['exception'];
+          errorMessage = 'An unknown error occurred during the request creation';
+          try {
+            const reason = JSON.parse(errorData['reason']);
+            Object.entries(reason).forEach((keys, _) => {
+              const key = keys[0];
+              const message = keys[1][0]; // take only the first issue
+              errorMessageDetail += `\n${key}: ${message}`;
+            });
+          } catch (_) {
+            errorMessageDetail = errorData['reason']; // can't parse it, leave it raw
+          }
+        }
+        $('#userMessage').text(
+          errorMessageDetail ? `Error: ${errorMessageDetail}` : errorMessage
+        );
         $('#userMessage').removeClass('badge-success');
         $('#userMessage').addClass('badge-danger');
       }

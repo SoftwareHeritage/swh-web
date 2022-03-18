@@ -134,6 +134,33 @@ describe('Test add-forge-request creation', function() {
 
     cy.get('#userMessage')
       .should('have.class', 'badge-danger')
-      .should('contain', 'Sorry; an error occurred');
+      .should('contain', 'already exists');
   });
+
+  it('should show error message', function() {
+    cy.userLogin();
+
+    cy.intercept('POST', `${this.Urls.api_1_add_forge_request_create()}**`,
+                 {
+                   body: {
+                     'exception': 'BadInputExc',
+                     'reason': '{"add-forge-comment": ["This field is required"]}'
+                   },
+                   statusCode: 400
+                 }).as('errorRequest');
+
+    cy.visit(this.addForgeNowUrl);
+
+    populateForm(
+      'bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'comment'
+    );
+    cy.get('#requestCreateForm').submit();
+
+    cy.wait('@errorRequest').then((xhr) => {
+      cy.get('#userMessage')
+        .should('have.class', 'badge-danger')
+        .should('contain', 'field is required');
+    });
+  });
+
 });
