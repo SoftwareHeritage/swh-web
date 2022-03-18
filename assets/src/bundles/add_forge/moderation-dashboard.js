@@ -28,7 +28,10 @@ export async function populateModerationList() {
         {
           data: 'id',
           name: 'id',
-          render: $.fn.dataTable.render.text()
+          render: function(data, type, row, meta) {
+            const dashboardUrl = Urls.add_forge_now_request_dashboard(data);
+            return `<a href=${dashboardUrl}>${data}</a>`;
+          }
         },
         {
           data: 'submission_date',

@@ -1,0 +1,135 @@
+{% extends "../layout.html" %}
+
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block header %}
+{% render_bundle 'add_forge' %}
+{% endblock %}
+
+{% block title %}{{heading}} &ndash; Software Heritage archive{% endblock %}
+
+{% block navbar-content %}
+<h4>Add forge now request dashboard</h4>
+
+{% endblock %}
+
+{% block content %}
+<div class="col-md-7 offset-md-2">
+  <div class="container">
+    <div id="fetchError" class="d-none">
+      <h3>Error fetching information about the request</h3>
+    </div>
+    <div id="requestDetails">
+      <div class="row">
+        <div class="col-md-12">
+          <label>Request Info</label>
+          <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Status</h6>
+              </div>
+              <span class="text-muted" id="requestStatus"></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Type</h6>
+              </div>
+              <span class="text-muted" id="requestType"></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Forge URL</h6>
+              </div>
+              <span class="text-muted" id="requestURL"></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Forge contact email</h6>
+              </div>
+              <span id="requestEmail"></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed"
+                title="Submitter comment">
+              <p id="submitterMessage"></p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <label>Request history</label>
+          <div class="accordion" id="requestHistory">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label style="padding-top: 10px;">Message for the Forge administrator (Editable)</label>
+        <div class="form-group col-md-12">
+          <textarea class="form-control" id="swh-input-forge-admin-email"
+                    name="forge_contact_comment" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group col-md-12">
+          <button class="btn btn-default float-right" id="contactForgeAdmin"
+                  emailSubject="" emailTo="">
+            Send message to forge
+          </button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group col-md-12">
+          <form method="POST"
+                action="{% url 'api-1-add-forge-request-update' request_id %}"
+                style="padding-top: 5px;" id="updateRequestForm">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="decisionOptions">Choose your decision</label>
+                <select class="form-control" id="decisionOptions" name="new_status">
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-12">
+                <label for="swh-input-forge-comment">Comment</label>
+                <textarea class="form-control" id="updateComment" name="text" rows="3" required></textarea>
+                <small class="form-text text-muted">
+                  Enter any comment related to your decision.
+                </small>
+              </div>
+            </div>
+            <div class="form-group col-md-6">
+              <button type="submit" class="btn btn-default mb-2 btn-lg">Submit</button>
+            </div>
+
+            <div class="form-row">
+              <div class="col-md-12">
+                <h3 class="text-center">
+                  <span id="userMessage" class="badge"></span>
+                </h3>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  swh.add_forge.onRequestDashboardLoad("{{ request_id }}");
+</script>
+{% endblock %}
