@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,7 +28,7 @@ from swh.web.common.exc import (
     swh_handle500,
 )
 from swh.web.common.utils import origin_visit_types
-from swh.web.config import get_config
+from swh.web.config import get_config, is_feature_enabled
 
 swh_web_config = get_config()
 
@@ -43,7 +43,7 @@ def _default_view(request):
 
 urlpatterns = [
     url(r"^admin/", include("swh.web.admin.urls")),
-    url(r"^favicon\.ico$", favicon_view),
+    url(r"^favicon\.ico/$", favicon_view),
     url(r"^api/", include("swh.web.api.urls")),
     url(r"^browse/", include("swh.web.browse.urls")),
     url(r"^$", _default_view, name="swh-web-homepage"),
@@ -64,6 +64,9 @@ urlpatterns = [
     url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
 ]
 
+if is_feature_enabled("add_forge_now"):
+    urlpatterns += (url(r"^", include("swh.web.add_forge_now.views")),)
+
 
 # allow to serve assets through django staticfiles
 # even if settings.DEBUG is False
@@ -73,7 +76,7 @@ def insecure_serve(request, path, **kwargs):
 
 # enable to serve compressed assets through django development server
 if swh_web_config["serve_assets"]:
-    static_pattern = r"^%s(?P<path>.*)$" % settings.STATIC_URL[1:]
+    static_pattern = r"^%s(?P<path>.*)/$" % settings.STATIC_URL[1:]
     urlpatterns.append(url(static_pattern, insecure_serve))
 
 

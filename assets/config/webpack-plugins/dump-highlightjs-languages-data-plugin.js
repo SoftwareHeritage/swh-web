@@ -25,7 +25,6 @@ require('highlightjs-eta/dist/eta.min');
 require('highlightjs-extempore/dist/extempore.min');
 require('highlightjs-gdscript/dist/gdscript.min');
 require('highlightjs-gf/dist/gf.min');
-require('highlightjs-graphql')(hljs);
 require('highlightjs-gsql/dist/gsql.min');
 require('highlightjs-hlsl/dist/hlsl.min');
 require('highlightjs-jolie/dist/jolie.min');

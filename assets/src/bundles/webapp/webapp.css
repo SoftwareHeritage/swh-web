@@ -354,6 +354,10 @@ a.dropdown-left::before {
     margin-top: 30px;
 }
 
+.sidebar {
+    height: calc(100% - 7rem);
+}
+
 .content-wrapper {
     background: none;
 }
