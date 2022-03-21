@@ -11,6 +11,7 @@ function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-forge-contact-name').type(contact);
   cy.get('#swh-input-forge-contact-email').type(email);
   cy.get('#swh-input-forge-comment').type(comment);
+  cy.get('#swh-input-consent-check').click({force: consent === 'on'});
 }
 
 describe('Test add-forge-request creation', function() {
@@ -152,7 +153,7 @@ describe('Test add-forge-request creation', function() {
     cy.visit(this.addForgeNowUrl);
 
     populateForm(
-      'bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'comment'
+      'bitbucket', 'gitlab.com', 'test', 'test@example.com', 'off', 'comment'
     );
     cy.get('#requestCreateForm').submit();
 

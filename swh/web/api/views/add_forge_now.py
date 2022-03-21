@@ -45,6 +45,7 @@ class AddForgeNowRequestForm(ModelForm):
             "forge_contact_email",
             "forge_contact_name",
             "forge_contact_comment",
+            "submitter_forward_username",
         )
 
 

@@ -40,6 +40,7 @@ ADD_FORGE_DATA_FORGE1 = {
     "forge_contact_email": "admin@gitlab.example.org",
     "forge_contact_name": "gitlab.example.org admin",
     "forge_contact_comment": "user marked as owner in forge members",
+    "submitter_forward_username": True,
 }
 
 ADD_FORGE_DATA_FORGE2 = {
@@ -48,6 +49,7 @@ ADD_FORGE_DATA_FORGE2 = {
     "forge_contact_email": "admin@gitea.example.org",
     "forge_contact_name": "gitea.example.org admin",
     "forge_contact_comment": "user marked as owner in forge members",
+    "submitter_forward_username": True,
 }
 
 ADD_FORGE_DATA_FORGE3 = {
@@ -56,6 +58,7 @@ ADD_FORGE_DATA_FORGE3 = {
     "forge_contact_email": "admin@example.org",
     "forge_contact_name": "heptapod admin",
     "forge_contact_comment": "",  # authorized empty or null comment
+    "submitter_forward_username": False,
 }
 
 

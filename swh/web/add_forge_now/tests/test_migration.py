@@ -11,6 +11,7 @@ APP_NAME = "add_forge_now"
 
 MIGRATION_0001 = "0001_initial"
 MIGRATION_0002 = "0002_authorized_null_comment"
+MIGRATION_0003 = "0003_request_submitter_forward_username"
 
 
 def now() -> datetime:
@@ -95,3 +96,16 @@ def test_add_forge_now_allow_no_comment(migrator):
 
     req2 = make_request_with_empty_comment(requestModel2)
     req2.save()
+
+
+def test_add_forge_now_store_submitter_forward_username(migrator):
+    """Basic migration test to check new model authorized empty comment"""
+
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0002))
+    requestModel = state.apps.get_model(APP_NAME, "Request")
+    assert not hasattr(requestModel, "submitter_forward_username")
+
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0003))
+    requestModel2 = state.apps.get_model(APP_NAME, "Request")
+
+    assert hasattr(requestModel2, "submitter_forward_username")

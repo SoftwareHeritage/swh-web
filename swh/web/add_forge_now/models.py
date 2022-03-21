@@ -89,6 +89,7 @@ class Request(models.Model):
     submission_date = models.DateTimeField(auto_now_add=True)
     submitter_name = models.TextField()
     submitter_email = models.TextField()
+    submitter_forward_username = models.BooleanField(default=False)
     # FIXME: shall we do create a user model inside the webapp instead?
     forge_type = models.TextField()
     forge_url = models.TextField()
