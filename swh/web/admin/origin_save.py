@@ -184,17 +184,17 @@ def _admin_origin_save_request_accept(request, visit_type, origin_url):
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_reject(request, visit_type, origin_url):
     try:
-        SaveUnauthorizedOrigin.objects.get(url=origin_url)
+        sor = SaveOriginRequest.objects.get(
+            visit_type=visit_type, origin_url=origin_url, status=SAVE_REQUEST_PENDING
+        )
     except ObjectDoesNotExist:
-        SaveUnauthorizedOrigin.objects.create(url=origin_url)
-    sor = SaveOriginRequest.objects.get(
-        visit_type=visit_type, origin_url=origin_url, status=SAVE_REQUEST_PENDING
-    )
-
-    sor.status = SAVE_REQUEST_REJECTED
-    sor.note = json.loads(request.body).get("note")
-    sor.save()
-    return HttpResponse(status=200)
+        status_code = 404
+    else:
+        status_code = 200
+        sor.status = SAVE_REQUEST_REJECTED
+        sor.note = json.loads(request.body).get("note")
+        sor.save()
+    return HttpResponse(status=status_code)
 
 
 @admin_route(

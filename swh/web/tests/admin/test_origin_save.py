@@ -164,6 +164,20 @@ def test_reject_pending_save_request(client, staff_user, swh_scheduler):
     assert response.data[0]["note"] is None
 
 
+def test_reject_pending_save_request_not_found(client, staff_user, swh_scheduler):
+
+    visit_type = "git"
+    origin_url = "https://example.org"
+
+    reject_request_url = reverse(
+        "admin-origin-save-request-reject",
+        url_args={"visit_type": visit_type, "origin_url": origin_url},
+    )
+
+    client.force_login(staff_user)
+    check_http_post_response(client, reject_request_url, status_code=404)
+
+
 def test_reject_pending_save_request_with_note(client, staff_user, swh_scheduler):
 
     visit_type = "git"
