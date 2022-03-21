@@ -35,6 +35,8 @@ def _block_while_testing():
 
 
 class AddForgeNowRequestForm(ModelForm):
+    forge_contact_comment = CharField(required=False,)
+
     class Meta:
         model = AddForgeRequest
         fields = (

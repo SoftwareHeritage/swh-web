@@ -95,5 +95,5 @@ class Request(models.Model):
     forge_contact_email = models.EmailField()
     forge_contact_name = models.TextField()
     forge_contact_comment = models.TextField(
-        help_text="Where did you find this contact information (url, ...)",
+        null=True, help_text="Where did you find this contact information (url, ...)",
     )
