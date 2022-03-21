@@ -521,3 +521,13 @@ def parse_swh_deposit_origin(raw_metadata: str) -> Optional[str]:
         if elt is not None:
             return elt.attrib["url"]
     return None
+
+
+def has_add_forge_now_permission(user) -> bool:
+    """Is a user considered an add-forge-now moderator?
+
+    Returns
+        True if a user is staff or has add forge now moderator permission
+
+    """
+    return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)

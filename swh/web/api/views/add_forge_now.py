@@ -25,7 +25,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import has_add_forge_now_permission, reverse
 
 
 def _block_while_testing():
@@ -194,7 +194,7 @@ def api_add_forge_request_update(
             "You must be authenticated to update a new add-forge request"
         )
 
-    if not request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
+    if not has_add_forge_now_permission(request.user):
         return HttpResponseForbidden("You are not a moderator")
 
     add_forge_request = (

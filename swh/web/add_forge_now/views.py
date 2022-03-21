@@ -17,7 +17,7 @@ from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
-from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
+from swh.web.common.utils import has_add_forge_now_permission
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -66,7 +66,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
-    if request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
+    if has_add_forge_now_permission(request.user):
         requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
