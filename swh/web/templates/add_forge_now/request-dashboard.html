@@ -96,7 +96,7 @@ See top-level LICENSE file for more information
             {% csrf_token %}
             <div class="form-row">
               <div class="form-group col-md-6">
-                <label for="decisionOptions">Choose your decision</label>
+                <label for="decisionOptions" class="swh-required-label">Choose your decision</label>
                 <select class="form-control" id="decisionOptions" name="new_status">
                 </select>
               </div>
@@ -104,10 +104,10 @@ See top-level LICENSE file for more information
 
             <div class="form-row">
               <div class="form-group col-md-12">
-                <label for="swh-input-forge-comment">Comment</label>
+                <label for="swh-input-forge-comment" class="swh-required-label">Comment</label>
                 <textarea class="form-control" id="updateComment" name="text" rows="3" required></textarea>
                 <small class="form-text text-muted">
-                  Enter any comment related to your decision.
+                  Enter a comment related to your decision.
                 </small>
               </div>
             </div>

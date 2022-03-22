@@ -762,3 +762,8 @@ div.d3-tooltip {
 .invalid-feedback {
     font-size: 100%;
 }
+
+.swh-required-label:after {
+    content: "*";
+    color: #FF0000;
+}

@@ -63,7 +63,7 @@ Add forge now – Software Heritage archive
           {% csrf_token %}
           <div class="form-row">
             <div class="form-group col-md-5">
-              <label for="swh-input-forge-type">Forge type</label>
+              <label for="swh-input-forge-type" class="swh-required-label">Forge type</label>
               <select class="form-control" id="swh-input-forge-type" name="forge_type" autofocus>
                 {% for forge_type in forge_types %}
                 <option value={{ forge_type }}>{{ forge_type}}</option>
@@ -75,7 +75,7 @@ Add forge now – Software Heritage archive
             </div>
 
             <div class="form-group col-md-7">
-              <label for="swh-input-forge-url">Forge URL</label>
+              <label for="swh-input-forge-url" class="swh-required-label">Forge URL</label>
               <input type="text" class="form-control" id="swh-input-forge-url" name="forge_url" required>
               <small class="form-text text-muted">
                 Remote URL of the forge to list.
@@ -85,7 +85,7 @@ Add forge now – Software Heritage archive
 
           <div class="form-row">
             <div class="form-group col-md-5">
-              <label for="swh-input-forge-contact-name">Forge contact name</label>
+              <label for="swh-input-forge-contact-name" class="swh-required-label">Forge contact name</label>
               <input type="text" class="form-control" name="forge_contact_name" id="swh-input-forge-contact-name" required>
               <small class="form-text text-muted">
                 Name of the Forge administrator.
@@ -93,7 +93,7 @@ Add forge now – Software Heritage archive
             </div>
 
             <div class="form-group col-md-7">
-              <label for="swh-input-forge-contact-email">Forge contact email</label>
+              <label for="swh-input-forge-contact-email" class="swh-required-label">Forge contact email</label>
               <input type="email" class="form-control" name="forge_contact_email" id="swh-input-forge-contact-email" required>
               <small class="form-text text-muted">
                 Email of the forge administrator. The given email address will not be used for any purpose outside the “add forge now” process.
