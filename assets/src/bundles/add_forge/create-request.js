@@ -105,7 +105,10 @@ export function populateRequestBrowseList() {
         },
         {
           data: 'status',
-          name: 'status'
+          name: 'status',
+          render: function(data, type, row, meta) {
+            return swh.add_forge.formatRequestStatusName(data);
+          }
         }
       ]
     });

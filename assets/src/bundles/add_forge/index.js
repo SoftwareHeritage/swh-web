@@ -11,3 +11,20 @@ export * from './add-forge.css';
 export * from './create-request';
 export * from './moderation-dashboard';
 export * from './request-dashboard';
+
+export function formatRequestStatusName(status) {
+  // Mapping to format the request status to a human readable text
+  const statusLabel = {
+    'PENDING': 'Pending',
+    'WAITING_FOR_FEEDBACK': 'Waiting for feedback',
+    'FEEDBACK_TO_HANDLE': 'Feedback to handle',
+    'ACCEPTED': 'Accepted',
+    'SCHEDULED': 'Scheduled',
+    'FIRST_LISTING_DONE': 'First listing done',
+    'FIRST_ORIGIN_LOADED': 'First origin loaded',
+    'REJECTED': 'Rejected',
+    'SUSPENDED': 'Suspended',
+    'DENIED': 'Denied'
+  };
+  return status in statusLabel ? statusLabel[status] : status;
+}

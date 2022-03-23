@@ -122,7 +122,7 @@ describe('Test add-forge-request creation', function() {
 
     cy.get('#add-forge-request-browse')
       .should('be.visible')
-      .should('contain', 'PENDING');
+      .should('contain', 'Pending');
   });
 
   it('should show error message on conflict', function() {

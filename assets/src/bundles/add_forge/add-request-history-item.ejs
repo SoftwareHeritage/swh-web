@@ -12,7 +12,7 @@
                 aria-expanded="true" aria-controls="collapse$<%= index %>">
                 From <%= event.actor %> (<%= event.actor_role %>) on <%= event.date.slice(0, 16) %>
           <%if (event.new_status !== null) { %>
-          <span style="padding-left: 10px;">New status:</span> <%= event.new_status %>
+          <span style="padding-left: 10px;">New status:</span> <%= swh.add_forge.formatRequestStatusName(event.new_status) %>
           <% } %>
         </button>
       </h2>
@@ -22,7 +22,7 @@
         <p><%= event.text %></p>
         <%if (event.new_status !== null) { %>
           <p>
-           <span>Status changed to:</span> <strong><%= event.new_status %></strong>
+           <span>Status changed to:</span> <strong><%= swh.add_forge.formatRequestStatusName(event.new_status) %></strong>
           </p>
         <% } %>
       </div>

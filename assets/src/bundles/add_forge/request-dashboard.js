@@ -46,7 +46,7 @@ async function populateRequestDetails(requestId) {
     const data = await response.json();
     forgeRequest = data.request;
 
-    $('#requestStatus').text(forgeRequest.status);
+    $('#requestStatus').text(swh.add_forge.formatRequestStatusName(forgeRequest.status));
     $('#requestType').text(forgeRequest.forge_type);
     $('#requestURL').text(forgeRequest.forge_url);
     $('#requestContactName').text(forgeRequest.forge_contact_name);
@@ -98,25 +98,12 @@ export function populateDecisionSelectOption(currentStatus) {
     'DENIED': []
   };
 
-  const statusLabel = {
-    'PENDING': 'pending',
-    'WAITING_FOR_FEEDBACK': 'waiting for feedback',
-    'FEEDBACK_TO_HANDLE': 'feedback to handle',
-    'ACCEPTED': 'accepted',
-    'SCHEDULED': 'scheduled',
-    'FIRST_LISTING_DONE': 'first listing done',
-    'FIRST_ORIGIN_LOADED': 'first origin loaded',
-    'REJECTED': 'rejected',
-    'SUSPENDED': 'suspended',
-    'DENIED': 'denied'
-  };
-
   // Determine the possible next status out of the current one
   const nextStatuses = nextStatusesFor[currentStatus];
 
   function addStatusOption(status, index) {
     // Push the next possible status options
-    const label = statusLabel[status];
+    const label = swh.add_forge.formatRequestStatusName(status);
     $('#decisionOptions').append(
       `<option value="${status}">${label}</option>`
     );

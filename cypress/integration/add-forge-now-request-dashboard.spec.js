@@ -20,7 +20,7 @@ describe('Test add forge now request dashboard load', function() {
   it('should load add forge request details', function() {
     cy.wait('@forgeAddRequest');
     cy.get('#requestStatus')
-      .should('contain', 'PENDING');
+      .should('contain', 'Pending');
 
     cy.get('#requestType')
       .should('contain', 'bitbucket');
@@ -60,7 +60,7 @@ describe('Test add forge now request dashboard load', function() {
 
     cy.get('#requestHistory')
       .children()
-      .should('contain', 'New status: PENDING');
+      .should('contain', 'New status: Pending');
   });
 
   it('should load possible next status', function() {

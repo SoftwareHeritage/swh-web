@@ -51,7 +51,9 @@ export async function populateModerationList() {
         {
           data: 'status',
           name: 'status',
-          render: $.fn.dataTable.render.text()
+          render: function(data, type, row, meta) {
+            return swh.add_forge.formatRequestStatusName(data);
+          }
         }
       ]
     });
