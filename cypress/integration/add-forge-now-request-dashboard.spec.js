@@ -28,8 +28,12 @@ describe('Test add forge now request dashboard load', function() {
     cy.get('#requestURL')
       .should('contain', 'test.com');
 
-    cy.get('#requestEmail')
+    cy.get('#requestContactEmail')
       .should('contain', 'test@example.com');
+
+    cy.get('#requestContactName')
+      .should('contain', 'test user');
+
   });
 
   it('should not show any error message', function() {

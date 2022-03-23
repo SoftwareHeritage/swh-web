@@ -5,9 +5,14 @@
  * See top-level LICENSE file for more information
  */
 
-// bundle for add forge views
+.request-actions {
+    padding-right: 10px;
+}
 
-export * from './add-forge.css';
-export * from './create-request';
-export * from './moderation-dashboard';
-export * from './request-dashboard';
+.details-text {
+    padding-top: 5px;
+}
+
+.history-item {
+    padding-bottom: 5px;
+}

@@ -22,77 +22,20 @@ See top-level LICENSE file for more information
 {% endblock %}
 
 {% block content %}
-<div class="col-md-7 offset-md-2">
-  <div class="container">
-    <div id="fetchError" class="d-none">
-      <h3>Error fetching information about the request</h3>
-    </div>
-    <div id="requestDetails">
-      <div class="row">
-        <div class="col-md-12">
-          <label>Request Info</label>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <h6 class="my-0">Status</h6>
-              </div>
-              <span class="text-muted" id="requestStatus"></span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <h6 class="my-0">Type</h6>
-              </div>
-              <span class="text-muted" id="requestType"></span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <h6 class="my-0">Forge URL</h6>
-              </div>
-              <span class="text-muted" id="requestURL"></span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <h6 class="my-0">Forge contact email</h6>
-              </div>
-              <span id="requestEmail"></span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed"
-                title="Submitter comment">
-              <p id="submitterMessage"></p>
-            </li>
-          </ul>
+<div class="container">
+  <div id="fetchError" class="row d-none">
+    <h3>Error fetching information about the request</h3>
+  </div>
+  <div class="row" id="requestDetails">
+    <div id="ForgeRequestActions" class="col-md-8 request-actions">
+      <div>
+        <div class="accordion" id="requestHistory">
         </div>
       </div>
-      <div class="row">
-        <div class="col-md-12">
-          <label>Request history</label>
-          <div class="accordion" id="requestHistory">
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <label style="padding-top: 10px;">Message for the Forge administrator (Editable)</label>
-        <div class="form-group col-md-12">
-          <textarea class="form-control" id="swh-input-forge-admin-email"
-                    name="forge_contact_comment" rows="4"></textarea>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="form-group col-md-12">
-          <button class="btn btn-default float-right" id="contactForgeAdmin"
-                  emailSubject="" emailTo="">
-            Send message to forge
-          </button>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="form-group col-md-12">
-          <form method="POST"
+      <div>
+        <form method="POST"
                 action="{% url 'api-1-add-forge-request-update' request_id %}"
-                style="padding-top: 5px;" id="updateRequestForm">
+              style="padding-top: 5px;" id="updateRequestForm">
             {% csrf_token %}
             <div class="form-row">
               <div class="form-group col-md-6">
@@ -123,12 +66,54 @@ See top-level LICENSE file for more information
               </div>
             </div>
           </form>
-        </div>
+
+      </div>
+    </div>
+    <div id="ForgeRequestDetails" class="col-md-2 details-pane">
+      <div>
+        <strong>Request status</strong>
+      </div>
+      <small class="details-text" id="requestStatus"></small>
+      <hr />
+      <div>
+        <strong>Forge type</strong>
+      </div>
+      <small class="details-text" id="requestType"></small>
+      <hr />
+      <div>
+        <strong>Forge URL</strong>
+      </div>
+      <small class="details-text" id="requestURL"></small>
+      <hr />
+      <div>
+        <strong>Contact name</strong>
+      </div>
+      <small class="details-text" id="requestContactName"></small>
+      <hr />
+      <div>
+        <strong>Consent to use name</strong>
+      </div>
+      <small class="details-text" id="requestContactConsent"></small>
+      <hr />
+      <div>
+        <strong>Contact email</strong>
+      </div>
+      <small class="details-text" id="requestContactEmail"></small>
+      <hr />
+      <div>
+        <strong>Message</strong>
+      </div>
+      <p><small id="submitterMessage" class="details-text"></small></p>
+      <hr />
+      <div>
+        <button class="btn btn-link" id="contactForgeAdmin"
+                emailSubject="" emailTo="">
+          Send message to the forge
+        </button>
       </div>
     </div>
   </div>
 </div>
-
 <script>
   swh.add_forge.onRequestDashboardLoad("{{ request_id }}");
 </script>

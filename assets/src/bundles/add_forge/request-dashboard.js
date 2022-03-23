@@ -9,6 +9,8 @@ import {handleFetchError, csrfPost} from 'utils/functions';
 import emailTempate from './forge-admin-email.ejs';
 import requestHistoryItem from './add-request-history-item.ejs';
 
+let forgeRequest;
+
 export function onRequestDashboardLoad(requestId) {
   $(document).ready(() => {
     populateRequestDetails(requestId);
@@ -42,19 +44,22 @@ async function populateRequestDetails(requestId) {
     const response = await fetch(Urls.api_1_add_forge_request_get(requestId));
     handleFetchError(response);
     const data = await response.json();
-    $('#requestStatus').text(data.request.status);
-    $('#requestType').text(data.request.forge_type);
-    $('#requestURL').text(data.request.forge_url);
-    $('#requestEmail').text(data.request.forge_contact_email);
-    $('#submitterMessage').text(data.request.forge_contact_comment);
+    forgeRequest = data.request;
+
+    $('#requestStatus').text(forgeRequest.status);
+    $('#requestType').text(forgeRequest.forge_type);
+    $('#requestURL').text(forgeRequest.forge_url);
+    $('#requestContactName').text(forgeRequest.forge_contact_name);
+    $('#requestContactConsent').text(forgeRequest.submitter_forward_username);
+    $('#requestContactEmail').text(forgeRequest.forge_contact_email);
+    $('#submitterMessage').text(forgeRequest.forge_contact_comment);
     $('#updateComment').val('');
 
     // Setting data for the email, now adding static data
-    $('#swh-input-forge-admin-email').val(emailTempate({'forgeUrl': data.request.forge_url}).trim());
-    $('#contactForgeAdmin').attr('emailTo', data.request.forge_contact_email);
-    $('#contactForgeAdmin').attr('emailSubject', `[swh-add_forge_now] Request ${data.request.id}`);
+    $('#contactForgeAdmin').attr('emailTo', forgeRequest.forge_contact_email);
+    $('#contactForgeAdmin').attr('emailSubject', `[swh-add_forge_now] Request ${forgeRequest.id}`);
     populateRequestHistory(data.history);
-    populateDecisionSelectOption(data.request.status);
+    populateDecisionSelectOption(forgeRequest.status);
   } catch (response) {
     // The error message
     $('#fetchError').removeClass('d-none');
@@ -128,7 +133,7 @@ function contactForgeAdmin(event) {
   // Open the mailclient with pre-filled text
   const mailTo = $('#contactForgeAdmin').attr('emailTo');
   const subject = $('#contactForgeAdmin').attr('emailSubject');
-  const emailText = $('#swh-input-forge-admin-email').val().replace(/\n/g, '%0D%0A');
+  const emailText = emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '%0D%0A');
   const w = window.open('', '_blank', '', true);
   w.location.href = `mailto: ${mailTo}?subject=${subject}&body=${emailText}`;
   w.focus();
