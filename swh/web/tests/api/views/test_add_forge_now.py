@@ -6,6 +6,7 @@
 import datetime
 import threading
 import time
+from typing import Dict
 from urllib.parse import urlencode
 
 import iso8601
@@ -34,7 +35,7 @@ def test_add_forge_request_create_empty(api_client, regular_user):
     assert '"forge_type"' in resp.data["reason"]
 
 
-ADD_FORGE_DATA_FORGE1 = {
+ADD_FORGE_DATA_FORGE1: Dict = {
     "forge_type": "gitlab",
     "forge_url": "https://gitlab.example.org",
     "forge_contact_email": "admin@gitlab.example.org",
@@ -43,7 +44,7 @@ ADD_FORGE_DATA_FORGE1 = {
     "submitter_forward_username": True,
 }
 
-ADD_FORGE_DATA_FORGE2 = {
+ADD_FORGE_DATA_FORGE2: Dict = {
     "forge_type": "gitea",
     "forge_url": "https://gitea.example.org",
     "forge_contact_email": "admin@gitea.example.org",
@@ -52,7 +53,7 @@ ADD_FORGE_DATA_FORGE2 = {
     "submitter_forward_username": True,
 }
 
-ADD_FORGE_DATA_FORGE3 = {
+ADD_FORGE_DATA_FORGE3: Dict = {
     "forge_type": "heptapod",
     "forge_url": "https://heptapod.host/",
     "forge_contact_email": "admin@example.org",
@@ -61,12 +62,32 @@ ADD_FORGE_DATA_FORGE3 = {
     "submitter_forward_username": False,
 }
 
+ADD_FORGE_DATA_FORGE4: Dict = {
+    **ADD_FORGE_DATA_FORGE3,
+    "forge_url": "https://heptapod2.host/",
+    "submitter_forward_username": "on",
+}
+
+ADD_FORGE_DATA_FORGE5: Dict = {
+    **ADD_FORGE_DATA_FORGE3,
+    "forge_url": "https://heptapod3.host/",
+    "submitter_forward_username": "off",
+}
+
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.parametrize(
-    "add_forge_data", [ADD_FORGE_DATA_FORGE1, ADD_FORGE_DATA_FORGE3]
+    "add_forge_data",
+    [
+        ADD_FORGE_DATA_FORGE1,
+        ADD_FORGE_DATA_FORGE2,
+        ADD_FORGE_DATA_FORGE3,
+        ADD_FORGE_DATA_FORGE4,
+    ],
 )
-def test_add_forge_request_create_success(api_client, regular_user, add_forge_data):
+def test_add_forge_request_create_success_post(
+    api_client, regular_user, add_forge_data
+):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
 
@@ -78,6 +99,10 @@ def test_add_forge_request_create_success(api_client, regular_user, add_forge_da
 
     date_after = datetime.datetime.now(tz=datetime.timezone.utc)
 
+    consent = add_forge_data["submitter_forward_username"]
+    # map the expected result with what's expectedly read from the db to ease comparison
+    expected_consent_bool = consent == "on" if isinstance(consent, str) else consent
+
     assert resp.data == {
         **add_forge_data,
         "id": resp.data["id"],
@@ -85,6 +110,7 @@ def test_add_forge_request_create_success(api_client, regular_user, add_forge_da
         "submission_date": resp.data["submission_date"],
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
+        "submitter_forward_username": expected_consent_bool,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
