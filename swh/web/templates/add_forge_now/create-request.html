@@ -45,6 +45,7 @@ Add forge now – Software Heritage archive
     <ul class="nav nav-tabs">
       <li class="nav-item"><a class="nav-link active" data-toggle="tab" id="swh-add-forge-tab" href="#swh-add-forge-submit-request">Submit a Request</a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" id="swh-add-forge-requests-list-tab" href="#swh-add-forge-requests-list">Browse Requests</a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" id="swh-add-forge-requests-help-tab" href="#swh-add-forge-requests-help">Help</a></li>
     </ul>
 
     <div class="tab-content">
@@ -138,76 +139,13 @@ Add forge now – Software Heritage archive
             </div>
           </div>
         </form>
-        <div class="panel panel-info">
-          <div class="panel-heading">
-            <a data-toggle="collapse" href="#swh-forge-add-request-help" role="button" aria-expanded="false" class="text-primary">
-              For more information
-            </a>
-          </div>
-          <div id="swh-forge-add-request-help" class="collapse panel-body">
-            <p>
-              Once submitted, your "add forge" request can either be:
-            </p>
-            <ul>
-              <li>
-                <strong>Pending:</strong>
-                the request was submitted and is waiting for a moderator
-                to check its validity.
-              </li>
-
-              <li>
-                <strong>Waiting for feedback:</strong>
-                the request was processed by a moderator
-                and the forge was contacted, the request is waiting for feedback from the
-                forge.
-              </li>
-
-              <li>
-                <strong>Feedback to handle:</strong>
-                the forge has responded to the request and
-                there is feedback to handle for the request.</li>
-
-              <li>
-                <strong>Accepted:</strong>
-                the request has been accepted and waiting to be
-                scheduled.
-              </li>
-
-              <li>
-                <strong>Scheduled:</strong>
-                the request has been scheduled is considered
-                done.
-              </li>
-
-              <li>
-                <strong>First listing done:</strong>
-                The first listing of the forge is
-                completed.
-              </li>
-
-              <li>
-                <strong>First origin loaded:</strong>
-                The first origin or repository processed by
-                loader and archived (using a search query).
-              </li>
-
-              <li><strong>Rejected:</strong> the request is not a valid request and is rejected by a
-                Software Heritage moderator.</li>
-
-              <li><strong>Denied:</strong> the forge has requested not to archive the forge.</li>
-
-              <li><strong>Suspended:</strong> the request is for a forge with a non supported
-                VCS.</li>
-            </ul>
-            <p>
-              Once a add request has been submitted, you can follow its current status in
-              the <a id="swh-show-forge-add-requests-list" href="#browse-requests">
-                submitted requests list
-              </a>. This process is depending on human interactions and might take a few days to be
-              handled (it primarily depends on the response time of the forge).
-            </p>
-          </div>
-        </div>
+        <p>
+          Once a add request has been submitted, you can follow its current status in
+          the <a id="swh-show-forge-add-requests-list" href="#browse-requests">
+          submitted requests list</a>. This process is depending on human interactions
+          and might take a few days to be handled (it primarily depends on the response
+          time of the forge).
+        </p>
         {% endif %}
       </div>
       <div id="swh-add-forge-requests-list" class="tab-pane fade show">
@@ -223,9 +161,93 @@ Add forge now – Software Heritage archive
         </table>
         <div id="add-forge-browse-request-error"></div>
       </div>
+      <div id="swh-add-forge-requests-help" class="tab-pane fade show">
+        <p style="margin-top: 1rem;">Prior to submit an "Add forge now" request, we ask
+        you to fill in the following parameters:</p>
+        <ul>
+          <li><b>Forge type:</b> the type of supported forge the software archive is able to list.
+        Currently, the supported types are:
+            <ul>
+              <li><code>cgit</code>, for <a href="https://git.zx2c4.com/cgit/">cgit</a> forges</li>
+              <li><code>gitea</code>, for <a href="https://gitea.io/en-us/">gitea</a> forges</li>
+              <li><code>gitlab</code>, for <a href="https://about.gitlab.com/install/">gitlab</a> forges</li>
+              <li><code>heptapod</code>, for <a href="https://heptapod.net/">heptapod</a> forges</li>
+              ...
+            </ul>
+          </li>
+          <li><b>Forge url:</b> the url of the selected forge. This must be unique.
+          </li>
+          <li><b>Forge contact name:</b> Contact name of the forge administrator we
+          intend to ingest.
+          </li>
+          <li><b>Forge contact email:</b> Contact email of the forge administrator so an
+          email can be send to the forge. The intent is to notify the forge prior to
+          actually start the ingestion.
+          </li>
+          <li><b>Consent checkbox:</b> This checkbox's purpose is to know whether we can
+          explicitly mention the user's login within the email sent to the forge. If
+          not checked, the user's name won't be mentioned in the email at all.
+          </li>
+          <li><b>Comment:</b> (Optionally) For the user to mention something more about
+          their request to the add-forge-now moderator.
+          </li>
+        </ul>
+        <p style="margin-top: 1rem;">Once submitted, your "add forge" request can either be:
+        </p>
+        <ul>
+          <li>
+            <strong>Pending:</strong>
+            the request was submitted and is waiting for a moderator
+            to check its validity.
+          </li>
+
+          <li>
+            <strong>Waiting for feedback:</strong>
+            the request was processed by a moderator
+            and the forge was contacted, the request is waiting for feedback from the
+            forge.
+          </li>
+
+          <li>
+            <strong>Feedback to handle:</strong>
+            the forge has responded to the request and
+            there is feedback to handle for the request.</li>
+
+          <li>
+            <strong>Accepted:</strong>
+            the request has been accepted and waiting to be
+            scheduled.
+          </li>
+
+          <li>
+            <strong>Scheduled:</strong>
+            the request has been scheduled is considered
+            done.
+          </li>
+
+          <li>
+            <strong>First listing done:</strong>
+            The first listing of the forge is
+            completed.
+          </li>
+
+          <li>
+            <strong>First origin loaded:</strong>
+            The first origin or repository processed by
+            loader and archived (using a search query).
+          </li>
+
+          <li><strong>Rejected:</strong> the request is not a valid request and is rejected by a
+            Software Heritage moderator.</li>
+
+          <li><strong>Denied:</strong> the forge has requested not to archive the forge.</li>
+
+          <li><strong>Suspended:</strong> the request is for a forge with a non supported
+            VCS.</li>
+        </ul>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
   swh.add_forge.onCreateRequestPageLoad();
