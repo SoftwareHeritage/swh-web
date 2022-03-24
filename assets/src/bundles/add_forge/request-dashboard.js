@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, getHumanReadableDate} from 'utils/functions';
 import emailTempate from './forge-admin-email.ejs';
 import requestHistoryItem from './add-request-history-item.ejs';
 
@@ -71,7 +71,11 @@ function populateRequestHistory(history) {
   $('#requestHistory').children().remove();
 
   history.forEach((event, index) => {
-    const historyEvent = requestHistoryItem({'event': event, 'index': index});
+    const historyEvent = requestHistoryItem({
+      'event': event,
+      'index': index,
+      'getHumanReadableDate': getHumanReadableDate
+    });
     $('#requestHistory').append(historyEvent);
   });
 }

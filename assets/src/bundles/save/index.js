@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment,
-        getCanonicalOriginURL} from 'utils/functions';
+        getCanonicalOriginURL, getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
 
@@ -160,13 +160,7 @@ export function initOriginSave() {
           {
             data: 'save_request_date',
             name: 'request_date',
-            render: (data, type, row) => {
-              if (type === 'display') {
-                const date = new Date(data);
-                return date.toLocaleString();
-              }
-              return data;
-            }
+            render: getHumanReadableDate
           },
           {
             data: 'visit_type',

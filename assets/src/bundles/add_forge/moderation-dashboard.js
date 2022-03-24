@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {getHumanReadableDate} from 'utils/functions';
+
 export function onModerationPageLoad() {
   populateModerationList();
 }
@@ -36,7 +38,7 @@ export async function populateModerationList() {
         {
           data: 'submission_date',
           name: 'submission_date',
-          render: $.fn.dataTable.render.text()
+          render: getHumanReadableDate
         },
         {
           data: 'forge_type',

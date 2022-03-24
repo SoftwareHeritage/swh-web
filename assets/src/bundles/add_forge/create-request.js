@@ -5,7 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, removeUrlFragment, csrfPost} from 'utils/functions';
+import {handleFetchError, removeUrlFragment, csrfPost,
+        getHumanReadableDate} from 'utils/functions';
 
 let requestBrowseTable;
 
@@ -93,7 +94,8 @@ export function populateRequestBrowseList() {
       columns: [
         {
           data: 'submission_date',
-          name: 'submission_date'
+          name: 'submission_date',
+          render: getHumanReadableDate
         },
         {
           data: 'forge_type',

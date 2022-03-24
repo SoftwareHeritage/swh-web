@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import {getHumanReadableDate} from 'utils/functions';
+
 function genSwhLink(data, type) {
   if (type === 'display' && data && data.startsWith('swh')) {
     const browseUrl = Urls.browse_swhid(data);
@@ -74,13 +76,7 @@ export function initDepositAdmin(username, isStaff) {
           {
             data: 'reception_date',
             name: 'reception_date',
-            render: (data, type, row) => {
-              if (type === 'display') {
-                const date = new Date(data);
-                return date.toLocaleString();
-              }
-              return data;
-            }
+            render: getHumanReadableDate
           },
           {
             data: 'status',

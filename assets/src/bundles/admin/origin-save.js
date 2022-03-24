@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
+import {handleFetchError, csrfPost, htmlAlert,
+        getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 
 let authorizedOriginTable;
@@ -64,13 +65,7 @@ export function initOriginSaveAdmin() {
       {
         data: 'save_request_date',
         name: 'request_date',
-        render: (data, type, row) => {
-          if (type === 'display') {
-            const date = new Date(data);
-            return date.toLocaleString();
-          }
-          return data;
-        }
+        render: getHumanReadableDate
       },
       {
         data: 'visit_type',
