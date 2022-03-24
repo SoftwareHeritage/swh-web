@@ -1067,20 +1067,22 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
 
 
 def origin_visit_find_by_date(
-    origin_url: str, visit_date: datetime.datetime
+    origin_url: str, visit_date: datetime.datetime, greater_or_equal: bool = True
 ) -> Optional[OriginVisitInfo]:
     """Retrieve origin visit status whose date is most recent than the provided visit_date.
 
     Args:
         origin_url: origin concerned by the visit
         visit_date: provided visit date
+        greater_or_equal: ensure returned visit has a date greater or equal
+            than the one passed as parameter
 
     Returns:
        The dict origin_visit_status matching the criteria if any.
 
     """
     visit = storage.origin_visit_find_by_date(origin_url, visit_date)
-    if visit and visit.date < visit_date:
+    if greater_or_equal and visit and visit.date < visit_date:
         # when visit is anterior to the provided date, trying to find another one most
         # recent
         visits = storage.origin_visit_get(
