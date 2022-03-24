@@ -54,7 +54,13 @@ Add forge now – Software Heritage archive
         <h3>
           <p class="text-primary">
             You must be logged in to submit an add forge request. Please
-            <a id="loginLink" href="{% url 'login' %}?next={% url 'forge-add' %}" class="link-primary">log in</a>
+            <a id="loginLink" class="link-primary"
+            {% if oidc_enabled and 'remote_user' in request.GET %}
+              href="{% url 'oidc-login' %}?next={% url 'forge-add' %}"
+            {% else %}
+              href="{% url 'login' %}?next={% url 'forge-add' %}"
+            {% endif %}
+            >log in</a>
           </p>
         </h3>
         {% else %}
