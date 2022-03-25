@@ -259,8 +259,7 @@ def api_add_forge_request_list(request: Request):
     """
     .. http:get:: /api/1/add-forge/request/list/
 
-        List requests to add forges to the list of those crawled regularly
-        by Software Heritage.
+        List add forge requests submitted by users.
 
         {common_headers}
         {resheader_link}
