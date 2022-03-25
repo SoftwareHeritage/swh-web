@@ -55,24 +55,34 @@ export function onCreateRequestPageLoad() {
       }
     });
 
-    $(window).on('hashchange', () => {
-      if (window.location.hash === '#browse-requests') {
-        $('.nav-tabs a[href="#swh-add-forge-requests-list"]').tab('show');
-      } else {
-        $('.nav-tabs a[href="#swh-add-forge-submit-request"]').tab('show');
-      }
-    });
-
     $('#swh-add-forge-requests-list-tab').on('shown.bs.tab', () => {
       window.location.hash = '#browse-requests';
+    });
+
+    $('#swh-add-forge-requests-help-tab').on('shown.bs.tab', () => {
+      window.location.hash = '#help';
     });
 
     $('#swh-add-forge-tab').on('shown.bs.tab', () => {
       removeUrlFragment();
     });
 
+    $(window).on('hashchange', () => {
+      onPageHashChage();
+    });
+    onPageHashChage(); // Explicit call to handle a hash during the page load
     populateRequestBrowseList(); // Load existing requests
   });
+}
+
+function onPageHashChage() {
+  if (window.location.hash === '#browse-requests') {
+    $('.nav-tabs a[href="#swh-add-forge-requests-list"]').tab('show');
+  } else if (window.location.hash === '#help') {
+    $('.nav-tabs a[href="#swh-add-forge-requests-help"]').tab('show');
+  } else {
+    $('.nav-tabs a[href="#swh-add-forge-submit-request"]').tab('show');
+  }
 }
 
 export function populateRequestBrowseList() {

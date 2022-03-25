@@ -19,13 +19,16 @@ describe('Test add-forge-request creation', function() {
     this.addForgeNowUrl = this.Urls.forge_add();
   });
 
-  it('should show both tabs for every user', function() {
+  it('should show all the tabs for every user', function() {
     cy.visit(this.addForgeNowUrl);
 
     cy.get('#swh-add-forge-tab')
       .should('have.class', 'nav-link');
 
     cy.get('#swh-add-forge-requests-list-tab')
+      .should('have.class', 'nav-link');
+
+    cy.get('#swh-add-forge-requests-help-tab')
       .should('have.class', 'nav-link');
   });
 
@@ -61,16 +64,29 @@ describe('Test add-forge-request creation', function() {
     cy.get('#swh-add-forge-requests-list-tab').click();
     cy.get('#swh-add-forge-tab')
       .should('not.have.class', 'active');
-
     cy.get('#swh-add-forge-requests-list-tab')
       .should('have.class', 'active');
+    cy.get('#swh-add-forge-requests-help-tab')
+      .should('not.have.class', 'active');
+    cy.hash().should('eq', '#browse-requests');
+
+    cy.get('#swh-add-forge-requests-help-tab').click();
+    cy.get('#swh-add-forge-tab')
+      .should('not.have.class', 'active');
+    cy.get('#swh-add-forge-requests-list-tab')
+      .should('not.have.class', 'active');
+    cy.get('#swh-add-forge-requests-help-tab')
+      .should('have.class', 'active');
+    cy.hash().should('eq', '#help');
 
     cy.get('#swh-add-forge-tab').click();
     cy.get('#swh-add-forge-tab')
       .should('have.class', 'active');
-
     cy.get('#swh-add-forge-requests-list-tab')
       .should('not.have.class', 'active');
+    cy.get('#swh-add-forge-requests-help-tab')
+      .should('not.have.class', 'active');
+    cy.hash().should('eq', '');
   });
 
   it('should show create form elements to authenticated user', function() {
