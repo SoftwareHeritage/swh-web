@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment,
+import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert,
         getCanonicalOriginURL, getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
@@ -240,15 +240,12 @@ export function initOriginSave() {
 
     swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
 
-    $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
+    if (window.location.pathname === Urls.origin_save() && window.location.hash === '#requests') {
+      // Keep old URLs to the save list working
+      window.location = Urls.origin_save_list();
+    } else if ($('#swh-origin-save-requests')) {
       saveRequestsTable.draw();
-      window.location.hash = '#requests';
-    });
-
-    $('#swh-origin-save-request-help-tab').on('shown.bs.tab', () => {
-      removeUrlFragment();
-      $('.swh-save-request-info').popover('dispose');
-    });
+    }
 
     const saveRequestAcceptedAlert = htmlAlert(
       'success',
