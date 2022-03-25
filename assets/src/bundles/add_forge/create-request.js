@@ -7,8 +7,16 @@
 
 import {handleFetchError, removeUrlFragment, csrfPost,
         getHumanReadableDate} from 'utils/functions';
+import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
+import {swhSpinnerSrc} from 'utils/constants';
 
 let requestBrowseTable;
+
+const addForgeCheckboxId = 'swh-add-forge-user-filter';
+const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
+  'inputId': addForgeCheckboxId,
+  'checked': true // by default, display only user requests
+});
 
 export function onCreateRequestPageLoad() {
   $(document).ready(() => {
@@ -56,6 +64,7 @@ export function onCreateRequestPageLoad() {
     });
 
     $('#swh-add-forge-requests-list-tab').on('shown.bs.tab', () => {
+      requestBrowseTable.draw();
       window.location.hash = '#browse-requests';
     });
 
@@ -93,13 +102,32 @@ export function populateRequestBrowseList() {
     .DataTable({
       serverSide: true,
       processing: true,
+      language: {
+        processing: `<img src="${swhSpinnerSrc}"></img>`
+      },
       retrieve: true,
       searching: true,
       info: false,
-      dom: '<<"d-flex justify-content-between align-items-center"f' +
-        '<"#list-exclude">l>rt<"bottom"ip>>',
+      // Layout configuration, see [1] for more details
+      // [1] https://datatables.net/reference/option/dom
+      dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
+           '<"row"<"col-sm-12"tr>>' +
+           '<"row"<"col-sm-5"i><"col-sm-7"p>>',
       ajax: {
-        'url': Urls.add_forge_request_list_datatables()
+        'url': Urls.add_forge_request_list_datatables(),
+        data: (d) => {
+          if (swh.webapp.isUserLoggedIn() && $(`#${addForgeCheckboxId}`).prop('checked')) {
+            d.user_requests_only = '1';
+          }
+        }
+      },
+      fnInitComplete: function() {
+        if (swh.webapp.isUserLoggedIn()) {
+          $('div.user-requests-filter').html(userRequestsFilterCheckbox);
+          $(`#${addForgeCheckboxId}`).on('change', () => {
+            requestBrowseTable.draw();
+          });
+        }
       },
       columns: [
         {
@@ -124,5 +152,4 @@ export function populateRequestBrowseList() {
         }
       ]
     });
-  requestBrowseTable.draw();
 }

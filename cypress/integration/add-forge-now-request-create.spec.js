@@ -7,12 +7,84 @@
 
 function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-forge-type').select(type);
-  cy.get('#swh-input-forge-url').type(url);
-  cy.get('#swh-input-forge-contact-name').type(contact);
-  cy.get('#swh-input-forge-contact-email').type(email);
-  cy.get('#swh-input-forge-comment').type(comment);
+  cy.get('#swh-input-forge-url').clear().type(url, {delay: 0, force: true});
+  cy.get('#swh-input-forge-contact-name').clear().type(contact, {delay: 0, force: true});
+  cy.get('#swh-input-forge-contact-email').clear().type(email, {delay: 0, force: true});
+  if (comment) {
+    cy.get('#swh-input-forge-comment').clear().type(comment, {delay: 0, force: true});
+  }
   cy.get('#swh-input-consent-check').click({force: consent === 'on'});
 }
+
+describe('Browse requests list tests', function() {
+  beforeEach(function() {
+    this.addForgeNowUrl = this.Urls.forge_add();
+    this.listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
+  });
+
+  it('should not show user requests filter checkbox for anonymous users', function() {
+    cy.visit(this.addForgeNowUrl);
+    cy.get('#swh-add-forge-requests-list-tab').click();
+    cy.get('#swh-add-forge-user-filter').should('not.exist');
+  });
+
+  it('should show user requests filter checkbox for authenticated users', function() {
+    cy.userLogin();
+    cy.visit(this.addForgeNowUrl);
+    cy.get('#swh-add-forge-requests-list-tab').click();
+    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+  });
+
+  it('should only display user requests when filter is activated', function() {
+    // Clean up previous state
+    cy.task('db:add_forge_now:delete');
+    // 'user2' logs in and create requests
+    cy.user2Login();
+    cy.visit(this.addForgeNowUrl);
+
+    // create requests for the user 'user'
+    populateForm('gitlab', 'gitlab.org', 'admin', 'admin@example.org', 'on', '');
+    cy.get('#requestCreateForm').submit();
+
+    // user requests filter checkbox should be in the DOM
+    cy.get('#swh-add-forge-requests-list-tab').click();
+    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+
+    // check unfiltered user requests
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(1);
+    });
+
+    // user1 logout
+    cy.contains('a', 'logout').click();
+
+    // user logs in
+    cy.userLogin();
+    cy.visit(this.addForgeNowUrl);
+
+    populateForm('gitea', 'gitea.org', 'admin', 'admin@example.org', 'on', '');
+    cy.get('#requestCreateForm').submit();
+    populateForm('cgit', 'cgit.org', 'admin', 'admin@example.org', 'on', '');
+    cy.get('#requestCreateForm').submit();
+
+    // user requests filter checkbox should be in the DOM
+    cy.get('#swh-add-forge-requests-list-tab').click();
+    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+
+    // check unfiltered user requests
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(2);
+    });
+
+    cy.get('#swh-add-forge-user-filter')
+      .uncheck({force: true});
+
+    // Users now sees everything
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(2 + 1);
+    });
+  });
+});
 
 describe('Test add-forge-request creation', function() {
   beforeEach(function() {

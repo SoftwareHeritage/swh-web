@@ -146,6 +146,14 @@ module.exports = (on, config) => {
       });
       db.close();
       return true;
+    },
+    'db:add_forge_now:delete': () => {
+      const db = getDatabase();
+      db.serialize(function() {
+        db.run('DELETE FROM add_forge_now_request');
+      });
+      db.close();
+      return true;
     }
   });
   return config;
