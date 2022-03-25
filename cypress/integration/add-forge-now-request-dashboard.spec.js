@@ -46,7 +46,12 @@ describe('Test add forge now request dashboard load', function() {
   it('should show error message for an api error', function() {
     const invalidRequestId = 2;
     const url = this.Urls.add_forge_now_request_dashboard(invalidRequestId);
+
+    cy.intercept(`${this.Urls.api_1_add_forge_request_get(invalidRequestId)}**`,
+                 {statusCode: 400}).as('forgeAddInvalidRequest');
+
     cy.visit(url);
+    cy.wait('@forgeAddInvalidRequest');
     cy.get('#fetchError')
       .should('not.have.class', 'd-none');
     cy.get('#requestDetails')
