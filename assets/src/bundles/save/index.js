@@ -9,6 +9,7 @@ import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment,
         getCanonicalOriginURL, getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
+import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 
 let saveRequestsTable;
 
@@ -103,15 +104,11 @@ export function deleteArtifactFormRow(event) {
   $(event.target).closest('.swh-save-origin-artifact-form').remove();
 }
 
-const userRequestsFilterCheckbox = `
-<div class="custom-control custom-checkbox swhid-option">
-  <input class="custom-control-input" value="option-user-requests-filter" type="checkbox"
-         id="swh-save-requests-user-filter">
-  <label class="custom-control-label font-weight-normal" for="swh-save-requests-user-filter">
-    show only your own requests
-  </label>
-</div>
-`;
+const saveRequestCheckboxId = 'swh-save-requests-user-filter';
+const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
+  'inputId': saveRequestCheckboxId,
+  'checked': false // no filtering by default on that view
+});
 
 export function initOriginSave() {
 
@@ -136,7 +133,7 @@ export function initOriginSave() {
         ajax: {
           url: Urls.origin_save_requests_list('all'),
           data: (d) => {
-            if (swh.webapp.isUserLoggedIn() && $('#swh-save-requests-user-filter').prop('checked')) {
+            if (swh.webapp.isUserLoggedIn() && $(`#${saveRequestCheckboxId}`).prop('checked')) {
               d.user_requests_only = '1';
             }
           }
@@ -151,7 +148,7 @@ export function initOriginSave() {
         fnInitComplete: function() {
           if (swh.webapp.isUserLoggedIn()) {
             $('div.user-requests-filter').html(userRequestsFilterCheckbox);
-            $('#swh-save-requests-user-filter').on('change', () => {
+            $(`#${saveRequestCheckboxId}`).on('change', () => {
               saveRequestsTable.draw();
             });
           }
