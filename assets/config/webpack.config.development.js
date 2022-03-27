@@ -26,6 +26,7 @@ const ESLintPlugin = require('eslint-webpack-plugin');
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('serve')) !== undefined;
 // webpack-dev-server configuration
+const host = '0.0.0.0';
 const devServerPort = 3000;
 const devServerPublicPath = 'http://localhost:' + devServerPort + '/static/';
 // set publicPath according if we are using webpack-dev-server to serve
@@ -97,19 +98,8 @@ module.exports = {
   devtool: isDevServer ? 'eval' : 'source-map',
   // webpack-dev-server configuration
   devServer: {
-    client: {
-      logging: 'warn',
-      overlay: {
-        warnings: true,
-        errors: true
-      },
-      progress: true
-    },
-    devMiddleware: {
-      publicPath: devServerPublicPath,
-      stats: 'errors-only'
-    },
-    host: '0.0.0.0',
+    clientLogLevel: 'warning',
+    host: host,
     port: devServerPort,
     // enable to serve static assets not managed by webpack
     static: {
@@ -145,10 +135,16 @@ module.exports = {
     alias: {
       'pdfjs-dist': 'pdfjs-dist/build/pdf.min.js'
     },
+    // for web-tree-sitter
+    fallback: {
+      'path': false,
+      'fs': false
+    },
     // configure base paths for resolving modules with webpack
     modules: [
       'node_modules',
-      path.resolve(__dirname, '../src')
+      path.resolve(__dirname, '../src'),
+      path.resolve(__dirname, '../../../swh-search/query_language/')
     ]
   },
   stats: 'errors-warnings',
@@ -237,6 +233,34 @@ module.exports = {
               globalName: 'hljs',
               override: true
             }
+          }
+        }]
+      },
+      {
+        test: require.resolve('js-cookie'),
+        use: [{
+          loader: 'expose-loader',
+          options: {
+            exposes: {
+              globalName: 'Cookies',
+              override: true
+            }
+          }
+        }]
+      },
+      // import .wasm files (for web-tree-sitter)
+      // web-tree-sitter tries to load static/js/tree-sitter.wasm
+      // so don't create new path 'wasm/' for .wasm resources.
+      // otherwise, web-tree-sitter will have to be patched
+      // in order to use the new path.
+      {
+        test: /\.wasm$/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'js/'
           }
         }]
       },

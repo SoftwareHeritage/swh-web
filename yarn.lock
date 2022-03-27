@@ -11184,6 +11184,11 @@ wbuf@^1.1.0, wbuf@^1.7.3:
   dependencies:
     minimalistic-assert "^1.0.0"
 
+web-tree-sitter@^0.19.4:
+  version "0.19.4"
+  resolved "https://registry.yarnpkg.com/web-tree-sitter/-/web-tree-sitter-0.19.4.tgz#975076e233204de9063e7a7bda1138c4b454b424"
+  integrity sha512-8G0xBj05hqZybCqBtW7RPZ/hWEtP3DiLTauQzGJZuZYfVRgw7qj7iaZ+8djNqJ4VPrdOO+pS2dR1JsTbsLxdYg==
+
 webidl-conversions@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-5.0.0.tgz#ae59c8a00b121543a2acc65c0434f57b0fc11aff"

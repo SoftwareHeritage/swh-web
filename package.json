@@ -90,6 +90,7 @@
     "typeface-alegreya": "^1.1.13",
     "typeface-alegreya-sans": "^1.1.13",
     "waypoints": "^4.0.1",
+    "web-tree-sitter": "^0.19.4",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
