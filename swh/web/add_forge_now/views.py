@@ -87,14 +87,32 @@ FORGE_TYPES: List[str] = [
 ]
 
 
-def create_request(request):
+def create_request_create(request):
     """View to create a new 'add_forge_now' request.
 
     """
 
     return render(
-        request, "add_forge_now/create-request.html", {"forge_types": FORGE_TYPES},
+        request,
+        "add_forge_now/create-request-create.html",
+        {"forge_types": FORGE_TYPES},
     )
+
+
+def create_request_list(request):
+    """View to list existing 'add_forge_now' requests.
+
+    """
+
+    return render(request, "add_forge_now/create-request-list.html",)
+
+
+def create_request_help(request):
+    """View to explain 'add_forge_now'.
+
+    """
+
+    return render(request, "add_forge_now/create-request-help.html",)
 
 
 urlpatterns = [
@@ -103,5 +121,7 @@ urlpatterns = [
         add_forge_request_list_datatables,
         name="add-forge-request-list-datatables",
     ),
-    url(r"^add-forge/request/create/$", create_request, name="forge-add"),
+    url(r"^add-forge/request/create/$", create_request_create, name="forge-add-create"),
+    url(r"^add-forge/request/list/$", create_request_list, name="forge-add-list"),
+    url(r"^add-forge/request/help/$", create_request_help, name="forge-add-help"),
 ]

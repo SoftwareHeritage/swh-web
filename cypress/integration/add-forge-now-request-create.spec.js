@@ -18,7 +18,7 @@ function populateForm(type, url, contact, email, consent, comment) {
 
 describe('Browse requests list tests', function() {
   beforeEach(function() {
-    this.addForgeNowUrl = this.Urls.forge_add();
+    this.addForgeNowUrl = this.Urls.forge_add_create();
     this.listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
   });
 
@@ -71,6 +71,10 @@ describe('Browse requests list tests', function() {
     cy.get('#swh-add-forge-requests-list-tab').click();
     cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
 
+    // Uncheck and re-check again, to synchronize table state with the checkbox
+    // FIXME: this should not be needed
+    cy.get('#swh-add-forge-user-filter').click().click();
+
     // check unfiltered user requests
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(2);
@@ -88,7 +92,7 @@ describe('Browse requests list tests', function() {
 
 describe('Test add-forge-request creation', function() {
   beforeEach(function() {
-    this.addForgeNowUrl = this.Urls.forge_add();
+    this.addForgeNowUrl = this.Urls.forge_add_create();
   });
 
   it('should show all the tabs for every user', function() {
@@ -127,7 +131,7 @@ describe('Test add-forge-request creation', function() {
 
     cy.get('#loginLink')
       .should('have.attr', 'href')
-      .and('include', `${this.Urls.login()}?next=${this.Urls.forge_add()}`);
+      .and('include', `${this.Urls.login()}?next=${this.Urls.forge_add_create()}`);
   });
 
   it('should change tabs on click', function() {
@@ -140,7 +144,8 @@ describe('Test add-forge-request creation', function() {
       .should('have.class', 'active');
     cy.get('#swh-add-forge-requests-help-tab')
       .should('not.have.class', 'active');
-    cy.hash().should('eq', '#browse-requests');
+    cy.url()
+      .should('include', `${this.Urls.forge_add_list()}`);
 
     cy.get('#swh-add-forge-requests-help-tab').click();
     cy.get('#swh-add-forge-tab')
@@ -149,7 +154,8 @@ describe('Test add-forge-request creation', function() {
       .should('not.have.class', 'active');
     cy.get('#swh-add-forge-requests-help-tab')
       .should('have.class', 'active');
-    cy.hash().should('eq', '#help');
+    cy.url()
+      .should('include', `${this.Urls.forge_add_help()}`);
 
     cy.get('#swh-add-forge-tab').click();
     cy.get('#swh-add-forge-tab')
@@ -158,7 +164,8 @@ describe('Test add-forge-request creation', function() {
       .should('not.have.class', 'active');
     cy.get('#swh-add-forge-requests-help-tab')
       .should('not.have.class', 'active');
-    cy.hash().should('eq', '');
+    cy.url()
+      .should('include', `${this.Urls.forge_add_create()}`);
   });
 
   it('should show create form elements to authenticated user', function() {
@@ -193,7 +200,7 @@ describe('Test add-forge-request creation', function() {
       .should('be.visible');
 
     cy.get('#loginLink')
-      .should('not.be.visible');
+      .should('not.exist');
   });
 
   it('should update browse list on successful submission', function() {
