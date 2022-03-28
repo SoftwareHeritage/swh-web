@@ -71,10 +71,6 @@ describe('Browse requests list tests', function() {
     cy.get('#swh-add-forge-requests-list-tab').click();
     cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
 
-    // Uncheck and re-check again, to synchronize table state with the checkbox
-    // FIXME: this should not be needed
-    cy.get('#swh-add-forge-user-filter').click().click();
-
     // check unfiltered user requests
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(2);

@@ -89,7 +89,10 @@ export function populateRequestBrowseList() {
       ajax: {
         'url': Urls.add_forge_request_list_datatables(),
         data: (d) => {
-          if (swh.webapp.isUserLoggedIn() && $(`#${addForgeCheckboxId}`).prop('checked')) {
+          const checked = $(`#${addForgeCheckboxId}`).prop('checked');
+          // If this function is called while the page is loading, 'checked' is
+          // undefined. As the checkbox defaults to being checked, coerce this to true.
+          if (swh.webapp.isUserLoggedIn() && (checked === undefined || checked)) {
             d.user_requests_only = '1';
           }
         }
