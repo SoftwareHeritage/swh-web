@@ -10,6 +10,8 @@ from typing import List
 
 from django.db import models
 
+from .apps import APP_LABEL
+
 
 class RequestStatus(enum.Enum):
     """Request statuses.
@@ -81,6 +83,10 @@ class RequestHistory(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     new_status = models.TextField(choices=RequestStatus.choices(), null=True)
 
+    class Meta:
+        app_label = APP_LABEL
+        db_table = "add_forge_request_history"
+
 
 class Request(models.Model):
     status = models.TextField(
@@ -98,3 +104,7 @@ class Request(models.Model):
     forge_contact_comment = models.TextField(
         null=True, help_text="Where did you find this contact information (url, ...)",
     )
+
+    class Meta:
+        app_label = APP_LABEL
+        db_table = "add_forge_request"

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("add_forge_now", "0002_authorized_null_comment"),
+        ("swh_web_add_forge_now", "0002_authorized_null_comment"),
     ]
 
     operations = [

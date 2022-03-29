@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-APP_NAME = "add_forge_now"
+from swh.web.add_forge_now.apps import APP_LABEL
 
 MIGRATION_0001 = "0001_initial"
 MIGRATION_0002 = "0002_authorized_null_comment"
@@ -21,9 +21,9 @@ def now() -> datetime:
 def test_add_forge_now_initial_migration(migrator):
     """Basic migration test to check the model is fine"""
 
-    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0001))
-    request = state.apps.get_model(APP_NAME, "Request")
-    request_history = state.apps.get_model(APP_NAME, "RequestHistory")
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0001))
+    request = state.apps.get_model(APP_LABEL, "Request")
+    request_history = state.apps.get_model(APP_LABEL, "RequestHistory")
 
     from swh.web.add_forge_now.models import RequestActorRole, RequestStatus
 
@@ -71,7 +71,7 @@ def test_add_forge_now_allow_no_comment(migrator):
 
     from django.db.utils import IntegrityError
 
-    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0001))
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0001))
 
     def make_request_with_empty_comment(requestModel):
         return requestModel(
@@ -85,14 +85,14 @@ def test_add_forge_now_allow_no_comment(migrator):
             forge_contact_comment=None,
         )
 
-    requestModel = state.apps.get_model(APP_NAME, "Request")
+    requestModel = state.apps.get_model(APP_LABEL, "Request")
 
     req = make_request_with_empty_comment(requestModel)
     with pytest.raises(IntegrityError, match="violates not-null constraint"):
         req.save()
 
-    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0002))
-    requestModel2 = state.apps.get_model(APP_NAME, "Request")
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0002))
+    requestModel2 = state.apps.get_model(APP_LABEL, "Request")
 
     req2 = make_request_with_empty_comment(requestModel2)
     req2.save()
@@ -101,11 +101,11 @@ def test_add_forge_now_allow_no_comment(migrator):
 def test_add_forge_now_store_submitter_forward_username(migrator):
     """Basic migration test to check new model authorized empty comment"""
 
-    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0002))
-    requestModel = state.apps.get_model(APP_NAME, "Request")
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0002))
+    requestModel = state.apps.get_model(APP_LABEL, "Request")
     assert not hasattr(requestModel, "submitter_forward_username")
 
-    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0003))
-    requestModel2 = state.apps.get_model(APP_NAME, "Request")
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0003))
+    requestModel2 = state.apps.get_model(APP_LABEL, "Request")
 
     assert hasattr(requestModel2, "submitter_forward_username")

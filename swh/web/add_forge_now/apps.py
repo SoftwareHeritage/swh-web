@@ -5,7 +5,9 @@
 
 from django.apps import AppConfig
 
+APP_LABEL = "swh_web_add_forge_now"
+
 
 class AddForgeNowConfig(AppConfig):
     name = "swh.web.add_forge_now"
-    label = "swh_web_add_forge_now"
+    label = APP_LABEL
