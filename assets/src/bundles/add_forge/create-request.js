@@ -113,11 +113,13 @@ export function populateRequestBrowseList() {
         },
         {
           data: 'forge_type',
-          name: 'forge_type'
+          name: 'forge_type',
+          render: $.fn.dataTable.render.text()
         },
         {
           data: 'forge_url',
-          name: 'forge_url'
+          name: 'forge_url',
+          render: $.fn.dataTable.render.text()
         },
         {
           data: 'status',
