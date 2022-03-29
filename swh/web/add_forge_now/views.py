@@ -93,9 +93,7 @@ def create_request_create(request):
     """
 
     return render(
-        request,
-        "add_forge_now/create-request-create.html",
-        {"forge_types": FORGE_TYPES},
+        request, "add_forge_now/creation_form.html", {"forge_types": FORGE_TYPES},
     )
 
 
@@ -104,7 +102,7 @@ def create_request_list(request):
 
     """
 
-    return render(request, "add_forge_now/create-request-list.html",)
+    return render(request, "add_forge_now/list.html",)
 
 
 def create_request_help(request):
@@ -112,7 +110,7 @@ def create_request_help(request):
 
     """
 
-    return render(request, "add_forge_now/create-request-help.html",)
+    return render(request, "add_forge_now/help.html",)
 
 
 urlpatterns = [
