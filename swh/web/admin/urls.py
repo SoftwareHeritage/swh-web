@@ -18,7 +18,7 @@ if is_feature_enabled("add_forge_now"):
 
 
 def _admin_default_view(request):
-    return redirect("admin-origin-save")
+    return redirect("admin-origin-save-requests")
 
 
 urlpatterns = [

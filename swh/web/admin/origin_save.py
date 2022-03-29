@@ -26,10 +26,16 @@ from swh.web.common.origin_save import (
 )
 
 
-@admin_route(r"origin/save/", view_name="admin-origin-save")
+@admin_route(r"origin/save/requests/", view_name="admin-origin-save-requests")
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
-def _admin_origin_save(request):
-    return render(request, "admin/origin-save.html")
+def _admin_origin_save_requests(request):
+    return render(request, "admin/origin-save/requests.html")
+
+
+@admin_route(r"origin/save/filters/", view_name="admin-origin-save-filters")
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
+def _admin_origin_save_filters(request):
+    return render(request, "admin/origin-save/filters.html")
 
 
 def _datatables_origin_urls_response(request, urls_query_set):

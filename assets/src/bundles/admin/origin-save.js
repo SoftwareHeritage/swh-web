@@ -178,14 +178,6 @@ export function initOriginSaveAdmin() {
     enableRowSelection('#swh-origin-save-accepted-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(acceptedSaveRequestsTable);
 
-    $('#swh-origin-save-requests-nav-item').on('shown.bs.tab', () => {
-      pendingSaveRequestsTable.draw();
-    });
-
-    $('#swh-origin-save-url-filters-nav-item').on('shown.bs.tab', () => {
-      authorizedOriginTable.draw();
-    });
-
     $('#swh-authorized-origins-tab').on('shown.bs.tab', () => {
       authorizedOriginTable.draw();
     });
