@@ -150,7 +150,12 @@ module.exports = (on, config) => {
     'db:add_forge_now:delete': () => {
       const db = getDatabase();
       db.serialize(function() {
+        db.run('DELETE FROM add_forge_request_history');
+        db.run('DELETE FROM sqlite_sequence WHERE name="add_forge_request_history"');
+      });
+      db.serialize(function() {
         db.run('DELETE FROM add_forge_request');
+        db.run('DELETE FROM sqlite_sequence WHERE name="add_forge_request"');
       });
       db.close();
       return true;

@@ -6,7 +6,7 @@
 %>
 <div class="history-item">
   <div class="card border-dark">
-    <div class="card-header" id="heading<%= index %>}">
+    <div class="card-header" id="historyItem<%= index %>}">
       <h2 class="mb-0">
         <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse<%= index %>"
                 aria-expanded="true" aria-controls="collapse$<%= index %>">
@@ -17,7 +17,7 @@
         </button>
       </h2>
     </div>
-    <div id="collapse<%= index %>" class="collapse" aria-labelledby="headingOne" data-parent="#requestHistory">
+    <div id="collapse<%= index %>" class="collapse" aria-labelledby="historyItem<%= index %>" data-parent="#requestHistory">
       <div class="card-body">
         <p><%= event.text %></p>
         <%if (event.new_status !== null) { %>
