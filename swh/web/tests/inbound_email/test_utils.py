@@ -130,3 +130,114 @@ def test_recipient_matches_casemapping():
     matches = utils.recipient_matches(message, "match@example.com")
     assert matches
     assert matches[0].extension == "weirdCaseMapping"
+
+
+def test_get_address_for_pk():
+    salt = "test_salt"
+    pks = [1, 10, 1000]
+    base_address = "base@example.com"
+
+    addresses = {
+        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        for pk in pks
+    }
+
+    assert len(set(addresses.values())) == len(addresses)
+
+    for pk, address in addresses.items():
+        localpart, _, domain = address.partition("@")
+        base_localpart, _, extension = localpart.partition("+")
+        assert domain == "example.com"
+        assert base_localpart == "base"
+        assert extension.startswith(f"{pk}.")
+
+
+def test_get_address_for_pk_salt():
+    pk = 1000
+    base_address = "base@example.com"
+    addresses = [
+        utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        for salt in ["salt1", "salt2"]
+    ]
+
+    assert len(addresses) == len(set(addresses))
+
+
+def test_get_pks_from_message():
+    salt = "test_salt"
+    pks = [1, 10, 1000]
+    base_address = "base@example.com"
+
+    addresses = {
+        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        for pk in pks
+    }
+
+    message = EmailMessage()
+    message["To"] = "test@example.com"
+
+    assert utils.get_pks_from_message(salt, base_address, message) == set()
+
+    message = EmailMessage()
+    message["To"] = f"Test Address <{addresses[1]}>"
+
+    assert utils.get_pks_from_message(salt, base_address, message) == {1}
+
+    message = EmailMessage()
+    message["To"] = f"Test Address <{addresses[1]}>"
+    message["Cc"] = ", ".join(
+        [
+            f"Test Address <{addresses[1]}>",
+            f"Another Test Address <{addresses[10].lower()}>",
+            "A Third Address <irrelevant@example.com>",
+        ]
+    )
+
+    assert utils.get_pks_from_message(salt, base_address, message) == {1, 10}
+
+
+def test_get_pks_from_message_logging(caplog):
+    salt = "test_salt"
+    pks = [1, 10, 1000]
+    base_address = "base@example.com"
+
+    addresses = {
+        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        for pk in pks
+    }
+
+    message = EmailMessage()
+    message["To"] = f"Test Address <{base_address}>"
+
+    assert utils.get_pks_from_message(salt, base_address, message) == set()
+
+    relevant_records = [
+        record
+        for record in caplog.records
+        if record.name == "swh.web.inbound_email.utils"
+    ]
+    assert len(relevant_records) == 1
+    assert relevant_records[0].levelname == "DEBUG"
+    assert (
+        f"{base_address} cannot be matched to a request"
+        in relevant_records[0].getMessage()
+    )
+
+    # Replace the signature with "mangle{signature}"
+    mangled_address = addresses[1].replace(".", ".mangle", 1)
+
+    message = EmailMessage()
+    message["To"] = f"Test Address <{mangled_address}>"
+
+    assert utils.get_pks_from_message(salt, base_address, message) == set()
+
+    relevant_records = [
+        record
+        for record in caplog.records
+        if record.name == "swh.web.inbound_email.utils"
+    ]
+    assert len(relevant_records) == 2
+    assert relevant_records[0].levelname == "DEBUG"
+    assert relevant_records[1].levelname == "DEBUG"
+
+    assert f"{mangled_address} failed" in relevant_records[1].getMessage()
