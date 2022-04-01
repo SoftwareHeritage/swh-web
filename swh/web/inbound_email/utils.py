@@ -164,3 +164,41 @@ def get_pks_from_message(
             continue
 
     return ret
+
+
+def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
+    """Get the plaintext body for a given message, if any such part exists. If only a html
+    part exists, return that instead.
+
+    If there are multiple, ambiguous plain text or html parts in the message, this
+    function will return the largest of them.
+
+    """
+    if not message.is_multipart():
+        single_part = message.get_payload(decode=True).rstrip(b"\n")
+        return single_part or None
+
+    text_parts: List[bytes] = []
+    fallback_parts: List[bytes] = []
+
+    for part in message.walk():
+        content_type = part.get_content_type()
+        content_disposition = str(part.get("Content-Disposition"))
+        if "attachment" in content_disposition:
+            continue
+        if content_type == "text/plain":
+            current_part = part.get_payload(decode=True).rstrip(b"\n")
+            if current_part:
+                text_parts.append(current_part)
+        elif not text_parts and content_type == "text/html":
+            current_part = part.get_payload(decode=True).rstrip(b"\n")
+            if current_part:
+                fallback_parts.append(current_part)
+
+    if text_parts:
+        return max(text_parts, key=len)
+
+    if fallback_parts:
+        return max(fallback_parts, key=len)
+
+    return None

@@ -3,8 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import email
 from email.headerregistry import Address
 from email.message import EmailMessage
+import email.policy
+from importlib.resources import open_binary
+from typing import List
+
+import pytest
 
 from swh.web.inbound_email import utils
 
@@ -241,3 +247,52 @@ def test_get_pks_from_message_logging(caplog):
     assert relevant_records[1].levelname == "DEBUG"
 
     assert f"{mangled_address} failed" in relevant_records[1].getMessage()
+
+
+@pytest.mark.parametrize(
+    "filename,expected_parts,expected_absent",
+    (
+        pytest.param(
+            "plaintext.eml",
+            [b"Plain text email.\n\n-- \nTest User"],
+            [],
+            id="plaintext",
+        ),
+        pytest.param(
+            "multipart.eml",
+            [b"*Multipart email.*\n\n-- \nTest User"],
+            [],
+            id="multipart",
+        ),
+        pytest.param(
+            "multipart_html_only.eml",
+            [b"<html>", b"<b>Multipart email (a much longer html part).</b>"],
+            [b"<b>Multipart email (short html part)</b>"],
+            id="multipart_html_only",
+        ),
+        pytest.param(
+            "multipart_text_only.eml",
+            [b"*Multipart email, but a longer text part.*\n\n--\nTest User"],
+            [],
+            id="multipart_text_only",
+        ),
+    ),
+)
+def test_get_message_plaintext(
+    filename: str, expected_parts: List[bytes], expected_absent: List[bytes]
+):
+    with open_binary("swh.web.tests.inbound_email.resources", filename) as f:
+        message = email.message_from_binary_file(f, policy=email.policy.default)
+
+    assert isinstance(message, EmailMessage)
+
+    plaintext = utils.get_message_plaintext(message)
+    assert plaintext is not None
+
+    if len(expected_parts) == 1:
+        assert plaintext == expected_parts[0]
+    else:
+        for part in expected_parts:
+            assert part in plaintext
+        for part in expected_absent:
+            assert part not in plaintext
