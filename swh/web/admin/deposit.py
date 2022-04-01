@@ -88,22 +88,27 @@ def _admin_deposit_list(request):
             }
             provenance = None
             raw_metadata = d["raw_metadata"]
-            # Try to determine provenance out of the raw metadata
+            # for meta deposit, the uri should be the url provenance
             if raw_metadata and d["type"] == "meta":  # metadata provenance
                 provenance = parse_swh_metadata_provenance(d["raw_metadata"])
+            # For code deposits the uri is the origin
+            # First, trying to determine it out of the raw metadata associated with the
+            # deposit
             elif raw_metadata and d["type"] == "code":
                 provenance = parse_swh_deposit_origin(raw_metadata)
 
-            if not provenance and d["origin_url"]:
-                provenance = d["origin_url"]
+            # For code deposits, if not provided, use the origin_url
+            if not provenance and d["type"] == "code":
+                if d["origin_url"]:
+                    provenance = d["origin_url"]
 
-            # Finally, if still not found, we determine uri using the swhid
-            if not provenance and d["swhid_context"]:
-                # Trying to compute the origin as we did before in the js
-                from swh.model.swhids import QualifiedSWHID
+                # If still not found, fallback using the swhid context
+                if not provenance and d["swhid_context"]:
+                    # Trying to compute the origin as we did before in the js
+                    from swh.model.swhids import QualifiedSWHID
 
-                swhid = QualifiedSWHID.from_string(d["swhid_context"])
-                provenance = swhid.origin
+                    swhid = QualifiedSWHID.from_string(d["swhid_context"])
+                    provenance = swhid.origin
 
             data_dict["uri"] = provenance  # could be None
 
