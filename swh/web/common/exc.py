@@ -136,6 +136,7 @@ def sentry_capture_exception(exc):
             exceptions.ObjectDoesNotExist,
             exceptions.DisallowedHost,
             exceptions.PermissionDenied,
+            BadInputExc,
         ),
     ):
         sentry_sdk.capture_exception(exc)

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -47,14 +47,14 @@ def release_browse(request, sha1_git):
     if not origin_url:
         origin_url = request.GET.get("origin")
     timestamp = request.GET.get("timestamp")
-    visit_id = request.GET.get("visit_id")
+    visit_id = int(request.GET.get("visit_id", 0))
     if origin_url:
         try:
             snapshot_context = get_snapshot_context(
                 snapshot_id,
                 origin_url,
                 timestamp,
-                visit_id,
+                visit_id or None,
                 release_name=release["name"],
             )
         except NotFoundExc as e:

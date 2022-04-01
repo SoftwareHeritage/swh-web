@@ -6,6 +6,7 @@
 import datetime
 import threading
 import time
+from typing import Dict
 from urllib.parse import urlencode
 
 import iso8601
@@ -34,50 +35,89 @@ def test_add_forge_request_create_empty(api_client, regular_user):
     assert '"forge_type"' in resp.data["reason"]
 
 
-ADD_FORGE_DATA = {
+ADD_FORGE_DATA_FORGE1: Dict = {
     "forge_type": "gitlab",
     "forge_url": "https://gitlab.example.org",
     "forge_contact_email": "admin@gitlab.example.org",
     "forge_contact_name": "gitlab.example.org admin",
     "forge_contact_comment": "user marked as owner in forge members",
+    "submitter_forward_username": True,
 }
 
-ADD_OTHER_FORGE_DATA = {
+ADD_FORGE_DATA_FORGE2: Dict = {
     "forge_type": "gitea",
     "forge_url": "https://gitea.example.org",
     "forge_contact_email": "admin@gitea.example.org",
     "forge_contact_name": "gitea.example.org admin",
     "forge_contact_comment": "user marked as owner in forge members",
+    "submitter_forward_username": True,
+}
+
+ADD_FORGE_DATA_FORGE3: Dict = {
+    "forge_type": "heptapod",
+    "forge_url": "https://heptapod.host/",
+    "forge_contact_email": "admin@example.org",
+    "forge_contact_name": "heptapod admin",
+    "forge_contact_comment": "",  # authorized empty or null comment
+    "submitter_forward_username": False,
+}
+
+ADD_FORGE_DATA_FORGE4: Dict = {
+    **ADD_FORGE_DATA_FORGE3,
+    "forge_url": "https://heptapod2.host/",
+    "submitter_forward_username": "on",
+}
+
+ADD_FORGE_DATA_FORGE5: Dict = {
+    **ADD_FORGE_DATA_FORGE3,
+    "forge_url": "https://heptapod3.host/",
+    "submitter_forward_username": "off",
 }
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-def test_add_forge_request_create_success(api_client, regular_user):
+@pytest.mark.parametrize(
+    "add_forge_data",
+    [
+        ADD_FORGE_DATA_FORGE1,
+        ADD_FORGE_DATA_FORGE2,
+        ADD_FORGE_DATA_FORGE3,
+        ADD_FORGE_DATA_FORGE4,
+    ],
+)
+def test_add_forge_request_create_success_post(
+    api_client, regular_user, add_forge_data
+):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
 
     date_before = datetime.datetime.now(tz=datetime.timezone.utc)
 
     resp = check_api_post_response(
-        api_client, url, data=ADD_FORGE_DATA, status_code=201,
+        api_client, url, data=add_forge_data, status_code=201,
     )
 
     date_after = datetime.datetime.now(tz=datetime.timezone.utc)
 
+    consent = add_forge_data["submitter_forward_username"]
+    # map the expected result with what's expectedly read from the db to ease comparison
+    expected_consent_bool = consent == "on" if isinstance(consent, str) else consent
+
     assert resp.data == {
-        **ADD_FORGE_DATA,
-        "id": 1,
+        **add_forge_data,
+        "id": resp.data["id"],
         "status": "PENDING",
         "submission_date": resp.data["submission_date"],
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
+        "submitter_forward_username": expected_consent_bool,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
 
-    request = Request.objects.all()[0]
+    request = Request.objects.all().last()
 
-    assert request.forge_url == ADD_FORGE_DATA["forge_url"]
+    assert request.forge_url == add_forge_data["forge_url"]
     assert request.submitter_name == regular_user.username
 
 
@@ -92,14 +132,14 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
         client,
         url,
         request_content_type="application/x-www-form-urlencoded",
-        data=urlencode(ADD_FORGE_DATA),
+        data=urlencode(ADD_FORGE_DATA_FORGE1),
         status_code=201,
     )
 
     date_after = datetime.datetime.now(tz=datetime.timezone.utc)
 
     assert resp.data == {
-        **ADD_FORGE_DATA,
+        **ADD_FORGE_DATA_FORGE1,
         "id": 1,
         "status": "PENDING",
         "submission_date": resp.data["submission_date"],
@@ -111,7 +151,7 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
 
     request = Request.objects.all()[0]
 
-    assert request.forge_url == ADD_FORGE_DATA["forge_url"]
+    assert request.forge_url == ADD_FORGE_DATA_FORGE1["forge_url"]
     assert request.submitter_name == regular_user.username
 
 
@@ -120,10 +160,10 @@ def test_add_forge_request_create_duplicate(api_client, regular_user):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
     check_api_post_response(
-        api_client, url, data=ADD_FORGE_DATA, status_code=201,
+        api_client, url, data=ADD_FORGE_DATA_FORGE1, status_code=201,
     )
     check_api_post_response(
-        api_client, url, data=ADD_FORGE_DATA, status_code=409,
+        api_client, url, data=ADD_FORGE_DATA_FORGE1, status_code=409,
     )
 
     requests = Request.objects.all()
@@ -150,7 +190,7 @@ def test_add_forge_request_update_non_existent(api_client, add_forge_moderator):
     check_api_post_response(api_client, url, status_code=400)
 
 
-def create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA):
+def create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE1):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
     return check_api_post_response(api_client, url, data=data, status_code=201,)
@@ -272,8 +312,8 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
     resp = check_api_get_responses(api_client, url, status_code=200)
 
     add_forge_request = {
-        "forge_url": ADD_FORGE_DATA["forge_url"],
-        "forge_type": ADD_FORGE_DATA["forge_type"],
+        "forge_url": ADD_FORGE_DATA_FORGE1["forge_url"],
+        "forge_type": ADD_FORGE_DATA_FORGE1["forge_type"],
         "status": "PENDING",
         "submission_date": resp.data[0]["submission_date"],
         "id": 1,
@@ -281,13 +321,13 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
 
     assert resp.data == [add_forge_request]
 
-    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE2)
 
     resp = check_api_get_responses(api_client, url, status_code=200)
 
     other_forge_request = {
-        "forge_url": ADD_OTHER_FORGE_DATA["forge_url"],
-        "forge_type": ADD_OTHER_FORGE_DATA["forge_type"],
+        "forge_url": ADD_FORGE_DATA_FORGE2["forge_url"],
+        "forge_type": ADD_FORGE_DATA_FORGE2["forge_type"],
         "status": "PENDING",
         "submission_date": resp.data[0]["submission_date"],
         "id": 2,
@@ -303,13 +343,13 @@ def test_add_forge_request_list_moderator(
     url = reverse("api-1-add-forge-request-list")
 
     create_add_forge_request(api_client, regular_user)
-    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE2)
 
     api_client.force_login(add_forge_moderator)
     resp = check_api_get_responses(api_client, url, status_code=200)
 
     add_forge_request = {
-        **ADD_FORGE_DATA,
+        **ADD_FORGE_DATA_FORGE1,
         "status": "PENDING",
         "submission_date": resp.data[1]["submission_date"],
         "submitter_name": regular_user.username,
@@ -318,7 +358,7 @@ def test_add_forge_request_list_moderator(
     }
 
     other_forge_request = {
-        **ADD_OTHER_FORGE_DATA,
+        **ADD_FORGE_DATA_FORGE2,
         "status": "PENDING",
         "submission_date": resp.data[0]["submission_date"],
         "submitter_name": regular_user.username,
@@ -334,7 +374,7 @@ def test_add_forge_request_list_pagination(
     api_client, regular_user, api_request_factory
 ):
     create_add_forge_request(api_client, regular_user)
-    create_add_forge_request(api_client, regular_user, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE2)
 
     url = reverse("api-1-add-forge-request-list", query_params={"per_page": 1})
 
@@ -370,7 +410,7 @@ def test_add_forge_request_list_submitter_filtering(
     api_client, regular_user, regular_user2
 ):
     create_add_forge_request(api_client, regular_user)
-    create_add_forge_request(api_client, regular_user2, data=ADD_OTHER_FORGE_DATA)
+    create_add_forge_request(api_client, regular_user2, data=ADD_FORGE_DATA_FORGE2)
 
     api_client.force_login(regular_user)
     url = reverse(
@@ -404,8 +444,8 @@ def test_add_forge_request_get(api_client, regular_user, add_forge_moderator):
 
     assert resp.data == {
         "request": {
-            "forge_url": ADD_FORGE_DATA["forge_url"],
-            "forge_type": ADD_FORGE_DATA["forge_type"],
+            "forge_url": ADD_FORGE_DATA_FORGE1["forge_url"],
+            "forge_type": ADD_FORGE_DATA_FORGE1["forge_type"],
             "id": 1,
             "status": "WAITING_FOR_FEEDBACK",
             "submission_date": submission_date,
@@ -449,7 +489,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
 
     assert resp.data == {
         "request": {
-            **ADD_FORGE_DATA,
+            **ADD_FORGE_DATA_FORGE1,
             "id": 1,
             "status": "WAITING_FOR_FEEDBACK",
             "submission_date": submission_date,

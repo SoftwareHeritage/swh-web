@@ -1,8 +1,39 @@
-swh-web (0.0.377-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.378-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.378     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2022-04-01 10:26:43
+    +0200)
+  * Upstream changes:     - v0.0.378     - Add-forge-now: Fix app label
+    - Add Forge Now: Shorten template names     - Save Forge Now: Fix
+    XSS in request list     - Save Code Now Admin: Use different views
+    for each tab     - Add Forge Now: Use different views for each tab
+    - Save Code Now: Use different views for each tab     -
+    assets/webapp.css: Disable common ligatures of Alegreya font     -
+    requirements-test: Remove workarounds to fix pytest execution     -
+    requirements-test: Temporarily pin django-stubs to < 1.10.0     -
+    package.json: Remove use of nodemon file watchers     - Filter user
+    add-forge-now requests when authenticated     - Maintain tab
+    selection on refresh     - Improve language in add-forge-now help
+    text     - save-code-now: Extract the checkbox filtering into a js
+    template     - Fix add-forge request list api docstring     - add-
+    forge-now: Fix login link depending on the oidc context     -
+    common/origin_visits: Improve get_origin_visit performance     - add-
+    forge-now: Refactor help content into a tab     - Simplify date
+    field display format in datatable views     - package.json: Upgrade
+    dependencies     - admin: Add mailmaps administration Web UI     -
+    Show forge request status in a human readable form     - add-forge-
+    now: Fix create request checkbox input name     - cypress: Fix flaky
+    test     - Style improvements for forge request dashboard     -
+    admin/origin_save: Do not modify unauthorized URLs list when
+    rejecting     - Do not report BadInputExc to Sentry     - Style to
+    add asterisk to mandatory fields in HTML forms     - Store submitter
+    consent to use their name when discussing with forge     - pytest:
+    Exclude build directory for tests discovery     - Allow no comment
+    when submitting a new add forge creation request     - Consistently
+    check add-forge-now permission to access or update info     -
+    add_forge_now: Rename django app and add missing app_label
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 18 Mar 2022 16:42:34 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 01 Apr 2022 10:57:36 +0000
 
 swh-web (0.0.377-1~swh1) unstable-swh; urgency=medium
 

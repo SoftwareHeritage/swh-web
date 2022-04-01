@@ -1,0 +1,17 @@
+<%#
+  Copyright (C) 2022  The Software Heritage developers
+  See the AUTHORS file at the top-level directory of this distribution
+  License: GNU Affero General Public License version 3, or any later version
+  See top-level LICENSE file for more information
+%>
+<div class="custom-control custom-checkbox swhid-option">
+  <input class="custom-control-input" value="option-user-requests-filter"
+         type="checkbox"
+    <% if (checked) { %>
+         checked="checked"
+    <% } %>
+         id="<%= inputId %>">
+  <label class="custom-control-label font-weight-normal" for="<%= inputId %>">
+    show only your own requests
+  </label>
+</div>

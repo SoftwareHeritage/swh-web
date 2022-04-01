@@ -258,12 +258,15 @@ def test_origin_visit_find_by_date(archive_data, new_origin):
     archive_data.origin_visit_status_add(visit_statuses)
 
     # Check correct visit is returned when searching by date
-    for search_date, expected_visit in [
-        (first_visit_date, 1),
-        (pivot_date, 2),
-        (second_visit_date, 2),
+    for search_date, greater_or_equal, expected_visit in [
+        (first_visit_date, True, 1),
+        (pivot_date, True, 2),
+        (pivot_date, False, 1),
+        (second_visit_date, True, 2),
     ]:
-        origin_visit = archive.origin_visit_find_by_date(new_origin.url, search_date)
+        origin_visit = archive.origin_visit_find_by_date(
+            new_origin.url, search_date, greater_or_equal
+        )
         assert origin_visit["visit"] == expected_visit
 
 

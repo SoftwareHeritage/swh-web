@@ -25,7 +25,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import has_add_forge_now_permission, reverse
 
 
 def _block_while_testing():
@@ -35,6 +35,8 @@ def _block_while_testing():
 
 
 class AddForgeNowRequestForm(ModelForm):
+    forge_contact_comment = CharField(required=False,)
+
     class Meta:
         model = AddForgeRequest
         fields = (
@@ -43,6 +45,7 @@ class AddForgeNowRequestForm(ModelForm):
             "forge_contact_email",
             "forge_contact_name",
             "forge_contact_comment",
+            "submitter_forward_username",
         )
 
 
@@ -194,7 +197,7 @@ def api_add_forge_request_update(
             "You must be authenticated to update a new add-forge request"
         )
 
-    if not request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
+    if not has_add_forge_now_permission(request.user):
         return HttpResponseForbidden("You are not a moderator")
 
     add_forge_request = (
@@ -256,8 +259,7 @@ def api_add_forge_request_list(request: Request):
     """
     .. http:get:: /api/1/add-forge/request/list/
 
-        List requests to add forges to the list of those crawled regularly
-        by Software Heritage.
+        List add forge requests submitted by users.
 
         {common_headers}
         {resheader_link}

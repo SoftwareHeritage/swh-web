@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2021  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -7,7 +7,7 @@
 
 const $ = Cypress.$;
 
-const defaultRedirect = '/admin/origin/save/';
+const defaultRedirect = '/admin/origin/save/requests/';
 
 let url;
 
@@ -40,7 +40,7 @@ describe('Test Admin Login/logout', function() {
     cy.adminLogin();
     cy.visit(url);
 
-    cy.get(`.sidebar a[href="${this.Urls.admin_origin_save()}"]`)
+    cy.get(`.sidebar a[href="${this.Urls.admin_origin_save_requests()}"]`)
       .should('be.visible');
 
     cy.get(`.sidebar a[href="${this.Urls.admin_deposit()}"]`)
@@ -76,7 +76,7 @@ describe('Test Admin Login/logout', function() {
   });
 
   it('should prevent unauthorized access after logout', function() {
-    cy.visit(this.Urls.admin_origin_save())
+    cy.visit(this.Urls.admin_origin_save_requests())
       .location('pathname')
       .should('be.equal', '/admin/login/');
     cy.visit(this.Urls.admin_deposit())
@@ -131,7 +131,7 @@ describe('Test Admin Origin Save Urls Filtering', function() {
 
   beforeEach(function() {
     cy.adminLogin();
-    cy.visit(this.Urls.admin_origin_save());
+    cy.visit(this.Urls.admin_origin_save_requests());
 
     cy.contains('a', 'Origin urls filtering')
       .click()
@@ -237,7 +237,7 @@ describe('Test Admin Origin Save', function() {
 
     // admin user logs in and visits save code now admin page
     cy.adminLogin();
-    cy.visit(this.Urls.admin_origin_save());
+    cy.visit(this.Urls.admin_origin_save_requests());
 
     // admin rejects the save request and adds a rejection note
     cy.contains('#swh-origin-save-pending-requests', originUrl)
@@ -279,7 +279,7 @@ describe('Test Admin Origin Save', function() {
 
     // remove rejected request from swh-web database to avoid side effects
     // in tests located in origin-save.spec.js
-    cy.visit(this.Urls.admin_origin_save());
+    cy.visit(this.Urls.admin_origin_save_requests());
     cy.get('#swh-save-requests-rejected-tab')
       .click();
 

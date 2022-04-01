@@ -1,14 +1,15 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert, removeUrlFragment,
-        getCanonicalOriginURL} from 'utils/functions';
+import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert,
+        getCanonicalOriginURL, getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
+import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 
 let saveRequestsTable;
 
@@ -103,15 +104,11 @@ export function deleteArtifactFormRow(event) {
   $(event.target).closest('.swh-save-origin-artifact-form').remove();
 }
 
-const userRequestsFilterCheckbox = `
-<div class="custom-control custom-checkbox swhid-option">
-  <input class="custom-control-input" value="option-user-requests-filter" type="checkbox"
-         id="swh-save-requests-user-filter">
-  <label class="custom-control-label font-weight-normal" for="swh-save-requests-user-filter">
-    show only your own requests
-  </label>
-</div>
-`;
+const saveRequestCheckboxId = 'swh-save-requests-user-filter';
+const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
+  'inputId': saveRequestCheckboxId,
+  'checked': false // no filtering by default on that view
+});
 
 export function initOriginSave() {
 
@@ -136,7 +133,7 @@ export function initOriginSave() {
         ajax: {
           url: Urls.origin_save_requests_list('all'),
           data: (d) => {
-            if (swh.webapp.isUserLoggedIn() && $('#swh-save-requests-user-filter').prop('checked')) {
+            if (swh.webapp.isUserLoggedIn() && $(`#${saveRequestCheckboxId}`).prop('checked')) {
               d.user_requests_only = '1';
             }
           }
@@ -151,7 +148,7 @@ export function initOriginSave() {
         fnInitComplete: function() {
           if (swh.webapp.isUserLoggedIn()) {
             $('div.user-requests-filter').html(userRequestsFilterCheckbox);
-            $('#swh-save-requests-user-filter').on('change', () => {
+            $(`#${saveRequestCheckboxId}`).on('change', () => {
               saveRequestsTable.draw();
             });
           }
@@ -160,13 +157,7 @@ export function initOriginSave() {
           {
             data: 'save_request_date',
             name: 'request_date',
-            render: (data, type, row) => {
-              if (type === 'display') {
-                const date = new Date(data);
-                return date.toLocaleString();
-              }
-              return data;
-            }
+            render: getHumanReadableDate
           },
           {
             data: 'visit_type',
@@ -249,15 +240,12 @@ export function initOriginSave() {
 
     swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
 
-    $('#swh-origin-save-requests-list-tab').on('shown.bs.tab', () => {
+    if (window.location.pathname === Urls.origin_save() && window.location.hash === '#requests') {
+      // Keep old URLs to the save list working
+      window.location = Urls.origin_save_list();
+    } else if ($('#swh-origin-save-requests')) {
       saveRequestsTable.draw();
-      window.location.hash = '#requests';
-    });
-
-    $('#swh-origin-save-request-help-tab').on('shown.bs.tab', () => {
-      removeUrlFragment();
-      $('.swh-save-request-info').popover('dispose');
-    });
+    }
 
     const saveRequestAcceptedAlert = htmlAlert(
       'success',

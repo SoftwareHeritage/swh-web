@@ -5,9 +5,18 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, removeUrlFragment, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost,
+        getHumanReadableDate} from 'utils/functions';
+import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
+import {swhSpinnerSrc} from 'utils/constants';
 
 let requestBrowseTable;
+
+const addForgeCheckboxId = 'swh-add-forge-user-filter';
+const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
+  'inputId': addForgeCheckboxId,
+  'checked': true // by default, display only user requests
+});
 
 export function onCreateRequestPageLoad() {
   $(document).ready(() => {
@@ -54,22 +63,6 @@ export function onCreateRequestPageLoad() {
       }
     });
 
-    $(window).on('hashchange', () => {
-      if (window.location.hash === '#browse-requests') {
-        $('.nav-tabs a[href="#swh-add-forge-requests-list"]').tab('show');
-      } else {
-        $('.nav-tabs a[href="#swh-add-forge-submit-request"]').tab('show');
-      }
-    });
-
-    $('#swh-add-forge-requests-list-tab').on('shown.bs.tab', () => {
-      window.location.hash = '#browse-requests';
-    });
-
-    $('#swh-add-forge-tab').on('shown.bs.tab', () => {
-      removeUrlFragment();
-    });
-
     populateRequestBrowseList(); // Load existing requests
   });
 }
@@ -82,32 +75,59 @@ export function populateRequestBrowseList() {
     .DataTable({
       serverSide: true,
       processing: true,
+      language: {
+        processing: `<img src="${swhSpinnerSrc}"></img>`
+      },
       retrieve: true,
       searching: true,
       info: false,
-      dom: '<<"d-flex justify-content-between align-items-center"f' +
-        '<"#list-exclude">l>rt<"bottom"ip>>',
+      // Layout configuration, see [1] for more details
+      // [1] https://datatables.net/reference/option/dom
+      dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
+           '<"row"<"col-sm-12"tr>>' +
+           '<"row"<"col-sm-5"i><"col-sm-7"p>>',
       ajax: {
-        'url': Urls.add_forge_request_list_datatables()
+        'url': Urls.add_forge_request_list_datatables(),
+        data: (d) => {
+          const checked = $(`#${addForgeCheckboxId}`).prop('checked');
+          // If this function is called while the page is loading, 'checked' is
+          // undefined. As the checkbox defaults to being checked, coerce this to true.
+          if (swh.webapp.isUserLoggedIn() && (checked === undefined || checked)) {
+            d.user_requests_only = '1';
+          }
+        }
+      },
+      fnInitComplete: function() {
+        if (swh.webapp.isUserLoggedIn()) {
+          $('div.user-requests-filter').html(userRequestsFilterCheckbox);
+          $(`#${addForgeCheckboxId}`).on('change', () => {
+            requestBrowseTable.draw();
+          });
+        }
       },
       columns: [
         {
           data: 'submission_date',
-          name: 'submission_date'
+          name: 'submission_date',
+          render: getHumanReadableDate
         },
         {
           data: 'forge_type',
-          name: 'forge_type'
+          name: 'forge_type',
+          render: $.fn.dataTable.render.text()
         },
         {
           data: 'forge_url',
-          name: 'forge_url'
+          name: 'forge_url',
+          render: $.fn.dataTable.render.text()
         },
         {
           data: 'status',
-          name: 'status'
+          name: 'status',
+          render: function(data, type, row, meta) {
+            return swh.add_forge.formatRequestStatusName(data);
+          }
         }
       ]
     });
-  requestBrowseTable.draw();
 }

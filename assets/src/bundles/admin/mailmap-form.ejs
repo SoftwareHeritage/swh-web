@@ -1,0 +1,29 @@
+<%#
+  Copyright (C) 2022  The Software Heritage developers
+  See the AUTHORS file at the top-level directory of this distribution
+  License: GNU Affero General Public License version 3, or any later version
+  See top-level LICENSE file for more information
+%>
+
+<form id="swh-mailmap-form" class="text-left">
+  <div class="form-group">
+    <label for="swh-mailmap-from-email">Email address</label>
+    <input type="email" class="form-control" id="swh-mailmap-from-email" value="<%= email %>"
+           <% if (updateForm) { %> readonly <% } %> required>
+  </div>
+  <div class="form-group">
+    <label for="swh-mailmap-display-name">Display name</label>
+    <input class="form-control" id="swh-mailmap-display-name" value="<%= displayName %>"
+           placeholder="John Doe <jdoe@example.org>" required>
+  </div>
+  <div class="custom-control custom-checkbox">
+    <input class="custom-control-input" type="checkbox" value=""
+           id="swh-mailmap-display-name-activated"
+           <% if (displayNameActivated) { %> checked <% } %>>
+    <label class="custom-control-label pt-0"
+           for="swh-mailmap-display-name-activated">Activate display name</label>
+  </div>
+  <div class="d-flex justify-content-center">
+    <input id="swh-mailmap-form-submit" type="submit" value="<%= buttonText %>">
+  </div>
+</form>

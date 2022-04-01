@@ -36,7 +36,12 @@ from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
-from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION, OIDC_SWH_WEB_CLIENT_ID
+from swh.web.auth.utils import (
+    ADD_FORGE_MODERATOR_PERMISSION,
+    MAILMAP_ADMIN_PERMISSION,
+    MAILMAP_PERMISSION,
+    OIDC_SWH_WEB_CLIENT_ID,
+)
 from swh.web.common import converters
 from swh.web.common.origin_save import get_scheduler_load_task_types
 from swh.web.common.typing import OriginVisitInfo
@@ -1224,3 +1229,19 @@ def add_forge_moderator():
         create_django_permission(ADD_FORGE_MODERATOR_PERMISSION)
     )
     return moderator
+
+
+@pytest.fixture
+def mailmap_admin():
+    mailmap_admin = User.objects.create_user(username="mailmap-admin", password="")
+    mailmap_admin.user_permissions.add(
+        create_django_permission(MAILMAP_ADMIN_PERMISSION)
+    )
+    return mailmap_admin
+
+
+@pytest.fixture
+def mailmap_user():
+    mailmap_user = User.objects.create_user(username="mailmap-user", password="")
+    mailmap_user.user_permissions.add(create_django_permission(MAILMAP_PERMISSION))
+    return mailmap_user

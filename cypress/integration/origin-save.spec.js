@@ -761,7 +761,9 @@ describe('Origin Save Tests', function() {
       .should('have.class', 'active');
 
     cy.get('#swh-origin-save-requests-list-tab')
-      .click()
+      .click();
+
+    cy.get('#swh-origin-save-requests-list-tab')
       .should('have.class', 'active');
 
     cy.go('back')

@@ -52,6 +52,10 @@ Cypress.Commands.add('userLogin', () => {
   return loginUser('user', 'user');
 });
 
+Cypress.Commands.add('user2Login', () => {
+  return loginUser('user2', 'user2');
+});
+
 Cypress.Commands.add('ambassadorLogin', () => {
   return loginUser('ambassador', 'ambassador');
 });
@@ -84,6 +88,9 @@ function mockCostlyRequests() {
     body: ''
   }).as('swhCoverageWidget');
 }
+Cypress.Commands.add('mailmapAdminLogin', () => {
+  return loginUser('mailmap-admin', 'mailmap-admin');
+});
 
 before(function() {
 

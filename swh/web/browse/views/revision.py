@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -197,11 +197,12 @@ def revision_log_browse(request, sha1_git):
     snapshot_id = request.GET.get("snapshot")
     snapshot_context = None
     if origin_url or snapshot_id:
+        visit_id = int(request.GET.get("visit_id", 0))
         snapshot_context = get_snapshot_context(
             snapshot_id=snapshot_id,
             origin_url=origin_url,
             timestamp=request.GET.get("timestamp"),
-            visit_id=request.GET.get("visit_id"),
+            visit_id=visit_id or None,
             branch_name=request.GET.get("branch"),
             release_name=request.GET.get("release"),
             revision_id=sha1_git,
@@ -309,7 +310,7 @@ def revision_browse(request, sha1_git):
     if not origin_url:
         origin_url = request.GET.get("origin")
     timestamp = request.GET.get("timestamp")
-    visit_id = request.GET.get("visit_id")
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_id = request.GET.get("snapshot_id")
     if not snapshot_id:
         snapshot_id = request.GET.get("snapshot")
@@ -323,7 +324,7 @@ def revision_browse(request, sha1_git):
                 snapshot_id=snapshot_id,
                 origin_url=origin_url,
                 timestamp=timestamp,
-                visit_id=visit_id,
+                visit_id=visit_id or None,
                 branch_name=request.GET.get("branch"),
                 release_name=request.GET.get("release"),
                 revision_id=sha1_git,

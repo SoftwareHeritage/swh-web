@@ -1,8 +1,6 @@
-import { __read, __values } from "tslib";
+import { __values } from "tslib";
 import { htmlTreeAsString } from './browser';
-import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive, isSyntheticEvent } from './is';
-import { memoBuilder } from './memo';
-import { getFunctionName } from './stacktrace';
+import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive } from './is';
 import { truncate } from './string';
 /**
  * Replace a method in an object with a wrapped version of itself.
@@ -88,7 +86,7 @@ export function urlEncode(object) {
  *
  * @param value Initial source that we have to transform in order for it to be usable by the serializer
  */
-function getWalkSource(value) {
+export function getWalkSource(value) {
     if (isError(value)) {
         var error = value;
         var err = {
@@ -137,180 +135,6 @@ function getWalkSource(value) {
         return source;
     }
     return value;
-}
-/** Calculates bytes size of input string */
-function utf8Length(value) {
-    // eslint-disable-next-line no-bitwise
-    return ~-encodeURI(value).split(/%..|./).length;
-}
-/** Calculates bytes size of input object */
-function jsonSize(value) {
-    return utf8Length(JSON.stringify(value));
-}
-/** JSDoc */
-export function normalizeToSize(object, 
-// Default Node.js REPL depth
-depth, 
-// 100kB, as 200kB is max payload size, so half sounds reasonable
-maxSize) {
-    if (depth === void 0) { depth = 3; }
-    if (maxSize === void 0) { maxSize = 100 * 1024; }
-    var serialized = normalize(object, depth);
-    if (jsonSize(serialized) > maxSize) {
-        return normalizeToSize(object, depth - 1, maxSize);
-    }
-    return serialized;
-}
-/**
- * Transform any non-primitive, BigInt, or Symbol-type value into a string. Acts as a no-op on strings, numbers,
- * booleans, null, and undefined.
- *
- * @param value The value to stringify
- * @returns For non-primitive, BigInt, and Symbol-type values, a string denoting the value's type, type and value, or
- *  type and `description` property, respectively. For non-BigInt, non-Symbol primitives, returns the original value,
- *  unchanged.
- */
-function serializeValue(value) {
-    // Node.js REPL notation
-    if (typeof value === 'string') {
-        return value;
-    }
-    var type = Object.prototype.toString.call(value);
-    if (type === '[object Object]') {
-        return '[Object]';
-    }
-    if (type === '[object Array]') {
-        return '[Array]';
-    }
-    // `makeSerializable` provides a string representation of certain non-serializable values. For all others, it's a
-    // pass-through.
-    var serializable = makeSerializable(value);
-    return isPrimitive(serializable) ? serializable : type;
-}
-/**
- * makeSerializable()
- *
- * Takes unserializable input and make it serializer-friendly.
- *
- * Handles globals, functions, `undefined`, `NaN`, and other non-serializable values.
- */
-function makeSerializable(value, key) {
-    if (key === 'domain' && value && typeof value === 'object' && value._events) {
-        return '[Domain]';
-    }
-    if (key === 'domainEmitter') {
-        return '[DomainEmitter]';
-    }
-    if (typeof global !== 'undefined' && value === global) {
-        return '[Global]';
-    }
-    // It's safe to use `window` and `document` here in this manner, as we are asserting using `typeof` first
-    // which won't throw if they are not present.
-    // eslint-disable-next-line no-restricted-globals
-    if (typeof window !== 'undefined' && value === window) {
-        return '[Window]';
-    }
-    // eslint-disable-next-line no-restricted-globals
-    if (typeof document !== 'undefined' && value === document) {
-        return '[Document]';
-    }
-    // React's SyntheticEvent thingy
-    if (isSyntheticEvent(value)) {
-        return '[SyntheticEvent]';
-    }
-    if (typeof value === 'number' && value !== value) {
-        return '[NaN]';
-    }
-    if (value === void 0) {
-        return '[undefined]';
-    }
-    if (typeof value === 'function') {
-        return "[Function: " + getFunctionName(value) + "]";
-    }
-    // symbols and bigints are considered primitives by TS, but aren't natively JSON-serilaizable
-    if (typeof value === 'symbol') {
-        return "[" + String(value) + "]";
-    }
-    if (typeof value === 'bigint') {
-        return "[BigInt: " + String(value) + "]";
-    }
-    return value;
-}
-/**
- * Walks an object to perform a normalization on it
- *
- * @param key of object that's walked in current iteration
- * @param value object to be walked
- * @param depth Optional number indicating how deep should walking be performed
- * @param memo Optional Memo class handling decycling
- */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function walk(key, value, depth, memo) {
-    if (depth === void 0) { depth = +Infinity; }
-    if (memo === void 0) { memo = memoBuilder(); }
-    var _a = __read(memo, 2), memoize = _a[0], unmemoize = _a[1];
-    // If we reach the maximum depth, serialize whatever is left
-    if (depth === 0) {
-        return serializeValue(value);
-    }
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    // If value implements `toJSON` method, call it and return early
-    if (value !== null && value !== undefined && typeof value.toJSON === 'function') {
-        return value.toJSON();
-    }
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-    // `makeSerializable` provides a string representation of certain non-serializable values. For all others, it's a
-    // pass-through. If what comes back is a primitive (either because it's been stringified or because it was primitive
-    // all along), we're done.
-    var serializable = makeSerializable(value, key);
-    if (isPrimitive(serializable)) {
-        return serializable;
-    }
-    // Create source that we will use for the next iteration. It will either be an objectified error object (`Error` type
-    // with extracted key:value pairs) or the input itself.
-    var source = getWalkSource(value);
-    // Create an accumulator that will act as a parent for all future itterations of that branch
-    var acc = Array.isArray(value) ? [] : {};
-    // If we already walked that branch, bail out, as it's circular reference
-    if (memoize(value)) {
-        return '[Circular ~]';
-    }
-    // Walk all keys of the source
-    for (var innerKey in source) {
-        // Avoid iterating over fields in the prototype if they've somehow been exposed to enumeration.
-        if (!Object.prototype.hasOwnProperty.call(source, innerKey)) {
-            continue;
-        }
-        // Recursively walk through all the child nodes
-        var innerValue = source[innerKey];
-        acc[innerKey] = walk(innerKey, innerValue, depth - 1, memo);
-    }
-    // Once walked through all the branches, remove the parent from memo storage
-    unmemoize(value);
-    // Return accumulated values
-    return acc;
-}
-/**
- * normalize()
- *
- * - Creates a copy to prevent original input mutation
- * - Skip non-enumerablers
- * - Calls `toJSON` if implemented
- * - Removes circular references
- * - Translates non-serializeable values (undefined/NaN/Functions) to serializable format
- * - Translates known global objects/Classes to a string representations
- * - Takes care of Error objects serialization
- * - Optionally limit depth of final output
- */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function normalize(input, depth) {
-    try {
-        // since we're at the outermost level, there is no key
-        return walk('', input, depth);
-    }
-    catch (_oO) {
-        return '**non-serializable**';
-    }
 }
 /**
  * Given any captured exception, extract its keys and create a sorted

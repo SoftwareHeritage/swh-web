@@ -101,7 +101,7 @@ class Migration(migrations.Migration):
                     "request",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.DO_NOTHING,
-                        to="add_forge_now.Request",
+                        to="swh_web_add_forge_now.Request",
                     ),
                 ),
             ],
