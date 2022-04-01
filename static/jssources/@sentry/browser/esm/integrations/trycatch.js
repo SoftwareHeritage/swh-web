@@ -100,16 +100,18 @@ function _wrapRAF(original) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return function (callback) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        return original.call(this, wrap(callback, {
-            mechanism: {
-                data: {
-                    function: 'requestAnimationFrame',
-                    handler: getFunctionName(original),
+        return original.apply(this, [
+            wrap(callback, {
+                mechanism: {
+                    data: {
+                        function: 'requestAnimationFrame',
+                        handler: getFunctionName(original),
+                    },
+                    handled: true,
+                    type: 'instrument',
                 },
-                handled: true,
-                type: 'instrument',
-            },
-        }));
+            }),
+        ]);
     };
 }
 /** JSDoc */
@@ -180,19 +182,22 @@ function _wrapEventTarget(target) {
             catch (err) {
                 // can sometimes get 'Permission denied to access property "handle Event'
             }
-            return original.call(this, eventName, 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            wrap(fn, {
-                mechanism: {
-                    data: {
-                        function: 'addEventListener',
-                        handler: getFunctionName(fn),
-                        target: target,
+            return original.apply(this, [
+                eventName,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                wrap(fn, {
+                    mechanism: {
+                        data: {
+                            function: 'addEventListener',
+                            handler: getFunctionName(fn),
+                            target: target,
+                        },
+                        handled: true,
+                        type: 'instrument',
                     },
-                    handled: true,
-                    type: 'instrument',
-                },
-            }), options);
+                }),
+                options,
+            ]);
         };
     });
     fill(proto, 'removeEventListener', function (originalRemoveEventListener) {

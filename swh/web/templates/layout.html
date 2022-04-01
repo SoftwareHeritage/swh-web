@@ -211,7 +211,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </li>
             {% if FEATURES.add_forge_now %}
             <li class="nav-item swh-origin-save-item" title="Request adding a new forge listing">
-              <a href="{% url 'forge-add' %}" class="nav-link swh-forge-add-link">
+              <a href="{% url 'forge-add-create' %}" class="nav-link swh-forge-add-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
                 <p>Add forge now</p>
               </a>
@@ -227,7 +227,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <li class="nav-header">Administration</li>
               {% if user.is_staff %}
                 <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
-                  <a href="{% url 'admin-origin-save' %}" class="nav-link swh-origin-save-admin-link">
+                  <a href="{% url 'admin-origin-save-requests' %}" class="nav-link swh-origin-save-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-camera"></i>
                     <p>Save code now</p>
                   </a>
@@ -244,12 +244,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
               {% endif %}
               {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
-              <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
-                <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
-                  <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
-                  <p>Deposit</p>
-                </a>
-              </li>
+                <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
+                  <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
+                    <p>Deposit</p>
+                  </a>
+                </li>
+              {% endif %}
+              {% if MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-mailmap-admin-item" title="Mailmap administration">
+                  <a href="{% url 'admin-mailmap' %}" class="nav-link swh-mailmap-admin-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-email"></i>
+                    <p>Mailmap</p>
+                  </a>
+                </li>
               {% endif %}
             {% endif %}
           </ul>

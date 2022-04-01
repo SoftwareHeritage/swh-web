@@ -19,6 +19,13 @@ export function addItemToEnvelope(envelope, newItem) {
     return [headers, __spread(items, [newItem])];
 }
 /**
+ * Get the type of the envelope. Grabs the type from the first envelope item.
+ */
+export function getEnvelopeType(envelope) {
+    var _a = __read(envelope, 2), _b = __read(_a[1], 1), _c = __read(_b[0], 1), firstItemHeader = _c[0];
+    return firstItemHeader.type;
+}
+/**
  * Serializes an envelope into a string.
  */
 export function serializeEnvelope(envelope) {

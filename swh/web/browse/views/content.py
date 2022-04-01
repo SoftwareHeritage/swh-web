@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -180,12 +180,14 @@ def _get_content_from_request(request):
         raise BadInputExc(
             "The origin_url or snapshot query parameters must be provided."
         )
+
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_context = get_snapshot_context(
         snapshot_id=snapshot,
         origin_url=origin_url,
         path=path,
         timestamp=request.GET.get("timestamp"),
-        visit_id=request.GET.get("visit_id"),
+        visit_id=visit_id or None,
         branch_name=request.GET.get("branch"),
         release_name=request.GET.get("release"),
         browse_context="content",
@@ -238,11 +240,12 @@ def content_display(request, query_string=None):
     snapshot_context = None
     if origin_url is not None or snapshot_id is not None:
         try:
+            visit_id = int(request.GET.get("visit_id", 0))
             snapshot_context = get_snapshot_context(
                 origin_url=origin_url,
                 snapshot_id=snapshot_id,
                 timestamp=request.GET.get("timestamp"),
-                visit_id=request.GET.get("visit_id"),
+                visit_id=visit_id or None,
                 branch_name=request.GET.get("branch"),
                 release_name=request.GET.get("release"),
                 revision_id=request.GET.get("revision"),

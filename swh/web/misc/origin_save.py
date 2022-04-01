@@ -17,10 +17,23 @@ from swh.web.common.origin_save import (
 )
 
 
-def _origin_save_view(request):
+def _origin_save_help_view(request):
     return render(
         request,
-        "misc/origin-save.html",
+        "misc/origin-save-help.html",
+        {
+            "heading": ("Request the saving of a software origin into the archive"),
+            "visit_types": get_savable_visit_types(
+                privileged_user(request, permissions=[SWH_AMBASSADOR_PERMISSION])
+            ),
+        },
+    )
+
+
+def _origin_save_list_view(request):
+    return render(
+        request,
+        "misc/origin-save-list.html",
         {
             "heading": ("Request the saving of a software origin into the archive"),
             "visit_types": get_savable_visit_types(
@@ -85,7 +98,8 @@ def _save_origin_task_info(request, save_request_id):
 
 
 urlpatterns = [
-    url(r"^save/$", _origin_save_view, name="origin-save"),
+    url(r"^save/$", _origin_save_help_view, name="origin-save"),
+    url(r"^save/list/$", _origin_save_list_view, name="origin-save-list"),
     url(
         r"^save/requests/list/(?P<status>.+)/$",
         _origin_save_requests_list,

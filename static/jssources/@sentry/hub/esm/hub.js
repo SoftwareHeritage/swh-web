@@ -1,5 +1,5 @@
 import { __assign, __read, __spread } from "tslib";
-import { consoleSandbox, dateTimestampInSeconds, getGlobalObject, isNodeEnv, logger, uuid4 } from '@sentry/utils';
+import { consoleSandbox, dateTimestampInSeconds, getGlobalObject, isDebugBuild, isNodeEnv, logger, uuid4, } from '@sentry/utils';
 import { Scope } from './scope';
 import { Session } from './session';
 /**
@@ -276,7 +276,7 @@ var Hub = /** @class */ (function () {
             return client.getIntegration(integration);
         }
         catch (_oO) {
-            logger.warn("Cannot retrieve integration " + integration.id + " from the current Hub");
+            isDebugBuild() && logger.warn("Cannot retrieve integration " + integration.id + " from the current Hub");
             return null;
         }
     };
@@ -397,7 +397,7 @@ var Hub = /** @class */ (function () {
         if (sentry && sentry.extensions && typeof sentry.extensions[method] === 'function') {
             return sentry.extensions[method].apply(this, args);
         }
-        logger.warn("Extension method " + method + " couldn't be found, doing nothing.");
+        isDebugBuild() && logger.warn("Extension method " + method + " couldn't be found, doing nothing.");
     };
     return Hub;
 }());
@@ -456,7 +456,7 @@ export function getCurrentHub() {
  */
 // eslint-disable-next-line deprecation/deprecation
 export function getActiveDomain() {
-    logger.warn('Function `getActiveDomain` is deprecated and will be removed in a future version.');
+    isDebugBuild() && logger.warn('Function `getActiveDomain` is deprecated and will be removed in a future version.');
     var sentry = getMainCarrier().__SENTRY__;
     return sentry && sentry.extensions && sentry.extensions.domain && sentry.extensions.domain.active;
 }

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -402,22 +402,17 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
     assert not mock_get_origin_visits.called
 
 
-def test_browse_origin_directory_unknown_visit(client, mocker, origin):
-    mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
-    )
-    mock_get_origin_visits.return_value = [{"visit": 1}]
+def test_browse_origin_directory_unknown_visit(client, origin):
 
     url = reverse(
         "browse-origin-directory",
-        query_params={"origin_url": origin["url"], "visit_id": 2},
+        query_params={"origin_url": origin["url"], "visit_id": 200},
     )
 
     resp = check_html_get_response(
         client, url, status_code=404, template_used="error.html"
     )
-    assert re.search("Visit.*not found", resp.content.decode("utf-8"))
-    assert mock_get_origin_visits.called
+    assert re.search("visit.*not found", resp.content.decode("utf-8"))
 
 
 def test_browse_origin_directory_not_found(client, origin):

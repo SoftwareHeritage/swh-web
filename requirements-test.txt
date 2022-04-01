@@ -1,6 +1,6 @@
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
-django-stubs
+django-stubs < 1.10.0
 django-test-migrations
 hypothesis
 pytest < 7.0.0  # v7.0.0 removed _pytest.tmpdir.TempdirFactory, which is used by some of the pytest plugins we use
@@ -17,13 +17,3 @@ types-docutils
 types-psycopg2
 types-pyyaml
 types-requests
-
-# TODO: remove dependencies below once pybadges depends on Jinja2 >=3
-
-# Fix "ImportError: cannot import name 'soft_unicode' from 'markupsafe'"
-# when running pytest
-markupsafe < 2.1.0
-# Fix "ImportError: cannot import name 'json' from 'itsdangerous'"
-# when running pytest after calling "./bin/install" from swh-environement
-# in empty venv
-flask >= 1.1.4

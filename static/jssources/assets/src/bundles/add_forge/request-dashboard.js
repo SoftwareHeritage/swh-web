@@ -5,9 +5,11 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost} from 'utils/functions';
+import {handleFetchError, csrfPost, getHumanReadableDate} from 'utils/functions';
 import emailTempate from './forge-admin-email.ejs';
 import requestHistoryItem from './add-request-history-item.ejs';
+
+let forgeRequest;
 
 export function onRequestDashboardLoad(requestId) {
   $(document).ready(() => {
@@ -42,19 +44,22 @@ async function populateRequestDetails(requestId) {
     const response = await fetch(Urls.api_1_add_forge_request_get(requestId));
     handleFetchError(response);
     const data = await response.json();
-    $('#requestStatus').text(data.request.status);
-    $('#requestType').text(data.request.forge_type);
-    $('#requestURL').text(data.request.forge_url);
-    $('#requestEmail').text(data.request.forge_contact_email);
-    $('#submitterMessage').text(data.request.forge_contact_comment);
+    forgeRequest = data.request;
+
+    $('#requestStatus').text(swh.add_forge.formatRequestStatusName(forgeRequest.status));
+    $('#requestType').text(forgeRequest.forge_type);
+    $('#requestURL').text(forgeRequest.forge_url);
+    $('#requestContactName').text(forgeRequest.forge_contact_name);
+    $('#requestContactConsent').text(forgeRequest.submitter_forward_username);
+    $('#requestContactEmail').text(forgeRequest.forge_contact_email);
+    $('#submitterMessage').text(forgeRequest.forge_contact_comment);
     $('#updateComment').val('');
 
     // Setting data for the email, now adding static data
-    $('#swh-input-forge-admin-email').val(emailTempate({'forgeUrl': data.request.forge_url}).trim());
-    $('#contactForgeAdmin').attr('emailTo', data.request.forge_contact_email);
-    $('#contactForgeAdmin').attr('emailSubject', `[swh-add_forge_now] Request ${data.request.id}`);
+    $('#contactForgeAdmin').attr('emailTo', forgeRequest.forge_contact_email);
+    $('#contactForgeAdmin').attr('emailSubject', `[swh-add_forge_now] Request ${forgeRequest.id}`);
     populateRequestHistory(data.history);
-    populateDecisionSelectOption(data.request.status);
+    populateDecisionSelectOption(forgeRequest.status);
   } catch (response) {
     // The error message
     $('#fetchError').removeClass('d-none');
@@ -66,7 +71,11 @@ function populateRequestHistory(history) {
   $('#requestHistory').children().remove();
 
   history.forEach((event, index) => {
-    const historyEvent = requestHistoryItem({'event': event, 'index': index});
+    const historyEvent = requestHistoryItem({
+      'event': event,
+      'index': index,
+      'getHumanReadableDate': getHumanReadableDate
+    });
     $('#requestHistory').append(historyEvent);
   });
 }
@@ -93,25 +102,12 @@ export function populateDecisionSelectOption(currentStatus) {
     'DENIED': []
   };
 
-  const statusLabel = {
-    'PENDING': 'pending',
-    'WAITING_FOR_FEEDBACK': 'waiting for feedback',
-    'FEEDBACK_TO_HANDLE': 'feedback to handle',
-    'ACCEPTED': 'accepted',
-    'SCHEDULED': 'scheduled',
-    'FIRST_LISTING_DONE': 'first listing done',
-    'FIRST_ORIGIN_LOADED': 'first origin loaded',
-    'REJECTED': 'rejected',
-    'SUSPENDED': 'suspended',
-    'DENIED': 'denied'
-  };
-
   // Determine the possible next status out of the current one
   const nextStatuses = nextStatusesFor[currentStatus];
 
   function addStatusOption(status, index) {
     // Push the next possible status options
-    const label = statusLabel[status];
+    const label = swh.add_forge.formatRequestStatusName(status);
     $('#decisionOptions').append(
       `<option value="${status}">${label}</option>`
     );
@@ -128,7 +124,7 @@ function contactForgeAdmin(event) {
   // Open the mailclient with pre-filled text
   const mailTo = $('#contactForgeAdmin').attr('emailTo');
   const subject = $('#contactForgeAdmin').attr('emailSubject');
-  const emailText = $('#swh-input-forge-admin-email').val().replace(/\n/g, '%0D%0A');
+  const emailText = emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '%0D%0A');
   const w = window.open('', '_blank', '', true);
   w.location.href = `mailto: ${mailTo}?subject=${subject}&body=${emailText}`;
   w.focus();

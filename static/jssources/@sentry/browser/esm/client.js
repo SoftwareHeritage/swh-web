@@ -1,6 +1,6 @@
 import { __assign, __extends } from "tslib";
 import { BaseClient, SDK_VERSION } from '@sentry/core';
-import { getGlobalObject, logger } from '@sentry/utils';
+import { getGlobalObject, isDebugBuild, logger } from '@sentry/utils';
 import { BrowserBackend } from './backend';
 import { injectReportDialog } from './helpers';
 import { Breadcrumbs } from './integrations';
@@ -47,7 +47,7 @@ var BrowserClient = /** @class */ (function (_super) {
             return;
         }
         if (!this._isEnabled()) {
-            logger.error('Trying to call showReportDialog with Sentry Client disabled');
+            isDebugBuild() && logger.error('Trying to call showReportDialog with Sentry Client disabled');
             return;
         }
         injectReportDialog(__assign(__assign({}, options), { dsn: options.dsn || this.getDsn() }));

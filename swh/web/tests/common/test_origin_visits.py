@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -82,8 +82,8 @@ def test_get_origin_visit(archive_data, new_origin, new_snapshots):
     with pytest.raises(NotFoundExc) as e:
         visit = get_origin_visit(origin_info, visit_id=visit_id)
 
-    assert e.match("Visit with id %s" % visit_id)
-    assert e.match("url %s" % origin_info["url"])
+    assert e.match("visit with id %s" % visit_id)
+    assert e.match("Origin %s" % origin_info["url"])
 
     visit_id = visits[1].visit
     visit = get_origin_visit(origin_info, visit_id=visit_id)

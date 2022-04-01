@@ -13,11 +13,13 @@ var XHRTransport = /** @class */ (function (_super) {
      */
     XHRTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
         var _this = this;
+        // eslint-disable-next-line deprecation/deprecation
         if (this._isRateLimited(sentryRequest.type)) {
             this.recordLostEvent('ratelimit_backoff', sentryRequest.type);
             return Promise.reject({
                 event: originalPayload,
                 type: sentryRequest.type,
+                // eslint-disable-next-line deprecation/deprecation
                 reason: "Transport for " + sentryRequest.type + " requests locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
                 status: 429,
             });

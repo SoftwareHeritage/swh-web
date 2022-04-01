@@ -1,9 +1,11 @@
 import { __read, __spread } from "tslib";
+import { isDebugBuild } from './env';
 import { getGlobalObject } from './global';
 // TODO: Implement different loggers for different environments
 var global = getGlobalObject();
 /** Prefix for logging strings */
 var PREFIX = 'Sentry Logger ';
+export var CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert'];
 /**
  * Temporarily unwrap `console.log` and friends in order to perform the given callback using the original methods.
  * Restores wrapping after the callback completes.
@@ -13,7 +15,6 @@ var PREFIX = 'Sentry Logger ';
  */
 export function consoleSandbox(callback) {
     var global = getGlobalObject();
-    var levels = ['debug', 'info', 'warn', 'error', 'log', 'assert'];
     if (!('console' in global)) {
         return callback();
     }
@@ -21,7 +22,7 @@ export function consoleSandbox(callback) {
     var originalConsole = global.console;
     var wrappedLevels = {};
     // Restore all wrapped console methods
-    levels.forEach(function (level) {
+    CONSOLE_LEVELS.forEach(function (level) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (level in global.console && originalConsole[level].__sentry_original__) {
             wrappedLevels[level] = originalConsole[level];
@@ -94,8 +95,12 @@ var Logger = /** @class */ (function () {
     };
     return Logger;
 }());
-// Ensure we only have a single logger instance, even if multiple versions of @sentry/utils are being used
-global.__SENTRY__ = global.__SENTRY__ || {};
-var logger = global.__SENTRY__.logger || (global.__SENTRY__.logger = new Logger());
+var sentryGlobal = global.__SENTRY__ || {};
+var logger = sentryGlobal.logger || new Logger();
+if (isDebugBuild()) {
+    // Ensure we only have a single logger instance, even if multiple versions of @sentry/utils are being used
+    sentryGlobal.logger = logger;
+    global.__SENTRY__ = sentryGlobal;
+}
 export { logger };
 //# sourceMappingURL=logger.js.map

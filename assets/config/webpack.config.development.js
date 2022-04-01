@@ -114,9 +114,7 @@ module.exports = {
     // enable to serve static assets not managed by webpack
     static: {
       directory: path.resolve('./'),
-      watch: {
-        ignored: /(node_modules|.tox|.mypy|.*.sqlite3)/
-      }
+      watch: false
     },
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
     // and prefer to fully reload the frontend application in the browser instead
@@ -124,6 +122,12 @@ module.exports = {
     historyApiFallback: true,
     headers: {
       'Access-Control-Allow-Origin': '*'
+    },
+    watchFiles: {
+      paths: ['assets/**/*', 'static/**/*', 'swh/web/**/*'],
+      options: {
+        ignored: /.*.sqlite3/
+      }
     }
   },
   // set entries to the bundles we want to produce

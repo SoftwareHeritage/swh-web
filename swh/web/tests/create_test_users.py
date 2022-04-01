@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
+    MAILMAP_ADMIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
 )
 from swh.web.tests.utils import create_django_permission
@@ -19,16 +20,22 @@ User = get_user_model()
 
 users: Dict[str, Tuple[str, str, List[str]]] = {
     "user": ("user", "user@example.org", []),
+    "user2": ("user2", "user2@example.org", []),
     "ambassador": (
         "ambassador",
         "ambassador@example.org",
         [SWH_AMBASSADOR_PERMISSION],
     ),
-    "deposit": ("deposit", "deposit@example.org", [ADMIN_LIST_DEPOSIT_PERMISSION],),
+    "deposit": ("deposit", "deposit@example.org", [ADMIN_LIST_DEPOSIT_PERMISSION]),
     "add-forge-moderator": (
         "add-forge-moderator",
         "moderator@example.org",
         [ADD_FORGE_MODERATOR_PERMISSION],
+    ),
+    "mailmap-admin": (
+        "mailmap-admin",
+        "mailmap-admin@example.org",
+        [MAILMAP_ADMIN_PERMISSION],
     ),
 }
 

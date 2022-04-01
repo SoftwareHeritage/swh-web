@@ -228,7 +228,9 @@ def create_django_permission(perm_name: str) -> Permission:
     app_label = ".".join(perm_splitted[:-1])
     perm_name = perm_splitted[-1]
     content_type = ContentType.objects.create(
-        id=1000 + ContentType.objects.count(), app_label=app_label, model="dummy"
+        id=1000 + ContentType.objects.count(),
+        app_label=app_label,
+        model=perm_splitted[-1],
     )
 
     return Permission.objects.create(
