@@ -1,0 +1,54 @@
+{% extends "./origin-save.html" %}
+
+{% comment %}
+Copyright (C) 2018-2021  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block tab_content %}
+  <div class="tab-pane active">
+    <p style="margin-top: 1rem;">A "Save code now" request takes the following parameters:</p>
+    <ul>
+      <li><b>Origin type:</b> the type of version control system the software origin is using.
+        Currently, the supported types are:
+        <ul>
+          <li><code>git</code>, for origins using <a href="https://git-scm.com/">Git</a></li>
+          <li><code>hg</code>, for origins using <a href="https://www.mercurial-scm.org/">Mercurial</a></li>
+          <li><code>svn</code>, for origins using <a href="https://subversion.apache.org/">Subversion</a></li>
+          {% if "cvs" in visit_types %}
+            <li><code>cvs</code>, for origins using <a href="http://cvs.nongnu.org/">CVS</a></li>
+          {% endif %}
+          {% if "bzr" in visit_types %}
+            <li><code>bzr</code>, for origins using <a href="https://bazaar.canonical.com/en/">Bazaar</a></li>
+          {% endif %}
+        </ul>
+      </li>
+      <li><b>Origin url:</b> the url of the remote repository for the software origin.<br/>
+        In order to avoid saving errors from Software Heritage, you should provide the clone/checkout url
+        as given by the provider hosting the software origin. <br/>It can easily be found in the
+        web interface used to browse the software origin. <br/>For instance, if you want to save a <code>git</code>
+        origin into the archive, you should check that the command <code>$ git clone &lt;origin_url&gt;</code><br/>
+        does not return an error before submitting a request.
+      </li>
+    </ul>
+    <p>
+      Once submitted, your save request can either be:
+    </p>
+    <ul>
+      <li><b>accepted:</b> a visit to the provided origin will then be scheduled by Software Heritage in order to
+        load its content into the archive as soon as possible</li>
+      <li><b>rejected:</b> the provided origin url is blacklisted and no visit will be scheduled</li>
+      <li>put in <b>pending</b> state: a manual review will then be performed in order to determine if the
+        origin can be safely loaded or not into the archive</li>
+    </ul>
+    <p>
+      Once a save request has been accepted, you can follow its current status in the
+      <a id="swh-show-origin-save-requests-list" href="#swh-origin-save-requests-list">submitted save requests list</a>.
+      <br/>
+      If you submitted requests while <a href="{% url 'oidc-login' %}">authenticated</a>, you will be able
+      to only display your own requests.
+    </p>
+  </div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2018-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{{ block.super }}
+{% render_bundle 'admin' %}
+{% render_bundle 'save' %}
+{% endblock %}
+
+{% block title %} Save origin administration {% endblock %}
+
+{% block navbar-content %}
+<h4>Save origin administration</h4>
+{% endblock %}
+
+{% block content %}
+
+<ul class="nav nav-tabs" style="padding-left: 5px;">
+  <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'admin-origin-save-requests' %}active{% endif %}" href="{% url 'admin-origin-save-requests' %}" id="swh-origin-save-requests-nav-item">Submitted save origin requests</a></li>
+  <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'admin-origin-save-filters' %}active{% endif %}" href="{% url 'admin-origin-save-filters' %}" id="swh-origin-save-url-filters-nav-item">Origin urls filtering</a></li>
+</ul>
+
+<div class="tab-content">
+  {% block tab_content %}
+  {% endblock %}
+</div>
+
+<script>
+  swh.webapp.initPage('origin-save-admin');
+  swh.admin.initOriginSaveAdmin();
+</script>
+{% endblock %}

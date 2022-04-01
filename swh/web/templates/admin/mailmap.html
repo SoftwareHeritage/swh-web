@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{{ block.super }}
+{% render_bundle 'admin' %}
+{% endblock %}
+
+{% block title %} Mailmap administration &ndash; Software Heritage archive {% endblock %}
+
+{% block navbar-content %}
+<h4>Mailmap administration</h4>
+{% endblock %}
+
+{% block content %}
+  <p class="mt-3">
+    This interface enables to manage author display names in the archive based
+    on their emails.
+  </p>
+  <div class="float-right">
+    <button class="btn btn-default" id="swh-add-new-mailmap" onclick="swh.admin.addNewMailmap()">
+      Add new mailmap
+    </button>
+  </div>
+  <div style="padding-top: 3rem;">
+    <table id="swh-mailmaps-table" class="table swh-table swh-table-striped" width="100%">
+      <thead>
+        <tr>
+          <th title="Email identifying author in the archive">Email</th>
+          <th title="Is email verified ?">Verified</th>
+          <th title="New display name for the author in the archive">Display name</th>
+          <th title="Should display name be used in the archive ?">Activated</th>
+          <th title="Date when that mailmap was last updated">Last update</th>
+          <th title="Is last mailmap update processed and effective in the archive ?">Effective</th>
+          <th></th>
+        </tr>
+      </thead>
+    </table>
+    <p id="swh-mailmaps-list-error"></p>
+  </div>
+  <script>
+    swh.admin.initMailmapUI();
+  </script>
+{% endblock content %}

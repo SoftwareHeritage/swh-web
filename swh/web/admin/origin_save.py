@@ -26,10 +26,16 @@ from swh.web.common.origin_save import (
 )
 
 
-@admin_route(r"origin/save/", view_name="admin-origin-save")
+@admin_route(r"origin/save/requests/", view_name="admin-origin-save-requests")
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
-def _admin_origin_save(request):
-    return render(request, "admin/origin-save.html")
+def _admin_origin_save_requests(request):
+    return render(request, "admin/origin-save/requests.html")
+
+
+@admin_route(r"origin/save/filters/", view_name="admin-origin-save-filters")
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
+def _admin_origin_save_filters(request):
+    return render(request, "admin/origin-save/filters.html")
 
 
 def _datatables_origin_urls_response(request, urls_query_set):
@@ -184,17 +190,17 @@ def _admin_origin_save_request_accept(request, visit_type, origin_url):
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
 def _admin_origin_save_request_reject(request, visit_type, origin_url):
     try:
-        SaveUnauthorizedOrigin.objects.get(url=origin_url)
+        sor = SaveOriginRequest.objects.get(
+            visit_type=visit_type, origin_url=origin_url, status=SAVE_REQUEST_PENDING
+        )
     except ObjectDoesNotExist:
-        SaveUnauthorizedOrigin.objects.create(url=origin_url)
-    sor = SaveOriginRequest.objects.get(
-        visit_type=visit_type, origin_url=origin_url, status=SAVE_REQUEST_PENDING
-    )
-
-    sor.status = SAVE_REQUEST_REJECTED
-    sor.note = json.loads(request.body).get("note")
-    sor.save()
-    return HttpResponse(status=200)
+        status_code = 404
+    else:
+        status_code = 200
+        sor.status = SAVE_REQUEST_REJECTED
+        sor.note = json.loads(request.body).get("note")
+        sor.save()
+    return HttpResponse(status=status_code)
 
 
 @admin_route(

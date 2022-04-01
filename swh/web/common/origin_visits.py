@@ -1,9 +1,8 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import math
 from typing import List, Optional
 
 from django.core.cache import cache
@@ -136,6 +135,25 @@ def get_origin_visit(
     if visit and (visit["snapshot"] == snapshot_id or visit["visit"] == visit_id):
         return visit
 
+    if visit_id:
+        return archive.lookup_origin_visit(origin_info["url"], visit_id)
+
+    if visit_ts:
+        visit = archive.origin_visit_find_by_date(
+            origin_info["url"],
+            parse_iso8601_date_to_utc(visit_ts),
+            greater_or_equal=False,
+        )
+        if visit is not None:
+            return visit
+        else:
+            raise NotFoundExc(
+                (
+                    "Visit with timestamp %s for origin with "
+                    "url %s not found!" % (visit_ts, origin_info["url"])
+                )
+            )
+
     visits = get_origin_visits(origin_info)
 
     if not visits:
@@ -154,46 +172,4 @@ def get_origin_visit(
             )
         return visits[0]
 
-    if visit_id:
-        visits = [v for v in visits if v["visit"] == int(visit_id)]
-        if len(visits) == 0:
-            raise NotFoundExc(
-                (
-                    "Visit with id %s for origin with"
-                    " url %s not found!" % (visit_id, origin_info["url"])
-                )
-            )
-        return visits[0]
-
-    if visit_ts:
-
-        target_visit_ts = math.floor(parse_iso8601_date_to_utc(visit_ts).timestamp())
-
-        # Find the visit with date closest to the target (in absolute value)
-        (abs_time_delta, visit_idx) = min(
-            (
-                (math.floor(parse_iso8601_date_to_utc(visit["date"]).timestamp()), i)
-                for (i, visit) in enumerate(visits)
-            ),
-            key=lambda ts_and_i: abs(ts_and_i[0] - target_visit_ts),
-        )
-
-        if visit_idx is not None:
-            visit = visits[visit_idx]
-            # If multiple visits have the same date, select the one with
-            # the largest id.
-            while (
-                visit_idx < len(visits) - 1
-                and visit["date"] == visits[visit_idx + 1]["date"]
-            ):
-                visit_idx = visit_idx + 1
-                visit = visits[visit_idx]
-            return visit
-        else:
-            raise NotFoundExc(
-                (
-                    "Visit with timestamp %s for origin with "
-                    "url %s not found!" % (visit_ts, origin_info["url"])
-                )
-            )
     return visits[-1]

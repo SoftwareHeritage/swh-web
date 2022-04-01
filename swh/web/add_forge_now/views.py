@@ -17,7 +17,7 @@ from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
-from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
+from swh.web.common.utils import has_add_forge_now_permission
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -66,7 +66,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
-    if request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
+    if has_add_forge_now_permission(request.user):
         requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
@@ -87,14 +87,30 @@ FORGE_TYPES: List[str] = [
 ]
 
 
-def create_request(request):
+def create_request_create(request):
     """View to create a new 'add_forge_now' request.
 
     """
 
     return render(
-        request, "add_forge_now/create-request.html", {"forge_types": FORGE_TYPES},
+        request, "add_forge_now/creation_form.html", {"forge_types": FORGE_TYPES},
     )
+
+
+def create_request_list(request):
+    """View to list existing 'add_forge_now' requests.
+
+    """
+
+    return render(request, "add_forge_now/list.html",)
+
+
+def create_request_help(request):
+    """View to explain 'add_forge_now'.
+
+    """
+
+    return render(request, "add_forge_now/help.html",)
 
 
 urlpatterns = [
@@ -103,5 +119,7 @@ urlpatterns = [
         add_forge_request_list_datatables,
         name="add-forge-request-list-datatables",
     ),
-    url(r"^add-forge/request/create/$", create_request, name="forge-add"),
+    url(r"^add-forge/request/create/$", create_request_create, name="forge-add-create"),
+    url(r"^add-forge/request/list/$", create_request_list, name="forge-add-list"),
+    url(r"^add-forge/request/help/$", create_request_help, name="forge-add-help"),
 ]

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -723,11 +723,12 @@ def browse_snapshot_directory(
     """
     _check_origin_url(snapshot_id, origin_url)
 
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_context = get_snapshot_context(
         snapshot_id=snapshot_id,
         origin_url=origin_url,
         timestamp=timestamp,
-        visit_id=request.GET.get("visit_id"),
+        visit_id=visit_id or None,
         path=path,
         browse_context="directory",
         branch_name=request.GET.get("branch"),
@@ -937,11 +938,12 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     """
     _check_origin_url(snapshot_id, origin_url)
 
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_context = get_snapshot_context(
         snapshot_id=snapshot_id,
         origin_url=origin_url,
         timestamp=timestamp,
-        visit_id=request.GET.get("visit_id"),
+        visit_id=visit_id or None,
         browse_context="log",
         branch_name=request.GET.get("branch"),
         release_name=request.GET.get("release"),
@@ -1082,11 +1084,12 @@ def browse_snapshot_branches(
     """
     _check_origin_url(snapshot_id, origin_url)
 
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_context = get_snapshot_context(
         snapshot_id=snapshot_id,
         origin_url=origin_url,
         timestamp=timestamp,
-        visit_id=request.GET.get("visit_id"),
+        visit_id=visit_id or None,
     )
 
     branches_bc = request.GET.get("branches_breadcrumbs", "")
@@ -1198,11 +1201,12 @@ def browse_snapshot_releases(
     """
     _check_origin_url(snapshot_id, origin_url)
 
+    visit_id = int(request.GET.get("visit_id", 0))
     snapshot_context = get_snapshot_context(
         snapshot_id=snapshot_id,
         origin_url=origin_url,
         timestamp=timestamp,
-        visit_id=request.GET.get("visit_id"),
+        visit_id=visit_id or None,
     )
 
     rel_bc = request.GET.get("releases_breadcrumbs", "")

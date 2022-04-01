@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -16,6 +16,13 @@ body {
     margin: 0;
     position: relative;
     padding-bottom: 120px;
+}
+
+/* The Alegreya font used in swh-web ships some ligatures producing
+confusing text rendering, for instance the ligatures for `~` and some
+characters like e, y, u, ... so disable font common ligatures */
+* {
+    font-variant-ligatures: no-common-ligatures;
 }
 
 a:active,
@@ -761,4 +768,9 @@ div.d3-tooltip {
 
 .invalid-feedback {
     font-size: 100%;
+}
+
+.swh-required-label::after {
+    content: "*";
+    color: #f00;
 }

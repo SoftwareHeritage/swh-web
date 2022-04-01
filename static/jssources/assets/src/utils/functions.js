@@ -143,3 +143,11 @@ export async function getCanonicalOriginURL(originUrl) {
 
   return originUrl;
 }
+
+export function getHumanReadableDate(data) {
+  // Display iso format date string into a human readable date
+  // This is expected to be used by date field in datatable listing views
+  // Example: 3/24/2022, 10:31:08 AM
+  const date = new Date(data);
+  return date.toLocaleString();
+}

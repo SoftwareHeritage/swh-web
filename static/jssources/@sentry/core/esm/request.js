@@ -24,8 +24,8 @@ function enhanceEventWithSdkInfo(event, sdkInfo) {
     event.sdk.packages = __spread((event.sdk.packages || []), (sdkInfo.packages || []));
     return event;
 }
-/** Creates a SentryRequest from a Session. */
-export function sessionToSentryRequest(session, api) {
+/** Creates an envelope from a Session */
+export function createSessionEnvelope(session, api) {
     var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
     var envelopeHeaders = __assign(__assign({ sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) }));
     // I know this is hacky but we don't want to add `sessions` to request type since it's never rate limited
@@ -33,11 +33,35 @@ export function sessionToSentryRequest(session, api) {
     // TODO (v7) Have to cast type because envelope items do not accept a `SentryRequestType`
     var envelopeItem = [{ type: type }, session];
     var envelope = createEnvelope(envelopeHeaders, [envelopeItem]);
+    return [envelope, type];
+}
+/** Creates a SentryRequest from a Session. */
+export function sessionToSentryRequest(session, api) {
+    var _a = __read(createSessionEnvelope(session, api), 2), envelope = _a[0], type = _a[1];
     return {
         body: serializeEnvelope(envelope),
         type: type,
         url: getEnvelopeEndpointWithUrlEncodedAuth(api.dsn, api.tunnel),
     };
+}
+/**
+ * Create an Envelope from an event. Note that this is duplicated from below,
+ * but on purpose as this will be refactored in v7.
+ */
+export function createEventEnvelope(event, api) {
+    var sdkInfo = getSdkMetadataForEnvelopeHeader(api);
+    var eventType = event.type || 'event';
+    var transactionSampling = (event.sdkProcessingMetadata || {}).transactionSampling;
+    var _a = transactionSampling || {}, samplingMethod = _a.method, sampleRate = _a.rate;
+    var envelopeHeaders = __assign(__assign({ event_id: event.event_id, sent_at: new Date().toISOString() }, (sdkInfo && { sdk: sdkInfo })), (!!api.tunnel && { dsn: dsnToString(api.dsn) }));
+    var eventItem = [
+        {
+            type: eventType,
+            sample_rates: [{ id: samplingMethod, rate: sampleRate }],
+        },
+        event,
+    ];
+    return createEnvelope(envelopeHeaders, [eventItem]);
 }
 /** Creates a SentryRequest from an event. */
 export function eventToSentryRequest(event, api) {

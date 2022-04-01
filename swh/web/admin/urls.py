@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 
 from swh.web.admin.adminurls import AdminUrls
 import swh.web.admin.deposit  # noqa
+import swh.web.admin.mailmap  # noqa
 import swh.web.admin.origin_save  # noqa
 from swh.web.config import is_feature_enabled
 
@@ -17,7 +18,7 @@ if is_feature_enabled("add_forge_now"):
 
 
 def _admin_default_view(request):
-    return redirect("admin-origin-save")
+    return redirect("admin-origin-save-requests")
 
 
 urlpatterns = [

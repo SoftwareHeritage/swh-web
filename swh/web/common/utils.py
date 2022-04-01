@@ -30,6 +30,7 @@ from django.urls import reverse as django_reverse
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
+    MAILMAP_ADMIN_PERMISSION,
 )
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import QueryParameters
@@ -316,6 +317,7 @@ def context_processor(request):
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
         "FEATURES": get_config()["features"],
+        "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
     }
 
 
@@ -521,3 +523,13 @@ def parse_swh_deposit_origin(raw_metadata: str) -> Optional[str]:
         if elt is not None:
             return elt.attrib["url"]
     return None
+
+
+def has_add_forge_now_permission(user) -> bool:
+    """Is a user considered an add-forge-now moderator?
+
+    Returns
+        True if a user is staff or has add forge now moderator permission
+
+    """
+    return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)

@@ -182,9 +182,7 @@ function _enhanceEventWithInitialFrame(event, url, line, column) {
     return event;
 }
 function globalHandlerLog(type) {
-    if (isDebugBuild()) {
-        logger.log("Global Handler attached: " + type);
-    }
+    isDebugBuild() && logger.log("Global Handler attached: " + type);
 }
 function addMechanismAndCapture(hub, error, event, type) {
     addExceptionMechanism(event, {

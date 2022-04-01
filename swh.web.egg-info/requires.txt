@@ -33,7 +33,7 @@ swh.vault>=1.0.0
 [testing]
 decorator
 djangorestframework-stubs
-django-stubs
+django-stubs<1.10.0
 django-test-migrations
 hypothesis
 pytest<7.0.0
@@ -50,5 +50,3 @@ types-docutils
 types-psycopg2
 types-pyyaml
 types-requests
-markupsafe<2.1.0
-flask>=1.1.4
