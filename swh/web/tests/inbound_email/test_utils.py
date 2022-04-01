@@ -42,6 +42,25 @@ def test_extract_recipients():
     ]
 
 
+def test_single_recipient_matches():
+    assert (
+        utils.single_recipient_matches(
+            Address(addr_spec="test@example.com"), "match@example.com"
+        )
+        is None
+    )
+    assert utils.single_recipient_matches(
+        Address(addr_spec="match@example.com"), "match@example.com"
+    ) == utils.AddressMatch(
+        recipient=Address(addr_spec="match@example.com"), extension=None
+    )
+    assert utils.single_recipient_matches(
+        Address(addr_spec="MaTch+12345AbC@exaMple.Com"), "match@example.com"
+    ) == utils.AddressMatch(
+        recipient=Address(addr_spec="MaTch+12345AbC@exaMple.Com"), extension="12345AbC"
+    )
+
+
 def test_recipient_matches():
     message = EmailMessage()
     assert utils.recipient_matches(message, "match@example.com") == []
