@@ -67,6 +67,7 @@ class RequestActorRole(enum.Enum):
     MODERATOR = "moderator"
     SUBMITTER = "submitter"
     FORGE_ADMIN = "forge admin"
+    EMAIL = "email"
 
     @classmethod
     def choices(cls):
@@ -85,6 +86,7 @@ class RequestHistory(models.Model):
     actor_role = models.TextField(choices=RequestActorRole.choices())
     date = models.DateTimeField(auto_now_add=True)
     new_status = models.TextField(choices=RequestStatus.choices(), null=True)
+    message_source = models.BinaryField(null=True)
 
     class Meta:
         app_label = APP_LABEL

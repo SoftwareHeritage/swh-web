@@ -109,7 +109,7 @@ class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
 class AddForgeNowRequestHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = AddForgeNowRequestHistory
-        exclude = ("request",)
+        exclude = ("request", "message_source")
 
 
 class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
