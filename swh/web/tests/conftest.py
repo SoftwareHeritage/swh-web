@@ -56,6 +56,8 @@ from swh.web.tests.data import (
 )
 from swh.web.tests.utils import create_django_permission
 
+os.environ["LC_ALL"] = "C.UTF-8"
+
 # Used to skip some tests
 ctags_json_missing = (
     shutil.which("ctags") is None
