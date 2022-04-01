@@ -10,6 +10,8 @@ from typing import List
 
 from django.db import models
 
+from ..config import get_config
+from ..inbound_email.utils import get_address_for_pk
 from .apps import APP_LABEL
 
 
@@ -110,3 +112,9 @@ class Request(models.Model):
     class Meta:
         app_label = APP_LABEL
         db_table = "add_forge_request"
+
+    @property
+    def inbound_email_address(self) -> str:
+        """Generate an email address for correspondence related to this request."""
+        base_address = get_config()["add_forge_now"]["email_address"]
+        return get_address_for_pk(salt=APP_LABEL, base_address=base_address, pk=self.pk)

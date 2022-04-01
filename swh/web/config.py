@@ -154,6 +154,7 @@ DEFAULT_CONFIG = {
     "instance_name": ("str", "archive-test.softwareheritage.org"),
     "give": ("dict", {"public_key": "", "token": ""}),
     "features": ("dict", {"add_forge_now": True}),
+    "add_forge_now": ("dict", {"email_address": "add-forge-now@example.com"}),
 }
 
 swhweb_config: Dict[str, Any] = {}

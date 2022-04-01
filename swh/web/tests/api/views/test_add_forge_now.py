@@ -14,6 +14,8 @@ import pytest
 
 from swh.web.add_forge_now.models import Request
 from swh.web.common.utils import reverse
+from swh.web.config import get_config
+from swh.web.inbound_email.utils import get_address_for_pk
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_response,
@@ -75,6 +77,15 @@ ADD_FORGE_DATA_FORGE5: Dict = {
 }
 
 
+def inbound_email_for_pk(pk: int) -> str:
+    """Check that the inbound email matches the one expected for the given pk"""
+
+    base_address = get_config()["add_forge_now"]["email_address"]
+    return get_address_for_pk(
+        salt="swh_web_add_forge_now", base_address=base_address, pk=pk
+    )
+
+
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.parametrize(
     "add_forge_data",
@@ -116,6 +127,7 @@ def test_add_forge_request_create_success_post(
         "submitter_forward_username": expected_consent_bool,
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
+        "inbound_email_address": inbound_email_for_pk(resp.data["id"]),
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -152,6 +164,7 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
         "submitter_email": regular_user.email,
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
+        "inbound_email_address": inbound_email_for_pk(1),
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -375,6 +388,7 @@ def test_add_forge_request_list_moderator(
         "last_moderator": resp.data[1]["last_moderator"],
         "last_modified_date": resp.data[1]["last_modified_date"],
         "id": resp.data[1]["id"],
+        "inbound_email_address": inbound_email_for_pk(resp.data[1]["id"]),
     }
 
     other_forge_request = {
@@ -386,6 +400,7 @@ def test_add_forge_request_list_moderator(
         "last_moderator": resp.data[0]["last_moderator"],
         "last_modified_date": resp.data[0]["last_modified_date"],
         "id": resp.data[0]["id"],
+        "inbound_email_address": inbound_email_for_pk(resp.data[0]["id"]),
     }
 
     assert resp.data == [other_forge_request, add_forge_request]
@@ -520,6 +535,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
             "submitter_email": regular_user.email,
             "last_moderator": add_forge_moderator.username,
             "last_modified_date": resp.data["history"][1]["date"],
+            "inbound_email_address": inbound_email_for_pk(1),
         },
         "history": [
             {

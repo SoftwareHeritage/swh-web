@@ -63,6 +63,7 @@ class AddForgeNowRequestHistoryForm(ModelForm):
 
 
 class AddForgeNowRequestSerializer(serializers.ModelSerializer):
+    inbound_email_address = serializers.CharField()
 
     last_moderator = serializers.SerializerMethodField()
     last_modified_date = serializers.SerializerMethodField()
