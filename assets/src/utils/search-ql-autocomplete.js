@@ -6,7 +6,7 @@ import {
   sortByOptions, visitTypeOptions, // options
   equalOp, rangeOp, choiceOp, // operators
   AND, OR, TRUE, FALSE // special tokens
-} from '../../../../swh-search/swh/search/query_language/tokens.js';
+} from './tokens.js';
 
 const filterNames = fields.concat(sortByField, limitField);
 
