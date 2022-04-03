@@ -119,7 +119,17 @@ export function populateRequestBrowseList() {
         {
           data: 'forge_url',
           name: 'forge_url',
-          render: $.fn.dataTable.render.text()
+          render: function(data, type, row) {
+            if (type === 'display') {
+              let html = '';
+              const sanitizedURL = $.fn.dataTable.render.text().display(data);
+              html += sanitizedURL;
+              html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
+                '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+              return html;
+            }
+            return data;
+          }
         },
         {
           data: 'status',
