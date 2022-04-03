@@ -149,10 +149,16 @@ module.exports = {
     alias: {
       'pdfjs-dist': 'pdfjs-dist/build/pdf.min.js'
     },
+    // for web-tree-sitter
+    fallback: {
+      'path': false,
+      'fs': false
+    },
     // configure base paths for resolving modules with webpack
     modules: [
       'node_modules',
-      path.resolve(__dirname, '../src')
+      path.resolve(__dirname, '../src'),
+      path.resolve(__dirname, '../../../swh-search/query_language/')
     ]
   },
   stats: 'errors-warnings',
@@ -212,6 +218,18 @@ module.exports = {
           }
         }]
       },
+      {
+        test: /\.wasm$/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'js/'
+          }
+        }]
+      },
+
       // expose jquery to the global context as $ and jQuery when importing it
       {
         test: require.resolve('jquery'),

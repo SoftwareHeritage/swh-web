@@ -6,6 +6,7 @@
  */
 
 import {handleFetchError, errorMessageFromResponse, isArchivedOrigin} from 'utils/functions';
+import {initAutocomplete} from 'utils/search-ql-autocomplete';
 
 const limit = 100;
 const linksPrev = [];
@@ -195,6 +196,17 @@ async function doSearch() {
 
 export function initOriginSearch() {
   $(document).ready(() => {
+    const inputBox = document.querySelector('#swh-origins-url-patterns');
+    const submitBtn = document.querySelector('#swh-search-submit');
+    const validQueryCallback = (isValid) => {
+      submitBtn.disabled = !isValid;
+      // if (!isValid)
+      //   inputBox.classList.add('invalid');
+      // else
+      //   inputBox.classList.remove('invalid');
+    };
+    initAutocomplete(inputBox, validQueryCallback);
+
     $('#swh-search-origins').submit(event => {
       event.preventDefault();
       if (event.target.checkValidity()) {

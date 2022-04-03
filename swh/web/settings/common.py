@@ -12,6 +12,7 @@ import os
 import sys
 from typing import Any, Dict
 
+from swh import search
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
 
@@ -145,7 +146,15 @@ STATIC_DIR = os.path.join(sys.prefix, "share/swh/web/static")
 if not os.path.exists(STATIC_DIR):
     # static folder location when developping swh-web
     STATIC_DIR = os.path.join(PROJECT_DIR, "../../../static")
-STATICFILES_DIRS = [STATIC_DIR]
+
+SEARCH_DIR = os.path.dirname(search.__file__)
+# static folder location when swh-search has been installed with pip
+SEARCH_STATIC_DIR = os.path.join(SEARCH_DIR, "static")
+if not os.path.exists(SEARCH_STATIC_DIR):
+    # static folder location when developping swh-search
+    SEARCH_STATIC_DIR = os.path.join(SEARCH_DIR, "../../static")
+
+STATICFILES_DIRS = [STATIC_DIR, SEARCH_STATIC_DIR]
 
 INTERNAL_IPS = ["127.0.0.1"]
 

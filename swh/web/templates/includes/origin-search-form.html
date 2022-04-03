@@ -10,9 +10,9 @@ See top-level LICENSE file for more information
     <input class="form-control"
            placeholder="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
            type="text" id="swh-origins-url-patterns"
-           oninput="swh.webapp.validateSWHIDInput(this)" autofocus required>
+           oninput="swh.webapp.validateSWHIDInput(this)" autofocus required autocomplete="off">
     <div class="input-group-append">
-      <button class="btn btn-primary" type="submit"><i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i></button>
+      <button class="btn btn-primary" type="submit" id="swh-search-submit"><i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i></button>
     </div>
     <div class="invalid-feedback"></div>
   </div>

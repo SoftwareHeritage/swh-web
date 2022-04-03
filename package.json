@@ -89,6 +89,7 @@
     "typeface-alegreya": "^1.1.13",
     "typeface-alegreya-sans": "^1.1.13",
     "waypoints": "^4.0.1",
+    "web-tree-sitter": "^0.20.5",
     "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
@@ -121,6 +122,7 @@
     "eslint-webpack-plugin": "^3.1.1",
     "exports-loader": "^3.1.0",
     "expose-loader": "^3.1.0",
+    "file-loader": "^6.2.0",
     "imports-loader": "^3.1.1",
     "istanbul-lib-coverage": "^3.2.0",
     "json-stable-stringify": "^1.0.1",
