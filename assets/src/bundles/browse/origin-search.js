@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, isArchivedOrigin} from 'utils/functions';
+import {handleFetchError, errorMessageFromResponse, isArchivedOrigin} from 'utils/functions';
 
 const limit = 100;
 const linksPrev = [];
@@ -147,11 +147,13 @@ async function searchOrigins(searchUrl) {
 
     $('.swh-loading').removeClass('show');
     populateOriginSearchResultsTable(data);
-  } catch (response) {
+  } catch (errorResponse) {
+    const errorData = await errorResponse.json();
     $('.swh-loading').removeClass('show');
     inSearch = false;
     $('#swh-origin-search-results').hide();
-    $('#swh-no-result').text(`Error ${response.status}: ${response.statusText}`);
+    $('#swh-no-result').text(errorMessageFromResponse(
+      errorData, 'An unknown error occurred while searching origins'));
     $('#swh-no-result').show();
   }
 }
