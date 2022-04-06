@@ -1,12 +1,12 @@
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
-django-stubs < 1.10.0
+django-stubs
 django-test-migrations
 hypothesis
 pytest < 7.0.0  # v7.0.0 removed _pytest.tmpdir.TempdirFactory, which is used by some of the pytest plugins we use
 pytest-django
 pytest-mock
-pytest-postgresql
+pytest-postgresql < 4.0.0
 requests-mock != 1.9.0, != 1.9.1
 swh.core[http] >= 0.0.95
 swh.loader.git >= 0.8.0

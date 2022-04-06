@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost,
+import {handleFetchError, errorMessageFromResponse, csrfPost,
         getHumanReadableDate} from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {swhSpinnerSrc} from 'utils/constants';
@@ -36,28 +36,16 @@ export function onCreateRequestPageLoad() {
         $('#userMessageDetail').empty();
 
         let errorMessage;
-        let errorMessageDetail = '';
         const errorData = await errorResponse.json();
         // if (errorResponse.content_type === 'text/plain') { // does not work?
         if (errorResponse.status === 409) {
           errorMessage = errorData;
         } else { // assuming json response
           // const exception = errorData['exception'];
-          errorMessage = 'An unknown error occurred during the request creation';
-          try {
-            const reason = JSON.parse(errorData['reason']);
-            Object.entries(reason).forEach((keys, _) => {
-              const key = keys[0];
-              const message = keys[1][0]; // take only the first issue
-              errorMessageDetail += `\n${key}: ${message}`;
-            });
-          } catch (_) {
-            errorMessageDetail = errorData['reason']; // can't parse it, leave it raw
-          }
+          errorMessage = errorMessageFromResponse(
+            errorData, 'An unknown error occurred during the request creation');
         }
-        $('#userMessage').text(
-          errorMessageDetail ? `Error: ${errorMessageDetail}` : errorMessage
-        );
+        $('#userMessage').text(errorMessage);
         $('#userMessage').removeClass('badge-success');
         $('#userMessage').addClass('badge-danger');
       }
@@ -119,7 +107,17 @@ export function populateRequestBrowseList() {
         {
           data: 'forge_url',
           name: 'forge_url',
-          render: $.fn.dataTable.render.text()
+          render: function(data, type, row) {
+            if (type === 'display') {
+              let html = '';
+              const sanitizedURL = $.fn.dataTable.render.text().display(data);
+              html += sanitizedURL;
+              html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
+                '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+              return html;
+            }
+            return data;
+          }
         },
         {
           data: 'status',
