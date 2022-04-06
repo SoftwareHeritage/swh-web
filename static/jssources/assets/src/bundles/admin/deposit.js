@@ -83,6 +83,18 @@ export function initDepositAdmin(username, isStaff) {
             name: 'status'
           },
           {
+            data: 'raw_metadata',
+            name: 'raw_metadata',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                if (row.raw_metadata) {
+                  return `<button class="btn btn-default metadata">metadata</button>`;
+                }
+              }
+              return data;
+            }
+          },
+          {
             data: 'status_detail',
             name: 'status_detail',
             render: (data, type, row) => {
@@ -137,10 +149,23 @@ export function initDepositAdmin(username, isStaff) {
     </div>
   </div>
 `);
+
+    // Show a modal when the "metadata" button is clicked
+    $('#swh-admin-deposit-list tbody').on('click', 'tr button.metadata', function() {
+      var row = depositsTable.row(this.parentNode.parentNode).data();
+      var metadata = row.raw_metadata;
+      var escapedMetadata = $('<div/>').text(metadata).html();
+      swh.webapp.showModalHtml(`Metadata of deposit ${row.id}`,
+                               `<pre style="max-height: 75vh;"><code class="xml">${escapedMetadata}</code></pre>`,
+                               '90%');
+      swh.webapp.highlightCode();
+    });
+
     // Adding exclusion pattern update behavior, when typing, update search
     $('#swh-admin-deposit-list-exclude-filter').keyup(function() {
       depositsTable.draw();
     });
+
     // at last draw the table
     depositsTable.draw();
   });

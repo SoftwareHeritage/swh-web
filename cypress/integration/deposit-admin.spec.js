@@ -66,6 +66,7 @@ describe('Test admin deposit page', function() {
         'status_detail': null,
         'swhid': 'swh:1:dir:ef04a768',
         'swhid_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/',
+        'raw_metadata': '<foo>bar</foo>',
         'uri': 'https://w.s.o/c-d-1'
       },
       {
@@ -77,6 +78,7 @@ describe('Test admin deposit page', function() {
         'status_detail': null,
         'swhid': 'swh:1:dir:181417fb',
         'swhid_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/',
+        'raw_metadata': null,
         'uri': 'https://w.s.o/c-d-2'
       },
       {
@@ -88,6 +90,7 @@ describe('Test admin deposit page', function() {
         'status_detail': 'incomplete deposit!',
         'swhid': null,
         'swhid_context': null,
+        'raw_metadata': null,
         'uri': null
       }
     ];
@@ -100,7 +103,7 @@ describe('Test admin deposit page', function() {
 
   });
 
-  it('Should display properly entries', function() {
+  it('Should properly display entries', function() {
     cy.adminLogin();
 
     const testDeposits = responseDeposits;
@@ -164,6 +167,21 @@ describe('Test admin deposit page', function() {
           cy.contains(deposit.swhid).should('not.exist');
           cy.contains(deposit.swhid_context).should('not.exist');
         }
+
+        if (deposit.raw_metadata !== null) {
+          cy.get('button.metadata', {withinSubject: row})
+            .should('exist')
+            .click({force: true});
+          cy.get('#swh-web-modal-html code.xml').should('be.visible');
+
+          // Dismiss the modal
+          cy.get('body').wait(500).type('{esc}');
+          cy.get('#swh-web-modal-html code.xml').should('not.be.visible');
+        } else {
+          cy.get('button.metadata', {withinSubject: row}).should('not.exist');
+          cy.get('#swh-web-modal-html code.xml').should('not.be.visible');
+        }
+
       });
 
       // toggling all links and ensure, the previous checks are inverted
@@ -175,7 +193,7 @@ describe('Test admin deposit page', function() {
           const expectedOrigin = expectedOrigins[deposit.id];
 
           // ensure it's in the dom
-          cy.contains(deposit.id).should('not.exist');
+          expect(row).to.not.contain(deposit.id);
           if (deposit.status !== 'rejected') {
             expect(row).to.not.contain(deposit.external_id);
             expect(row).to.contain(expectedOrigin);

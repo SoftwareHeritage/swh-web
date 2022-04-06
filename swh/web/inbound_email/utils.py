@@ -34,6 +34,31 @@ class AddressMatch:
     """The parsed +-extension of the matched recipient address"""
 
 
+def single_recipient_matches(
+    recipient: Address, address: str
+) -> Optional[AddressMatch]:
+    """Check whether a single address matches the provided base address.
+
+    The match is case-insensitive, which is not really RFC-compliant but is consistent
+    with what most people would expect.
+
+    This function supports "+-addressing", where the local part of the email address is
+    appended with a `+`.
+
+    """
+    parsed_address = Address(addr_spec=address.lower())
+
+    if recipient.domain.lower() != parsed_address.domain:
+        return None
+
+    base_username, _, extension = recipient.username.partition("+")
+
+    if base_username.lower() != parsed_address.username:
+        return None
+
+    return AddressMatch(recipient=recipient, extension=extension or None)
+
+
 def recipient_matches(message: EmailMessage, address: str) -> List[AddressMatch]:
     """Check whether any of the message recipients match the given address.
 
@@ -47,17 +72,9 @@ def recipient_matches(message: EmailMessage, address: str) -> List[AddressMatch]
 
     ret = []
 
-    parsed_address = Address(addr_spec=address.lower())
-
     for recipient in extract_recipients(message):
-        if recipient.domain.lower() != parsed_address.domain:
-            continue
-
-        base_username, _, extension = recipient.username.partition("+")
-
-        if base_username.lower() != parsed_address.username:
-            continue
-
-        ret.append(AddressMatch(recipient=recipient, extension=extension or None))
+        match = single_recipient_matches(recipient, address)
+        if match:
+            ret.append(match)
 
     return ret

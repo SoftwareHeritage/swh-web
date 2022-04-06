@@ -25,6 +25,21 @@ export function handleFetchErrors(responses) {
   return responses;
 }
 
+export function errorMessageFromResponse(errorData, defaultMessage) {
+  let errorMessage = '';
+  try {
+    const reason = JSON.parse(errorData['reason']);
+    Object.entries(reason).forEach((keys, _) => {
+      const key = keys[0];
+      const message = keys[1][0]; // take only the first issue
+      errorMessage += `\n${key}: ${message}`;
+    });
+  } catch (_) {
+    errorMessage = errorData['reason']; // can't parse it, leave it raw
+  }
+  return errorMessage ? `Error: ${errorMessage}` : defaultMessage;
+}
+
 export function staticAsset(asset) {
   return `${__STATIC__}${asset}`;
 }

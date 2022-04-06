@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,8 +7,15 @@
 Django production settings for swh-web.
 """
 
+from .common import (
+    CACHES,
+    DEBUG,
+    MIDDLEWARE,
+    REST_FRAMEWORK,
+    WEBPACK_LOADER,
+    swh_web_config,
+)
 from .common import *  # noqa
-from .common import CACHES, MIDDLEWARE, REST_FRAMEWORK, WEBPACK_LOADER, swh_web_config
 
 MIDDLEWARE += [
     "swh.web.common.middlewares.HtmlMinifyMiddleware",
@@ -58,7 +65,7 @@ DATABASES = {
     }
 }
 
-WEBPACK_LOADER["DEFAULT"]["CACHE"] = True
+WEBPACK_LOADER["DEFAULT"]["CACHE"] = not DEBUG
 
 LOGIN_URL = "/oidc/login/"
 LOGIN_REDIRECT_URL = "/oidc/profile/"
