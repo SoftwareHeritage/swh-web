@@ -1,4 +1,4 @@
-import { __values } from "tslib";
+import { __assign, __values } from "tslib";
 import { htmlTreeAsString } from './browser';
 import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive } from './is';
 import { truncate } from './string';
@@ -86,55 +86,38 @@ export function urlEncode(object) {
  *
  * @param value Initial source that we have to transform in order for it to be usable by the serializer
  */
-export function getWalkSource(value) {
+export function convertToPlainObject(value) {
+    var newObj = value;
     if (isError(value)) {
-        var error = value;
-        var err = {
-            message: error.message,
-            name: error.name,
-            stack: error.stack,
-        };
-        for (var i in error) {
-            if (Object.prototype.hasOwnProperty.call(error, i)) {
-                err[i] = error[i];
-            }
-        }
-        return err;
+        newObj = __assign({ message: value.message, name: value.name, stack: value.stack }, getOwnProperties(value));
     }
-    if (isEvent(value)) {
+    else if (isEvent(value)) {
         var event_1 = value;
-        var source = {};
-        // Accessing event attributes can throw (see https://github.com/getsentry/sentry-javascript/issues/768 and
-        // https://github.com/getsentry/sentry-javascript/issues/838), but accessing `type` hasn't been wrapped in a
-        // try-catch in at least two years and no one's complained, so that's likely not an issue anymore
-        source.type = event_1.type;
-        try {
-            source.target = isElement(event_1.target)
-                ? htmlTreeAsString(event_1.target)
-                : Object.prototype.toString.call(event_1.target);
-        }
-        catch (_oO) {
-            source.target = '<unknown>';
-        }
-        try {
-            source.currentTarget = isElement(event_1.currentTarget)
-                ? htmlTreeAsString(event_1.currentTarget)
-                : Object.prototype.toString.call(event_1.currentTarget);
-        }
-        catch (_oO) {
-            source.currentTarget = '<unknown>';
-        }
+        newObj = __assign({ type: event_1.type, target: serializeEventTarget(event_1.target), currentTarget: serializeEventTarget(event_1.currentTarget) }, getOwnProperties(event_1));
         if (typeof CustomEvent !== 'undefined' && isInstanceOf(value, CustomEvent)) {
-            source.detail = event_1.detail;
+            newObj.detail = event_1.detail;
         }
-        for (var attr in event_1) {
-            if (Object.prototype.hasOwnProperty.call(event_1, attr)) {
-                source[attr] = event_1[attr];
-            }
-        }
-        return source;
     }
-    return value;
+    return newObj;
+}
+/** Creates a string representation of the target of an `Event` object */
+function serializeEventTarget(target) {
+    try {
+        return isElement(target) ? htmlTreeAsString(target) : Object.prototype.toString.call(target);
+    }
+    catch (_oO) {
+        return '<unknown>';
+    }
+}
+/** Filters out all but an object's own properties */
+function getOwnProperties(obj) {
+    var extractedProps = {};
+    for (var property in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, property)) {
+            extractedProps[property] = obj[property];
+        }
+    }
+    return extractedProps;
 }
 /**
  * Given any captured exception, extract its keys and create a sorted
@@ -144,7 +127,7 @@ export function getWalkSource(value) {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function extractExceptionKeysForMessage(exception, maxLength) {
     if (maxLength === void 0) { maxLength = 40; }
-    var keys = Object.keys(getWalkSource(exception));
+    var keys = Object.keys(convertToPlainObject(exception));
     keys.sort();
     if (!keys.length) {
         return '[object has no keys]';
@@ -171,13 +154,12 @@ export function extractExceptionKeysForMessage(exception, maxLength) {
 export function dropUndefinedKeys(val) {
     var e_1, _a;
     if (isPlainObject(val)) {
-        var obj = val;
         var rv = {};
         try {
-            for (var _b = __values(Object.keys(obj)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = __values(Object.keys(val)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var key = _c.value;
-                if (typeof obj[key] !== 'undefined') {
-                    rv[key] = dropUndefinedKeys(obj[key]);
+                if (typeof val[key] !== 'undefined') {
+                    rv[key] = dropUndefinedKeys(val[key]);
                 }
             }
         }

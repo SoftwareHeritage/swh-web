@@ -341,7 +341,7 @@ var BaseClient = /** @class */ (function () {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             normalized.contexts.trace = event.contexts.trace;
         }
-        event.sdkProcessingMetadata = __assign(__assign({}, event.sdkProcessingMetadata), { baseClientNormalized: true });
+        normalized.sdkProcessingMetadata = __assign(__assign({}, normalized.sdkProcessingMetadata), { baseClientNormalized: true });
         return normalized;
     };
     /**

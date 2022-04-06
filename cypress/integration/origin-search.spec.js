@@ -237,6 +237,35 @@ describe('Test origin-search', function() {
       .should('exist');
   });
 
+  it('should show error messages when using the query language', function() {
+    cy.adminLogin();
+    cy.visit(url);
+
+    cy.intercept('GET', `${this.Urls.api_1_origin_search('**')}**`,
+                 {
+                   body: {
+                     'exception': 'BadInputExc',
+                     'reason': 'Syntax error in search query: Invalid query'
+                   },
+                   statusCode: 400
+                 })
+      .as('searchOrigin');
+
+    cy.get('#swh-search-use-ql')
+      .should('exist')
+      .click({force: true}); // Covered by label
+
+    cy.get('#swh-origins-url-patterns')
+      .type('this is not a valid query')
+      .type('{enter}');
+
+    cy.wait('@searchOrigin').then((xhr) => {
+      cy.get('#swh-no-result')
+        .should('contain', 'Syntax error in search query');
+    });
+
+  });
+
   context('Test pagination', function() {
     it('should not paginate if there are not many results', function() {
       // Setup search

@@ -1,8 +1,21 @@
-swh-web (0.0.378-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.0.379-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.0.379     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2022-04-06 17:08:51
+    +0200)
+  * Upstream changes:     - v0.0.379     - Revert "requirements-test:
+    Temporarily pin django-stubs to < 1.10.0"     - package.json:
+    Upgrade dependencies     - settings/production: Use webpack loader
+    cache when not in debug mode     - inbound_email: split recipient
+    matching logic out     - Restrict pytest-postgresql to < 4.0.0     -
+    origin-search: Show original error message to users     - Add a
+    button to the deposit admin UI to show deposit metadata     -
+    add_forge_now: Add hyperlinks to forge URLs in Browse Requests tab
+    - moderation: Fix deposit uri computation for 'code' deposits     -
+    Ensure that tests run with the C.UTF-8 locale     - Move
+    add_forge_now migration tests with other add_forge_now tests
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 01 Apr 2022 11:06:01 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 06 Apr 2022 15:31:50 +0000
 
 swh-web (0.0.378-1~swh1) unstable-swh; urgency=medium
 
