@@ -3,7 +3,7 @@ djangorestframework-stubs
 django-stubs
 django-test-migrations
 hypothesis
-pytest < 7.0.0  # v7.0.0 removed _pytest.tmpdir.TempdirFactory, which is used by some of the pytest plugins we use
+pytest
 pytest-django
 pytest-mock
 pytest-postgresql < 4.0.0

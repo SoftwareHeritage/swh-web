@@ -1,0 +1,21 @@
+Return-Path: <test@example.com>
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.7.0-alpha0-382-g88b93171a9-fm-20220330.001-g88b93171
+Mime-Version: 1.0
+Message-Id: <c78f8ea4-6dc7-4604-b0b1-be1f4aecdc7f@www.fastmail.com>
+Date: Mon, 04 Apr 2022 17:10:00 +0200
+From: "Test User" <test@example.com>
+To: test@example.com
+Subject: Multipart email
+Content-Type: multipart/alternative;
+ boundary=67575b1b68b24603a2d00f02e032c975
+
+--67575b1b68b24603a2d00f02e032c975
+Content-Type: text/html
+
+<!DOCTYPE html><html><head><title></title></head><body><div><b>Multipart email (short html part).</b><br></div><div><br></div><div>--&nbsp;<br></div><div>Test User<br></div></body></html>
+--67575b1b68b24603a2d00f02e032c975
+Content-Type: text/html
+
+<!DOCTYPE html><html><head><title></title></head><body><div><b>Multipart email (a much longer html part).</b><br></div><div><br></div><div>--&nbsp;<br></div><div>Test User<br></div></body></html>
+--67575b1b68b24603a2d00f02e032c975--

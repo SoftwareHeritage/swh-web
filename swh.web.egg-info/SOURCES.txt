@@ -1863,8 +1863,14 @@ swh/web/tests/common/test_origin_visits.py
 swh/web/tests/common/test_query.py
 swh/web/tests/common/test_templatetags.py
 swh/web/tests/common/test_utils.py
+swh/web/tests/inbound_email/__init__.py
 swh/web/tests/inbound_email/test_management_command.py
 swh/web/tests/inbound_email/test_utils.py
+swh/web/tests/inbound_email/resources/__init__.py
+swh/web/tests/inbound_email/resources/multipart.eml
+swh/web/tests/inbound_email/resources/multipart_html_only.eml
+swh/web/tests/inbound_email/resources/multipart_text_only.eml
+swh/web/tests/inbound_email/resources/plaintext.eml
 swh/web/tests/misc/__init__.py
 swh/web/tests/misc/test_badges.py
 swh/web/tests/misc/test_coverage.py
