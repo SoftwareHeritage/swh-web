@@ -5,6 +5,7 @@ repos:
     rev: v4.1.0
     hooks:
       - id: trailing-whitespace
+        exclude: '.eml$'
       - id: check-json
       - id: check-yaml
 

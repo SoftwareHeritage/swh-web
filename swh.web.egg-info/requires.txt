@@ -36,7 +36,7 @@ djangorestframework-stubs
 django-stubs
 django-test-migrations
 hypothesis
-pytest<7.0.0
+pytest
 pytest-django
 pytest-mock
 pytest-postgresql<4.0.0
