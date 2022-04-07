@@ -499,14 +499,19 @@ def get_deposit_raw_metadata(deposit_id: int) -> Optional[str]:
     return requests.get(url).json()["raw_metadata"]
 
 
+_origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours
+
+
+@django_cache(
+    timeout=_origin_visit_types_cache_timeout,
+    catch_exception=True,
+    exception_return_value=[],
+)
 def origin_visit_types() -> List[str]:
     """Return the exhaustive list of visit types for origins
     ingested into the archive.
     """
-    try:
-        return sorted(search().visit_types_count().keys())
-    except Exception:
-        return []
+    return sorted(search().visit_types_count().keys())
 
 
 def redirect_to_new_route(request, new_route, permanent=True):
