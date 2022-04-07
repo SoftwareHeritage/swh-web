@@ -447,7 +447,7 @@ def get_deposit_raw_metadata(deposit_id: int) -> Optional[str]:
         config = get_config()["deposit"]
 
         url = f"{config['private_api_url']}/{deposit_id}/meta"
-        metadata = requests.get(url).json()["metadata_raw"]
+        metadata = requests.get(url).json()["raw_metadata"]
         cache.set(cache_key, metadata)
 
     return metadata

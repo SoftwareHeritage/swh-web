@@ -1,0 +1,15 @@
+Return-Path: <test@example.com>
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.7.0-alpha0-382-g88b93171a9-fm-20220330.001-g88b93171
+Mime-Version: 1.0
+Message-Id: <21e17bca-d6a7-40fb-bab8-5dadd939835b@www.fastmail.com>
+Date: Mon, 04 Apr 2022 17:08:04 +0200
+From: "Test User" <test@example.com>
+To: test@example.com
+Subject: Plain text email
+Content-Type: text/plain
+
+Plain text email.
+
+-- 
+Test User
