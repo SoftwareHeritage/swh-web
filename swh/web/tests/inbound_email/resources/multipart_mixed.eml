@@ -1,0 +1,23 @@
+Return-Path: <test@example.com>
+Content-Type: multipart/mixed; boundary="------------BR6CvS06rj0369ladb31gYCL"
+Message-ID: <8318382c-b4d3-9239-0805-e8cff4b9187a@inria.fr>
+Date: Thu, 7 Apr 2022 10:30:36 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Content-Language: en-US
+To: Test User <test@example.com>
+From: Test User <test@example.com>
+Subject: test email
+
+This is a multi-part message in MIME format.
+--------------BR6CvS06rj0369ladb31gYCL
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+This is plain text
+
+--------------BR6CvS06rj0369ladb31gYCL
+Content-Type: text/html
+
+and <b>this is HTML</b>

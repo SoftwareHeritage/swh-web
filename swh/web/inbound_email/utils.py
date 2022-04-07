@@ -180,6 +180,7 @@ def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
 
     text_parts: List[bytes] = []
     fallback_parts: List[bytes] = []
+    all_parts: List[bytes] = []
 
     for part in message.walk():
         content_type = part.get_content_type()
@@ -190,15 +191,23 @@ def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
             current_part = part.get_payload(decode=True).rstrip(b"\n")
             if current_part:
                 text_parts.append(current_part)
-        elif not text_parts and content_type == "text/html":
+                all_parts.append(current_part)
+        elif content_type == "text/html":
             current_part = part.get_payload(decode=True).rstrip(b"\n")
             if current_part:
                 fallback_parts.append(current_part)
+                all_parts.append(current_part)
 
-    if text_parts:
-        return max(text_parts, key=len)
+    assert message.get_content_maintype() == "multipart"
+    if message.get_content_subtype() == "alternative":
+        if text_parts:
+            return max(text_parts, key=len)
 
-    if fallback_parts:
-        return max(fallback_parts, key=len)
+        if fallback_parts:
+            return max(fallback_parts, key=len)
+    else:
+        # Handles multipart/mixed; but this should be an appropriate handling for
+        # other multipart formats
+        return b"".join(all_parts)
 
     return None
