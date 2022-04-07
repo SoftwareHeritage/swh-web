@@ -299,6 +299,21 @@ def test_get_pks_from_message_logging(caplog):
             ],
             id="multipart_mixed_text_only",
         ),
+        pytest.param(
+            "multipart_alternative_recursive.eml",
+            [b"This is plain text", b"and more plain text"],
+            [b"this is HTML", b"This is a multi-part message in MIME format."],
+            id="multipart_alternative_recursive",
+        ),
+        pytest.param(
+            "multipart_related.eml",
+            [
+                b"See the message below\n\n---------- Forwarded message ---------",
+                b"Hello everyone,\n\nSee my attachment",
+            ],
+            [b"this is HTML", b"This is a multi-part message in MIME format."],
+            id="multipart_alternative_recursive",
+        ),
     ),
 )
 def test_get_message_plaintext(
