@@ -1,3 +1,15 @@
+swh-web (0.0.380-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.380     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2022-04-07 15:29:35 +0200)
+  * Upstream changes:     - v0.0.380     - * requirements-test: Remove
+    pytest pinning to < 7     - * inbound_email: add support for signed
+    email addresses     - * inbound_email: add function to extract the
+    plaintext from a mail     - * Rename metadata_raw to raw_metadata in
+    get_deposit_raw_metadata
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 07 Apr 2022 13:55:02 +0000
+
 swh-web (0.0.379-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.379     - (tagged by Antoine R. Dumont
