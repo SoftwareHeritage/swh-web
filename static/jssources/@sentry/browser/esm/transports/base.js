@@ -1,6 +1,7 @@
 import { __read } from "tslib";
 import { eventToSentryRequest, getEnvelopeEndpointWithUrlEncodedAuth, getStoreEndpointWithUrlEncodedAuth, initAPIDetails, sessionToSentryRequest, } from '@sentry/core';
-import { createClientReportEnvelope, disabledUntil, dsnToString, eventStatusFromHttpCode, getGlobalObject, isDebugBuild, isRateLimited, logger, makePromiseBuffer, serializeEnvelope, updateRateLimits, } from '@sentry/utils';
+import { createClientReportEnvelope, disabledUntil, dsnToString, eventStatusFromHttpCode, getGlobalObject, isRateLimited, logger, makePromiseBuffer, serializeEnvelope, updateRateLimits, } from '@sentry/utils';
+import { IS_DEBUG_BUILD } from '../flags';
 import { sendReport } from './utils';
 function requestTypeToCategory(ty) {
     var tyStr = ty;
@@ -60,7 +61,7 @@ var BaseTransport = /** @class */ (function () {
         // A correct type for map-based implementation if we want to go that route
         // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
         var key = requestTypeToCategory(category) + ":" + reason;
-        isDebugBuild() && logger.log("Adding outcome: " + key);
+        IS_DEBUG_BUILD && logger.log("Adding outcome: " + key);
         this._outcomes[key] = (_a = this._outcomes[key], (_a !== null && _a !== void 0 ? _a : 0)) + 1;
     };
     /**
@@ -74,10 +75,10 @@ var BaseTransport = /** @class */ (function () {
         this._outcomes = {};
         // Nothing to send
         if (!Object.keys(outcomes).length) {
-            isDebugBuild() && logger.log('No outcomes to flush');
+            IS_DEBUG_BUILD && logger.log('No outcomes to flush');
             return;
         }
-        isDebugBuild() && logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
+        IS_DEBUG_BUILD && logger.log("Flushing outcomes:\n" + JSON.stringify(outcomes, null, 2));
         var url = getEnvelopeEndpointWithUrlEncodedAuth(this._api.dsn, this._api.tunnel);
         var discardedEvents = Object.keys(outcomes).map(function (key) {
             var _a = __read(key.split(':'), 2), category = _a[0], reason = _a[1];
@@ -93,7 +94,7 @@ var BaseTransport = /** @class */ (function () {
             sendReport(url, serializeEnvelope(envelope));
         }
         catch (e) {
-            isDebugBuild() && logger.error(e);
+            IS_DEBUG_BUILD && logger.error(e);
         }
     };
     /**
@@ -105,7 +106,7 @@ var BaseTransport = /** @class */ (function () {
         this._rateLimits = updateRateLimits(this._rateLimits, headers);
         // eslint-disable-next-line deprecation/deprecation
         if (this._isRateLimited(requestType)) {
-            isDebugBuild() &&
+            IS_DEBUG_BUILD &&
                 // eslint-disable-next-line deprecation/deprecation
                 logger.warn("Too many " + requestType + " requests, backing off until: " + this._disabledUntil(requestType));
         }

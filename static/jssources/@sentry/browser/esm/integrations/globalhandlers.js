@@ -2,8 +2,9 @@ import { __assign, __read } from "tslib";
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getCurrentHub } from '@sentry/core';
 import { Severity } from '@sentry/types';
-import { addExceptionMechanism, addInstrumentationHandler, getLocationHref, isDebugBuild, isErrorEvent, isPrimitive, isString, logger, } from '@sentry/utils';
+import { addExceptionMechanism, addInstrumentationHandler, getLocationHref, isErrorEvent, isPrimitive, isString, logger, } from '@sentry/utils';
 import { eventFromUnknownInput } from '../eventbuilder';
+import { IS_DEBUG_BUILD } from '../flags';
 import { shouldIgnoreOnError } from '../helpers';
 /** Global handlers */
 var GlobalHandlers = /** @class */ (function () {
@@ -182,7 +183,7 @@ function _enhanceEventWithInitialFrame(event, url, line, column) {
     return event;
 }
 function globalHandlerLog(type) {
-    isDebugBuild() && logger.log("Global Handler attached: " + type);
+    IS_DEBUG_BUILD && logger.log("Global Handler attached: " + type);
 }
 function addMechanismAndCapture(hub, error, event, type) {
     addExceptionMechanism(event, {
