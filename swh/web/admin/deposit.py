@@ -124,7 +124,7 @@ def _admin_deposit_list(request):
         for row in table_data["data"]:
             metadata = get_deposit_raw_metadata(row["id"])
             if metadata:
-                row["raw_metadata"] = metadata[-1]
+                row["raw_metadata"] = metadata
             else:
                 row["raw_metadata"] = None
 
