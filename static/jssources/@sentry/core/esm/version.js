@@ -1,2 +1,2 @@
-export var SDK_VERSION = '6.19.4';
+export var SDK_VERSION = '6.19.6';
 //# sourceMappingURL=version.js.map
