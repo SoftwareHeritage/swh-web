@@ -26,7 +26,9 @@ def create_add_forge_requests(client, regular_user, regular_user2):
             "forge_contact_comment": "user marked as owner in forge members",
         }
         create_add_forge_request(
-            client, regular_user, data=request,
+            client,
+            regular_user,
+            data=request,
         )
         requests.append(request)
 
@@ -38,7 +40,9 @@ def create_add_forge_requests(client, regular_user, regular_user2):
             "forge_contact_comment": "user marked as owner in forge members",
         }
         create_add_forge_request(
-            client, regular_user2, data=request,
+            client,
+            regular_user2,
+            data=request,
         )
         requests.append(request)
     return requests

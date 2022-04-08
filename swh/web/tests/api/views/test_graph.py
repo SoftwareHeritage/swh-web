@@ -328,7 +328,9 @@ def test_graph_query_params(
     )
 
     url = reverse(
-        "api-1-graph", url_args={"graph_query": graph_query}, query_params=query_params,
+        "api-1-graph",
+        url_args={"graph_query": graph_query},
+        query_params=query_params,
     )
 
     check_http_get_response(api_client, url, status_code=200)
@@ -362,7 +364,9 @@ def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_m
     # standard user
     _authenticate_graph_user(api_client, keycloak_oidc)
     check_http_get_response(
-        api_client, url, status_code=200,
+        api_client,
+        url,
+        status_code=200,
     )
     assert (
         f"max_edges={graph_config['max_edges']['user']}"
@@ -372,7 +376,9 @@ def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_m
     # staff user
     _authenticate_graph_user(api_client, keycloak_oidc, is_staff=True)
     check_http_get_response(
-        api_client, url, status_code=200,
+        api_client,
+        url,
+        status_code=200,
     )
     assert (
         f"max_edges={graph_config['max_edges']['staff']}"
@@ -402,7 +408,9 @@ def test_graph_endpoint_max_edges_query_parameter_value(
         query_params={"max_edges": max_edges},
     )
     check_http_get_response(
-        api_client, url, status_code=200,
+        api_client,
+        url,
+        status_code=200,
     )
     assert f"max_edges={max_edges}" in requests_mock.request_history[0].url
 
@@ -413,6 +421,8 @@ def test_graph_endpoint_max_edges_query_parameter_value(
         query_params={"max_edges": max_edges},
     )
     check_http_get_response(
-        api_client, url, status_code=200,
+        api_client,
+        url,
+        status_code=200,
     )
     assert f"max_edges={max_edges_max_value}" in requests_mock.request_history[1].url

@@ -50,7 +50,9 @@ def _get_content_rendering_data(cnt_swhid: QualifiedSWHID, path: str) -> Dict[st
 
 
 def _get_directory_rendering_data(
-    dir_swhid: QualifiedSWHID, focus_swhid: QualifiedSWHID, path: str,
+    dir_swhid: QualifiedSWHID,
+    focus_swhid: QualifiedSWHID,
+    path: str,
 ) -> Dict[str, Any]:
     dirs, files = get_directory_entries(dir_swhid.object_id.hex())
     for d in dirs:
@@ -294,7 +296,8 @@ def swhid_iframe(request, swhid: str):
                     anchor=root_dir_swhid,
                 )
                 archive_link = reverse(
-                    "browse-swhid", url_args={"swhid": f"{archive_swhid}"},
+                    "browse-swhid",
+                    url_args={"swhid": f"{archive_swhid}"},
                 )
 
     except BadInputExc as e:

@@ -263,8 +263,7 @@ def _get_listers_metrics(
 
 
 def _get_deposits_netloc_counts(cache_counts: bool = False) -> Counter:
-    """Return deposit counts per origin url network location.
-    """
+    """Return deposit counts per origin url network location."""
 
     def _process_origin_url(origin_url):
         parsed_url = urlparse(origin_url)

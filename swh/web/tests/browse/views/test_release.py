@@ -143,7 +143,9 @@ def _release_browse_checks(
             directory_url = reverse(
                 "browse-snapshot-directory",
                 url_args={"snapshot_id": snapshot_id},
-                query_params={"release": release_data["name"],},
+                query_params={
+                    "release": release_data["name"],
+                },
             )
             rev_metadata["visit"] = dir_metadata["visit"] = gen_swhid(
                 ObjectType.SNAPSHOT, snapshot_id

@@ -397,7 +397,10 @@ def search_origin_metadata(
         search
         and config.get_config()["search_config"]["metadata_backend"] == "swh-search"
     ):
-        page_result = search.origin_search(metadata_pattern=fulltext, limit=limit,)
+        page_result = search.origin_search(
+            metadata_pattern=fulltext,
+            limit=limit,
+        )
         matches = idx_storage.origin_intrinsic_metadata_get(
             [r["url"] for r in page_result.results]
         )
@@ -1086,7 +1089,9 @@ def origin_visit_find_by_date(
         # when visit is anterior to the provided date, trying to find another one most
         # recent
         visits = storage.origin_visit_get(
-            origin_url, page_token=str(visit.visit), limit=1,
+            origin_url,
+            page_token=str(visit.visit),
+            limit=1,
         ).results
         visit = visits[0] if visits else None
     if not visit:
@@ -1292,20 +1297,17 @@ def _vault_request(vault_fn, bundle_type: str, swhid: CoreSWHID, **kwargs):
 
 
 def vault_cook(bundle_type: str, swhid: CoreSWHID, email=None):
-    """Cook a vault bundle.
-    """
+    """Cook a vault bundle."""
     return _vault_request(vault.cook, bundle_type, swhid, email=email)
 
 
 def vault_fetch(bundle_type: str, swhid: CoreSWHID):
-    """Fetch a vault bundle.
-    """
+    """Fetch a vault bundle."""
     return _vault_request(vault.fetch, bundle_type, swhid)
 
 
 def vault_progress(bundle_type: str, swhid: CoreSWHID):
-    """Get the current progress of a vault bundle.
-    """
+    """Get the current progress of a vault bundle."""
     return _vault_request(vault.progress, bundle_type, swhid)
 
 

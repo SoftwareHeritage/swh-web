@@ -179,8 +179,20 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
         ("content", {"origin_url": origin_url, "path": "/some/path"}),
         ("directory", {"origin_url": origin_url}),
         ("log", {"origin_url": origin_url}),
-        ("directory", {"origin_url": origin_url, "timestamp": timestamp,},),
-        ("directory", {"origin_url": origin_url, "visit_id": visit_id,},),
+        (
+            "directory",
+            {
+                "origin_url": origin_url,
+                "timestamp": timestamp,
+            },
+        ),
+        (
+            "directory",
+            {
+                "origin_url": origin_url,
+                "visit_id": visit_id,
+            },
+        ),
     ):
 
         visit_id = kwargs["visit_id"] if "visit_id" in kwargs else None
@@ -270,7 +282,12 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
 
 
 def _check_branch_release_revision_parameters(
-    archive_data, base_expected_context, browse_context, kwargs, branches, releases,
+    archive_data,
+    base_expected_context,
+    browse_context,
+    kwargs,
+    branches,
+    releases,
 ):
     branch = random.choice(branches)
 

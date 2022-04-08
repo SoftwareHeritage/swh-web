@@ -610,7 +610,9 @@ def get_snapshot_context(
         release_query_params.pop("revision", None)
         release_query_params["release"] = r["name"]
         r["url"] = reverse(
-            browse_view_name, url_args=url_args, query_params=release_query_params,
+            browse_view_name,
+            url_args=url_args,
+            query_params=release_query_params,
         )
 
     revision_info = None
@@ -827,14 +829,20 @@ def browse_snapshot_directory(
             SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=sha1_git)
         )
         vault_cooking.update(
-            {"directory_context": True, "directory_swhid": f"swh:1:dir:{sha1_git}",}
+            {
+                "directory_context": True,
+                "directory_swhid": f"swh:1:dir:{sha1_git}",
+            }
         )
     if revision_id is not None and revision_found:
         swh_objects.append(
             SWHObjectInfo(object_type=ObjectType.REVISION, object_id=revision_id)
         )
         vault_cooking.update(
-            {"revision_context": True, "revision_swhid": f"swh:1:rev:{revision_id}",}
+            {
+                "revision_context": True,
+                "revision_swhid": f"swh:1:rev:{revision_id}",
+            }
         )
     swh_objects.append(
         SWHObjectInfo(object_type=ObjectType.SNAPSHOT, object_id=snapshot_id)

@@ -251,8 +251,7 @@ def get_client_ip(request):
 
 
 def is_swh_web_development(request: HttpRequest) -> bool:
-    """Indicate if we are running a development version of swh-web.
-    """
+    """Indicate if we are running a development version of swh-web."""
     site_base_url = request.build_absolute_uri("/")
     return any(
         host in site_base_url for host in ("localhost", "127.0.0.1", "testserver")
@@ -260,8 +259,7 @@ def is_swh_web_development(request: HttpRequest) -> bool:
 
 
 def is_swh_web_staging(request: HttpRequest) -> bool:
-    """Indicate if we are running a staging version of swh-web.
-    """
+    """Indicate if we are running a staging version of swh-web."""
     config = get_config()
     site_base_url = request.build_absolute_uri("/")
     return any(
@@ -270,8 +268,7 @@ def is_swh_web_staging(request: HttpRequest) -> bool:
 
 
 def is_swh_web_production(request: HttpRequest) -> bool:
-    """Indicate if we are running the public production version of swh-web.
-    """
+    """Indicate if we are running the public production version of swh-web."""
     return SWH_WEB_SERVER_NAME in request.build_absolute_uri("/")
 
 
@@ -462,8 +459,7 @@ def _deposits_list_url(
 
 
 def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Return the list of software deposits using swh-deposit API
-    """
+    """Return the list of software deposits using swh-deposit API"""
     config = get_config()["deposit"]
     deposits_list_base_url = config["private_api_url"] + "deposits"
     deposits_list_auth = HTTPBasicAuth(
@@ -484,7 +480,9 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
             deposits_list_base_url, page_size=nb_deposits, username=username
         )
         return requests.get(
-            deposits_list_url, auth=deposits_list_auth, timeout=30,
+            deposits_list_url,
+            auth=deposits_list_auth,
+            timeout=30,
         ).json()
 
     deposits_data = _get_deposits_data()
@@ -521,7 +519,10 @@ def redirect_to_new_route(request, new_route, permanent=True):
     """
     request_path = resolve(request.path_info)
     args = {**request_path.kwargs, **request.GET.dict()}
-    return redirect(reverse(new_route, query_params=args), permanent=permanent,)
+    return redirect(
+        reverse(new_route, query_params=args),
+        permanent=permanent,
+    )
 
 
 NAMESPACES = {
@@ -551,7 +552,8 @@ def parse_swh_metadata_provenance(raw_metadata: str) -> Optional[str]:
     """
     metadata = ElementTree.fromstring(raw_metadata)
     url = metadata.findtext(
-        "swh:deposit/swh:metadata-provenance/schema:url", namespaces=NAMESPACES,
+        "swh:deposit/swh:metadata-provenance/schema:url",
+        namespaces=NAMESPACES,
     )
     return url or None
 

@@ -508,7 +508,11 @@ def test_content_origin_snapshot_branch_browse(
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
+        ObjectType.SNAPSHOT,
+        snapshot["id"],
+        metadata={
+            "origin": origin_url,
+        },
     )
     assert_contains(resp, snp_swhid)
 
@@ -594,7 +598,11 @@ def test_content_origin_snapshot_release_browse(
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
+        ObjectType.SNAPSHOT,
+        snapshot["id"],
+        metadata={
+            "origin": origin_url,
+        },
     )
     assert_contains(resp, snp_swhid)
 
@@ -646,7 +654,10 @@ def _process_content_for_display(archive_data, content):
 
 
 def test_content_dispaly_empty_query_string_missing_path(client):
-    url = reverse("browse-content", query_params={"origin_url": "http://example.com"},)
+    url = reverse(
+        "browse-content",
+        query_params={"origin_url": "http://example.com"},
+    )
     resp = check_html_get_response(
         client, url, status_code=400, template_used="error.html"
     )
@@ -654,8 +665,15 @@ def test_content_dispaly_empty_query_string_missing_path(client):
 
 
 def test_content_dispaly_empty_query_string_and_snapshot_origin(client):
-    url = reverse("browse-content", query_params={"path": "test.txt"},)
-    resp = check_html_get_response(client, url, status_code=400,)
+    url = reverse(
+        "browse-content",
+        query_params={"path": "test.txt"},
+    )
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=400,
+    )
     assert_contains(
         resp,
         "The origin_url or snapshot query parameters must be provided.",
@@ -676,14 +694,24 @@ def test_content_dispaly_empty_query_string_with_origin(
 
     url = reverse(
         "browse-content",
-        query_params={"origin_url": origin_url, "path": dir_file["name"],},
+        query_params={
+            "origin_url": origin_url,
+            "path": dir_file["name"],
+        },
     )
 
-    resp = check_html_get_response(client, url, status_code=302,)
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=302,
+    )
     redict_url = reverse(
         "browse-content",
         url_args={"query_string": f"sha1_git:{dir_file['checksums']['sha1_git']}"},
-        query_params={"origin_url": origin_url, "path": dir_file["name"],},
+        query_params={
+            "origin_url": origin_url,
+            "path": dir_file["name"],
+        },
     )
     assert resp.url == redict_url
 
@@ -700,14 +728,24 @@ def test_content_dispaly_empty_query_string_with_snapshot(
     dir_file = random.choice(dir_files)
     url = reverse(
         "browse-content",
-        query_params={"snapshot": snapshot["id"], "path": dir_file["name"],},
+        query_params={
+            "snapshot": snapshot["id"],
+            "path": dir_file["name"],
+        },
     )
 
-    resp = check_html_get_response(client, url, status_code=302,)
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=302,
+    )
     redict_url = reverse(
         "browse-content",
         url_args={"query_string": f"sha1_git:{dir_file['checksums']['sha1_git']}"},
-        query_params={"snapshot": snapshot["id"], "path": dir_file["name"],},
+        query_params={
+            "snapshot": snapshot["id"],
+            "path": dir_file["name"],
+        },
     )
     assert resp.url == redict_url
 
@@ -720,7 +758,8 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
     mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
     mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse(
-        "browse-content", query_params={"origin_url": origin["url"], "path": "foo"},
+        "browse-content",
+        query_params={"origin_url": origin["url"], "path": "foo"},
     )
 
     resp = check_html_get_response(

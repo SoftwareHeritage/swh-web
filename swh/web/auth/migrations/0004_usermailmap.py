@@ -40,6 +40,8 @@ class Migration(migrations.Migration):
                 ("mailmap_last_processing_date", models.DateTimeField(null=True)),
                 ("last_update_date", models.DateTimeField(auto_now=True)),
             ],
-            options={"db_table": "user_mailmap",},
+            options={
+                "db_table": "user_mailmap",
+            },
         ),
     ]

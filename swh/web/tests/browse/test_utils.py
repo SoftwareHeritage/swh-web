@@ -23,7 +23,10 @@ from swh.web.tests.data import get_tests_data
 
 def test_get_mimetype_and_encoding_for_content():
     text = b"Hello world!"
-    assert get_mimetype_and_encoding_for_content(text) == ("text/plain", "us-ascii",)
+    assert get_mimetype_and_encoding_for_content(text) == (
+        "text/plain",
+        "us-ascii",
+    )
 
 
 def test_gen_link():

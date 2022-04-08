@@ -154,7 +154,10 @@ def check_api_post_response(
     """
     return _assert_http_response(
         response=api_client.post(
-            url, data=data, format="json", HTTP_ACCEPT=content_type,
+            url,
+            data=data,
+            format="json",
+            HTTP_ACCEPT=content_type,
         ),
         status_code=status_code,
         content_type=content_type,

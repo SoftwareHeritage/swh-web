@@ -48,11 +48,13 @@ def mock_scheduler(mocker, swh_scheduler):
 def test_command_refresh__with_statuses_refreshed(
     mock_scheduler, mock_refresh, nb_results
 ):
-    """Refresh status command reports non-terminal statuses updates.
-
-    """
+    """Refresh status command reports non-terminal statuses updates."""
     # fake returned refreshed status for 'archives' visit type
-    mock_refresh.return_value = [{"visit_type": "archives",}] * nb_results
+    mock_refresh.return_value = [
+        {
+            "visit_type": "archives",
+        }
+    ] * nb_results
 
     out = StringIO()
     call_command(COMMAND_NAME, stdout=out)
@@ -69,48 +71,42 @@ def test_command_refresh__with_statuses_refreshed(
 
 @pytest.fixture
 def fake_refreshed_data():
-    """Prepare test data within the scheduler and the swh-web model db
-
-    """
+    """Prepare test data within the scheduler and the swh-web model db"""
     duplicated_origin_url = AUTHORIZED_ORIGIN_URL % "specific-origin"
-    entries = (
-        [
-            {
-                "visit_type": "archives",  # ignored from recurring task scheduling
-                "visit_status": VISIT_STATUS_FULL,
-                "task_status": SAVE_TASK_SUCCEEDED,
-            },
-            {
-                "visit_type": "hg",  # scheduled as recurring task
-                "visit_status": VISIT_STATUS_PARTIAL,
-                "task_status": SAVE_TASK_SUCCEEDED,
-            },
-            {
-                "visit_type": "svn",  # scheduled as recurring task
-                "visit_status": VISIT_STATUS_PARTIAL,
-                "task_status": SAVE_TASK_SCHEDULED,
-            },
-            {
-                "visit_type": "svn",  # ignored from recurring task scheduling
-                "visit_status": VISIT_STATUS_FAILED,
-                "task_status": SAVE_TASK_FAILED,
-            },
-            {
-                "visit_type": "hg",  # ignored from recurring task scheduling
-                "visit_status": "created",
-                "task_status": SAVE_TASK_SCHEDULED,
-            },
-        ]
-        + [
-            {
-                "visit_type": "git",
-                "visit_status": VISIT_STATUS_FULL,
-                "task_status": SAVE_TASK_SUCCEEDED,
-                "origin": duplicated_origin_url,
-            }
-        ]
-        * 3
-    )  # only 1 of the origin duplicates will be scheduled as recurring task
+    entries = [
+        {
+            "visit_type": "archives",  # ignored from recurring task scheduling
+            "visit_status": VISIT_STATUS_FULL,
+            "task_status": SAVE_TASK_SUCCEEDED,
+        },
+        {
+            "visit_type": "hg",  # scheduled as recurring task
+            "visit_status": VISIT_STATUS_PARTIAL,
+            "task_status": SAVE_TASK_SUCCEEDED,
+        },
+        {
+            "visit_type": "svn",  # scheduled as recurring task
+            "visit_status": VISIT_STATUS_PARTIAL,
+            "task_status": SAVE_TASK_SCHEDULED,
+        },
+        {
+            "visit_type": "svn",  # ignored from recurring task scheduling
+            "visit_status": VISIT_STATUS_FAILED,
+            "task_status": SAVE_TASK_FAILED,
+        },
+        {
+            "visit_type": "hg",  # ignored from recurring task scheduling
+            "visit_status": "created",
+            "task_status": SAVE_TASK_SCHEDULED,
+        },
+    ] + [
+        {
+            "visit_type": "git",
+            "visit_status": VISIT_STATUS_FULL,
+            "task_status": SAVE_TASK_SUCCEEDED,
+            "origin": duplicated_origin_url,
+        }
+    ] * 3  # only 1 of the origin duplicates will be scheduled as recurring task
 
     time_now = datetime.now(tz=timezone.utc) - timedelta(days=len(entries))
     return [
@@ -136,7 +132,7 @@ def test_command_refresh__with_recurrent_tasks_scheduling(
     mock_scheduler, mock_refresh, fake_refreshed_data, swh_scheduler
 ):
     """Refresh status command report updates of statuses. The successful ones without the
-       type 'archived' are also scheduled recurringly.
+    type 'archived' are also scheduled recurringly.
 
     """
     mock_refresh.return_value = fake_refreshed_data
