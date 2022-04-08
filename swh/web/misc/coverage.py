@@ -230,7 +230,7 @@ deposited_origins: Dict[str, Any] = {
     ],
 }
 
-_cache_timeout = 5 * 60
+_cache_timeout = 60 * 60  # one hour
 
 
 def _get_listers_metrics(
