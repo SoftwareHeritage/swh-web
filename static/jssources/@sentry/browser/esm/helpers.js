@@ -1,6 +1,7 @@
 import { __assign } from "tslib";
 import { captureException, getReportDialogEndpoint, withScope } from '@sentry/core';
-import { addExceptionMechanism, addExceptionTypeValue, addNonEnumerableProperty, getGlobalObject, getOriginalFunction, isDebugBuild, logger, markFunctionWrapped, } from '@sentry/utils';
+import { addExceptionMechanism, addExceptionTypeValue, addNonEnumerableProperty, getGlobalObject, getOriginalFunction, logger, markFunctionWrapped, } from '@sentry/utils';
+import { IS_DEBUG_BUILD } from './flags';
 var global = getGlobalObject();
 var ignoreOnError = 0;
 /**
@@ -128,11 +129,11 @@ export function injectReportDialog(options) {
         return;
     }
     if (!options.eventId) {
-        isDebugBuild() && logger.error('Missing eventId option in showReportDialog call');
+        IS_DEBUG_BUILD && logger.error('Missing eventId option in showReportDialog call');
         return;
     }
     if (!options.dsn) {
-        isDebugBuild() && logger.error('Missing dsn option in showReportDialog call');
+        IS_DEBUG_BUILD && logger.error('Missing dsn option in showReportDialog call');
         return;
     }
     var script = global.document.createElement('script');

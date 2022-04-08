@@ -4,7 +4,9 @@
 # See top-level LICENSE file for more information
 from base64 import b64encode
 import datetime
+import math
 from os.path import join
+import sys
 from urllib.parse import quote
 
 import pytest
@@ -355,3 +357,77 @@ def test_parse_swh_origins(datadir, raw_metadata_file, expected_url):
     actual_url = utils.parse_swh_deposit_origin(raw_metadata)
 
     assert actual_url == expected_url
+
+
+def add(x, y):
+    return x + y
+
+
+def test_django_cache(mocker):
+    """Decorated function should be called once and returned value
+    put in django cache."""
+    spy_add = mocker.spy(sys.modules[__name__], "add")
+    spy_cache_set = mocker.spy(utils.cache, "set")
+
+    cached_add = utils.django_cache()(add)
+
+    val = cached_add(1, 2)
+    val2 = cached_add(1, 2)
+
+    assert val == val2 == 3
+    assert spy_add.call_count == 1
+    assert spy_cache_set.call_count == 1
+
+
+def test_django_cache_invalidate_cache_pred(mocker):
+    """Decorated function should be called twice and returned value
+    put in django cache twice."""
+    spy_add = mocker.spy(sys.modules[__name__], "add")
+    spy_cache_set = mocker.spy(utils.cache, "set")
+
+    cached_add = utils.django_cache(invalidate_cache_pred=lambda val: val == 3)(add)
+
+    val = cached_add(1, 2)
+    val2 = cached_add(1, 2)
+
+    assert val == val2 == 3
+    assert spy_add.call_count == 2
+    assert spy_cache_set.call_count == 2
+
+
+def test_django_cache_raise_exception(mocker):
+    """Decorated function should be called twice, exceptions should be
+    raised and no value put in django cache"""
+    spy_add = mocker.spy(sys.modules[__name__], "add")
+    spy_cache_set = mocker.spy(utils.cache, "set")
+
+    cached_add = utils.django_cache()(add)
+
+    with pytest.raises(TypeError):
+        cached_add(1, "2")
+
+    with pytest.raises(TypeError):
+        cached_add(1, "2")
+
+    assert spy_add.call_count == 2
+    assert spy_cache_set.call_count == 0
+
+
+def test_django_cache_catch_exception(mocker):
+    """Decorated function should be called twice, exceptions should not be
+    raised, specified fallback value should be returned and no value put
+    in django cache"""
+    spy_add = mocker.spy(sys.modules[__name__], "add")
+    spy_cache_set = mocker.spy(utils.cache, "set")
+
+    cached_add = utils.django_cache(
+        catch_exception=True, exception_return_value=math.nan
+    )(add)
+
+    val = cached_add(1, "2")
+    val2 = cached_add(1, "2")
+
+    assert math.isnan(val)
+    assert math.isnan(val2)
+    assert spy_add.call_count == 2
+    assert spy_cache_set.call_count == 0

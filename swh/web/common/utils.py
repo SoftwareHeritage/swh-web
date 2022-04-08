@@ -4,9 +4,10 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timezone
+import functools
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import urllib.parse
 from xml.etree import ElementTree
 
@@ -20,8 +21,10 @@ from pkg_resources import get_distribution
 from prometheus_client.registry import CollectorRegistry
 import requests
 from requests.auth import HTTPBasicAuth
+import sentry_sdk
 
 from django.core.cache import cache
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.http import HttpRequest, QueryDict
 from django.shortcuts import redirect
 from django.urls import resolve
@@ -400,6 +403,55 @@ def prettify_html(html: str) -> str:
     return BeautifulSoup(html, "lxml").prettify()
 
 
+def django_cache(
+    timeout: int = DEFAULT_TIMEOUT,
+    catch_exception: bool = False,
+    exception_return_value: Any = None,
+    invalidate_cache_pred: Callable[[Any], bool] = lambda val: False,
+):
+    """Decorator to put the result of a function call in Django cache,
+    subsequent calls will directly return the cached value.
+
+    Args:
+        timeout: The number of seconds value will be hold in cache
+        catch_exception: If :const:`True`, any thrown exception by
+            the decorated function will be caught and not reraised
+        exception_return_value: The value to return if previous
+            parameter is set to :const:`True`
+        invalidate_cache_pred: A predicate function enabling to
+            invalidate the cache under certain conditions, decorated
+            function will then be called again
+
+    Returns:
+        The returned value of the decorated function for the specified
+        parameters
+
+    """
+
+    def inner(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            func_args = args + (0,) + tuple(sorted(kwargs.items()))
+            cache_key = str(hash((func.__module__, func.__name__) + func_args))
+            ret = cache.get(cache_key)
+            if ret is None or invalidate_cache_pred(ret):
+                try:
+                    ret = func(*args, **kwargs)
+                except Exception as exc:
+                    sentry_sdk.capture_exception(exc)
+                    if catch_exception:
+                        return exception_return_value
+                    else:
+                        raise
+                else:
+                    cache.set(cache_key, ret, timeout=timeout)
+            return ret
+
+        return wrapper
+
+    return inner
+
+
 def _deposits_list_url(
     deposits_list_base_url: str, page_size: int, username: Optional[str]
 ) -> str:
@@ -426,41 +478,40 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
         deposits_list_url, auth=deposits_list_auth, timeout=30
     ).json()["count"]
 
-    cache_key = f"swh-deposit-list-{username}"
-    deposits_data = cache.get(cache_key)
-    if not deposits_data or deposits_data["count"] != nb_deposits:
+    @django_cache(invalidate_cache_pred=lambda data: data["count"] != nb_deposits)
+    def _get_deposits_data():
         deposits_list_url = _deposits_list_url(
             deposits_list_base_url, page_size=nb_deposits, username=username
         )
-        deposits_data = requests.get(
+        return requests.get(
             deposits_list_url, auth=deposits_list_auth, timeout=30,
         ).json()
-        cache.set(cache_key, deposits_data)
+
+    deposits_data = _get_deposits_data()
 
     return deposits_data["results"]
 
 
+@django_cache()
 def get_deposit_raw_metadata(deposit_id: int) -> Optional[str]:
-    cache_key = f"swh-deposit-raw-metadata-{deposit_id}"
-    metadata = cache.get(cache_key)
-    if metadata is None:
-        config = get_config()["deposit"]
-
-        url = f"{config['private_api_url']}/{deposit_id}/meta"
-        metadata = requests.get(url).json()["raw_metadata"]
-        cache.set(cache_key, metadata)
-
-    return metadata
+    config = get_config()["deposit"]
+    url = f"{config['private_api_url']}/{deposit_id}/meta"
+    return requests.get(url).json()["raw_metadata"]
 
 
+_origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours
+
+
+@django_cache(
+    timeout=_origin_visit_types_cache_timeout,
+    catch_exception=True,
+    exception_return_value=[],
+)
 def origin_visit_types() -> List[str]:
     """Return the exhaustive list of visit types for origins
     ingested into the archive.
     """
-    try:
-        return sorted(search().visit_types_count().keys())
-    except Exception:
-        return []
+    return sorted(search().visit_types_count().keys())
 
 
 def redirect_to_new_route(request, new_route, permanent=True):

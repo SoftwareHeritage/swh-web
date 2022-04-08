@@ -12,7 +12,6 @@ import chardet
 import magic
 import sentry_sdk
 
-from django.core.cache import cache
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -20,6 +19,7 @@ from swh.web.common import archive, highlightjs
 from swh.web.common.exc import NotFoundExc
 from swh.web.common.utils import (
     browsers_supported_image_mimes,
+    django_cache,
     format_utc_iso_date,
     reverse,
     rst_to_html,
@@ -27,6 +27,7 @@ from swh.web.common.utils import (
 from swh.web.config import get_config
 
 
+@django_cache()
 def get_directory_entries(sha1_git):
     """Function that retrieves the content of a directory
     from the archive.
@@ -44,12 +45,6 @@ def get_directory_entries(sha1_git):
     Raises:
         NotFoundExc if the directory is not found
     """
-    cache_entry_id = "directory_entries_%s" % sha1_git
-    cache_entry = cache.get(cache_entry_id)
-
-    if cache_entry:
-        return cache_entry
-
     entries = list(archive.lookup_directory(sha1_git))
     for e in entries:
         e["perms"] = stat.filemode(e["perms"])
@@ -63,8 +58,6 @@ def get_directory_entries(sha1_git):
 
     dirs = sorted(dirs, key=lambda d: d["name"])
     files = sorted(files, key=lambda f: f["name"])
-
-    cache.set(cache_entry_id, (dirs, files))
 
     return dirs, files
 
@@ -717,18 +710,15 @@ def get_readme_to_display(readmes):
     # convert rst README to html server side as there is
     # no viable solution to perform that task client side
     if readme_name and readme_name.endswith(".rst"):
-        cache_entry_id = "readme_%s" % readme_sha1
-        cache_entry = cache.get(cache_entry_id)
 
-        if cache_entry:
-            readme_html = cache_entry
-        else:
-            try:
-                rst_doc = request_content(readme_sha1)
-                readme_html = rst_to_html(rst_doc["raw_data"])
-                cache.set(cache_entry_id, readme_html)
-            except Exception as exc:
-                sentry_sdk.capture_exception(exc)
-                readme_html = "Readme bytes are not available"
+        @django_cache(
+            catch_exception=True,
+            exception_return_value="Readme bytes are not available",
+        )
+        def _rst_readme_to_html(readme_sha1):
+            rst_doc = request_content(readme_sha1)
+            return rst_to_html(rst_doc["raw_data"])
+
+        readme_html = _rst_readme_to_html(readme_sha1)
 
     return readme_name, readme_url, readme_html

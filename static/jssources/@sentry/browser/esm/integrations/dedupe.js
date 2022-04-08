@@ -1,4 +1,5 @@
-import { isDebugBuild, logger } from '@sentry/utils';
+import { logger } from '@sentry/utils';
+import { IS_DEBUG_BUILD } from '../flags';
 /** Deduplication filter */
 var Dedupe = /** @class */ (function () {
     function Dedupe() {
@@ -17,7 +18,7 @@ var Dedupe = /** @class */ (function () {
                 // Juuust in case something goes wrong
                 try {
                     if (_shouldDropEvent(currentEvent, self._previousEvent)) {
-                        isDebugBuild() && logger.warn('Event dropped due to being a duplicate of previously captured event.');
+                        IS_DEBUG_BUILD && logger.warn('Event dropped due to being a duplicate of previously captured event.');
                         return null;
                     }
                 }

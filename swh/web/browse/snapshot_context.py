@@ -8,7 +8,6 @@
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
-from django.core.cache import cache
 from django.shortcuts import render
 from django.utils.html import escape
 
@@ -38,6 +37,7 @@ from swh.web.common.typing import (
     SWHObjectInfo,
 )
 from swh.web.common.utils import (
+    django_cache,
     format_utc_iso_date,
     gen_path_info,
     reverse,
@@ -280,6 +280,7 @@ def process_snapshot_branches(
     return ret_branches, ret_releases, resolved_aliases
 
 
+@django_cache()
 def get_snapshot_content(
     snapshot_id: str,
 ) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo], Dict[str, Any]]:
@@ -303,15 +304,6 @@ def get_snapshot_content(
     Raises:
         NotFoundExc if the snapshot does not exist
     """
-    cache_entry_id = "swh_snapshot_%s" % snapshot_id
-    cache_entry = cache.get(cache_entry_id)
-
-    if cache_entry:
-        return (
-            cache_entry["branches"],
-            cache_entry["releases"],
-            cache_entry.get("aliases", {}),
-        )
 
     branches: List[SnapshotBranchInfo] = []
     releases: List[SnapshotReleaseInfo] = []
@@ -324,10 +316,6 @@ def get_snapshot_content(
             snapshot_id, branches_count=snapshot_content_max_size
         )
         branches, releases, aliases = process_snapshot_branches(snapshot)
-
-    cache.set(
-        cache_entry_id, {"branches": branches, "releases": releases, "aliases": aliases}
-    )
 
     return branches, releases, aliases
 
@@ -483,11 +471,11 @@ def get_snapshot_context(
 
     releases = list(reversed(releases))
 
-    snapshot_sizes_cache_id = f"swh_snapshot_{snapshot_id}_sizes"
-    snapshot_sizes = cache.get(snapshot_sizes_cache_id)
-    if snapshot_sizes is None:
-        snapshot_sizes = archive.lookup_snapshot_sizes(snapshot_id)
-        cache.set(snapshot_sizes_cache_id, snapshot_sizes)
+    @django_cache()
+    def _get_snapshot_sizes(snapshot_id):
+        return archive.lookup_snapshot_sizes(snapshot_id)
+
+    snapshot_sizes = _get_snapshot_sizes(snapshot_id)
 
     is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
 
