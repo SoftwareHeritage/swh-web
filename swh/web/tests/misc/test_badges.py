@@ -41,7 +41,9 @@ def test_snapshot_badge(client, snapshot):
     _test_badge_endpoints(client, "snapshot", snapshot)
 
 
-@given(new_origin(),)
+@given(
+    new_origin(),
+)
 def test_badge_errors(
     client,
     unknown_content,

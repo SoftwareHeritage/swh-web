@@ -12,13 +12,12 @@ from swh.web.common.utils import has_add_forge_now_permission
 
 
 @admin_route(
-    r"add-forge/requests/", view_name="add-forge-now-requests-moderation",
+    r"add-forge/requests/",
+    view_name="add-forge-now-requests-moderation",
 )
 @user_passes_test(has_add_forge_now_permission, login_url=settings.LOGIN_URL)
 def add_forge_now_requests_moderation_dashboard(request):
-    """Moderation dashboard to allow listing current requests.
-
-    """
+    """Moderation dashboard to allow listing current requests."""
     return render(
         request,
         "add_forge_now/requests-moderation.html",
@@ -32,9 +31,7 @@ def add_forge_now_requests_moderation_dashboard(request):
 )
 @user_passes_test(has_add_forge_now_permission, login_url=settings.LOGIN_URL)
 def add_forge_now_request_dashboard(request, request_id):
-    """Moderation dashboard to allow listing current requests.
-
-    """
+    """Moderation dashboard to allow listing current requests."""
     return render(
         request,
         "add_forge_now/request-dashboard.html",

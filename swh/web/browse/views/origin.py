@@ -22,7 +22,8 @@ from swh.web.common.utils import (
 
 
 @browse_route(
-    r"origin/directory/", view_name="browse-origin-directory",
+    r"origin/directory/",
+    view_name="browse-origin-directory",
 )
 def origin_directory_browse(request):
     """Django view for browsing the content of a directory associated
@@ -64,7 +65,8 @@ def origin_directory_browse_legacy(request, origin_url, timestamp=None, path=Non
 
 
 @browse_route(
-    r"origin/content/", view_name="browse-origin-content",
+    r"origin/content/",
+    view_name="browse-origin-content",
 )
 def origin_content_browse(request):
     """
@@ -101,7 +103,8 @@ def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None)
 
 
 @browse_route(
-    r"origin/log/", view_name="browse-origin-log",
+    r"origin/log/",
+    view_name="browse-origin-log",
 )
 def origin_log_browse(request):
     """
@@ -132,11 +135,15 @@ def origin_log_browse_legacy(request, origin_url, timestamp=None):
     :http:get:`/browse/origin/(origin_url)/visit/(timestamp)/log/`
 
     """
-    return redirect_to_new_route(request, "browse-snapshot-log",)
+    return redirect_to_new_route(
+        request,
+        "browse-snapshot-log",
+    )
 
 
 @browse_route(
-    r"origin/branches/", view_name="browse-origin-branches",
+    r"origin/branches/",
+    view_name="browse-origin-branches",
 )
 def origin_branches_browse(request):
     """
@@ -172,7 +179,8 @@ def origin_branches_browse_legacy(request, origin_url, timestamp=None):
 
 
 @browse_route(
-    r"origin/releases/", view_name="browse-origin-releases",
+    r"origin/releases/",
+    view_name="browse-origin-releases",
 )
 def origin_releases_browse(request):
     """
@@ -228,7 +236,10 @@ def _origin_visits_browse(request, origin_url):
 
         snapshot = visit["snapshot"] if visit["snapshot"] else ""
 
-        visit["url"] = reverse("browse-origin-directory", query_params=query_params,)
+        visit["url"] = reverse(
+            "browse-origin-directory",
+            query_params=query_params,
+        )
         if not snapshot:
             visit["snapshot"] = ""
         visit["date"] = parse_iso8601_date_to_utc(visit["date"]).timestamp()
@@ -280,7 +291,10 @@ def origin_browse(request):
     """Django view that redirects to the display of the latest archived
     snapshot for a given software origin.
     """
-    last_snapshot_url = reverse("browse-origin-directory", query_params=request.GET,)
+    last_snapshot_url = reverse(
+        "browse-origin-directory",
+        query_params=request.GET,
+    )
     return redirect(last_snapshot_url)
 
 

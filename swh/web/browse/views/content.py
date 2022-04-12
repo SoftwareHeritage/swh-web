@@ -338,7 +338,10 @@ def content_display(request, query_string=None):
 
     content_checksums = content_data.get("checksums", {})
 
-    content_url = reverse("browse-content", url_args={"query_string": query_string},)
+    content_url = reverse(
+        "browse-content",
+        url_args={"query_string": query_string},
+    )
 
     content_raw_url = reverse(
         "browse-content-raw",
@@ -405,7 +408,9 @@ def content_display(request, query_string=None):
             )
 
     swhids_info = get_swhids_info(
-        swh_objects, snapshot_context, extra_context=content_metadata,
+        swh_objects,
+        snapshot_context,
+        extra_context=content_metadata,
     )
 
     heading = "Content - %s" % content_checksums.get("sha1_git")

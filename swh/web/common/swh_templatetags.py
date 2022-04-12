@@ -110,12 +110,12 @@ def mul(value, arg):
 def key_value(dict, key):
     """Django template filter to get a value in a dictionary.
 
-        Args:
-            dict (dict): a dictionary
-            key (str): the key to lookup value
+    Args:
+        dict (dict): a dictionary
+        key (str): the key to lookup value
 
-        Returns:
-            The requested value in the dictionary
+    Returns:
+        The requested value in the dictionary
     """
     return dict[key]
 
@@ -139,11 +139,11 @@ def visit_type_savable(visit_type: str) -> bool:
 def split(value, arg):
     """Django template filter to split a string.
 
-        Args:
-            value (str): the string to split
-            arg (str): the split separator
+    Args:
+        value (str): the string to split
+        arg (str): the split separator
 
-        Returns:
-            list: the split string parts
+    Returns:
+        list: the split string parts
     """
     return value.split(arg)

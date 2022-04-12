@@ -314,7 +314,10 @@ class APIDocException(Exception):
 
 
 def api_doc(
-    route: str, noargs: bool = False, tags: List[str] = [], api_version: str = "1",
+    route: str,
+    noargs: bool = False,
+    tags: List[str] = [],
+    api_version: str = "1",
 ):
     """
     Decorator for an API endpoint implementation used to generate a dedicated

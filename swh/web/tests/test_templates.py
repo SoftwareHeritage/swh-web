@@ -41,7 +41,10 @@ def test_layout_with_staging_ribbon(client):
 def test_layout_with_development_ribbon(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(
-        client, url, status_code=200, server_name="localhost",
+        client,
+        url,
+        status_code=200,
+        server_name="localhost",
     )
     assert_contains(resp, "swh-corner-ribbon")
     assert_contains(resp, f"Development<br/>v{swh_web_version.split('+')[0]}")

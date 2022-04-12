@@ -74,7 +74,10 @@ def test_sub_directory_view_origin_context(
     parentdir = Directory(
         entries=(
             DirectoryEntry(
-                name=b"baz", type="dir", target=subdir.id, perms=DentryPerms.directory,
+                name=b"baz",
+                type="dir",
+                target=subdir.id,
+                perms=DentryPerms.directory,
             ),
         )
     )
@@ -95,10 +98,12 @@ def test_sub_directory_view_origin_context(
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target="refs/head/master".encode(), target_type=TargetType.ALIAS,
+                target="refs/head/master".encode(),
+                target_type=TargetType.ALIAS,
             ),
             b"refs/head/master": SnapshotBranch(
-                target=revision.id, target_type=TargetType.REVISION,
+                target=revision.id,
+                target_type=TargetType.REVISION,
             ),
         }
     )
@@ -251,7 +256,11 @@ def test_directory_origin_snapshot_branch_browse(
     assert_contains(resp, rev_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
+        ObjectType.SNAPSHOT,
+        snapshot["id"],
+        metadata={
+            "origin": origin_url,
+        },
     )
     assert_contains(resp, snp_swhid)
 
@@ -327,7 +336,11 @@ def test_drectory_origin_snapshot_release_browse(
     assert_contains(resp, rel_swhid)
 
     snp_swhid = gen_swhid(
-        ObjectType.SNAPSHOT, snapshot["id"], metadata={"origin": origin_url,},
+        ObjectType.SNAPSHOT,
+        snapshot["id"],
+        metadata={
+            "origin": origin_url,
+        },
     )
     assert_contains(resp, snp_swhid)
 
@@ -419,7 +432,9 @@ def _directory_view_checks(
     )
 
     root_dir_url = reverse(
-        "browse-directory", url_args=url_args, query_params=query_params,
+        "browse-directory",
+        url_args=url_args,
+        query_params=query_params,
     )
 
     resp = check_html_get_response(
@@ -427,7 +442,8 @@ def _directory_view_checks(
     )
 
     assert_contains(
-        resp, '<a href="' + root_dir_url + '">' + root_directory_sha1[:7] + "</a>",
+        resp,
+        '<a href="' + root_dir_url + '">' + root_directory_sha1[:7] + "</a>",
     )
     assert_contains(resp, '<td class="swh-directory">', count=len(dirs))
     assert_contains(resp, '<td class="swh-content">', count=len(files))

@@ -270,9 +270,7 @@ def _get_save_origin_requests(
     visit_status,
     request_date: Optional[datetime] = None,
 ):
-    """Wrapper around the get_origin_save_origin_request call.
-
-    """
+    """Wrapper around the get_origin_save_origin_request call."""
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -312,9 +310,7 @@ def _get_save_origin_requests(
 
 @pytest.mark.parametrize("visit_date", [None, "some-date"])
 def test_from_save_origin_request_to_save_request_info_dict(visit_date):
-    """Ensure save request to json serializable dict is fine
-
-    """
+    """Ensure save request to json serializable dict is fine"""
     request_date = datetime.now(tz=timezone.utc)
     _visit_date = request_date + timedelta(minutes=5) if visit_date else None
     request_date = datetime.now(tz=timezone.utc)
@@ -371,7 +367,10 @@ def test_origin_exists_404(requests_mock):
 
     actual_result = origin_exists(url_ko)
     assert actual_result == OriginExistenceCheckInfo(
-        origin_url=url_ko, exists=False, last_modified=None, content_length=None,
+        origin_url=url_ko,
+        exists=False,
+        last_modified=None,
+        content_length=None,
     )
 
 
@@ -379,12 +378,16 @@ def test_origin_exists_200_no_data(requests_mock):
     """Existing origin should be reported as such (no extra information)"""
     url = "http://example.org/real-url"
     requests_mock.head(
-        url, status_code=200,
+        url,
+        status_code=200,
     )
 
     actual_result = origin_exists(url)
     assert actual_result == OriginExistenceCheckInfo(
-        origin_url=url, exists=True, last_modified=None, content_length=None,
+        origin_url=url,
+        exists=True,
+        last_modified=None,
+        content_length=None,
     )
 
 
@@ -421,7 +424,11 @@ def test_origin_exists_internet_archive(requests_mock):
         "http://www.cs.unm.edu/~mccune/old-ftp/eqp-09e.tar.gz"
     )
     requests_mock.head(
-        url, status_code=302, headers={"Location": redirect_url,},
+        url,
+        status_code=302,
+        headers={
+            "Location": redirect_url,
+        },
     )
     requests_mock.head(
         redirect_url,
@@ -447,26 +454,40 @@ def test_origin_exists_200_with_data_unexpected_date_format(requests_mock):
     # this is parsable but not as expected
     unexpected_format_date = "Sun, 21 Aug 2021 16:26:32"
     requests_mock.head(
-        url, status_code=200, headers={"last-modified": unexpected_format_date,},
+        url,
+        status_code=200,
+        headers={
+            "last-modified": unexpected_format_date,
+        },
     )
 
     actual_result = origin_exists(url)
     # so the resulting date is None
     assert actual_result == OriginExistenceCheckInfo(
-        origin_url=url, exists=True, content_length=None, last_modified=None,
+        origin_url=url,
+        exists=True,
+        content_length=None,
+        last_modified=None,
     )
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("visit_status", [VISIT_STATUS_CREATED, VISIT_STATUS_ONGOING,])
+@pytest.mark.parametrize(
+    "visit_status",
+    [
+        VISIT_STATUS_CREATED,
+        VISIT_STATUS_ONGOING,
+    ],
+)
 def test_get_save_origin_requests_no_visit_date_found(
     mocker, swh_scheduler, visit_status
 ):
-    """Uneventful visits with failed visit status are marked as failed
-
-    """
+    """Uneventful visits with failed visit status are marked as failed"""
     sors = _get_save_origin_requests(
-        mocker, swh_scheduler, load_status="scheduled", visit_status=visit_status,
+        mocker,
+        swh_scheduler,
+        load_status="scheduled",
+        visit_status=visit_status,
     )
     # check no visit date has been found
     assert len(sors) == 1
@@ -476,13 +497,17 @@ def test_get_save_origin_requests_no_visit_date_found(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("visit_status", ["not_found", "failed",])
+@pytest.mark.parametrize(
+    "visit_status",
+    [
+        "not_found",
+        "failed",
+    ],
+)
 def test_get_save_origin_requests_no_failed_status_override(
     mocker, swh_scheduler, visit_status
 ):
-    """Uneventful visits with failed statuses (failed, not found) are marked as failed
-
-    """
+    """Uneventful visits with failed statuses (failed, not found) are marked as failed"""
     sors = _get_save_origin_requests(
         mocker, swh_scheduler, load_status="uneventful", visit_status=visit_status
     )
@@ -526,15 +551,22 @@ def test_get_visit_info_for_save_request_succeeded(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("load_status", ["eventful", "uneventful",])
+@pytest.mark.parametrize(
+    "load_status",
+    [
+        "eventful",
+        "uneventful",
+    ],
+)
 def test_get_visit_info_incomplete_visit_still_successful(
     mocker, swh_scheduler, load_status
 ):
-    """Incomplete visit information, yet the task is updated partially
-
-    """
+    """Incomplete visit information, yet the task is updated partially"""
     sors = _get_save_origin_requests(
-        mocker, swh_scheduler, load_status=load_status, visit_status=None,
+        mocker,
+        swh_scheduler,
+        load_status=load_status,
+        visit_status=None,
     )
     assert len(sors) == 1
 
@@ -556,8 +588,7 @@ def test_get_visit_info_incomplete_visit_still_successful(
 def test_refresh_in_progress_save_request_statuses(
     mocker, swh_scheduler, api_client, archive_data
 ):
-    """Refresh a pending save origins requests and update if the status changes
-    """
+    """Refresh a pending save origins requests and update if the status changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
     visit_started_date = date_now - timedelta(minutes=1)
@@ -661,9 +692,7 @@ def test_refresh_in_progress_save_request_statuses(
 
 @pytest.mark.django_db
 def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archive_data):
-    """Refresh filters save origins requests and update if changes
-
-    """
+    """Refresh filters save origins requests and update if changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
     # returned visit status

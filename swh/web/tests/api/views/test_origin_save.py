@@ -153,7 +153,10 @@ def check_save_request_status(
 def test_save_request_rejected(api_client, mocker, swh_scheduler):
     origin_url = "https://github.com/user/illegal_repo"
     check_created_save_request_status(
-        api_client, mocker, origin_url, expected_request_status=SAVE_REQUEST_REJECTED,
+        api_client,
+        mocker,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_REJECTED,
     )
     check_save_request_status(
         api_client,
@@ -436,7 +439,10 @@ def test_create_save_request_pending_review_anonymous_user(
 
 
 def test_create_save_request_archives_with_ambassador_user(
-    api_client, keycloak_oidc, requests_mock, swh_scheduler,
+    api_client,
+    keycloak_oidc,
+    requests_mock,
+    swh_scheduler,
 ):
     swh_scheduler.add_load_archive_task_type()
 
@@ -454,12 +460,18 @@ def test_create_save_request_archives_with_ambassador_user(
     requests_mock.head(
         artifact_url,
         status_code=200,
-        headers={"content-length": content_length, "last-modified": last_modified,},
+        headers={
+            "content-length": content_length,
+            "last-modified": last_modified,
+        },
     )
 
     url = reverse(
         "api-1-save-origin",
-        url_args={"visit_type": "archives", "origin_url": originUrl,},
+        url_args={
+            "visit_type": "archives",
+            "origin_url": originUrl,
+        },
     )
 
     response = check_api_post_response(
@@ -468,7 +480,10 @@ def test_create_save_request_archives_with_ambassador_user(
         status_code=200,
         data={
             "archives_data": [
-                {"artifact_url": artifact_url, "artifact_version": artifact_version,}
+                {
+                    "artifact_url": artifact_url,
+                    "artifact_version": artifact_version,
+                }
             ]
         },
     )
@@ -492,10 +507,18 @@ def test_create_save_request_archives_missing_artifacts_data(
 
     url = reverse(
         "api-1-save-origin",
-        url_args={"visit_type": "archives", "origin_url": originUrl,},
+        url_args={
+            "visit_type": "archives",
+            "origin_url": originUrl,
+        },
     )
 
-    response = check_api_post_response(api_client, url, status_code=400, data={},)
+    response = check_api_post_response(
+        api_client,
+        url,
+        status_code=400,
+        data={},
+    )
     assert "Artifacts data are missing" in response.data["reason"]
 
     response = check_api_post_response(
@@ -529,7 +552,8 @@ def test_create_save_request_archives_accepted_ambassador_user(
 def test_create_save_request_anonymous_user_no_user_id(api_client, swh_scheduler):
     origin_url = "https://some.git.hosters/user/repo"
     url = reverse(
-        "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url},
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
     )
 
     check_api_post_responses(api_client, url, status_code=200)
@@ -547,7 +571,8 @@ def test_create_save_request_authenticated_user_id(
 
     origin_url = "https://some.git.hosters/user/repo2"
     url = reverse(
-        "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url},
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
     )
 
     response = check_api_post_response(api_client, url, status_code=200)
@@ -565,7 +590,8 @@ def test_create_pending_save_request_multiple_authenticated_users(
     origin_url = "https://some.git.hosters/user/repo3"
 
     url = reverse(
-        "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url},
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
     )
 
     api_client.force_login(regular_user)

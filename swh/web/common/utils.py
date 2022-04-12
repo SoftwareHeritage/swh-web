@@ -9,7 +9,6 @@ import os
 import re
 from typing import Any, Callable, Dict, List, Optional
 import urllib.parse
-from xml.etree import ElementTree
 
 from bs4 import BeautifulSoup
 from docutils.core import publish_parts
@@ -251,8 +250,7 @@ def get_client_ip(request):
 
 
 def is_swh_web_development(request: HttpRequest) -> bool:
-    """Indicate if we are running a development version of swh-web.
-    """
+    """Indicate if we are running a development version of swh-web."""
     site_base_url = request.build_absolute_uri("/")
     return any(
         host in site_base_url for host in ("localhost", "127.0.0.1", "testserver")
@@ -260,8 +258,7 @@ def is_swh_web_development(request: HttpRequest) -> bool:
 
 
 def is_swh_web_staging(request: HttpRequest) -> bool:
-    """Indicate if we are running a staging version of swh-web.
-    """
+    """Indicate if we are running a staging version of swh-web."""
     config = get_config()
     site_base_url = request.build_absolute_uri("/")
     return any(
@@ -270,8 +267,7 @@ def is_swh_web_staging(request: HttpRequest) -> bool:
 
 
 def is_swh_web_production(request: HttpRequest) -> bool:
-    """Indicate if we are running the public production version of swh-web.
-    """
+    """Indicate if we are running the public production version of swh-web."""
     return SWH_WEB_SERVER_NAME in request.build_absolute_uri("/")
 
 
@@ -462,10 +458,10 @@ def _deposits_list_url(
 
 
 def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Return the list of software deposits using swh-deposit API
-    """
+    """Return the list of software deposits using swh-deposit API"""
     config = get_config()["deposit"]
-    deposits_list_base_url = config["private_api_url"] + "deposits"
+    private_api_url = config["private_api_url"].rstrip("/") + "/"
+    deposits_list_base_url = private_api_url + "deposits"
     deposits_list_auth = HTTPBasicAuth(
         config["private_api_user"], config["private_api_password"]
     )
@@ -484,19 +480,14 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
             deposits_list_base_url, page_size=nb_deposits, username=username
         )
         return requests.get(
-            deposits_list_url, auth=deposits_list_auth, timeout=30,
+            deposits_list_url,
+            auth=deposits_list_auth,
+            timeout=30,
         ).json()
 
     deposits_data = _get_deposits_data()
 
     return deposits_data["results"]
-
-
-@django_cache()
-def get_deposit_raw_metadata(deposit_id: int) -> Optional[str]:
-    config = get_config()["deposit"]
-    url = f"{config['private_api_url']}/{deposit_id}/meta"
-    return requests.get(url).json()["raw_metadata"]
 
 
 _origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours
@@ -521,73 +512,10 @@ def redirect_to_new_route(request, new_route, permanent=True):
     """
     request_path = resolve(request.path_info)
     args = {**request_path.kwargs, **request.GET.dict()}
-    return redirect(reverse(new_route, query_params=args), permanent=permanent,)
-
-
-NAMESPACES = {
-    "swh": "https://www.softwareheritage.org/schema/2018/deposit",
-    "schema": "http://schema.org/",
-}
-
-
-def parse_swh_metadata_provenance(raw_metadata: str) -> Optional[str]:
-    """Parse swh metadata-provenance out of the raw metadata deposit. If found, returns the
-    value, None otherwise.
-
-    .. code-block:: xml
-
-         <swh:deposit>
-           <swh:metadata-provenance>
-             <schema:url>https://example.org/metadata/url</schema:url>
-           </swh:metadata-provenance>
-         </swh:deposit>
-
-    Args:
-        raw_metadata: raw metadata out of deposits received
-
-    Returns:
-        Either the metadata provenance url if any or None otherwise
-
-    """
-    metadata = ElementTree.fromstring(raw_metadata)
-    url = metadata.findtext(
-        "swh:deposit/swh:metadata-provenance/schema:url", namespaces=NAMESPACES,
+    return redirect(
+        reverse(new_route, query_params=args),
+        permanent=permanent,
     )
-    return url or None
-
-
-def parse_swh_deposit_origin(raw_metadata: str) -> Optional[str]:
-    """Parses <swh:add_to_origin> and <swh:create_origin> from metadata document,
-    if any. They are mutually exclusive and tested as such in the deposit.
-
-    .. code-block:: xml
-
-       <swh:deposit>
-         <swh:create_origin>
-           <swh:origin url='https://example.org/repo/software123/'/>
-         </swh:reference>
-       </swh:deposit>
-
-    .. code-block:: xml
-
-       <swh:deposit>
-         <swh:add_to_origin>
-           <swh:origin url='https://example.org/repo/software123/'/>
-         </swh:add_to_origin>
-       </swh:deposit>
-
-    Returns:
-        The one not null if any, None otherwise
-
-    """
-    metadata = ElementTree.fromstring(raw_metadata)
-    for origin_tag in ["create_origin", "add_to_origin"]:
-        elt = metadata.find(
-            f"swh:deposit/swh:{origin_tag}/swh:origin[@url]", namespaces=NAMESPACES
-        )
-        if elt is not None:
-            return elt.attrib["url"]
-    return None
 
 
 def has_add_forge_now_permission(user) -> bool:

@@ -187,7 +187,11 @@ urlpatterns = (
             oidc_revoke_bearer_tokens,
             name="oidc-revoke-bearer-tokens",
         ),
-        url(r"^oidc/profile/$", _oidc_profile_view, name="oidc-profile",),
+        url(
+            r"^oidc/profile/$",
+            _oidc_profile_view,
+            name="oidc-profile",
+        ),
     ]
     + mailmap_urlpatterns
 )

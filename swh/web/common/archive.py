@@ -2,6 +2,7 @@
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
 from collections import defaultdict
 import datetime
 import itertools
@@ -11,11 +12,12 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 from urllib.parse import urlparse
 
 from swh.model import hashutil
-from swh.model.model import OriginVisit, Revision
+from swh.model.model import Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
+from swh.storage.interface import OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.common import converters, query
@@ -34,7 +36,7 @@ idx_storage = config.indexer_storage()
 counters = config.counters()
 
 
-MAX_LIMIT = 50  # Top limit the users can ask for
+MAX_LIMIT = 1000  # Top limit the users can ask for
 
 
 def _first_element(lst):
@@ -397,7 +399,10 @@ def search_origin_metadata(
         search
         and config.get_config()["search_config"]["metadata_backend"] == "swh-search"
     ):
-        page_result = search.origin_search(metadata_pattern=fulltext, limit=limit,)
+        page_result = search.origin_search(
+            metadata_pattern=fulltext,
+            limit=limit,
+        )
         matches = idx_storage.origin_intrinsic_metadata_get(
             [r["url"] for r in page_result.results]
         )
@@ -965,7 +970,7 @@ def stat_counters():
 
 def _lookup_origin_visits(
     origin_url: str, last_visit: Optional[int] = None, limit: int = 10
-) -> Iterator[OriginVisit]:
+) -> Iterator[OriginVisitWithStatuses]:
     """Yields the origin origins' visits.
 
     Args:
@@ -983,7 +988,7 @@ def _lookup_origin_visits(
         page_token = str(last_visit)
     else:
         page_token = None
-    visit_page = storage.origin_visit_get(
+    visit_page = storage.origin_visit_get_with_statuses(
         origin_url, page_token=page_token, limit=limit
     )
     yield from visit_page.results
@@ -1002,10 +1007,7 @@ def lookup_origin_visits(
 
     """
     for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
-        visit_status = storage.origin_visit_status_get_latest(origin, visit.visit)
-        yield converters.from_origin_visit(
-            {**visit_status.to_dict(), "type": visit.type}
-        )
+        yield converters.from_origin_visit(visit.statuses[-1].to_dict())
 
 
 def lookup_origin_visit_latest(
@@ -1086,7 +1088,9 @@ def origin_visit_find_by_date(
         # when visit is anterior to the provided date, trying to find another one most
         # recent
         visits = storage.origin_visit_get(
-            origin_url, page_token=str(visit.visit), limit=1,
+            origin_url,
+            page_token=str(visit.visit),
+            limit=1,
         ).results
         visit = visits[0] if visits else None
     if not visit:
@@ -1292,20 +1296,17 @@ def _vault_request(vault_fn, bundle_type: str, swhid: CoreSWHID, **kwargs):
 
 
 def vault_cook(bundle_type: str, swhid: CoreSWHID, email=None):
-    """Cook a vault bundle.
-    """
+    """Cook a vault bundle."""
     return _vault_request(vault.cook, bundle_type, swhid, email=email)
 
 
 def vault_fetch(bundle_type: str, swhid: CoreSWHID):
-    """Fetch a vault bundle.
-    """
+    """Fetch a vault bundle."""
     return _vault_request(vault.fetch, bundle_type, swhid)
 
 
 def vault_progress(bundle_type: str, swhid: CoreSWHID):
-    """Get the current progress of a vault bundle.
-    """
+    """Get the current progress of a vault bundle."""
     return _vault_request(vault.progress, bundle_type, swhid)
 
 

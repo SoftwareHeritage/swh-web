@@ -192,7 +192,8 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": str(swhid)},
+            f"api-1-vault-fetch-{bundle_type}",
+            url_args={"swhid": str(swhid)},
         )
         stub_cook = {
             "type": obj_type,
@@ -262,7 +263,8 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
         rv = check_http_get_response(api_client, fetch_url, status_code=302)
 
         redirect_url = reverse(
-            f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+            f"api-1-vault-fetch-{obj_type}",
+            url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
         assert rv["location"] == redirect_url
@@ -282,7 +284,8 @@ def test_api_vault_cook_notfound_legacy(
     ):
 
         url = reverse(
-            f"api-1-vault-cook-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+            f"api-1-vault-cook-{obj_type}",
+            url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
         swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
@@ -309,13 +312,15 @@ def test_api_vault_cook_notfound_legacy(
         mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{obj_type}", url_args={f"{obj_type[:3]}_id": obj_id},
+            f"api-1-vault-fetch-{obj_type}",
+            url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
         # Redirected to the current 'fetch' url
         rv = check_http_get_response(api_client, fetch_url, status_code=302)
         redirect_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}", url_args={"swhid": str(swhid)},
+            f"api-1-vault-fetch-{bundle_type}",
+            url_args={"swhid": str(swhid)},
         )
         assert rv["location"] == redirect_url
 

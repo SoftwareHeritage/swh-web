@@ -32,13 +32,21 @@ class Migration(migrations.Migration):
                 ("creation_date", models.DateTimeField(auto_now_add=True)),
                 ("offline_token", models.BinaryField()),
             ],
-            options={"db_table": "oidc_user_offline_tokens",},
+            options={
+                "db_table": "oidc_user_offline_tokens",
+            },
         ),
         migrations.CreateModel(
             name="OIDCUser",
             fields=[],
-            options={"proxy": True, "indexes": [], "constraints": [],},
+            options={
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
+            },
             bases=("auth.user",),
-            managers=[("objects", django.contrib.auth.models.UserManager()),],
+            managers=[
+                ("objects", django.contrib.auth.models.UserManager()),
+            ],
         ),
     ]

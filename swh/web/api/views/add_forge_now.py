@@ -29,13 +29,14 @@ from swh.web.common.utils import has_add_forge_now_permission, reverse
 
 
 def _block_while_testing():
-    """Replaced by tests to check concurrency behavior
-    """
+    """Replaced by tests to check concurrency behavior"""
     pass
 
 
 class AddForgeNowRequestForm(ModelForm):
-    forge_contact_comment = CharField(required=False,)
+    forge_contact_comment = CharField(
+        required=False,
+    )
 
     class Meta:
         model = AddForgeRequest
@@ -50,7 +51,10 @@ class AddForgeNowRequestForm(ModelForm):
 
 
 class AddForgeNowRequestHistoryForm(ModelForm):
-    new_status = CharField(max_length=200, required=False,)
+    new_status = CharField(
+        max_length=200,
+        required=False,
+    )
 
     class Meta:
         model = AddForgeNowRequestHistory
@@ -64,8 +68,7 @@ class AddForgeNowRequestSerializer(serializers.ModelSerializer):
 
 
 class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
-    """Serializes AddForgeRequest without private fields.
-    """
+    """Serializes AddForgeRequest without private fields."""
 
     class Meta:
         model = AddForgeRequest
@@ -85,7 +88,9 @@ class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
 
 
 @api_route(
-    r"/add-forge/request/create/", "api-1-add-forge-request-create", methods=["POST"],
+    r"/add-forge/request/create/",
+    "api-1-add-forge-request-create",
+    methods=["POST"],
 )
 @api_doc("/add-forge/request/create")
 @format_docstring()
@@ -251,7 +256,9 @@ def api_add_forge_request_update(
 
 
 @api_route(
-    r"/add-forge/request/list/", "api-1-add-forge-request-list", methods=["GET"],
+    r"/add-forge/request/list/",
+    "api-1-add-forge-request-list",
+    methods=["GET"],
 )
 @api_doc("/add-forge/request/list")
 @format_docstring()
@@ -299,7 +306,10 @@ def api_add_forge_request_list(request: Request):
     if page.has_previous():
         response["headers"]["link-prev"] = reverse(
             "api-1-add-forge-request-list",
-            query_params={"page": page.previous_page_number(), "per_page": per_page,},
+            query_params={
+                "page": page.previous_page_number(),
+                "per_page": per_page,
+            },
             request=request,
         )
 

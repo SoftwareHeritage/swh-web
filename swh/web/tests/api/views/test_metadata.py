@@ -151,13 +151,19 @@ _swhid = "swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307"
         pytest.param(
             400,
             {"target": _swhid},
-            {"authority": "forge http://example.org", "after": "yesterday",},
+            {
+                "authority": "forge http://example.org",
+                "after": "yesterday",
+            },
             id="invalid 'after' format",
         ),
         pytest.param(
             400,
             {"target": _swhid},
-            {"authority": "forge http://example.org", "limit": "abc",},
+            {
+                "authority": "forge http://example.org",
+                "limit": "abc",
+            },
             id="invalid 'limit'",
         ),
     ],

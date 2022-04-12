@@ -323,7 +323,8 @@ def _check_visit_update_status(
 
 
 def _compute_task_loading_status(
-    task: Optional[Dict[str, Any]] = None, task_run: Optional[Dict[str, Any]] = None,
+    task: Optional[Dict[str, Any]] = None,
+    task_run: Optional[Dict[str, Any]] = None,
 ) -> Optional[str]:
     loading_task_status: Optional[str] = None
     # First determine the loading task status out of task information
@@ -612,7 +613,9 @@ def update_save_origin_requests_from_queryset(
             task_runs = {}
         for sor in requests_queryset:
             sr_dict = _update_save_request_info(
-                sor, tasks.get(sor.loading_task_id), task_runs.get(sor.loading_task_id),
+                sor,
+                tasks.get(sor.loading_task_id),
+                task_runs.get(sor.loading_task_id),
             )
             save_requests.append(sr_dict)
     return save_requests
@@ -907,7 +910,8 @@ def compute_save_requests_metrics() -> None:
     for sor in SaveOriginRequest.objects.all():
         if sor.status == SAVE_REQUEST_ACCEPTED:
             _accepted_save_requests_gauge.labels(
-                load_task_status=sor.loading_task_status, visit_type=sor.visit_type,
+                load_task_status=sor.loading_task_status,
+                visit_type=sor.visit_type,
             ).inc()
 
         _submitted_save_requests_gauge.labels(
@@ -921,5 +925,6 @@ def compute_save_requests_metrics() -> None:
         ):
             delay = sor.visit_date.timestamp() - sor.request_date.timestamp()
             _accepted_save_requests_delay_gauge.labels(
-                load_task_status=sor.loading_task_status, visit_type=sor.visit_type,
+                load_task_status=sor.loading_task_status,
+                visit_type=sor.visit_type,
             ).inc(delay)
