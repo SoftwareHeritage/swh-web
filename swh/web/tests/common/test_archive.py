@@ -179,7 +179,11 @@ def test_lookup_origin_visits(subtest, new_origin, visit_dates):
 
         archive_data.origin_visit_add(
             [
-                OriginVisit(origin=new_origin.url, date=ts, type="git",)
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=ts,
+                    type="git",
+                )
                 for ts in visit_dates
             ]
         )
@@ -199,7 +203,14 @@ def test_lookup_origin_visits(subtest, new_origin, visit_dates):
 def test_lookup_origin_visit(archive_data, new_origin, visit_dates):
     archive_data.origin_add([new_origin])
     visits = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=ts, type="git",) for ts in visit_dates]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=ts,
+                type="git",
+            )
+            for ts in visit_dates
+        ]
     )
 
     visit = random.choice(visits).visit
@@ -237,7 +248,11 @@ def test_origin_visit_find_by_date(archive_data, new_origin):
     second_visit_date = pivot_date + datetime.timedelta(hours=2)
     visits = archive_data.origin_visit_add(
         [
-            OriginVisit(origin=new_origin.url, date=visit_date, type="git",)
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_date,
+                type="git",
+            )
             for visit_date in [first_visit_date, second_visit_date]
         ]
     )
@@ -789,7 +804,11 @@ def test_lookup_revision_through_with_revision_by(archive_data, origin):
     branch_name = random.choice(list(branches.keys()))
 
     assert archive.lookup_revision_through(
-        {"origin_url": origin["url"], "branch_name": branch_name, "ts": None,}
+        {
+            "origin_url": origin["url"],
+            "branch_name": branch_name,
+            "ts": None,
+        }
     ) == archive.lookup_revision_by(origin["url"], branch_name, None)
 
 
@@ -798,7 +817,10 @@ def test_lookup_revision_through_with_context(ancestor_revisions):
     sha1_git_root = ancestor_revisions["sha1_git_root"]
 
     assert archive.lookup_revision_through(
-        {"sha1_git_root": sha1_git_root, "sha1_git": sha1_git,}
+        {
+            "sha1_git_root": sha1_git_root,
+            "sha1_git": sha1_git,
+        }
     ) == archive.lookup_revision_with_context(sha1_git_root, sha1_git)
 
 
@@ -1014,7 +1036,8 @@ def test_search_origin_use_ql(mocker, origin):
 
     mock_archive_search = mocker.patch("swh.web.common.archive.search")
     mock_archive_search.origin_search.return_value = PagedResult(
-        results=ORIGIN, next_page_token=None,
+        results=ORIGIN,
+        next_page_token=None,
     )
 
     query = f"origin = '{origin['url']}'"
@@ -1048,16 +1071,20 @@ def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     snapshot = Snapshot(
         branches={
             b"refs/heads/master": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/heads/incoming": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/pull/1": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/pull/2": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
         },
     )
@@ -1090,7 +1117,8 @@ def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     snapshot = Snapshot(
         branches={
             b"refs/heads/master": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
         },
     )
@@ -1101,7 +1129,8 @@ def test_lookup_snapshot_empty_branch_list(archive_data, revision):
     # in-memory implementation (used in tests) returns a data structure;
     # hence the inconsistency
     branches = archive.lookup_snapshot(
-        hash_to_hex(snapshot.id), branch_name_include_substring="non-existing",
+        hash_to_hex(snapshot.id),
+        branch_name_include_substring="non-existing",
     )["branches"]
     assert not branches
 
@@ -1111,19 +1140,24 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
     snapshot = Snapshot(
         branches={
             b"refs/heads/master": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/heads/incoming": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/pull/1": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             b"refs/pull/2": SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
             "non_ascii_name_é".encode(): SnapshotBranch(
-                target=rev_id, target_type=TargetType.REVISION,
+                target=rev_id,
+                target_type=TargetType.REVISION,
             ),
         },
     )
@@ -1158,16 +1192,20 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
     branches = {}
     for i in range(nb_branches_by_target_type):
         branches[f"branch/directory/bar{i}".encode()] = SnapshotBranch(
-            target=hash_to_bytes(directory), target_type=TargetType.DIRECTORY,
+            target=hash_to_bytes(directory),
+            target_type=TargetType.DIRECTORY,
         )
         branches[f"branch/revision/bar{i}".encode()] = SnapshotBranch(
-            target=hash_to_bytes(revision), target_type=TargetType.REVISION,
+            target=hash_to_bytes(revision),
+            target_type=TargetType.REVISION,
         )
         branches[f"branch/directory/{pattern}{i}".encode()] = SnapshotBranch(
-            target=hash_to_bytes(directory), target_type=TargetType.DIRECTORY,
+            target=hash_to_bytes(directory),
+            target_type=TargetType.DIRECTORY,
         )
         branches[f"branch/revision/{pattern}{i}".encode()] = SnapshotBranch(
-            target=hash_to_bytes(revision), target_type=TargetType.REVISION,
+            target=hash_to_bytes(revision),
+            target_type=TargetType.REVISION,
         )
 
     snapshot = Snapshot(branches=branches)

@@ -29,23 +29,41 @@ DEFAULT_CONFIG = {
     "allowed_hosts": ("list", []),
     "storage": (
         "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5002/", "timeout": 10,},
+        {
+            "cls": "remote",
+            "url": "http://127.0.0.1:5002/",
+            "timeout": 10,
+        },
     ),
     "indexer_storage": (
         "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5007/", "timeout": 1,},
+        {
+            "cls": "remote",
+            "url": "http://127.0.0.1:5007/",
+            "timeout": 1,
+        },
     ),
     "counters": (
         "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5011/", "timeout": 1,},
+        {
+            "cls": "remote",
+            "url": "http://127.0.0.1:5011/",
+            "timeout": 1,
+        },
     ),
     "search": (
         "dict",
-        {"cls": "remote", "url": "http://127.0.0.1:5010/", "timeout": 10,},
+        {
+            "cls": "remote",
+            "url": "http://127.0.0.1:5010/",
+            "timeout": 10,
+        },
     ),
     "search_config": (
         "dict",
-        {"metadata_backend": "swh-indexer-storage",},  # or "swh-search"
+        {
+            "metadata_backend": "swh-indexer-storage",
+        },  # or "swh-search"
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -85,7 +103,15 @@ DEFAULT_CONFIG = {
             },
         },
     ),
-    "vault": ("dict", {"cls": "remote", "args": {"url": "http://127.0.0.1:5005/",}}),
+    "vault": (
+        "dict",
+        {
+            "cls": "remote",
+            "args": {
+                "url": "http://127.0.0.1:5005/",
+            },
+        },
+    ),
     "scheduler": ("dict", {"cls": "remote", "url": "http://127.0.0.1:5008/"}),
     "development_db": ("string", os.path.join(SETTINGS_DIR, "db.sqlite3")),
     "test_db": ("dict", {"name": "swh-web-test"}),
@@ -136,14 +162,14 @@ swhweb_config: Dict[str, Any] = {}
 def get_config(config_file="web/web"):
     """Read the configuration file `config_file`.
 
-       If an environment variable SWH_CONFIG_FILENAME is defined, this
-       takes precedence over the config_file parameter.
+    If an environment variable SWH_CONFIG_FILENAME is defined, this
+    takes precedence over the config_file parameter.
 
-       In any case, update the app with parameters (secret_key, conf)
-       and return the parsed configuration as a dict.
+    In any case, update the app with parameters (secret_key, conf)
+    and return the parsed configuration as a dict.
 
-       If no configuration file is provided, return a default
-       configuration.
+    If no configuration file is provided, return a default
+    configuration.
 
     """
 
@@ -169,44 +195,32 @@ def get_config(config_file="web/web"):
 
 
 def search():
-    """Return the current application's search.
-
-    """
+    """Return the current application's search."""
     return get_config()["search"]
 
 
 def storage():
-    """Return the current application's storage.
-
-    """
+    """Return the current application's storage."""
     return get_config()["storage"]
 
 
 def vault():
-    """Return the current application's vault.
-
-    """
+    """Return the current application's vault."""
     return get_config()["vault"]
 
 
 def indexer_storage():
-    """Return the current application's indexer storage.
-
-    """
+    """Return the current application's indexer storage."""
     return get_config()["indexer_storage"]
 
 
 def scheduler():
-    """Return the current application's scheduler.
-
-    """
+    """Return the current application's scheduler."""
     return get_config()["scheduler"]
 
 
 def counters():
-    """Return the current application's counters.
-
-    """
+    """Return the current application's counters."""
     return get_config()["counters"]
 
 

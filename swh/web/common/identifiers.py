@@ -224,14 +224,14 @@ def resolve_swhid(
 def get_swhid(swhid: str) -> QualifiedSWHID:
     """Check if a SWHID is valid and return it parsed.
 
-        Args:
-            swhid: a SoftWare Heritage persistent IDentifier.
+    Args:
+        swhid: a SoftWare Heritage persistent IDentifier.
 
-        Raises:
-            BadInputExc: if the provided SWHID can not be parsed.
+    Raises:
+        BadInputExc: if the provided SWHID can not be parsed.
 
-        Return:
-            A parsed SWHID.
+    Return:
+        A parsed SWHID.
     """
     try:
         # ensure core part of SWHID is in lower case to avoid parsing error
@@ -242,7 +242,9 @@ def get_swhid(swhid: str) -> QualifiedSWHID:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
 
 
-def group_swhids(swhids: Iterable[QualifiedSWHID],) -> Dict[ObjectType, List[bytes]]:
+def group_swhids(
+    swhids: Iterable[QualifiedSWHID],
+) -> Dict[ObjectType, List[bytes]]:
     """
     Groups many SoftWare Heritage persistent IDentifiers into a
     dictionary depending on their type.

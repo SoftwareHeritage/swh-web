@@ -94,7 +94,10 @@ def test_add_forge_request_create_success_post(
     date_before = datetime.datetime.now(tz=datetime.timezone.utc)
 
     resp = check_api_post_response(
-        api_client, url, data=add_forge_data, status_code=201,
+        api_client,
+        url,
+        data=add_forge_data,
+        status_code=201,
     )
 
     date_after = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -160,10 +163,16 @@ def test_add_forge_request_create_duplicate(api_client, regular_user):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
     check_api_post_response(
-        api_client, url, data=ADD_FORGE_DATA_FORGE1, status_code=201,
+        api_client,
+        url,
+        data=ADD_FORGE_DATA_FORGE1,
+        status_code=201,
     )
     check_api_post_response(
-        api_client, url, data=ADD_FORGE_DATA_FORGE1, status_code=409,
+        api_client,
+        url,
+        data=ADD_FORGE_DATA_FORGE1,
+        status_code=409,
     )
 
     requests = Request.objects.all()
@@ -193,7 +202,12 @@ def test_add_forge_request_update_non_existent(api_client, add_forge_moderator):
 def create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE1):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
-    return check_api_post_response(api_client, url, data=data, status_code=201,)
+    return check_api_post_response(
+        api_client,
+        url,
+        data=data,
+        status_code=201,
+    )
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

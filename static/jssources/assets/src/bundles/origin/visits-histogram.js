@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -116,8 +116,8 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   // set y scale domain
   y.domain([0, yMax]);
 
-  // compute ticks values for the y axis
-  const step = 5;
+  // compute ticks values for the y axis (at most 8 ticks)
+  const step = Math.floor(yMax / 8) + 1;
   const yTickValues = [];
   for (let i = 0; i <= yMax / step; ++i) {
     yTickValues.push(i * step);
@@ -280,7 +280,15 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .call(
       d3.axisBottom(x)
         .ticks(d3.timeYear.every(1))
-        .tickFormat(d => d.getUTCFullYear())
+        .tickFormat(d => {
+          const year = d.getUTCFullYear();
+          if (year >= startYear) {
+            return year;
+          } else {
+            // filter out 2014 tick label
+            return '';
+          }
+        })
     );
 
   // shift tick labels in order to display them at the middle

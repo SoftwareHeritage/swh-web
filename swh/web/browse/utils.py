@@ -132,7 +132,9 @@ def re_encode_content(
 
 
 def request_content(
-    query_string, max_size=content_display_max_size, re_encode=True,
+    query_string,
+    max_size=content_display_max_size,
+    re_encode=True,
 ):
     """Function that retrieves a content from the archive.
 

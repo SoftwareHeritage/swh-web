@@ -10,8 +10,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelTable(name="request", table="add_forge_request",),
         migrations.AlterModelTable(
-            name="requesthistory", table="add_forge_request_history",
+            name="request",
+            table="add_forge_request",
+        ),
+        migrations.AlterModelTable(
+            name="requesthistory",
+            table="add_forge_request_history",
         ),
     ]

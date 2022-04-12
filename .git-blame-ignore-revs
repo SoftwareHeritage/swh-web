@@ -1,0 +1,8 @@
+# Apply black formatting to Python code and add pre-commit hook
+0503cce23f70d1cca279fd9f4794c1f5df63a325
+
+# test_origin_save: Fix black formatting
+00cc0c4daef20455144845214f52330063a211c3
+
+# python: Reformat code with black 22.3.0
+f9f5854c3af9fbaa164187c56ba544454041d26e

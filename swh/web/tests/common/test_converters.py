@@ -53,7 +53,11 @@ def test_from_swh():
         "q": {"extra-headers": [["a", b"intact"]]},
         "w": None,
         "r": {"p": "also intact", "q": "bar"},
-        "s": {"timestamp": 42, "offset": -420, "negative_utc": None,},
+        "s": {
+            "timestamp": 42,
+            "offset": -420,
+            "negative_utc": None,
+        },
         "s1": {
             "timestamp": {"seconds": 42, "microseconds": 0},
             "offset": -420,
@@ -353,8 +357,16 @@ def test_from_revision():
             "email": b"robot@softwareheritage.org",
         },
         "message": b"synthetic revision message",
-        "date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
-        "committer_date": {"timestamp": ts, "offset": 0, "negative_utc": False,},
+        "date": {
+            "timestamp": ts,
+            "offset": 0,
+            "negative_utc": False,
+        },
+        "committer_date": {
+            "timestamp": ts,
+            "offset": 0,
+            "negative_utc": False,
+        },
         "synthetic": True,
         "type": "tar",
         "parents": [

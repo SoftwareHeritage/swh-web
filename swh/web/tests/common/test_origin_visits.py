@@ -29,7 +29,13 @@ def test_get_origin_visits(mocker, archive_data, new_origin, new_snapshots):
     for i, snapshot in enumerate(new_snapshots):
         visit_date = now() + timedelta(days=i * 10)
         visit = archive_data.origin_visit_add(
-            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
         )[0]
         visit_status = OriginVisitStatus(
             origin=new_origin.url,
@@ -64,7 +70,13 @@ def test_get_origin_visit(archive_data, new_origin, new_snapshots):
         )
     ):
         visit = archive_data.origin_visit_add(
-            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
         )[0]
         visits.append(visit)
         visit_status = OriginVisitStatus(
@@ -123,7 +135,13 @@ def test_get_origin_visit_return_first_valid_full_visit(
     for i, snp in enumerate(new_snapshots):
         visit_date = now() + timedelta(days=i * 10)
         visit = archive_data.origin_visit_add(
-            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
         )[0]
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(
@@ -153,7 +171,13 @@ def test_get_origin_visit_non_resolvable_snapshots(
     for i, snp in enumerate(new_snapshots):
         visit_date = now() + timedelta(days=i * 10)
         visit = archive_data.origin_visit_add(
-            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
         )[0]
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(
@@ -184,7 +208,13 @@ def test_get_origin_visit_return_first_valid_partial_visit(
     for i, snp in enumerate(new_snapshots):
         visit_date = now() + timedelta(days=i * 10)
         visit = archive_data.origin_visit_add(
-            [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
         )[0]
         archive_data.snapshot_add([new_snapshots[i]])
         visit_status = OriginVisitStatus(

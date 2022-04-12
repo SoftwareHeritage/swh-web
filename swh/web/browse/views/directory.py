@@ -92,7 +92,10 @@ def _directory_browse(request, sha1_git, path=None):
                 "url": reverse(
                     "browse-directory",
                     url_args={"sha1_git": root_sha1_git},
-                    query_params={**query_params, "path": pi["path"],},
+                    query_params={
+                        **query_params,
+                        "path": pi["path"],
+                    },
                 ),
             }
         )
@@ -110,7 +113,10 @@ def _directory_browse(request, sha1_git, path=None):
             d["url"] = reverse(
                 "browse-directory",
                 url_args={"sha1_git": root_sha1_git},
-                query_params={**query_params, "path": path + d["name"],},
+                query_params={
+                    **query_params,
+                    "path": path + d["name"],
+                },
             )
 
     sum_file_sizes = 0

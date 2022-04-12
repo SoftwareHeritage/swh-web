@@ -84,8 +84,7 @@ def api_revision(request, sha1_git):
 )
 @api_doc("/revision/raw/", tags=["hidden"])
 def api_revision_raw_message(request, sha1_git):
-    """Return the raw data of the message of revision identified by sha1_git
-    """
+    """Return the raw data of the message of revision identified by sha1_git"""
     raw = archive.lookup_revision_message(sha1_git)
     response = HttpResponse(raw["message"], content_type="application/octet-stream")
     response["Content-disposition"] = "attachment;filename=rev_%s_raw" % sha1_git

@@ -9,7 +9,8 @@ from swh.web.config import get_config, is_feature_enabled
 
 
 @pytest.mark.parametrize(
-    "feature_name", ["inexistant-feature", "awesome-stuff"],
+    "feature_name",
+    ["inexistant-feature", "awesome-stuff"],
 )
 def test_is_feature_enabled(feature_name):
     config = get_config()

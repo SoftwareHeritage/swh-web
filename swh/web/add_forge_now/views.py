@@ -88,29 +88,31 @@ FORGE_TYPES: List[str] = [
 
 
 def create_request_create(request):
-    """View to create a new 'add_forge_now' request.
-
-    """
+    """View to create a new 'add_forge_now' request."""
 
     return render(
-        request, "add_forge_now/creation_form.html", {"forge_types": FORGE_TYPES},
+        request,
+        "add_forge_now/creation_form.html",
+        {"forge_types": FORGE_TYPES},
     )
 
 
 def create_request_list(request):
-    """View to list existing 'add_forge_now' requests.
+    """View to list existing 'add_forge_now' requests."""
 
-    """
-
-    return render(request, "add_forge_now/list.html",)
+    return render(
+        request,
+        "add_forge_now/list.html",
+    )
 
 
 def create_request_help(request):
-    """View to explain 'add_forge_now'.
+    """View to explain 'add_forge_now'."""
 
-    """
-
-    return render(request, "add_forge_now/help.html",)
+    return render(
+        request,
+        "add_forge_now/help.html",
+    )
 
 
 urlpatterns = [

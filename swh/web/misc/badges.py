@@ -27,12 +27,30 @@ _red = "#cd5741"
 _swh_logo_data = None
 
 _badge_config = {
-    "content": {"color": _blue, "title": "Archived source file",},
-    "directory": {"color": _blue, "title": "Archived source tree",},
-    "origin": {"color": _orange, "title": "Archived software repository",},
-    "release": {"color": _blue, "title": "Archived software release",},
-    "revision": {"color": _blue, "title": "Archived commit",},
-    "snapshot": {"color": _blue, "title": "Archived software repository snapshot",},
+    "content": {
+        "color": _blue,
+        "title": "Archived source file",
+    },
+    "directory": {
+        "color": _blue,
+        "title": "Archived source tree",
+    },
+    "origin": {
+        "color": _orange,
+        "title": "Archived software repository",
+    },
+    "release": {
+        "color": _blue,
+        "title": "Archived software release",
+    },
+    "revision": {
+        "color": _blue,
+        "title": "Archived commit",
+    },
+    "snapshot": {
+        "color": _blue,
+        "title": "Archived software repository snapshot",
+    },
     "error": {"color": _red, "title": "An error occurred when generating the badge"},
 }
 

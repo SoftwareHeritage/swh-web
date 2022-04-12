@@ -26,8 +26,7 @@ def new_origin():
 
 
 def visit_dates(nb_dates=None):
-    """Hypothesis strategy returning a list of visit dates.
-    """
+    """Hypothesis strategy returning a list of visit dates."""
     min_size = nb_dates if nb_dates else 2
     max_size = nb_dates if nb_dates else 8
     return lists(
@@ -43,15 +42,13 @@ def visit_dates(nb_dates=None):
 
 
 def new_person():
-    """Hypothesis strategy returning random raw swh person data.
-    """
+    """Hypothesis strategy returning random raw swh person data."""
     return new_person_strategy()
 
 
 @composite
 def new_swh_date(draw):
-    """Hypothesis strategy returning random raw swh date data.
-    """
+    """Hypothesis strategy returning random raw swh date data."""
     timestamp = draw(
         datetimes(min_value=datetime(2015, 1, 1, 0, 0), max_value=datetime.now()).map(
             lambda d: int(d.timestamp())

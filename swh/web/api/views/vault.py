@@ -121,7 +121,9 @@ def api_vault_cook_flat(request, swhid):
     if swhid.object_type == ObjectType.DIRECTORY:
         res = _dispatch_cook_progress(request, "flat", swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-flat", url_args={"swhid": str(swhid)}, request=request,
+            "api-1-vault-fetch-flat",
+            url_args={"swhid": str(swhid)},
+            request=request,
         )
         return _vault_response(res, add_legacy_items=False)
     elif swhid.object_type == ObjectType.CONTENT:
@@ -162,13 +164,16 @@ def api_vault_cook_directory(request, dir_id):
     swhid = f"swh:1:dir:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "flat", CoreSWHID.from_string(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-flat", url_args={"swhid": swhid}, request=request,
+        "api-1-vault-fetch-flat",
+        url_args={"swhid": swhid},
+        request=request,
     )
     return _vault_response(res, add_legacy_items=True)
 
 
 @api_route(
-    f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/", "api-1-vault-fetch-flat",
+    f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/",
+    "api-1-vault-fetch-flat",
 )
 @api_doc("/vault/flat/raw/")
 def api_vault_fetch_flat(request, swhid):
@@ -326,13 +331,16 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     swhid = f"swh:1:rev:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "gitfast", CoreSWHID.from_string(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-gitfast", url_args={"swhid": swhid}, request=request,
+        "api-1-vault-fetch-gitfast",
+        url_args={"swhid": swhid},
+        request=request,
     )
     return _vault_response(res, add_legacy_items=True)
 
 
 @api_route(
-    f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/", "api-1-vault-fetch-gitfast",
+    f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/",
+    "api-1-vault-fetch-gitfast",
 )
 @api_doc("/vault/gitfast/raw/")
 def api_vault_fetch_revision_gitfast(request, swhid):
@@ -469,7 +477,8 @@ def api_vault_cook_git_bare(request, swhid):
 
 
 @api_route(
-    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/", "api-1-vault-fetch-git-bare",
+    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/",
+    "api-1-vault-fetch-git-bare",
 )
 @api_doc("/vault/git-bare/raw/")
 def api_vault_fetch_revision_git_bare(request, swhid):

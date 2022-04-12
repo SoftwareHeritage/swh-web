@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="saveoriginrequest", name="user_id",),
+        migrations.RemoveField(
+            model_name="saveoriginrequest",
+            name="user_id",
+        ),
         migrations.AddField(
             model_name="saveoriginrequest",
             name="user_ids",

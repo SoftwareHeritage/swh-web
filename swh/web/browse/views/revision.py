@@ -529,7 +529,9 @@ def revision_browse(request, sha1_git):
     query_params.pop("path", None)
 
     diff_revision_url = reverse(
-        "diff-revision", url_args={"sha1_git": sha1_git}, query_params=query_params,
+        "diff-revision",
+        url_args={"sha1_git": sha1_git},
+        query_params=query_params,
     )
 
     if snapshot_id:
