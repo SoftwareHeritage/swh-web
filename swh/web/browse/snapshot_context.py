@@ -813,7 +813,12 @@ def browse_snapshot_directory(
         dir_path = "/" + path
 
     swh_objects = []
-    vault_cooking = {}
+    vault_cooking = {
+        "directory_context": False,
+        "directory_swhid": None,
+        "revision_context": False,
+        "revision_swhid": None,
+    }
     revision_found = False
 
     if revision_id is not None:
