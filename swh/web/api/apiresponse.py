@@ -224,8 +224,7 @@ def error_response(
 def error_response_handler(
     exc: Exception, context: Dict[str, Any]
 ) -> Optional[HttpResponse]:
-    """Custom DRF exception handler used to generate API error responses.
-    """
+    """Custom DRF exception handler used to generate API error responses."""
     sentry_capture_exception(exc)
     doc_data = getattr(exc, "doc_data", {})
     return error_response(context["request"], exc, doc_data)

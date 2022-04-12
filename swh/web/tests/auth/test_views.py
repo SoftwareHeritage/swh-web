@@ -258,12 +258,18 @@ def test_oidc_revoke_bearer_tokens(client, keycloak_oidc):
     url = reverse("oidc-revoke-bearer-tokens")
 
     check_http_post_response(
-        client, url, status_code=200, data={"token_ids": [1]},
+        client,
+        url,
+        status_code=200,
+        data={"token_ids": [1]},
     )
     assert len(OIDCUserOfflineTokens.objects.all()) == 2
 
     check_http_post_response(
-        client, url, status_code=200, data={"token_ids": [2, 3]},
+        client,
+        url,
+        status_code=200,
+        data={"token_ids": [2, 3]},
     )
     assert len(OIDCUserOfflineTokens.objects.all()) == 0
 

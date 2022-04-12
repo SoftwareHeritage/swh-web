@@ -90,7 +90,8 @@ class RequestHistory(models.Model):
 
 class Request(models.Model):
     status = models.TextField(
-        choices=RequestStatus.choices(), default=RequestStatus.PENDING.name,
+        choices=RequestStatus.choices(),
+        default=RequestStatus.PENDING.name,
     )
     submission_date = models.DateTimeField(auto_now_add=True)
     submitter_name = models.TextField()
@@ -102,7 +103,8 @@ class Request(models.Model):
     forge_contact_email = models.EmailField()
     forge_contact_name = models.TextField()
     forge_contact_comment = models.TextField(
-        null=True, help_text="Where did you find this contact information (url, ...)",
+        null=True,
+        help_text="Where did you find this contact information (url, ...)",
     )
 
     class Meta:

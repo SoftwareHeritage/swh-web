@@ -103,9 +103,7 @@ def from_swh(
     """
 
     def convert_hashes_bytes(v):
-        """v is supposedly a hash as bytes, returns it converted in hex.
-
-        """
+        """v is supposedly a hash as bytes, returns it converted in hex."""
         if isinstance(v, bytes):
             return hashutil.hash_to_hex(v)
         return v
@@ -195,9 +193,7 @@ def from_swh(
 
 
 def from_origin(origin: Dict[str, Any]) -> OriginInfo:
-    """Convert from a swh origin to an origin dictionary.
-
-    """
+    """Convert from a swh origin to an origin dictionary."""
     return from_swh(origin, blacklist={"id"})
 
 
@@ -255,9 +251,7 @@ class SWHMetadataEncoder(json.JSONEncoder):
 
 
 def convert_metadata(metadata):
-    """Convert json specific dict to a json serializable one.
-
-    """
+    """Convert json specific dict to a json serializable one."""
     if metadata is None:
         return {}
 
@@ -303,8 +297,7 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
 def from_raw_extrinsic_metadata(
     metadata: Union[Dict[str, Any], RawExtrinsicMetadata]
 ) -> Dict[str, Any]:
-    """Convert RawExtrinsicMetadata model object to a json serializable dictionary.
-    """
+    """Convert RawExtrinsicMetadata model object to a json serializable dictionary."""
     return from_swh(
         metadata.to_dict() if isinstance(metadata, RawExtrinsicMetadata) else metadata,
         blacklist={"id", "metadata"},
@@ -313,9 +306,7 @@ def from_raw_extrinsic_metadata(
 
 
 def from_content(content):
-    """Convert swh content to serializable content dictionary.
-
-    """
+    """Convert swh content to serializable content dictionary."""
     return from_swh(
         content,
         hashess={"sha1", "sha1_git", "sha256", "blake2s256"},
@@ -326,16 +317,12 @@ def from_content(content):
 
 
 def from_person(person):
-    """Convert swh person to serializable person dictionary.
-
-    """
+    """Convert swh person to serializable person dictionary."""
     return from_swh(person, bytess={"name", "fullname", "email"})
 
 
 def from_origin_visit(visit: Dict[str, Any]) -> OriginVisitInfo:
-    """Convert swh origin_visit to serializable origin_visit dictionary.
-
-    """
+    """Convert swh origin_visit to serializable origin_visit dictionary."""
     ov = from_swh(
         visit,
         hashess={"target", "snapshot"},
@@ -348,9 +335,7 @@ def from_origin_visit(visit: Dict[str, Any]) -> OriginVisitInfo:
 
 
 def from_snapshot(snapshot):
-    """Convert swh snapshot to serializable (partial) snapshot dictionary.
-
-    """
+    """Convert swh snapshot to serializable (partial) snapshot dictionary."""
     sv = from_swh(snapshot, hashess={"id", "target"}, bytess={"next_branch"})
 
     if sv and "branches" in sv:
@@ -366,9 +351,7 @@ def from_snapshot(snapshot):
 
 
 def from_partial_branches(branches: PartialBranches):
-    """Convert PartialBranches to serializable partial snapshot dictionary
-
-    """
+    """Convert PartialBranches to serializable partial snapshot dictionary"""
     return from_snapshot(
         {
             "id": branches["id"],
@@ -382,9 +365,7 @@ def from_partial_branches(branches: PartialBranches):
 
 
 def from_directory_entry(dir_entry):
-    """Convert swh directory to serializable directory dictionary.
-
-    """
+    """Convert swh directory to serializable directory dictionary."""
     return from_swh(
         dir_entry,
         hashess={"dir_id", "sha1_git", "sha1", "sha256", "blake2s256", "target"},

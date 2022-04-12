@@ -47,7 +47,10 @@ def test_mailmap_endpoints_user_with_permission(
         for view_name in ("profile-mailmap-add", "profile-mailmap-update"):
             url = reverse(view_name)
             check_api_post_response(
-                api_client, url, data=request_data, status_code=200,
+                api_client,
+                url,
+                data=request_data,
+                status_code=200,
             )
 
         # FIXME: use check_api_get_responses; currently this crashes without
@@ -249,7 +252,10 @@ def test_mailmap_update_from_email_not_found(api_client, mailmap_admin):
     check_api_post_response(
         api_client,
         reverse("profile-mailmap-update"),
-        data={"from_email": "invalid@example.org", "display_name": "Display Name",},
+        data={
+            "from_email": "invalid@example.org",
+            "display_name": "Display Name",
+        },
         status_code=404,
     )
 

@@ -1,3 +1,4 @@
+.git-blame-ignore-revs
 .gitignore
 .pre-commit-config.yaml
 AUTHORS
@@ -339,8 +340,8 @@ static/js/mathjax.a0046af7afe82fd10728.js
 static/js/mathjax.a0046af7afe82fd10728.js.map
 static/js/org.9adc9a39a210c2fb4be0.js
 static/js/org.9adc9a39a210c2fb4be0.js.map
-static/js/origin.751694c0f651d0e204de.js
-static/js/origin.751694c0f651d0e204de.js.map
+static/js/origin.278a63bfc40cb4173975.js
+static/js/origin.278a63bfc40cb4173975.js.map
 static/js/pdf.worker.min.js
 static/js/pdf.worker.min.js.LICENSE.txt
 static/js/pdfjs.7fa499e22fea56527058.js

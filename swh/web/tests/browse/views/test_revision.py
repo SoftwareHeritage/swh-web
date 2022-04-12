@@ -31,7 +31,11 @@ def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, or
     _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
     _revision_browse_checks(client, archive_data, revision, snapshot=snapshot)
     _revision_browse_checks(
-        client, archive_data, revision, origin_url=origin["url"], snapshot=snapshot,
+        client,
+        archive_data,
+        revision,
+        origin_url=origin["url"],
+        snapshot=snapshot,
     )
 
     revision = random.choice(archive_data.revision_log(revision))["id"]
@@ -57,7 +61,10 @@ def test_revision_log_browse(client, archive_data, revision):
     next_page_url = reverse(
         "browse-revision-log",
         url_args={"sha1_git": revision},
-        query_params={"offset": per_page, "per_page": per_page,},
+        query_params={
+            "offset": per_page,
+            "per_page": per_page,
+        },
     )
 
     nb_log_entries = per_page
@@ -72,7 +79,8 @@ def test_revision_log_browse(client, archive_data, revision):
 
     if len(revision_log_sorted) > per_page:
         assert_contains(
-            resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
+            resp,
+            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
     for log in revision_log_sorted[:per_page]:
@@ -114,7 +122,8 @@ def test_revision_log_browse(client, archive_data, revision):
 
     if len(revision_log_sorted) > 2 * per_page:
         assert_contains(
-            resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
+            resp,
+            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
     if len(revision_log_sorted) <= 2 * per_page:
@@ -146,7 +155,8 @@ def test_revision_log_browse(client, archive_data, revision):
 
     if len(revision_log_sorted) > 3 * per_page:
         assert_contains(
-            resp, '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
+            resp,
+            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
         )
 
 
@@ -210,7 +220,8 @@ def _revision_browse_checks(
     if origin_url:
         snapshot = archive_data.snapshot_get_latest(origin_url)
         history_url = reverse(
-            "browse-origin-log", query_params={"revision": revision, **query_params},
+            "browse-origin-log",
+            query_params={"revision": revision, **query_params},
         )
     elif snapshot:
         history_url = reverse(

@@ -110,7 +110,13 @@ def test_origin_save_metrics(client, swh_scheduler):
 
     save_requests = SaveOriginRequest.objects.all()
 
-    labels_set = product(visit_types, (SAVE_TASK_SUCCEEDED, SAVE_TASK_FAILED,))
+    labels_set = product(
+        visit_types,
+        (
+            SAVE_TASK_SUCCEEDED,
+            SAVE_TASK_FAILED,
+        ),
+    )
     for labels in labels_set:
         sors = save_requests.filter(
             visit_type=labels[0],

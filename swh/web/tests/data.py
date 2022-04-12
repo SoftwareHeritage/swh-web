@@ -48,8 +48,14 @@ from swh.web.common import archive
 # Base content indexer configuration
 _TEST_INDEXER_BASE_CONFIG = {
     "storage": {"cls": "memory"},
-    "objstorage": {"cls": "memory", "args": {},},
-    "indexer_storage": {"cls": "memory", "args": {},},
+    "objstorage": {
+        "cls": "memory",
+        "args": {},
+    },
+    "indexer_storage": {
+        "cls": "memory",
+        "args": {},
+    },
 }
 
 
@@ -93,7 +99,9 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
         "tools": {
             "name": "nomos",
             "version": "3.1.0rc2-31-ga2cbb8c",
-            "configuration": {"command_line": "nomossa <filepath>",},
+            "configuration": {
+                "command_line": "nomossa <filepath>",
+            },
         },
     },
 )
@@ -252,7 +260,9 @@ def _init_tests_data():
                 os.path.dirname(__file__), "resources/repos/%s" % archive_
             )
             loader = GitLoaderFromArchive(
-                storage, origin["url"], archive_path=origin_repo_archive,
+                storage,
+                origin["url"],
+                archive_path=origin_repo_archive,
             )
 
             result = loader.load()

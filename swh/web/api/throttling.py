@@ -207,7 +207,9 @@ def throttle_scope(scope: str) -> Callable[..., APIView]:
             "SwhWebScopeRateThrottle", (SwhWebRateThrottle,), {"scope": scope}
         )
         SwhScopeUserRateThrottle = type(
-            "SwhWebScopeUserRateThrottle", (SwhWebUserRateThrottle,), {"scope": scope},
+            "SwhWebScopeUserRateThrottle",
+            (SwhWebUserRateThrottle,),
+            {"scope": scope},
         )
         func.throttle_classes = (SwhScopeRateThrottle, SwhScopeUserRateThrottle)
         return func

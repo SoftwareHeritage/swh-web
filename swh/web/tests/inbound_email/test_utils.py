@@ -112,7 +112,8 @@ def test_recipient_matches():
     )
     assert utils.recipient_matches(message, "match@example.com") == [
         utils.AddressMatch(
-            recipient=Address(addr_spec="match@example.com"), extension=None,
+            recipient=Address(addr_spec="match@example.com"),
+            extension=None,
         ),
         utils.AddressMatch(
             recipient=Address(

@@ -186,7 +186,9 @@ def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs)
         )
 
     swhids = get_swhids_info(
-        swh_objects_info, snapshot_context=None, extra_context=extra_context,
+        swh_objects_info,
+        snapshot_context=None,
+        extra_context=extra_context,
     )
 
     swhid_lower = swhids[0]["swhid_with_context"]
@@ -233,7 +235,9 @@ def test_get_swhids_info_revision_context(archive_data, revision):
         extra_context["filename"] = dir_entry["name"]
 
     swhids = get_swhids_info(
-        swh_objects, snapshot_context=None, extra_context=extra_context,
+        swh_objects,
+        snapshot_context=None,
+        extra_context=extra_context,
     )
 
     assert swhids[0]["context"] == {}

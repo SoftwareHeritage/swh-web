@@ -83,13 +83,19 @@ suppress_health_check = [
 
 
 settings.register_profile(
-    "swh-web", settings(deadline=None, suppress_health_check=suppress_health_check,),
+    "swh-web",
+    settings(
+        deadline=None,
+        suppress_health_check=suppress_health_check,
+    ),
 )
 
 settings.register_profile(
     "swh-web-fast",
     settings(
-        deadline=None, max_examples=5, suppress_health_check=suppress_health_check,
+        deadline=None,
+        max_examples=5,
+        suppress_health_check=suppress_health_check,
     ),
 )
 
@@ -229,22 +235,19 @@ def tests_data():
 
 @pytest.fixture(scope="function")
 def sha1():
-    """Fixture returning a valid hexadecimal sha1 value.
-    """
+    """Fixture returning a valid hexadecimal sha1 value."""
     return random_sha1()
 
 
 @pytest.fixture(scope="function")
 def invalid_sha1():
-    """Fixture returning an invalid sha1 representation.
-    """
+    """Fixture returning an invalid sha1 representation."""
     return hash_to_hex(bytes(random.randint(0, 255) for _ in range(50)))
 
 
 @pytest.fixture(scope="function")
 def sha256():
-    """Fixture returning a valid hexadecimal sha256 value.
-    """
+    """Fixture returning a valid hexadecimal sha256 value."""
     return random_sha256()
 
 
@@ -254,15 +257,13 @@ def _known_swh_objects(tests_data, object_type):
 
 @pytest.fixture(scope="function")
 def content(tests_data):
-    """Fixture returning a random content ingested into the test archive.
-    """
+    """Fixture returning a random content ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "contents"))
 
 
 @pytest.fixture(scope="function")
 def contents(tests_data):
-    """Fixture returning random contents ingested into the test archive.
-    """
+    """Fixture returning random contents ingested into the test archive."""
     return random.choices(
         _known_swh_objects(tests_data, "contents"), k=random.randint(2, 8)
     )
@@ -278,15 +279,13 @@ def _new_content(tests_data):
 
 @pytest.fixture(scope="function")
 def unknown_content(tests_data):
-    """Fixture returning a random content not ingested into the test archive.
-    """
+    """Fixture returning a random content not ingested into the test archive."""
     return _new_content(tests_data)
 
 
 @pytest.fixture(scope="function")
 def unknown_contents(tests_data):
-    """Fixture returning random contents not ingested into the test archive.
-    """
+    """Fixture returning random contents not ingested into the test archive."""
     new_contents = []
     new_content_ids = set()
     nb_contents = random.randint(2, 8)
@@ -300,8 +299,7 @@ def unknown_contents(tests_data):
 
 @pytest.fixture(scope="function")
 def empty_content():
-    """Fixture returning the empty content ingested into the test archive.
-    """
+    """Fixture returning the empty content ingested into the test archive."""
     empty_content = Content.from_data(data=b"").to_dict()
     for algo in DEFAULT_ALGORITHMS:
         empty_content[algo] = hash_to_hex(empty_content[algo])
@@ -396,8 +394,7 @@ def _content_image_type():
 
 @pytest.fixture(scope="function")
 def content_image_type():
-    """Fixture returning a random image content ingested into the test archive.
-    """
+    """Fixture returning a random image content ingested into the test archive."""
     return random.choice(_content_image_type())
 
 
@@ -477,8 +474,7 @@ def contents_with_ctags():
 
 @pytest.fixture(scope="function")
 def directory(tests_data):
-    """Fixture returning a random directory ingested into the test archive.
-    """
+    """Fixture returning a random directory ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "directories"))
 
 
@@ -508,15 +504,13 @@ def directory_with_subdirs():
 
 @pytest.fixture(scope="function")
 def directory_with_files():
-    """Fixture returning a random directory containing at least one regular file.
-    """
+    """Fixture returning a random directory containing at least one regular file."""
     return random.choice(_directory_with_entry_type("file"))
 
 
 @pytest.fixture(scope="function")
 def unknown_directory(tests_data):
-    """Fixture returning a random directory not ingested into the test archive.
-    """
+    """Fixture returning a random directory not ingested into the test archive."""
     while True:
         new_directory = random_sha1()
         sha1_bytes = hash_to_bytes(new_directory)
@@ -526,42 +520,41 @@ def unknown_directory(tests_data):
 
 @pytest.fixture(scope="function")
 def empty_directory():
-    """Fixture returning the empty directory ingested into the test archive.
-    """
+    """Fixture returning the empty directory ingested into the test archive."""
     return Directory(entries=()).id.hex()
 
 
 @pytest.fixture(scope="function")
 def revision(tests_data):
-    """Fixturereturning a random revision ingested into the test archive.
-    """
+    """Fixturereturning a random revision ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "revisions"))
 
 
 @pytest.fixture(scope="function")
 def revisions(tests_data):
-    """Fixture returning random revisions ingested into the test archive.
-    """
+    """Fixture returning random revisions ingested into the test archive."""
     return random.choices(
-        _known_swh_objects(tests_data, "revisions"), k=random.randint(2, 8),
+        _known_swh_objects(tests_data, "revisions"),
+        k=random.randint(2, 8),
     )
 
 
 @pytest.fixture(scope="function")
 def revisions_list(tests_data):
-    """Fixture returning random revisions ingested into the test archive.
-    """
+    """Fixture returning random revisions ingested into the test archive."""
 
     def gen_revisions_list(size):
-        return random.choices(_known_swh_objects(tests_data, "revisions"), k=size,)
+        return random.choices(
+            _known_swh_objects(tests_data, "revisions"),
+            k=size,
+        )
 
     return gen_revisions_list
 
 
 @pytest.fixture(scope="function")
 def unknown_revision(tests_data):
-    """Fixture returning a random revision not ingested into the test archive.
-    """
+    """Fixture returning a random revision not ingested into the test archive."""
     while True:
         new_revision = random_sha1()
         sha1_bytes = hash_to_bytes(new_revision)
@@ -671,15 +664,13 @@ def revision_with_submodules():
 
 @pytest.fixture(scope="function")
 def release(tests_data):
-    """Fixture returning a random release ingested into the test archive.
-    """
+    """Fixture returning a random release ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "releases"))
 
 
 @pytest.fixture(scope="function")
 def releases(tests_data):
-    """Fixture returning random releases ingested into the test archive.
-    """
+    """Fixture returning random releases ingested into the test archive."""
     return random.choices(
         _known_swh_objects(tests_data, "releases"), k=random.randint(2, 8)
     )
@@ -687,8 +678,7 @@ def releases(tests_data):
 
 @pytest.fixture(scope="function")
 def unknown_release(tests_data):
-    """Fixture returning a random release not ingested into the test archive.
-    """
+    """Fixture returning a random release not ingested into the test archive."""
     while True:
         new_release = random_sha1()
         sha1_bytes = hash_to_bytes(new_release)
@@ -698,15 +688,13 @@ def unknown_release(tests_data):
 
 @pytest.fixture(scope="function")
 def snapshot(tests_data):
-    """Fixture returning a random snapshot ingested into the test archive.
-    """
+    """Fixture returning a random snapshot ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "snapshots"))
 
 
 @pytest.fixture(scope="function")
 def unknown_snapshot(tests_data):
-    """Fixture returning a random snapshot not ingested into the test archive.
-    """
+    """Fixture returning a random snapshot not ingested into the test archive."""
     while True:
         new_snapshot = random_sha1()
         sha1_bytes = hash_to_bytes(new_snapshot)
@@ -716,8 +704,7 @@ def unknown_snapshot(tests_data):
 
 @pytest.fixture(scope="function")
 def origin(tests_data):
-    """Fixture returning a random origin ingested into the test archive.
-    """
+    """Fixture returning a random origin ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "origins"))
 
 
@@ -754,8 +741,7 @@ def _origin_with_releases():
 
 @pytest.fixture(scope="function")
 def origin_with_releases():
-    """Fixture returning a random origin with releases ingested into the test archive.
-    """
+    """Fixture returning a random origin with releases ingested into the test archive."""
     return random.choice(_origin_with_releases())
 
 

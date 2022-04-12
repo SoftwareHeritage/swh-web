@@ -38,9 +38,7 @@ def filter_field_keys(data, field_keys):
 
 
 def person_to_string(person):
-    """Map a person (person, committer, tagger, etc...) to a string.
-
-    """
+    """Map a person (person, committer, tagger, etc...) to a string."""
     return "".join([person["name"], " <", person["email"], ">"])
 
 

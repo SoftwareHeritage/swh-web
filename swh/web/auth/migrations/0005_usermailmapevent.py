@@ -28,7 +28,9 @@ class Migration(migrations.Migration):
                 ("request", models.TextField()),
                 ("successful", models.BooleanField(default=False)),
             ],
-            options={"db_table": "user_mailmap_event",},
+            options={
+                "db_table": "user_mailmap_event",
+            },
         ),
         migrations.AddIndex(
             model_name="usermailmapevent",

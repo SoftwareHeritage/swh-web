@@ -95,7 +95,11 @@ def test_snapshot_browse_without_id(client, browse_context, archive_data, origin
         f"browse-snapshot-{browse_context}", query_params={"origin_url": origin["url"]}
     )
     # This will be redirected to /snapshot/<latest_snapshot_id>/log
-    resp = check_html_get_response(client, url, status_code=302,)
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=302,
+    )
     snapshot = archive_data.snapshot_get_latest(origin["url"])
 
     assert resp.url == reverse(
@@ -108,7 +112,11 @@ def test_snapshot_browse_without_id(client, browse_context, archive_data, origin
 @pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
 def test_snapshot_browse_without_id_and_origin(client, browse_context):
     url = reverse(f"browse-snapshot-{browse_context}")
-    resp = check_html_get_response(client, url, status_code=400,)
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=400,
+    )
     # assert_contains works only with a success response, using re.search instead
     assert re.search(
         "An origin URL must be provided as a query parameter",
@@ -183,10 +191,17 @@ def _check_origin_link(resp, origin_url):
 
 
 @given(
-    new_origin(), visit_dates(),
+    new_origin(),
+    visit_dates(),
 )
 def test_snapshot_branches_pagination_with_alias(
-    client, archive_data, mocker, release, revisions_list, new_origin, visit_dates,
+    client,
+    archive_data,
+    mocker,
+    release,
+    revisions_list,
+    new_origin,
+    visit_dates,
 ):
     """
     When a snapshot contains a branch or a release alias, pagination links
@@ -213,7 +228,13 @@ def test_snapshot_branches_pagination_with_alias(
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_dates[0],
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,

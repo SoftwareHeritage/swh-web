@@ -89,7 +89,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "swh.web.common.utils.context_processor",
             ],
-            "libraries": {"swh_templatetags": "swh.web.common.swh_templatetags",},
+            "libraries": {
+                "swh_templatetags": "swh.web.common.swh_templatetags",
+            },
         },
     },
 ]
@@ -109,9 +111,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 
@@ -181,8 +189,12 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {
-        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse",},
-        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue",},
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
     },
     "formatters": {
         "request": {
@@ -235,7 +247,9 @@ LOGGING = {
             "filename": os.path.join(swh_web_config["log_dir"], "swh-web.log"),
             "formatter": "verbose",
         },
-        "null": {"class": "logging.NullHandler",},
+        "null": {
+            "class": "logging.NullHandler",
+        },
     },
     "loggers": {
         "": {
@@ -253,8 +267,12 @@ LOGGING = {
             "propagate": False,
         },
         "django.db.backends": {"handlers": ["null"], "propagate": False},
-        "django.utils.autoreload": {"level": "INFO",},
-        "swh.core.statsd": {"level": "INFO",},
+        "django.utils.autoreload": {
+            "level": "INFO",
+        },
+        "swh.core.statsd": {
+            "level": "INFO",
+        },
     },
 }
 

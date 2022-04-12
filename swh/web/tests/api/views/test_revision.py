@@ -160,7 +160,8 @@ def test_api_revision_directory_ok_returns_content(
     revision_id = hash_to_hex(revision.id)
     cnt_data = archive_data.content_get(content["sha1"])
     url = reverse(
-        "api-1-revision-directory", {"sha1_git": revision_id, "dir_path": content_path},
+        "api-1-revision-directory",
+        {"sha1_git": revision_id, "dir_path": content_path},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
@@ -204,7 +205,8 @@ def test_api_revision_directory_ok_returns_revision(
     revision_id = hash_to_hex(rev.id)
     rev_data = archive_data.revision_get(revision)
     url = reverse(
-        "api-1-revision-directory", {"sha1_git": revision_id, "dir_path": rev_path},
+        "api-1-revision-directory",
+        {"sha1_git": revision_id, "dir_path": rev_path},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 

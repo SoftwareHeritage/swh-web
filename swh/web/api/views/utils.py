@@ -83,9 +83,7 @@ APIUrls.add_url_pattern(r"^$", api_home, view_name="api-1-homepage")
 
 @api_route(r"/", "api-1-endpoints")
 def api_endpoints(request):
-    """Display the list of opened api endpoints.
-
-    """
+    """Display the list of opened api endpoints."""
     routes = APIUrls.get_app_endpoints().copy()
     for route, doc in routes.items():
         doc["doc_intro"] = doc["docstring"].split("\n\n")[0]

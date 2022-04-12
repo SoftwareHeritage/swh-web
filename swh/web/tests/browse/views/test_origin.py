@@ -299,10 +299,17 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
 
 @given(
-    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
+    new_origin(),
+    new_snapshot(min_size=4, max_size=4),
+    visit_dates(),
 )
 def test_origin_snapshot_null_branch(
-    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
+    client,
+    archive_data,
+    revisions_list,
+    new_origin,
+    new_snapshot,
+    visit_dates,
 ):
     revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
@@ -318,7 +325,13 @@ def test_origin_snapshot_null_branch(
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_dates[0],
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -339,10 +352,17 @@ def test_origin_snapshot_null_branch(
 
 
 @given(
-    new_origin(), new_snapshot(min_size=4, max_size=4), visit_dates(),
+    new_origin(),
+    new_snapshot(min_size=4, max_size=4),
+    visit_dates(),
 )
 def test_origin_snapshot_invalid_branch(
-    client, archive_data, revisions_list, new_origin, new_snapshot, visit_dates,
+    client,
+    archive_data,
+    revisions_list,
+    new_origin,
+    new_snapshot,
+    visit_dates,
 ):
     revisions = revisions_list(size=4)
     snp_dict = new_snapshot.to_dict()
@@ -355,7 +375,13 @@ def test_origin_snapshot_invalid_branch(
 
     archive_data.snapshot_add([Snapshot.from_dict(snp_dict)])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=visit_dates[0], type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_dates[0],
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -432,7 +458,13 @@ def _add_empty_snapshot_origin(new_origin, archive_data):
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([snapshot])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=now(),
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -503,7 +535,8 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target="refs/head/master".encode(), target_type=TargetType.ALIAS,
+                target="refs/head/master".encode(),
+                target_type=TargetType.ALIAS,
             ),
             b"refs/head/master": None,
         }
@@ -511,7 +544,13 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([snapshot])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=now(),
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -523,7 +562,8 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     archive_data.origin_visit_status_add([visit_status])
 
     url = reverse(
-        "browse-origin-directory", query_params={"origin_url": new_origin.url},
+        "browse-origin-directory",
+        query_params={"origin_url": new_origin.url},
     )
 
     resp = check_html_get_response(
@@ -588,20 +628,30 @@ def test_origin_release_browse_not_found(client, origin_with_releases):
 
 @given(new_origin())
 def test_origin_browse_directory_branch_with_non_resolvable_revision(
-    client, archive_data, unknown_revision, new_origin,
+    client,
+    archive_data,
+    unknown_revision,
+    new_origin,
 ):
     branch_name = "master"
     snapshot = Snapshot(
         branches={
             branch_name.encode(): SnapshotBranch(
-                target=hash_to_bytes(unknown_revision), target_type=TargetType.REVISION,
+                target=hash_to_bytes(unknown_revision),
+                target_type=TargetType.REVISION,
             )
         }
     )
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add([snapshot])
     visit = archive_data.origin_visit_add(
-        [OriginVisit(origin=new_origin.url, date=now(), type="git",)]
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=now(),
+                type="git",
+            )
+        ]
     )[0]
     visit_status = OriginVisitStatus(
         origin=new_origin.url,
@@ -645,7 +695,9 @@ def test_origin_views_no_url_query_parameter(client):
             client, url, status_code=400, template_used="error.html"
         )
         assert_contains(
-            resp, "An origin URL must be provided as query parameter.", status_code=400,
+            resp,
+            "An origin URL must be provided as query parameter.",
+            status_code=400,
         )
 
 
@@ -709,7 +761,9 @@ def test_origin_content_view_legacy_redirects(client, new_origin):
     params = {"extra-param1": "extra-param1", "extra-param2": "extra-param2"}
     for each_arg in url_args:
         url = reverse(
-            "browse-origin-content-legacy", url_args=each_arg, query_params=params,
+            "browse-origin-content-legacy",
+            url_args=each_arg,
+            query_params=params,
         )
 
         resp = check_html_get_response(client, url, status_code=301)
@@ -772,7 +826,10 @@ def _origin_directory_view_test_helper(
             if path:
                 dir_path = "%s/%s" % (path, d["name"])
             query_params["path"] = dir_path
-            dir_url = reverse("browse-origin-directory", query_params=query_params,)
+            dir_url = reverse(
+                "browse-origin-directory",
+                query_params=query_params,
+            )
         assert_contains(resp, dir_url)
 
     for f in files:

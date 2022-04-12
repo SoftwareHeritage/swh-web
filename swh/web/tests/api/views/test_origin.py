@@ -81,7 +81,13 @@ def test_api_lookup_origin_visits(
         archive_data.origin_add([new_origin])
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
-                [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+                [
+                    OriginVisit(
+                        origin=new_origin.url,
+                        date=visit_date,
+                        type="git",
+                    )
+                ]
             )[0]
             archive_data.snapshot_add([new_snapshots[i]])
             visit_status = OriginVisitStatus(
@@ -130,7 +136,13 @@ def test_api_lookup_origin_visits_by_id(
         archive_data.origin_add([new_origin])
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
-                [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+                [
+                    OriginVisit(
+                        origin=new_origin.url,
+                        date=visit_date,
+                        type="git",
+                    )
+                ]
             )[0]
             archive_data.snapshot_add([new_snapshots[i]])
             visit_status = OriginVisitStatus(
@@ -179,7 +191,13 @@ def test_api_lookup_origin_visit(
         archive_data.origin_add([new_origin])
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
-                [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+                [
+                    OriginVisit(
+                        origin=new_origin.url,
+                        date=visit_date,
+                        type="git",
+                    )
+                ]
             )[0]
             visit_id = origin_visit.visit
             archive_data.snapshot_add([new_snapshots[i]])
@@ -236,7 +254,13 @@ def test_api_lookup_origin_visit_latest(
         visit_ids = []
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
-                [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+                [
+                    OriginVisit(
+                        origin=new_origin.url,
+                        date=visit_date,
+                        type="git",
+                    )
+                ]
             )[0]
             visit_ids.append(origin_visit.visit)
 
@@ -284,7 +308,13 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         visit_ids = []
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
-                [OriginVisit(origin=new_origin.url, date=visit_date, type="git",)]
+                [
+                    OriginVisit(
+                        origin=new_origin.url,
+                        date=visit_date,
+                        type="git",
+                    )
+                ]
             )[0]
             visit_ids.append(origin_visit.visit)
 
@@ -343,9 +373,7 @@ def test_api_lookup_origin_visit_not_found(api_client, origin):
 
 
 def test_api_origins_wrong_input(api_client, archive_data):
-    """Should fail with 400 if the input is deprecated.
-
-    """
+    """Should fail with 400 if the input is deprecated."""
     # fail if wrong input
     url = reverse("api-1-origins", query_params={"origin_from": 1})
     rv = check_api_get_responses(api_client, url, status_code=400)
@@ -530,7 +558,9 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
 
     url = reverse(
         "api-1-origin-search",
-        url_args={"url_pattern": "github com",},
+        url_args={
+            "url_pattern": "github com",
+        },
         query_params={"visit_type": "git"},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
@@ -538,7 +568,9 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
 
     url = reverse(
         "api-1-origin-search",
-        url_args={"url_pattern": "github com",},
+        url_args={
+            "url_pattern": "github com",
+        },
         query_params={"visit_type": "foo"},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
@@ -555,7 +587,8 @@ def test_api_origin_search_use_ql(api_client, mocker):
 
     mock_archive_search = mocker.patch("swh.web.common.archive.search")
     mock_archive_search.origin_search.return_value = PagedResult(
-        results=ORIGINS, next_page_token=None,
+        results=ORIGINS,
+        next_page_token=None,
     )
 
     query = "origin : 'github.com'"

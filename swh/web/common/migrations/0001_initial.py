@@ -45,7 +45,9 @@ class Migration(migrations.Migration):
                 ),
                 ("url", models.CharField(max_length=200)),
             ],
-            options={"db_table": "save_authorized_origin",},
+            options={
+                "db_table": "save_authorized_origin",
+            },
         ),
         migrations.CreateModel(
             name="SaveOriginRequest",
@@ -67,7 +69,10 @@ class Migration(migrations.Migration):
                 ),
                 ("loading_task_id", models.IntegerField(default=-1)),
             ],
-            options={"db_table": "save_origin_request", "ordering": ["-id"],},
+            options={
+                "db_table": "save_origin_request",
+                "ordering": ["-id"],
+            },
         ),
         migrations.CreateModel(
             name="SaveUnauthorizedOrigin",
@@ -83,7 +88,9 @@ class Migration(migrations.Migration):
                 ),
                 ("url", models.CharField(max_length=200)),
             ],
-            options={"db_table": "save_unauthorized_origin",},
+            options={
+                "db_table": "save_unauthorized_origin",
+            },
         ),
         migrations.RunPython(_populate_save_authorized_origins),
     ]

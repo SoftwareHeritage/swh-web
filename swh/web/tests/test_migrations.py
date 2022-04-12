@@ -15,7 +15,9 @@ MIGRATION_0012 = "0012_saveoriginrequest_note"
 def test_migrations_09_add_visit_status_to_sor_model(migrator):
     """Ensures the migration adds the visit_status field to SaveOriginRequest table"""
 
-    old_state = migrator.apply_initial_migration((APP_NAME, MIGRATION_0008),)
+    old_state = migrator.apply_initial_migration(
+        (APP_NAME, MIGRATION_0008),
+    )
     old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
 
     assert hasattr(old_model, "visit_status") is False
@@ -29,7 +31,9 @@ def test_migrations_09_add_visit_status_to_sor_model(migrator):
 def test_migrations_10_add_user_id_to_sor_model(migrator):
     """Ensures the migration adds the user_id field to SaveOriginRequest table"""
 
-    old_state = migrator.apply_initial_migration((APP_NAME, MIGRATION_0009),)
+    old_state = migrator.apply_initial_migration(
+        (APP_NAME, MIGRATION_0009),
+    )
     old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
 
     assert hasattr(old_model, "user_id") is False
@@ -43,7 +47,9 @@ def test_migrations_10_add_user_id_to_sor_model(migrator):
 def test_migrations_12_add_note_to_sor_model(migrator):
     """Ensures the migration adds the user_id field to SaveOriginRequest table"""
 
-    old_state = migrator.apply_initial_migration((APP_NAME, MIGRATION_0011),)
+    old_state = migrator.apply_initial_migration(
+        (APP_NAME, MIGRATION_0011),
+    )
     old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
 
     assert hasattr(old_model, "note") is False
