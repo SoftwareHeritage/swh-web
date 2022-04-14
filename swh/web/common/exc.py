@@ -12,6 +12,7 @@ from django.core import exceptions
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+from rest_framework.exceptions import AuthenticationFailed
 
 from swh.web.config import get_config
 
@@ -137,6 +138,8 @@ def sentry_capture_exception(exc):
             exceptions.DisallowedHost,
             exceptions.PermissionDenied,
             BadInputExc,
+            NotFoundExc,
+            AuthenticationFailed,
         ),
     ):
         sentry_sdk.capture_exception(exc)
