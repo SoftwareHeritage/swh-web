@@ -10,13 +10,12 @@ from typing import Tuple
 
 import chardet
 import magic
-import sentry_sdk
 
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from swh.web.common import archive, highlightjs
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, sentry_capture_exception
 from swh.web.common.utils import (
     browsers_supported_image_mimes,
     django_cache,
@@ -122,7 +121,7 @@ def re_encode_content(
             try:
                 content_data = content_data.decode(enc).encode("utf-8")
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
+                sentry_capture_exception(exc)
             else:
                 # ensure display in content view
                 encoding = enc
@@ -166,7 +165,7 @@ def request_content(
         filetype = archive.lookup_content_filetype(query_string)
         language = archive.lookup_content_language(query_string)
     except Exception as exc:
-        sentry_sdk.capture_exception(exc)
+        sentry_capture_exception(exc)
     mimetype = "unknown"
     encoding = "unknown"
     if filetype:
@@ -177,7 +176,7 @@ def request_content(
         try:
             content_raw = archive.lookup_content_raw(query_string)
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            sentry_capture_exception(exc)
             raise NotFoundExc(
                 "The bytes of the content are currently not available "
                 "in the archive."
