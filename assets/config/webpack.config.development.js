@@ -388,6 +388,14 @@ module.exports = {
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
           to: path.resolve(__dirname, '../../static/fonts/[name][ext]')
+        },
+        {
+          from: path.resolve(__dirname, '../../tree-sitter-swh_search_ql.wasm'),
+          to: path.resolve(__dirname, '../../static/js/swh_ql.wasm')
+        },
+        {
+          from: path.resolve(__dirname, '../tokens.js'),
+          to: path.resolve(__dirname, '../../static/js/')
         }
       ]
     }),

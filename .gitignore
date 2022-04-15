@@ -39,3 +39,4 @@ cypress/fixtures/source*.json
 cypress/junit/
 cypress/downloads/
 .eslintcache
+tree-sitter-swh_search_ql.wasm

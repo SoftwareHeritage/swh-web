@@ -20,18 +20,21 @@ export class Autocomplete {
 
     this.inputBox.addEventListener('keydown', (e) => {
       if (e.keyCode === 40) { // down
+        e.preventDefault();
         this.currentIndex++;
         this.addActive();
       } else if (e.keyCode === 38) { // up
+        e.preventDefault();
         this.currentIndex--;
         this.addActive();
-      } else if (e.keyCode === 13) { // enter
+      } else if (e.keyCode === 13 || e.keyCode === 9) { // enter or tab
         e.preventDefault();
         if (this.currentIndex > -1) {
           // Simulate a click on the "active" item:
           if (this.autocompleteList) this.autocompleteList.children[this.currentIndex].click();
         }
       } else if (e.keyCode === 27) { // escape
+        e.preventDefault();
         this.removeAllItems(e.target);
       }
     });
@@ -71,9 +74,14 @@ export class Autocomplete {
       }
 
       itemDiv.setAttribute('data-value', suggestion);
+      itemDiv.setAttribute('data-editable-suggestion', 'false');
+      itemDiv.setAttribute('title', 'Include repos with the provided term in their url (origin)');
 
       const suggestionClick = (e) => {
         const toInsert = e.target.getAttribute('data-value');
+        const isEditableSuggestion = e.target.getAttribute('data-editable-suggestion');
+
+        if (isEditableSuggestion === 'true') return;
 
         const oldValue = this.inputBox.value;
         const tokens = oldValue.split();

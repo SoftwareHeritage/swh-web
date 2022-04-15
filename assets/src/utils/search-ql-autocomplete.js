@@ -1,12 +1,13 @@
-import '../../../node_modules/web-tree-sitter/tree-sitter.wasm';
+import {staticAsset} from 'utils/functions';
+import 'web-tree-sitter/tree-sitter.wasm';
 import Parser from 'web-tree-sitter';
 import {Autocomplete} from 'utils/autocomplete.js';
 import {
   fields, limitField, sortByField, // fields
   sortByOptions, visitTypeOptions, // options
-  equalOp, rangeOp, choiceOp, // operators
+  equalOp, containOp, rangeOp, choiceOp, // operators
   AND, OR, TRUE, FALSE // special tokens
-} from './tokens.js';
+} from '../../tokens.js';
 
 const filterNames = fields.concat(sortByField, limitField);
 
@@ -14,7 +15,7 @@ const languageSyntax = [
   {
     category: 'patternFilter',
     field: 'patternField',
-    operator: 'equalOp',
+    operator: 'containOp',
     value: 'patternVal',
     suggestion: ['string', '"string"']
   },
@@ -72,7 +73,7 @@ const languageSyntax = [
   }
 ];
 
-const filterOperators = {equalOp, choiceOp, rangeOp};
+const filterOperators = {equalOp, containOp, choiceOp, rangeOp};
 
 const findMissingNode = (node) => {
   if (node.isMissing()) {
@@ -191,8 +192,7 @@ const suggestNextNode = (tree, inputBox) => {
 export const initAutocomplete = (inputBox, validQueryCallback) => {
   Parser.init().then(async() => {
     const parser = new Parser();
-
-    const swhSearchQL = await Parser.Language.load(`${window.location.origin}/static/swh_ql.wasm`);
+    const swhSearchQL = await Parser.Language.load(staticAsset('js/swh_ql.wasm'));
     parser.setLanguage(swhSearchQL);
 
     const autocomplete = new Autocomplete(
