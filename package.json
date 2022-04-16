@@ -10,7 +10,7 @@
     "mochawesome": "mochawesome-merge cypress/mochawesome/results/*.json > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
     "eslint": "eslint -c assets/config/.eslintrc --fix assets/** cypress/integration/** cypress/plugins/** cypress/support/**",
     "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)",
-    "postinstall": "make build-ts-wasm",
+    "postinstall": "SWH_SEARCH_DIR=$(python -c 'import os;from swh import search; print(os.path.dirname(search.__file__))') && yarn run tree-sitter build-wasm $SWH_SEARCH_DIR/query_language && cp $SWH_SEARCH_DIR/query_language/tokens.js assets/tokens.js",
     "nyc-report": "nyc report --reporter=lcov"
   },
   "repository": {
