@@ -9,7 +9,6 @@ SWH_SEARCH_DIR := $(shell python -c "import os;from swh import search; print(os.
 
 yarn-install: package.json
 	$(YARN) install --frozen-lockfile
-	$(MAKE) build-ts-wasm
 
 .PHONY: build-webpack-dev
 build-webpack-dev:
