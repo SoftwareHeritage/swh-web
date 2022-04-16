@@ -9,9 +9,10 @@ SWH_SEARCH_DIR := $(shell python -c "import os;from swh import search; print(os.
 
 yarn-install: package.json
 	$(YARN) install --frozen-lockfile
+	$(MAKE) build-ts-wasm
 
 .PHONY: build-webpack-dev
-build-webpack-dev: yarn-install
+build-webpack-dev:
 	$(YARN) build-dev
 
 .PHONY: build-webpack-test
@@ -55,17 +56,17 @@ add-users-prod: run-migrations-prod
 clear-memcached:
 	echo "flush_all" | nc -q 2 localhost 11211 2>/dev/null
 
-run-django-webpack-devserver: add-users-dev yarn-install build-ts-wasm
+run-django-webpack-devserver: add-users-dev yarn-install
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	# ensure all child processes will be killed by PGID when exiting \
 	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
 	$(YARN) start-dev & sleep 10 && cd swh/web && \
 	python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV) || exit 1"
 
-run-django-webpack-dev: build-ts-wasm build-webpack-dev add-users-dev
+run-django-webpack-dev: build-webpack-dev add-users-dev
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
 
-run-django-webpack-prod: build-ts-wasm build-webpack-prod add-users-prod clear-memcached
+run-django-webpack-prod: build-webpack-prod add-users-prod clear-memcached
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_PROD)
 
 run-django-server-dev: add-users-dev
@@ -80,7 +81,7 @@ run-gunicorn-server: add-users-prod clear-memcached
 	--threads 2 \
 	--workers 2 'django.core.wsgi:get_wsgi_application()'
 
-run-django-webpack-memory-storages: build-ts-wasm build-webpack-dev add-users-test
+run-django-webpack-memory-storages: build-webpack-dev add-users-test
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST)
 
 test-full:
