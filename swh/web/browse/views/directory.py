@@ -1,11 +1,9 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import os
-
-import sentry_sdk
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -15,7 +13,11 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, http_status_code_message
+from swh.web.common.exc import (
+    NotFoundExc,
+    http_status_code_message,
+    sentry_capture_exception,
+)
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -288,5 +290,5 @@ def _directory_resolve_content_path(request, sha1_git):
                 )
                 return redirect(data_url)
     except Exception as exc:
-        sentry_sdk.capture_exception(exc)
+        sentry_capture_exception(exc)
     return HttpResponse(status=404)

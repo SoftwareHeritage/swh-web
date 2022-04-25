@@ -1,0 +1,42 @@
+MIME-Version: 1.0
+From: Forwarder <forwarder@example.org>
+Date: Fri, 18 Feb 2022 09:40:39 +0100
+Content-Type: multipart/related; boundary="00000000000015426c05d846d79d"
+Subject: Fwd: Look at this
+
+--00000000000015426c05d846d79d
+Content-Type: multipart/alternative; boundary="00000000000015426b05d846d79c"
+
+--00000000000015426b05d846d79c
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+See the message below
+
+---------- Forwarded message ---------
+From: Test User <test@example.com>
+Date: Thu, 17 Feb 2022 at 17:00
+Subject: Look at this
+
+
+Hello everyone,
+
+See my attachment
+
+
+--00000000000015426b05d846d79c
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hello everyone, <img id=3D"m_5164678217581478571524=
+639AD-E6C1-4CE3-A16C-391E884948FC" src=3D"cid:my-attachment-id">
+
+--00000000000015426b05d846d79c--
+--00000000000015426c05d846d79d
+Content-Type: image/png; name="attachment.png"
+Content-Disposition: inline; filename="attachment.png"
+Content-ID: <my-attachment-id>
+X-Attachment-Id: my-attachment-id
+
+This is an image
+--00000000000015426c05d846d79d--

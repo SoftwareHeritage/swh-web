@@ -3,8 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import sentry_sdk
-
 from django.shortcuts import render
 
 from swh.model.swhids import ObjectType
@@ -19,7 +17,7 @@ from swh.web.browse.utils import (
     gen_revision_link,
 )
 from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
+from swh.web.common.exc import NotFoundExc, sentry_capture_exception
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ReleaseMetadata, SWHObjectInfo
 from swh.web.common.utils import format_utc_iso_date, reverse
@@ -132,7 +130,7 @@ def release_browse(request, sha1_git):
                 SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=rev_directory)
             )
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            sentry_capture_exception(exc)
     elif release["target_type"] == ObjectType.DIRECTORY.name.lower():
         target_link = gen_directory_link(
             release["target"],
@@ -155,7 +153,7 @@ def release_browse(request, sha1_git):
                 )
             )
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            sentry_capture_exception(exc)
     elif release["target_type"] == ObjectType.CONTENT.name.lower():
         target_link = gen_content_link(
             release["target"],

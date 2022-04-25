@@ -10,10 +10,9 @@ import logging
 import sys
 from typing import Callable
 
-import sentry_sdk
-
 from django.core.management.base import BaseCommand
 
+from swh.web.common.exc import sentry_capture_exception
 from swh.web.inbound_email import signals
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ class Command(BaseCommand):
         try:
             message = email.message_from_bytes(raw_message, policy=email.policy.default)
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            sentry_capture_exception(exc)
             self.handle_failed_message(raw_message)
             # XXX make sure having logging doesn't make postfix unhappy
             logger.exception("Could not convert email from bytes")
@@ -40,7 +39,7 @@ class Command(BaseCommand):
         handled = False
         for receiver, response in responses:
             if isinstance(response, Exception):
-                sentry_sdk.capture_exception(response)
+                sentry_capture_exception(response)
                 self.handle_failing_receiver(message, receiver)
                 logger.error(
                     "Receiver produced the following exception", exc_info=response

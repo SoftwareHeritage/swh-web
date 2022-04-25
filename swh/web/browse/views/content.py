@@ -6,8 +6,6 @@
 import difflib
 from distutils.util import strtobool
 
-import sentry_sdk
-
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
@@ -22,7 +20,12 @@ from swh.web.browse.utils import (
     request_content,
 )
 from swh.web.common import archive, highlightjs, query
-from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
+from swh.web.common.exc import (
+    BadInputExc,
+    NotFoundExc,
+    http_status_code_message,
+    sentry_capture_exception,
+)
 from swh.web.common.identifiers import get_swhids_info
 from swh.web.common.typing import ContentMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
@@ -162,7 +165,7 @@ def _contents_diff(request, from_query_string, to_query_string):
                 diff_lines = difflib.unified_diff(content_from_lines, content_to_lines)
                 diff_str = "".join(list(diff_lines)[2:])
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
+            sentry_capture_exception(exc)
             diff_str = str(exc)
 
     diff_data["diff_str"] = diff_str

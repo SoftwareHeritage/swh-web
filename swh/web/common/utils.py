@@ -20,7 +20,6 @@ from pkg_resources import get_distribution
 from prometheus_client.registry import CollectorRegistry
 import requests
 from requests.auth import HTTPBasicAuth
-import sentry_sdk
 
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -34,7 +33,7 @@ from swh.web.auth.utils import (
     ADMIN_LIST_DEPOSIT_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
 )
-from swh.web.common.exc import BadInputExc
+from swh.web.common.exc import BadInputExc, sentry_capture_exception
 from swh.web.common.typing import QueryParameters
 from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 
@@ -434,8 +433,8 @@ def django_cache(
                 try:
                     ret = func(*args, **kwargs)
                 except Exception as exc:
-                    sentry_sdk.capture_exception(exc)
                     if catch_exception:
+                        sentry_capture_exception(exc)
                         return exception_return_value
                     else:
                         raise

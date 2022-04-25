@@ -5,9 +5,9 @@
 
 from dataclasses import dataclass
 from email.headerregistry import Address
-from email.message import EmailMessage
+from email.message import EmailMessage, Message
 import logging
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple, Union
 
 from django.core.signing import Signer
 from django.utils.crypto import constant_time_compare
@@ -166,6 +166,59 @@ def get_pks_from_message(
     return ret
 
 
+def _get_message_text(
+    message: Union[Message, EmailMessage]
+) -> Tuple[bool, List[bytes]]:
+    """Recursively parses a message, and returns ``(is_plain_text, parts)``."""
+
+    # Ignore all attachments; only consider message body
+    content_disposition = str(message.get("Content-Disposition"))
+    if "attachment" in content_disposition:
+        return (False, [])
+
+    maintype = message.get_content_maintype()
+    subtype = message.get_content_subtype()
+    if maintype == "text":
+        # This is a simple message (message part)
+        current_part = message.get_payload(decode=True).rstrip(b"\n")
+        if subtype == "plain":
+            if current_part:
+                return (True, [current_part])
+        elif subtype == "html":
+            if current_part:
+                return (False, [current_part])
+        return (True, [])
+    elif maintype == "multipart":
+        # This message (message part) contains sub-parts.
+        text_parts: List[bytes] = []
+        fallback_parts: List[bytes] = []
+        all_parts: List[bytes] = []
+
+        # Parse each part independently:
+        for part in message.get_payload():
+            (is_plain_text, current_part) = _get_message_text(part)
+            if is_plain_text:
+                text_parts.append(b"".join(current_part))
+            else:
+                fallback_parts.append(b"".join(current_part))
+            all_parts.extend(current_part)
+
+        if subtype == "alternative":
+            # Return the largest plain text part if any; or the largest HTML otherwise
+            if text_parts:
+                return (True, [max(text_parts, key=len)])
+
+            if fallback_parts:
+                return (False, [max(fallback_parts, key=len)])
+        else:
+            # Handles multipart/mixed; but this should be an appropriate handling for
+            # other multipart formats
+            is_plain_text = len(fallback_parts) == 0
+            return (is_plain_text, all_parts)
+
+    return (False, [])
+
+
 def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
     """Get the plaintext body for a given message, if any such part exists. If only a html
     part exists, return that instead.
@@ -174,31 +227,5 @@ def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
     function will return the largest of them.
 
     """
-    if not message.is_multipart():
-        single_part = message.get_payload(decode=True).rstrip(b"\n")
-        return single_part or None
-
-    text_parts: List[bytes] = []
-    fallback_parts: List[bytes] = []
-
-    for part in message.walk():
-        content_type = part.get_content_type()
-        content_disposition = str(part.get("Content-Disposition"))
-        if "attachment" in content_disposition:
-            continue
-        if content_type == "text/plain":
-            current_part = part.get_payload(decode=True).rstrip(b"\n")
-            if current_part:
-                text_parts.append(current_part)
-        elif not text_parts and content_type == "text/html":
-            current_part = part.get_payload(decode=True).rstrip(b"\n")
-            if current_part:
-                fallback_parts.append(current_part)
-
-    if text_parts:
-        return max(text_parts, key=len)
-
-    if fallback_parts:
-        return max(fallback_parts, key=len)
-
-    return None
+    (is_plain_text, parts) = _get_message_text(message)
+    return b"".join(parts) or None
