@@ -487,7 +487,7 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
     content = 'Not available';
 
   } else if (saveRequestTaskInfo.note != null) {
-    content = saveRequestTaskInfo.note;
+    content = `<pre>${saveRequestTaskInfo.note}</pre>`;
   } else {
     const saveRequestInfo = [];
     const taskData = {

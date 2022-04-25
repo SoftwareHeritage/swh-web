@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from prometheus_client import Gauge
 import requests
-import sentry_sdk
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
@@ -21,7 +20,12 @@ from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
+from swh.web.common.exc import (
+    BadInputExc,
+    ForbiddenExc,
+    NotFoundExc,
+    sentry_capture_exception,
+)
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -810,7 +814,7 @@ def get_save_origin_task_info(
 
     except Exception as exc:
         logger.warning("Request to Elasticsearch failed\n%s", exc)
-        sentry_sdk.capture_exception(exc)
+        sentry_capture_exception(exc)
 
     if not full_info:
         for field in ("id", "backend_id", "worker"):
