@@ -120,8 +120,8 @@ def re_encode_content(
         for enc in encodings:
             try:
                 content_data = content_data.decode(enc).encode("utf-8")
-            except Exception as exc:
-                sentry_capture_exception(exc)
+            except Exception:
+                pass
             else:
                 # ensure display in content view
                 encoding = enc
