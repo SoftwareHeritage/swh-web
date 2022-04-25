@@ -11,6 +11,8 @@ let expectedOrigins;
 let depositModerationUrl;
 let depositListUrl;
 
+const $ = Cypress.$;
+
 describe('Test moderation deposit Login/logout', function() {
   before(function() {
     depositModerationUrl = this.Urls.admin_deposit();
@@ -135,6 +137,7 @@ describe('Test admin deposit page', function() {
 
       // only 2 entries
       cy.get('@rows').each((row, idx, collection) => {
+        const cells = row[0].cells;
         const deposit = deposits[idx];
         const responseDeposit = testDeposits[idx];
         assert.isNotNull(deposit);
@@ -156,6 +159,15 @@ describe('Test admin deposit page', function() {
           cy.contains(expectedOrigin).should('be.visible');
         }
 
+        if (deposit.uri && deposit.swhid_context) {
+          let html = `<a href="${this.Urls.browse_swhid(deposit.swhid_context)}">${deposit.uri}</a>`;
+          html += `&nbsp;<a href="${deposit.uri}" target="_blank" rel="noopener noreferrer">`;
+          html += '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+          expect($(cells[2]).html()).to.contain(html);
+        } else if (!deposit.uri) {
+          expect($(cells[2]).text().trim()).to.equal('');
+        }
+
         cy.contains(deposit.status).should('be.visible');
         // those are hidden by default, so now visible
         if (deposit.status_detail !== null) {
@@ -171,6 +183,7 @@ describe('Test admin deposit page', function() {
         if (deposit.raw_metadata !== null) {
           cy.get('button.metadata', {withinSubject: row})
             .should('exist')
+            .should('have.text', 'display')
             .click({force: true});
           cy.get('#swh-web-modal-html code.xml').should('be.visible');
 

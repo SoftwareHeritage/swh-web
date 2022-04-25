@@ -7,19 +7,29 @@
 
 import {getHumanReadableDate} from 'utils/functions';
 
-function genSwhLink(data, type) {
+function genSwhLink(data, type, linkText = '') {
   if (type === 'display' && data && data.startsWith('swh')) {
     const browseUrl = Urls.browse_swhid(data);
     const formattedSWHID = data.replace(/;/g, ';<br/>');
-    return `<a href="${browseUrl}">${formattedSWHID}</a>`;
+    if (!linkText) {
+      linkText = formattedSWHID;
+    }
+    return `<a href="${browseUrl}">${linkText}</a>`;
   }
   return data;
 }
 
-function genLink(data, type) {
+function genLink(data, type, openInNewTab = false, linkText = '') {
   if (type === 'display' && data) {
     const sData = encodeURI(data);
-    return `<a href="${sData}">${sData}</a>`;
+    if (!linkText) {
+      linkText = sData;
+    }
+    let attrs = '';
+    if (openInNewTab) {
+      attrs = 'target="_blank" rel="noopener noreferrer"';
+    }
+    return `<a href="${sData}" ${attrs}>${linkText}</a>`;
   }
   return data;
 }
@@ -70,7 +80,19 @@ export function initDepositAdmin(username, isStaff) {
             data: 'uri',
             name: 'uri',
             render: (data, type, row) => {
-              return genLink(data, type);
+              const sanitizedURL = $.fn.dataTable.render.text().display(data);
+              let swhLink = '';
+              let originLink = '';
+              if (row.swhid_context && data) {
+                swhLink = genSwhLink(row.swhid_context, type, sanitizedURL);
+              } else if (data) {
+                swhLink = sanitizedURL;
+              }
+              if (data) {
+                originLink = genLink(sanitizedURL, type, true,
+                                     '<i class="mdi mdi-open-in-new" aria-hidden="true"></i>');
+              }
+              return swhLink + '&nbsp;' + originLink;
             }
           },
           {
@@ -88,7 +110,7 @@ export function initDepositAdmin(username, isStaff) {
             render: (data, type, row) => {
               if (type === 'display') {
                 if (row.raw_metadata) {
-                  return `<button class="btn btn-default metadata">metadata</button>`;
+                  return `<button class="btn btn-default metadata">display</button>`;
                 }
               }
               return data;

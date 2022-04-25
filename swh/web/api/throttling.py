@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,13 +6,12 @@
 from ipaddress import IPv4Network, IPv6Network, ip_address, ip_network
 from typing import Callable, List, TypeVar, Union
 
-import sentry_sdk
-
 from django.core.exceptions import ImproperlyConfigured
 import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
 
 from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION
+from swh.web.common.exc import sentry_capture_exception
 from swh.web.config import get_config
 
 APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
@@ -109,7 +108,7 @@ class SwhWebRateThrottle(ScopedRateThrottle):
                     request_allowed = super().allow_request(request, view)
                 # use default rate limiting otherwise
                 except ImproperlyConfigured as exc:
-                    sentry_sdk.capture_exception(exc)
+                    sentry_capture_exception(exc)
 
             setattr(view, self.scope_attr, default_scope)
             if request_allowed is None:

@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021  The Software Heritage developers
+# Copyright (C) 2019-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,6 @@
 import json
 
 import requests
-import sentry_sdk
 
 from django.conf.urls import include, url
 from django.contrib.staticfiles import finders
@@ -14,6 +13,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from swh.web.common import archive
+from swh.web.common.exc import sentry_capture_exception
 from swh.web.config import get_config
 from swh.web.misc.metrics import prometheus_metrics
 
@@ -35,7 +35,7 @@ def _stat_counters(request):
         response = requests.get(url, timeout=5)
         stat_counters_history = json.loads(response.text)
     except Exception as exc:
-        sentry_sdk.capture_exception(exc)
+        sentry_capture_exception(exc)
 
     counters = {
         "stat_counters": stat_counters,
