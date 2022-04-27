@@ -59,15 +59,19 @@ _TEST_INDEXER_BASE_CONFIG = {
 }
 
 
-def random_sha1():
-    return hash_to_hex(bytes(random.randint(0, 255) for _ in range(20)))
+def random_sha1_bytes() -> Sha1:
+    return bytes(random.randint(0, 255) for _ in range(20))
 
 
-def random_sha256():
+def random_sha1() -> str:
+    return hash_to_hex(random_sha1_bytes())
+
+
+def random_sha256() -> str:
     return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
 
 
-def random_blake2s256():
+def random_blake2s256() -> str:
     return hash_to_hex(bytes(random.randint(0, 255) for _ in range(32)))
 
 

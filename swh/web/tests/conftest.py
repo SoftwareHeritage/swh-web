@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -31,7 +31,7 @@ from swh.model.hashutil import (
     hash_to_hex,
 )
 from swh.model.model import Content, Directory
-from swh.model.swhids import ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
@@ -52,6 +52,7 @@ from swh.web.tests.data import (
     override_storages,
     random_content,
     random_sha1,
+    random_sha1_bytes,
     random_sha256,
 )
 from swh.web.tests.utils import create_django_permission
@@ -813,6 +814,18 @@ def snapshot_swhid():
     ingested into the test archive.
     """
     return random.choice(_object_type_swhid(ObjectType.SNAPSHOT))
+
+
+@pytest.fixture(scope="function", params=list(ObjectType))
+def unknown_core_swhid(request) -> CoreSWHID:
+    """Fixture returning an unknown core SWHID.
+
+    Tests using this will be called once per object type.
+    """
+    return CoreSWHID(
+        object_type=request.param,
+        object_id=random_sha1_bytes(),
+    )
 
 
 # Fixture to manipulate data from a sample archive used in the tests
