@@ -1406,7 +1406,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
-def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
+def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[bytes]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 
@@ -1415,7 +1415,7 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
         keys: object types
         values: object hashes
     Returns:
-        A set(hexadecimal) of the hashes not found in the storage
+        A set(bytes) of the hashes not found in the storage
     """
     missing_hashes = []
 
@@ -1431,9 +1431,7 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
         elif obj_type == ObjectType.SNAPSHOT:
             missing_hashes.append(storage.snapshot_missing(obj_ids))
 
-    missing = set(
-        map(lambda x: hashutil.hash_to_hex(x), itertools.chain(*missing_hashes))
-    )
+    missing = set(itertools.chain(*missing_hashes))
 
     return missing
 

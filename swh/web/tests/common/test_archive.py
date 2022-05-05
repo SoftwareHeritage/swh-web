@@ -31,7 +31,7 @@ from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
-from swh.web.tests.data import random_content, random_sha1
+from swh.web.tests.data import random_content, random_sha1, random_sha1_bytes
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 
 
@@ -941,18 +941,18 @@ def test_lookup_invalid_objects(invalid_sha1):
 
 
 def test_lookup_missing_hashes_non_present():
-    missing_cnt = random_sha1()
-    missing_dir = random_sha1()
-    missing_rev = random_sha1()
-    missing_rel = random_sha1()
-    missing_snp = random_sha1()
+    missing_cnt = random_sha1_bytes()
+    missing_dir = random_sha1_bytes()
+    missing_rev = random_sha1_bytes()
+    missing_rel = random_sha1_bytes()
+    missing_snp = random_sha1_bytes()
 
     grouped_swhids = {
-        ObjectType.CONTENT: [hash_to_bytes(missing_cnt)],
-        ObjectType.DIRECTORY: [hash_to_bytes(missing_dir)],
-        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
-        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
-        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
+        ObjectType.CONTENT: [missing_cnt],
+        ObjectType.DIRECTORY: [missing_dir],
+        ObjectType.REVISION: [missing_rev],
+        ObjectType.RELEASE: [missing_rel],
+        ObjectType.SNAPSHOT: [missing_snp],
     }
 
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
@@ -967,16 +967,16 @@ def test_lookup_missing_hashes_non_present():
 
 
 def test_lookup_missing_hashes_some_present(content, directory):
-    missing_rev = random_sha1()
-    missing_rel = random_sha1()
-    missing_snp = random_sha1()
+    missing_rev = random_sha1_bytes()
+    missing_rel = random_sha1_bytes()
+    missing_snp = random_sha1_bytes()
 
     grouped_swhids = {
         ObjectType.CONTENT: [hash_to_bytes(content["sha1_git"])],
         ObjectType.DIRECTORY: [hash_to_bytes(directory)],
-        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
-        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
-        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
+        ObjectType.REVISION: [missing_rev],
+        ObjectType.RELEASE: [missing_rel],
+        ObjectType.SNAPSHOT: [missing_snp],
     }
 
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
