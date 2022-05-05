@@ -109,12 +109,13 @@ def api_swhid_known(request):
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
     # search for hashes not present in the storage
-    missing_hashes = set(
-        map(hash_to_bytes, archive.lookup_missing_hashes(swhids_by_type))
-    )
+    missing_hashes = {
+        k: set(map(hash_to_bytes, archive.lookup_missing_hashes({k: v})))
+        for k, v in swhids_by_type.items()
+    }
 
     for swhid in swhids:
-        if swhid.object_id not in missing_hashes:
+        if swhid.object_id not in missing_hashes[swhid.object_type]:
             response[str(swhid)]["known"] = True
 
     return response
