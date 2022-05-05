@@ -14,7 +14,7 @@ and mechanized (REST API) use
    developers-info
    uri-scheme-api
    uri-scheme-browse
-   uri-scheme-identifiers
+   uri-scheme-swhids
    uri-scheme-misc
 
 
