@@ -16,9 +16,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import archive, converters
 from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.utils import reverse
-
-SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
+from swh.web.common.utils import SWHID_RE, reverse
 
 
 @api_route(

@@ -39,6 +39,8 @@ from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
+SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
+
 swh_object_icons = {
     "alias": "mdi mdi-star",
     "branch": "mdi mdi-source-branch",

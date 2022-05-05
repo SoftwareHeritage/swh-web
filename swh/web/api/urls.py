@@ -13,6 +13,7 @@ import swh.web.api.views.metadata  # noqa
 import swh.web.api.views.origin  # noqa
 import swh.web.api.views.origin_save  # noqa
 import swh.web.api.views.ping  # noqa
+import swh.web.api.views.raw  # noqa
 import swh.web.api.views.release  # noqa
 import swh.web.api.views.revision  # noqa
 import swh.web.api.views.snapshot  # noqa
