@@ -18,7 +18,7 @@ from swh.web.api.views.utils import api_lookup
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse
+from swh.web.common.utils import origin_visit_types, reverse
 
 DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information
@@ -146,13 +146,29 @@ def api_origin(request, origin_url):
     )
 
 
+def _visit_types():
+    docstring = ""
+    # available visit types are queried using swh-search so we do it in a try
+    # block in case of failure (for instance in docker environment when
+    # elasticsearch service is not available)
+    try:
+        visit_types = [f"**{visit_type}**" for visit_type in origin_visit_types()]
+        docstring = ", ".join(visit_types[:-1]) + f", and {visit_types[-1]}"
+    except Exception:
+        docstring = "???"
+        pass
+    return docstring
+
+
 @api_route(
     r"/origin/search/(?P<url_pattern>.+)/",
     "api-1-origin-search",
     throttle_scope="swh_api_origin_search",
 )
 @api_doc("/origin/search/")
-@format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
+@format_docstring(
+    return_origin_array=DOC_RETURN_ORIGIN_ARRAY, visit_types=_visit_types()
+)
 def api_origin_search(request, url_pattern):
     """
     .. http:get:: /api/1/origin/search/(url_pattern)/
@@ -174,6 +190,8 @@ def api_origin_search(request, url_pattern):
             (bounded to 1000)
         :query boolean with_visit: if true, only return origins with at least
             one visit by Software heritage
+        :query string visit_type: if provided, only return origins with that
+            specific visit type (currently the supported types are {visit_types})
 
         {return_origin_array}
 
