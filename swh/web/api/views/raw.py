@@ -5,14 +5,14 @@
 
 from django.http import HttpResponse
 
+from swh.model import model
 from swh.model.git_objects import (
     content_git_object,
     directory_git_object,
-    revision_git_object,
     release_git_object,
+    revision_git_object,
     snapshot_git_object,
 )
-from swh.model import model
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos.directory import directory_get
@@ -32,7 +32,7 @@ from swh.web.common.utils import SWHID_RE
 @format_docstring()
 def api_raw_object(request, swhid):
     """
-    .. http:get::  /api/1/raw/<swhid>/
+    .. http:get::  /api/1/raw/(swhid)/
 
         Get the object corresponding to the SWHID in raw form.
 

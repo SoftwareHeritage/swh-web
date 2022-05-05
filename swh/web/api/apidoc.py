@@ -233,6 +233,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         # transform references to some elements into bold text
         text = re.sub(":http:header:`(.*)`", r"**\1**", text)
         text = re.sub(":func:`(.*)`", r"**\1**", text)
+        text = re.sub(":mod:`(.*)`", r"**\1**", text)
 
         # extract example urls
         if ":swh_web_api:" in text:
