@@ -114,6 +114,8 @@ def test_add_forge_request_create_success_post(
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
         "submitter_forward_username": expected_consent_bool,
+        "last_moderator": resp.data["last_moderator"],
+        "last_modified_date": resp.data["last_modified_date"],
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -143,11 +145,13 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
 
     assert resp.data == {
         **ADD_FORGE_DATA_FORGE1,
-        "id": 1,
+        "id": resp.data["id"],
         "status": "PENDING",
         "submission_date": resp.data["submission_date"],
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
+        "last_moderator": resp.data["last_moderator"],
+        "last_modified_date": resp.data["last_modified_date"],
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -330,7 +334,7 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
         "forge_type": ADD_FORGE_DATA_FORGE1["forge_type"],
         "status": "PENDING",
         "submission_date": resp.data[0]["submission_date"],
-        "id": 1,
+        "id": resp.data[0]["id"],
     }
 
     assert resp.data == [add_forge_request]
@@ -344,7 +348,7 @@ def test_add_forge_request_list_anonymous(api_client, regular_user):
         "forge_type": ADD_FORGE_DATA_FORGE2["forge_type"],
         "status": "PENDING",
         "submission_date": resp.data[0]["submission_date"],
-        "id": 2,
+        "id": resp.data[0]["id"],
     }
 
     assert resp.data == [other_forge_request, add_forge_request]
@@ -368,7 +372,9 @@ def test_add_forge_request_list_moderator(
         "submission_date": resp.data[1]["submission_date"],
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
-        "id": 1,
+        "last_moderator": resp.data[1]["last_moderator"],
+        "last_modified_date": resp.data[1]["last_modified_date"],
+        "id": resp.data[1]["id"],
     }
 
     other_forge_request = {
@@ -377,7 +383,9 @@ def test_add_forge_request_list_moderator(
         "submission_date": resp.data[0]["submission_date"],
         "submitter_name": regular_user.username,
         "submitter_email": regular_user.email,
-        "id": 2,
+        "last_moderator": resp.data[0]["last_moderator"],
+        "last_modified_date": resp.data[0]["last_modified_date"],
+        "id": resp.data[0]["id"],
     }
 
     assert resp.data == [other_forge_request, add_forge_request]
@@ -500,6 +508,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
     url = reverse("api-1-add-forge-request-get", url_args={"id": 1})
 
     resp = check_api_get_responses(api_client, url, status_code=200)
+    resp.data["history"] = [dict(history_item) for history_item in resp.data["history"]]
 
     assert resp.data == {
         "request": {
@@ -509,6 +518,8 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
             "submission_date": submission_date,
             "submitter_name": regular_user.username,
             "submitter_email": regular_user.email,
+            "last_moderator": add_forge_moderator.username,
+            "last_modified_date": resp.data["history"][1]["date"],
         },
         "history": [
             {

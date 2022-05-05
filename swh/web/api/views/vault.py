@@ -15,12 +15,11 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 from swh.web.common import archive, query
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
+from swh.web.common.utils import SWHID_RE, reverse
+
 
 ######################################################
 # Common
-
-SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
 
 
 # XXX: a bit spaghetti. Would be better with class-based views.

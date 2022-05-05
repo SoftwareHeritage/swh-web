@@ -51,6 +51,16 @@ export async function populateModerationList() {
           render: $.fn.dataTable.render.text()
         },
         {
+          data: 'last_moderator',
+          name: 'last_moderator',
+          render: $.fn.dataTable.render.text()
+        },
+        {
+          data: 'last_modified_date',
+          name: 'last_modified_date',
+          render: getHumanReadableDate
+        },
+        {
           data: 'status',
           name: 'status',
           render: function(data, type, row, meta) {

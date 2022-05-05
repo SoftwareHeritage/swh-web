@@ -9,6 +9,7 @@ from typing import Any, Dict, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.forms import CharField, ModelForm
 from django.http import HttpResponseBadRequest
 from django.http.request import HttpRequest
@@ -62,9 +63,37 @@ class AddForgeNowRequestHistoryForm(ModelForm):
 
 
 class AddForgeNowRequestSerializer(serializers.ModelSerializer):
+
+    last_moderator = serializers.SerializerMethodField()
+    last_modified_date = serializers.SerializerMethodField()
+    history: Dict[int, QuerySet] = {}
+
     class Meta:
         model = AddForgeRequest
         fields = "__all__"
+
+    def _gethistory(self, request):
+        if request.id not in self.history:
+            self.history[request.id] = AddForgeNowRequestHistory.objects.filter(
+                request=request
+            ).order_by("id")
+        return self.history[request.id]
+
+    def get_last_moderator(self, request):
+        last_history_with_moderator = (
+            self._gethistory(request).filter(actor_role="MODERATOR").last()
+        )
+        return (
+            last_history_with_moderator.actor if last_history_with_moderator else "None"
+        )
+
+    def get_last_modified_date(self, request):
+        last_history = self._gethistory(request).last()
+        return (
+            last_history.date.isoformat().replace("+00:00", "Z")
+            if last_history
+            else None
+        )
 
 
 class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
