@@ -3,7 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.hashutil import hash_to_hex
+from swh.model.swhids import CoreSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import archive
@@ -104,7 +105,7 @@ def api_swhid_known(request):
 
     swhids = [get_swhid(swhid) for swhid in request.data]
 
-    response = {str(swhid): {"known": False} for swhid in swhids}
+    response = {str(swhid): {"known": True} for swhid in swhids}
 
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
@@ -113,8 +114,9 @@ def api_swhid_known(request):
         k: set(archive.lookup_missing_hashes({k: v})) for k, v in swhids_by_type.items()
     }
 
-    for swhid in swhids:
-        if hash_to_bytes(swhid.object_id) not in missing_hashes[swhid.object_type]:
-            response[str(swhid)]["known"] = True
+    for ty, missing_hashes in missing_hashes.items():
+        for hash in missing_hashes.iter():
+            swhid = CoreSWHID(object_type=ty, object_id=hash)
+            response[str(swhid)]["known"] = False
 
     return response
