@@ -1406,7 +1406,21 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
-def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[bytes]:
+# TODO factored out into swh-storage in D7751. Use that version once it
+# lands.
+def _identifiers_missing(obj_type: ObjectType, obj_ids: List[bytes]) -> Iterable[bytes]:
+    return {
+        ObjectType.CONTENT: storage.content_missing_per_sha1_git,
+        ObjectType.DIRECTORY: storage.directory_missing,
+        ObjectType.REVISION: storage.revision_missing,
+        ObjectType.RELEASE: storage.release_missing,
+        ObjectType.SNAPSHOT: storage.snapshot_missing,
+    }[obj_type](obj_ids)
+
+
+def lookup_missing_hashes(
+    grouped_swhids: Dict[ObjectType, List[bytes]]
+) -> Dict[ObjectType, Set[bytes]]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 
@@ -1415,25 +1429,12 @@ def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[bytes]:
         keys: object types
         values: object hashes
     Returns:
-        A set(bytes) of the hashes not found in the storage
+        A dictionary per type with set(bytes) of the hashes not found in the storage
     """
-    missing_hashes = []
-
-    for obj_type, obj_ids in grouped_swhids.items():
-        if obj_type == ObjectType.CONTENT:
-            missing_hashes.append(storage.content_missing_per_sha1_git(obj_ids))
-        elif obj_type == ObjectType.DIRECTORY:
-            missing_hashes.append(storage.directory_missing(obj_ids))
-        elif obj_type == ObjectType.REVISION:
-            missing_hashes.append(storage.revision_missing(obj_ids))
-        elif obj_type == ObjectType.RELEASE:
-            missing_hashes.append(storage.release_missing(obj_ids))
-        elif obj_type == ObjectType.SNAPSHOT:
-            missing_hashes.append(storage.snapshot_missing(obj_ids))
-
-    missing = set(itertools.chain(*missing_hashes))
-
-    return missing
+    return {
+        obj_type: set(_identifiers_missing(obj_type, obj_ids))
+        for obj_type, obj_ids in grouped_swhids.items()
+    }
 
 
 def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:

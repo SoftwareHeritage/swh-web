@@ -958,11 +958,11 @@ def test_lookup_missing_hashes_non_present():
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
 
     assert actual_result == {
-        missing_cnt,
-        missing_dir,
-        missing_rev,
-        missing_rel,
-        missing_snp,
+        ObjectType.CONTENT: {missing_cnt},
+        ObjectType.DIRECTORY: {missing_dir},
+        ObjectType.REVISION: {missing_rev},
+        ObjectType.RELEASE: {missing_rel},
+        ObjectType.SNAPSHOT: {missing_snp},
     }
 
 
@@ -981,7 +981,11 @@ def test_lookup_missing_hashes_some_present(content, directory):
 
     actual_result = archive.lookup_missing_hashes(grouped_swhids)
 
-    assert actual_result == {missing_rev, missing_rel, missing_snp}
+    assert actual_result == {
+        ObjectType.REVISION: {missing_rev},
+        ObjectType.RELEASE: {missing_rel},
+        ObjectType.SNAPSHOT: {missing_snp},
+    }
 
 
 def test_lookup_origin_extra_trailing_slash(origin):

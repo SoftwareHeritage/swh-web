@@ -110,9 +110,7 @@ def api_swhid_known(request):
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
     # search for hashes not present in the storage
-    missing_hashes = {
-        k: set(archive.lookup_missing_hashes({k: v})) for k, v in swhids_by_type.items()
-    }
+    missing_hashes = archive.lookup_missing_hashes(swhids_by_type)
 
     for ty, missing_hashes in missing_hashes.items():
         for hash in missing_hashes.iter():
