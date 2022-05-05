@@ -71,8 +71,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
 
-    results = [dict(request) for request in requests]
-
+    results = [dict(req) for req in requests]
     table_data["recordsFiltered"] = add_forge_requests.count()
     table_data["data"] = results
     return JsonResponse(table_data)

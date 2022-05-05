@@ -1,12 +1,15 @@
 /**
- * Copyright (C) 2019-2021  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 let url;
-let origin;
+const origin = {
+  type: 'git',
+  url: 'https://git.example.org/user/repo'
+};
 const $ = Cypress.$;
 
 const saveCodeMsg = {
@@ -98,7 +101,6 @@ function genOriginSaveResponse({
 describe('Origin Save Tests', function() {
   before(function() {
     url = this.Urls.origin_save();
-    origin = this.origin[0];
     this.originSaveUrl = this.Urls.api_1_save_origin(origin.type, origin.url);
   });
 
