@@ -161,7 +161,7 @@ def _visit_types():
 
 
 @api_route(
-    r"/origin/search/(?P<url_pattern>.+)/",
+    r"/origin/search/(?P<url_pattern>.*)/",
     "api-1-origin-search",
     throttle_scope="swh_api_origin_search",
 )
