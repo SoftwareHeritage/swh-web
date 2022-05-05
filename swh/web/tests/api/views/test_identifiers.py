@@ -140,6 +140,26 @@ def test_api_known_swhid_some_present(api_client, content, directory):
     }
 
 
+def test_api_known_swhid_same_hash(api_client, content):
+    content_ = gen_swhid(ObjectType.CONTENT, content["sha1_git"])
+    # Reuse hash to make invalid directory SHWID
+    directory_ = gen_swhid(ObjectType.DIRECTORY, content["sha1_git"])
+
+    input_swhids = [
+        content_,
+        directory_,
+    ]
+
+    url = reverse("api-1-known")
+
+    resp = check_api_post_responses(api_client, url, data=input_swhids, status_code=200)
+
+    assert resp.data == {
+        content_: {"known": True},
+        directory_: {"known": False},
+    }
+
+
 def test_api_known_invalid_swhid(api_client):
     invalid_swhid_sha1 = ["swh:1:cnt:8068d0075010b590762c6cb5682ed53cb3c13de;"]
     invalid_swhid_type = ["swh:1:cnn:8068d0075010b590762c6cb5682ed53cb3c13deb"]
