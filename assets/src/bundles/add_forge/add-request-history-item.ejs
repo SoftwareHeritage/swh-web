@@ -20,6 +20,9 @@
     <div id="collapse<%= index %>" class="collapse" aria-labelledby="historyItem<%= index %>" data-parent="#requestHistory">
       <div class="card-body">
         <p><%= event.text %></p>
+        <%if (event.message_source_url !== null) { %>
+        <p><a href="<%= event.message_source_url %>">Open original message in email client</a></p>
+        <% } %>
         <%if (event.new_status !== null) { %>
           <p>
            <span>Status changed to:</span> <strong><%= swh.add_forge.formatRequestStatusName(event.new_status) %></strong>

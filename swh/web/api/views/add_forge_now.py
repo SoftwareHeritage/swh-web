@@ -107,9 +107,21 @@ class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
 
 
 class AddForgeNowRequestHistorySerializer(serializers.ModelSerializer):
+    message_source_url = serializers.SerializerMethodField()
+
     class Meta:
         model = AddForgeNowRequestHistory
         exclude = ("request", "message_source")
+
+    def get_message_source_url(self, request_history):
+        if request_history.message_source is None:
+            return None
+
+        return reverse(
+            "forge-add-message-source",
+            url_args={"id": request_history.pk},
+            request=self.context["request"],
+        )
 
 
 class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
@@ -388,7 +400,9 @@ def api_add_forge_request_get(request: Request, id: int):
         ADD_FORGE_MODERATOR_PERMISSION
     ):
         data = AddForgeNowRequestSerializer(add_forge_request).data
-        history = AddForgeNowRequestHistorySerializer(request_history, many=True).data
+        history = AddForgeNowRequestHistorySerializer(
+            request_history, many=True, context={"request": request}
+        ).data
     else:
         data = AddForgeNowRequestPublicSerializer(add_forge_request).data
         history = AddForgeNowRequestHistoryPublicSerializer(
