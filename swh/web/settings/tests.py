@@ -18,7 +18,7 @@ scope2_limiter_rate = 5
 scope2_limiter_rate_post = 2
 scope3_limiter_rate = 1
 scope3_limiter_rate_post = 1
-save_origin_rate_post = 10
+save_origin_rate_post = 5
 
 swh_web_config = get_config()
 
