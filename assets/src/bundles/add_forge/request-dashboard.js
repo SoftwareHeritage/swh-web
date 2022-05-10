@@ -57,6 +57,7 @@ async function populateRequestDetails(requestId) {
 
     // Setting data for the email, now adding static data
     $('#contactForgeAdmin').attr('emailTo', forgeRequest.forge_contact_email);
+    $('#contactForgeAdmin').attr('emailCc', forgeRequest.inbound_email_address);
     $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival request for ${forgeRequest.forge_domain}`);
     populateRequestHistory(data.history);
     populateDecisionSelectOption(forgeRequest.status);
@@ -123,9 +124,10 @@ export function populateDecisionSelectOption(currentStatus) {
 function contactForgeAdmin(event) {
   // Open the mailclient with pre-filled text
   const mailTo = $('#contactForgeAdmin').attr('emailTo');
+  const mailCc = $('#contactForgeAdmin').attr('emailCc');
   const subject = $('#contactForgeAdmin').attr('emailSubject');
   const emailText = emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '%0D%0A');
   const w = window.open('', '_blank', '', true);
-  w.location.href = `mailto: ${mailTo}?subject=${subject}&body=${emailText}`;
+  w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailCc}&Subject=${subject}&body=${emailText}`;
   w.focus();
 }
