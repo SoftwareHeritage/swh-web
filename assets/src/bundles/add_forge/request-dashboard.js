@@ -61,10 +61,15 @@ async function populateRequestDetails(requestId) {
     $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival request for ${forgeRequest.forge_domain}`);
     populateRequestHistory(data.history);
     populateDecisionSelectOption(forgeRequest.status);
-  } catch (response) {
-    // The error message
-    $('#fetchError').removeClass('d-none');
-    $('#requestDetails').addClass('d-none');
+  } catch (e) {
+    if (e instanceof Response) {
+      // The fetch request failed (in handleFetchError), show the error message
+      $('#fetchError').removeClass('d-none');
+      $('#requestDetails').addClass('d-none');
+    } else {
+      // Unknown exception, pass it through
+      throw e;
+    }
   }
 }
 
