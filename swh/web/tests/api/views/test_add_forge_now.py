@@ -7,7 +7,7 @@ import datetime
 import threading
 import time
 from typing import Dict
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import iso8601
 import pytest
@@ -128,6 +128,7 @@ def test_add_forge_request_create_success_post(
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
         "inbound_email_address": inbound_email_for_pk(resp.data["id"]),
+        "forge_domain": urlparse(add_forge_data["forge_url"]).netloc,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -165,6 +166,7 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
         "inbound_email_address": inbound_email_for_pk(1),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -389,6 +391,7 @@ def test_add_forge_request_list_moderator(
         "last_modified_date": resp.data[1]["last_modified_date"],
         "id": resp.data[1]["id"],
         "inbound_email_address": inbound_email_for_pk(resp.data[1]["id"]),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
     }
 
     other_forge_request = {
@@ -401,6 +404,7 @@ def test_add_forge_request_list_moderator(
         "last_modified_date": resp.data[0]["last_modified_date"],
         "id": resp.data[0]["id"],
         "inbound_email_address": inbound_email_for_pk(resp.data[0]["id"]),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE2["forge_url"]).netloc,
     }
 
     assert resp.data == [other_forge_request, add_forge_request]
@@ -536,6 +540,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
             "last_moderator": add_forge_moderator.username,
             "last_modified_date": resp.data["history"][1]["date"],
             "inbound_email_address": inbound_email_for_pk(1),
+            "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
         },
         "history": [
             {

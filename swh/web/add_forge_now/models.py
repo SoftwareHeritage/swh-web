@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import enum
 from typing import List
+from urllib.parse import urlparse
 
 from django.db import models
 
@@ -118,3 +119,18 @@ class Request(models.Model):
         """Generate an email address for correspondence related to this request."""
         base_address = get_config()["add_forge_now"]["email_address"]
         return get_address_for_pk(salt=APP_LABEL, base_address=base_address, pk=self.pk)
+
+    @property
+    def forge_domain(self) -> str:
+        """Get the domain/netloc out of the forge_url.
+
+        Fallback to using the first part of the url path, if the netloc can't be found
+        (for instance, if the url scheme hasn't been set).
+        """
+
+        parsed_url = urlparse(self.forge_url)
+        domain = parsed_url.netloc
+        if not domain:
+            domain = parsed_url.path.split("/", 1)[0]
+
+        return domain

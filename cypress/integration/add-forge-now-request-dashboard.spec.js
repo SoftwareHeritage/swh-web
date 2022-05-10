@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-let requestId;
+let requestId, forgeDomain;
 
 function createDummyRequest(urls) {
   cy.task('db:add_forge_now:delete');
@@ -27,8 +27,9 @@ function createDummyRequest(urls) {
         'X-CSRFToken': token
       }
     }).then((response) => {
-      // setting requestId from response
+      // setting requestId and forgeDomain from response
       requestId = response.body.id;
+      forgeDomain = response.body.forge_domain;
       // logout the user
       cy.visit(urls.swh_web_homepage());
       cy.contains('a', 'logout').click();
@@ -87,7 +88,7 @@ describe('Test add forge now request dashboard load', function() {
 
     cy.get('#contactForgeAdmin')
       .should('have.attr', 'emailsubject')
-      .and('include', `[swh-add_forge_now] Request ${requestId}`);
+      .and('include', `Software Heritage archival request for ${forgeDomain}`);
   });
 
   it('should not show any error message', function() {
