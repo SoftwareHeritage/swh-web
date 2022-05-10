@@ -184,7 +184,9 @@ class SwhWebUserRateThrottle(SwhWebRateThrottle):
             # no throttling for staff users or users with adequate permission
             return True
         scope = self.get_scope(view)
-        if scope == "save_origin" and request.user.has_perm(API_SAVE_ORIGIN_PERMISSION):
+        if scope == "swh_save_origin" and request.user.has_perm(
+            API_SAVE_ORIGIN_PERMISSION
+        ):
             # no throttling on save origin endpoint for users with adequate permission
             return True
         return super().allow_request(request, view)

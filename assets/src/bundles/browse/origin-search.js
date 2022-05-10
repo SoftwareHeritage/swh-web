@@ -248,14 +248,15 @@ export function initOriginSearch() {
       event.preventDefault();
     });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get('q');
-    const withVisit = urlParams.has('with_visit');
-    const useSearchQL = urlParams.has('use_ql');
-    const withContent = urlParams.has('with_content');
-    const searchMetadata = urlParams.has('search_metadata');
-    const visitType = urlParams.get('visit_type');
-    if (query) {
+    if (window.location.search) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const query = urlParams.get('q');
+      const withVisit = urlParams.has('with_visit');
+      const useSearchQL = urlParams.has('use_ql');
+      const withContent = urlParams.has('with_content');
+      const searchMetadata = urlParams.has('search_metadata');
+      const visitType = urlParams.get('visit_type');
+
       $('#swh-origins-url-patterns').val(query);
       $('#swh-search-origins-with-visit').prop('checked', withVisit);
       $('#swh-search-use-ql').prop('checked', useSearchQL ?? false);
