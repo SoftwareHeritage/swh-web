@@ -1,5 +1,5 @@
-URI scheme for Software Heritage identifiers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+URI scheme for SoftWare Heritage IDentifiers (SWHIDs)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A subset of Software Heritage objects (contents, directories, releases and
 revisions) can be browsed using :ref:`persistent-identifiers`.  Those

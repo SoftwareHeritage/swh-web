@@ -793,3 +793,46 @@ def test_api_stat_counters(api_client, mocker, backend):
 
     for obj in ["content", "origin", "release", "directory", "revision"]:
         assert counts.get(obj, 0) > 0
+
+
+@pytest.fixture
+def archived_origins(archive_data):
+    page_result = archive_data.origin_list(page_token=None, limit=10000)
+    origins = [origin.to_dict() for origin in page_result.results]
+    for origin in origins:
+        ovs = archive_data.origin_visit_get_with_statuses(origin["url"]).results
+        del origin["id"]
+        origin["type"] = ovs[0].visit.type
+
+    return origins
+
+
+def test_api_origin_search_empty_pattern(api_client, archived_origins):
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": ""},
+        query_params={"limit": 10000},
+    )
+
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    assert {o["url"] for o in rv.data} == {o["url"] for o in archived_origins}
+
+
+def test_api_origin_search_empty_pattern_and_visit_type(api_client, archived_origins):
+
+    visit_types = {o["type"] for o in archived_origins}
+
+    for visit_type in visit_types:
+
+        url = reverse(
+            "api-1-origin-search",
+            url_args={"url_pattern": ""},
+            query_params={"visit_type": visit_type, "limit": 10000},
+        )
+
+        rv = check_api_get_responses(api_client, url, status_code=200)
+
+        assert {o["url"] for o in rv.data} == {
+            o["url"] for o in archived_origins if o["type"] == visit_type
+        }

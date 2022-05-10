@@ -31,7 +31,7 @@ function searchInCalendar(date) {
     .trigger('mouseenter')
     .get('.popover-body')
     .should('be.visible')
-    .and('contain', `${date.hours}:${date.minutes} UTC`);
+    .and('contain', `${date.hours}:${date.minutes}:${date.seconds} UTC`);
 }
 
 describe('Visits tests', function() {

@@ -159,12 +159,12 @@ docs/index.rst
 docs/uri-scheme-api-content.rst
 docs/uri-scheme-api-directory.rst
 docs/uri-scheme-api-graph.rst
-docs/uri-scheme-api-identifiers.rst
 docs/uri-scheme-api-origin.rst
 docs/uri-scheme-api-release.rst
 docs/uri-scheme-api-revision.rst
 docs/uri-scheme-api-snapshot.rst
 docs/uri-scheme-api-stat.rst
+docs/uri-scheme-api-swhids.rst
 docs/uri-scheme-api-vault.rst
 docs/uri-scheme-api.rst
 docs/uri-scheme-browse-content.rst
@@ -174,8 +174,8 @@ docs/uri-scheme-browse-release.rst
 docs/uri-scheme-browse-revision.rst
 docs/uri-scheme-browse-snapshot.rst
 docs/uri-scheme-browse.rst
-docs/uri-scheme-identifiers.rst
 docs/uri-scheme-misc.rst
+docs/uri-scheme-swhids.rst
 docs/_static/.placeholder
 docs/_templates/.placeholder
 static/robots.txt
@@ -325,9 +325,9 @@ static/js/admin.cb05f9f1ab8e1adcdbfb.js.map
 static/js/auth.7a6ba4612115126f9b59.js
 static/js/auth.7a6ba4612115126f9b59.js.LICENSE.txt
 static/js/auth.7a6ba4612115126f9b59.js.map
-static/js/browse.e03893c8e18381ce9581.js
-static/js/browse.e03893c8e18381ce9581.js.LICENSE.txt
-static/js/browse.e03893c8e18381ce9581.js.map
+static/js/browse.dd1b3cff11e141a4fbbc.js
+static/js/browse.dd1b3cff11e141a4fbbc.js.LICENSE.txt
+static/js/browse.dd1b3cff11e141a4fbbc.js.map
 static/js/d3.f989183a810fb9dbb086.js
 static/js/d3.f989183a810fb9dbb086.js.map
 static/js/guided_tour.6fdb762b8416936b3c84.js

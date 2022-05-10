@@ -266,6 +266,51 @@ describe('Test origin-search', function() {
 
   });
 
+  function checkSearchHasResults() {
+    cy.get('.swh-search-icon')
+        .click();
+
+    cy.wait('@checkOriginVisits');
+
+    cy.get('#origin-search-results')
+        .should('be.visible');
+
+    cy.get('tbody tr td.swh-origin-visit-type')
+      .should('exist');
+  }
+
+  it('should search all origins when no pattern is provided', function() {
+    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+
+    // with default filters
+    checkSearchHasResults();
+
+    // remove filters
+    cy.get('#swh-search-origins-with-visit')
+      .uncheck({force: true})
+      .get('#swh-filter-empty-visits')
+      .uncheck({force: true});
+    checkSearchHasResults();
+
+  });
+
+  it('should search all origins for a visit type', function() {
+    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+
+    for (const visitType of ['git', 'tar']) {
+      cy.get('#swh-search-visit-type')
+        .select(visitType);
+
+      checkSearchHasResults();
+
+      cy.get('tbody tr td.swh-origin-visit-type').then(elts => {
+        for (const elt of elts) {
+          cy.get(elt).should('have.text', visitType);
+        }
+      });
+    }
+  });
+
   context('Test pagination', function() {
     it('should not paginate if there are not many results', function() {
       // Setup search

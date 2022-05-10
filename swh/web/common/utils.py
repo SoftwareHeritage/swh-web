@@ -158,7 +158,7 @@ def shorten_path(path):
     return re.sub(sha1_re, r"\1...", ret)
 
 
-def format_utc_iso_date(iso_date, fmt="%d %B %Y, %H:%M UTC"):
+def format_utc_iso_date(iso_date, fmt="%d %B %Y, %H:%M:%S UTC"):
     """Turns a string representation of an ISO 8601 datetime string
     to UTC and format it into a more human readable one.
 
