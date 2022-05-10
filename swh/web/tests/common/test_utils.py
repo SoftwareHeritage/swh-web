@@ -87,7 +87,7 @@ def test_parse_iso8601_date_to_utc_ko(invalid_iso8601_timestamp):
 def test_format_utc_iso_date():
     assert (
         utils.format_utc_iso_date("2017-05-04T13:27:13+02:00")
-        == "04 May 2017, 11:27 UTC"
+        == "04 May 2017, 11:27:13 UTC"
     )
 
 

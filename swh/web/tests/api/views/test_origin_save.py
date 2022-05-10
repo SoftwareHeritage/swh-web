@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,6 +11,7 @@ import pytest
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
+from swh.web.api.throttling import SwhWebUserRateThrottle
 from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION, SWH_AMBASSADOR_PERMISSION
 from swh.web.common.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -366,7 +367,7 @@ def test_save_requests_no_rate_limit_if_permission(
         url_args={"visit_type": _visit_type, "origin_url": _origin_url},
     )
 
-    for _ in range(save_origin_rate_post):
+    for _ in range(save_origin_rate_post * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR):
         check_api_post_response(api_client, url, status_code=200)
 
     check_api_post_response(api_client, url, status_code=200)

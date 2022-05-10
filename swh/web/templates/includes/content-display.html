@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2021  The Software Heritage developers
+Copyright (C) 2017-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -25,13 +25,6 @@ See top-level LICENSE file for more information
         Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
       {% elif "inode/x-empty" == mimetype %}
         <i>File is empty</i>
-      {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
-        <div class="swh-ipynb">
-        </div>
-      {% elif "text/" in mimetype or "application/" in mimetype and encoding != "binary" %}
-        <div class="highlightjs">
-          <pre><code class="{{ language }}">{{ content }}</code></pre>
-        </div>
       {% elif mimetype in browsers_supported_image_mimes and content %}
         <img src="data:{{ mimetype }};base64,{{ content }}"/>
       {% elif "application/pdf" == mimetype %}
@@ -42,6 +35,13 @@ See top-level LICENSE file for more information
             <button class="btn btn-default btn-sm" id="pdf-next">Next</button>
           </div>
           <canvas id="pdf-canvas"></canvas>
+        </div>
+      {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
+        <div class="swh-ipynb">
+        </div>
+      {% elif "text/" in mimetype or "application/" in mimetype and encoding != "binary" %}
+        <div class="highlightjs">
+          <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
       {% elif content %}
         Content with mime type {{ mimetype }} and encoding {{ encoding }} cannot be displayed.

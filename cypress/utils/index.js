@@ -22,7 +22,8 @@ export function getTime(text) {
     monthName: date.toLocaleString('en', {month: 'long'}),
     year: date.getUTCFullYear(),
     hours: pad(date.getUTCHours()),
-    minutes: pad(date.getUTCMinutes())
+    minutes: pad(date.getUTCMinutes()),
+    seconds: pad(date.getUTCSeconds())
   };
 
   return time;
