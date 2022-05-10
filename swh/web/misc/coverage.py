@@ -412,6 +412,11 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
             "deposit": _search_url(origins["search_pattern"], "deposit")
         }
 
+    focus = []
+    focus_param = request.GET.get("focus")
+    if focus_param:
+        focus = focus_param.split(",")
+
     return render(
         request,
         "misc/coverage.html",
@@ -420,7 +425,8 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
                 "Regular crawling": listed_origins,
                 "Discontinued hosting": legacy_origins,
                 "On demand archival": deposited_origins,
-            }
+            },
+            "focus": focus,
         },
     )
 
