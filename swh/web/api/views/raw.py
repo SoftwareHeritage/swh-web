@@ -91,13 +91,13 @@ def api_raw_object(request, swhid):
         result = directory_git_object(result)
 
     elif object_type == ObjectType.REVISION:
-        result = archive.storage.revision_get([object_id])[0]
+        result = archive.storage.revision_get([object_id], ignore_displayname=True)[0]
         if result is None:
             raise not_found()
         result = revision_git_object(result)
 
     elif object_type == ObjectType.RELEASE:
-        result = archive.storage.release_get([object_id])[0]
+        result = archive.storage.release_get([object_id], ignore_displayname=True)[0]
         if result is None:
             raise not_found()
         result = release_git_object(result)
