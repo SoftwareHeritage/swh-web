@@ -11,3 +11,9 @@ APP_LABEL = "swh_web_add_forge_now"
 class AddForgeNowConfig(AppConfig):
     name = "swh.web.add_forge_now"
     label = APP_LABEL
+
+    def ready(self):
+        from ..inbound_email.signals import email_received
+        from .signal_receivers import handle_inbound_message
+
+        email_received.connect(handle_inbound_message)

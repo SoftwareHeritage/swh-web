@@ -23,36 +23,46 @@ Add forge now – Software Heritage archive
 {% endblock %}
 
 {% block content %}
-<div class="col-md-12 offset-md-1">
-  <div class="col-md-8">
-    <h5 class="d-flex justify-content-between align-items-center mb-3">
-    </h5>
-    <p style="margin-top: 1rem;">
-      “Add forge now” provides a service for Software Heritage users to save a
-      complete forge in the Software Heritage archive by requesting the addition
-      of the forge URL into the list of regularly visited forges.
-      {% if not user.is_authenticated %}
-      <p>
-        You can submit an “Add forge now” request only when you are authenticated,
-        please login to submit the request.
-      </p>
-      {% endif %}
+<div class="row mt-3">
+  <p>
+    “Add forge now” provides a service for Software Heritage users to save a
+    complete forge in the Software Heritage archive by requesting the addition
+    of the forge URL into the list of regularly visited forges.
+  </p>
+  {% if not user.is_authenticated %}
+    <p>
+      You can submit an “Add forge now” request only when you are authenticated,
+      please login to submit the request.
     </p>
-  </div>
+  {% endif %}
+</div>
 
-  <!-- Tabs in the page -->
-  <div class="col-md-8">
-    <ul class="nav nav-tabs">
-      <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'forge-add-create' %}active{% endif %}" href="{% url 'forge-add-create' %}" id="swh-add-forge-tab">Submit a Request</a></li>
-      <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'forge-add-list' %}active{% endif %}" href="{% url 'forge-add-list' %}" id="swh-add-forge-requests-list-tab">Browse Requests</a></li>
-      <li class="nav-item"><a class="nav-link {% if request.resolver_match.view_name == 'forge-add-help' %}active{% endif %}" href="{% url 'forge-add-help' %}" id="swh-add-forge-requests-help-tab">Help</a></li>
-    </ul>
+<!-- Tabs in the page -->
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-create' %}active{% endif %}"
+       href="{% url 'forge-add-create' %}" id="swh-add-forge-tab">
+      Submit a Request
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-list' %}active{% endif %}"
+       href="{% url 'forge-add-list' %}" id="swh-add-forge-requests-list-tab">
+      Browse Requests
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-help' %}active{% endif %}"
+       href="{% url 'forge-add-help' %}" id="swh-add-forge-requests-help-tab">
+      Help
+    </a>
+  </li>
+</ul>
 
-    <div class="tab-content">
-      {% block tab_content %}
-      {% endblock %}
-    </div>
-  </div>
+<div class="tab-content">
+  {% block tab_content %}
+  {% endblock %}
+</div>
 
 <script>
   swh.add_forge.onCreateRequestPageLoad();

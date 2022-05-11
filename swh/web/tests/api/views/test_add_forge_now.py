@@ -7,16 +7,19 @@ import datetime
 import threading
 import time
 from typing import Dict
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import iso8601
 import pytest
 
-from swh.web.add_forge_now.models import Request
+from swh.web.add_forge_now.models import Request, RequestHistory
 from swh.web.common.utils import reverse
+from swh.web.config import get_config
+from swh.web.inbound_email.utils import get_address_for_pk
 from swh.web.tests.utils import (
     check_api_get_responses,
     check_api_post_response,
+    check_http_get_response,
     check_http_post_response,
 )
 
@@ -75,6 +78,15 @@ ADD_FORGE_DATA_FORGE5: Dict = {
 }
 
 
+def inbound_email_for_pk(pk: int) -> str:
+    """Check that the inbound email matches the one expected for the given pk"""
+
+    base_address = get_config()["add_forge_now"]["email_address"]
+    return get_address_for_pk(
+        salt="swh_web_add_forge_now", base_address=base_address, pk=pk
+    )
+
+
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.parametrize(
     "add_forge_data",
@@ -116,6 +128,8 @@ def test_add_forge_request_create_success_post(
         "submitter_forward_username": expected_consent_bool,
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
+        "inbound_email_address": inbound_email_for_pk(resp.data["id"]),
+        "forge_domain": urlparse(add_forge_data["forge_url"]).netloc,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -152,6 +166,8 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
         "submitter_email": regular_user.email,
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
+        "inbound_email_address": inbound_email_for_pk(1),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
     }
 
     assert date_before < iso8601.parse_date(resp.data["submission_date"]) < date_after
@@ -375,6 +391,8 @@ def test_add_forge_request_list_moderator(
         "last_moderator": resp.data[1]["last_moderator"],
         "last_modified_date": resp.data[1]["last_modified_date"],
         "id": resp.data[1]["id"],
+        "inbound_email_address": inbound_email_for_pk(resp.data[1]["id"]),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
     }
 
     other_forge_request = {
@@ -386,6 +404,8 @@ def test_add_forge_request_list_moderator(
         "last_moderator": resp.data[0]["last_moderator"],
         "last_modified_date": resp.data[0]["last_modified_date"],
         "id": resp.data[0]["id"],
+        "inbound_email_address": inbound_email_for_pk(resp.data[0]["id"]),
+        "forge_domain": urlparse(ADD_FORGE_DATA_FORGE2["forge_url"]).netloc,
     }
 
     assert resp.data == [other_forge_request, add_forge_request]
@@ -520,6 +540,8 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
             "submitter_email": regular_user.email,
             "last_moderator": add_forge_moderator.username,
             "last_modified_date": resp.data["history"][1]["date"],
+            "inbound_email_address": inbound_email_for_pk(1),
+            "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
         },
         "history": [
             {
@@ -529,6 +551,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
                 "actor_role": "SUBMITTER",
                 "date": resp.data["history"][0]["date"],
                 "new_status": "PENDING",
+                "message_source_url": None,
             },
             {
                 "id": 2,
@@ -537,9 +560,67 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
                 "actor_role": "MODERATOR",
                 "date": resp.data["history"][1]["date"],
                 "new_status": "WAITING_FOR_FEEDBACK",
+                "message_source_url": None,
             },
         ],
     }
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_get_moderator_message_source(
+    api_client, regular_user, add_forge_moderator
+):
+    resp = create_add_forge_request(api_client, regular_user)
+
+    rh = RequestHistory(
+        request=Request.objects.get(pk=resp.data["id"]),
+        new_status="WAITING_FOR_FEEDBACK",
+        text="waiting for message",
+        actor=add_forge_moderator.username,
+        actor_role="MODERATOR",
+        message_source=b"test with a message source",
+    )
+    rh.save()
+
+    api_client.force_login(add_forge_moderator)
+    url = reverse("api-1-add-forge-request-get", url_args={"id": resp.data["id"]})
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    resp.data["history"] = [dict(history_item) for history_item in resp.data["history"]]
+
+    # Check that the authentified moderator can't urlhack non-existent message sources
+    assert resp.data["history"][0]["message_source_url"] is None
+    empty_message_url = reverse(
+        "forge-add-message-source", url_args={"id": resp.data["history"][0]["id"]}
+    )
+    check_http_get_response(api_client, empty_message_url, status_code=404)
+
+    # Check that the authentified moderator can't urlhack non-existent message sources
+    non_existent_message_url = reverse(
+        "forge-add-message-source", url_args={"id": 9001}
+    )
+    check_http_get_response(api_client, non_existent_message_url, status_code=404)
+
+    # Check that the authentified moderator can access the message source when the url is
+    # given
+
+    message_source_url = resp.data["history"][-1]["message_source_url"]
+    assert message_source_url is not None
+
+    message_source_resp = check_http_get_response(
+        api_client, message_source_url, status_code=200, content_type="text/email"
+    )
+
+    # Check that the message source shows up as an attachment
+    assert message_source_resp.content == rh.message_source
+    disposition = message_source_resp["Content-Disposition"]
+    assert disposition.startswith("attachment; filename=")
+    assert disposition.endswith('.eml"')
+
+    # Check that a regular user can't access message sources
+    api_client.force_login(regular_user)
+    check_http_get_response(api_client, message_source_url, status_code=302)
+
+    api_client.force_login(add_forge_moderator)
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

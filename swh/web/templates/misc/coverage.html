@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2015-2021  The Software Heritage developers
+Copyright (C) 2015-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -23,7 +23,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2015-2021  The Software Heritage developers
+Copyright (C) 2015-2022  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -48,7 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <body style="padding-bottom: 0;">
     <div class="wrapper" style="margin-left: 0;" data-iframe-height>
       <div class="content">
-        <div class="container-fluid">
+        <div id="swh-coverage-content" class="container-fluid">
           <p>
             A significant amount of source code has already been ingested in the Software Heritage
             archive. It notably includes the following software origins.
@@ -59,7 +59,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <div class="row">
               {% for origins in origins_data.origins %}
                 <div class="col-md-4 swh-coverage-col">
-                  <div class="card swh-coverage" id="{{ origins.type }}" title="{{ origins.info }}">
+                  <div class="card swh-coverage {% if focus and origins.type in focus %}swh-coverage-focus{% endif %}"
+                       id="{{ origins.type }}" title="{{ origins.info }}">
                     <a href="{{ origins.info_url }}" target="_blank" rel="noopener noreferrer">
                       {% with 'img/logos/'|add:origins.type.lower|add:'.png' as png_logo %}
                         <img class="card-img-top swh-coverage-logo" src="{% static png_logo %}"
@@ -67,7 +68,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                       {% endwith %}
                     </a>
                     <div class="card-header swh-coverage-header">
-                      <a class="collapsed d-block" data-toggle="collapse"
+                      <a class="{% if not focus %}collapsed{% endif %} d-block" data-toggle="collapse"
                          href="#swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
                          aria-expanded="true" aria-controls="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
                          id="heading-collapsed"
@@ -82,9 +83,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         </div>
                       </a>
                     </div>
-                    <div id="swh-coverage-info-{{ origins_type.lower|cut:' ' }}" class="collapse"
+                    <div id="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         class="collapse {% if focus %}show{% endif %}"
                          aria-labelledby="heading-collapsed">
-                      <div class="card-body text-center swh-coverage-info-body">
+                      <div class="card-body text-center swh-coverage-info-body"
+                        {% if focus is not None %}style="max-height: none;"{% endif %}>
                         <table style="width: 100%">
                         {% if "instances" in origins %}
                           <thead>
@@ -147,5 +150,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </div>
     </div>
     <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>
+    <script>
+      $(document).ready(function() {
+        if (window.frameElement === null) {
+          // do not render full width page if not embedded in an iframe
+          $("#swh-coverage-content").removeClass("container-fluid");
+          $("#swh-coverage-content").addClass("container");
+        }
+      });
+    </script>
   </body>
 </html>

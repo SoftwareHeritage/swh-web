@@ -6,6 +6,7 @@
  */
 
 const axios = require('axios');
+const {execFileSync} = require('child_process');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -159,6 +160,16 @@ module.exports = (on, config) => {
       });
       db.close();
       return true;
+    },
+    processAddForgeNowInboundEmail(emailSrc) {
+      try {
+        execFileSync('django-admin',
+                     ['process_inbound_email', '--settings=swh.web.settings.tests'],
+                     {input: emailSrc});
+        return true;
+      } catch (_) {
+        return false;
+      }
     }
   });
   return config;

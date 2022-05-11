@@ -5,7 +5,9 @@
 
 from typing import Any, Dict, List
 
+from django.conf import settings
 from django.conf.urls import url
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
@@ -13,6 +15,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from swh.web.add_forge_now.models import Request as AddForgeRequest
+from swh.web.add_forge_now.models import RequestHistory
 from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
@@ -114,6 +117,32 @@ def create_request_help(request):
     )
 
 
+@user_passes_test(
+    has_add_forge_now_permission,
+    redirect_field_name="next_path",
+    login_url=settings.LOGIN_URL,
+)
+def create_request_message_source(request: HttpRequest, id: int) -> HttpResponse:
+    """View to retrieve the message source for a given request history entry"""
+
+    try:
+        history_entry = RequestHistory.objects.select_related("request").get(
+            pk=id, message_source__isnull=False
+        )
+        assert history_entry.message_source is not None
+    except RequestHistory.DoesNotExist:
+        return HttpResponse(status=404)
+
+    response = HttpResponse(
+        bytes(history_entry.message_source), content_type="text/email"
+    )
+    filename = f"add-forge-now-{history_entry.request.forge_domain}-message{id}.eml"
+
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
+
+
 urlpatterns = [
     url(
         r"^add-forge/request/list/datatables/$",
@@ -122,5 +151,10 @@ urlpatterns = [
     ),
     url(r"^add-forge/request/create/$", create_request_create, name="forge-add-create"),
     url(r"^add-forge/request/list/$", create_request_list, name="forge-add-list"),
+    url(
+        r"^add-forge/request/message-source/(?P<id>\d+)/$",
+        create_request_message_source,
+        name="forge-add-message-source",
+    ),
     url(r"^add-forge/request/help/$", create_request_help, name="forge-add-help"),
 ]

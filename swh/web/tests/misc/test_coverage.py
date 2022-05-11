@@ -6,8 +6,10 @@
 from datetime import datetime, timezone
 from itertools import chain
 import os
-from random import randint
+from random import choices, randint
 import uuid
+
+import pytest
 
 from django.conf import settings
 from django.utils.html import escape
@@ -31,20 +33,20 @@ def test_coverage_view_no_metrics(client, swh_scheduler):
     )
 
 
-def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
-    """
-    Generate some sample scheduler metrics and some sample deposits
-    that will be consumed by the archive coverage view, then check
-    the HTML page gets rendered without errors.
-    """
+visit_types = ["git", "hg", "svn", "bzr", "svn"]
 
+
+@pytest.fixture(autouse=True)
+def archive_coverage_data(mocker, swh_scheduler):
+    """Generate some sample scheduler metrics and some sample deposits
+    that will be consumed by the archive coverage view.
+    """
     # mock calls to get nixguix origin counts
     mock_archive = mocker.patch("swh.web.misc.coverage.archive")
     mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
     mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
 
     listers = []
-    visit_types = ["git", "hg", "svn", "bzr", "svn"]
     for origins in listed_origins["origins"]:
         # create some instances for each lister
         for instance in range(randint(1, 5)):
@@ -98,6 +100,8 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
     get_deposits_list = mocker.patch("swh.web.misc.coverage.get_deposits_list")
     get_deposits_list.return_value = deposits
 
+
+def test_coverage_view_with_metrics(client):
     # check view gets rendered without errors
     url = reverse("swh-coverage")
     resp = check_html_get_response(
@@ -128,4 +132,35 @@ def test_coverage_view_with_metrics(client, swh_scheduler, mocker):
     # check request as in production with cache enabled
     check_http_get_response(
         client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    )
+
+
+def test_coverage_view_with_focus(client):
+
+    origins = (
+        listed_origins["origins"]
+        + legacy_origins["origins"]
+        + deposited_origins["origins"]
+    )
+
+    focus = choices([o["type"] for o in origins], k=randint(1, 3))
+
+    # check view gets rendered without errors
+    url = reverse("swh-coverage", query_params={"focus": ",".join(focus)})
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="misc/coverage.html"
+    )
+
+    # check focused elements
+    assert_contains(
+        resp,
+        "swh-coverage-focus",
+        count=len([o for o in origins if o["type"] in focus]),
+    )
+
+    # check bootstrap cards are expanded
+    assert_contains(
+        resp,
+        'class="collapse show"',
+        count=len(origins),
     )
