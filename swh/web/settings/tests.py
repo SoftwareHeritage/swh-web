@@ -19,6 +19,7 @@ scope2_limiter_rate_post = 2
 scope3_limiter_rate = 1
 scope3_limiter_rate_post = 1
 save_origin_rate_post = 5
+api_raw_object_rate = 5
 
 swh_web_config = get_config()
 
@@ -54,6 +55,9 @@ swh_web_config.update(
                         "default": "120/h",
                         "POST": "%s/h" % save_origin_rate_post,
                     }
+                },
+                "swh_raw_object": {
+                    "limiter_rate": {"default": f"{api_raw_object_rate}/h"},
                 },
                 "scope1": {
                     "limiter_rate": {

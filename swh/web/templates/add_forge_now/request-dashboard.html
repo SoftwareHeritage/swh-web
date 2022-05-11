@@ -27,14 +27,14 @@ See top-level LICENSE file for more information
     <h3>Error fetching information about the request</h3>
   </div>
   <div class="row" id="requestDetails">
-    <div id="ForgeRequestActions" class="col-md-8 request-actions">
+    <div id="ForgeRequestActions" class="request-actions">
       <div>
         <div class="accordion" id="requestHistory">
         </div>
       </div>
       <div>
         <form method="POST"
-                action="{% url 'api-1-add-forge-request-update' request_id %}"
+              action="{% url 'api-1-add-forge-request-update' request_id %}"
               style="padding-top: 5px;" id="updateRequestForm">
             {% csrf_token %}
             <div class="form-row">
@@ -55,7 +55,7 @@ See top-level LICENSE file for more information
               </div>
             </div>
             <div class="form-group col-md-6">
-              <button type="submit" class="btn btn-default mb-2 btn-lg">Submit</button>
+              <button type="submit" class="btn btn-default mb-2">Submit</button>
             </div>
 
             <div class="form-row">
@@ -107,7 +107,7 @@ See top-level LICENSE file for more information
       <hr />
       <div>
         <button class="btn btn-link" id="contactForgeAdmin"
-                emailSubject="" emailTo="">
+                emailSubject="" emailTo="" emailCc="">
           Send message to the forge
         </button>
       </div>

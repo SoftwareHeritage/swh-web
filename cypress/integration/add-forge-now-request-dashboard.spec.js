@@ -6,34 +6,80 @@
  */
 
 let requestId;
+let requestForgeDomain;
+let requestInboundEmailAddress;
+
+const requestData = {
+  forge_type: 'bitbucket',
+  forge_url: 'test.example.com',
+  forge_contact_email: 'test@example.com',
+  forge_contact_name: 'test user',
+  submitter_forward_username: true,
+  forge_contact_comment: 'test comment'
+};
 
 function createDummyRequest(urls) {
   cy.task('db:add_forge_now:delete');
   cy.userLogin();
 
-  cy.getCookie('csrftoken').its('value').then((token) => {
+  return cy.getCookie('csrftoken').its('value').then((token) => {
     cy.request({
       method: 'POST',
       url: urls.api_1_add_forge_request_create(),
-      body: {
-        forge_type: 'bitbucket',
-        forge_url: 'test.example.com',
-        forge_contact_email: 'test@example.com',
-        forge_contact_name: 'test user',
-        submitter_forward_username: true,
-        forge_contact_comment: 'test comment'
-      },
+      body: requestData,
       headers: {
         'X-CSRFToken': token
       }
     }).then((response) => {
-      // setting requestId from response
+      // setting requestId and forgeDomain from response
       requestId = response.body.id;
+      requestForgeDomain = response.body.forge_domain;
+      requestInboundEmailAddress = response.body.inbound_email_address;
       // logout the user
       cy.visit(urls.swh_web_homepage());
       cy.contains('a', 'logout').click();
     });
   });
+}
+
+function genEmailSrc() {
+  return `Message-ID: <d5c43e75-2a11-250a-43e3-37034ae3904b@example.com>
+Date: Tue, 19 Apr 2022 14:00:56 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+To: ${requestData.forge_contact_email}
+Cc: ${requestInboundEmailAddress}
+Reply-To: ${requestInboundEmailAddress}
+Subject: Software Heritage archival request for test.example.com
+Content-Language: en-US
+From: Test Admin <admin@example.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Dear forge administrator,
+
+The mission of Software Heritage is to collect, preserve and share all the
+publicly available source code (see https://www.softwareheritage.org for more
+information).
+
+We just received a request to add the forge hosted at https://test.example.com to the
+list of software origins that are archived, and it is our understanding that you
+are the contact person for this forge.
+
+In order to archive the forge contents, we will have to periodically pull the
+public repositories it contains and clone them into the
+Software Heritage archive.
+
+Would you be so kind as to reply to this message to acknowledge the reception
+of this email and let us know if there are any special steps we should take in
+order to properly archive the public repositories hosted on your infrastructure?
+
+Thank you in advance for your help.
+
+Kind regards,
+The Software Heritage team
+`;
 }
 
 describe('Test add forge now request dashboard load', function() {
@@ -87,7 +133,7 @@ describe('Test add forge now request dashboard load', function() {
 
     cy.get('#contactForgeAdmin')
       .should('have.attr', 'emailsubject')
-      .and('include', `[swh-add_forge_now] Request ${requestId}`);
+      .and('include', `Software Heritage archival request for ${requestForgeDomain}`);
   });
 
   it('should not show any error message', function() {
@@ -145,22 +191,24 @@ function populateAndSubmitForm() {
   cy.get('#updateRequestForm').submit();
 }
 
-describe('Test forge now request update', function() {
+describe('Test add forge now request update', function() {
 
   beforeEach(function() {
-    createDummyRequest(this.Urls);
+    createDummyRequest(this.Urls).then(() => {
 
-    const url = this.Urls.add_forge_now_request_dashboard(requestId);
-    cy.adminLogin();
-    // intercept GET API on page load
-    cy.intercept(`${this.Urls.api_1_add_forge_request_get(requestId)}**`).as('forgeRequestGet');
-    // intercept update POST API
-    cy.intercept('POST', `${this.Urls.api_1_add_forge_request_update(requestId)}**`).as('forgeRequestUpdate');
-    cy.visit(url);
+      this.url = this.Urls.add_forge_now_request_dashboard(requestId);
+      cy.adminLogin();
+      // intercept GET API on page load
+      cy.intercept(`${this.Urls.api_1_add_forge_request_get(requestId)}**`).as('forgeRequestGet');
+      // intercept update POST API
+      cy.intercept('POST', `${this.Urls.api_1_add_forge_request_update(requestId)}**`).as('forgeRequestUpdate');
+      cy.visit(this.url).then(() => {
+        cy.wait('@forgeRequestGet');
+      });
+    });
   });
 
   it('should submit correct details', function() {
-    cy.wait('@forgeRequestGet');
     populateAndSubmitForm();
 
     // Making sure posting the right data
@@ -171,7 +219,6 @@ describe('Test forge now request update', function() {
   });
 
   it('should show success message', function() {
-    cy.wait('@forgeRequestGet');
     populateAndSubmitForm();
 
     // Making sure showing the success message
@@ -183,7 +230,6 @@ describe('Test forge now request update', function() {
   });
 
   it('should update the dashboard after submit', function() {
-    cy.wait('@forgeRequestGet');
     populateAndSubmitForm();
 
     // Making sure the UI is updated after the submit
@@ -210,6 +256,39 @@ describe('Test forge now request update', function() {
     cy.get('#decisionOptions')
       .children()
       .should('have.length', 2);
+  });
+
+  it('should update the dashboard after receiving email', function() {
+    const emailSrc = genEmailSrc();
+    cy.task('processAddForgeNowInboundEmail', emailSrc);
+
+    // Refresh page and wait for the async request to complete
+    cy.visit(this.url);
+    cy.wait('@forgeRequestGet');
+
+    cy.get('#requestHistory')
+      .children()
+      .should('have.length', 2);
+
+    cy.get('#historyItem1')
+      .click()
+      .should('contain', 'New status: Waiting for feedback');
+
+    cy.get('#historyItemBody1')
+      .find('a')
+      .should('contain', 'Open original message in email client')
+      .should('have.prop', 'href').and('contain', '/message-source/').then(function(href) {
+        cy.request(href).then((response) => {
+          expect(response.headers['content-type'])
+            .to.equal('text/email');
+
+          expect(response.headers['content-disposition'])
+            .to.match(/filename="add-forge-now-test.example.com-message\d+.eml"/);
+
+          expect(response.body)
+            .to.equal(emailSrc);
+        });
+      });
   });
 
   it('should show an error on API failure', function() {
