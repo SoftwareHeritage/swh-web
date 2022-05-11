@@ -202,8 +202,8 @@ static/css/vault.25fc5883f848b48ffa5b.css
 static/css/vault.25fc5883f848b48ffa5b.css.map
 static/css/vendors.c225243a224e4caea239.css
 static/css/vendors.c225243a224e4caea239.css.map
-static/css/webapp.ac2aaf02609c198af58a.css
-static/css/webapp.ac2aaf02609c198af58a.css.map
+static/css/webapp.06378649ab57a826c4e9.css
+static/css/webapp.06378649ab57a826c4e9.css.map
 static/fonts/MathJax_AMS-Regular.woff
 static/fonts/MathJax_Calligraphic-Bold.woff
 static/fonts/MathJax_Calligraphic-Regular.woff
@@ -316,9 +316,9 @@ static/img/logos/pypi.png
 static/img/logos/sourceforge.png
 static/img/thirdParty/chosen-sprite.png
 static/img/thirdParty/chosen-sprite@2x.png
-static/js/add_forge.6d7376990eabad2fde82.js
-static/js/add_forge.6d7376990eabad2fde82.js.LICENSE.txt
-static/js/add_forge.6d7376990eabad2fde82.js.map
+static/js/add_forge.b03ba291e43a6431bc44.js
+static/js/add_forge.b03ba291e43a6431bc44.js.LICENSE.txt
+static/js/add_forge.b03ba291e43a6431bc44.js.map
 static/js/admin.cb05f9f1ab8e1adcdbfb.js
 static/js/admin.cb05f9f1ab8e1adcdbfb.js.LICENSE.txt
 static/js/admin.cb05f9f1ab8e1adcdbfb.js.map
@@ -1654,11 +1654,13 @@ swh/web/urls.py
 swh/web/add_forge_now/__init__.py
 swh/web/add_forge_now/apps.py
 swh/web/add_forge_now/models.py
+swh/web/add_forge_now/signal_receivers.py
 swh/web/add_forge_now/views.py
 swh/web/add_forge_now/migrations/0001_initial.py
 swh/web/add_forge_now/migrations/0002_authorized_null_comment.py
 swh/web/add_forge_now/migrations/0003_request_submitter_forward_username.py
 swh/web/add_forge_now/migrations/0004_rename_tables.py
+swh/web/add_forge_now/migrations/0005_prepare_inbound_email.py
 swh/web/add_forge_now/migrations/__init__.py
 swh/web/admin/__init__.py
 swh/web/admin/add_forge_now.py

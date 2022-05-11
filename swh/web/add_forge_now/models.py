@@ -7,9 +7,12 @@ from __future__ import annotations
 
 import enum
 from typing import List
+from urllib.parse import urlparse
 
 from django.db import models
 
+from ..config import get_config
+from ..inbound_email.utils import get_address_for_pk
 from .apps import APP_LABEL
 
 
@@ -64,6 +67,7 @@ class RequestActorRole(enum.Enum):
     MODERATOR = "moderator"
     SUBMITTER = "submitter"
     FORGE_ADMIN = "forge admin"
+    EMAIL = "email"
 
     @classmethod
     def choices(cls):
@@ -82,6 +86,7 @@ class RequestHistory(models.Model):
     actor_role = models.TextField(choices=RequestActorRole.choices())
     date = models.DateTimeField(auto_now_add=True)
     new_status = models.TextField(choices=RequestStatus.choices(), null=True)
+    message_source = models.BinaryField(null=True)
 
     class Meta:
         app_label = APP_LABEL
@@ -110,3 +115,24 @@ class Request(models.Model):
     class Meta:
         app_label = APP_LABEL
         db_table = "add_forge_request"
+
+    @property
+    def inbound_email_address(self) -> str:
+        """Generate an email address for correspondence related to this request."""
+        base_address = get_config()["add_forge_now"]["email_address"]
+        return get_address_for_pk(salt=APP_LABEL, base_address=base_address, pk=self.pk)
+
+    @property
+    def forge_domain(self) -> str:
+        """Get the domain/netloc out of the forge_url.
+
+        Fallback to using the first part of the url path, if the netloc can't be found
+        (for instance, if the url scheme hasn't been set).
+        """
+
+        parsed_url = urlparse(self.forge_url)
+        domain = parsed_url.netloc
+        if not domain:
+            domain = parsed_url.path.split("/", 1)[0]
+
+        return domain

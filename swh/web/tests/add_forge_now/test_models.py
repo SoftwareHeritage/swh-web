@@ -5,7 +5,7 @@
 
 import pytest
 
-from swh.web.add_forge_now.models import RequestStatus
+from swh.web.add_forge_now.models import Request, RequestStatus
 
 
 @pytest.mark.parametrize(
@@ -24,3 +24,15 @@ from swh.web.add_forge_now.models import RequestStatus
 )
 def test_allowed_next_statuses(current_status, allowed_next_statuses):
     assert current_status.allowed_next_statuses() == allowed_next_statuses
+
+
+@pytest.mark.parametrize(
+    "forge_url, expected_domain",
+    [
+        ("https://gitlab.example.com/foo/bar", "gitlab.example.com"),
+        ("gitlab.example.com", "gitlab.example.com"),
+        ("gitlab.example.com/foo/bar", "gitlab.example.com"),
+    ],
+)
+def test_request_forge_domain(forge_url, expected_domain):
+    assert Request(forge_url=forge_url).forge_domain == expected_domain
