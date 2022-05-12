@@ -133,16 +133,12 @@ listed_origins: Dict[str, Any] = {
             "info": "public packages from the source-based package manager for OCaml",
             "search_pattern": "opam+https://opam.ocaml.org/",
         },
-        # apart our forge, most phabricator origins have not been archived
-        # while they have been listed so do not display those type of origins
-        # until new listing processes have been executed and origins loaded
-        #
-        # {
-        #     "type": "phabricator",
-        #     "info_url": "https://www.phacility.com/phabricator",
-        #     "info": "public repositories from multiple Phabricator instances",
-        #     "search_pattern": "phabricator",
-        # },
+        {
+            "type": "phabricator",
+            "info_url": "https://www.phacility.com/phabricator",
+            "info": "public repositories from multiple Phabricator instances",
+            "search_pattern": "phabricator",
+        },
         {
             "type": "pypi",
             "info_url": "https://pypi.org",
