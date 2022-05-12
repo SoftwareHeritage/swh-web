@@ -135,6 +135,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "maven",
+            "info_url": "https://maven.apache.org/",
+            "info": "java source packages from maven repositories",
+            "search_pattern": {
+                "default": "maven",
+            },
+        },
+        {
             "type": "nixos",
             "info_url": "https://nixos.org",
             "info": "source code tarballs used to build the Nix package collection",
