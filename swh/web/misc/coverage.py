@@ -170,6 +170,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "Packagist",
+            "info_url": "https://packagist.org/",
+            "info": "source code repositories referenced by The PHP Package Repository",
+            "search_pattern": {
+                "default": "",
+            },
+        },
+        {
             "type": "phabricator",
             "info_url": "https://www.phacility.com/phabricator",
             "info": "public repositories from multiple Phabricator instances",
@@ -429,6 +437,7 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
         nb_instances = len(instances)
         for instance_name, visit_types in instances.items():
             for visit_type in visit_types:
+                search_url = ""
                 if nb_instances > 1:
                     search_pattern = instance_name
                 else:
@@ -436,7 +445,8 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
                         search_pattern = origins["search_pattern"][visit_type]
                     else:
                         search_pattern = origins["search_pattern"]["default"]
-                search_url = _search_url(search_pattern, visit_type)
+                if search_pattern:
+                    search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
 
     # filter out origin types without archived origins on production and staging

@@ -125,7 +125,7 @@ def test_coverage_view_with_metrics(client, archive_coverage_data):
             for visit_types_ in origins["instances"].values():
                 origin_visit_types.update(visit_types_.keys())
                 for data in visit_types_.values():
-                    if data["count"]:
+                    if data["count"] and data["search_url"]:
                         assert_contains(resp, f'<a href="{escape(data["search_url"])}"')
         else:
             for search_url in origins["search_urls"].values():

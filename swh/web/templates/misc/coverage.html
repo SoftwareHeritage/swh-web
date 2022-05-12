@@ -107,9 +107,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                     <td>{{ visit_type }}</td>
                                     <td>{{ data.count }}</td>
                                     <td>
-                                      <a href="{{ data.search_url }}" target="_blank" rel="noopener noreferrer">
-                                        <i class="mdi mdi-magnify"></i>
-                                      </a>
+                                      {% if data.search_url %}
+                                        <a href="{{ data.search_url }}" target="_blank" rel="noopener noreferrer">
+                                          <i class="mdi mdi-magnify"></i>
+                                        </a>
+                                      {% endif %}
                                     </td>
                                   </tr>
                                 {% endif %}
@@ -130,9 +132,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                               <td>{{ origins.type }}</td>
                               <td>{{ visit_type }}</td>
                               <td>
-                                <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">
-                                  <i class="mdi mdi-magnify"></i>
-                                </a>
+                                {% if search_url %}
+                                  <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">
+                                    <i class="mdi mdi-magnify"></i>
+                                  </a>
+                                {% endif %}
                               </td>
                             </tr>
                           {% endfor %}
