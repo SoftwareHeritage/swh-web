@@ -102,7 +102,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             {% for instance, visit_types in origins.instances.items %}
                               {% for visit_type, data in visit_types.items %}
                                 {% if data.count %}
-                                  <tr>
+                                  <tr id="{{ origins.type }}-{{ visit_type }}">
                                     <td>{{ instance }}</td>
                                     <td>{{ visit_type }}</td>
                                     <td>{{ data.count }}</td>
@@ -126,7 +126,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                           </thead>
                           <tbody>
                           {% for visit_type, search_url in origins.search_urls.items %}
-                            <tr>
+                            <tr id="{{ origins.type }}-{{ visit_type }}">
                               <td>{{ origins.type }}</td>
                               <td>{{ visit_type }}</td>
                               <td>

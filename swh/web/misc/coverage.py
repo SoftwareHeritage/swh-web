@@ -16,10 +16,10 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.common import archive
-from swh.web.common.origin_save import get_savable_visit_types
 from swh.web.common.utils import (
     django_cache,
     get_deposits_list,
+    is_swh_web_development,
     is_swh_web_production,
     reverse,
 )
@@ -334,7 +334,9 @@ def _search_url(query: str, visit_type: str) -> str:
 def _swh_coverage(request: HttpRequest) -> HttpResponse:
     use_cache = is_swh_web_production(request)
     listers_metrics = _get_listers_metrics(use_cache)
+
     for origins in listed_origins["origins"]:
+        origins["count"] = "0"
         origins["instances"] = {}
         origins_type = origins["type"]
 
@@ -343,14 +345,14 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
         if origins_type in ("nixos", "guix"):
             count = _get_nixguix_origins_count(origins["search_pattern"], use_cache)
 
-            origins["count"] = f"{count:,}" if count else ""
+            origins["count"] = f"{count:,}"
             origins["instances"][origins_type] = {"nixguix": {"count": count}}
 
         if origins_type not in listers_metrics:
             continue
 
         count_total = sum(
-            [metrics.origins_known for _, metrics in listers_metrics[origins_type]]
+            [metrics.origins_enabled for _, metrics in listers_metrics[origins_type]]
         )
         count_never_visited = sum(
             [
@@ -363,13 +365,11 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
         origins["count"] = f"{count:,}"
         origins["instances"] = defaultdict(dict)
         for instance, metrics in listers_metrics[origins_type]:
-            # these types are available in staging/docker but not yet in production
-            if (
-                metrics.visit_type in ("bzr", "cvs")
-                and metrics.visit_type not in get_savable_visit_types()
-            ):
+            instance_count = metrics.origins_enabled - metrics.origins_never_visited
+            # no archived origins for that visit type, skip it
+            if instance_count == 0:
                 continue
-            instance_count = metrics.origins_known - metrics.origins_never_visited
+
             origins["instances"][instance].update(
                 {metrics.visit_type: {"count": f"{instance_count:,}"}}
             )
@@ -396,6 +396,12 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
                 search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
 
+    # filter out origin types without archived origins on production and staging
+    if not is_swh_web_development(request):
+        listed_origins["origins"] = list(
+            filter(lambda o: o["count"] != "0", listed_origins["origins"])
+        )
+
     for origins in legacy_origins["origins"]:
         origins["search_urls"] = {}
         for visit_type in origins["visit_types"]:
@@ -406,6 +412,7 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
     deposits_counts = _get_deposits_netloc_counts(use_cache)
 
     for origins in deposited_origins["origins"]:
+        origins["count"] = "0"
         if origins["search_pattern"] in deposits_counts:
             origins["count"] = f"{deposits_counts[origins['search_pattern']]:,}"
         origins["search_urls"] = {
