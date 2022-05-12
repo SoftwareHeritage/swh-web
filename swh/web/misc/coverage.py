@@ -48,108 +48,144 @@ listed_origins: Dict[str, Any] = {
             "type": "bitbucket",
             "info_url": "https://bitbucket.org",
             "info": "public repositories from Bitbucket",
-            "search_pattern": "https://bitbucket.org/",
+            "search_pattern": {
+                "default": "https://bitbucket.org/",
+            },
         },
         {
             "type": "cgit",
             "info_url": "https://git.zx2c4.com/cgit/about",
             "info": "public repositories from cgit instances",
-            "search_pattern": "cgit",
+            "search_pattern": {
+                "default": "cgit",
+            },
         },
         {
             "type": "CRAN",
             "info_url": "https://cran.r-project.org",
             "info": "source packages from The Comprehensive R Archive Network",
-            "search_pattern": "https://cran.r-project.org/",
+            "search_pattern": {
+                "default": "https://cran.r-project.org/",
+            },
         },
         {
             "type": "debian",
             "info_url": "https://www.debian.org",
             "info": "source packages from Debian and Debian-based distributions",
-            "search_pattern": "deb://",
+            "search_pattern": {
+                "default": "deb://",
+            },
         },
         {
             "type": "gitea",
             "info_url": "https://gitea.io",
             "info": "public repositories from Gitea instances",
-            "search_pattern": "gitea",
+            "search_pattern": {
+                "default": "gitea",
+            },
         },
         {
             "type": "github",
             "info_url": "https://github.com",
             "info": "public repositories from GitHub",
-            "search_pattern": "https://github.com/",
+            "search_pattern": {
+                "default": "https://github.com/",
+            },
         },
         {
             "type": "gitlab",
             "info_url": "https://gitlab.com",
             "info": "public repositories from multiple GitLab instances",
-            "search_pattern": "gitlab",
+            "search_pattern": {
+                "default": "gitlab",
+            },
         },
         {
             "type": "guix",
             "info_url": "https://guix.gnu.org",
             "info": "source code tarballs used to build the Guix package collection",
             "visit_types": ["nixguix"],
-            "search_pattern": "https://guix.gnu.org/sources.json",
+            "search_pattern": {
+                "default": "https://guix.gnu.org/sources.json",
+            },
         },
         {
             "type": "GNU",
             "info_url": "https://www.gnu.org",
             "info": "releases from the GNU project (as of August 2015)",
-            "search_pattern": "gnu",
+            "search_pattern": {
+                "default": "gnu",
+            },
         },
         {
             "type": "heptapod",
             "info_url": "https://heptapod.net/",
             "info": "public repositories from multiple Heptapod instances",
-            "search_pattern": "heptapod",
+            "search_pattern": {
+                "default": "heptapod",
+            },
         },
         {
             "type": "launchpad",
             "info_url": "https://launchpad.net",
             "logo": "img/logos/launchpad.png",
             "info": "public repositories from Launchpad",
-            "search_pattern": "https://git.launchpad.net/",
+            "search_pattern": {
+                "default": "https://git.launchpad.net/",
+            },
         },
         {
             "type": "nixos",
             "info_url": "https://nixos.org",
             "info": "source code tarballs used to build the Nix package collection",
             "visit_types": ["nixguix"],
-            "search_pattern": (
-                "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json"
-            ),
+            "search_pattern": {
+                "default": (
+                    "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json"
+                )
+            },
         },
         {
             "type": "npm",
             "info_url": "https://www.npmjs.com",
             "info": "public packages from the package registry for javascript",
-            "search_pattern": "https://www.npmjs.com",
+            "search_pattern": {
+                "default": "https://www.npmjs.com",
+            },
         },
         {
             "type": "opam",
             "info_url": "https://opam.ocaml.org/",
             "info": "public packages from the source-based package manager for OCaml",
-            "search_pattern": "opam+https://opam.ocaml.org/",
+            "search_pattern": {
+                "default": "opam+https://opam.ocaml.org/",
+            },
         },
         {
             "type": "phabricator",
             "info_url": "https://www.phacility.com/phabricator",
             "info": "public repositories from multiple Phabricator instances",
-            "search_pattern": "phabricator",
+            "search_pattern": {
+                "default": "phabricator",
+            },
         },
         {
             "type": "pypi",
             "info_url": "https://pypi.org",
             "info": "source packages from the Python Package Index",
-            "search_pattern": "https://pypi.org",
+            "search_pattern": {
+                "default": "https://pypi.org",
+            },
         },
         {
             "type": "sourceforge",
             "info_url": "https://sourceforge.net",
             "info": "public repositories from SourceForge",
-            "search_pattern": "code.sf.net",
+            "search_pattern": {
+                "default": "code.sf.net",
+                "bzr": "bzr.sourceforge.net",
+                "cvs": "cvs.sourceforge.net",
+            },
         },
     ],
 }
@@ -388,7 +424,10 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
                 if nb_instances > 1:
                     search_pattern = instance_name
                 else:
-                    search_pattern = origins["search_pattern"]
+                    if visit_type in origins["search_pattern"]:
+                        search_pattern = origins["search_pattern"][visit_type]
+                    else:
+                        search_pattern = origins["search_pattern"]["default"]
                 search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
 
