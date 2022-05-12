@@ -131,7 +131,7 @@ listed_origins: Dict[str, Any] = {
             "logo": "img/logos/launchpad.png",
             "info": "public repositories from Launchpad",
             "search_pattern": {
-                "default": "https://git.launchpad.net/",
+                "default": "launchpad.net/",
             },
         },
         {
@@ -140,6 +140,10 @@ listed_origins: Dict[str, Any] = {
             "info": "java source packages from maven repositories",
             "search_pattern": {
                 "default": "maven",
+                "cvs": "",
+                "git": "",
+                "hg": "",
+                "svn": "",
             },
         },
         {
@@ -166,7 +170,7 @@ listed_origins: Dict[str, Any] = {
             "info_url": "https://opam.ocaml.org/",
             "info": "public packages from the source-based package manager for OCaml",
             "search_pattern": {
-                "default": "opam+https://opam.ocaml.org/",
+                "default": "opam+https://",
             },
         },
         {
@@ -438,13 +442,12 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
         for instance_name, visit_types in instances.items():
             for visit_type in visit_types:
                 search_url = ""
-                if nb_instances > 1:
+                if visit_type in origins["search_pattern"]:
+                    search_pattern = origins["search_pattern"][visit_type]
+                elif nb_instances > 1:
                     search_pattern = instance_name
                 else:
-                    if visit_type in origins["search_pattern"]:
-                        search_pattern = origins["search_pattern"][visit_type]
-                    else:
-                        search_pattern = origins["search_pattern"]["default"]
+                    search_pattern = origins["search_pattern"]["default"]
                 if search_pattern:
                     search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
