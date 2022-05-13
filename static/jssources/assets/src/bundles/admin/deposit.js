@@ -62,9 +62,6 @@ export function initDepositAdmin(username, isStaff) {
           url: Urls.admin_deposit_list(),
           data: d => {
             d.excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
-            if (!isStaff) {
-              d.username = username;
-            }
           }
         },
         columns: [

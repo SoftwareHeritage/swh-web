@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -195,7 +195,12 @@ def check_api_post_responses(
 
 
 def check_html_get_response(
-    client: Client, url: str, status_code: int, template_used: Optional[str] = None
+    client: Client,
+    url: str,
+    status_code: int,
+    template_used: Optional[str] = None,
+    http_origin: Optional[str] = None,
+    server_name: Optional[str] = None,
 ) -> HttpResponse:
     """Helper function to check HTML responses for a GET request.
 
@@ -209,7 +214,12 @@ def check_html_get_response(
         The HTML response
     """
     response = check_http_get_response(
-        client, url, status_code, content_type="text/html"
+        client,
+        url,
+        status_code,
+        content_type="text/html",
+        http_origin=http_origin,
+        server_name=server_name,
     )
     if template_used is not None:
         assert_template_used(response, template_used)
