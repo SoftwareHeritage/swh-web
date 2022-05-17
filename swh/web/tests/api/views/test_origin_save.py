@@ -603,3 +603,55 @@ def test_create_pending_save_request_multiple_authenticated_users(
 
     assert SaveOriginRequest.objects.get(user_ids__contains=f'"{regular_user.id}"')
     assert SaveOriginRequest.objects.get(user_ids__contains=f'"{regular_user2.id}"')
+
+
+def test_reject_origin_url_with_password(api_client, swh_scheduler):
+    url = reverse(
+        "api-1-save-origin",
+        url_args={
+            "visit_type": "git",
+            "origin_url": "https://user:password@git.example.org/user/repo",
+        },
+    )
+    resp = check_api_post_responses(api_client, url, status_code=400)
+
+    assert resp.data == {
+        "exception": "BadInputExc",
+        "reason": (
+            "The provided origin url contains a password and cannot "
+            "be accepted for security reasons."
+        ),
+    }
+
+
+def test_accept_origin_url_with_username_but_without_password(
+    api_client, swh_scheduler
+):
+    url = reverse(
+        "api-1-save-origin",
+        url_args={
+            "visit_type": "git",
+            "origin_url": "https://user@git.example.org/user/repo",
+        },
+    )
+    check_api_post_responses(api_client, url, status_code=200)
+
+
+@pytest.mark.parametrize(
+    "origin_url",
+    [
+        "https://anonymous:anonymous@git.example.org/user/repo",
+        "https://anonymous:@git.example.org/user/repo",
+    ],
+)
+def test_accept_origin_url_with_anonymous_credentials(
+    api_client, swh_scheduler, origin_url
+):
+    url = reverse(
+        "api-1-save-origin",
+        url_args={
+            "visit_type": "git",
+            "origin_url": origin_url,
+        },
+    )
+    check_api_post_responses(api_client, url, status_code=200)
