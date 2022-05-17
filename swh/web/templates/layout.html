@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2015-2021  The Software Heritage developers
+Copyright (C) 2015-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -27,7 +27,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2015-2021  The Software Heritage developers
+Copyright (C) 2015-2022  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -59,13 +59,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
 
-    {% block header %}{% endblock %}
+    {% include "includes/favicon.html" %}
 
-    <link rel="icon" href="{% static 'img/icons/swh-logo-32x32.png' %}" sizes="32x32" />
-    <link rel="icon" href="{% static 'img/icons/swh-logo-archive-192x192.png' %}" sizes="192x192" />
-    <link rel="apple-touch-icon-precomposed" href="{% static 'img/icons/swh-logo-archive-180x180.png' %}" />
-    <link rel="search" type="application/opensearchdescription+xml" title="Software Heritage archive of public source code" href="{% static 'xml/swh-opensearch.xml' %}">
-    <meta name="msapplication-TileImage" content="{% static 'img/icons/swh-logo-archive-270x270.png' %}" />
+    {% block header %}{% endblock %}
 
     {% if not swh_web_dev and not swh_web_staging %}
 
