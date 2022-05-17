@@ -395,7 +395,9 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
         # special processing for nixos/guix origins as there is no
         # scheduler metrics for those
         if origins_type in ("nixos", "guix"):
-            count = _get_nixguix_origins_count(origins["search_pattern"], use_cache)
+            count = _get_nixguix_origins_count(
+                origins["search_pattern"]["default"], use_cache
+            )
 
             origins["count"] = f"{count:,}"
             origins["instances"][origins_type] = {"nixguix": {"count": count}}
