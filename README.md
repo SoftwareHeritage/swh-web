@@ -70,7 +70,7 @@ $ pip install -r requirements.txt -r requirements-test.txt
 ### Frontend requirements
 
 To compile the frontend assets, you need to have
-[nodejs](https://nodejs.org/en/) >= 12.0.0 and [yarn](https://yarnpkg.com/en/)
+[nodejs](https://nodejs.org/en/) >= 14.0.0 and [yarn](https://yarnpkg.com/en/)
 installed. If you are on Debian, you can easily install an up to date nodejs
 from the
 [nodesource](https://github.com/nodesource/distributions/blob/master/README.md)

@@ -104,7 +104,7 @@
     "babel-plugin-istanbul": "^6.1.1",
     "bootstrap-loader": "^3.0.4",
     "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^10.2.4",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "cypress": "^9.6.1",
     "cypress-hmr-restarter": "^2.0.3",
@@ -119,13 +119,13 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-standard": "^5.0.0",
     "eslint-webpack-plugin": "^3.1.1",
-    "exports-loader": "^3.1.0",
-    "expose-loader": "^3.1.0",
-    "imports-loader": "^3.1.1",
+    "exports-loader": "^4.0.0",
+    "expose-loader": "^4.0.0",
+    "imports-loader": "^4.0.0",
     "istanbul-lib-coverage": "^3.2.0",
     "json-stable-stringify": "^1.0.1",
     "mini-css-extract-plugin": "^2.6.0",
-    "mocha": "^9.2.2",
+    "mocha": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2",
     "mochawesome": "^7.1.3",
     "mochawesome-merge": "^4.2.1",
@@ -133,14 +133,14 @@
     "node-sass": "^7.0.1",
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^6.0.1",
-    "postcss": "^8.4.13",
-    "postcss-loader": "^6.2.1",
+    "postcss": "^8.4.14",
+    "postcss-loader": "^7.0.0",
     "postcss-normalize": "^10.0.1",
     "postcss-reporter": "^7.0.5",
     "progress-bar-webpack-plugin": "^2.1.0",
     "resolve-url-loader": "^5.0.0",
     "robotstxt-webpack-plugin": "^7.0.0",
-    "sass-loader": "^12.6.0",
+    "sass-loader": "^13.0.0",
     "schema-utils": "^4.0.0",
     "script-loader": "^0.7.2",
     "spdx-expression-parse": "^3.0.1",
@@ -155,7 +155,7 @@
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.9.0",
     "webpack-log": "^3.0.2",
-    "yaml-loader": "^0.6.0"
+    "yaml-loader": "^0.8.0"
   },
   "resolutions": {
     "jquery": "^3.6.0"
@@ -172,6 +172,6 @@
     ]
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.0.0"
   }
 }
