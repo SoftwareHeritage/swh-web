@@ -777,4 +777,73 @@ describe('Origin Save Tests', function() {
       .should('have.class', 'active');
   });
 
+  it('should not accept origin URL with password', function() {
+
+    makeOriginSaveRequest('git', 'https://user:password@git.example.org/user/repo');
+
+    cy.get('.invalid-feedback')
+      .should('contain', 'The origin url contains a password and cannot be accepted for security reasons');
+
+  });
+
+  it('should accept origin URL with username but without password', function() {
+
+    cy.adminLogin();
+    cy.visit(url);
+
+    const originUrl = 'https://user@git.example.org/user/repo';
+
+    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+                     saveRequestStatus: 'accepted',
+                     originUrl: originUrl,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+
+  });
+
+  it('should accept origin URL with anonymous credentials', function() {
+
+    cy.adminLogin();
+    cy.visit(url);
+
+    const originUrl = 'https://anonymous:anonymous@git.example.org/user/repo';
+
+    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+                     saveRequestStatus: 'accepted',
+                     originUrl: originUrl,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+
+  });
+
+  it('should accept origin URL with empty password', function() {
+
+    cy.adminLogin();
+    cy.visit(url);
+
+    const originUrl = 'https://anonymous:@git.example.org/user/repo';
+
+    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+                     saveRequestStatus: 'accepted',
+                     originUrl: originUrl,
+                     saveTaskStatus: 'not yet scheduled'});
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      checkAlertVisible('success', saveCodeMsg['success']);
+    });
+
+  });
+
 });

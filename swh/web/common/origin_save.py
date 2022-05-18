@@ -9,6 +9,7 @@ from itertools import product
 import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 from prometheus_client import Gauge
 import requests
@@ -218,7 +219,14 @@ def _check_origin_url_valid(origin_url: str) -> None:
         _validate_url(origin_url)
     except ValidationError:
         raise BadInputExc(
-            "The provided origin url (%s) is not valid!" % escape(origin_url)
+            f"The provided origin url ({escape(origin_url)}) is not valid!"
+        )
+
+    parsed_url = urlparse(origin_url)
+    if parsed_url.password not in (None, "", "anonymous"):
+        raise BadInputExc(
+            "The provided origin url contains a password and cannot be "
+            "accepted for security reasons."
         )
 
 
