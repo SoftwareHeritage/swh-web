@@ -312,6 +312,7 @@ def context_processor(request):
         "status": config["status"],
         "swh_web_dev": is_swh_web_development(request),
         "swh_web_staging": is_swh_web_staging(request),
+        "swh_web_prod": is_swh_web_production(request),
         "swh_web_version": get_distribution("swh.web").version,
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
