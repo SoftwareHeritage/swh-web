@@ -372,11 +372,16 @@ export function validateSaveOriginUrl(input) {
     validUrl = isGitRepoUrl(originUrl);
   }
 
+  let customValidity = '';
   if (validUrl) {
-    input.setCustomValidity('');
+    if ((originUrl.password !== '' && originUrl.password !== 'anonymous')) {
+      customValidity = 'The origin url contains a password and cannot be accepted for security reasons';
+    }
   } else {
-    input.setCustomValidity('The origin url is not valid or does not reference a code repository');
+    customValidity = 'The origin url is not valid or does not reference a code repository';
   }
+  input.setCustomValidity(customValidity);
+  $(input).siblings('.invalid-feedback').text(customValidity);
 }
 
 export function initTakeNewSnapshot() {
