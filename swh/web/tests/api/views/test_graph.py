@@ -341,6 +341,7 @@ def test_graph_query_params(
     assert expected_graph_query_params in parsed_url.query
 
 
+@pytest.mark.django_db  # for authentication
 def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_mock):
     graph_config = get_config()["graph"]
     graph_query = "stats"
