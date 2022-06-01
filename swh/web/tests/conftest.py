@@ -21,7 +21,7 @@ import pytest
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test.utils import setup_databases  # type: ignore
+from django.test.utils import setup_databases
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import (

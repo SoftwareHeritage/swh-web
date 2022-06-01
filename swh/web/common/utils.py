@@ -101,7 +101,7 @@ def reverse(
     if query_params and len(query_params) > 0:
         query_dict = QueryDict("", mutable=True)
         for k in sorted(query_params.keys()):
-            query_dict[k] = query_params[k]
+            query_dict[k] = str(query_params[k])
         url += "?" + query_dict.urlencode(safe="/;:")
 
     if request is not None:
