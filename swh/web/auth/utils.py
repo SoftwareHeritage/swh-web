@@ -114,3 +114,13 @@ def any_permission_required(*perms):
         raise ForbiddenExc
 
     return user_passes_test(check_perms)
+
+
+def is_add_forge_now_moderator(user) -> bool:
+    """Is a user considered an add-forge-now moderator?
+
+    Returns
+        True if a user is staff or has add forge now moderator permission
+
+    """
+    return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)

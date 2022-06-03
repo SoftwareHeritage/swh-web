@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,7 @@
 from datetime import timedelta
 import json
 
-from hypothesis import given
+from hypothesis import given, settings
 import pytest
 
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
@@ -70,6 +70,7 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(api_client, mocker
     }
 
 
+@settings(max_examples=10)
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits(
     api_client, subtest, new_origin, visit_dates, new_snapshots
@@ -125,6 +126,7 @@ def test_api_lookup_origin_visits(
             assert rv.data == expected_visits
 
 
+@settings(max_examples=10)
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits_by_id(
     api_client, subtest, new_origin, visit_dates, new_snapshots

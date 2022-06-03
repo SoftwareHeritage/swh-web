@@ -128,10 +128,10 @@ export function populateDecisionSelectOption(currentStatus) {
 
 function contactForgeAdmin(event) {
   // Open the mailclient with pre-filled text
-  const mailTo = $('#contactForgeAdmin').attr('emailTo');
-  const mailCc = $('#contactForgeAdmin').attr('emailCc');
-  const subject = $('#contactForgeAdmin').attr('emailSubject');
-  const emailText = emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '%0D%0A');
+  const mailTo = encodeURIComponent($('#contactForgeAdmin').attr('emailTo'));
+  const mailCc = encodeURIComponent($('#contactForgeAdmin').attr('emailCc'));
+  const subject = encodeURIComponent($('#contactForgeAdmin').attr('emailSubject'));
+  const emailText = encodeURIComponent(emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '\r\n'));
   const w = window.open('', '_blank', '', true);
   w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailCc}&Subject=${subject}&body=${emailText}`;
   w.focus();

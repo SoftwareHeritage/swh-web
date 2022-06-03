@@ -1,59 +1,85 @@
-import { disabledUntil, eventStatusFromHttpCode, getEnvelopeType, isRateLimited, makePromiseBuffer, rejectedSyncPromise, resolvedSyncPromise, serializeEnvelope, updateRateLimits, } from '@sentry/utils';
-export var ERROR_TRANSPORT_CATEGORY = 'error';
-export var TRANSACTION_TRANSPORT_CATEGORY = 'transaction';
-export var ATTACHMENT_TRANSPORT_CATEGORY = 'attachment';
-export var SESSION_TRANSPORT_CATEGORY = 'session';
-export var DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
+import { makePromiseBuffer, forEachEnvelopeItem, envelopeItemTypeToDataCategory, isRateLimited, resolvedSyncPromise, createEnvelope, serializeEnvelope, logger, updateRateLimits, SentryError } from '@sentry/utils';
+import { IS_DEBUG_BUILD } from '../flags.js';
+
+var DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
+
 /**
- * Creates a `NewTransport`
+ * Creates an instance of a Sentry `Transport`
  *
  * @param options
  * @param makeRequest
  */
-export function createTransport(options, makeRequest, buffer) {
-    if (buffer === void 0) { buffer = makePromiseBuffer(options.bufferSize || DEFAULT_TRANSPORT_BUFFER_SIZE); }
-    var rateLimits = {};
-    var flush = function (timeout) { return buffer.drain(timeout); };
-    function send(envelope) {
-        var envCategory = getEnvelopeType(envelope);
-        var category = envCategory === 'event' ? 'error' : envCategory;
-        var request = {
-            category: category,
-            body: serializeEnvelope(envelope),
-        };
-        // Don't add to buffer if transport is already rate-limited
-        if (isRateLimited(rateLimits, category)) {
-            return rejectedSyncPromise({
-                status: 'rate_limit',
-                reason: getRateLimitReason(rateLimits, category),
-            });
-        }
-        var requestTask = function () {
-            return makeRequest(request).then(function (_a) {
-                var body = _a.body, headers = _a.headers, reason = _a.reason, statusCode = _a.statusCode;
-                var status = eventStatusFromHttpCode(statusCode);
-                if (headers) {
-                    rateLimits = updateRateLimits(rateLimits, headers);
-                }
-                if (status === 'success') {
-                    return resolvedSyncPromise({ status: status, reason: reason });
-                }
-                return rejectedSyncPromise({
-                    status: status,
-                    reason: reason ||
-                        body ||
-                        (status === 'rate_limit' ? getRateLimitReason(rateLimits, category) : 'Unknown transport error'),
-                });
-            });
-        };
-        return buffer.add(requestTask);
+function createTransport(
+  options,
+  makeRequest,
+  buffer = makePromiseBuffer(options.bufferSize || DEFAULT_TRANSPORT_BUFFER_SIZE),
+) {
+  let rateLimits = {};
+
+  var flush = (timeout) => buffer.drain(timeout);
+
+  function send(envelope) {
+    var filteredEnvelopeItems = [];
+
+    // Drop rate limited items from envelope
+    forEachEnvelopeItem(envelope, (item, type) => {
+      var envelopeItemDataCategory = envelopeItemTypeToDataCategory(type);
+      if (isRateLimited(rateLimits, envelopeItemDataCategory)) {
+        options.recordDroppedEvent('ratelimit_backoff', envelopeItemDataCategory);
+      } else {
+        filteredEnvelopeItems.push(item);
+      }
+    });
+
+    // Skip sending if envelope is empty after filtering out rate limited events
+    if (filteredEnvelopeItems.length === 0) {
+      return resolvedSyncPromise();
     }
-    return {
-        send: send,
-        flush: flush,
+
+        var filteredEnvelope = createEnvelope(envelope[0], filteredEnvelopeItems );
+
+    // Creates client report for each item in an envelope
+    var recordEnvelopeLoss = (reason) => {
+      forEachEnvelopeItem(filteredEnvelope, (_, type) => {
+        options.recordDroppedEvent(reason, envelopeItemTypeToDataCategory(type));
+      });
     };
+
+    var requestTask = () =>
+      makeRequest({ body: serializeEnvelope(filteredEnvelope, options.textEncoder) }).then(
+        response => {
+          // We don't want to throw on NOK responses, but we want to at least log them
+          if (response.statusCode !== undefined && (response.statusCode < 200 || response.statusCode >= 300)) {
+            IS_DEBUG_BUILD && logger.warn(`Sentry responded with status code ${response.statusCode} to sent event.`);
+          }
+
+          rateLimits = updateRateLimits(rateLimits, response);
+        },
+        error => {
+          IS_DEBUG_BUILD && logger.error('Failed while sending event:', error);
+          recordEnvelopeLoss('network_error');
+        },
+      );
+
+    return buffer.add(requestTask).then(
+      result => result,
+      error => {
+        if (error instanceof SentryError) {
+          IS_DEBUG_BUILD && logger.error('Skipped sending event due to full buffer');
+          recordEnvelopeLoss('queue_overflow');
+          return resolvedSyncPromise();
+        } else {
+          throw error;
+        }
+      },
+    );
+  }
+
+  return {
+    send,
+    flush,
+  };
 }
-function getRateLimitReason(rateLimits, category) {
-    return "Too many " + category + " requests, backing off until: " + new Date(disabledUntil(rateLimits, category)).toISOString();
-}
+
+export { DEFAULT_TRANSPORT_BUFFER_SIZE, createTransport };
 //# sourceMappingURL=base.js.map

@@ -12,12 +12,15 @@
  * An example for this is the __SENTRY_DEBUG__ constant. It is declared in each package individually because we want
  * users to be able to shake away expressions that it guards.
  */
+
 /**
  * Figures out if we're building a browser bundle.
  *
  * @returns true if this is a browser bundle build.
  */
-export function isBrowserBundle() {
-    return typeof __SENTRY_BROWSER_BUNDLE__ !== 'undefined' && !!__SENTRY_BROWSER_BUNDLE__;
+function isBrowserBundle() {
+  return typeof __SENTRY_BROWSER_BUNDLE__ !== 'undefined' && !!__SENTRY_BROWSER_BUNDLE__;
 }
+
+export { isBrowserBundle };
 //# sourceMappingURL=env.js.map

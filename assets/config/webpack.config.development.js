@@ -307,7 +307,12 @@ module.exports = {
       {
         test: /\.ya?ml$/,
         type: 'json',
-        use: 'yaml-loader'
+        use: {
+          loader: 'yaml-loader',
+          options: {
+            asJSON: true
+          }
+        }
       }
     ],
     // tell webpack to not parse already minified files to speedup build process

@@ -63,7 +63,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     {% block header %}{% endblock %}
 
-    {% if not swh_web_dev and not swh_web_staging %}
+    {% if swh_web_prod %}
 
       <!-- Matomo -->
       <script type="text/javascript">

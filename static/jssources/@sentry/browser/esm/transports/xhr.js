@@ -1,63 +1,52 @@
-import { __extends } from "tslib";
-import { SentryError, SyncPromise } from '@sentry/utils';
-import { BaseTransport } from './base';
-/** `XHR` based transport */
-var XHRTransport = /** @class */ (function (_super) {
-    __extends(XHRTransport, _super);
-    function XHRTransport() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    /**
-     * @param sentryRequest Prepared SentryRequest to be delivered
-     * @param originalPayload Original payload used to create SentryRequest
-     */
-    XHRTransport.prototype._sendRequest = function (sentryRequest, originalPayload) {
-        var _this = this;
-        // eslint-disable-next-line deprecation/deprecation
-        if (this._isRateLimited(sentryRequest.type)) {
-            this.recordLostEvent('ratelimit_backoff', sentryRequest.type);
-            return Promise.reject({
-                event: originalPayload,
-                type: sentryRequest.type,
-                // eslint-disable-next-line deprecation/deprecation
-                reason: "Transport for " + sentryRequest.type + " requests locked till " + this._disabledUntil(sentryRequest.type) + " due to too many requests.",
-                status: 429,
-            });
+import { createTransport } from '@sentry/core';
+import { SyncPromise } from '@sentry/utils';
+
+/**
+ * The DONE ready state for XmlHttpRequest
+ *
+ * Defining it here as a constant b/c XMLHttpRequest.DONE is not always defined
+ * (e.g. during testing, it is `undefined`)
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState}
+ */
+var XHR_READYSTATE_DONE = 4;
+
+/**
+ * Creates a Transport that uses the XMLHttpRequest API to send events to Sentry.
+ */
+function makeXHRTransport(options) {
+  function makeRequest(request) {
+    return new SyncPromise((resolve, reject) => {
+      var xhr = new XMLHttpRequest();
+
+      xhr.onerror = reject;
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XHR_READYSTATE_DONE) {
+          resolve({
+            statusCode: xhr.status,
+            headers: {
+              'x-sentry-rate-limits': xhr.getResponseHeader('X-Sentry-Rate-Limits'),
+              'retry-after': xhr.getResponseHeader('Retry-After'),
+            },
+          });
         }
-        return this._buffer
-            .add(function () {
-            return new SyncPromise(function (resolve, reject) {
-                var request = new XMLHttpRequest();
-                request.onreadystatechange = function () {
-                    if (request.readyState === 4) {
-                        var headers = {
-                            'x-sentry-rate-limits': request.getResponseHeader('X-Sentry-Rate-Limits'),
-                            'retry-after': request.getResponseHeader('Retry-After'),
-                        };
-                        _this._handleResponse({ requestType: sentryRequest.type, response: request, headers: headers, resolve: resolve, reject: reject });
-                    }
-                };
-                request.open('POST', sentryRequest.url);
-                for (var header in _this.options.headers) {
-                    if (Object.prototype.hasOwnProperty.call(_this.options.headers, header)) {
-                        request.setRequestHeader(header, _this.options.headers[header]);
-                    }
-                }
-                request.send(sentryRequest.body);
-            });
-        })
-            .then(undefined, function (reason) {
-            // It's either buffer rejection or any other xhr/fetch error, which are treated as NetworkError.
-            if (reason instanceof SentryError) {
-                _this.recordLostEvent('queue_overflow', sentryRequest.type);
-            }
-            else {
-                _this.recordLostEvent('network_error', sentryRequest.type);
-            }
-            throw reason;
-        });
-    };
-    return XHRTransport;
-}(BaseTransport));
-export { XHRTransport };
+      };
+
+      xhr.open('POST', options.url);
+
+      for (var header in options.headers) {
+        if (Object.prototype.hasOwnProperty.call(options.headers, header)) {
+          xhr.setRequestHeader(header, options.headers[header]);
+        }
+      }
+
+      xhr.send(request.body);
+    });
+  }
+
+  return createTransport(options, makeRequest);
+}
+
+export { makeXHRTransport };
 //# sourceMappingURL=xhr.js.map

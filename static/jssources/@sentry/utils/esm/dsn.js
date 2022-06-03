@@ -1,11 +1,13 @@
-import { __read } from "tslib";
-import { SentryError } from './error';
-import { IS_DEBUG_BUILD } from './flags';
+import { SentryError } from './error.js';
+import { IS_DEBUG_BUILD } from './flags.js';
+
 /** Regular expression used to parse a Dsn. */
 var DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
+
 function isValidProtocol(protocol) {
-    return protocol === 'http' || protocol === 'https';
+  return protocol === 'http' || protocol === 'https';
 }
+
 /**
  * Renders the string representation of this Dsn.
  *
@@ -15,75 +17,115 @@ function isValidProtocol(protocol) {
  *
  * @param withPassword When set to true, the password will be included.
  */
-export function dsnToString(dsn, withPassword) {
-    if (withPassword === void 0) { withPassword = false; }
-    var host = dsn.host, path = dsn.path, pass = dsn.pass, port = dsn.port, projectId = dsn.projectId, protocol = dsn.protocol, publicKey = dsn.publicKey;
-    return (protocol + "://" + publicKey + (withPassword && pass ? ":" + pass : '') +
-        ("@" + host + (port ? ":" + port : '') + "/" + (path ? path + "/" : path) + projectId));
+function dsnToString(dsn, withPassword = false) {
+  const { host, path, pass, port, projectId, protocol, publicKey } = dsn;
+  return (
+    `${protocol}://${publicKey}${withPassword && pass ? `:${pass}` : ''}` +
+    `@${host}${port ? `:${port}` : ''}/${path ? `${path}/` : path}${projectId}`
+  );
 }
+
+/**
+ * Parses a Dsn from a given string.
+ *
+ * @param str A Dsn as string
+ * @returns Dsn as DsnComponents
+ */
 function dsnFromString(str) {
-    var match = DSN_REGEX.exec(str);
-    if (!match) {
-        throw new SentryError("Invalid Sentry Dsn: " + str);
+  var match = DSN_REGEX.exec(str);
+
+  if (!match) {
+    throw new SentryError(`Invalid Sentry Dsn: ${str}`);
+  }
+
+  const [protocol, publicKey, pass = '', host, port = '', lastPath] = match.slice(1);
+  let path = '';
+  let projectId = lastPath;
+
+  var split = projectId.split('/');
+  if (split.length > 1) {
+    path = split.slice(0, -1).join('/');
+    projectId = split.pop() ;
+  }
+
+  if (projectId) {
+    var projectMatch = projectId.match(/^\d+/);
+    if (projectMatch) {
+      projectId = projectMatch[0];
     }
-    var _a = __read(match.slice(1), 6), protocol = _a[0], publicKey = _a[1], _b = _a[2], pass = _b === void 0 ? '' : _b, host = _a[3], _c = _a[4], port = _c === void 0 ? '' : _c, lastPath = _a[5];
-    var path = '';
-    var projectId = lastPath;
-    var split = projectId.split('/');
-    if (split.length > 1) {
-        path = split.slice(0, -1).join('/');
-        projectId = split.pop();
-    }
-    if (projectId) {
-        var projectMatch = projectId.match(/^\d+/);
-        if (projectMatch) {
-            projectId = projectMatch[0];
-        }
-    }
-    return dsnFromComponents({ host: host, pass: pass, path: path, projectId: projectId, port: port, protocol: protocol, publicKey: publicKey });
+  }
+
+  return dsnFromComponents({ host, pass, path, projectId, port, protocol: protocol , publicKey });
 }
+
 function dsnFromComponents(components) {
-    // TODO this is for backwards compatibility, and can be removed in a future version
-    if ('user' in components && !('publicKey' in components)) {
-        components.publicKey = components.user;
-    }
-    return {
-        user: components.publicKey || '',
-        protocol: components.protocol,
-        publicKey: components.publicKey || '',
-        pass: components.pass || '',
-        host: components.host,
-        port: components.port || '',
-        path: components.path || '',
-        projectId: components.projectId,
-    };
+  return {
+    protocol: components.protocol,
+    publicKey: components.publicKey || '',
+    pass: components.pass || '',
+    host: components.host,
+    port: components.port || '',
+    path: components.path || '',
+    projectId: components.projectId,
+  };
 }
+
 function validateDsn(dsn) {
-    if (!IS_DEBUG_BUILD) {
-        return;
+  if (!IS_DEBUG_BUILD) {
+    return;
+  }
+
+  const { port, projectId, protocol } = dsn;
+
+  var requiredComponents = ['protocol', 'publicKey', 'host', 'projectId'];
+  requiredComponents.forEach(component => {
+    if (!dsn[component]) {
+      throw new SentryError(`Invalid Sentry Dsn: ${component} missing`);
     }
-    var port = dsn.port, projectId = dsn.projectId, protocol = dsn.protocol;
-    var requiredComponents = ['protocol', 'publicKey', 'host', 'projectId'];
-    requiredComponents.forEach(function (component) {
-        if (!dsn[component]) {
-            throw new SentryError("Invalid Sentry Dsn: " + component + " missing");
-        }
-    });
-    if (!projectId.match(/^\d+$/)) {
-        throw new SentryError("Invalid Sentry Dsn: Invalid projectId " + projectId);
-    }
-    if (!isValidProtocol(protocol)) {
-        throw new SentryError("Invalid Sentry Dsn: Invalid protocol " + protocol);
-    }
-    if (port && isNaN(parseInt(port, 10))) {
-        throw new SentryError("Invalid Sentry Dsn: Invalid port " + port);
-    }
-    return true;
+  });
+
+  if (!projectId.match(/^\d+$/)) {
+    throw new SentryError(`Invalid Sentry Dsn: Invalid projectId ${projectId}`);
+  }
+
+  if (!isValidProtocol(protocol)) {
+    throw new SentryError(`Invalid Sentry Dsn: Invalid protocol ${protocol}`);
+  }
+
+  if (port && isNaN(parseInt(port, 10))) {
+    throw new SentryError(`Invalid Sentry Dsn: Invalid port ${port}`);
+  }
+
+  return true;
 }
+
 /** The Sentry Dsn, identifying a Sentry instance and project. */
-export function makeDsn(from) {
-    var components = typeof from === 'string' ? dsnFromString(from) : dsnFromComponents(from);
-    validateDsn(components);
-    return components;
+function makeDsn(from) {
+  var components = typeof from === 'string' ? dsnFromString(from) : dsnFromComponents(from);
+  validateDsn(components);
+  return components;
 }
+
+/**
+ * Changes a Dsn to point to the `relay` server running in the Lambda Extension.
+ *
+ * This is only used by the serverless integration for AWS Lambda.
+ *
+ * @param originalDsn The original Dsn of the customer.
+ * @returns Dsn pointing to Lambda extension.
+ */
+function extensionRelayDSN(originalDsn) {
+  if (originalDsn === undefined) {
+    return undefined;
+  }
+
+  var dsn = dsnFromString(originalDsn);
+  dsn.host = 'localhost';
+  dsn.port = '3000';
+  dsn.protocol = 'http';
+
+  return dsnToString(dsn);
+}
+
+export { dsnToString, extensionRelayDSN, makeDsn };
 //# sourceMappingURL=dsn.js.map
