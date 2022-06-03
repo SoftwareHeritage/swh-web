@@ -1,3 +1,12 @@
+swh-web (0.0.393-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.0.393     - (tagged by Benoit Chauvet
+    <contact@benoitchauvet.com> on 2022-06-03 06:15:29 +0200)
+  * Upstream changes:     - v0.0.393     - tests: Fix flaky ones since
+    hypothesis 6.46.11 release
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Fri, 03 Jun 2022 04:43:41 +0000
+
 swh-web (0.0.390-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.0.390     - (tagged by Antoine Lambert
