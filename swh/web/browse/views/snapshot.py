@@ -44,7 +44,7 @@ def snapshot_browse(request: HttpRequest, snapshot_id: str) -> HttpResponse:
     browse_snapshot_url = reverse(
         "browse-snapshot-directory",
         url_args={"snapshot_id": snapshot_id},
-        query_params=request.GET,
+        query_params=request.GET.dict(),
     )
     return redirect(browse_snapshot_url)
 

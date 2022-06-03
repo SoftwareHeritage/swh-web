@@ -3,16 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar
 
 from typing_extensions import TypedDict
 
-from django.http import QueryDict
-
 from swh.core.api.classes import PagedResult as CorePagedResult
 from swh.model.swhids import ObjectType
-
-QueryParameters = Union[Dict[str, Any], QueryDict]
 
 
 class OriginInfo(TypedDict):
@@ -103,7 +99,7 @@ class SnapshotContext(TypedDict):
     """optional origin info associated to the snapshot"""
     origin_visits_url: Optional[str]
     """optional origin visits URL"""
-    query_params: QueryParameters
+    query_params: Dict[str, Optional[str]]
     """common query parameters when browsing snapshot content"""
     release: Optional[str]
     """optional release name set when browsing snapshot in that scope"""

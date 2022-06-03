@@ -15,6 +15,6 @@ def swhid_browse(request: HttpRequest, swhid: str) -> HttpResponse:
 
     The url that points to it is :http:get:`/(swhid)/`.
     """
-    swhid_resolved = resolve_swhid(swhid, query_params=request.GET)
+    swhid_resolved = resolve_swhid(swhid, query_params=request.GET.dict())
     assert swhid_resolved["browse_url"]
     return redirect(swhid_resolved["browse_url"])

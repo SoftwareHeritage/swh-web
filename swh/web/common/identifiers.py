@@ -8,15 +8,12 @@ from urllib.parse import quote, unquote
 
 from typing_extensions import TypedDict
 
-from django.http import QueryDict
-
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.typing import (
-    QueryParameters,
     SnapshotContext,
     SWHIDContext,
     SWHIDInfo,
@@ -87,7 +84,7 @@ class ResolvedSWHID(TypedDict):
 
 
 def resolve_swhid(
-    swhid: str, query_params: Optional[QueryParameters] = None
+    swhid: str, query_params: Optional[Mapping[str, str]] = None
 ) -> ResolvedSWHID:
     """
     Try to resolve a SoftWare Heritage persistent IDentifier into an url for
@@ -109,13 +106,10 @@ def resolve_swhid(
     object_id = swhid_parsed.object_id
     browse_url = None
     url_args = {}
-    query_dict = QueryDict("", mutable=True)
     fragment = ""
     process_lines = object_type == ObjectType.CONTENT
 
-    if query_params and len(query_params) > 0:
-        for k in sorted(query_params.keys()):
-            query_dict[k] = str(query_params[k])
+    query_dict: Dict[str, str] = dict(query_params or {})
 
     if swhid_parsed.origin:
         origin_url = unquote(swhid_parsed.origin)
@@ -148,13 +142,13 @@ def resolve_swhid(
                     # when no origin or revision context, content objects need to have
                     # their path prefixed by root directory id for breadcrumbs display
                     query_dict["path"] = hash_to_hex(directory) + query_dict["path"]
-                else:
+                elif query_dict["path"] is not None:
                     # remove leading slash from SWHID content path
-                    query_dict["path"] = str(query_dict["path"]).lstrip("/")
-            elif object_type == ObjectType.DIRECTORY:
+                    query_dict["path"] = query_dict["path"].lstrip("/")
+            elif object_type == ObjectType.DIRECTORY and query_dict["path"] is not None:
                 object_id = directory
                 # remove leading and trailing slashes from SWHID directory path
-                query_dict["path"] = str(query_dict["path"]).strip("/")
+                query_dict["path"] = query_dict["path"].strip("/")
 
     # snapshot context
     if swhid_parsed.visit:

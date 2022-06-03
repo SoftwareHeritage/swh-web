@@ -256,8 +256,8 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "browse-revision-log",
             url_args={"sha1_git": sha1_git},
             query_params={
-                "per_page": per_page,
-                "offset": offset + per_page,
+                "per_page": str(per_page),
+                "offset": str(offset + per_page),
                 "revs_ordering": revs_ordering or None,
             },
         )
@@ -268,8 +268,8 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "browse-revision-log",
             url_args={"sha1_git": sha1_git},
             query_params={
-                "per_page": per_page,
-                "offset": offset - per_page,
+                "per_page": str(per_page),
+                "offset": str(offset - per_page),
                 "revs_ordering": revs_ordering or None,
             },
         )

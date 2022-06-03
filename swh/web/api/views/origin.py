@@ -105,7 +105,7 @@ def api_origins(request: Request):
     if next_page_token is not None:
         headers["link-next"] = reverse(
             "api-1-origins",
-            query_params={"page_token": next_page_token, "origin_count": limit},
+            query_params={"page_token": next_page_token, "origin_count": str(limit)},
             request=request,
         )
     return {"results": origins, "headers": headers}

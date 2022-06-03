@@ -97,8 +97,8 @@ def api_snapshot(request: Request, snapshot_id: str):
             url_args={"snapshot_id": snapshot_id},
             query_params={
                 "branches_from": results["next_branch"],
-                "branches_count": branches_count,
-                "target_types": target_types,
+                "branches_count": str(branches_count),
+                "target_types": ",".join(target_types) if target_types else None,
             },
             request=request,
         )
