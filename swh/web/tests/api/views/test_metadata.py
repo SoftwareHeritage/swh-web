@@ -1,10 +1,10 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import attr
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis.strategies import composite, sampled_from, sets
 import pytest
 
@@ -73,7 +73,6 @@ def test_api_raw_extrinsic_metadata(api_client, subtest, metadata):
 
 
 @pytest.mark.parametrize("limit", [1, 2, 10, 100])
-@settings(max_examples=2)
 @given(sets(raw_extrinsic_metadata(), min_size=1))
 def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
     # ensure archive_data fixture will be reset between each hypothesis
