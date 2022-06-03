@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, cast
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http.response import HttpResponse, HttpResponseBase, StreamingHttpResponse
 from django.test.client import Client
 from rest_framework.response import Response
 from rest_framework.test import APIClient
@@ -16,8 +16,8 @@ from swh.web.tests.django_asserts import assert_template_used
 
 
 def _assert_http_response(
-    response: HttpResponse, status_code: int, content_type: str
-) -> HttpResponse:
+    response: HttpResponseBase, status_code: int, content_type: str
+) -> HttpResponseBase:
 
     if isinstance(response, Response):
         drf_response = cast(Response, response)
@@ -28,7 +28,7 @@ def _assert_http_response(
         )
     elif isinstance(response, StreamingHttpResponse):
         error_context = getattr(response, "traceback", response.streaming_content)
-    else:
+    elif isinstance(response, HttpResponse):
         error_context = getattr(response, "traceback", response.content)
 
     assert response.status_code == status_code, error_context
@@ -44,7 +44,7 @@ def check_http_get_response(
     content_type: str = "*/*",
     http_origin: Optional[str] = None,
     server_name: Optional[str] = None,
-) -> HttpResponse:
+) -> HttpResponseBase:
     """Helper function to check HTTP response for a GET request.
 
     Args:
@@ -77,7 +77,7 @@ def check_http_post_response(
     request_content_type="application/json",
     data: Optional[Dict[str, Any]] = None,
     http_origin: Optional[str] = None,
-) -> HttpResponse:
+) -> HttpResponseBase:
     """Helper function to check HTTP response for a POST request.
 
     Args:
@@ -140,7 +140,7 @@ def check_api_post_response(
     status_code: int,
     content_type: str = "*/*",
     data: Optional[Dict[str, Any]] = None,
-) -> HttpResponse:
+) -> HttpResponseBase:
     """Helper function to check Web API response for a POST request
     for all accepted content types.
 
@@ -201,7 +201,7 @@ def check_html_get_response(
     template_used: Optional[str] = None,
     http_origin: Optional[str] = None,
     server_name: Optional[str] = None,
-) -> HttpResponse:
+) -> HttpResponseBase:
     """Helper function to check HTML responses for a GET request.
 
     Args:

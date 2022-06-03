@@ -1,43 +1,50 @@
-import { __assign } from "tslib";
-import { getGlobalObject } from './global';
-import { addNonEnumerableProperty } from './object';
-import { snipLine } from './string';
+import { getGlobalObject } from './global.js';
+import { addNonEnumerableProperty } from './object.js';
+import { snipLine } from './string.js';
+
+/**
+ * Extended Window interface that allows for Crypto API usage in IE browsers
+ */
+
 /**
  * UUID4 generator
  *
  * @returns string Generated UUID4.
  */
-export function uuid4() {
-    var global = getGlobalObject();
-    var crypto = global.crypto || global.msCrypto;
-    if (!(crypto === void 0) && crypto.getRandomValues) {
-        // Use window.crypto API if available
-        var arr = new Uint16Array(8);
-        crypto.getRandomValues(arr);
-        // set 4 in byte 7
-        // eslint-disable-next-line no-bitwise
+function uuid4() {
+  var global = getGlobalObject() ;
+  var crypto = global.crypto || global.msCrypto;
+
+  if (!(crypto === void 0) && crypto.getRandomValues) {
+    // Use window.crypto API if available
+    var arr = new Uint16Array(8);
+    crypto.getRandomValues(arr);
+
+    // set 4 in byte 7
         arr[3] = (arr[3] & 0xfff) | 0x4000;
-        // set 2 most significant bits of byte 9 to '10'
-        // eslint-disable-next-line no-bitwise
+    // set 2 most significant bits of byte 9 to '10'
         arr[4] = (arr[4] & 0x3fff) | 0x8000;
-        var pad = function (num) {
-            var v = num.toString(16);
-            while (v.length < 4) {
-                v = "0" + v;
-            }
-            return v;
-        };
-        return (pad(arr[0]) + pad(arr[1]) + pad(arr[2]) + pad(arr[3]) + pad(arr[4]) + pad(arr[5]) + pad(arr[6]) + pad(arr[7]));
-    }
-    // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
-    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        // eslint-disable-next-line no-bitwise
+
+    var pad = (num) => {
+      let v = num.toString(16);
+      while (v.length < 4) {
+        v = `0${v}`;
+      }
+      return v;
+    };
+
+    return (
+      pad(arr[0]) + pad(arr[1]) + pad(arr[2]) + pad(arr[3]) + pad(arr[4]) + pad(arr[5]) + pad(arr[6]) + pad(arr[7])
+    );
+  }
+  // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
+  return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => {
         var r = (Math.random() * 16) | 0;
-        // eslint-disable-next-line no-bitwise
         var v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
+    return v.toString(16);
+  });
 }
+
 /**
  * Parses string form of URL into an object
  * // borrowed from https://tools.ietf.org/html/rfc3986#appendix-B
@@ -45,45 +52,54 @@ export function uuid4() {
  * // environments where DOM might not be available
  * @returns parsed URL object
  */
-export function parseUrl(url) {
-    if (!url) {
-        return {};
-    }
-    var match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
-    if (!match) {
-        return {};
-    }
-    // coerce to undefined values to empty string so we don't get 'undefined'
-    var query = match[6] || '';
-    var fragment = match[8] || '';
-    return {
-        host: match[4],
-        path: match[5],
-        protocol: match[2],
-        relative: match[5] + query + fragment,
-    };
+function parseUrl(url)
+
+ {
+  if (!url) {
+    return {};
+  }
+
+  var match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
+
+  if (!match) {
+    return {};
+  }
+
+  // coerce to undefined values to empty string so we don't get 'undefined'
+  var query = match[6] || '';
+  var fragment = match[8] || '';
+  return {
+    host: match[4],
+    path: match[5],
+    protocol: match[2],
+    relative: match[5] + query + fragment, // everything minus origin
+  };
 }
+
 function getFirstException(event) {
-    return event.exception && event.exception.values ? event.exception.values[0] : undefined;
+  return event.exception && event.exception.values ? event.exception.values[0] : undefined;
 }
+
 /**
  * Extracts either message or type+value from an event that can be used for user-facing logs
  * @returns event's description
  */
-export function getEventDescription(event) {
-    var message = event.message, eventId = event.event_id;
-    if (message) {
-        return message;
+function getEventDescription(event) {
+  const { message, event_id: eventId } = event;
+  if (message) {
+    return message;
+  }
+
+  var firstException = getFirstException(event);
+  if (firstException) {
+    if (firstException.type && firstException.value) {
+      return `${firstException.type}: ${firstException.value}`;
     }
-    var firstException = getFirstException(event);
-    if (firstException) {
-        if (firstException.type && firstException.value) {
-            return firstException.type + ": " + firstException.value;
-        }
-        return firstException.type || firstException.value || eventId || '<unknown>';
-    }
-    return eventId || '<unknown>';
+    return firstException.type || firstException.value || eventId || '<unknown>';
+  }
+  return eventId || '<unknown>';
 }
+
 /**
  * Adds exception values, type and value to an synthetic Exception.
  * @param event The event to modify.
@@ -91,17 +107,18 @@ export function getEventDescription(event) {
  * @param type Type of the exception.
  * @hidden
  */
-export function addExceptionTypeValue(event, value, type) {
-    var exception = (event.exception = event.exception || {});
-    var values = (exception.values = exception.values || []);
-    var firstException = (values[0] = values[0] || {});
-    if (!firstException.value) {
-        firstException.value = value || '';
-    }
-    if (!firstException.type) {
-        firstException.type = type || 'Error';
-    }
+function addExceptionTypeValue(event, value, type) {
+  var exception = (event.exception = event.exception || {});
+  var values = (exception.values = exception.values || []);
+  var firstException = (values[0] = values[0] || {});
+  if (!firstException.value) {
+    firstException.value = value || '';
+  }
+  if (!firstException.type) {
+    firstException.type = type || 'Error';
+  }
 }
+
 /**
  * Adds exception mechanism data to a given event. Uses defaults if the second parameter is not passed.
  *
@@ -109,38 +126,48 @@ export function addExceptionTypeValue(event, value, type) {
  * @param newMechanism Mechanism data to add to the event.
  * @hidden
  */
-export function addExceptionMechanism(event, newMechanism) {
-    var firstException = getFirstException(event);
-    if (!firstException) {
-        return;
-    }
-    var defaultMechanism = { type: 'generic', handled: true };
-    var currentMechanism = firstException.mechanism;
-    firstException.mechanism = __assign(__assign(__assign({}, defaultMechanism), currentMechanism), newMechanism);
-    if (newMechanism && 'data' in newMechanism) {
-        var mergedData = __assign(__assign({}, (currentMechanism && currentMechanism.data)), newMechanism.data);
-        firstException.mechanism.data = mergedData;
-    }
+function addExceptionMechanism(event, newMechanism) {
+  var firstException = getFirstException(event);
+  if (!firstException) {
+    return;
+  }
+
+  var defaultMechanism = { type: 'generic', handled: true };
+  var currentMechanism = firstException.mechanism;
+  firstException.mechanism = { ...defaultMechanism, ...currentMechanism, ...newMechanism };
+
+  if (newMechanism && 'data' in newMechanism) {
+    var mergedData = { ...(currentMechanism && currentMechanism.data), ...newMechanism.data };
+    firstException.mechanism.data = mergedData;
+  }
 }
+
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-var SEMVER_REGEXP = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+var SEMVER_REGEXP =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+/**
+ * Represents Semantic Versioning object
+ */
+
 /**
  * Parses input into a SemVer interface
  * @param input string representation of a semver version
  */
-export function parseSemver(input) {
-    var match = input.match(SEMVER_REGEXP) || [];
-    var major = parseInt(match[1], 10);
-    var minor = parseInt(match[2], 10);
-    var patch = parseInt(match[3], 10);
-    return {
-        buildmetadata: match[5],
-        major: isNaN(major) ? undefined : major,
-        minor: isNaN(minor) ? undefined : minor,
-        patch: isNaN(patch) ? undefined : patch,
-        prerelease: match[4],
-    };
+function parseSemver(input) {
+  var match = input.match(SEMVER_REGEXP) || [];
+  var major = parseInt(match[1], 10);
+  var minor = parseInt(match[2], 10);
+  var patch = parseInt(match[3], 10);
+  return {
+    buildmetadata: match[5],
+    major: isNaN(major) ? undefined : major,
+    minor: isNaN(minor) ? undefined : minor,
+    patch: isNaN(patch) ? undefined : patch,
+    prerelease: match[4],
+  };
 }
+
 /**
  * This function adds context (pre/post/line) lines to the provided frame
  *
@@ -148,29 +175,32 @@ export function parseSemver(input) {
  * @param frame StackFrame that will be mutated
  * @param linesOfContext number of context lines we want to add pre/post
  */
-export function addContextToFrame(lines, frame, linesOfContext) {
-    if (linesOfContext === void 0) { linesOfContext = 5; }
-    var lineno = frame.lineno || 0;
-    var maxLines = lines.length;
-    var sourceLine = Math.max(Math.min(maxLines, lineno - 1), 0);
-    frame.pre_context = lines
-        .slice(Math.max(0, sourceLine - linesOfContext), sourceLine)
-        .map(function (line) { return snipLine(line, 0); });
-    frame.context_line = snipLine(lines[Math.min(maxLines - 1, sourceLine)], frame.colno || 0);
-    frame.post_context = lines
-        .slice(Math.min(sourceLine + 1, maxLines), sourceLine + 1 + linesOfContext)
-        .map(function (line) { return snipLine(line, 0); });
+function addContextToFrame(lines, frame, linesOfContext = 5) {
+  var lineno = frame.lineno || 0;
+  var maxLines = lines.length;
+  var sourceLine = Math.max(Math.min(maxLines, lineno - 1), 0);
+
+  frame.pre_context = lines
+    .slice(Math.max(0, sourceLine - linesOfContext), sourceLine)
+    .map((line) => snipLine(line, 0));
+
+  frame.context_line = snipLine(lines[Math.min(maxLines - 1, sourceLine)], frame.colno || 0);
+
+  frame.post_context = lines
+    .slice(Math.min(sourceLine + 1, maxLines), sourceLine + 1 + linesOfContext)
+    .map((line) => snipLine(line, 0));
 }
+
 /**
  * Strip the query string and fragment off of a given URL or path (if present)
  *
  * @param urlPath Full URL or path, including possible query string and/or fragment
  * @returns URL or path without query string or fragment
  */
-export function stripUrlQueryAndFragment(urlPath) {
-    // eslint-disable-next-line no-useless-escape
+function stripUrlQueryAndFragment(urlPath) {
     return urlPath.split(/[\?#]/, 1)[0];
 }
+
 /**
  * Checks whether or not we've already captured the given exception (note: not an identical exception - the very object
  * in question), and marks it captured if not.
@@ -192,19 +222,21 @@ export function stripUrlQueryAndFragment(urlPath) {
  * @param A thrown exception to check or flag as having been seen
  * @returns `true` if the exception has already been captured, `false` if not (with the side effect of marking it seen)
  */
-export function checkOrSetAlreadyCaught(exception) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (exception && exception.__sentry_captured__) {
-        return true;
-    }
-    try {
-        // set it this way rather than by assignment so that it's not ennumerable and therefore isn't recorded by the
-        // `ExtraErrorData` integration
-        addNonEnumerableProperty(exception, '__sentry_captured__', true);
-    }
-    catch (err) {
-        // `exception` is a primitive, so we can't mark it seen
-    }
-    return false;
+function checkOrSetAlreadyCaught(exception) {
+    if (exception && (exception ).__sentry_captured__) {
+    return true;
+  }
+
+  try {
+    // set it this way rather than by assignment so that it's not ennumerable and therefore isn't recorded by the
+    // `ExtraErrorData` integration
+    addNonEnumerableProperty(exception , '__sentry_captured__', true);
+  } catch (err) {
+    // `exception` is a primitive, so we can't mark it seen
+  }
+
+  return false;
 }
+
+export { addContextToFrame, addExceptionMechanism, addExceptionTypeValue, checkOrSetAlreadyCaught, getEventDescription, parseSemver, parseUrl, stripUrlQueryAndFragment, uuid4 };
 //# sourceMappingURL=misc.js.map

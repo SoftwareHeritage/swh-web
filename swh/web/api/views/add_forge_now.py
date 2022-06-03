@@ -24,9 +24,9 @@ from swh.web.add_forge_now.models import RequestHistory as AddForgeNowRequestHis
 from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStatus
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.auth.utils import ADD_FORGE_MODERATOR_PERMISSION
+from swh.web.auth.utils import is_add_forge_now_moderator
 from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import has_add_forge_now_permission, reverse
+from swh.web.common.utils import reverse
 
 
 def _block_while_testing():
@@ -245,7 +245,7 @@ def api_add_forge_request_update(
             "You must be authenticated to update a new add-forge request"
         )
 
-    if not has_add_forge_now_permission(request.user):
+    if not is_add_forge_now_moderator(request.user):
         return HttpResponseForbidden("You are not a moderator")
 
     add_forge_request = (
@@ -337,7 +337,7 @@ def api_add_forge_request_list(request: Request):
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
-    if request.user.has_perm(ADD_FORGE_MODERATOR_PERMISSION):
+    if is_add_forge_now_moderator(request.user):
         requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
@@ -396,9 +396,7 @@ def api_add_forge_request_get(request: Request, id: int):
         request=add_forge_request
     ).order_by("id")
 
-    if request.user.is_authenticated and request.user.has_perm(
-        ADD_FORGE_MODERATOR_PERMISSION
-    ):
+    if is_add_forge_now_moderator(request.user):
         data = AddForgeNowRequestSerializer(add_forge_request).data
         history = AddForgeNowRequestHistorySerializer(
             request_history, many=True, context={"request": request}

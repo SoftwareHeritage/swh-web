@@ -97,3 +97,17 @@ def test_layout_deposit_admin_for_user_with_permission(client, regular_user):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_contains(resp, "swh-deposit-admin-link")
+
+
+def test_layout_no_piwik_by_default(client):
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "https://piwik.inria.fr")
+
+
+def test_layout_piwik_in_production(client):
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(
+        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    )
+    assert_contains(resp, "https://piwik.inria.fr")
