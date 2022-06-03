@@ -101,7 +101,7 @@ def reverse(
     if query_params and len(query_params) > 0:
         query_dict = QueryDict("", mutable=True)
         for k in sorted(query_params.keys()):
-            query_dict[k] = query_params[k]
+            query_dict[k] = str(query_params[k])
         url += "?" + query_dict.urlencode(safe="/;:")
 
     if request is not None:
@@ -312,6 +312,7 @@ def context_processor(request):
         "status": config["status"],
         "swh_web_dev": is_swh_web_development(request),
         "swh_web_staging": is_swh_web_staging(request),
+        "swh_web_prod": is_swh_web_production(request),
         "swh_web_version": get_distribution("swh.web").version,
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
@@ -517,13 +518,3 @@ def redirect_to_new_route(request, new_route, permanent=True):
         reverse(new_route, query_params=args),
         permanent=permanent,
     )
-
-
-def has_add_forge_now_permission(user) -> bool:
-    """Is a user considered an add-forge-now moderator?
-
-    Returns
-        True if a user is staff or has add forge now moderator permission
-
-    """
-    return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)

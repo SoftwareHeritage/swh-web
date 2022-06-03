@@ -11,6 +11,9 @@
  * our, or the user's build process. Take care when introducing new flags - they must not throw if they are not
  * replaced.
  */
+
 /** Flag that is true for debug builds, false otherwise. */
-export var IS_DEBUG_BUILD = typeof __SENTRY_DEBUG__ === 'undefined' ? true : __SENTRY_DEBUG__;
+var IS_DEBUG_BUILD = typeof __SENTRY_DEBUG__ === 'undefined' ? true : __SENTRY_DEBUG__;
+
+export { IS_DEBUG_BUILD };
 //# sourceMappingURL=flags.js.map

@@ -115,7 +115,7 @@ def resolve_swhid(
 
     if query_params and len(query_params) > 0:
         for k in sorted(query_params.keys()):
-            query_dict[k] = query_params[k]
+            query_dict[k] = str(query_params[k])
 
     if swhid_parsed.origin:
         origin_url = unquote(swhid_parsed.origin)
@@ -150,14 +150,11 @@ def resolve_swhid(
                     query_dict["path"] = hash_to_hex(directory) + query_dict["path"]
                 else:
                     # remove leading slash from SWHID content path
-                    query_dict["path"] = query_dict["path"][1:]
+                    query_dict["path"] = str(query_dict["path"]).lstrip("/")
             elif object_type == ObjectType.DIRECTORY:
                 object_id = directory
                 # remove leading and trailing slashes from SWHID directory path
-                if query_dict["path"].endswith("/"):
-                    query_dict["path"] = query_dict["path"][1:-1]
-                else:
-                    query_dict["path"] = query_dict["path"][1:]
+                query_dict["path"] = str(query_dict["path"]).strip("/")
 
     # snapshot context
     if swhid_parsed.visit:

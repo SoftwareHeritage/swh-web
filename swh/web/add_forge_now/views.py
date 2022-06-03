@@ -20,7 +20,7 @@ from swh.web.api.views.add_forge_now import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
-from swh.web.common.utils import has_add_forge_now_permission
+from swh.web.auth.utils import is_add_forge_now_moderator
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -69,7 +69,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
     paginator = Paginator(add_forge_requests, per_page)
     page = paginator.page(page_num)
 
-    if has_add_forge_now_permission(request.user):
+    if is_add_forge_now_moderator(request.user):
         requests = AddForgeNowRequestSerializer(page.object_list, many=True).data
     else:
         requests = AddForgeNowRequestPublicSerializer(page.object_list, many=True).data
@@ -118,7 +118,7 @@ def create_request_help(request):
 
 
 @user_passes_test(
-    has_add_forge_now_permission,
+    is_add_forge_now_moderator,
     redirect_field_name="next_path",
     login_url=settings.LOGIN_URL,
 )

@@ -1,76 +1,137 @@
-import { __assign, __extends } from "tslib";
-import { BaseClient, SDK_VERSION } from '@sentry/core';
-import { getGlobalObject, logger } from '@sentry/utils';
-import { BrowserBackend } from './backend';
-import { IS_DEBUG_BUILD } from './flags';
-import { injectReportDialog } from './helpers';
-import { Breadcrumbs } from './integrations';
+import { BaseClient, SDK_VERSION, getCurrentHub, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
+import { getGlobalObject, getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { eventFromException, eventFromMessage } from './eventbuilder.js';
+import { IS_DEBUG_BUILD } from './flags.js';
+import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
+import { sendReport } from './transports/utils.js';
+
+var globalObject = getGlobalObject();
+
 /**
  * The Sentry Browser SDK Client.
  *
  * @see BrowserOptions for documentation on configuration options.
  * @see SentryClient for usage documentation.
  */
-var BrowserClient = /** @class */ (function (_super) {
-    __extends(BrowserClient, _super);
-    /**
-     * Creates a new Browser SDK instance.
-     *
-     * @param options Configuration options for this SDK.
-     */
-    function BrowserClient(options) {
-        if (options === void 0) { options = {}; }
-        var _this = this;
-        options._metadata = options._metadata || {};
-        options._metadata.sdk = options._metadata.sdk || {
-            name: 'sentry.javascript.browser',
-            packages: [
-                {
-                    name: 'npm:@sentry/browser',
-                    version: SDK_VERSION,
-                },
-            ],
-            version: SDK_VERSION,
-        };
-        _this = _super.call(this, BrowserBackend, options) || this;
-        return _this;
+class BrowserClient extends BaseClient {
+  /**
+   * Creates a new Browser SDK instance.
+   *
+   * @param options Configuration options for this SDK.
+   */
+   constructor(options) {
+    options._metadata = options._metadata || {};
+    options._metadata.sdk = options._metadata.sdk || {
+      name: 'sentry.javascript.browser',
+      packages: [
+        {
+          name: 'npm:@sentry/browser',
+          version: SDK_VERSION,
+        },
+      ],
+      version: SDK_VERSION,
+    };
+
+    super(options);
+
+    if (options.sendClientReports && globalObject.document) {
+      globalObject.document.addEventListener('visibilitychange', () => {
+        if (globalObject.document.visibilityState === 'hidden') {
+          this._flushOutcomes();
+        }
+      });
     }
-    /**
-     * Show a report dialog to the user to send feedback to a specific event.
-     *
-     * @param options Set individual options for the dialog
-     */
-    BrowserClient.prototype.showReportDialog = function (options) {
-        if (options === void 0) { options = {}; }
-        // doesn't work without a document (React Native)
-        var document = getGlobalObject().document;
-        if (!document) {
-            return;
-        }
-        if (!this._isEnabled()) {
-            IS_DEBUG_BUILD && logger.error('Trying to call showReportDialog with Sentry Client disabled');
-            return;
-        }
-        injectReportDialog(__assign(__assign({}, options), { dsn: options.dsn || this.getDsn() }));
-    };
-    /**
-     * @inheritDoc
-     */
-    BrowserClient.prototype._prepareEvent = function (event, scope, hint) {
-        event.platform = event.platform || 'javascript';
-        return _super.prototype._prepareEvent.call(this, event, scope, hint);
-    };
-    /**
-     * @inheritDoc
-     */
-    BrowserClient.prototype._sendEvent = function (event) {
-        var integration = this.getIntegration(Breadcrumbs);
-        if (integration) {
-            integration.addSentryBreadcrumb(event);
-        }
-        _super.prototype._sendEvent.call(this, event);
-    };
-    return BrowserClient;
-}(BaseClient));
+  }
+
+  /**
+   * @inheritDoc
+   */
+   eventFromException(exception, hint) {
+    return eventFromException(this._options.stackParser, exception, hint, this._options.attachStacktrace);
+  }
+
+  /**
+   * @inheritDoc
+   */
+   eventFromMessage(
+    message,
+        level = 'info',
+    hint,
+  ) {
+    return eventFromMessage(this._options.stackParser, message, level, hint, this._options.attachStacktrace);
+  }
+
+  /**
+   * @inheritDoc
+   */
+   sendEvent(event, hint) {
+    // We only want to add the sentry event breadcrumb when the user has the breadcrumb integration installed and
+    // activated its `sentry` option.
+    // We also do not want to use the `Breadcrumbs` class here directly, because we do not want it to be included in
+    // bundles, if it is not used by the SDK.
+    // This all sadly is a bit ugly, but we currently don't have a "pre-send" hook on the integrations so we do it this
+    // way for now.
+    var breadcrumbIntegration = this.getIntegrationById(BREADCRUMB_INTEGRATION_ID) ;
+    if (
+      breadcrumbIntegration &&
+      // We check for definedness of `options`, even though it is not strictly necessary, because that access to
+      // `.sentry` below does not throw, in case users provided their own integration with id "Breadcrumbs" that does
+      // not have an`options` field
+      breadcrumbIntegration.options &&
+      breadcrumbIntegration.options.sentry
+    ) {
+      getCurrentHub().addBreadcrumb(
+        {
+          category: `sentry.${event.type === 'transaction' ? 'transaction' : 'event'}`,
+          event_id: event.event_id,
+          level: event.level,
+          message: getEventDescription(event),
+        },
+        {
+          event,
+        },
+      );
+    }
+
+    super.sendEvent(event, hint);
+  }
+
+  /**
+   * @inheritDoc
+   */
+   _prepareEvent(event, hint, scope) {
+    event.platform = event.platform || 'javascript';
+    return super._prepareEvent(event, hint, scope);
+  }
+
+  /**
+   * Sends client reports as an envelope.
+   */
+   _flushOutcomes() {
+    var outcomes = this._clearOutcomes();
+
+    if (outcomes.length === 0) {
+      IS_DEBUG_BUILD && logger.log('No outcomes to send');
+      return;
+    }
+
+    if (!this._dsn) {
+      IS_DEBUG_BUILD && logger.log('No dsn provided, will not send outcomes');
+      return;
+    }
+
+    IS_DEBUG_BUILD && logger.log('Sending outcomes:', outcomes);
+
+    var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options.tunnel);
+    var envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
+
+    try {
+      sendReport(url, serializeEnvelope(envelope));
+    } catch (e) {
+      IS_DEBUG_BUILD && logger.error(e);
+    }
+  }
+}
+
 export { BrowserClient };
 //# sourceMappingURL=client.js.map

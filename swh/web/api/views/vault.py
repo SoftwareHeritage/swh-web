@@ -17,7 +17,6 @@ from swh.web.common import archive, query
 from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import SWHID_RE, reverse
 
-
 ######################################################
 # Common
 

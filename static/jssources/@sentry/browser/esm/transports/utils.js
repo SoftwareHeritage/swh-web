@@ -1,16 +1,18 @@
-import { forget, getGlobalObject, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from '../flags';
+import { getGlobalObject, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
+import { IS_DEBUG_BUILD } from '../flags.js';
+
 var global = getGlobalObject();
-var cachedFetchImpl;
+let cachedFetchImpl;
+
 /**
  * A special usecase for incorrectly wrapped Fetch APIs in conjunction with ad-blockers.
  * Whenever someone wraps the Fetch API and returns the wrong promise chain,
  * this chain becomes orphaned and there is no possible way to capture it's rejections
  * other than allowing it bubble up to this very handler. eg.
  *
- * const f = window.fetch;
+ * var f = window.fetch;
  * window.fetch = function () {
- *   const p = f.apply(this, arguments);
+ *   var p = f.apply(this, arguments);
  *
  *   p.then(function() {
  *     console.log('hi.');
@@ -40,59 +42,61 @@ var cachedFetchImpl;
  * Firefox: NetworkError when attempting to fetch resource
  * Safari:  resource blocked by content blocker
  */
-export function getNativeFetchImplementation() {
-    if (cachedFetchImpl) {
-        return cachedFetchImpl;
-    }
-    /* eslint-disable @typescript-eslint/unbound-method */
-    // Fast path to avoid DOM I/O
-    if (isNativeFetch(global.fetch)) {
-        return (cachedFetchImpl = global.fetch.bind(global));
-    }
-    var document = global.document;
-    var fetchImpl = global.fetch;
-    // eslint-disable-next-line deprecation/deprecation
+function getNativeFetchImplementation() {
+  if (cachedFetchImpl) {
+    return cachedFetchImpl;
+  }
+
+  // Fast path to avoid DOM I/O
+  if (isNativeFetch(global.fetch)) {
+    return (cachedFetchImpl = global.fetch.bind(global));
+  }
+
+  var document = global.document;
+  let fetchImpl = global.fetch;
     if (document && typeof document.createElement === 'function') {
-        try {
-            var sandbox = document.createElement('iframe');
-            sandbox.hidden = true;
-            document.head.appendChild(sandbox);
-            var contentWindow = sandbox.contentWindow;
-            if (contentWindow && contentWindow.fetch) {
-                fetchImpl = contentWindow.fetch;
-            }
-            document.head.removeChild(sandbox);
-        }
-        catch (e) {
-            IS_DEBUG_BUILD &&
-                logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
-        }
+    try {
+      var sandbox = document.createElement('iframe');
+      sandbox.hidden = true;
+      document.head.appendChild(sandbox);
+      var contentWindow = sandbox.contentWindow;
+      if (contentWindow && contentWindow.fetch) {
+        fetchImpl = contentWindow.fetch;
+      }
+      document.head.removeChild(sandbox);
+    } catch (e) {
+      IS_DEBUG_BUILD &&
+        logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
     }
-    return (cachedFetchImpl = fetchImpl.bind(global));
-    /* eslint-enable @typescript-eslint/unbound-method */
-}
+  }
+
+  return (cachedFetchImpl = fetchImpl.bind(global));
+  }
+
 /**
  * Sends sdk client report using sendBeacon or fetch as a fallback if available
  *
  * @param url report endpoint
  * @param body report payload
  */
-export function sendReport(url, body) {
-    var isRealNavigator = Object.prototype.toString.call(global && global.navigator) === '[object Navigator]';
-    var hasSendBeacon = isRealNavigator && typeof global.navigator.sendBeacon === 'function';
-    if (hasSendBeacon) {
-        // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-        var sendBeacon = global.navigator.sendBeacon.bind(global.navigator);
-        return sendBeacon(url, body);
-    }
-    if (supportsFetch()) {
-        var fetch_1 = getNativeFetchImplementation();
-        return forget(fetch_1(url, {
-            body: body,
-            method: 'POST',
-            credentials: 'omit',
-            keepalive: true,
-        }));
-    }
+function sendReport(url, body) {
+  var isRealNavigator = Object.prototype.toString.call(global && global.navigator) === '[object Navigator]';
+  var hasSendBeacon = isRealNavigator && typeof global.navigator.sendBeacon === 'function';
+
+  if (hasSendBeacon) {
+    // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
+    var sendBeacon = global.navigator.sendBeacon.bind(global.navigator);
+    sendBeacon(url, body);
+  } else if (supportsFetch()) {
+    var fetch = getNativeFetchImplementation();
+    fetch(url, {
+      body,
+      method: 'POST',
+      credentials: 'omit',
+      keepalive: true,
+    }).then(null, error => logger.error(error));
+  }
 }
+
+export { getNativeFetchImplementation, sendReport };
 //# sourceMappingURL=utils.js.map

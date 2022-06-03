@@ -1,20 +1,31 @@
-import { __assign } from "tslib";
-import { getCurrentHub, initAndBind, Integrations as CoreIntegrations } from '@sentry/core';
-import { addInstrumentationHandler, getGlobalObject, logger, resolvedSyncPromise } from '@sentry/utils';
-import { BrowserClient } from './client';
-import { IS_DEBUG_BUILD } from './flags';
-import { wrap as internalWrap } from './helpers';
-import { Breadcrumbs, Dedupe, GlobalHandlers, LinkedErrors, TryCatch, UserAgent } from './integrations';
-export var defaultIntegrations = [
-    new CoreIntegrations.InboundFilters(),
-    new CoreIntegrations.FunctionToString(),
-    new TryCatch(),
-    new Breadcrumbs(),
-    new GlobalHandlers(),
-    new LinkedErrors(),
-    new Dedupe(),
-    new UserAgent(),
+import { Integrations, getIntegrationsToSetup, initAndBind, getCurrentHub, getReportDialogEndpoint } from '@sentry/core';
+import { getGlobalObject, stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
+import { BrowserClient } from './client.js';
+import { IS_DEBUG_BUILD } from './flags.js';
+import { wrap as wrap$1 } from './helpers.js';
+import './integrations/index.js';
+import { defaultStackParser } from './stack-parsers.js';
+import './transports/index.js';
+import { TryCatch } from './integrations/trycatch.js';
+import { Breadcrumbs } from './integrations/breadcrumbs.js';
+import { GlobalHandlers } from './integrations/globalhandlers.js';
+import { LinkedErrors } from './integrations/linkederrors.js';
+import { Dedupe } from './integrations/dedupe.js';
+import { HttpContext } from './integrations/httpcontext.js';
+import { makeFetchTransport } from './transports/fetch.js';
+import { makeXHRTransport } from './transports/xhr.js';
+
+var defaultIntegrations = [
+  new Integrations.InboundFilters(),
+  new Integrations.FunctionToString(),
+  new TryCatch(),
+  new Breadcrumbs(),
+  new GlobalHandlers(),
+  new LinkedErrors(),
+  new Dedupe(),
+  new HttpContext(),
 ];
+
 /**
  * The Sentry Browser SDK Client.
  *
@@ -72,71 +83,110 @@ export var defaultIntegrations = [
  *
  * @see {@link BrowserOptions} for documentation on configuration options.
  */
-export function init(options) {
-    if (options === void 0) { options = {}; }
-    if (options.defaultIntegrations === undefined) {
-        options.defaultIntegrations = defaultIntegrations;
+function init(options = {}) {
+  if (options.defaultIntegrations === undefined) {
+    options.defaultIntegrations = defaultIntegrations;
+  }
+  if (options.release === undefined) {
+    var window = getGlobalObject();
+    // This supports the variable that sentry-webpack-plugin injects
+    if (window.SENTRY_RELEASE && window.SENTRY_RELEASE.id) {
+      options.release = window.SENTRY_RELEASE.id;
     }
-    if (options.release === undefined) {
-        var window_1 = getGlobalObject();
-        // This supports the variable that sentry-webpack-plugin injects
-        if (window_1.SENTRY_RELEASE && window_1.SENTRY_RELEASE.id) {
-            options.release = window_1.SENTRY_RELEASE.id;
-        }
-    }
-    if (options.autoSessionTracking === undefined) {
-        options.autoSessionTracking = true;
-    }
-    if (options.sendClientReports === undefined) {
-        options.sendClientReports = true;
-    }
-    initAndBind(BrowserClient, options);
-    if (options.autoSessionTracking) {
-        startSessionTracking();
-    }
+  }
+  if (options.autoSessionTracking === undefined) {
+    options.autoSessionTracking = true;
+  }
+  if (options.sendClientReports === undefined) {
+    options.sendClientReports = true;
+  }
+
+  var clientOptions = {
+    ...options,
+    stackParser: stackParserFromStackParserOptions(options.stackParser || defaultStackParser),
+    integrations: getIntegrationsToSetup(options),
+    transport: options.transport || (supportsFetch() ? makeFetchTransport : makeXHRTransport),
+  };
+
+  initAndBind(BrowserClient, clientOptions);
+
+  if (options.autoSessionTracking) {
+    startSessionTracking();
+  }
 }
+
 /**
  * Present the user with a report dialog.
  *
  * @param options Everything is optional, we try to fetch all info need from the global scope.
  */
-export function showReportDialog(options) {
-    if (options === void 0) { options = {}; }
-    var hub = getCurrentHub();
-    var scope = hub.getScope();
-    if (scope) {
-        options.user = __assign(__assign({}, scope.getUser()), options.user);
-    }
-    if (!options.eventId) {
-        options.eventId = hub.lastEventId();
-    }
-    var client = hub.getClient();
-    if (client) {
-        client.showReportDialog(options);
-    }
+function showReportDialog(options = {}, hub = getCurrentHub()) {
+  // doesn't work without a document (React Native)
+  var global = getGlobalObject();
+  if (!global.document) {
+    IS_DEBUG_BUILD && logger.error('Global document not defined in showReportDialog call');
+    return;
+  }
+
+  const { client, scope } = hub.getStackTop();
+  var dsn = options.dsn || (client && client.getDsn());
+  if (!dsn) {
+    IS_DEBUG_BUILD && logger.error('DSN not configured for showReportDialog call');
+    return;
+  }
+
+  if (scope) {
+    options.user = {
+      ...scope.getUser(),
+      ...options.user,
+    };
+  }
+
+  if (!options.eventId) {
+    options.eventId = hub.lastEventId();
+  }
+
+  var script = global.document.createElement('script');
+  script.async = true;
+  script.src = getReportDialogEndpoint(dsn, options);
+
+  if (options.onLoad) {
+        script.onload = options.onLoad;
+  }
+
+  var injectionPoint = global.document.head || global.document.body;
+  if (injectionPoint) {
+    injectionPoint.appendChild(script);
+  } else {
+    IS_DEBUG_BUILD && logger.error('Not injecting report dialog. No injection point found in HTML');
+  }
 }
+
 /**
  * This is the getter for lastEventId.
  *
  * @returns The last event id of a captured event.
  */
-export function lastEventId() {
-    return getCurrentHub().lastEventId();
+function lastEventId() {
+  return getCurrentHub().lastEventId();
 }
+
 /**
  * This function is here to be API compatible with the loader.
  * @hidden
  */
-export function forceLoad() {
-    // Noop
+function forceLoad() {
+  // Noop
 }
+
 /**
  * This function is here to be API compatible with the loader.
  * @hidden
  */
-export function onLoad(callback) {
-    callback();
+function onLoad(callback) {
+  callback();
 }
+
 /**
  * Call `flush()` on the current client, if there is one. See {@link Client.flush}.
  *
@@ -145,14 +195,15 @@ export function onLoad(callback) {
  * @returns A promise which resolves to `true` if the queue successfully drains before the timeout, or `false` if it
  * doesn't (or if there's no client defined).
  */
-export function flush(timeout) {
-    var client = getCurrentHub().getClient();
-    if (client) {
-        return client.flush(timeout);
-    }
-    IS_DEBUG_BUILD && logger.warn('Cannot flush events. No client defined.');
-    return resolvedSyncPromise(false);
+function flush(timeout) {
+  var client = getCurrentHub().getClient();
+  if (client) {
+    return client.flush(timeout);
+  }
+  IS_DEBUG_BUILD && logger.warn('Cannot flush events. No client defined.');
+  return resolvedSyncPromise(false);
 }
+
 /**
  * Call `close()` on the current client, if there is one. See {@link Client.close}.
  *
@@ -161,14 +212,15 @@ export function flush(timeout) {
  * @returns A promise which resolves to `true` if the queue successfully drains before the timeout, or `false` if it
  * doesn't (or if there's no client defined).
  */
-export function close(timeout) {
-    var client = getCurrentHub().getClient();
-    if (client) {
-        return client.close(timeout);
-    }
-    IS_DEBUG_BUILD && logger.warn('Cannot flush events and disable SDK. No client defined.');
-    return resolvedSyncPromise(false);
+function close(timeout) {
+  var client = getCurrentHub().getClient();
+  if (client) {
+    return client.close(timeout);
+  }
+  IS_DEBUG_BUILD && logger.warn('Cannot flush events and disable SDK. No client defined.');
+  return resolvedSyncPromise(false);
 }
+
 /**
  * Wrap code within a try/catch block so the SDK is able to capture errors.
  *
@@ -176,46 +228,53 @@ export function close(timeout) {
  *
  * @returns The result of wrapped function call.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function wrap(fn) {
-    return internalWrap(fn)();
+function wrap(fn) {
+  return wrap$1(fn)();
 }
+
 function startSessionOnHub(hub) {
-    hub.startSession({ ignoreDuration: true });
-    hub.captureSession();
+  hub.startSession({ ignoreDuration: true });
+  hub.captureSession();
 }
+
 /**
  * Enable automatic Session Tracking for the initial page load.
  */
 function startSessionTracking() {
-    var window = getGlobalObject();
-    var document = window.document;
-    if (typeof document === 'undefined') {
-        IS_DEBUG_BUILD && logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
-        return;
+  var window = getGlobalObject();
+  var document = window.document;
+
+  if (typeof document === 'undefined') {
+    IS_DEBUG_BUILD && logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
+    return;
+  }
+
+  var hub = getCurrentHub();
+
+  // The only way for this to be false is for there to be a version mismatch between @sentry/browser (>= 6.0.0) and
+  // @sentry/hub (< 5.27.0). In the simple case, there won't ever be such a mismatch, because the two packages are
+  // pinned at the same version in package.json, but there are edge cases where it's possible. See
+  // https://github.com/getsentry/sentry-javascript/issues/3207 and
+  // https://github.com/getsentry/sentry-javascript/issues/3234 and
+  // https://github.com/getsentry/sentry-javascript/issues/3278.
+  if (!hub.captureSession) {
+    return;
+  }
+
+  // The session duration for browser sessions does not track a meaningful
+  // concept that can be used as a metric.
+  // Automatically captured sessions are akin to page views, and thus we
+  // discard their duration.
+  startSessionOnHub(hub);
+
+  // We want to create a session for every navigation as well
+  addInstrumentationHandler('history', ({ from, to }) => {
+    // Don't create an additional session for the initial route or if the location did not change
+    if (!(from === undefined || from === to)) {
+      startSessionOnHub(getCurrentHub());
     }
-    var hub = getCurrentHub();
-    // The only way for this to be false is for there to be a version mismatch between @sentry/browser (>= 6.0.0) and
-    // @sentry/hub (< 5.27.0). In the simple case, there won't ever be such a mismatch, because the two packages are
-    // pinned at the same version in package.json, but there are edge cases where it's possible. See
-    // https://github.com/getsentry/sentry-javascript/issues/3207 and
-    // https://github.com/getsentry/sentry-javascript/issues/3234 and
-    // https://github.com/getsentry/sentry-javascript/issues/3278.
-    if (!hub.captureSession) {
-        return;
-    }
-    // The session duration for browser sessions does not track a meaningful
-    // concept that can be used as a metric.
-    // Automatically captured sessions are akin to page views, and thus we
-    // discard their duration.
-    startSessionOnHub(hub);
-    // We want to create a session for every navigation as well
-    addInstrumentationHandler('history', function (_a) {
-        var from = _a.from, to = _a.to;
-        // Don't create an additional session for the initial route or if the location did not change
-        if (!(from === undefined || from === to)) {
-            startSessionOnHub(getCurrentHub());
-        }
-    });
+  });
 }
+
+export { close, defaultIntegrations, flush, forceLoad, init, lastEventId, onLoad, showReportDialog, wrap };
 //# sourceMappingURL=sdk.js.map
