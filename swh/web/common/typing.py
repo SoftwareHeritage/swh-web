@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -229,7 +229,7 @@ TResult = TypeVar("TResult")
 PagedResult = CorePagedResult[TResult, str]
 
 
-class SaveOriginRequestInfo(TypedDict):
+class SaveOriginRequestInfo(TypedDict, total=False):
     id: int
     """Unique key"""
     save_request_date: str

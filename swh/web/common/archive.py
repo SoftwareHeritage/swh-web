@@ -1406,7 +1406,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
-def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
+def lookup_missing_hashes(grouped_swhids: Dict[ObjectType, List[bytes]]) -> Set[str]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 

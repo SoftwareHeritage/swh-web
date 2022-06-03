@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from rest_framework.request import Request
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType
@@ -74,7 +75,7 @@ def _vault_response(
 )
 @api_doc("/vault/flat/")
 @format_docstring()
-def api_vault_cook_flat(request, swhid):
+def api_vault_cook_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/
     .. http:post:: /api/1/vault/flat/(swhid)/
@@ -115,21 +116,21 @@ def api_vault_cook_flat(request, swhid):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    swhid = CoreSWHID.from_string(swhid)
-    if swhid.object_type == ObjectType.DIRECTORY:
-        res = _dispatch_cook_progress(request, "flat", swhid)
+    parsed_swhid = CoreSWHID.from_string(swhid)
+    if parsed_swhid.object_type == ObjectType.DIRECTORY:
+        res = _dispatch_cook_progress(request, "flat", parsed_swhid)
         res["fetch_url"] = reverse(
             "api-1-vault-fetch-flat",
-            url_args={"swhid": str(swhid)},
+            url_args={"swhid": swhid},
             request=request,
         )
         return _vault_response(res, add_legacy_items=False)
-    elif swhid.object_type == ObjectType.CONTENT:
+    elif parsed_swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
             "use `/api/1/content/raw/` instead."
         )
-    elif swhid.object_type == ObjectType.REVISION:
+    elif parsed_swhid.object_type == ObjectType.REVISION:
         # TODO: support revisions too? (the vault allows it)
         raise BadInputExc(
             "Only directories can be cooked as 'flat' bundles. "
@@ -149,7 +150,7 @@ def api_vault_cook_flat(request, swhid):
 )
 @api_doc("/vault/directory/", tags=["deprecated"])
 @format_docstring()
-def api_vault_cook_directory(request, dir_id):
+def api_vault_cook_directory(request: Request, dir_id: str):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/
 
@@ -174,7 +175,7 @@ def api_vault_cook_directory(request, dir_id):
     "api-1-vault-fetch-flat",
 )
 @api_doc("/vault/flat/raw/")
-def api_vault_fetch_flat(request, swhid):
+def api_vault_fetch_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/raw/
 
@@ -213,7 +214,7 @@ def api_vault_fetch_flat(request, swhid):
     checksum_args=["dir_id"],
 )
 @api_doc("/vault/directory/raw/", tags=["hidden", "deprecated"])
-def api_vault_fetch_directory(request, dir_id):
+def api_vault_fetch_directory(request: Request, dir_id: str):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
 
@@ -241,7 +242,7 @@ def api_vault_fetch_directory(request, dir_id):
 )
 @api_doc("/vault/gitfast/")
 @format_docstring()
-def api_vault_cook_gitfast(request, swhid):
+def api_vault_cook_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/
     .. http:post:: /api/1/vault/gitfast/(swhid)/
@@ -283,21 +284,21 @@ def api_vault_cook_gitfast(request, swhid):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    swhid = CoreSWHID.from_string(swhid)
-    if swhid.object_type == ObjectType.REVISION:
-        res = _dispatch_cook_progress(request, "gitfast", swhid)
+    parsed_swhid = CoreSWHID.from_string(swhid)
+    if parsed_swhid.object_type == ObjectType.REVISION:
+        res = _dispatch_cook_progress(request, "gitfast", parsed_swhid)
         res["fetch_url"] = reverse(
             "api-1-vault-fetch-gitfast",
-            url_args={"swhid": str(swhid)},
+            url_args={"swhid": swhid},
             request=request,
         )
         return _vault_response(res, add_legacy_items=False)
-    elif swhid.object_type == ObjectType.CONTENT:
+    elif parsed_swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
             "use `/api/1/content/raw/` instead."
         )
-    elif swhid.object_type == ObjectType.DIRECTORY:
+    elif parsed_swhid.object_type == ObjectType.DIRECTORY:
         raise BadInputExc(
             "Only revisions can be cooked as 'gitfast' bundles. "
             "Use `/api/1/vault/flat/` to cook directories, as flat bundles."
@@ -316,7 +317,7 @@ def api_vault_cook_gitfast(request, swhid):
 )
 @api_doc("/vault/revision/gitfast/", tags=["deprecated"])
 @format_docstring()
-def api_vault_cook_revision_gitfast(request, rev_id):
+def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/
 
@@ -341,7 +342,7 @@ def api_vault_cook_revision_gitfast(request, rev_id):
     "api-1-vault-fetch-gitfast",
 )
 @api_doc("/vault/gitfast/raw/")
-def api_vault_fetch_revision_gitfast(request, swhid):
+def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/raw/
 
@@ -380,7 +381,7 @@ def api_vault_fetch_revision_gitfast(request, swhid):
     checksum_args=["rev_id"],
 )
 @api_doc("/vault/revision_gitfast/raw/", tags=["hidden", "deprecated"])
-def _api_vault_revision_gitfast_raw(request, rev_id):
+def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
     """
     .. http:get:: /api/1/vault/revision/(rev_id)/gitfast/raw/
 
@@ -405,7 +406,7 @@ def _api_vault_revision_gitfast_raw(request, rev_id):
 )
 @api_doc("/vault/git-bare/")
 @format_docstring()
-def api_vault_cook_git_bare(request, swhid):
+def api_vault_cook_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/
     .. http:post:: /api/1/vault/git-bare/(swhid)/
@@ -451,21 +452,21 @@ def api_vault_cook_git_bare(request, swhid):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    swhid = CoreSWHID.from_string(swhid)
-    if swhid.object_type == ObjectType.REVISION:
-        res = _dispatch_cook_progress(request, "git_bare", swhid)
+    parsed_swhid = CoreSWHID.from_string(swhid)
+    if parsed_swhid.object_type == ObjectType.REVISION:
+        res = _dispatch_cook_progress(request, "git_bare", parsed_swhid)
         res["fetch_url"] = reverse(
             "api-1-vault-fetch-git-bare",
-            url_args={"swhid": str(swhid)},
+            url_args={"swhid": swhid},
             request=request,
         )
         return _vault_response(res, add_legacy_items=False)
-    elif swhid.object_type == ObjectType.CONTENT:
+    elif parsed_swhid.object_type == ObjectType.CONTENT:
         raise BadInputExc(
             "Content objects do not need to be cooked, "
             "use `/api/1/content/raw/` instead."
         )
-    elif swhid.object_type == ObjectType.DIRECTORY:
+    elif parsed_swhid.object_type == ObjectType.DIRECTORY:
         raise BadInputExc(
             "Only revisions can be cooked as 'git-bare' bundles. "
             "Use `/api/1/vault/flat/` to cook directories, as flat bundles."
@@ -479,7 +480,7 @@ def api_vault_cook_git_bare(request, swhid):
     "api-1-vault-fetch-git-bare",
 )
 @api_doc("/vault/git-bare/raw/")
-def api_vault_fetch_revision_git_bare(request, swhid):
+def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/raw/
 

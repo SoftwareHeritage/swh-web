@@ -1,10 +1,13 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from distutils.util import strtobool
 from functools import partial
+from typing import Dict
+
+from rest_framework.request import Request
 
 from swh.search.exc import SearchQuerySyntaxError
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -56,7 +59,7 @@ DOC_RETURN_ORIGIN_VISIT_ARRAY += """
 @api_route(r"/origins/", "api-1-origins")
 @api_doc("/origins/", noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
-def api_origins(request):
+def api_origins(request: Request):
     """
     .. http:get:: /api/1/origins/
 
@@ -98,20 +101,20 @@ def api_origins(request):
     origins = [enrich_origin(o, request=request) for o in page_result.results]
     next_page_token = page_result.next_page_token
 
-    response = {"results": origins, "headers": {}}
+    headers: Dict[str, str] = {}
     if next_page_token is not None:
-        response["headers"]["link-next"] = reverse(
+        headers["link-next"] = reverse(
             "api-1-origins",
             query_params={"page_token": next_page_token, "origin_count": limit},
             request=request,
         )
-    return response
+    return {"results": origins, "headers": headers}
 
 
 @api_route(r"/origin/(?P<origin_url>.+)/get/", "api-1-origin")
 @api_doc("/origin/")
 @format_docstring(return_origin=DOC_RETURN_ORIGIN)
-def api_origin(request, origin_url):
+def api_origin(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/get/
 
@@ -146,7 +149,7 @@ def api_origin(request, origin_url):
     )
 
 
-def _visit_types():
+def _visit_types() -> str:
     docstring = ""
     # available visit types are queried using swh-search so we do it in a try
     # block in case of failure (for instance in docker environment when
@@ -169,7 +172,7 @@ def _visit_types():
 @format_docstring(
     return_origin_array=DOC_RETURN_ORIGIN_ARRAY, visit_types=_visit_types()
 )
-def api_origin_search(request, url_pattern):
+def api_origin_search(request: Request, url_pattern: str):
     """
     .. http:get:: /api/1/origin/search/(url_pattern)/
 
@@ -249,7 +252,7 @@ def api_origin_search(request, url_pattern):
 @api_route(r"/origin/metadata-search/", "api-1-origin-metadata-search")
 @api_doc("/origin/metadata-search/", noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
-def api_origin_metadata_search(request):
+def api_origin_metadata_search(request: Request):
     """
     .. http:get:: /api/1/origin/metadata-search/
 
@@ -290,10 +293,10 @@ def api_origin_metadata_search(request):
     }
 
 
-@api_route(r"/origin/(?P<origin_url>.*)/visits/", "api-1-origin-visits")
+@api_route(r"/origin/(?P<origin_url>.+)/visits/", "api-1-origin-visits")
 @api_doc("/origin/visits/")
 @format_docstring(return_origin_visit_array=DOC_RETURN_ORIGIN_VISIT_ARRAY)
-def api_origin_visits(request, origin_url):
+def api_origin_visits(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/visits/
 
@@ -327,9 +330,8 @@ def api_origin_visits(request, origin_url):
     notfound_msg = "No origin {} found".format(origin_url)
     url_args_next = {"origin_url": origin_url}
     per_page = int(request.query_params.get("per_page", "10"))
-    last_visit = request.query_params.get("last_visit")
-    if last_visit:
-        last_visit = int(last_visit)
+    last_visit_str = request.query_params.get("last_visit")
+    last_visit = int(last_visit_str) if last_visit_str else None
 
     def _lookup_origin_visits(origin_query, last_visit=last_visit, per_page=per_page):
         all_visits = get_origin_visits(origin_query)
@@ -380,13 +382,13 @@ def api_origin_visits(request, origin_url):
 
 
 @api_route(
-    r"/origin/(?P<origin_url>.*)/visit/latest/",
+    r"/origin/(?P<origin_url>.+)/visit/latest/",
     "api-1-origin-visit-latest",
     throttle_scope="swh_api_origin_visit_latest",
 )
 @api_doc("/origin/visit/latest/")
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
-def api_origin_visit_latest(request, origin_url=None):
+def api_origin_visit_latest(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/visit/latest/
 
@@ -424,11 +426,11 @@ def api_origin_visit_latest(request, origin_url=None):
 
 
 @api_route(
-    r"/origin/(?P<origin_url>.*)/visit/(?P<visit_id>[0-9]+)/", "api-1-origin-visit"
+    r"/origin/(?P<origin_url>.+)/visit/(?P<visit_id>[0-9]+)/", "api-1-origin-visit"
 )
 @api_doc("/origin/visit/")
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
-def api_origin_visit(request, visit_id, origin_url):
+def api_origin_visit(request: Request, visit_id: str, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/visit/(visit_id)/
 
@@ -468,7 +470,7 @@ def api_origin_visit(request, visit_id, origin_url):
 )
 @api_doc("/origin/intrinsic-metadata/")
 @format_docstring()
-def api_origin_intrinsic_metadata(request, origin_url):
+def api_origin_intrinsic_metadata(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
 

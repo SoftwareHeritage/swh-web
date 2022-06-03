@@ -1,7 +1,9 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -19,7 +21,7 @@ from swh.web.config import get_config
 )
 @api_doc("/snapshot/")
 @format_docstring()
-def api_snapshot(request, snapshot_id):
+def api_snapshot(request: Request, snapshot_id: str):
     """
     .. http:get:: /api/1/snapshot/(snapshot_id)/
 
@@ -72,8 +74,8 @@ def api_snapshot(request, snapshot_id):
 
     branches_from = request.GET.get("branches_from", "")
     branches_count = int(request.GET.get("branches_count", snapshot_content_max_size))
-    target_types = request.GET.get("target_types", None)
-    target_types = target_types.split(",") if target_types else None
+    target_types_str = request.GET.get("target_types", None)
+    target_types = target_types_str.split(",") if target_types_str else None
 
     results = api_lookup(
         archive.lookup_snapshot,

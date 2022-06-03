@@ -1,7 +1,9 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from rest_framework.request import Request
 
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -15,7 +17,7 @@ from swh.web.common import archive
 )
 @api_doc("/release/")
 @format_docstring()
-def api_release(request, sha1_git):
+def api_release(request: Request, sha1_git: str):
     """
     .. http:get:: /api/1/release/(sha1_git)/
 
