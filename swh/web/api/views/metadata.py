@@ -154,7 +154,7 @@ def api_raw_extrinsic_metadata_swhid(request, target):
                 limit=limit_str,
                 page_token=base64.urlsafe_b64encode(
                     result_page.next_page_token.encode()
-                ),
+                ).decode(),
             ),
             request=request,
         )
