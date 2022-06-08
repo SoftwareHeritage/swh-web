@@ -137,7 +137,7 @@ class SnapshotContext(TypedDict):
 
 class SWHObjectInfo(TypedDict):
     object_type: ObjectType
-    object_id: str
+    object_id: Optional[str]
 
 
 class SWHIDContext(TypedDict, total=False):
@@ -182,12 +182,12 @@ class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
 
 
 class DirectoryMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
-    directory: str
-    nb_files: int
-    nb_dirs: int
-    sum_file_sizes: int
+    directory: Optional[str]
+    nb_files: Optional[int]
+    nb_dirs: Optional[int]
+    sum_file_sizes: Optional[int]
     root_directory: Optional[str]
-    path: str
+    path: Optional[str]
     revision: Optional[str]
     revision_found: Optional[bool]
     release: Optional[str]

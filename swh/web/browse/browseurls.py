@@ -1,7 +1,9 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from typing import List, Optional
 
 from swh.web.common.urlsindex import UrlsIndex
 
@@ -14,7 +16,11 @@ class BrowseUrls(UrlsIndex):
     scope = "browse"
 
 
-def browse_route(*url_patterns, view_name=None, checksum_args=None):
+def browse_route(
+    *url_patterns: str,
+    view_name: Optional[str] = None,
+    checksum_args: Optional[List[str]] = None,
+):
     """
     Decorator to ease the registration of a swh-web browse endpoint
 
@@ -24,7 +30,7 @@ def browse_route(*url_patterns, view_name=None, checksum_args=None):
         view_name: the name of the Django view associated to the routes used
             to reverse the url
     """
-    url_patterns = ["^" + url_pattern + "$" for url_pattern in url_patterns]
+    url_patterns = tuple("^" + url_pattern + "$" for url_pattern in url_patterns)
     view_name = view_name
 
     def decorator(f):

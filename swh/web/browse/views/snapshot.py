@@ -1,9 +1,11 @@
-# Copyright (C) 2018-2019  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Optional
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 
 from swh.web.browse.browseurls import browse_route
@@ -18,7 +20,7 @@ from swh.web.common.exc import BadInputExc
 from swh.web.common.utils import redirect_to_new_route, reverse
 
 
-def get_snapshot_from_request(request):
+def get_snapshot_from_request(request: HttpRequest) -> str:
     snapshot = request.GET.get("snapshot")
     if snapshot:
         return snapshot
@@ -34,7 +36,7 @@ def get_snapshot_from_request(request):
     view_name="browse-snapshot",
     checksum_args=["snapshot_id"],
 )
-def snapshot_browse(request, snapshot_id):
+def snapshot_browse(request: HttpRequest, snapshot_id: str) -> HttpResponse:
     """Django view for browsing the content of a snapshot.
 
     The url that points to it is :http:get:`/browse/snapshot/(snapshot_id)/`
@@ -52,7 +54,7 @@ def snapshot_browse(request, snapshot_id):
     view_name="browse-snapshot-directory",
     checksum_args=["snapshot_id"],
 )
-def snapshot_directory_browse(request, snapshot_id):
+def snapshot_directory_browse(request: HttpRequest, snapshot_id: str) -> HttpResponse:
     """Django view for browsing the content of a directory collected
     in a snapshot.
 
@@ -71,7 +73,9 @@ def snapshot_directory_browse(request, snapshot_id):
     view_name="browse-snapshot-directory-legacy",
     checksum_args=["snapshot_id"],
 )
-def snapshot_directory_browse_legacy(request, snapshot_id, path=None):
+def snapshot_directory_browse_legacy(
+    request: HttpRequest, snapshot_id: str, path: Optional[str] = None
+) -> HttpResponse:
     """Django view for browsing the content of a directory collected
     in a snapshot.
 
@@ -91,7 +95,7 @@ def snapshot_directory_browse_legacy(request, snapshot_id, path=None):
     view_name="browse-snapshot-content",
     checksum_args=["snapshot_id"],
 )
-def snapshot_content_browse(request, snapshot_id):
+def snapshot_content_browse(request: HttpRequest, snapshot_id: str) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/content` instead
 
@@ -109,7 +113,9 @@ def snapshot_content_browse(request, snapshot_id):
     view_name="browse-snapshot-content-legacy",
     checksum_args=["snapshot_id"],
 )
-def snapshot_content_browse_legacy(request, snapshot_id, path):
+def snapshot_content_browse_legacy(
+    request: HttpRequest, snapshot_id: str, path: str
+) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/content` instead
 
@@ -128,7 +134,9 @@ def snapshot_content_browse_legacy(request, snapshot_id, path):
     view_name="browse-snapshot-log",
     checksum_args=["snapshot_id"],
 )
-def snapshot_log_browse(request, snapshot_id=None):
+def snapshot_log_browse(
+    request: HttpRequest, snapshot_id: Optional[str] = None
+) -> HttpResponse:
     """Django view that produces an HTML display of revisions history (aka
     the commit log) collected in a snapshot.
 
@@ -161,7 +169,9 @@ def snapshot_log_browse(request, snapshot_id=None):
     view_name="browse-snapshot-branches",
     checksum_args=["snapshot_id"],
 )
-def snapshot_branches_browse(request, snapshot_id=None):
+def snapshot_branches_browse(
+    request: HttpRequest, snapshot_id: Optional[str] = None
+) -> HttpResponse:
     """Django view that produces an HTML display of the list of branches
     collected in a snapshot.
 
@@ -196,7 +206,9 @@ def snapshot_branches_browse(request, snapshot_id=None):
     view_name="browse-snapshot-releases",
     checksum_args=["snapshot_id"],
 )
-def snapshot_releases_browse(request, snapshot_id=None):
+def snapshot_releases_browse(
+    request: HttpRequest, snapshot_id: Optional[str] = None
+) -> HttpResponse:
     """Django view that produces an HTML display of the list of releases
     collected in a snapshot.
 

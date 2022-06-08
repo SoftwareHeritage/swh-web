@@ -1,9 +1,9 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 from urllib.parse import quote, unquote
 
 from typing_extensions import TypedDict
@@ -274,7 +274,7 @@ def group_swhids(
 def get_swhids_info(
     swh_objects: Iterable[SWHObjectInfo],
     snapshot_context: Optional[SnapshotContext] = None,
-    extra_context: Optional[Dict[str, Any]] = None,
+    extra_context: Optional[Mapping[str, Any]] = None,
 ) -> List[SWHIDInfo]:
     """
     Returns a list of dict containing info related to SWHIDs of objects.

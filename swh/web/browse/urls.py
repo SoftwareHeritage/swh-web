@@ -1,9 +1,10 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from django.conf.urls import url
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from swh.web.browse.browseurls import BrowseUrls
@@ -17,13 +18,13 @@ import swh.web.browse.views.snapshot  # noqa
 from swh.web.common.utils import origin_visit_types, reverse
 
 
-def _browse_help_view(request):
+def _browse_help_view(request: HttpRequest) -> HttpResponse:
     return render(
         request, "browse/help.html", {"heading": "How to browse the archive ?"}
     )
 
 
-def _browse_search_view(request):
+def _browse_search_view(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "browse/search.html",
@@ -34,7 +35,7 @@ def _browse_search_view(request):
     )
 
 
-def _browse_vault_view(request):
+def _browse_vault_view(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "browse/vault-ui.html",
@@ -42,7 +43,7 @@ def _browse_vault_view(request):
     )
 
 
-def _browse_origin_save_view(request):
+def _browse_origin_save_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse("origin-save"))
 
 

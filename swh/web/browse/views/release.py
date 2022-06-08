@@ -3,6 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Optional
+
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from swh.model.swhids import ObjectType
@@ -19,7 +22,7 @@ from swh.web.browse.utils import (
 from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc, sentry_capture_exception
 from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import ReleaseMetadata, SWHObjectInfo
+from swh.web.common.typing import ReleaseMetadata, SnapshotContext, SWHObjectInfo
 from swh.web.common.utils import format_utc_iso_date, reverse
 
 
@@ -28,7 +31,7 @@ from swh.web.common.utils import format_utc_iso_date, reverse
     view_name="browse-release",
     checksum_args=["sha1_git"],
 )
-def release_browse(request, sha1_git):
+def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     """
     Django view that produces an HTML display of a release
     identified by its id.
@@ -36,7 +39,7 @@ def release_browse(request, sha1_git):
     The url that points to it is :http:get:`/browse/release/(sha1_git)/`.
     """
     release = archive.lookup_release(sha1_git)
-    snapshot_context = {}
+    snapshot_context: Optional[SnapshotContext] = None
     origin_info = None
     snapshot_id = request.GET.get("snapshot_id")
     if not snapshot_id:
@@ -76,7 +79,8 @@ def release_browse(request, sha1_git):
             snapshot_id, release_name=release["name"]
         )
 
-    snapshot_id = snapshot_context.get("snapshot_id", None)
+    if snapshot_context is not None:
+        snapshot_id = snapshot_context.get("snapshot_id", None)
 
     release_metadata = ReleaseMetadata(
         object_type=ObjectType.RELEASE,
