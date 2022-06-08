@@ -416,7 +416,10 @@ def search_origin_metadata(
     for origin, match in zip(origins, matches):
         if not origin:
             continue
-        match["from_directory"] = hashutil.hash_to_hex(match["from_directory"])
+        for field in ("from_directory", "from_revision"):
+            # from_directory when using swh.indexer >= 2.0.0, from_revision otherwise
+            if field in match:
+                match[field] = hashutil.hash_to_hex(match[field])
         del match["id"]
         results.append(OriginMetadataInfo(url=origin.url, metadata=match))
 
