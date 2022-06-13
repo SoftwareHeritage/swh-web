@@ -1,7 +1,6 @@
 import { getCurrentHub } from '@sentry/core';
 import { addInstrumentationHandler, isString, isPrimitive, isErrorEvent, getLocationHref, logger, addExceptionMechanism } from '@sentry/utils';
 import { eventFromUnknownInput } from '../eventbuilder.js';
-import { IS_DEBUG_BUILD } from '../flags.js';
 import { shouldIgnoreOnError } from '../helpers.js';
 
 /** Global handlers */
@@ -216,7 +215,7 @@ function _enhanceEventWithInitialFrame(event, url, line, column) {
 }
 
 function globalHandlerLog(type) {
-  IS_DEBUG_BUILD && logger.log(`Global Handler attached: ${type}`);
+  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Global Handler attached: ${type}`);
 }
 
 function addMechanismAndCapture(hub, error, event, type) {

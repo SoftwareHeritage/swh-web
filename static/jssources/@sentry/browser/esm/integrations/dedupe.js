@@ -1,5 +1,4 @@
 import { logger } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from '../flags.js';
 
 /** Deduplication filter */
 class Dedupe  {constructor() { Dedupe.prototype.__init.call(this); }
@@ -28,7 +27,7 @@ class Dedupe  {constructor() { Dedupe.prototype.__init.call(this); }
         // Juuust in case something goes wrong
         try {
           if (_shouldDropEvent(currentEvent, self._previousEvent)) {
-            IS_DEBUG_BUILD && logger.warn('Event dropped due to being a duplicate of previously captured event.');
+            (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Event dropped due to being a duplicate of previously captured event.');
             return null;
           }
         } catch (_oO) {

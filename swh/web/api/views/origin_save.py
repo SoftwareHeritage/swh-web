@@ -1,9 +1,12 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import os
+from typing import Optional, cast
+
+from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -19,7 +22,7 @@ from swh.web.common.origin_save import (
 )
 
 
-def _savable_visit_types():
+def _savable_visit_types() -> str:
     docstring = ""
     if os.environ.get("DJANGO_SETTINGS_MODULE") != "swh.web.settings.tests":
         visit_types = sorted(get_savable_visit_types())
@@ -39,7 +42,7 @@ def _savable_visit_types():
 )
 @api_doc("/origin/save/")
 @format_docstring(visit_types=_savable_visit_types())
-def api_save_origin(request, visit_type, origin_url):
+def api_save_origin(request: Request, visit_type: str, origin_url: str):
     """
     .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
     .. http:post:: /api/1/origin/save/(visit_type)/url/(origin_url)/
@@ -112,13 +115,13 @@ def api_save_origin(request, visit_type, origin_url):
                 request,
                 permissions=[SWH_AMBASSADOR_PERMISSION, API_SAVE_ORIGIN_PERMISSION],
             ),
-            user_id=request.user.id,
+            user_id=cast(Optional[int], request.user.id),
             **data,
         )
         del sor["id"]
+        return sor
     else:
-        sor = get_save_origin_requests(visit_type, origin_url)
-        for s in sor:
-            del s["id"]
-
-    return sor
+        sors = get_save_origin_requests(visit_type, origin_url)
+        for sor in sors:
+            del sor["id"]
+        return sors

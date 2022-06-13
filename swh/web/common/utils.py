@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import functools
 import os
 import re
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 import urllib.parse
 
 from bs4 import BeautifulSoup
@@ -34,7 +34,6 @@ from swh.web.auth.utils import (
     MAILMAP_ADMIN_PERMISSION,
 )
 from swh.web.common.exc import BadInputExc, sentry_capture_exception
-from swh.web.common.typing import QueryParameters
 from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
@@ -67,7 +66,7 @@ swh_object_icons = {
 def reverse(
     viewname: str,
     url_args: Optional[Dict[str, Any]] = None,
-    query_params: Optional[QueryParameters] = None,
+    query_params: Optional[Mapping[str, Optional[str]]] = None,
     current_app: Optional[str] = None,
     urlconf: Optional[str] = None,
     request: Optional[HttpRequest] = None,
@@ -95,13 +94,13 @@ def reverse(
         viewname, urlconf=urlconf, kwargs=url_args, current_app=current_app
     )
 
+    params: Dict[str, str] = {}
     if query_params:
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        params = {k: v for k, v in query_params.items() if v is not None}
 
-    if query_params and len(query_params) > 0:
+    if params:
         query_dict = QueryDict("", mutable=True)
-        for k in sorted(query_params.keys()):
-            query_dict[k] = str(query_params[k])
+        query_dict.update(dict(sorted(params.items())))
         url += "?" + query_dict.urlencode(safe="/;:")
 
     if request is not None:

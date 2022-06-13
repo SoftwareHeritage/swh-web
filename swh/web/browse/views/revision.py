@@ -6,8 +6,9 @@
 import hashlib
 import json
 import textwrap
+from typing import Any, Dict, List, Optional
 
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
@@ -30,7 +31,7 @@ from swh.web.browse.utils import (
 from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc, http_status_code_message
 from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import RevisionMetadata, SWHObjectInfo
+from swh.web.common.typing import RevisionMetadata, SnapshotContext, SWHObjectInfo
 from swh.web.common.utils import (
     format_utc_iso_date,
     gen_path_info,
@@ -39,7 +40,12 @@ from swh.web.common.utils import (
 )
 
 
-def _gen_content_url(revision, query_string, path, snapshot_context):
+def _gen_content_url(
+    revision: Dict[str, Any],
+    query_string: str,
+    path: str,
+    snapshot_context: Optional[SnapshotContext],
+) -> str:
     if snapshot_context:
         query_params = snapshot_context["query_params"]
         query_params["path"] = path
@@ -55,7 +61,7 @@ def _gen_content_url(revision, query_string, path, snapshot_context):
     return content_url
 
 
-def _gen_diff_link(idx, diff_anchor, link_text):
+def _gen_diff_link(idx: int, diff_anchor: str, link_text: str) -> str:
     if idx < _max_displayed_file_diffs:
         return gen_link(diff_anchor, link_text)
     else:
@@ -66,7 +72,11 @@ def _gen_diff_link(idx, diff_anchor, link_text):
 _max_displayed_file_diffs = 1000
 
 
-def _gen_revision_changes_list(revision, changes, snapshot_context):
+def _gen_revision_changes_list(
+    revision: Dict[str, Any],
+    changes: List[Dict[str, Any]],
+    snapshot_context: Optional[SnapshotContext],
+) -> str:
     """
     Returns a HTML string describing the file changes
     introduced in a revision.
@@ -151,7 +161,7 @@ def _gen_revision_changes_list(revision, changes, snapshot_context):
     view_name="diff-revision",
     checksum_args=["sha1_git"],
 )
-def _revision_diff(request, sha1_git):
+def _revision_diff(request: HttpRequest, sha1_git: str) -> HttpResponse:
     """
     Browse internal endpoint to compute revision diff
     """
@@ -161,7 +171,8 @@ def _revision_diff(request, sha1_git):
     if not origin_url:
         origin_url = request.GET.get("origin", None)
     timestamp = request.GET.get("timestamp", None)
-    visit_id = request.GET.get("visit_id", None)
+    visit_id_str = request.GET.get("visit_id", None)
+    visit_id = int(visit_id_str) if visit_id_str is not None else None
     if origin_url:
         snapshot_context = get_snapshot_context(
             origin_url=origin_url, timestamp=timestamp, visit_id=visit_id
@@ -186,7 +197,7 @@ NB_LOG_ENTRIES = 100
     view_name="browse-revision-log",
     checksum_args=["sha1_git"],
 )
-def revision_log_browse(request, sha1_git):
+def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     """
     Django view that produces an HTML display of the history
     log for a revision identified by its id.
@@ -245,8 +256,8 @@ def revision_log_browse(request, sha1_git):
             "browse-revision-log",
             url_args={"sha1_git": sha1_git},
             query_params={
-                "per_page": per_page,
-                "offset": offset + per_page,
+                "per_page": str(per_page),
+                "offset": str(offset + per_page),
                 "revs_ordering": revs_ordering or None,
             },
         )
@@ -257,8 +268,8 @@ def revision_log_browse(request, sha1_git):
             "browse-revision-log",
             url_args={"sha1_git": sha1_git},
             query_params={
-                "per_page": per_page,
-                "offset": offset - per_page,
+                "per_page": str(per_page),
+                "offset": str(offset - per_page),
                 "revs_ordering": revs_ordering or None,
             },
         )
@@ -296,7 +307,7 @@ def revision_log_browse(request, sha1_git):
     view_name="browse-revision",
     checksum_args=["sha1_git"],
 )
-def revision_browse(request, sha1_git):
+def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     """
     Django view that produces an HTML display of a revision
     identified by its id.
@@ -350,7 +361,7 @@ def revision_browse(request, sha1_git):
     elif snapshot_id:
         snapshot_context = get_snapshot_context(snapshot_id)
 
-    error_info = {"status_code": 200, "description": None}
+    error_info: Dict[str, Any] = {"status_code": 200, "description": None}
 
     if path:
         try:

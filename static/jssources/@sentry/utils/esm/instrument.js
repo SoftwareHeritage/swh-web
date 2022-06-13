@@ -1,4 +1,3 @@
-import { IS_DEBUG_BUILD } from './flags.js';
 import { getGlobalObject } from './global.js';
 import { isInstanceOf, isString } from './is.js';
 import { logger, CONSOLE_LEVELS } from './logger.js';
@@ -53,7 +52,7 @@ function instrument(type) {
       instrumentUnhandledRejection();
       break;
     default:
-      IS_DEBUG_BUILD && logger.warn('unknown instrumentation type:', type);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('unknown instrumentation type:', type);
       return;
   }
 }
@@ -79,7 +78,7 @@ function triggerHandlers(type, data) {
     try {
       handler(data);
     } catch (e) {
-      IS_DEBUG_BUILD &&
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
         logger.error(
           `Error while triggering instrumentation handler.\nType: ${type}\nName: ${getFunctionName(handler)}\nError:`,
           e,

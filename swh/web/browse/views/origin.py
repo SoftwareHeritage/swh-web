@@ -1,8 +1,11 @@
-# Copyright (C) 2021 The Software Heritage developers
+# Copyright (C) 2021-2022 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Any, Dict, List, Optional, cast
+
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from swh.web.browse.browseurls import browse_route
@@ -25,7 +28,7 @@ from swh.web.common.utils import (
     r"origin/directory/",
     view_name="browse-origin-directory",
 )
-def origin_directory_browse(request):
+def origin_directory_browse(request: HttpRequest) -> HttpResponse:
     """Django view for browsing the content of a directory associated
     to an origin for a given visit.
 
@@ -47,7 +50,12 @@ def origin_directory_browse(request):
     r"origin/(?P<origin_url>.+)/directory/",
     view_name="browse-origin-directory-legacy",
 )
-def origin_directory_browse_legacy(request, origin_url, timestamp=None, path=None):
+def origin_directory_browse_legacy(
+    request: HttpRequest,
+    origin_url: str,
+    timestamp: Optional[str] = None,
+    path: Optional[str] = None,
+) -> HttpResponse:
     """Django view for browsing the content of a directory associated
     to an origin for a given visit.
 
@@ -68,7 +76,7 @@ def origin_directory_browse_legacy(request, origin_url, timestamp=None, path=Non
     r"origin/content/",
     view_name="browse-origin-content",
 )
-def origin_content_browse(request):
+def origin_content_browse(request: HttpRequest) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/content` instead
 
@@ -87,7 +95,12 @@ def origin_content_browse(request):
     r"origin/(?P<origin_url>.+)/content/",
     view_name="browse-origin-content-legacy",
 )
-def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None):
+def origin_content_browse_legacy(
+    request: HttpRequest,
+    origin_url: str,
+    path: Optional[str] = None,
+    timestamp: Optional[str] = None,
+) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/content` instead
 
@@ -106,7 +119,7 @@ def origin_content_browse_legacy(request, origin_url, path=None, timestamp=None)
     r"origin/log/",
     view_name="browse-origin-log",
 )
-def origin_log_browse(request):
+def origin_log_browse(request: HttpRequest) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/log` instead
 
@@ -123,7 +136,9 @@ def origin_log_browse(request):
     r"origin/(?P<origin_url>.+)/log/",
     view_name="browse-origin-log-legacy",
 )
-def origin_log_browse_legacy(request, origin_url, timestamp=None):
+def origin_log_browse_legacy(
+    request: HttpRequest, origin_url: str, timestamp: Optional[str] = None
+) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/log` instead
 
@@ -145,7 +160,7 @@ def origin_log_browse_legacy(request, origin_url, timestamp=None):
     r"origin/branches/",
     view_name="browse-origin-branches",
 )
-def origin_branches_browse(request):
+def origin_branches_browse(request: HttpRequest) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/branches` instead
 
@@ -163,7 +178,9 @@ def origin_branches_browse(request):
     r"origin/(?P<origin_url>.+)/branches/",
     view_name="browse-origin-branches-legacy",
 )
-def origin_branches_browse_legacy(request, origin_url, timestamp=None):
+def origin_branches_browse_legacy(
+    request: HttpRequest, origin_url: str, timestamp: Optional[str] = None
+) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/branches` instead
 
@@ -182,7 +199,7 @@ def origin_branches_browse_legacy(request, origin_url, timestamp=None):
     r"origin/releases/",
     view_name="browse-origin-releases",
 )
-def origin_releases_browse(request):
+def origin_releases_browse(request: HttpRequest) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/releases` instead
 
@@ -200,7 +217,9 @@ def origin_releases_browse(request):
     r"origin/(?P<origin_url>.+)/releases/",
     view_name="browse-origin-releases-legacy",
 )
-def origin_releases_browse_legacy(request, origin_url, timestamp=None):
+def origin_releases_browse_legacy(
+    request: HttpRequest, origin_url: str, timestamp: Optional[str] = None
+) -> HttpResponse:
     """
     This route is deprecated; use http:get:`/browse/snapshot/releases` instead
 
@@ -215,12 +234,15 @@ def origin_releases_browse_legacy(request, origin_url, timestamp=None):
     return redirect_to_new_route(request, "browse-snapshot-releases")
 
 
-def _origin_visits_browse(request, origin_url):
+def _origin_visits_browse(
+    request: HttpRequest, origin_url: Optional[str]
+) -> HttpResponse:
     if origin_url is None:
         raise BadInputExc("An origin URL must be provided as query parameter.")
 
     origin_info = archive.lookup_origin({"url": origin_url})
-    origin_visits = get_origin_visits(origin_info)
+    origin_visits = cast(List[Dict[str, Any]], get_origin_visits(origin_info))
+
     snapshot_context = get_snapshot_context(origin_url=origin_url)
 
     for i, visit in enumerate(origin_visits):
@@ -263,7 +285,7 @@ def _origin_visits_browse(request, origin_url):
 
 
 @browse_route(r"origin/visits/", view_name="browse-origin-visits")
-def origin_visits_browse(request):
+def origin_visits_browse(request: HttpRequest) -> HttpResponse:
     """Django view that produces an HTML display of visits reporting
     for a given origin.
 
@@ -276,7 +298,7 @@ def origin_visits_browse(request):
 @browse_route(
     r"origin/(?P<origin_url>.+)/visits/", view_name="browse-origin-visits-legacy"
 )
-def origin_visits_browse_legacy(request, origin_url):
+def origin_visits_browse_legacy(request: HttpRequest, origin_url: str) -> HttpResponse:
     """Django view that produces an HTML display of visits reporting
     for a given origin.
 
@@ -287,7 +309,7 @@ def origin_visits_browse_legacy(request, origin_url):
 
 
 @browse_route(r"origin/", view_name="browse-origin")
-def origin_browse(request):
+def origin_browse(request: HttpRequest) -> HttpResponse:
     """Django view that redirects to the display of the latest archived
     snapshot for a given software origin.
     """
@@ -299,7 +321,7 @@ def origin_browse(request):
 
 
 @browse_route(r"origin/(?P<origin_url>.+)/", view_name="browse-origin-legacy")
-def origin_browse_legacy(request, origin_url):
+def origin_browse_legacy(request: HttpRequest, origin_url: str) -> HttpResponse:
     """Django view that redirects to the display of the latest archived
     snapshot for a given software origin.
     """

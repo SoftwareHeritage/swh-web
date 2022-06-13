@@ -562,9 +562,9 @@ describe('Origin Save Tests', function() {
   });
 
   it('should be allowed to submit \'archives\' save request when connected as ambassador', function() {
-    const originUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf';
-    const artifactUrl = 'https://ftp.gnu.org/pub/pub/gnu/3dldf/3DLDF-1.1.4.tar.gz';
-    const artifactVersion = '1.1.4';
+    const originUrl = 'https://github.com/chromium/chromium/tags';
+    const artifactUrl = 'https://github.com/chromium/chromium/archive/refs/tags/104.0.5106.1.tar.gz';
+    const artifactVersion = '104.0.5106.1';
     stubSaveRequest({
       requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
       saveRequestStatus: 'accepted',

@@ -1,18 +1,14 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar
 
 from typing_extensions import TypedDict
 
-from django.http import QueryDict
-
 from swh.core.api.classes import PagedResult as CorePagedResult
 from swh.model.swhids import ObjectType
-
-QueryParameters = Union[Dict[str, Any], QueryDict]
 
 
 class OriginInfo(TypedDict):
@@ -103,7 +99,7 @@ class SnapshotContext(TypedDict):
     """optional origin info associated to the snapshot"""
     origin_visits_url: Optional[str]
     """optional origin visits URL"""
-    query_params: QueryParameters
+    query_params: Dict[str, Optional[str]]
     """common query parameters when browsing snapshot content"""
     release: Optional[str]
     """optional release name set when browsing snapshot in that scope"""
@@ -137,7 +133,7 @@ class SnapshotContext(TypedDict):
 
 class SWHObjectInfo(TypedDict):
     object_type: ObjectType
-    object_id: str
+    object_id: Optional[str]
 
 
 class SWHIDContext(TypedDict, total=False):
@@ -182,12 +178,12 @@ class ContentMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
 
 
 class DirectoryMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
-    directory: str
-    nb_files: int
-    nb_dirs: int
-    sum_file_sizes: int
+    directory: Optional[str]
+    nb_files: Optional[int]
+    nb_dirs: Optional[int]
+    sum_file_sizes: Optional[int]
     root_directory: Optional[str]
-    path: str
+    path: Optional[str]
     revision: Optional[str]
     revision_found: Optional[bool]
     release: Optional[str]
@@ -229,7 +225,7 @@ TResult = TypeVar("TResult")
 PagedResult = CorePagedResult[TResult, str]
 
 
-class SaveOriginRequestInfo(TypedDict):
+class SaveOriginRequestInfo(TypedDict, total=False):
     id: int
     """Unique key"""
     save_request_date: str

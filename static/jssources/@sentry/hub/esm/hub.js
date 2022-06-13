@@ -1,5 +1,4 @@
 import { uuid4, dateTimestampInSeconds, consoleSandbox, logger, getGlobalObject, getGlobalSingleton, isNodeEnv } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from './flags.js';
 import { Scope } from './scope.js';
 import { closeSession, makeSession, updateSession } from './session.js';
 
@@ -294,7 +293,7 @@ class Hub  {
     try {
       return client.getIntegration(integration);
     } catch (_oO) {
-      IS_DEBUG_BUILD && logger.warn(`Cannot retrieve integration ${integration.id} from the current Hub`);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot retrieve integration ${integration.id} from the current Hub`);
       return null;
     }
   }
@@ -416,7 +415,7 @@ class Hub  {
     if (sentry && sentry.extensions && typeof sentry.extensions[method] === 'function') {
       return sentry.extensions[method].apply(this, args);
     }
-    IS_DEBUG_BUILD && logger.warn(`Extension method ${method} couldn't be found, doing nothing.`);
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Extension method ${method} couldn't be found, doing nothing.`);
   }
 }
 

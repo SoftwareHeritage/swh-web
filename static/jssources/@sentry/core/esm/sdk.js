@@ -1,6 +1,5 @@
 import { getCurrentHub } from '@sentry/hub';
 import { logger } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from './flags.js';
 
 /** A class object that can instantiate Client objects. */
 
@@ -16,7 +15,7 @@ function initAndBind(
   options,
 ) {
   if (options.debug === true) {
-    if (IS_DEBUG_BUILD) {
+    if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
       logger.enable();
     } else {
       // use `console.warn` rather than `logger.warn` since by non-debug bundles have all `logger.x` statements stripped
