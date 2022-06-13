@@ -34,8 +34,6 @@ function forEachEnvelopeItem(
   });
 }
 
-// Combination of global TextEncoder and Node require('util').TextEncoder
-
 function encodeUTF8(input, textEncoder) {
   var utf8 = textEncoder || new TextEncoder();
   return utf8.encode(input);

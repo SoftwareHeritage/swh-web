@@ -1,6 +1,5 @@
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
 import { logger } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from './flags.js';
 
 var installedIntegrations = [];
 
@@ -64,7 +63,7 @@ function setupIntegrations(integrations) {
     if (installedIntegrations.indexOf(integration.name) === -1) {
       integration.setupOnce(addGlobalEventProcessor, getCurrentHub);
       installedIntegrations.push(integration.name);
-      IS_DEBUG_BUILD && logger.log(`Integration installed: ${integration.name}`);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
     }
   });
 

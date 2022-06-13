@@ -1,7 +1,6 @@
 import { Integrations, getIntegrationsToSetup, initAndBind, getCurrentHub, getReportDialogEndpoint } from '@sentry/core';
 import { getGlobalObject, stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
 import { BrowserClient } from './client.js';
-import { IS_DEBUG_BUILD } from './flags.js';
 import { wrap as wrap$1 } from './helpers.js';
 import './integrations/index.js';
 import { defaultStackParser } from './stack-parsers.js';
@@ -124,14 +123,14 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
   // doesn't work without a document (React Native)
   var global = getGlobalObject();
   if (!global.document) {
-    IS_DEBUG_BUILD && logger.error('Global document not defined in showReportDialog call');
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Global document not defined in showReportDialog call');
     return;
   }
 
   const { client, scope } = hub.getStackTop();
   var dsn = options.dsn || (client && client.getDsn());
   if (!dsn) {
-    IS_DEBUG_BUILD && logger.error('DSN not configured for showReportDialog call');
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('DSN not configured for showReportDialog call');
     return;
   }
 
@@ -158,7 +157,7 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
   if (injectionPoint) {
     injectionPoint.appendChild(script);
   } else {
-    IS_DEBUG_BUILD && logger.error('Not injecting report dialog. No injection point found in HTML');
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Not injecting report dialog. No injection point found in HTML');
   }
 }
 
@@ -200,7 +199,7 @@ function flush(timeout) {
   if (client) {
     return client.flush(timeout);
   }
-  IS_DEBUG_BUILD && logger.warn('Cannot flush events. No client defined.');
+  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events. No client defined.');
   return resolvedSyncPromise(false);
 }
 
@@ -217,7 +216,7 @@ function close(timeout) {
   if (client) {
     return client.close(timeout);
   }
-  IS_DEBUG_BUILD && logger.warn('Cannot flush events and disable SDK. No client defined.');
+  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events and disable SDK. No client defined.');
   return resolvedSyncPromise(false);
 }
 
@@ -245,7 +244,8 @@ function startSessionTracking() {
   var document = window.document;
 
   if (typeof document === 'undefined') {
-    IS_DEBUG_BUILD && logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+      logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
     return;
   }
 

@@ -1,9 +1,12 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Optional
+
 from django.http import HttpResponse
+from rest_framework.request import Request
 
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -41,7 +44,7 @@ DOC_RETURN_REVISION_ARRAY = DOC_RETURN_REVISION.replace(":>json", ":>jsonarr")
 )
 @api_doc("/revision/")
 @format_docstring(return_revision=DOC_RETURN_REVISION)
-def api_revision(request, sha1_git):
+def api_revision(request: Request, sha1_git: str):
     """
     .. http:get:: /api/1/revision/(sha1_git)/
 
@@ -83,7 +86,7 @@ def api_revision(request, sha1_git):
     checksum_args=["sha1_git"],
 )
 @api_doc("/revision/raw/", tags=["hidden"])
-def api_revision_raw_message(request, sha1_git):
+def api_revision_raw_message(request: Request, sha1_git: str):
     """Return the raw data of the message of revision identified by sha1_git"""
     raw = archive.lookup_revision_message(sha1_git)
     response = HttpResponse(raw["message"], content_type="application/octet-stream")
@@ -103,7 +106,9 @@ def api_revision_raw_message(request, sha1_git):
 )
 @api_doc("/revision/directory/")
 @format_docstring()
-def api_revision_directory(request, sha1_git, dir_path=None, with_data=False):
+def api_revision_directory(
+    request: Request, sha1_git: str, dir_path: Optional[str] = None
+):
     """
     .. http:get:: /api/1/revision/(sha1_git)/directory/[(path)/]
 
@@ -136,7 +141,7 @@ def api_revision_directory(request, sha1_git, dir_path=None, with_data=False):
             :swh_web_api:`revision/f1b94134a4b879bc55c3dacdb496690c8ebdc03f/directory/`
     """
     rev_id, result = archive.lookup_directory_through_revision(
-        {"sha1_git": sha1_git}, dir_path, with_data=with_data
+        {"sha1_git": sha1_git}, dir_path
     )
 
     content = result["content"]
@@ -159,7 +164,7 @@ def api_revision_directory(request, sha1_git, dir_path=None, with_data=False):
 )
 @api_doc("/revision/log/")
 @format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
-def api_revision_log(request, sha1_git):
+def api_revision_log(request: Request, sha1_git: str):
     """
     .. http:get:: /api/1/revision/(sha1_git)/log/
 

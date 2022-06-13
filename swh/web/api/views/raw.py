@@ -5,6 +5,7 @@
 
 from django.http import HttpResponse
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.request import Request
 
 from swh.model import model
 from swh.model.git_objects import (
@@ -33,7 +34,7 @@ from swh.web.common.utils import SWHID_RE
 )
 @api_doc("/raw/")
 @format_docstring()
-def api_raw_object(request, swhid):
+def api_raw_object(request: Request, swhid: str):
     """
     .. http:get::  /api/1/raw/(swhid)/
 
@@ -64,9 +65,9 @@ def api_raw_object(request, swhid):
     if not (request.user.is_staff or request.user.has_perm(API_RAW_OBJECT_PERMISSION)):
         raise PermissionDenied()
 
-    swhid = CoreSWHID.from_string(swhid)
-    object_id = swhid.object_id
-    object_type = swhid.object_type
+    parsed_swhid = CoreSWHID.from_string(swhid)
+    object_id = parsed_swhid.object_id
+    object_type = parsed_swhid.object_type
 
     def not_found():
         return NotFoundExc(f"Object with id {swhid} not found.")
@@ -85,34 +86,34 @@ def api_raw_object(request, swhid):
         result = content_git_object(cnt)
 
     elif object_type == ObjectType.DIRECTORY:
-        result = directory_get(archive.storage, object_id)
-        if result is None:
+        dir_ = directory_get(archive.storage, object_id)
+        if dir_ is None:
             raise not_found()
-        result = directory_git_object(result)
+        result = directory_git_object(dir_)
 
     elif object_type == ObjectType.REVISION:
-        result = archive.storage.revision_get([object_id], ignore_displayname=True)[0]
-        if result is None:
+        rev = archive.storage.revision_get([object_id], ignore_displayname=True)[0]
+        if rev is None:
             raise not_found()
-        result = revision_git_object(result)
+        result = revision_git_object(rev)
 
     elif object_type == ObjectType.RELEASE:
-        result = archive.storage.release_get([object_id], ignore_displayname=True)[0]
-        if result is None:
+        rel = archive.storage.release_get([object_id], ignore_displayname=True)[0]
+        if rel is None:
             raise not_found()
-        result = release_git_object(result)
+        result = release_git_object(rel)
 
     elif object_type == ObjectType.SNAPSHOT:
-        result = snapshot_get_all_branches(archive.storage, object_id)
-        if result is None:
+        snp = snapshot_get_all_branches(archive.storage, object_id)
+        if snp is None:
             raise not_found()
-        result = snapshot_git_object(result)
+        result = snapshot_git_object(snp)
 
     else:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
     response = HttpResponse(result, content_type="application/octet-stream")
-    filename = str(swhid).replace(":", "_") + "_raw"
+    filename = swhid.replace(":", "_") + "_raw"
     response["Content-disposition"] = f"attachment; filename={filename}"
 
     return response

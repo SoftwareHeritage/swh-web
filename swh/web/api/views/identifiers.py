@@ -1,9 +1,14 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from typing import Dict, Set
+
+from rest_framework.request import Request
+
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.swhids import ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import archive
@@ -11,10 +16,10 @@ from swh.web.common.exc import LargePayloadExc
 from swh.web.common.identifiers import get_swhid, group_swhids, resolve_swhid
 
 
-@api_route(r"/resolve/(?P<swhid>.*)/", "api-1-resolve-swhid")
+@api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")
 @api_doc("/resolve/")
 @format_docstring()
-def api_resolve_swhid(request, swhid):
+def api_resolve_swhid(request: Request, swhid: str):
     """
     .. http:get:: /api/1/resolve/(swhid)/
 
@@ -71,7 +76,7 @@ def api_resolve_swhid(request, swhid):
 @api_route(r"/known/", "api-1-known", methods=["POST"])
 @api_doc("/known/")
 @format_docstring()
-def api_swhid_known(request):
+def api_swhid_known(request: Request):
     """
     .. http:post:: /api/1/known/
 
@@ -109,7 +114,7 @@ def api_swhid_known(request):
     # group swhids by their type
     swhids_by_type = group_swhids(swhids)
     # search for hashes not present in the storage
-    missing_hashes = {
+    missing_hashes: Dict[ObjectType, Set[bytes]] = {
         k: set(map(hash_to_bytes, archive.lookup_missing_hashes({k: v})))
         for k, v in swhids_by_type.items()
     }

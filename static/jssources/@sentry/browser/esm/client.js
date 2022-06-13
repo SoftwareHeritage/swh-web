@@ -1,7 +1,6 @@
 import { BaseClient, SDK_VERSION, getCurrentHub, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
 import { getGlobalObject, getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
-import { IS_DEBUG_BUILD } from './flags.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
 import { sendReport } from './transports/utils.js';
 
@@ -111,16 +110,16 @@ class BrowserClient extends BaseClient {
     var outcomes = this._clearOutcomes();
 
     if (outcomes.length === 0) {
-      IS_DEBUG_BUILD && logger.log('No outcomes to send');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('No outcomes to send');
       return;
     }
 
     if (!this._dsn) {
-      IS_DEBUG_BUILD && logger.log('No dsn provided, will not send outcomes');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('No dsn provided, will not send outcomes');
       return;
     }
 
-    IS_DEBUG_BUILD && logger.log('Sending outcomes:', outcomes);
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('Sending outcomes:', outcomes);
 
     var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options.tunnel);
     var envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
@@ -128,7 +127,7 @@ class BrowserClient extends BaseClient {
     try {
       sendReport(url, serializeEnvelope(envelope));
     } catch (e) {
-      IS_DEBUG_BUILD && logger.error(e);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(e);
     }
   }
 }

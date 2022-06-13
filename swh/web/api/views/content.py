@@ -1,11 +1,13 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import functools
+from typing import Optional
 
 from django.http import HttpResponse
+from rest_framework.request import Request
 
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -23,7 +25,7 @@ from swh.web.common.utils import reverse
 )
 @api_doc("/content/filetype/")
 @format_docstring()
-def api_content_filetype(request, q):
+def api_content_filetype(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/filetype/
 
@@ -73,7 +75,7 @@ def api_content_filetype(request, q):
 )
 @api_doc("/content/language/")
 @format_docstring()
-def api_content_language(request, q):
+def api_content_language(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/language/
 
@@ -124,7 +126,7 @@ def api_content_language(request, q):
 )
 @api_doc("/content/license/")
 @format_docstring()
-def api_content_license(request, q):
+def api_content_license(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/license/
 
@@ -167,7 +169,7 @@ def api_content_license(request, q):
 
 @api_route(r"/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/", "api-1-content-ctags")
 @api_doc("/content/ctags/", tags=["hidden"])
-def api_content_ctags(request, q):
+def api_content_ctags(request: Request, q: str):
     """
     Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
     symbols defined in a content object.
@@ -187,7 +189,7 @@ def api_content_ctags(request, q):
     checksum_args=["q"],
 )
 @api_doc("/content/raw/")
-def api_content_raw(request, q):
+def api_content_raw(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/raw/
 
@@ -235,7 +237,7 @@ def api_content_raw(request, q):
 
 @api_route(r"/content/symbol/(?P<q>.+)/", "api-1-content-symbol")
 @api_doc("/content/symbol/", tags=["hidden"])
-def api_content_symbol(request, q=None):
+def api_content_symbol(request: Request, q: str):
     """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
     symbol (e.g., function name, data type, method, ...).
 
@@ -281,10 +283,10 @@ def api_content_symbol(request, q=None):
 
 
 @api_route(r"/content/known/search/", "api-1-content-known", methods=["POST"])
-@api_route(r"/content/known/(?P<q>(?!search).*)/", "api-1-content-known")
+@api_route(r"/content/known/(?P<q>(?!search).+)/", "api-1-content-known")
 @api_doc("/content/known/", tags=["hidden"])
 @format_docstring()
-def api_check_content_known(request, q=None):
+def api_check_content_known(request: Request, q: Optional[str] = None):
     """
     .. http:get:: /api/1/content/known/(sha1)[,(sha1), ...,(sha1)]/
 
@@ -311,7 +313,6 @@ def api_check_content_known(request, q=None):
 
             :swh_web_api:`content/known/dc2830a9e72f23c1dfebef4413003221baa5fb62,0c3f19cb47ebfbe643fb19fa94c874d18fa62d12/`
     """
-    response = {"search_res": None, "search_stats": None}
     search_stats = {"nbfiles": 0, "pct": 0}
     search_res = None
 
@@ -345,11 +346,9 @@ def api_check_content_known(request, q=None):
             search_res = result
             nbfound = len([x for x in lookup if x["found"]])
             search_stats["nbfiles"] = nb_queries
-            search_stats["pct"] = (nbfound / nb_queries) * 100
+            search_stats["pct"] = int((nbfound / nb_queries) * 100)
 
-    response["search_res"] = search_res
-    response["search_stats"] = search_stats
-    return response
+    return {"search_res": search_res, "search_stats": search_stats}
 
 
 @api_route(
@@ -357,7 +356,7 @@ def api_check_content_known(request, q=None):
 )
 @api_doc("/content/")
 @format_docstring()
-def api_content_metadata(request, q):
+def api_content_metadata(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/
 

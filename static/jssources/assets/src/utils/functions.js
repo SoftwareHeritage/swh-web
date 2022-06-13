@@ -139,7 +139,7 @@ export async function getCanonicalOriginURL(originUrl) {
     // extract {owner}/{repo}
     const ownerRepo = originUrlLower.replace(ghUrlRegex, '');
     // fetch canonical URL from github Web API
-    const url = getCanonicalGithubOriginURL(ownerRepo);
+    const url = await getCanonicalGithubOriginURL(ownerRepo);
     if (url) {
       return url;
     }
@@ -150,7 +150,7 @@ export async function getCanonicalOriginURL(originUrl) {
   if (parsedUrl) {
     const ownerRepo = `${parsedUrl.groups.owner}/${parsedUrl.groups.repo}`;
     // fetch canonical URL from github Web API
-    const url = getCanonicalGithubOriginURL(ownerRepo);
+    const url = await getCanonicalGithubOriginURL(ownerRepo);
     if (url) {
       return url;
     }

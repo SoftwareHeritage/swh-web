@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2021  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,7 @@
 from datetime import timedelta
 import json
 
-from hypothesis import given, settings
+from hypothesis import given
 import pytest
 
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
@@ -23,6 +23,7 @@ from swh.web.common.utils import reverse
 from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.data import (
     INDEXER_TOOL,
+    ORIGIN_MASTER_DIRECTORY,
     ORIGIN_MASTER_REVISION,
     ORIGIN_METADATA_KEY,
     ORIGIN_METADATA_VALUE,
@@ -70,7 +71,6 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(api_client, mocker
     }
 
 
-@settings(max_examples=10)
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits(
     api_client, subtest, new_origin, visit_dates, new_snapshots
@@ -126,7 +126,6 @@ def test_api_lookup_origin_visits(
             assert rv.data == expected_visits
 
 
-@settings(max_examples=10)
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits_by_id(
     api_client, subtest, new_origin, visit_dates, new_snapshots
@@ -698,7 +697,7 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
             {
                 "url": origin_url,
                 "metadata": {
-                    "from_revision": ORIGIN_MASTER_REVISION[origin_url],
+                    "from_directory": ORIGIN_MASTER_DIRECTORY[origin_url],
                     "tool": {
                         "name": INDEXER_TOOL["tool_name"],
                         "version": INDEXER_TOOL["tool_version"],
@@ -732,12 +731,12 @@ def test_api_origin_metadata_search_limit(api_client, mocker):
     oimsft.side_effect = lambda conjunction, limit: [
         OriginIntrinsicMetadataRow(
             id=origin_url,
-            from_revision=hash_to_bytes(master_rev),
+            from_directory=hash_to_bytes(directory),
             indexer_configuration_id=INDEXER_TOOL["id"],
             metadata={ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
             mappings=[],
         )
-        for origin_url, master_rev in ORIGIN_MASTER_REVISION.items()
+        for origin_url, directory in ORIGIN_MASTER_DIRECTORY.items()
     ]
 
     url = reverse(

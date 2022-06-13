@@ -4,8 +4,9 @@
 # See top-level LICENSE file for more information
 
 import os
+from typing import Any, Dict, Optional
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from swh.model.swhids import ObjectType
@@ -23,21 +24,24 @@ from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
 from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
 
 
-def _directory_browse(request, sha1_git, path=None):
+def _directory_browse(
+    request: HttpRequest, sha1_git: str, path: Optional[str] = None
+) -> HttpResponse:
     root_sha1_git = sha1_git
-    error_info = {"status_code": 200, "description": None}
+    dir_sha1_git: Optional[str] = sha1_git
+    error_info: Dict[str, Any] = {"status_code": 200, "description": None}
     if path:
         try:
             dir_info = archive.lookup_directory_with_path(sha1_git, path)
-            sha1_git = dir_info["target"]
+            dir_sha1_git = dir_info["target"]
         except NotFoundExc as e:
             error_info["status_code"] = 404
             error_info["description"] = f"NotFoundExc: {str(e)}"
-            sha1_git = None
+            dir_sha1_git = None
 
     dirs, files = [], []
-    if sha1_git is not None:
-        dirs, files = get_directory_entries(sha1_git)
+    if dir_sha1_git is not None:
+        dirs, files = get_directory_entries(dir_sha1_git)
     origin_url = request.GET.get("origin_url")
     if not origin_url:
         origin_url = request.GET.get("origin")
@@ -54,9 +58,9 @@ def _directory_browse(request, sha1_git, path=None):
                 path=path,
             )
         except NotFoundExc as e:
-            if str(e).startswith("Origin"):
+            if str(e).startswith("Origin") and origin_url is not None:
                 raw_dir_url = reverse(
-                    "browse-directory", url_args={"sha1_git": sha1_git}
+                    "browse-directory", url_args={"sha1_git": dir_sha1_git}
                 )
                 error_message = (
                     "The Software Heritage archive has a directory "
@@ -144,7 +148,7 @@ def _directory_browse(request, sha1_git, path=None):
 
     dir_metadata = DirectoryMetadata(
         object_type=ObjectType.DIRECTORY,
-        object_id=sha1_git,
+        object_id=dir_sha1_git,
         directory=root_sha1_git,
         nb_files=len(files),
         nb_dirs=len(dirs),
@@ -159,12 +163,14 @@ def _directory_browse(request, sha1_git, path=None):
 
     vault_cooking = {
         "directory_context": True,
-        "directory_swhid": f"swh:1:dir:{sha1_git}",
+        "directory_swhid": f"swh:1:dir:{dir_sha1_git}",
         "revision_context": False,
         "revision_swhid": None,
     }
 
-    swh_objects = [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=sha1_git)]
+    swh_objects = [
+        SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=dir_sha1_git)
+    ]
 
     if snapshot_context:
         if snapshot_context["revision_id"]:
@@ -190,7 +196,7 @@ def _directory_browse(request, sha1_git, path=None):
 
     swhids_info = get_swhids_info(swh_objects, snapshot_context, dir_metadata)
 
-    heading = "Directory - %s" % sha1_git
+    heading = "Directory - %s" % dir_sha1_git
     if breadcrumbs:
         dir_path = "/".join([bc["name"] for bc in breadcrumbs]) + "/"
         heading += " - %s" % dir_path
@@ -244,7 +250,7 @@ def _directory_browse(request, sha1_git, path=None):
     view_name="browse-directory",
     checksum_args=["sha1_git"],
 )
-def directory_browse(request, sha1_git):
+def directory_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     """Django view for browsing the content of a directory identified
     by its sha1_git value.
 
@@ -259,7 +265,9 @@ def directory_browse(request, sha1_git):
     view_name="browse-directory-legacy",
     checksum_args=["sha1_git"],
 )
-def directory_browse_legacy(request, sha1_git, path):
+def directory_browse_legacy(
+    request: HttpRequest, sha1_git: str, path: str
+) -> HttpResponse:
     """Django view for browsing the content of a directory identified
     by its sha1_git value.
 
@@ -274,13 +282,15 @@ def directory_browse_legacy(request, sha1_git, path):
     view_name="browse-directory-resolve-content-path",
     checksum_args=["sha1_git"],
 )
-def _directory_resolve_content_path(request, sha1_git):
+def _directory_resolve_content_path(
+    request: HttpRequest, sha1_git: str
+) -> HttpResponse:
     """
     Internal endpoint redirecting to data url for a specific file path
     relative to a root directory.
     """
     try:
-        path = os.path.normpath(request.GET.get("path"))
+        path = os.path.normpath(request.GET.get("path", ""))
         if not path.startswith("../"):
             dir_info = archive.lookup_directory_with_path(sha1_git, path)
             if dir_info["type"] == "file":

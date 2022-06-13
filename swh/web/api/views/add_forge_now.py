@@ -350,8 +350,8 @@ def api_add_forge_request_list(request: Request):
         response["headers"]["link-prev"] = reverse(
             "api-1-add-forge-request-list",
             query_params={
-                "page": page.previous_page_number(),
-                "per_page": per_page,
+                "page": str(page.previous_page_number()),
+                "per_page": str(per_page),
             },
             request=request,
         )
@@ -359,7 +359,10 @@ def api_add_forge_request_list(request: Request):
     if page.has_next():
         response["headers"]["link-next"] = reverse(
             "api-1-add-forge-request-list",
-            query_params={"page": page.next_page_number(), "per_page": per_page},
+            query_params={
+                "page": str(page.next_page_number()),
+                "per_page": str(per_page),
+            },
             request=request,
         )
 

@@ -139,7 +139,7 @@ def _get_breacrumbs_data(
                     "swhid-iframe",
                     url_args={"swhid": str(root_dir_swhid)},
                     query_params={
-                        "focus_swhid": focus_swhid
+                        "focus_swhid": str(focus_swhid)
                         if focus_swhid != root_dir_swhid
                         else None
                     },
@@ -165,7 +165,7 @@ def _get_breacrumbs_data(
                     "url": reverse(
                         "swhid-iframe",
                         url_args={"swhid": str(dir_swhid)},
-                        query_params={"focus_swhid": focus_swhid},
+                        query_params={"focus_swhid": str(focus_swhid)},
                     ),
                 }
             )

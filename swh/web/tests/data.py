@@ -204,6 +204,7 @@ ORIGIN_METADATA_KEY = "keywords"
 ORIGIN_METADATA_VALUE = "git"
 
 ORIGIN_MASTER_REVISION = {}
+ORIGIN_MASTER_DIRECTORY = {}
 
 
 def _add_origin(
@@ -325,9 +326,10 @@ def _init_tests_data():
                     # Add some origin intrinsic metadata for tests
                     metadata = common_metadata
                     metadata.update(origin.get("metadata", {}))
+                    revision = storage.revision_get([branch_data.target])[0]
                     origin_metadata = OriginIntrinsicMetadataRow(
                         id=origin["url"],
-                        from_revision=branch_data.target,
+                        from_directory=revision.directory,
                         indexer_configuration_id=idx_tool["id"],
                         metadata=metadata,
                         mappings=[],
@@ -339,6 +341,9 @@ def _init_tests_data():
 
                     ORIGIN_MASTER_REVISION[origin["url"]] = hash_to_hex(
                         branch_data.target
+                    )
+                    ORIGIN_MASTER_DIRECTORY[origin["url"]] = hash_to_hex(
+                        revision.directory
                     )
             elif target_type == "release":
                 release = storage.release_get([branch_data.target])[0]

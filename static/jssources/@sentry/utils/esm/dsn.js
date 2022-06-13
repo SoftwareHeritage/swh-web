@@ -1,5 +1,4 @@
 import { SentryError } from './error.js';
-import { IS_DEBUG_BUILD } from './flags.js';
 
 /** Regular expression used to parse a Dsn. */
 var DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
@@ -71,7 +70,7 @@ function dsnFromComponents(components) {
 }
 
 function validateDsn(dsn) {
-  if (!IS_DEBUG_BUILD) {
+  if (!(typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
     return;
   }
 
