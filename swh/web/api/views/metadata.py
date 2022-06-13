@@ -1,14 +1,16 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import base64
 import re
+from typing import Dict, Optional
 
 import iso8601
 
 from django.http import HttpResponse
+from rest_framework.request import Request
 
 from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType
@@ -25,7 +27,7 @@ from swh.web.common.utils import SWHID_RE, reverse
 )
 @api_doc("/raw-extrinsic-metadata/swhid/")
 @format_docstring()
-def api_raw_extrinsic_metadata_swhid(request, target):
+def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
     """
     .. http:get:: /api/1/raw-extrinsic-metadata/swhid/(target)
 
@@ -71,12 +73,12 @@ def api_raw_extrinsic_metadata_swhid(request, target):
 
             :swh_web_api:`raw-extrinsic-metadata/swhid/swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307/?authority=forge%20https://pypi.org/`
     """  # noqa
-    authority_str: str = request.query_params.get("authority")
-    after_str: str = request.query_params.get("after")
+    authority_str: Optional[str] = request.query_params.get("authority")
+    after_str: Optional[str] = request.query_params.get("after")
     limit_str: str = request.query_params.get("limit", "100")
-    page_token_str: str = request.query_params.get("page_token")
+    page_token_str: Optional[str] = request.query_params.get("page_token")
 
-    if not authority_str:
+    if authority_str is None:
         raise BadInputExc("The 'authority' query parameter is required.")
     if " " not in authority_str.strip():
         raise BadInputExc("The 'authority' query parameter should contain a space.")
@@ -106,17 +108,17 @@ def api_raw_extrinsic_metadata_swhid(request, target):
     limit = min(limit, 10000)
 
     try:
-        target = swhids.CoreSWHID.from_string(target).to_extended()
+        parsed_target = swhids.CoreSWHID.from_string(target).to_extended()
     except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 
-    if page_token_str:
+    if page_token_str is not None:
         page_token = base64.urlsafe_b64decode(page_token_str)
     else:
         page_token = None
 
     result_page = archive.storage.raw_extrinsic_metadata_get(
-        target=target,
+        target=parsed_target,
         authority=authority,
         after=after,
         page_token=page_token,
@@ -139,13 +141,9 @@ def api_raw_extrinsic_metadata_swhid(request, target):
 
         results.append(result)
 
-    response = {
-        "results": results,
-        "headers": {},
-    }
-
+    headers: Dict[str, str] = {}
     if result_page.next_page_token is not None:
-        response["headers"]["link-next"] = reverse(
+        headers["link-next"] = reverse(
             "api-1-raw-extrinsic-metadata-swhid",
             url_args={"target": target},
             query_params=dict(
@@ -154,19 +152,22 @@ def api_raw_extrinsic_metadata_swhid(request, target):
                 limit=limit_str,
                 page_token=base64.urlsafe_b64encode(
                     result_page.next_page_token.encode()
-                ),
+                ).decode(),
             ),
             request=request,
         )
 
-    return response
+    return {
+        "results": results,
+        "headers": headers,
+    }
 
 
 @api_route(
     "/raw-extrinsic-metadata/get/(?P<id>[0-9a-z]+)/",
     "api-1-raw-extrinsic-metadata-get",
 )
-def api_raw_extrinsic_metadata_get(request, id):
+def api_raw_extrinsic_metadata_get(request: Request, id: str):
     # This is an internal endpoint that should only be accessed via URLs given
     # by /raw-extrinsic-metadata/swhid/; so it is not documented.
     metadata = archive.storage.raw_extrinsic_metadata_get_by_ids(
@@ -198,7 +199,7 @@ def api_raw_extrinsic_metadata_get(request, id):
 )
 @api_doc("/raw-extrinsic-metadata/swhid/authorities/")
 @format_docstring()
-def api_raw_extrinsic_metadata_swhid_authorities(request, target):
+def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
     """
     .. http:get:: /api/1/raw-extrinsic-metadata/swhid/(target)/authorities/
 
@@ -225,20 +226,21 @@ def api_raw_extrinsic_metadata_swhid_authorities(request, target):
 
             :swh_web_api:`raw-extrinsic-metadata/swhid/swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307/authorities/`
     """  # noqa
-    target_str = target
 
     try:
-        target = swhids.CoreSWHID.from_string(target_str).to_extended()
+        parsed_target = swhids.CoreSWHID.from_string(target).to_extended()
     except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
 
-    authorities = archive.storage.raw_extrinsic_metadata_get_authorities(target=target)
+    authorities = archive.storage.raw_extrinsic_metadata_get_authorities(
+        target=parsed_target
+    )
     results = [
         {
             **authority.to_dict(),
             "metadata_list_url": reverse(
                 "api-1-raw-extrinsic-metadata-swhid",
-                url_args={"target": target_str},
+                url_args={"target": target},
                 query_params={"authority": f"{authority.type.value} {authority.url}"},
                 request=request,
             ),

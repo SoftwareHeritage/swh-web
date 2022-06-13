@@ -8,6 +8,7 @@
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
 
@@ -48,7 +49,9 @@ from swh.web.config import get_config
 _empty_snapshot_id = Snapshot(branches={}).id.hex()
 
 
-def _get_branch(branches, branch_name, snapshot_id):
+def _get_branch(
+    branches: List[SnapshotBranchInfo], branch_name: str, snapshot_id: str
+) -> Optional[SnapshotBranchInfo]:
     """
     Utility function to get a specific branch from a snapshot.
     Returns None if the branch cannot be found.
@@ -71,9 +74,12 @@ def _get_branch(branches, branch_name, snapshot_id):
         if snp_branch and snp_branch[0]["name"] == branch_name:
             branches.append(snp_branch[0])
             return snp_branch[0]
+    return None
 
 
-def _get_release(releases, release_name, snapshot_id):
+def _get_release(
+    releases: List[SnapshotReleaseInfo], release_name: Optional[str], snapshot_id: str
+) -> Optional[SnapshotReleaseInfo]:
     """
     Utility function to get a specific release from a snapshot.
     Returns None if the release cannot be found.
@@ -81,7 +87,7 @@ def _get_release(releases, release_name, snapshot_id):
     filtered_releases = [r for r in releases if r["name"] == release_name]
     if filtered_releases:
         return filtered_releases[0]
-    else:
+    elif release_name:
         # case where a large branches list has been truncated
         try:
             # git origins have specific branches for releases
@@ -102,11 +108,18 @@ def _get_release(releases, release_name, snapshot_id):
         if snp_release and snp_release[0]["name"] == release_name:
             releases.append(snp_release[0])
             return snp_release[0]
+    return None
 
 
 def _branch_not_found(
-    branch_type, branch, snapshot_id, snapshot_sizes, origin_info, timestamp, visit_id
-):
+    branch_type: str,
+    branch: str,
+    snapshot_id: str,
+    snapshot_sizes: Dict[str, int],
+    origin_info: Optional[OriginInfo],
+    timestamp: Optional[str],
+    visit_id: Optional[int],
+) -> None:
     """
     Utility function to raise an exception when a specified branch/release
     can not be found.
@@ -131,25 +144,25 @@ def _branch_not_found(
             branch,
             snapshot_id,
         )
-    elif visit_id and snapshot_sizes[target_type] == 0:
+    elif visit_id and snapshot_sizes[target_type] == 0 and origin_info:
         msg = (
             "Origin with url %s"
             " for visit with id %s has an empty list"
             " of %s!" % (origin_info["url"], visit_id, branch_type_plural)
         )
-    elif visit_id:
+    elif visit_id and origin_info:
         msg = (
             "%s %s associated to visit with"
             " id %s for origin with url %s"
             " not found!" % (branch_type, branch, visit_id, origin_info["url"])
         )
-    elif snapshot_sizes[target_type] == 0:
+    elif snapshot_sizes[target_type] == 0 and origin_info and timestamp:
         msg = (
             "Origin with url %s"
             " for visit with timestamp %s has an empty list"
             " of %s!" % (origin_info["url"], timestamp, branch_type_plural)
         )
-    else:
+    elif origin_info and timestamp:
         msg = (
             "%s %s associated to visit with"
             " timestamp %s for origin with "
@@ -569,13 +582,24 @@ def get_snapshot_context(
                 # HEAD alias targets a release
                 release_name = archive.lookup_release(head["target"])["name"]
                 head_rel = _get_release(releases, release_name, snapshot_id)
-                if head_rel["target_type"] == "revision":
+                if head_rel is None:
+                    _branch_not_found(
+                        "release",
+                        str(release_name),
+                        snapshot_id,
+                        snapshot_sizes,
+                        origin_info,
+                        timestamp,
+                        visit_id,
+                    )
+                elif head_rel["target_type"] == "revision":
                     revision = archive.lookup_revision(head_rel["target"])
                     root_directory = revision["directory"]
                     revision_id = head_rel["target"]
                 elif head_rel["target_type"] == "directory":
                     root_directory = head_rel["target"]
-                release_id = head_rel["id"]
+                if head_rel is not None:
+                    release_id = head_rel["id"]
         elif branches:
             # fallback to browse first branch otherwise
             branch = branches[0]
@@ -658,12 +682,16 @@ def get_snapshot_context(
     )
 
     if revision_info:
-        revision_info["revision_url"] = gen_revision_url(revision_id, snapshot_context)
+        revision_info["revision_url"] = gen_revision_url(
+            revision_info["id"], snapshot_context
+        )
 
     return snapshot_context
 
 
-def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
+def _build_breadcrumbs(
+    snapshot_context: SnapshotContext, path: Optional[str]
+) -> List[Dict[str, str]]:
     origin_info = snapshot_context["origin_info"]
     url_args = snapshot_context["url_args"]
     query_params = dict(snapshot_context["query_params"])
@@ -700,14 +728,18 @@ def _build_breadcrumbs(snapshot_context: SnapshotContext, path: str):
     return breadcrumbs
 
 
-def _check_origin_url(snapshot_id, origin_url):
+def _check_origin_url(snapshot_id: Optional[str], origin_url: Optional[str]) -> None:
     if snapshot_id is None and origin_url is None:
         raise BadInputExc("An origin URL must be provided as query parameter.")
 
 
 def browse_snapshot_directory(
-    request, snapshot_id=None, origin_url=None, timestamp=None, path=None
-):
+    request: HttpRequest,
+    snapshot_id: Optional[str] = None,
+    origin_url: Optional[str] = None,
+    timestamp: Optional[str] = None,
+    path: Optional[str] = None,
+) -> HttpResponse:
     """
     Django view implementation for browsing a directory in a snapshot context.
     """
@@ -728,7 +760,7 @@ def browse_snapshot_directory(
 
     root_directory = snapshot_context["root_directory"]
     sha1_git = root_directory
-    error_info = {
+    error_info: Dict[str, Any] = {
         "status_code": 200,
         "description": None,
     }
@@ -813,7 +845,7 @@ def browse_snapshot_directory(
         dir_path = "/" + path
 
     swh_objects = []
-    vault_cooking = {
+    vault_cooking: Dict[str, Any] = {
         "directory_context": False,
         "directory_swhid": None,
         "revision_context": False,
@@ -932,7 +964,12 @@ def browse_snapshot_directory(
 PER_PAGE = 100
 
 
-def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=None):
+def browse_snapshot_log(
+    request: HttpRequest,
+    snapshot_id: Optional[str] = None,
+    origin_url: Optional[str] = None,
+    timestamp: Optional[str] = None,
+) -> HttpResponse:
     """
     Django view implementation for browsing a revision history in a
     snapshot context.
@@ -991,9 +1028,10 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
     query_params = snapshot_context["query_params"]
     snapshot_id = snapshot_context["snapshot_id"]
 
-    query_params["per_page"] = per_page
+    query_params["per_page"] = str(per_page)
     revs_ordering = request.GET.get("revs_ordering", "")
-    query_params["revs_ordering"] = revs_ordering or None
+    if revs_ordering:
+        query_params["revs_ordering"] = revs_ordering
 
     if origin_info:
         browse_view_name = "browse-origin-log"
@@ -1002,14 +1040,14 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
     prev_log_url = None
     if len(rev_log) > offset + per_page:
-        query_params["offset"] = offset + per_page
+        query_params["offset"] = str(offset + per_page)
         prev_log_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
         )
 
     next_log_url = None
     if offset != 0:
-        query_params["offset"] = offset - per_page
+        query_params["offset"] = str(offset - per_page)
         next_log_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
         )
@@ -1029,7 +1067,7 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
         "snapshot": snapshot_id,
     }
 
-    if origin_info:
+    if origin_info and visit_info:
         revision_metadata["origin url"] = origin_info["url"]
         revision_metadata["origin visit date"] = format_utc_iso_date(visit_info["date"])
         revision_metadata["origin visit type"] = visit_info["type"]
@@ -1077,8 +1115,12 @@ def browse_snapshot_log(request, snapshot_id=None, origin_url=None, timestamp=No
 
 
 def browse_snapshot_branches(
-    request, snapshot_id=None, origin_url=None, timestamp=None, branch_name_include=None
-):
+    request: HttpRequest,
+    snapshot_id: Optional[str] = None,
+    origin_url: Optional[str] = None,
+    timestamp: Optional[str] = None,
+    branch_name_include: Optional[str] = None,
+) -> HttpResponse:
     """
     Django view implementation for browsing a list of branches in a snapshot
     context.
@@ -1093,8 +1135,8 @@ def browse_snapshot_branches(
         visit_id=visit_id or None,
     )
 
-    branches_bc = request.GET.get("branches_breadcrumbs", "")
-    branches_bc = branches_bc.split(",") if branches_bc else []
+    branches_bc_str = request.GET.get("branches_breadcrumbs", "")
+    branches_bc = branches_bc_str.split(",") if branches_bc_str else []
     branches_from = branches_bc[-1] if branches_bc else ""
 
     origin_info = snapshot_context["origin_info"]
@@ -1113,9 +1155,10 @@ def browse_snapshot_branches(
         target_types=["revision", "alias"],
         branch_name_include_substring=branch_name_include,
     )
-    displayed_branches = []
+    displayed_branches: List[Dict[str, Any]] = []
     if snapshot:
-        displayed_branches, _, _ = process_snapshot_branches(snapshot)
+        branches, _, _ = process_snapshot_branches(snapshot)
+        displayed_branches = [dict(branch) for branch in branches]
 
     for branch in displayed_branches:
         rev_query_params = {}
@@ -1190,11 +1233,11 @@ def browse_snapshot_branches(
 
 
 def browse_snapshot_releases(
-    request,
-    snapshot_id=None,
-    origin_url=None,
-    timestamp=None,
-    release_name_include=None,
+    request: HttpRequest,
+    snapshot_id: Optional[str] = None,
+    origin_url: Optional[str] = None,
+    timestamp: Optional[str] = None,
+    release_name_include: Optional[str] = None,
 ):
     """
     Django view implementation for browsing a list of releases in a snapshot
@@ -1210,8 +1253,8 @@ def browse_snapshot_releases(
         visit_id=visit_id or None,
     )
 
-    rel_bc = request.GET.get("releases_breadcrumbs", "")
-    rel_bc = rel_bc.split(",") if rel_bc else []
+    rel_bc_str = request.GET.get("releases_breadcrumbs", "")
+    rel_bc = rel_bc_str.split(",") if rel_bc_str else []
     rel_from = rel_bc[-1] if rel_bc else ""
 
     origin_info = snapshot_context["origin_info"]
@@ -1225,9 +1268,10 @@ def browse_snapshot_releases(
         target_types=["release", "alias"],
         branch_name_include_substring=release_name_include,
     )
-    displayed_releases = []
+    displayed_releases: List[Dict[str, Any]] = []
     if snapshot:
-        _, displayed_releases, _ = process_snapshot_branches(snapshot)
+        _, releases, _ = process_snapshot_branches(snapshot)
+        displayed_releases = [dict(release) for release in releases]
 
     for release in displayed_releases:
         query_params_tgt = {"snapshot": snapshot_id, "release": release["name"]}

@@ -416,7 +416,10 @@ def search_origin_metadata(
     for origin, match in zip(origins, matches):
         if not origin:
             continue
-        match["from_revision"] = hashutil.hash_to_hex(match["from_revision"])
+        for field in ("from_directory", "from_revision"):
+            # from_directory when using swh.indexer >= 2.0.0, from_revision otherwise
+            if field in match:
+                match[field] = hashutil.hash_to_hex(match[field])
         del match["id"]
         results.append(OriginMetadataInfo(url=origin.url, metadata=match))
 
@@ -1406,7 +1409,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
-def lookup_missing_hashes(grouped_swhids: Dict[str, List[bytes]]) -> Set[str]:
+def lookup_missing_hashes(grouped_swhids: Dict[ObjectType, List[bytes]]) -> Set[str]:
     """Lookup missing Software Heritage persistent identifier hash, using
     batch processing.
 

@@ -5,8 +5,9 @@
 
 import difflib
 from distutils.util import strtobool
+from typing import Any, Dict, Optional
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from swh.model.hashutil import hash_to_hex
@@ -32,11 +33,11 @@ from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
 
 
 @browse_route(
-    r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+.)/raw/",
+    r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+)/raw/",
     view_name="browse-content-raw",
     checksum_args=["query_string"],
 )
-def content_raw(request, query_string):
+def content_raw(request: HttpRequest, query_string: str) -> HttpResponse:
     """Django view that produces a raw display of a content identified
     by its hash value.
 
@@ -70,10 +71,12 @@ _auto_diff_size_limit = 20000
 
 
 @browse_route(
-    r"content/(?P<from_query_string>.*)/diff/(?P<to_query_string>.*)/",
+    r"content/(?P<from_query_string>.+)/diff/(?P<to_query_string>.+)/",
     view_name="diff-contents",
 )
-def _contents_diff(request, from_query_string, to_query_string):
+def _contents_diff(
+    request: HttpRequest, from_query_string: str, to_query_string: str
+) -> HttpResponse:
     """
     Browse endpoint used to compute unified diffs between two contents.
 
@@ -102,11 +105,11 @@ def _contents_diff(request, from_query_string, to_query_string):
     content_to_size = 0
     content_from_lines = []
     content_to_lines = []
-    force = request.GET.get("force", "false")
+    force_str = request.GET.get("force", "false")
     path = request.GET.get("path", None)
     language = "plaintext"
 
-    force = bool(strtobool(force))
+    force = bool(strtobool(force_str))
 
     if from_query_string == to_query_string:
         diff_str = "File renamed without changes"
@@ -173,7 +176,7 @@ def _contents_diff(request, from_query_string, to_query_string):
     return JsonResponse(diff_data)
 
 
-def _get_content_from_request(request):
+def _get_content_from_request(request: HttpRequest) -> Dict[str, Any]:
     path = request.GET.get("path")
     if path is None:
         raise BadInputExc("The path query parameter must be provided.")
@@ -196,16 +199,19 @@ def _get_content_from_request(request):
         browse_context="content",
     )
     root_directory = snapshot_context["root_directory"]
+    assert root_directory is not None  # to keep mypy happy
     return archive.lookup_directory_with_path(root_directory, path)
 
 
 @browse_route(
-    r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+.)/",
+    r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+)/",
     r"content/",
     view_name="browse-content",
     checksum_args=["query_string"],
 )
-def content_display(request, query_string=None):
+def content_display(
+    request: HttpRequest, query_string: Optional[str] = None
+) -> HttpResponse:
     """Django view that produces an HTML display of a content identified
     by its hash value.
 
@@ -215,11 +221,11 @@ def content_display(request, query_string=None):
     """
     if query_string is None:
         # this case happens when redirected from origin/content or snapshot/content
-        content = _get_content_from_request(request)
+        content_data = _get_content_from_request(request)
         return redirect(
             reverse(
                 "browse-content",
-                url_args={"query_string": f"sha1_git:{content['target']}"},
+                url_args={"query_string": f"sha1_git:{content_data['target']}"},
                 query_params=request.GET,
             ),
         )
@@ -233,7 +239,7 @@ def content_display(request, query_string=None):
     snapshot_id = request.GET.get("snapshot") or request.GET.get("snapshot_id")
     path = request.GET.get("path")
     content_data = {}
-    error_info = {"status_code": 200, "description": None}
+    error_info: Dict[str, Any] = {"status_code": 200, "description": None}
     try:
         content_data = request_content(query_string)
     except NotFoundExc as e:
@@ -256,7 +262,7 @@ def content_display(request, query_string=None):
                 browse_context="content",
             )
         except NotFoundExc as e:
-            if str(e).startswith("Origin"):
+            if str(e).startswith("Origin") and origin_url is not None:
                 raw_cnt_url = reverse(
                     "browse-content", url_args={"query_string": query_string}
                 )
@@ -327,9 +333,9 @@ def content_display(request, query_string=None):
                     query_params=query_params,
                 )
                 breadcrumbs.append({"name": pi["name"], "url": dir_url})
-        breadcrumbs.append({"name": filename, "url": None})
+        breadcrumbs.append({"name": filename, "url": ""})
 
-    if path and root_dir != path:
+    if path and root_dir is not None and root_dir != path:
         dir_info = archive.lookup_directory_with_path(root_dir, path)
         directory_id = dir_info["target"]
     elif root_dir != path:
@@ -360,10 +366,10 @@ def content_display(request, query_string=None):
         sha256=content_checksums.get("sha256"),
         blake2s256=content_checksums.get("blake2s256"),
         content_url=content_url,
-        mimetype=content_data.get("mimetype"),
-        encoding=content_data.get("encoding"),
+        mimetype=content_data.get("mimetype", ""),
+        encoding=content_data.get("encoding", ""),
         size=content_data.get("length", 0),
-        language=content_data.get("language"),
+        language=content_data.get("language", ""),
         root_directory=root_dir,
         path=f"/{path}" if path else None,
         filename=filename or "",
@@ -418,7 +424,7 @@ def content_display(request, query_string=None):
 
     heading = "Content - %s" % content_checksums.get("sha1_git")
     if breadcrumbs:
-        content_path = "/".join([bc["name"] for bc in breadcrumbs])
+        content_path = "/".join(bc["name"] for bc in breadcrumbs)
         heading += " - %s" % content_path
 
     return render(

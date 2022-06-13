@@ -1,6 +1,5 @@
 import { htmlTreeAsString } from './browser.js';
 import { isError, isEvent, isInstanceOf, isElement, isPlainObject, isPrimitive } from './is.js';
-import { memoBuilder } from './memo.js';
 import { truncate } from './string.js';
 
 /**
@@ -184,42 +183,61 @@ function extractExceptionKeysForMessage(exception, maxLength = 40) {
 }
 
 /**
- * Given any object, return the new object with removed keys that value was `undefined`.
+ * Given any object, return a new object having removed all fields whose value was `undefined`.
  * Works recursively on objects and arrays.
  *
  * Attention: This function keeps circular references in the returned object.
  */
-function dropUndefinedKeys(val) {
+function dropUndefinedKeys(inputValue) {
+  // This map keeps track of what already visited nodes map to.
+  // Our Set - based memoBuilder doesn't work here because we want to the output object to have the same circular
+  // references as the input object.
+  var memoizationMap = new Map();
+
   // This function just proxies `_dropUndefinedKeys` to keep the `memoBuilder` out of this function's API
-  return _dropUndefinedKeys(val, memoBuilder());
+  return _dropUndefinedKeys(inputValue, memoizationMap);
 }
 
-function _dropUndefinedKeys(val, memo) {
-  const [memoize] = memo; // we don't need unmemoize because we don't need to visit nodes twice
-
-  if (isPlainObject(val)) {
-    if (memoize(val)) {
-      return val;
+function _dropUndefinedKeys(inputValue, memoizationMap) {
+  if (isPlainObject(inputValue)) {
+    // If this node has already been visited due to a circular reference, return the object it was mapped to in the new object
+    var memoVal = memoizationMap.get(inputValue);
+    if (memoVal !== undefined) {
+      return memoVal ;
     }
-    var rv = {};
-    for (var key of Object.keys(val)) {
-      if (typeof val[key] !== 'undefined') {
-        rv[key] = _dropUndefinedKeys(val[key], memo);
+
+    var returnValue = {};
+    // Store the mapping of this value in case we visit it again, in case of circular data
+    memoizationMap.set(inputValue, returnValue);
+
+    for (var key of Object.keys(inputValue)) {
+      if (typeof inputValue[key] !== 'undefined') {
+        returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap);
       }
     }
-    return rv ;
+
+    return returnValue ;
   }
 
-  if (Array.isArray(val)) {
-    if (memoize(val)) {
-      return val;
+  if (Array.isArray(inputValue)) {
+    // If this node has already been visited due to a circular reference, return the array it was mapped to in the new object
+    var memoVal = memoizationMap.get(inputValue);
+    if (memoVal !== undefined) {
+      return memoVal ;
     }
-    return (val ).map(item => {
-      return _dropUndefinedKeys(item, memo);
-    }) ;
+
+    var returnValue = [];
+    // Store the mapping of this value in case we visit it again, in case of circular data
+    memoizationMap.set(inputValue, returnValue);
+
+    inputValue.forEach((item) => {
+      returnValue.push(_dropUndefinedKeys(item, memoizationMap));
+    });
+
+    return returnValue ;
   }
 
-  return val;
+  return inputValue;
 }
 
 /**

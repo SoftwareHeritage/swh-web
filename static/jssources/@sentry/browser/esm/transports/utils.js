@@ -1,5 +1,4 @@
 import { getGlobalObject, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from '../flags.js';
 
 var global = getGlobalObject();
 let cachedFetchImpl;
@@ -65,7 +64,7 @@ function getNativeFetchImplementation() {
       }
       document.head.removeChild(sandbox);
     } catch (e) {
-      IS_DEBUG_BUILD &&
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
         logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', e);
     }
   }
@@ -94,7 +93,9 @@ function sendReport(url, body) {
       method: 'POST',
       credentials: 'omit',
       keepalive: true,
-    }).then(null, error => logger.error(error));
+    }).then(null, error => {
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(error);
+    });
   }
 }
 

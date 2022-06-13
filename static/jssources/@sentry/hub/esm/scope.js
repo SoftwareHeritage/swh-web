@@ -1,5 +1,4 @@
 import { isPlainObject, dateTimestampInSeconds, getGlobalSingleton, SyncPromise, logger, isThenable } from '@sentry/utils';
-import { IS_DEBUG_BUILD } from './flags.js';
 import { updateSession } from './session.js';
 
 /**
@@ -466,7 +465,7 @@ class Scope  {constructor() { Scope.prototype.__init.call(this);Scope.prototype.
       } else {
         var result = processor({ ...event }, hint) ;
 
-        IS_DEBUG_BUILD &&
+        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
           processor.id &&
           result === null &&
           logger.log(`Event processor "${processor.id}" dropped event`);

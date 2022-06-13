@@ -1,33 +1,32 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from types import GeneratorType
-from typing import Any, Callable, Dict, Mapping, Optional
-
-from typing_extensions import Protocol
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.common.exc import NotFoundExc
 
+EnrichFunction = Callable[[Dict[str, str], Optional[HttpRequest]], Dict[str, str]]
 
-class EnrichFunction(Protocol):
-    def __call__(
-        self, input: Mapping[str, str], request: Optional[HttpRequest]
-    ) -> Dict[str, str]:
-        ...
+EnrichFunctionSearchResult = Callable[
+    [Tuple[List[Dict[str, Any]], Optional[str]], Optional[HttpRequest]],
+    Tuple[List[Dict[str, Any]], Optional[str]],
+]
 
 
 def api_lookup(
     lookup_fn: Callable[..., Any],
     *args: Any,
     notfound_msg: Optional[str] = "Object not found",
-    enrich_fn: Optional[EnrichFunction] = None,
+    enrich_fn: Optional[Union[EnrichFunction, EnrichFunctionSearchResult]] = None,
     request: Optional[HttpRequest] = None,
     **kwargs: Any,
 ):
@@ -69,12 +68,12 @@ def api_lookup(
     if res is None:
         raise NotFoundExc(notfound_msg)
     if isinstance(res, (list, GeneratorType)) or type(res) == map:
-        return [enrich_fn(x, request=request) for x in res]
-    return enrich_fn(res, request=request)
+        return [enrich_fn(x, request) for x in res]
+    return enrich_fn(res, request)
 
 
 @api_view(["GET", "HEAD"])
-def api_home(request):
+def api_home(request: Request):
     return Response({}, template_name="api/api.html")
 
 

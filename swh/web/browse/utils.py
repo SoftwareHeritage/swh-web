@@ -6,7 +6,7 @@
 import base64
 import stat
 import textwrap
-from typing import Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import chardet
 import magic
@@ -16,6 +16,7 @@ from django.utils.safestring import mark_safe
 
 from swh.web.common import archive, highlightjs
 from swh.web.common.exc import NotFoundExc, sentry_capture_exception
+from swh.web.common.typing import SnapshotContext
 from swh.web.common.utils import (
     browsers_supported_image_mimes,
     django_cache,
@@ -27,7 +28,9 @@ from swh.web.config import get_config
 
 
 @django_cache()
-def get_directory_entries(sha1_git):
+def get_directory_entries(
+    sha1_git: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Function that retrieves the content of a directory
     from the archive.
 
@@ -44,7 +47,7 @@ def get_directory_entries(sha1_git):
     Raises:
         NotFoundExc if the directory is not found
     """
-    entries = list(archive.lookup_directory(sha1_git))
+    entries: List[Dict[str, Any]] = list(archive.lookup_directory(sha1_git))
     for e in entries:
         e["perms"] = stat.filemode(e["perms"])
         if e["type"] == "rev":
@@ -61,12 +64,12 @@ def get_directory_entries(sha1_git):
     return dirs, files
 
 
-def get_mimetype_and_encoding_for_content(content):
+def get_mimetype_and_encoding_for_content(content: bytes) -> Tuple[str, str]:
     """Function that returns the mime type and the encoding associated to
     a content buffer using the magic module under the hood.
 
     Args:
-        content (bytes): a content buffer
+        content: a content buffer
 
     Returns:
         A tuple (mimetype, encoding), for instance ('text/plain', 'us-ascii'),
@@ -131,10 +134,10 @@ def re_encode_content(
 
 
 def request_content(
-    query_string,
-    max_size=content_display_max_size,
-    re_encode=True,
-):
+    query_string: str,
+    max_size: Optional[int] = content_display_max_size,
+    re_encode: bool = True,
+) -> Dict[str, Any]:
     """Function that retrieves a content from the archive.
 
     Raw bytes content is first retrieved, then the content mime type.
@@ -150,8 +153,7 @@ def request_content(
             no size limit if None)
 
     Returns:
-        A tuple whose first member corresponds to the content raw bytes
-        and second member the content mime type
+        A dict filled with content info.
 
     Raises:
         NotFoundExc if the content is not found
@@ -209,7 +211,9 @@ def request_content(
     return content_data
 
 
-def prepare_content_for_display(content_data, mime_type, path):
+def prepare_content_for_display(
+    content_data: bytes, mime_type: str, path: Optional[str]
+) -> Dict[str, Any]:
     """Function that prepares a content for HTML display.
 
     The function tries to associate a programming language to a
@@ -221,9 +225,9 @@ def prepare_content_for_display(content_data, mime_type, path):
     for displaying the image.
 
     Args:
-        content_data (bytes): raw bytes of the content
-        mime_type (string): mime type of the content
-        path (string): path of the content including filename
+        content_data: raw bytes of the content
+        mime_type: mime type of the content
+        path: path of the content including filename
 
     Returns:
         A dict containing the content bytes (possibly different from the one
@@ -242,29 +246,39 @@ def prepare_content_for_display(content_data, mime_type, path):
     if language is None:
         language = "plaintext"
 
+    processed_content: Union[bytes, str] = content_data
+
     if mime_type.startswith("image/"):
         if mime_type in browsers_supported_image_mimes:
-            content_data = base64.b64encode(content_data).decode("ascii")
+            processed_content = base64.b64encode(content_data).decode("ascii")
 
     if mime_type.startswith("image/svg"):
         mime_type = "image/svg+xml"
 
     if mime_type.startswith("text/") or mime_type.startswith("application/"):
-        content_data = content_data.decode("utf-8", errors="replace")
+        processed_content = content_data.decode("utf-8", errors="replace")
 
-    return {"content_data": content_data, "language": language, "mimetype": mime_type}
+    return {
+        "content_data": processed_content,
+        "language": language,
+        "mimetype": mime_type,
+    }
 
 
-def gen_link(url, link_text=None, link_attrs=None):
+def gen_link(
+    url: str,
+    link_text: Optional[str] = None,
+    link_attrs: Optional[Dict[str, str]] = None,
+) -> str:
     """
     Utility function for generating an HTML link to insert
     in Django templates.
 
     Args:
-        url (str): an url
-        link_text (str): optional text for the produced link,
+        url: an url
+        link_text: optional text for the produced link,
             if not provided the url will be used
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -281,8 +295,10 @@ def gen_link(url, link_text=None, link_attrs=None):
     return mark_safe(link)
 
 
-def _snapshot_context_query_params(snapshot_context):
-    query_params = {}
+def _snapshot_context_query_params(
+    snapshot_context: Optional[SnapshotContext],
+) -> Dict[str, str]:
+    query_params: Dict[str, str] = {}
     if not snapshot_context:
         return query_params
     if snapshot_context and snapshot_context["origin_info"]:
@@ -290,11 +306,11 @@ def _snapshot_context_query_params(snapshot_context):
         snp_query_params = snapshot_context["query_params"]
         query_params = {"origin_url": origin_info["url"]}
         if "timestamp" in snp_query_params:
-            query_params["timestamp"] = snp_query_params["timestamp"]
+            query_params["timestamp"] = str(snp_query_params["timestamp"])
         if "visit_id" in snp_query_params:
-            query_params["visit_id"] = snp_query_params["visit_id"]
+            query_params["visit_id"] = str(snp_query_params["visit_id"])
         if "snapshot" in snp_query_params and "visit_id" not in query_params:
-            query_params["snapshot"] = snp_query_params["snapshot"]
+            query_params["snapshot"] = str(snp_query_params["snapshot"])
     elif snapshot_context:
         query_params = {"snapshot": snapshot_context["snapshot_id"]}
 
@@ -310,13 +326,15 @@ def _snapshot_context_query_params(snapshot_context):
     return query_params
 
 
-def gen_revision_url(revision_id, snapshot_context=None):
+def gen_revision_url(
+    revision_id: str, snapshot_context: Optional[SnapshotContext] = None
+) -> str:
     """
     Utility function for generating an url to a revision.
 
     Args:
-        revision_id (str): a revision id
-        snapshot_context (dict): if provided, generate snapshot-dependent
+        revision_id: a revision id
+        snapshot_context: if provided, generate snapshot-dependent
             browsing url
 
     Returns:
@@ -334,25 +352,28 @@ def gen_revision_url(revision_id, snapshot_context=None):
 
 
 def gen_revision_link(
-    revision_id,
-    shorten_id=False,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    revision_id: str,
+    shorten_id: bool = False,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> Optional[str]:
     """
     Utility function for generating a link to a revision HTML view
     to insert in Django templates.
 
     Args:
-        revision_id (str): a revision id
-        shorten_id (boolean): whether to shorten the revision id to 7
+        revision_id: a revision id
+        shorten_id: whether to shorten the revision id to 7
             characters for the link text
-        snapshot_context (dict): if provided, generate snapshot-dependent
+        snapshot_context: if provided, generate snapshot-dependent
             browsing link
-        link_text (str): optional text for the generated link
+        link_text: optional text for the generated link
             (the revision id will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -373,20 +394,23 @@ def gen_revision_link(
 
 
 def gen_directory_link(
-    sha1_git,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    sha1_git: str,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> Optional[str]:
     """
     Utility function for generating a link to a directory HTML view
     to insert in Django templates.
 
     Args:
-        sha1_git (str): directory identifier
-        link_text (str): optional text for the generated link
+        sha1_git: directory identifier
+        link_text: optional text for the generated link
             (the directory id will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -408,20 +432,23 @@ def gen_directory_link(
 
 
 def gen_snapshot_link(
-    snapshot_id,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    snapshot_id: str,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> str:
     """
     Utility function for generating a link to a snapshot HTML view
     to insert in Django templates.
 
     Args:
-        snapshot_id (str): snapshot identifier
-        link_text (str): optional text for the generated link
+        snapshot_id: snapshot identifier
+        link_text: optional text for the generated link
             (the snapshot id will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -442,20 +469,23 @@ def gen_snapshot_link(
 
 
 def gen_content_link(
-    sha1_git,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    sha1_git: str,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> Optional[str]:
     """
     Utility function for generating a link to a content HTML view
     to insert in Django templates.
 
     Args:
-        sha1_git (str): content identifier
-        link_text (str): optional text for the generated link
+        sha1_git: content identifier
+        link_text: optional text for the generated link
             (the content sha1_git will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -477,14 +507,16 @@ def gen_content_link(
     return gen_link(content_url, link_text, link_attrs)
 
 
-def get_revision_log_url(revision_id, snapshot_context=None):
+def get_revision_log_url(
+    revision_id: str, snapshot_context: Optional[SnapshotContext] = None
+) -> str:
     """
     Utility function for getting the URL for a revision log HTML view
     (possibly in the context of an origin).
 
     Args:
-        revision_id (str): revision identifier the history heads to
-        snapshot_context (dict): if provided, generate snapshot-dependent
+        revision_id: revision identifier the history heads to
+        snapshot_context: if provided, generate snapshot-dependent
             browsing link
     Returns:
         The revision log view URL
@@ -510,22 +542,25 @@ def get_revision_log_url(revision_id, snapshot_context=None):
 
 
 def gen_revision_log_link(
-    revision_id,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    revision_id: str,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> Optional[str]:
     """
     Utility function for generating a link to a revision log HTML view
     (possibly in the context of an origin) to insert in Django templates.
 
     Args:
-        revision_id (str): revision identifier the history heads to
-        snapshot_context (dict): if provided, generate snapshot-dependent
+        revision_id: revision identifier the history heads to
+        snapshot_context: if provided, generate snapshot-dependent
             browsing link
-        link_text (str): optional text to use for the generated link
+        link_text: optional text to use for the generated link
             (the revision id will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -542,15 +577,17 @@ def gen_revision_log_link(
     return gen_link(revision_log_url, link_text, link_attrs)
 
 
-def gen_person_mail_link(person, link_text=None):
+def gen_person_mail_link(
+    person: Dict[str, Any], link_text: Optional[str] = None
+) -> str:
     """
     Utility function for generating a mail link to a person to insert
     in Django templates.
 
     Args:
-        person (dict): dictionary containing person data
+        person: dictionary containing person data
             (*name*, *email*, *fullname*)
-        link_text (str): optional text to use for the generated mail link
+        link_text: optional text to use for the generated mail link
             (the person name will be used by default)
 
     Returns:
@@ -570,20 +607,23 @@ def gen_person_mail_link(person, link_text=None):
 
 
 def gen_release_link(
-    sha1_git,
-    snapshot_context=None,
-    link_text="Browse",
-    link_attrs={"class": "btn btn-default btn-sm", "role": "button"},
-):
+    sha1_git: str,
+    snapshot_context: Optional[SnapshotContext] = None,
+    link_text: Optional[str] = "Browse",
+    link_attrs: Optional[Dict[str, str]] = {
+        "class": "btn btn-default btn-sm",
+        "role": "button",
+    },
+) -> str:
     """
     Utility function for generating a link to a release HTML view
     to insert in Django templates.
 
     Args:
-        sha1_git (str): release identifier
-        link_text (str): optional text for the generated link
+        sha1_git: release identifier
+        link_text: optional text for the generated link
             (the release id will be used by default)
-        link_attrs (dict): optional attributes (e.g. class)
+        link_attrs: optional attributes (e.g. class)
             to add to the link
 
     Returns:
@@ -601,7 +641,11 @@ def gen_release_link(
     return gen_link(release_url, link_text, link_attrs)
 
 
-def format_log_entries(revision_log, per_page, snapshot_context=None):
+def format_log_entries(
+    revision_log: Iterator[Optional[Dict[str, Any]]],
+    per_page: int,
+    snapshot_context: Optional[SnapshotContext] = None,
+) -> List[Dict[str, str]]:
     """
     Utility functions that process raw revision log data for HTML display.
     Its purpose is to:
@@ -611,15 +655,17 @@ def format_log_entries(revision_log, per_page, snapshot_context=None):
         * truncate the message log
 
     Args:
-        revision_log (list): raw revision log as returned by the swh-web api
-        per_page (int): number of log entries per page
-        snapshot_context (dict): if provided, generate snapshot-dependent
+        revision_log: raw revision log as returned by the swh-web api
+        per_page: number of log entries per page
+        snapshot_context: if provided, generate snapshot-dependent
             browsing link
 
 
     """
     revision_log_data = []
     for i, rev in enumerate(revision_log):
+        if rev is None:
+            continue
         if i == per_page:
             break
         author_name = "None"
@@ -666,17 +712,19 @@ _common_readme_names = [
 ]
 
 
-def get_readme_to_display(readmes):
+def get_readme_to_display(
+    readmes: Dict[str, str]
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Process a list of readme files found in a directory
     in order to find the adequate one to display.
 
     Args:
-        readmes: a list of dict where keys are readme file names and values
+        readmes: a dict where keys are readme file names and values
             are readme sha1s
 
     Returns:
-        A tuple (readme_name, readme_sha1)
+        A tuple (readme_name, readme_url, readme_html)
     """
     readme_name = None
     readme_url = None

@@ -1,7 +1,9 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
@@ -11,7 +13,7 @@ from swh.web.common import archive
 @api_route(r"/stat/counters/", "api-1-stat-counters")
 @api_doc("/stat/counters/", noargs=True)
 @format_docstring()
-def api_stats(request):
+def api_stats(request: Request):
     """
     .. http:get:: /api/1/stat/counters/
 

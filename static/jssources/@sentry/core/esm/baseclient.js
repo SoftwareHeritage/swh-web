@@ -3,7 +3,6 @@ import { updateSession, Scope } from '@sentry/hub';
 import { makeDsn, logger, checkOrSetAlreadyCaught, isPrimitive, resolvedSyncPromise, addItemToEnvelope, createAttachmentEnvelopeItem, SyncPromise, uuid4, dateTimestampInSeconds, normalize, truncate, rejectedSyncPromise, SentryError, isThenable, isPlainObject } from '@sentry/utils';
 import { getEnvelopeEndpointWithUrlEncodedAuth } from './api.js';
 import { createEventEnvelope, createSessionEnvelope } from './envelope.js';
-import { IS_DEBUG_BUILD } from './flags.js';
 import { setupIntegrations } from './integration.js';
 
 var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
@@ -74,7 +73,7 @@ class BaseClient {
         url,
       });
     } else {
-      IS_DEBUG_BUILD && logger.warn('No DSN provided, client will not do anything.');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not do anything.');
     }
   }
 
@@ -84,7 +83,7 @@ class BaseClient {
      captureException(exception, hint, scope) {
     // ensure we haven't captured this very object before
     if (checkOrSetAlreadyCaught(exception)) {
-      IS_DEBUG_BUILD && logger.log(ALREADY_SEEN_ERROR);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(ALREADY_SEEN_ERROR);
       return;
     }
 
@@ -133,7 +132,7 @@ class BaseClient {
    captureEvent(event, hint, scope) {
     // ensure we haven't captured this very object before
     if (hint && hint.originalException && checkOrSetAlreadyCaught(hint.originalException)) {
-      IS_DEBUG_BUILD && logger.log(ALREADY_SEEN_ERROR);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(ALREADY_SEEN_ERROR);
       return;
     }
 
@@ -153,12 +152,12 @@ class BaseClient {
    */
    captureSession(session) {
     if (!this._isEnabled()) {
-      IS_DEBUG_BUILD && logger.warn('SDK not enabled, will not capture session.');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('SDK not enabled, will not capture session.');
       return;
     }
 
     if (!(typeof session.release === 'string')) {
-      IS_DEBUG_BUILD && logger.warn('Discarded session because of missing or non-string release');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Discarded session because of missing or non-string release');
     } else {
       this.sendSession(session);
       // After sending, we set init false to indicate it's not the first occurrence
@@ -237,7 +236,7 @@ class BaseClient {
     try {
       return (this._integrations[integration.id] ) || null;
     } catch (_oO) {
-      IS_DEBUG_BUILD && logger.warn(`Cannot retrieve integration ${integration.id} from the current Client`);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot retrieve integration ${integration.id} from the current Client`);
       return null;
     }
   }
@@ -282,7 +281,7 @@ class BaseClient {
       // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
       // With typescript 4.1 we could even use template literal types
       var key = `${reason}:${category}`;
-      IS_DEBUG_BUILD && logger.log(`Adding outcome: "${key}"`);
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Adding outcome: "${key}"`);
 
       // The following works because undefined + 1 === NaN and NaN is falsy
       this._outcomes[key] = this._outcomes[key] + 1 || 1;
@@ -457,6 +456,7 @@ class BaseClient {
         extra: normalize(event.extra, depth, maxBreadth),
       }),
     };
+
     // event.contexts.trace stores information about a Transaction. Similarly,
     // event.spans[] stores information about child Spans. Given that a
     // Transaction is conceptually a Span, normalization should apply to both
@@ -465,7 +465,24 @@ class BaseClient {
     // so this block overwrites the normalized event to add back the original
     // Transaction information prior to normalization.
     if (event.contexts && event.contexts.trace) {
-            normalized.contexts.trace = event.contexts.trace;
+      normalized.contexts = {};
+      normalized.contexts.trace = event.contexts.trace;
+
+      // event.contexts.trace.data may contain circular/dangerous data so we need to normalize it
+      if (event.contexts.trace.data) {
+        normalized.contexts.trace.data = normalize(event.contexts.trace.data, depth, maxBreadth);
+      }
+    }
+
+    // event.spans[].data may contain circular/dangerous data so we need to normalize it
+    if (event.spans) {
+      normalized.spans = event.spans.map(span => {
+        // We cannot use the spread operator here because `toJSON` on `span` is non-enumerable
+        if (span.data) {
+          span.data = normalize(span.data, depth, maxBreadth);
+        }
+        return span;
+      });
     }
 
     normalized.sdkProcessingMetadata = { ...normalized.sdkProcessingMetadata, baseClientNormalized: true };
@@ -534,7 +551,7 @@ class BaseClient {
         return finalEvent.event_id;
       },
       reason => {
-        IS_DEBUG_BUILD && logger.warn(reason);
+        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(reason);
         return undefined;
       },
     );
@@ -642,10 +659,10 @@ class BaseClient {
    _sendEnvelope(envelope) {
     if (this._transport && this._dsn) {
       this._transport.send(envelope).then(null, reason => {
-        IS_DEBUG_BUILD && logger.error('Error while sending event:', reason);
+        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Error while sending event:', reason);
       });
     } else {
-      IS_DEBUG_BUILD && logger.error('Transport disabled');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Transport disabled');
     }
   }
 

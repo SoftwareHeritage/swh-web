@@ -1,13 +1,14 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest
 
 from swh.web.common.query import parse_hash
+from swh.web.common.typing import OriginInfo
 from swh.web.common.utils import resolve_branch_alias, reverse
 
 
@@ -136,9 +137,9 @@ def enrich_metadata_endpoint(
 
 def enrich_content(
     content: Dict[str, Any],
+    request: Optional[HttpRequest] = None,
     top_url: Optional[bool] = False,
     query_string: Optional[str] = None,
-    request: Optional[HttpRequest] = None,
 ) -> Dict[str, str]:
     """Enrich content with links to:
         - data_url: its raw data
@@ -273,7 +274,7 @@ def enrich_snapshot(
 
 
 def enrich_origin(
-    origin: Dict[str, Any], request: Optional[HttpRequest] = None
+    origin: Union[Dict[str, Any], OriginInfo], request: Optional[HttpRequest] = None
 ) -> Dict[str, Any]:
     """Enrich origin dict with link to its visits
 
@@ -284,14 +285,15 @@ def enrich_origin(
     Returns:
         An enriched origin dict filled with an additional url
     """
-    if "url" in origin:
-        origin["origin_visits_url"] = reverse(
+    origin_dict = dict(origin)
+    if "url" in origin_dict:
+        origin_dict["origin_visits_url"] = reverse(
             "api-1-origin-visits",
-            url_args={"origin_url": origin["url"]},
+            url_args={"origin_url": origin_dict["url"]},
             request=request,
         )
 
-    return origin
+    return origin_dict
 
 
 def enrich_origin_search_result(
@@ -313,10 +315,9 @@ def enrich_origin_search_result(
 
 def enrich_origin_visit(
     origin_visit: Dict[str, Any],
-    *,
-    with_origin_link: bool,
-    with_origin_visit_link: bool,
     request: Optional[HttpRequest] = None,
+    with_origin_link: bool = False,
+    with_origin_visit_link: bool = False,
 ) -> Dict[str, Any]:
     """Enrich origin visit dict with additional links
 

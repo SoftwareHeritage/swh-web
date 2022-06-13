@@ -1,4 +1,3 @@
-import { IS_DEBUG_BUILD } from './flags.js';
 import { getGlobalObject, getGlobalSingleton } from './global.js';
 
 // TODO: Implement different loggers for different environments
@@ -57,7 +56,7 @@ function makeLogger() {
     },
   };
 
-  if (IS_DEBUG_BUILD) {
+  if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
     CONSOLE_LEVELS.forEach(name => {
             logger[name] = (...args) => {
         if (enabled) {
@@ -78,7 +77,7 @@ function makeLogger() {
 
 // Ensure we only have a single logger instance, even if multiple versions of @sentry/utils are being used
 let logger;
-if (IS_DEBUG_BUILD) {
+if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
   logger = getGlobalSingleton('logger', makeLogger);
 } else {
   logger = makeLogger();
