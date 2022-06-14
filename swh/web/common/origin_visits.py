@@ -13,7 +13,9 @@ from swh.web.common.typing import OriginInfo, OriginVisitInfo
 from swh.web.common.utils import parse_iso8601_date_to_utc
 
 
-def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
+def get_origin_visits(
+    origin_info: OriginInfo, lookup_similar_urls: bool = True
+) -> List[OriginVisitInfo]:
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
     in the swh web browse ui.
@@ -23,6 +25,8 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
 
     Args:
         origin_info: dict describing the origin to fetch visits from
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
 
     Returns:
         A list of dict describing the origin visits
@@ -33,10 +37,9 @@ def get_origin_visits(origin_info: OriginInfo) -> List[OriginVisitInfo]:
 
     from swh.web.common import archive
 
-    if "url" in origin_info:
-        origin_url = origin_info["url"]
-    else:
-        origin_url = archive.lookup_origin(origin_info)["url"]
+    origin_url = archive.lookup_origin(
+        origin_info, lookup_similar_urls=lookup_similar_urls
+    )["url"]
 
     cache_entry_id = "origin_visits_%s" % origin_url
     cache_entry = cache.get(cache_entry_id)
