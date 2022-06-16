@@ -215,7 +215,7 @@ describe('Test origin-search', function() {
       .as('searchOrigin');
 
     cy.get('#swh-origins-url-patterns')
-      .type(origin.url.slice(0, -1), {delay: 0, force: true});
+      .type(origin.url.slice(0, -1));
 
     cy.get('.swh-search-icon')
       .click();
@@ -567,7 +567,7 @@ describe('Test origin-search', function() {
         .as('searchOrigin');
 
       cy.get('#swh-origins-url-patterns')
-        .type(swhid, {delay: 0, force: true});
+        .type(swhid);
 
       cy.get('.swh-search-icon')
         .click();

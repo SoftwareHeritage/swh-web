@@ -7,11 +7,11 @@
 
 function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-forge-type').select(type);
-  cy.get('#swh-input-forge-url').clear().type(url, {delay: 0, force: true});
-  cy.get('#swh-input-forge-contact-name').clear().type(contact, {delay: 0, force: true});
-  cy.get('#swh-input-forge-contact-email').clear().type(email, {delay: 0, force: true});
+  cy.get('#swh-input-forge-url').clear().type(url);
+  cy.get('#swh-input-forge-contact-name').clear().type(contact);
+  cy.get('#swh-input-forge-contact-email').clear().type(email);
   if (comment) {
-    cy.get('#swh-input-forge-comment').clear().type(comment, {delay: 0, force: true});
+    cy.get('#swh-input-forge-comment').clear().type(comment);
   }
   cy.get('#swh-input-consent-check').click({force: consent === 'on'});
 }
