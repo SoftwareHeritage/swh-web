@@ -52,6 +52,15 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
       tables: true,
       extensions: [showdownHighlight]
     });
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('origin_url')) {
+      try {
+        const originUrl = new URL(url.searchParams.get('origin_url'));
+        if (originUrl.hostname === 'github.com') {
+          converter.setFlavor('github');
+        }
+      } catch (TypeError) {}
+    }
 
     try {
       const response = await fetch(markdownDocUrl);

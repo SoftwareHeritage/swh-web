@@ -11,13 +11,13 @@ function fillFormAndSubmitMailmap(fromEmail, displayName, activated) {
   if (fromEmail) {
     cy.get('#swh-mailmap-from-email')
       .clear()
-      .type(fromEmail, {delay: 0, force: true});
+      .type(fromEmail);
   }
 
   if (displayName) {
     cy.get('#swh-mailmap-display-name')
       .clear()
-      .type(displayName, {delay: 0, force: true});
+      .type(displayName);
   }
 
   if (activated) {

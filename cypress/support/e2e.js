@@ -108,3 +108,9 @@ before(function() {
 beforeEach(function() {
   mockCostlyRequests();
 });
+
+Cypress.Commands.overwrite('type', (originalFn, subject, text, options = {}) => {
+  options.delay = options.delay || 0;
+  options.force = options.force || true;
+  return originalFn(subject, text, options);
+});
