@@ -188,7 +188,7 @@ describe('Test admin deposit page', function() {
           cy.get('#swh-web-modal-html code.xml').should('be.visible');
 
           // Dismiss the modal
-          cy.get('body').wait(500).type('{esc}');
+          cy.wait(500).get('#swh-web-modal-html .close').click();
           cy.get('#swh-web-modal-html code.xml').should('not.be.visible');
         } else {
           cy.get('button.metadata', {withinSubject: row}).should('not.exist');

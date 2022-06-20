@@ -71,7 +71,7 @@ _auto_diff_size_limit = 20000
 
 
 @browse_route(
-    r"content/(?P<from_query_string>.+)/diff/(?P<to_query_string>.+)/",
+    r"content/(?P<from_query_string>.*)/diff/(?P<to_query_string>.*)/",
     view_name="diff-contents",
 )
 def _contents_diff(

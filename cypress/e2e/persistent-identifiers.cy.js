@@ -29,6 +29,9 @@ describe('Persistent Identifiers Tests', function() {
       if (win.location.port) {
         urlPrefix += `:${win.location.port}`;
       }
+      // for some reasons, cypress hangs when visiting that URL in beforeEach callback
+      // due to HTTP redirection, so get the redirected URL here to workaround that issue.
+      url = win.location.href;
       const swhids = win.swh.webapp.getSwhIdsContext();
       cntSWHID = swhids.content.swhid;
       cntSWHIDWithContext = swhids.content.swhid_with_context;
