@@ -363,9 +363,9 @@ static/js/vault.e2e8f042b9c742390872.js.map
 static/js/vendors.25e511d510279ab9d0bd.js
 static/js/vendors.25e511d510279ab9d0bd.js.LICENSE.txt
 static/js/vendors.25e511d510279ab9d0bd.js.map
-static/js/webapp.a38ca7d2f5449ef2421c.js
-static/js/webapp.a38ca7d2f5449ef2421c.js.LICENSE.txt
-static/js/webapp.a38ca7d2f5449ef2421c.js.map
+static/js/webapp.4e4310cfc39e0dfe8406.js
+static/js/webapp.4e4310cfc39e0dfe8406.js.LICENSE.txt
+static/js/webapp.4e4310cfc39e0dfe8406.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
