@@ -7,10 +7,11 @@ import json
 
 import requests
 
-from django.conf.urls import include, url
+from django.conf.urls import include
 from django.contrib.staticfiles import finders
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import re_path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.web.common import archive

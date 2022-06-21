@@ -3,9 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.conf.urls import url
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect
+from django.urls import re_path as url
 
 from swh.web.admin.adminurls import AdminUrls
 import swh.web.admin.deposit  # noqa

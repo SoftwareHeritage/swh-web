@@ -6,7 +6,6 @@
 import json
 from typing import Any, Dict
 
-from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import Q
@@ -17,6 +16,7 @@ from django.http.response import (
     HttpResponseNotFound,
     JsonResponse,
 )
+from django.urls import re_path as url
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.request import Request

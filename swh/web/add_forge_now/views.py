@@ -6,13 +6,13 @@
 from typing import Any, Dict, List
 
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.urls import re_path as url
 
 from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.add_forge_now.models import RequestHistory
