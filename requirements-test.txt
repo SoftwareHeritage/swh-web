@@ -3,6 +3,8 @@ djangorestframework-stubs
 django-stubs
 django-test-migrations
 hypothesis
+# TODO: remove that pin once we bump mypy to > 0.950 in tox.ini
+mypy == 0.942
 pytest
 pytest-django
 pytest-mock
