@@ -252,7 +252,7 @@ a.dropdown-left::before {
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
-    margin-top: 30px;
+    margin-top: 60px;
     justify-content: normal;
     flex-wrap: nowrap;
     height: 72px;
@@ -312,8 +312,8 @@ a.dropdown-left::before {
     color: #fecd1b;
 }
 
-.swh-fundraising-banner-iframe {
-    height: 60px;
+.swh-banner-iframe {
+    height: 30px;
     position: fixed;
     top: 30px;
     left: 0;
@@ -358,7 +358,7 @@ a.dropdown-left::before {
 }
 
 .main-sidebar {
-    margin-top: 30px;
+    margin-top: 60px;
 }
 
 .sidebar {
@@ -752,7 +752,7 @@ div.d3-tooltip {
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 55px;
+    top: 85px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
