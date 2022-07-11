@@ -1,5 +1,5 @@
 var isCallable = require('../internals/is-callable');
-var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
+var definePropertyModule = require('../internals/object-define-property');
 var makeBuiltIn = require('../internals/make-built-in');
 var defineGlobalProperty = require('../internals/define-global-property');
 
@@ -12,9 +12,16 @@ module.exports = function (O, key, value, options) {
     if (simple) O[key] = value;
     else defineGlobalProperty(key, value);
   } else {
-    if (!options.unsafe) delete O[key];
-    else if (O[key]) simple = true;
+    try {
+      if (!options.unsafe) delete O[key];
+      else if (O[key]) simple = true;
+    } catch (error) { /* empty */ }
     if (simple) O[key] = value;
-    else createNonEnumerableProperty(O, key, value);
+    else definePropertyModule.f(O, key, {
+      value: value,
+      enumerable: false,
+      configurable: !options.nonConfigurable,
+      writable: !options.nonWritable
+    });
   } return O;
 };

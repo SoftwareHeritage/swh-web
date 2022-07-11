@@ -6,7 +6,7 @@ var global = getGlobalObject();
 /** Prefix for logging strings */
 var PREFIX = 'Sentry Logger ';
 
-var CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert'] ;
+var CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert', 'trace'] ;
 
 /**
  * Temporarily disable sentry console instrumentations.

@@ -378,6 +378,16 @@ class Hub  {
   }
 
   /**
+   * Returns if default PII should be sent to Sentry and propagated in ourgoing requests
+   * when Tracing is used.
+   */
+   shouldSendDefaultPii() {
+    var client = this.getClient();
+    var options = client && client.getOptions();
+    return Boolean(options && options.sendDefaultPii);
+  }
+
+  /**
    * Sends the current Session on the scope
    */
    _sendSessionUpdate() {

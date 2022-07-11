@@ -19,7 +19,9 @@
     </div>
     <div id="historyItemBody<%= index%>" class="collapse" aria-labelledby="historyItem<%= index %>" data-parent="#requestHistory">
       <div class="card-body">
+        <%if (event.text) { %>
         <pre><%= event.text %></pre>
+        <% } %>
         <%if (event.message_source_url !== null) { %>
         <p><a href="<%= event.message_source_url %>">Open original message in email client</a></p>
         <% } %>

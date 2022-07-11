@@ -11,30 +11,39 @@ var MAX_BREADCRUMBS = 100;
  * Holds additional event information. {@link Scope.applyToEvent} will be
  * called by the client before an event will be sent.
  */
-class Scope  {constructor() { Scope.prototype.__init.call(this);Scope.prototype.__init2.call(this);Scope.prototype.__init3.call(this);Scope.prototype.__init4.call(this);Scope.prototype.__init5.call(this);Scope.prototype.__init6.call(this);Scope.prototype.__init7.call(this);Scope.prototype.__init8.call(this);Scope.prototype.__init9.call(this);Scope.prototype.__init10.call(this); }
+class Scope  {
   /** Flag if notifying is happening. */
-   __init() {this._notifyingListeners = false;}
+  
 
   /** Callback for client to receive scope changes. */
-   __init2() {this._scopeListeners = [];}
+  
 
   /** Callback list that will be called after {@link applyToEvent}. */
-   __init3() {this._eventProcessors = [];}
+  
 
   /** Array of breadcrumbs. */
-   __init4() {this._breadcrumbs = [];}
+  
 
   /** User */
-   __init5() {this._user = {};}
+  
 
   /** Tags */
-   __init6() {this._tags = {};}
+  
 
   /** Extra */
-   __init7() {this._extra = {};}
+  
 
   /** Contexts */
-   __init8() {this._contexts = {};}
+  
+
+  /** Attachments */
+  
+
+  /**
+   * A place to stash data which is needed at some point in the SDK's event processing pipeline but which shouldn't get
+   * sent to Sentry
+   */
+  
 
   /** Fingerprint */
   
@@ -54,14 +63,18 @@ class Scope  {constructor() { Scope.prototype.__init.call(this);Scope.prototype.
   /** Request Mode Session Status */
   
 
-  /** Attachments */
-   __init9() {this._attachments = [];}
-
-  /**
-   * A place to stash data which is needed at some point in the SDK's event processing pipeline but which shouldn't get
-   * sent to Sentry
-   */
-   __init10() {this._sdkProcessingMetadata = {};}
+   constructor() {
+    this._notifyingListeners = false;
+    this._scopeListeners = [];
+    this._eventProcessors = [];
+    this._breadcrumbs = [];
+    this._attachments = [];
+    this._user = {};
+    this._tags = {};
+    this._extra = {};
+    this._contexts = {};
+    this._sdkProcessingMetadata = {};
+  }
 
   /**
    * Inherit values from the parent scope.
@@ -419,6 +432,7 @@ class Scope  {constructor() { Scope.prototype.__init.call(this);Scope.prototype.
     if (this._transactionName) {
       event.transaction = this._transactionName;
     }
+
     // We want to set the trace context for normal events only if there isn't already
     // a trace context on the event. There is a product feature in place where we link
     // errors with transaction and it relies on that.
@@ -435,7 +449,7 @@ class Scope  {constructor() { Scope.prototype.__init.call(this);Scope.prototype.
     event.breadcrumbs = [...(event.breadcrumbs || []), ...this._breadcrumbs];
     event.breadcrumbs = event.breadcrumbs.length > 0 ? event.breadcrumbs : undefined;
 
-    event.sdkProcessingMetadata = this._sdkProcessingMetadata;
+    event.sdkProcessingMetadata = { ...event.sdkProcessingMetadata, ...this._sdkProcessingMetadata };
 
     return this._notifyEventProcessors([...getGlobalEventProcessors(), ...this._eventProcessors], event, hint);
   }

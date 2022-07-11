@@ -1,4 +1,3 @@
-import { _optionalChain } from '@sentry/utils/esm/buildPolyfills';
 import { updateSession, Scope } from '@sentry/hub';
 import { makeDsn, logger, checkOrSetAlreadyCaught, isPrimitive, resolvedSyncPromise, addItemToEnvelope, createAttachmentEnvelopeItem, SyncPromise, uuid4, dateTimestampInSeconds, normalize, truncate, rejectedSyncPromise, SentryError, isThenable, isPlainObject } from '@sentry/utils';
 import { getEnvelopeEndpointWithUrlEncodedAuth } from './api.js';
@@ -251,7 +250,10 @@ class BaseClient {
       for (var attachment of hint.attachments || []) {
         env = addItemToEnvelope(
           env,
-          createAttachmentEnvelopeItem(attachment, _optionalChain([this, 'access', _ => _._options, 'access', _2 => _2.transportOptions, 'optionalAccess', _3 => _3.textEncoder])),
+          createAttachmentEnvelopeItem(
+            attachment,
+            this._options.transportOptions && this._options.transportOptions.textEncoder,
+          ),
         );
       }
 
@@ -406,14 +408,6 @@ class BaseClient {
     }
 
     return result.then(evt => {
-      if (evt) {
-        // TODO this is more of the hack trying to solve https://github.com/getsentry/sentry-javascript/issues/2809
-        // it is only attached as extra data to the event if the event somehow skips being normalized
-        evt.sdkProcessingMetadata = {
-          ...evt.sdkProcessingMetadata,
-          normalizeDepth: `${normalize(normalizeDepth)} (${typeof normalizeDepth})`,
-        };
-      }
       if (typeof normalizeDepth === 'number' && normalizeDepth > 0) {
         return this._normalizeEvent(evt, normalizeDepth, normalizeMaxBreadth);
       }
@@ -464,8 +458,7 @@ class BaseClient {
     // For now the decision is to skip normalization of Transactions and Spans,
     // so this block overwrites the normalized event to add back the original
     // Transaction information prior to normalization.
-    if (event.contexts && event.contexts.trace) {
-      normalized.contexts = {};
+    if (event.contexts && event.contexts.trace && normalized.contexts) {
       normalized.contexts.trace = event.contexts.trace;
 
       // event.contexts.trace.data may contain circular/dangerous data so we need to normalize it
@@ -484,8 +477,6 @@ class BaseClient {
         return span;
       });
     }
-
-    normalized.sdkProcessingMetadata = { ...normalized.sdkProcessingMetadata, baseClientNormalized: true };
 
     return normalized;
   }

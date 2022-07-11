@@ -232,18 +232,20 @@ def lookup_content_license(q):
     return converters.from_swh(lic, hashess={"id"})
 
 
-def lookup_origin(origin: OriginInfo) -> OriginInfo:
+def lookup_origin(origin: OriginInfo, lookup_similar_urls: bool = True) -> OriginInfo:
     """Return information about the origin matching dict origin.
 
     Args:
         origin: origin's dict with 'url' key
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
 
     Returns:
         origin information as dict.
 
     """
     origin_urls = [origin["url"]]
-    if origin["url"]:
+    if origin["url"] and lookup_similar_urls:
         # handle case when user provided an origin url with a trailing
         # slash while the url in storage does not have it (e.g. GitHub)
         if origin["url"].endswith("/"):
@@ -977,9 +979,9 @@ def _lookup_origin_visits(
     """Yields the origin origins' visits.
 
     Args:
-        origin_url (str): origin to list visits for
-        last_visit (int): last visit to lookup from
-        limit (int): Number of elements max to display
+        origin_url: origin to list visits for
+        last_visit: last visit to lookup from
+        limit: Number of elements max to display
 
     Yields:
        OriginVisit for that origin
@@ -1018,6 +1020,7 @@ def lookup_origin_visit_latest(
     require_snapshot: bool = False,
     type: Optional[str] = None,
     allowed_statuses: Optional[List[str]] = None,
+    lookup_similar_urls: bool = True,
 ) -> Optional[OriginVisitInfo]:
     """Return the origin's latest visit
 
@@ -1030,11 +1033,18 @@ def lookup_origin_visit_latest(
             ``allowed_statuses=['full']`` will only consider visits that
             have successfully run to completion.
         require_snapshot: filter out origins without a snapshot
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
 
     Returns:
        The origin visit info as dict if found
 
     """
+
+    # check origin existence in the archive
+    origin_url = lookup_origin(
+        OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
+    )["url"]
 
     visit_status = origin_get_latest_visit_status(
         storage,
@@ -1048,12 +1058,18 @@ def lookup_origin_visit_latest(
     )
 
 
-def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
+def lookup_origin_visit(
+    origin_url: str,
+    visit_id: int,
+    lookup_similar_urls: bool = True,
+) -> OriginVisitInfo:
     """Return information about visit visit_id with origin origin.
 
     Args:
         origin: origin concerned by the visit
         visit_id: the visit identifier to lookup
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
 
     Raises:
         NotFoundExc if no origin visit matching the criteria is found
@@ -1062,6 +1078,11 @@ def lookup_origin_visit(origin_url: str, visit_id: int) -> OriginVisitInfo:
        The dict origin_visit concerned
 
     """
+    # check origin existence in the archive
+    origin_url = lookup_origin(
+        OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
+    )["url"]
+
     visit = storage.origin_visit_get_by(origin_url, visit_id)
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
     if not visit:
