@@ -21,6 +21,7 @@ from swh.web.api.views.utils import api_lookup
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc
 from swh.web.common.origin_visits import get_origin_visits
+from swh.web.common.typing import OriginInfo
 from swh.web.common.utils import origin_visit_types, reverse
 
 DOC_RETURN_ORIGIN = """
@@ -143,6 +144,7 @@ def api_origin(request: Request, origin_url: str):
     return api_lookup(
         archive.lookup_origin,
         ori_dict,
+        lookup_similar_urls=False,
         notfound_msg=error_msg,
         enrich_fn=enrich_origin,
         request=request,
@@ -326,7 +328,7 @@ def api_origin_visits(request: Request, origin_url: str):
 
     """
     result = {}
-    origin_query = {"url": origin_url}
+    origin_query = OriginInfo(url=origin_url)
     notfound_msg = "No origin {} found".format(origin_url)
     url_args_next = {"origin_url": origin_url}
     per_page = int(request.query_params.get("per_page", "10"))
@@ -334,7 +336,7 @@ def api_origin_visits(request: Request, origin_url: str):
     last_visit = int(last_visit_str) if last_visit_str else None
 
     def _lookup_origin_visits(origin_query, last_visit=last_visit, per_page=per_page):
-        all_visits = get_origin_visits(origin_query)
+        all_visits = get_origin_visits(origin_query, lookup_similar_urls=False)
         all_visits.reverse()
         visits = []
         if not last_visit:
@@ -412,11 +414,13 @@ def api_origin_visit_latest(request: Request, origin_url: str):
 
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/latest/`
     """
+
     require_snapshot = request.query_params.get("require_snapshot", "false")
     return api_lookup(
         archive.lookup_origin_visit_latest,
         origin_url,
         bool(strtobool(require_snapshot)),
+        lookup_similar_urls=False,
         notfound_msg=("No visit for origin {} found".format(origin_url)),
         enrich_fn=partial(
             enrich_origin_visit, with_origin_link=True, with_origin_visit_link=False
@@ -453,10 +457,12 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
 
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/1/`
     """
+
     return api_lookup(
         archive.lookup_origin_visit,
         origin_url,
         int(visit_id),
+        lookup_similar_urls=False,
         notfound_msg=("No visit {} for origin {} found".format(visit_id, origin_url)),
         enrich_fn=partial(
             enrich_origin_visit, with_origin_link=True, with_origin_visit_link=False

@@ -66,16 +66,6 @@ function visit(
 ) {
   const [memoize, unmemoize] = memo;
 
-  // If the value has a `toJSON` method, see if we can bail and let it do the work
-  var valueWithToJSON = value ;
-  if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
-    try {
-      return valueWithToJSON.toJSON();
-    } catch (err) {
-      // pass (The built-in `toJSON` failed, but we can still try to do it ourselves)
-    }
-  }
-
   // Get the simple cases out of the way first
   if (value === null || (['number', 'boolean', 'string'].includes(typeof value) && !isNaN(value))) {
     return value ;
@@ -107,6 +97,18 @@ function visit(
   // If we've already visited this branch, bail out, as it's circular reference. If not, note that we're seeing it now.
   if (memoize(value)) {
     return '[Circular ~]';
+  }
+
+  // If the value has a `toJSON` method, we call it to extract more information
+  var valueWithToJSON = value ;
+  if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
+    try {
+      var jsonValue = valueWithToJSON.toJSON();
+      // We need to normalize the return value of `.toJSON()` in case it has circular references
+      return visit('', jsonValue, depth - 1, maxProperties, memo);
+    } catch (err) {
+      // pass (The built-in `toJSON` failed, but we can still try to do it ourselves)
+    }
   }
 
   // At this point we know we either have an object or an array, we haven't seen it before, and we're going to recurse

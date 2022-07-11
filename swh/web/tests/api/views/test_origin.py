@@ -32,24 +32,26 @@ from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
 from swh.web.tests.utils import check_api_get_responses
 
 
-def test_api_lookup_origin_visits_raise_error(api_client, mocker):
+def test_api_lookup_origin_visits_raise_error(api_client, origin, mocker):
     mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
     err_msg = "voluntary error to check the bad request middleware."
 
     mock_get_origin_visits.side_effect = BadInputExc(err_msg)
 
-    url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
+    url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=400)
     assert rv.data == {"exception": "BadInputExc", "reason": err_msg}
 
 
-def test_api_lookup_origin_visits_raise_swh_storage_error_db(api_client, mocker):
+def test_api_lookup_origin_visits_raise_swh_storage_error_db(
+    api_client, origin, mocker
+):
     mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
     err_msg = "Storage exploded! Will be back online shortly!"
 
     mock_get_origin_visits.side_effect = StorageDBError(err_msg)
 
-    url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
+    url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageDBError",
@@ -57,13 +59,15 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_db(api_client, mocker)
     }
 
 
-def test_api_lookup_origin_visits_raise_swh_storage_error_api(api_client, mocker):
+def test_api_lookup_origin_visits_raise_swh_storage_error_api(
+    api_client, origin, mocker
+):
     mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
     err_msg = "Storage API dropped dead! Will resurrect asap!"
 
     mock_get_origin_visits.side_effect = StorageAPIError(err_msg)
 
-    url = reverse("api-1-origin-visits", url_args={"origin_url": "http://foo"})
+    url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageAPIError",
@@ -837,3 +841,27 @@ def test_api_origin_search_empty_pattern_and_visit_type(api_client, archived_ori
         assert {o["url"] for o in rv.data} == {
             o["url"] for o in archived_origins if o["type"] == visit_type
         }
+
+
+@pytest.mark.parametrize(
+    "view_name, extra_args",
+    [
+        ("api-1-origin", {}),
+        ("api-1-origin-visits", {}),
+        ("api-1-origin-visit", {"visit_id": 1}),
+        ("api-1-origin-visit-latest", {}),
+        ("api-origin-intrinsic-metadata", {}),
+    ],
+)
+def test_api_origin_by_url_with_extra_trailing_slash(
+    api_client, origin, view_name, extra_args
+):
+    origin_url = origin["url"]
+    assert not origin_url.endswith("/")
+    origin_url = origin_url + "/"
+    url = reverse(view_name, url_args={"origin_url": origin_url, **extra_args})
+    rv = check_api_get_responses(api_client, url, status_code=404)
+    assert rv.data == {
+        "exception": "NotFoundExc",
+        "reason": f"Origin with url {origin_url} not found!",
+    }

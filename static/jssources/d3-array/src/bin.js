@@ -7,7 +7,7 @@ import nice from "./nice.js";
 import ticks, {tickIncrement} from "./ticks.js";
 import sturges from "./threshold/sturges.js";
 
-export default function() {
+export default function bin() {
   var value = identity,
       domain = extent,
       threshold = sturges;
@@ -18,6 +18,7 @@ export default function() {
     var i,
         n = data.length,
         x,
+        step,
         values = new Array(n);
 
     for (i = 0; i < n; ++i) {
@@ -35,6 +36,11 @@ export default function() {
       const max = x1, tn = +tz;
       if (domain === extent) [x0, x1] = nice(x0, x1, tn);
       tz = ticks(x0, x1, tn);
+
+      // If the domain is aligned with the first tick (which it will by
+      // default), then we can use quantization rather than bisection to bin
+      // values, which is substantially faster.
+      if (tz[0] <= x0) step = tickIncrement(x0, x1, tn);
 
       // If the last threshold is coincident with the domain’s upper bound, the
       // last bin will be zero-width. If the default domain is used, and this
@@ -75,10 +81,26 @@ export default function() {
     }
 
     // Assign data to bins by value, ignoring any outside the domain.
-    for (i = 0; i < n; ++i) {
-      x = values[i];
-      if (x != null && x0 <= x && x <= x1) {
-        bins[bisect(tz, x, 0, m)].push(data[i]);
+    if (isFinite(step)) {
+      if (step > 0) {
+        for (i = 0; i < n; ++i) {
+          if ((x = values[i]) != null && x0 <= x && x <= x1) {
+            bins[Math.min(m, Math.floor((x - x0) / step))].push(data[i]);
+          }
+        }
+      } else if (step < 0) {
+        for (i = 0; i < n; ++i) {
+          if ((x = values[i]) != null && x0 <= x && x <= x1) {
+            const j = Math.floor((x0 - x) * step);
+            bins[Math.min(m, j + (tz[j] <= x))].push(data[i]); // handle off-by-one due to rounding
+          }
+        }
+      }
+    } else {
+      for (i = 0; i < n; ++i) {
+        if ((x = values[i]) != null && x0 <= x && x <= x1) {
+          bins[bisect(tz, x, 0, m)].push(data[i]);
+        }
       }
     }
 
