@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -236,10 +236,11 @@ def test_api_content_raw_text(api_client, archive_data, content):
     assert rv["Content-Type"] == "application/octet-stream"
     assert (
         rv["Content-disposition"]
-        == "attachment; filename=content_sha1_%s_raw" % content["sha1"]
+        == 'attachment; filename="content_sha1_%s_raw"' % content["sha1"]
     )
     expected_data = archive_data.content_get_data(content["sha1"])
-    assert rv.content == expected_data["data"]
+    assert b"".join(rv.streaming_content) == expected_data["data"]
+    assert int(rv["Content-Length"]) == len(expected_data["data"])
 
 
 def test_api_content_raw_text_with_filename(api_client, archive_data, content):
@@ -249,10 +250,51 @@ def test_api_content_raw_text_with_filename(api_client, archive_data, content):
         query_params={"filename": "filename.txt"},
     )
     rv = check_http_get_response(api_client, url, status_code=200)
-    assert rv["Content-disposition"] == "attachment; filename=filename.txt"
+    assert rv["Content-disposition"] == 'attachment; filename="filename.txt"'
     assert rv["Content-Type"] == "application/octet-stream"
     expected_data = archive_data.content_get_data(content["sha1"])
-    assert rv.content == expected_data["data"]
+    assert b"".join(rv.streaming_content) == expected_data["data"]
+    assert int(rv["Content-Length"]) == len(expected_data["data"])
+
+
+@pytest.mark.parametrize(
+    "encoded,expected",
+    [
+        # From https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.2
+        (
+            "%c2%a3%20and%20%e2%82%ac%20rates.txt",
+            "%C2%A3%20and%20%E2%82%AC%20rates.txt",
+        ),
+        ("%A3%20rates.txt", "%EF%BF%BD%20rates.txt"),
+        # found in the wild
+        (
+            "Th%C3%A9orie%20de%20sant%C3%A9-aide-justice.pdf",
+            "Th%C3%A9orie%20de%20sant%C3%A9-aide-justice.pdf",
+        ),
+    ],
+)
+def test_api_content_raw_text_with_nonascii_filename(
+    api_client, archive_data, content, encoded, expected
+):
+    url = reverse(
+        "api-1-content-raw",
+        url_args={"q": "sha1:%s" % content["sha1"]},
+    )
+    rv = check_http_get_response(
+        api_client, f"{url}?filename={encoded}", status_code=200
+    )
+
+    # technically, ISO8859-1 is allowed too
+    assert rv["Content-disposition"].isascii(), rv["Content-disposition"]
+
+    assert rv["Content-disposition"] == (
+        f"attachment; filename*=utf-8''{expected}"
+    ), rv["Content-disposition"]
+
+    assert rv["Content-Type"] == "application/octet-stream"
+    expected_data = archive_data.content_get_data(content["sha1"])
+    assert b"".join(rv.streaming_content) == expected_data["data"]
+    assert int(rv["Content-Length"]) == len(expected_data["data"])
 
 
 def test_api_check_content_known(api_client, content):
