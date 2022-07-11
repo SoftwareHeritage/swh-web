@@ -105,26 +105,5 @@ function makeDsn(from) {
   return components;
 }
 
-/**
- * Changes a Dsn to point to the `relay` server running in the Lambda Extension.
- *
- * This is only used by the serverless integration for AWS Lambda.
- *
- * @param originalDsn The original Dsn of the customer.
- * @returns Dsn pointing to Lambda extension.
- */
-function extensionRelayDSN(originalDsn) {
-  if (originalDsn === undefined) {
-    return undefined;
-  }
-
-  var dsn = dsnFromString(originalDsn);
-  dsn.host = 'localhost';
-  dsn.port = '3000';
-  dsn.protocol = 'http';
-
-  return dsnToString(dsn);
-}
-
-export { dsnToString, extensionRelayDSN, makeDsn };
+export { dsnFromString, dsnToString, makeDsn };
 //# sourceMappingURL=dsn.js.map

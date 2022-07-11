@@ -11,6 +11,7 @@ from django.conf.urls import include, url
 from django.contrib.staticfiles import finders
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.web.common import archive
 from swh.web.common.exc import sentry_capture_exception
@@ -44,6 +45,20 @@ def _stat_counters(request):
     return JsonResponse(counters)
 
 
+@xframe_options_exempt
+def hiring_banner(request):
+
+    lang = request.GET.get("lang")
+
+    return render(
+        request,
+        "misc/hiring-banner.html",
+        {
+            "lang": lang if lang else "en",
+        },
+    )
+
+
 urlpatterns = [
     url(r"^", include("swh.web.misc.coverage")),
     url(r"^jslicenses/$", _jslicenses, name="jslicenses"),
@@ -53,6 +68,7 @@ urlpatterns = [
     url(r"^metrics/prometheus/$", prometheus_metrics, name="metrics-prometheus"),
     url(r"^", include("swh.web.misc.iframe")),
     url(r"^", include("swh.web.misc.fundraising")),
+    url(r"^hiring/banner/$", hiring_banner, name="swh-hiring-banner"),
 ]
 
 
