@@ -44,6 +44,8 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
         {common_headers}
 
         :>jsonarr string target: SWHID of the object described by this metadata
+            (absent when ``target`` is not a core SWHID (ie. it does not have type
+            ``cnt``/``dir``/``rev``/``rel``/``snp``)
         :>jsonarr string discovery_date: ISO8601/RFC3339 timestamp of the moment this
             metadata was collected.
         :>jsonarr object authority: authority this metadata is coming from
@@ -108,9 +110,17 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
     limit = min(limit, 10000)
 
     try:
-        parsed_target = swhids.CoreSWHID.from_string(target).to_extended()
+        parsed_target = swhids.ExtendedSWHID.from_string(target)
     except swhids.ValidationError as e:
-        raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
+        raise BadInputExc(f"Invalid target SWHID: {e}") from None
+
+    try:
+        swhids.CoreSWHID.from_string(target)
+    except swhids.ValidationError:
+        # Can be parsed as an extended SWHID, but not as a core SWHID
+        extended_swhid = True
+    else:
+        extended_swhid = False
 
     if page_token_str is not None:
         page_token = base64.urlsafe_b64decode(page_token_str)
@@ -125,17 +135,32 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
         limit=limit,
     )
 
+    filename = None
+    if parsed_target.object_type == swhids.ExtendedObjectType.ORIGIN:
+        origin_sha1 = hashutil.hash_to_hex(parsed_target.object_id)
+        (origin_info,) = list(archive.lookup_origins_by_sha1s([origin_sha1]))
+        if origin_info is not None:
+            filename = re.sub("[:/_.]+", "_", origin_info["url"]) + "_metadata"
+    if filename is None:
+        filename = f"{target}_metadata"
+
     results = []
 
     for metadata in result_page.results:
         result = converters.from_raw_extrinsic_metadata(metadata)
+
+        if extended_swhid:
+            # Keep extended SWHIDs away from the public API as much as possible.
+            # (It is part of the URL, but not documented, and only accessed via
+            # the link in the response of api-1-origin)
+            del result["target"]
 
         # We can't reliably send metadata directly, because it is a bytestring,
         # and we have to return JSON documents.
         result["metadata_url"] = reverse(
             "api-1-raw-extrinsic-metadata-get",
             url_args={"id": hashutil.hash_to_hex(metadata.id)},
-            query_params={"filename": f"{target}_metadata"},
+            query_params={"filename": filename},
             request=request,
         )
 
@@ -208,6 +233,13 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
         They can then be used to get the raw `extrinsic metadata <https://docs.softwareheritage.org/devel/glossary.html#term-extrinsic-metadata>`__ collected on
         that object from each of the authorities.
 
+        This endpoint should only be used directly to retrieve metadata from
+        core SWHIDs (with type ``cnt``, ``dir``, ``rev``, ``rel``, and ``snp``).
+        For "extended" SWHIDs such as origins, the URL in the
+        ``origin_metadata_authorities_url`` field of
+        :http:get:`/api/1/origin/(origin_url)/get/` should be used instead of building
+        this URL directly.
+
         :param string target: The core SWHID of the object whose metadata-providing
           authorities should be returned
 
@@ -228,9 +260,9 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
     """  # noqa
 
     try:
-        parsed_target = swhids.CoreSWHID.from_string(target).to_extended()
+        parsed_target = swhids.ExtendedSWHID.from_string(target)
     except swhids.ValidationError as e:
-        raise BadInputExc(f"Invalid target SWHID: {e.args[0]}") from None
+        raise BadInputExc(f"Invalid target SWHID: {e}") from None
 
     authorities = archive.storage.raw_extrinsic_metadata_get_authorities(
         target=parsed_target

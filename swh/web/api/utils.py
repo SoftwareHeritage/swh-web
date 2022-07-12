@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest
 
+from swh.model.model import Origin
 from swh.web.common.query import parse_hash
 from swh.web.common.typing import OriginInfo
 from swh.web.common.utils import resolve_branch_alias, reverse
@@ -283,13 +284,18 @@ def enrich_origin(
         request: Absolute URIs will be generated if provided
 
     Returns:
-        An enriched origin dict filled with an additional url
+        An enriched origin dict filled with additional urls
     """
     origin_dict = dict(origin)
     if "url" in origin_dict:
         origin_dict["origin_visits_url"] = reverse(
             "api-1-origin-visits",
             url_args={"origin_url": origin_dict["url"]},
+            request=request,
+        )
+        origin_dict["metadata_authorities_url"] = reverse(
+            "api-1-raw-extrinsic-metadata-swhid-authorities",
+            url_args={"target": Origin(url=origin_dict["url"]).swhid()},
             request=request,
         )
 
