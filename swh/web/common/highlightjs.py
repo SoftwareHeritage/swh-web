@@ -56,7 +56,7 @@ def _hljs_languages_aliases():
 
 
 # dictionary mapping pygment lexers to hljs languages
-_pygments_lexer_to_hljs_language = {}  # type: Dict[str, str]
+_pygments_lexer_to_hljs_language: Dict[str, str] = {}
 
 
 # dictionary mapping mime types to hljs languages
