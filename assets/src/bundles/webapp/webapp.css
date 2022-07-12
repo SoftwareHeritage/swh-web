@@ -312,7 +312,7 @@ a.dropdown-left::before {
     color: #fecd1b;
 }
 
-.swh-banner-iframe {
+.swh-banner {
     height: 30px;
     position: fixed;
     top: 30px;
@@ -320,6 +320,13 @@ a.dropdown-left::before {
     width: 100%;
     z-index: 99999;
     border: none;
+}
+
+.swh-banner .row {
+    height: 30px;
+    background-color: #fecd1b;
+    color: #e20026;
+    font-size: larger;
 }
 
 .swh-position-left {

@@ -318,6 +318,7 @@ def context_processor(request):
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
         "FEATURES": get_config()["features"],
         "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
+        "lang": "en",
     }
 
 

@@ -53,7 +53,7 @@ def hiring_banner(request):
 
     return render(
         request,
-        "misc/hiring-banner.html",
+        "misc/hiring-banner-iframe.html",
         {
             "lang": lang if lang else "en",
         },
