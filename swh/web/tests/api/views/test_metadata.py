@@ -8,32 +8,21 @@ from hypothesis import given
 from hypothesis.strategies import composite, sampled_from, sets
 import pytest
 
-from swh.model.hypothesis_strategies import (
-    raw_extrinsic_metadata as raw_extrinsic_metadata_orig,
-)
-from swh.model.hypothesis_strategies import sha1_git
-from swh.model.swhids import ExtendedObjectType, ExtendedSWHID, ObjectType
+from swh.model.hypothesis_strategies import raw_extrinsic_metadata, sha1_git
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.common.utils import reverse
 from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.utils import check_api_get_responses, check_http_get_response
 
 
-# public Web API endpoint for raw extrinsic metadata does not support
-# extended SWHIDs so we ensure only core ones will be used in test inputs.
 @composite
-def raw_extrinsic_metadata(draw):
-    remd = draw(raw_extrinsic_metadata_orig())
-    remd = attr.evolve(
-        remd,
-        target=ExtendedSWHID(
-            object_type=ExtendedObjectType(draw(sampled_from(ObjectType)).value),
-            object_id=draw(sha1_git()),
-        ),
-    )
-    return attr.evolve(remd, id=remd.compute_hash())
+def core_swhids(draw):
+    object_type = draw(sampled_from(ObjectType))
+    object_id = draw(sha1_git())
+    return CoreSWHID(object_type=object_type, object_id=object_id).to_extended()
 
 
-@given(raw_extrinsic_metadata())
+@given(raw_extrinsic_metadata(target=core_swhids()))
 def test_api_raw_extrinsic_metadata(api_client, subtest, metadata):
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
@@ -73,7 +62,7 @@ def test_api_raw_extrinsic_metadata(api_client, subtest, metadata):
 
 
 @pytest.mark.parametrize("limit", [1, 2, 10, 100])
-@given(sets(raw_extrinsic_metadata(), min_size=1))
+@given(sets(raw_extrinsic_metadata(target=core_swhids()), min_size=1))
 def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
@@ -179,7 +168,7 @@ def test_api_raw_extrinsic_metadata_check_params(
     check_api_get_responses(api_client, url, status_code=status_code)
 
 
-@given(raw_extrinsic_metadata())
+@given(raw_extrinsic_metadata(target=core_swhids()))
 def test_api_raw_extrinsic_metadata_list_authorities(api_client, subtest, metadata):
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
