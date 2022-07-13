@@ -235,3 +235,21 @@ def test_api_raw_extrinsic_metadata_list_authorities(api_client, subtest, metada
         ]
 
         assert rv.data == expected_results
+
+
+def test_api_raw_extrinsic_metadata_origin_redirect(api_client, archive_data):
+    origin = Origin(url="http://example.com/repo.git")
+    archive_data.origin_add([origin])
+
+    url = reverse(
+        "api-1-raw-extrinsic-metadata-origin-authorities",
+        url_args={"origin_url": origin.url},
+    )
+    rv = check_http_get_response(api_client, url, status_code=302)
+
+    redirect_url = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": str(origin.swhid())},
+    )
+
+    assert rv["location"] == redirect_url

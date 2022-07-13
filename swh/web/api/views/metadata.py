@@ -10,10 +10,11 @@ from typing import Dict, Optional
 import iso8601
 
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from rest_framework.request import Request
 
 from swh.model import hashutil, swhids
-from swh.model.model import MetadataAuthority, MetadataAuthorityType
+from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.common import archive, converters
@@ -235,10 +236,9 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
 
         This endpoint should only be used directly to retrieve metadata from
         core SWHIDs (with type ``cnt``, ``dir``, ``rev``, ``rel``, and ``snp``).
-        For "extended" SWHIDs such as origins, the URL in the
-        ``origin_metadata_authorities_url`` field of
-        :http:get:`/api/1/origin/(origin_url)/get/` should be used instead of building
-        this URL directly.
+        For "extended" SWHIDs such as origins,
+        :http:get:`/api/1/raw-extrinsic-metadata/origin/(origin_url)/authorities/`
+        should be used instead of building this URL directly.
 
         :param string target: The core SWHID of the object whose metadata-providing
           authorities should be returned
@@ -284,3 +284,42 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
         "results": results,
         "headers": {},
     }
+
+
+@api_route(
+    "/raw-extrinsic-metadata/origin/(?P<origin_url>.*)/authorities/",
+    "api-1-raw-extrinsic-metadata-origin-authorities",
+)
+@api_doc("/raw-extrinsic-metadata/origin/authorities/")
+@format_docstring()
+def api_raw_extrinsic_metadata_origin_authorities(request: Request, origin_url: str):
+    """
+    .. http:get:: /api/1/raw-extrinsic-metadata/origin/(origin_url)/authorities/
+
+        Similar to
+        :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
+        but to get metadata on origins instead of objects
+
+        :param string origin_url: The URL of the origin whose metadata-providing
+          authorities should be returned
+
+        {common_headers}
+
+        :>jsonarr string type: Type of authority (deposit_client, forge, registry)
+        :>jsonarr string url: Unique IRI identifying the authority
+        :>jsonarr object metadata_list_url: URL to get the list of metadata objects
+          on the given object from this authority
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`raw-extrinsic-metadata/origin/https://github.com/rdicosmo/parmap/authorities/`
+    """  # noqa
+    url = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": Origin(url=origin_url).swhid()},
+    )
+    return redirect(url)
