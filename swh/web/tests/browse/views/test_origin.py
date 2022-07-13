@@ -76,6 +76,7 @@ def test_origin_root_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
     )
 
@@ -88,6 +89,7 @@ def test_origin_root_directory_view(
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
@@ -103,6 +105,7 @@ def test_origin_root_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
         timestamp=visit["date"],
     )
@@ -116,6 +119,7 @@ def test_origin_root_directory_view(
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         snapshot_id=visit["snapshot"],
@@ -131,6 +135,7 @@ def test_origin_root_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
     )
 
@@ -143,6 +148,7 @@ def test_origin_root_directory_view(
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
@@ -158,6 +164,7 @@ def test_origin_root_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
         timestamp=visit["date"],
     )
@@ -171,6 +178,7 @@ def test_origin_root_directory_view(
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         snapshot_id=visit["snapshot"],
@@ -211,6 +219,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
     )
@@ -225,6 +234,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         visit_id=visit["visit"],
@@ -240,6 +250,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         timestamp=visit["date"],
@@ -255,6 +266,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         snapshot_id=visit["snapshot"],
@@ -270,6 +282,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
     )
@@ -284,6 +297,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         visit_id=visit["visit"],
@@ -299,6 +313,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         timestamp=visit["date"],
@@ -314,6 +329,7 @@ def test_origin_sub_directory_view(
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         snapshot_id=visit["snapshot"],
@@ -804,6 +820,7 @@ def _origin_directory_view_test_helper(
     origin_branches,
     origin_releases,
     root_directory_sha1,
+    target_directory_sha1,
     directory_entries,
     visit_id=None,
     timestamp=None,
@@ -947,7 +964,7 @@ def _origin_directory_view_test_helper(
     )
     directory_metadata_api_url = reverse(
         "api-1-raw-extrinsic-metadata-swhid-authorities",
-        url_args={"target": f"swh:1:dir:{root_directory_sha1}"},
+        url_args={"target": f"swh:1:dir:{target_directory_sha1}"},
     )
     extrinsic_metadata_snippets = [
         "Extrinsic metadata",
