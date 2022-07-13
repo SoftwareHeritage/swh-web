@@ -1,11 +1,10 @@
-# Copyright (C) 2015-2018  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 
 import re
-from uuid import UUID
 
 from swh.model.hashutil import ALGORITHMS, hash_to_bytes
 from swh.web.common.exc import BadInputExc
@@ -87,25 +86,3 @@ def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
         raise BadInputExc(error_msg)
 
     return (algo, hash)
-
-
-def parse_uuid4(uuid):
-    """Parse an uuid 4 from a string.
-
-    Args:
-        uuid: String representing an uuid.
-
-    Returns:
-        The uuid as is if everything is ok.
-
-    Raises:
-        BadInputExc: if the uuid is invalid.
-
-    """
-    try:
-        UUID(uuid, version=4)
-    except ValueError as e:
-        # not a valid hex code for a UUID
-        raise BadInputExc(str(e))
-
-    return uuid
