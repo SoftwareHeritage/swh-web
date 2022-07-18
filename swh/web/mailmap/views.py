@@ -6,6 +6,7 @@
 import json
 from typing import Any, Dict
 
+from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import Q
@@ -16,18 +17,18 @@ from django.http.response import (
     HttpResponseNotFound,
     JsonResponse,
 )
-from django.urls import re_path as url
+from django.shortcuts import render
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from swh.web.auth.models import UserMailmap, UserMailmapEvent
 from swh.web.auth.utils import (
     MAILMAP_ADMIN_PERMISSION,
     MAILMAP_PERMISSION,
     any_permission_required,
 )
+from swh.web.mailmap.models import UserMailmap, UserMailmapEvent
 
 
 class UserMailmapSerializer(serializers.ModelSerializer):
@@ -180,25 +181,6 @@ def profile_list_mailmap_datatables(request: HttpRequest) -> HttpResponse:
     return JsonResponse(table_data)
 
 
-urlpatterns = [
-    url(
-        r"^profile/mailmap/list/$",
-        profile_list_mailmap,
-        name="profile-mailmap-list",
-    ),
-    url(
-        r"^profile/mailmap/add/$",
-        profile_add_mailmap,
-        name="profile-mailmap-add",
-    ),
-    url(
-        r"^profile/mailmap/update/$",
-        profile_update_mailmap,
-        name="profile-mailmap-update",
-    ),
-    url(
-        r"^profile/mailmap/list/datatables/$",
-        profile_list_mailmap_datatables,
-        name="profile-mailmap-list-datatables",
-    ),
-]
+@permission_required(MAILMAP_ADMIN_PERMISSION)
+def admin_mailmap(request):
+    return render(request, "admin/mailmap.html")

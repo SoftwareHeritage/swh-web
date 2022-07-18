@@ -33,8 +33,6 @@ from swh.web.common.exc import ForbiddenExc
 from swh.web.common.utils import reverse
 from swh.web.config import get_config
 
-from .mailmap import urlpatterns as mailmap_urlpatterns
-
 
 def oidc_generate_bearer_token(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated or not isinstance(request.user, OIDCUser):
@@ -159,39 +157,35 @@ def _oidc_profile_view(request: HttpRequest) -> HttpResponse:
     return render(request, "auth/profile.html")
 
 
-urlpatterns = (
-    auth_urlpatterns
-    + [
-        url(
-            r"^oidc/generate-bearer-token/$",
-            oidc_generate_bearer_token,
-            name="oidc-generate-bearer-token",
-        ),
-        url(
-            r"^oidc/generate-bearer-token-complete/$",
-            oidc_generate_bearer_token_complete,
-            name="oidc-generate-bearer-token-complete",
-        ),
-        url(
-            r"^oidc/list-bearer-token/$",
-            oidc_list_bearer_tokens,
-            name="oidc-list-bearer-tokens",
-        ),
-        url(
-            r"^oidc/get-bearer-token/$",
-            oidc_get_bearer_token,
-            name="oidc-get-bearer-token",
-        ),
-        url(
-            r"^oidc/revoke-bearer-tokens/$",
-            oidc_revoke_bearer_tokens,
-            name="oidc-revoke-bearer-tokens",
-        ),
-        url(
-            r"^oidc/profile/$",
-            _oidc_profile_view,
-            name="oidc-profile",
-        ),
-    ]
-    + mailmap_urlpatterns
-)
+urlpatterns = auth_urlpatterns + [
+    url(
+        r"^oidc/generate-bearer-token/$",
+        oidc_generate_bearer_token,
+        name="oidc-generate-bearer-token",
+    ),
+    url(
+        r"^oidc/generate-bearer-token-complete/$",
+        oidc_generate_bearer_token_complete,
+        name="oidc-generate-bearer-token-complete",
+    ),
+    url(
+        r"^oidc/list-bearer-token/$",
+        oidc_list_bearer_tokens,
+        name="oidc-list-bearer-tokens",
+    ),
+    url(
+        r"^oidc/get-bearer-token/$",
+        oidc_get_bearer_token,
+        name="oidc-get-bearer-token",
+    ),
+    url(
+        r"^oidc/revoke-bearer-tokens/$",
+        oidc_revoke_bearer_tokens,
+        name="oidc-revoke-bearer-tokens",
+    ),
+    url(
+        r"^oidc/profile/$",
+        _oidc_profile_view,
+        name="oidc-profile",
+    ),
+]

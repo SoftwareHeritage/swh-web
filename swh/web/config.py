@@ -160,6 +160,7 @@ DEFAULT_CONFIG = {
         [
             "swh.web.inbound_email",
             "swh.web.add_forge_now",
+            "swh.web.mailmap",
         ],
     ),
 }
