@@ -6,6 +6,7 @@
 from collections import defaultdict
 from datetime import timedelta
 import functools
+from importlib import import_module, reload
 import json
 import os
 import random
@@ -17,10 +18,12 @@ from typing import Any, Dict, List, Optional
 from _pytest.python import Function
 from hypothesis import HealthCheck, settings
 import pytest
+from pytest_django.fixtures import SettingsWrapper
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test.utils import setup_databases
+from django.urls import clear_url_caches
 from rest_framework.test import APIClient, APIRequestFactory
 
 from swh.model.hashutil import (
@@ -1202,3 +1205,35 @@ def mailmap_user():
     mailmap_user = User.objects.create_user(username="mailmap-user", password="")
     mailmap_user.user_permissions.add(create_django_permission(MAILMAP_PERMISSION))
     return mailmap_user
+
+
+def reload_urlconf():
+    from django.conf import settings
+
+    clear_url_caches()
+    urlconf = settings.ROOT_URLCONF
+    if urlconf in sys.modules:
+        reload(sys.modules[urlconf])
+    else:
+        import_module(urlconf)
+
+
+class SwhSettingsWrapper(SettingsWrapper):
+    def __setattr__(self, attr: str, value) -> None:
+        super().__setattr__(attr, value)
+        reload_urlconf()
+
+    def finalize(self) -> None:
+        super().finalize()
+        reload_urlconf()
+
+
+@pytest.fixture
+def django_settings():
+    """Override pytest-django settings fixture in order to reload URLs
+    when modifying settings in test and after test execution as most of
+    them depend on installed django apps in swh-web.
+    """
+    settings = SwhSettingsWrapper()
+    yield settings
+    settings.finalize()

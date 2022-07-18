@@ -8,6 +8,7 @@
 Django common settings for swh-web.
 """
 
+from importlib.util import find_spec
 import os
 import sys
 from typing import Any, Dict
@@ -42,6 +43,21 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 
 # Application definition
 
+SWH_BASE_DJANGO_APPS = [
+    "swh.web.auth",
+    "swh.web.browse",
+    "swh.web.common",
+    "swh.web.api",
+]
+SWH_EXTRA_DJANGO_APPS = [
+    app
+    for app in swh_web_config["swh_extra_django_apps"]
+    if app not in SWH_BASE_DJANGO_APPS
+]
+# swh.web.api must be the last loaded application due to the way
+# its URLS are registered
+SWH_DJANGO_APPS = SWH_EXTRA_DJANGO_APPS + SWH_BASE_DJANGO_APPS
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,16 +66,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "swh.web.common",
-    "swh.web.inbound_email",
-    "swh.web.api",
-    "swh.web.auth",
-    "swh.web.browse",
-    "swh.web.add_forge_now",
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
-]
+] + SWH_DJANGO_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -84,10 +94,23 @@ if swh_web_config["serve_assets"]:
 
 ROOT_URLCONF = "swh.web.urls"
 
+SWH_APP_TEMPLATES = [os.path.join(PROJECT_DIR, "../templates")]
+# Add templates directory from each SWH Django application
+for app in SWH_DJANGO_APPS:
+    try:
+        app_spec = find_spec(app)
+        assert app_spec is not None, f"Django application {app} not found !"
+        assert app_spec.origin is not None
+        SWH_APP_TEMPLATES.append(
+            os.path.join(os.path.dirname(app_spec.origin), "templates")
+        )
+    except ModuleNotFoundError:
+        assert False, f"Django application {app} not found !"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(PROJECT_DIR, "../templates")],
+        "DIRS": SWH_APP_TEMPLATES,
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

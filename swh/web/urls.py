@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from importlib.util import find_spec
 
 from django_js_reverse.views import urls_js
 
@@ -38,8 +39,6 @@ def _default_view(request):
 urlpatterns = [
     url(r"^admin/", include("swh.web.admin.urls")),
     url(r"^favicon\.ico/$", favicon_view),
-    url(r"^api/", include("swh.web.api.urls")),
-    url(r"^browse/", include("swh.web.browse.urls")),
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
     # keep legacy SWHID resolving URL with trailing slash for backward compatibility
@@ -57,6 +56,16 @@ urlpatterns = [
     url(r"^", include("swh.web.auth.views")),
     url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
 ]
+
+# Register URLs for each SWH Django application
+for app in settings.SWH_DJANGO_APPS:
+    app_urls = app + ".urls"
+    try:
+        app_urls_spec = find_spec(app_urls)
+        if app_urls_spec is not None:
+            urlpatterns.append(url(r"^", include(app_urls)))
+    except ModuleNotFoundError:
+        assert False, f"Django application {app} not found !"
 
 if is_feature_enabled("add_forge_now"):
     urlpatterns += (url(r"^", include("swh.web.add_forge_now.views")),)
