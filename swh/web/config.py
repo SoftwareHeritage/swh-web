@@ -164,6 +164,7 @@ DEFAULT_CONFIG = {
             "auth",
             "browse",
             "add_forge_now",
+            "mailmap",
         ],
     ),
 }

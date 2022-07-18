@@ -249,7 +249,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   </a>
                 </li>
               {% endif %}
-              {% if MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
+              {% if "swh.web.mailmap" in SWH_DJANGO_APPS and MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
                 <li class="nav-item swh-mailmap-admin-item" title="Mailmap administration">
                   <a href="{% url 'admin-mailmap' %}" class="nav-link swh-mailmap-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-email"></i>

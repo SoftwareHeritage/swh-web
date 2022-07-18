@@ -13,7 +13,7 @@ from django.db.models import F
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
-from swh.web.auth.models import UserMailmap
+from swh.web.mailmap.models import UserMailmap
 
 DISABLE_MAILMAPS_QUERY = """\
 UPDATE person
