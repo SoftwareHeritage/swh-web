@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -155,6 +155,17 @@ DEFAULT_CONFIG = {
     "give": ("dict", {"public_key": "", "token": ""}),
     "features": ("dict", {"add_forge_now": True}),
     "add_forge_now": ("dict", {"email_address": "add-forge-now@example.com"}),
+    "swh_django_apps": (
+        "list",
+        [
+            "common",
+            "inbound_email",
+            "api",
+            "auth",
+            "browse",
+            "add_forge_now",
+        ],
+    ),
 }
 
 swhweb_config: Dict[str, Any] = {}

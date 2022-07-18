@@ -7,7 +7,11 @@ from django.urls import get_resolver
 
 
 def test_swh_web_urls_have_trailing_slash():
-    urls = set(value[1] for value in get_resolver().reverse_dict.values())
+    urls = set(
+        value[1]
+        for key, value in get_resolver().reverse_dict.items()
+        if key != "browse-swhid"  # (see T3234)
+    )
     for url in urls:
         if url != "$":
             assert url.endswith("/$")

@@ -21,6 +21,7 @@ from prometheus_client.registry import CollectorRegistry
 import requests
 from requests.auth import HTTPBasicAuth
 
+from django.conf import settings
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.http import HttpRequest, QueryDict
@@ -39,6 +40,7 @@ from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
+
 
 swh_object_icons = {
     "alias": "mdi mdi-star",
@@ -320,6 +322,7 @@ def context_processor(request):
         "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
         "lang": "en",
         "sidebar_state": request.COOKIES.get("sidebar-state", "expanded"),
+        "SWH_DJANGO_APPS": settings.SWH_DJANGO_APPS,
     }
 
 

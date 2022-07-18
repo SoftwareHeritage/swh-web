@@ -42,6 +42,8 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 
 # Application definition
 
+SWH_DJANGO_APPS = [f"swh.web.{app}" for app in swh_web_config["swh_django_apps"]]
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,16 +52,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "swh.web.common",
-    "swh.web.inbound_email",
-    "swh.web.api",
-    "swh.web.auth",
-    "swh.web.browse",
-    "swh.web.add_forge_now",
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
-]
+] + SWH_DJANGO_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -87,7 +83,11 @@ ROOT_URLCONF = "swh.web.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(PROJECT_DIR, "../templates")],
+        "DIRS": [os.path.join(PROJECT_DIR, "../templates")]
+        + [
+            os.path.join(PROJECT_DIR, f"../{app}/templates")
+            for app in swh_web_config["swh_django_apps"]
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
