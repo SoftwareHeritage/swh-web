@@ -1,7 +1,8 @@
-# Copyright (C) 2017-2020  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
 
 from swh.web.api.apiurls import APIUrls
 import swh.web.api.views.add_forge_now  # noqa
@@ -11,7 +12,6 @@ import swh.web.api.views.graph  # noqa
 import swh.web.api.views.identifiers  # noqa
 import swh.web.api.views.metadata  # noqa
 import swh.web.api.views.origin  # noqa
-import swh.web.api.views.origin_save  # noqa
 import swh.web.api.views.ping  # noqa
 import swh.web.api.views.raw  # noqa
 import swh.web.api.views.release  # noqa

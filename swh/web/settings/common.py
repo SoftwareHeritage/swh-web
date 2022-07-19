@@ -58,6 +58,7 @@ SWH_EXTRA_DJANGO_APPS = [
 # its URLS are registered
 SWH_DJANGO_APPS = SWH_EXTRA_DJANGO_APPS + SWH_BASE_DJANGO_APPS
 
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

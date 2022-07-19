@@ -63,7 +63,6 @@ def hiring_banner(request):
 urlpatterns = [
     url(r"^", include("swh.web.misc.coverage")),
     url(r"^jslicenses/$", _jslicenses, name="jslicenses"),
-    url(r"^", include("swh.web.misc.origin_save")),
     url(r"^stat_counters/$", _stat_counters, name="stat-counters"),
     url(r"^", include("swh.web.misc.badges")),
     url(r"^metrics/prometheus/$", prometheus_metrics, name="metrics-prometheus"),

@@ -46,10 +46,10 @@ from swh.web.auth.utils import (
     OIDC_SWH_WEB_CLIENT_ID,
 )
 from swh.web.common import converters
-from swh.web.common.origin_save import get_scheduler_load_task_types
 from swh.web.common.typing import OriginVisitInfo
 from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.config import get_config
+from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
 from swh.web.tests.data import (
     get_tests_data,
     override_storages,
