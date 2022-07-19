@@ -281,6 +281,9 @@ LOGGING = {
         "swh.core.statsd": {
             "level": "INFO",
         },
+        "urllib3": {
+            "level": "INFO",
+        },
     },
 }
 
