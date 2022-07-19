@@ -7,8 +7,8 @@ from prometheus_client.exposition import CONTENT_TYPE_LATEST, generate_latest
 
 from django.http import HttpResponse
 
-from swh.web.common.origin_save import compute_save_requests_metrics
 from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY
+from swh.web.save_code_now.origin_save import compute_save_requests_metrics
 
 
 def prometheus_metrics(request):

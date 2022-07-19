@@ -201,12 +201,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Downloads</p>
               </a>
             </li>
-            <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
-              <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
-                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
-                <p>Save code now</p>
-              </a>
-            </li>
+            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+              <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
+                <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
+                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
+                  <p>Save code now</p>
+                </a>
+              </li>
+            {% endif %}
             {% if FEATURES.add_forge_now %}
             <li class="nav-item swh-add-forge-now-item" title="Request adding a new forge listing">
               <a href="{% url 'forge-add-create' %}" class="nav-link swh-add-forge-now-link">
@@ -223,7 +225,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </li>
             {% if user.is_authenticated %}
               <li class="nav-header">Administration</li>
-              {% if user.is_staff %}
+              {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
                 <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
                   <a href="{% url 'admin-origin-save-requests' %}" class="nav-link swh-origin-save-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-camera"></i>

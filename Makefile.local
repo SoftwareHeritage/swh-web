@@ -27,10 +27,12 @@ build-webpack-prod: yarn-install
 
 .PHONY: run-migrations-dev
 run-migrations-dev:
+	python3 swh/web/manage.py rename_app --settings=$(SETTINGS_DEV) swh_web_common swh_web_save_code_now
 	python3 swh/web/manage.py migrate --settings=$(SETTINGS_DEV) -v0
 
 .PHONY: run-migrations-prod
 run-migrations-prod:
+	django-admin rename_app --settings=$(SETTINGS_PROD) swh_web_common swh_web_save_code_now
 	django-admin migrate --settings=$(SETTINGS_PROD) -v0
 
 .PHONY: run-migrations-test

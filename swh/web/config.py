@@ -158,13 +158,13 @@ DEFAULT_CONFIG = {
     "swh_django_apps": (
         "list",
         [
-            "common",
             "inbound_email",
             "api",
             "auth",
             "browse",
             "add_forge_now",
             "mailmap",
+            "save_code_now",
         ],
     ),
 }

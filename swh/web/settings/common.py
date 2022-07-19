@@ -44,6 +44,10 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 
 SWH_DJANGO_APPS = [f"swh.web.{app}" for app in swh_web_config["swh_django_apps"]]
 
+if "swh.web.api" in SWH_DJANGO_APPS:
+    # Ensure Web API application will be the last one loaded for URLs definititon
+    SWH_DJANGO_APPS.append(SWH_DJANGO_APPS.pop(SWH_DJANGO_APPS.index("swh.web.api")))
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -55,6 +59,7 @@ INSTALLED_APPS = [
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
+    "swh.web.utils",
 ] + SWH_DJANGO_APPS
 
 MIDDLEWARE = [
