@@ -1,12 +1,12 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from django.conf.urls import url
 from django.shortcuts import render
+from django.urls import re_path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes

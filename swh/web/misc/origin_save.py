@@ -1,13 +1,13 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.conf.urls import url
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import re_path as url
 
 from swh.web.auth.utils import SWH_AMBASSADOR_PERMISSION, privileged_user
 from swh.web.common.models import SaveOriginRequest

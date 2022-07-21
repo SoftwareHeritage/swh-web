@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,7 @@
 import random
 
 from swh.model.hashutil import DEFAULT_ALGORITHMS
+from swh.model.model import Origin
 from swh.web.api import utils
 from swh.web.common.origin_visits import get_origin_visits
 from swh.web.common.utils import resolve_branch_alias, reverse
@@ -533,6 +534,11 @@ def test_enrich_origin(api_request_factory, origin):
     origin_data["origin_visits_url"] = reverse(
         "api-1-origin-visits", url_args={"origin_url": origin["url"]}, request=request
     )
+    origin_data["metadata_authorities_url"] = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": Origin(url=origin["url"]).swhid()},
+        request=request,
+    )
 
     assert actual_origin == origin_data
 
@@ -544,6 +550,11 @@ def test_enrich_origin_search_result(api_request_factory, origin):
     origin_visits_url = reverse(
         "api-1-origin-visits", url_args={"origin_url": origin["url"]}, request=request
     )
+    metadata_authorities_url = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": Origin(url=origin["url"]).swhid()},
+        request=request,
+    )
 
     origin_search_result_data = (
         [{"url": origin["url"]}],
@@ -551,7 +562,13 @@ def test_enrich_origin_search_result(api_request_factory, origin):
     )
 
     enriched_origin_search_result = (
-        [{"url": origin["url"], "origin_visits_url": origin_visits_url}],
+        [
+            {
+                "url": origin["url"],
+                "origin_visits_url": origin_visits_url,
+                "metadata_authorities_url": metadata_authorities_url,
+            }
+        ],
         None,
     )
 

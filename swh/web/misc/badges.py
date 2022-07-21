@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021  The Software Heritage developers
+# Copyright (C) 2019-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,9 +8,9 @@ from typing import Optional, cast
 
 from pybadges import badge
 
-from django.conf.urls import url
 from django.contrib.staticfiles import finders
 from django.http import HttpRequest, HttpResponse
+from django.urls import re_path as url
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex

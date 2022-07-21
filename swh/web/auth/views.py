@@ -8,7 +8,6 @@ from typing import Any, Dict, Union, cast
 
 from cryptography.fernet import InvalidToken
 
-from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpRequest
@@ -20,6 +19,7 @@ from django.http.response import (
     JsonResponse,
 )
 from django.shortcuts import render
+from django.urls import re_path as url
 from django.views.decorators.http import require_http_methods
 
 from swh.auth.django.models import OIDCUser

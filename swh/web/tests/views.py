@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,9 +19,9 @@ from swh.model.model import Content
 from swh.web.common.highlightjs import get_hljs_language_from_filename
 from swh.web.tests.data import get_tests_data
 
-_content_code_data_exts = {}  # type: Dict[str, Dict[str, str]]
-_content_code_data_filenames = {}  # type: Dict[str, Dict[str, str]]
-_content_other_data_exts = {}  # type: Dict[str, Dict[str, str]]
+_content_code_data_exts: Dict[str, Dict[str, str]] = {}
+_content_code_data_filenames: Dict[str, Dict[str, str]] = {}
+_content_other_data_exts: Dict[str, Dict[str, str]] = {}
 
 
 def _init_content_tests_data(data_path, data_dict, ext_key):

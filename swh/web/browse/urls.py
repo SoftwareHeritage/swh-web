@@ -3,9 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.conf.urls import url
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import re_path as url
 
 from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swhid_browse

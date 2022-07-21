@@ -121,7 +121,7 @@ class BrowserClient extends BaseClient {
 
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('Sending outcomes:', outcomes);
 
-    var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options.tunnel);
+    var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options);
     var envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
 
     try {
