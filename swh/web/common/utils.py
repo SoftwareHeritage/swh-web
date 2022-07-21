@@ -318,7 +318,6 @@ def context_processor(request):
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
-        "FEATURES": get_config()["features"],
         "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
         "lang": "en",
         "sidebar_state": request.COOKIES.get("sidebar-state", "expanded"),

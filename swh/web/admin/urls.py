@@ -9,10 +9,6 @@ from django.urls import re_path as url
 
 from swh.web.admin.adminurls import AdminUrls
 import swh.web.admin.deposit  # noqa
-from swh.web.config import is_feature_enabled
-
-if is_feature_enabled("add_forge_now"):
-    import swh.web.admin.add_forge_now  # noqa
 
 
 def _admin_default_view(request):

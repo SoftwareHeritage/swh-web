@@ -23,7 +23,7 @@ from swh.web.common.exc import (
     swh_handle500,
 )
 from swh.web.common.utils import origin_visit_types
-from swh.web.config import get_config, is_feature_enabled
+from swh.web.config import get_config
 
 swh_web_config = get_config()
 
@@ -66,9 +66,6 @@ for app in settings.SWH_DJANGO_APPS:
             urlpatterns.append(url(r"^", include(app_urls)))
     except ModuleNotFoundError:
         assert False, f"Django application {app} not found !"
-
-if is_feature_enabled("add_forge_now"):
-    urlpatterns += (url(r"^", include("swh.web.add_forge_now.views")),)
 
 
 # allow to serve assets through django staticfiles

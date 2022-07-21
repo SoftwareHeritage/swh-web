@@ -316,7 +316,7 @@ def test_add_forge_request_update_status_concurrent(
 ):
 
     _block_while_testing = mocker.patch(
-        "swh.web.api.views.add_forge_now._block_while_testing"
+        "swh.web.add_forge_now.api_views._block_while_testing"
     )
     _block_while_testing.side_effect = lambda: time.sleep(1)
 
