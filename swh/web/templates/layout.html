@@ -209,7 +209,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </a>
               </li>
             {% endif %}
-            {% if FEATURES.add_forge_now %}
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
             <li class="nav-item swh-add-forge-now-item" title="Request adding a new forge listing">
               <a href="{% url 'forge-add-create' %}" class="nav-link swh-add-forge-now-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
@@ -233,7 +233,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   </a>
                 </li>
               {% endif %}
-              {% if FEATURES.add_forge_now %}
+              {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
                 {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
                 <li class="nav-item swh-add-forge-now-moderation-item" title="Add forge now moderation">
                   <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-add-forge-now-moderation-link">

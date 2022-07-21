@@ -5,7 +5,6 @@
 
 
 from swh.web.api.apiurls import APIUrls
-import swh.web.api.views.add_forge_now  # noqa
 import swh.web.api.views.content  # noqa
 import swh.web.api.views.directory  # noqa
 import swh.web.api.views.graph  # noqa
