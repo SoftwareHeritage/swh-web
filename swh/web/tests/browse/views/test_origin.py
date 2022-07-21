@@ -51,7 +51,10 @@ def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits)
     _check_origin_link(resp, origin_url)
 
 
-def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin):
+@pytest.mark.django_db
+def test_origin_root_directory_view(
+    client, staff_user, archive_data, swh_scheduler, origin
+):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
     visit = origin_visits[-1]
@@ -65,6 +68,7 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -72,17 +76,20 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
     )
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
@@ -90,12 +97,14 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         timestamp=visit["date"],
@@ -103,12 +112,14 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         snapshot_id=visit["snapshot"],
@@ -116,6 +127,7 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -123,17 +135,20 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
     )
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         visit_id=visit["visit"],
@@ -141,12 +156,14 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
         snapshot_sizes,
         branches,
         releases,
+        root_dir_sha1,
         root_dir_sha1,
         dir_content,
         timestamp=visit["date"],
@@ -154,6 +171,7 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -161,12 +179,16 @@ def test_origin_root_directory_view(client, archive_data, swh_scheduler, origin)
         branches,
         releases,
         root_dir_sha1,
+        root_dir_sha1,
         dir_content,
         snapshot_id=visit["snapshot"],
     )
 
 
-def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
+@pytest.mark.django_db
+def test_origin_sub_directory_view(
+    client, staff_user, archive_data, swh_scheduler, origin
+):
     origin_visits = archive_data.origin_visit_get(origin["url"])
 
     visit = origin_visits[-1]
@@ -189,6 +211,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -196,12 +219,14 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
     )
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -209,6 +234,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         visit_id=visit["visit"],
@@ -216,6 +242,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -223,6 +250,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         timestamp=visit["date"],
@@ -230,6 +258,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -237,6 +266,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         snapshot_id=visit["snapshot"],
@@ -244,6 +274,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -251,12 +282,14 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
     )
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -264,6 +297,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         visit_id=visit["visit"],
@@ -271,6 +305,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -278,6 +313,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         timestamp=visit["date"],
@@ -285,6 +321,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
 
     _origin_directory_view_test_helper(
         client,
+        staff_user,
         archive_data,
         origin,
         visit,
@@ -292,6 +329,7 @@ def test_origin_sub_directory_view(client, archive_data, swh_scheduler, origin):
         branches,
         releases,
         root_dir_sha1,
+        subdir["target"],
         subdir_content,
         path=subdir_path,
         snapshot_id=visit["snapshot"],
@@ -774,6 +812,7 @@ def test_origin_content_view_legacy_redirects(client, new_origin):
 
 def _origin_directory_view_test_helper(
     client,
+    staff_user,
     archive_data,
     origin_info,
     origin_visit,
@@ -781,6 +820,7 @@ def _origin_directory_view_test_helper(
     origin_branches,
     origin_releases,
     root_directory_sha1,
+    target_directory_sha1,
     directory_entries,
     visit_id=None,
     timestamp=None,
@@ -915,6 +955,43 @@ def _origin_directory_view_test_helper(
     _check_origin_link(resp, origin_info["url"])
 
     assert_not_contains(resp, "swh-metadata-popover")
+
+    # Finally, check "Extrinsic metadata" dropdown:
+
+    origin_metadata_api_url = reverse(
+        "api-1-raw-extrinsic-metadata-origin-authorities",
+        url_args={"origin_url": origin_info["url"]},
+    )
+    directory_metadata_api_url = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": f"swh:1:dir:{target_directory_sha1}"},
+    )
+    extrinsic_metadata_snippets = [
+        "Extrinsic metadata",
+        f'<a href="{origin_metadata_api_url}" class="dropdown-item" role="button">',
+        f'<a href="{directory_metadata_api_url}" class="dropdown-item" role="button">',
+    ]
+
+    client.logout()
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
+    # None of the above should be present for logged-out users
+    for snippet in extrinsic_metadata_snippets:
+        assert_not_contains(resp, snippet)
+
+    client.force_login(staff_user)
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse/directory.html"
+    )
+
+    # But they should for staff users
+    for snippet in extrinsic_metadata_snippets:
+        assert_contains(resp, snippet)
+
+    client.logout()
 
 
 def _check_origin_link(resp, origin_url):

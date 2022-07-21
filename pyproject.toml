@@ -1,5 +1,6 @@
 [tool.black]
 target-version = ['py37']
+exclude = 'swh/web/tests/resources/contents'
 
 [tool.isort]
 multi_line_output = 3

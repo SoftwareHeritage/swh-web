@@ -7,17 +7,11 @@
 from django_js_reverse.views import urls_js
 
 from django.conf import settings
-from django.conf.urls import (
-    handler400,
-    handler403,
-    handler404,
-    handler500,
-    include,
-    url,
-)
+from django.conf.urls import handler400, handler403, handler404, handler500, include
 from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
+from django.urls import re_path as url
 from django.views.generic.base import RedirectView
 
 from swh.web.browse.identifiers import swhid_browse

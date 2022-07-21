@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,8 +12,16 @@ import os
 import sys
 from typing import Any, Dict
 
+from django.utils import encoding
+
 from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
+
+# Fix django-js-reverse 0.9.1 compatibility with django 4.x
+# TODO: Remove that hack once a new django-js-reverse release
+# is available on PyPI
+if not hasattr(encoding, "force_text"):
+    setattr(encoding, "force_text", encoding.force_str)
 
 swh_web_config = get_config()
 
@@ -273,6 +281,9 @@ LOGGING = {
         "swh.core.statsd": {
             "level": "INFO",
         },
+        "urllib3": {
+            "level": "INFO",
+        },
     },
 }
 
@@ -310,3 +321,5 @@ SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]
 SWH_AUTH_REALM_NAME = swh_web_config["keycloak"]["realm_name"]
 SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID
 SWH_AUTH_SESSION_EXPIRED_REDIRECT_VIEW = "logout"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

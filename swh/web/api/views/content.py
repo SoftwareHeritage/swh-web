@@ -4,9 +4,10 @@
 # See top-level LICENSE file for more information
 
 import functools
+import io
 from typing import Optional
 
-from django.http import HttpResponse
+from django.http import FileResponse
 from rest_framework.request import Request
 
 from swh.web.api import utils
@@ -216,10 +217,6 @@ def api_content_raw(request: Request, q: str):
 
             :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/raw/`
     """
-
-    def generate(content):
-        yield content["data"]
-
     content_raw = archive.lookup_content_raw(q)
     if not content_raw:
         raise NotFoundExc("Content %s is not found." % q)
@@ -228,11 +225,12 @@ def api_content_raw(request: Request, q: str):
     if not filename:
         filename = "content_%s_raw" % q.replace(":", "_")
 
-    response = HttpResponse(
-        generate(content_raw), content_type="application/octet-stream"
+    return FileResponse(
+        io.BytesIO(content_raw["data"]),  # not copied, as this is never modified
+        filename=filename,
+        content_type="application/octet-stream",
+        as_attachment=True,
     )
-    response["Content-disposition"] = "attachment; filename=%s" % filename
-    return response
 
 
 @api_route(r"/content/symbol/(?P<q>.+)/", "api-1-content-symbol")

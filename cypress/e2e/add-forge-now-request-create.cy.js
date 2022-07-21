@@ -142,6 +142,8 @@ describe('Test add-forge-request creation', function() {
       .should('not.have.class', 'active');
     cy.url()
       .should('include', `${this.Urls.forge_add_list()}`);
+    cy.get('.swh-add-forge-now-item')
+      .should('have.class', 'active');
 
     cy.get('#swh-add-forge-requests-help-tab').click();
     cy.get('#swh-add-forge-tab')
@@ -152,6 +154,8 @@ describe('Test add-forge-request creation', function() {
       .should('have.class', 'active');
     cy.url()
       .should('include', `${this.Urls.forge_add_help()}`);
+    cy.get('.swh-add-forge-now-item')
+      .should('have.class', 'active');
 
     cy.get('#swh-add-forge-tab').click();
     cy.get('#swh-add-forge-tab')
@@ -162,6 +166,8 @@ describe('Test add-forge-request creation', function() {
       .should('not.have.class', 'active');
     cy.url()
       .should('include', `${this.Urls.forge_add_create()}`);
+    cy.get('.swh-add-forge-now-item')
+      .should('have.class', 'active');
   });
 
   it('should show create form elements to authenticated user', function() {

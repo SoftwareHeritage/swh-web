@@ -65,7 +65,7 @@ class BaseClient {
     this._options = options;
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
-      var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, options.tunnel);
+      var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, options);
       this._transport = options.transport({
         recordDroppedEvent: this.recordDroppedEvent.bind(this),
         ...options.transportOptions,

@@ -7,10 +7,10 @@ from collections import Counter, defaultdict
 from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
 
-from django.conf.urls import url
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
+from django.urls import re_path as url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
