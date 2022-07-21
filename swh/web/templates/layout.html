@@ -208,8 +208,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               </a>
             </li>
             {% if FEATURES.add_forge_now %}
-            <li class="nav-item swh-origin-save-item" title="Request adding a new forge listing">
-              <a href="{% url 'forge-add-create' %}" class="nav-link swh-forge-add-link">
+            <li class="nav-item swh-add-forge-now-item" title="Request adding a new forge listing">
+              <a href="{% url 'forge-add-create' %}" class="nav-link swh-add-forge-now-link">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
                 <p>Add forge now</p>
               </a>
@@ -233,8 +233,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               {% endif %}
               {% if FEATURES.add_forge_now %}
                 {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
-                <li class="nav-item swh-forge-add-moderation-item" title="Add forge now moderation">
-                  <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-forge-add-moderation-link">
+                <li class="nav-item swh-add-forge-now-moderation-item" title="Add forge now moderation">
+                  <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-add-forge-now-moderation-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
                     <p>Add forge now</p>
                   </a>

@@ -96,7 +96,9 @@ describe('Test mailmap administration', function() {
     cy.visit(this.url);
 
     cy.get('.swh-mailmap-admin-item')
-      .should('exist');
+      .should('exist')
+      .should('have.class', 'active');
+
   });
 
   it('should not create a new mailmap when input data are empty', function() {
