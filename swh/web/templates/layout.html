@@ -83,7 +83,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
   </head>
 
-  <body class="hold-transition layout-fixed sidebar-mini">
+  <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %} sidebar-collapse {% endif %}">
     <a id="top"></a>
     <div class="wrapper">
       <div class="swh-top-bar">
@@ -169,7 +169,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </nav>
     </div>
 
-    <aside class="swh-sidebar main-sidebar sidebar-no-expand sidebar-light-primary elevation-4">
+    <aside class="swh-sidebar main-sidebar sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
         <img class="brand-image" src="{% static 'img/swh-logo.png' %}">
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">

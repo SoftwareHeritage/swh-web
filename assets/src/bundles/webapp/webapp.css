@@ -487,6 +487,10 @@ ul.nav-sidebar a {
     visibility: hidden;
 }
 
+.sidebar-collapse .swh-words-logo-swh {
+    visibility: visible;
+}
+
 hr.swh-faded-line {
     border: 0;
     height: 1px;

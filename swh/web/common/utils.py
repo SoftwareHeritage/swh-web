@@ -319,6 +319,7 @@ def context_processor(request):
         "FEATURES": get_config()["features"],
         "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
         "lang": "en",
+        "sidebar_state": request.COOKIES.get("sidebar-state", "expanded"),
     }
 
 

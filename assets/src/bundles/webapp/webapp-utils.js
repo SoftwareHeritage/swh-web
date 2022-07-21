@@ -8,36 +8,7 @@
 import objectFitImages from 'object-fit-images';
 import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
-
-let collapseSidebar = false;
-const previousSidebarState = localStorage.getItem('remember.lte.pushmenu');
-if (previousSidebarState !== undefined) {
-  collapseSidebar = previousSidebarState === 'sidebar-collapse';
-}
-
-$(document).on('DOMContentLoaded', () => {
-  // set state to collapsed on smaller devices
-  if ($(window).width() < BREAKPOINT_MD) {
-    collapseSidebar = true;
-  }
-
-  // restore previous sidebar state (collapsed/expanded)
-  if (collapseSidebar) {
-    // hack to avoid animated transition for collapsing sidebar
-    // when loading a page
-    const sidebarTransition = $('.main-sidebar, .main-sidebar:before').css('transition');
-    const sidebarEltsTransition = $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition');
-    $('.main-sidebar, .main-sidebar:before').css('transition', 'none');
-    $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition', 'none');
-    $('body').addClass('sidebar-collapse');
-    $('.swh-words-logo-swh').css('visibility', 'visible');
-    // restore transitions for user navigation
-    setTimeout(() => {
-      $('.main-sidebar, .main-sidebar:before').css('transition', sidebarTransition);
-      $('.sidebar .nav-link p, .main-sidebar .brand-text, .sidebar .user-panel .info').css('transition', sidebarEltsTransition);
-    });
-  }
-});
+import Cookies from 'js-cookie';
 
 $(document).on('collapsed.lte.pushmenu', event => {
   if ($('body').width() >= BREAKPOINT_MD) {
@@ -73,11 +44,13 @@ $(document).ready(() => {
       mainSideBar.removeClass('swh-sidebar-expanded');
       mainSideBar.addClass('swh-sidebar-collapsed');
       $('.swh-words-logo-swh').css('visibility', 'visible');
+      Cookies.set('sidebar-state', 'collapsed');
     } else if (!body.hasClass('sidebar-collapse') &&
                !mainSideBar.hasClass('swh-sidebar-expanded')) {
       mainSideBar.removeClass('swh-sidebar-collapsed');
       mainSideBar.addClass('swh-sidebar-expanded');
       $('.swh-words-logo-swh').css('visibility', 'hidden');
+      Cookies.set('sidebar-state', 'expanded');
     }
     // ensure correct sidebar state when loading a page
     if (body.hasClass('hold-transition')) {
