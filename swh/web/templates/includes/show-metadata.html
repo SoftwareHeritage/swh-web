@@ -36,6 +36,12 @@ See top-level LICENSE file for more information
         Extrinsic metadata
       </button>
       <div class="dropdown-menu swh-extrinsic-metadata-menu">
+        {% if snapshot_context.origin_info %}
+          <a href="{% url 'api-1-raw-extrinsic-metadata-origin-authorities' snapshot_context.origin_info.url %}" class="dropdown-item" role="button">
+            <i class="{{ swh_object_icons.origin }} mdi-fw" aria-hidden="true"></i>
+            Origin
+          </a>
+        {% endif %}
         {% for swhid_info in swhids_info %}
           <a href="{% url 'api-1-raw-extrinsic-metadata-swhid-authorities' swhid_info.swhid  %}" class="dropdown-item" role="button">
             <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw" aria-hidden="true"></i>

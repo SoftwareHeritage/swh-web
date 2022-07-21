@@ -2,6 +2,7 @@
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
 from base64 import b64encode
 import datetime
 import math
@@ -10,8 +11,8 @@ from urllib.parse import quote
 
 import pytest
 
-from django.conf.urls import url
 from django.test.utils import override_settings
+from django.urls import re_path as url
 from django.urls.exceptions import NoReverseMatch
 
 from swh.web.common import utils

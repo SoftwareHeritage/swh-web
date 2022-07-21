@@ -1,0 +1,54 @@
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<!DOCTYPE html>
+
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+<html class="swh-banner" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Software Heritage fundraising banner</title>
+    {% render_bundle 'vendors' %}
+    <script>
+/*
+@licstart  The following is the entire license notice for the JavaScript code in this page.
+
+Copyright (C) 2022  The Software Heritage developers
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+@licend  The above is the entire license notice for the JavaScript code in this page.
+*/
+    </script>
+    <style>
+      .swh-banner .row {
+          height: 30px;
+          background-color: #fecd1b;
+          color: #e20026;
+          font-size: larger;
+      }
+    </style>
+  </head>
+  <body>
+    {% include "./hiring-banner.html" %}
+  </body>
+</html>

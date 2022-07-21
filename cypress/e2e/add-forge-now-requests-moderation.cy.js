@@ -95,6 +95,9 @@ describe('Test "Add Forge Now" moderation listing', function() {
     cy.addForgeModeratorLogin();
     cy.visit(addForgeModerationUrl);
 
+    cy.get('.swh-add-forge-now-moderation-item')
+      .should('have.class', 'active');
+
     cy.wait('@listRequests').then((xhr) => {
       cy.log('response:', xhr.response);
       cy.log(xhr.response.body);

@@ -1,13 +1,13 @@
-# Copyright (C) 2017-2019  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from typing import Dict, List
 
-from django.conf.urls import url
 from django.shortcuts import redirect
-import django.urls
+from django.urls import URLPattern
+from django.urls import re_path as url
 
 
 class UrlsIndex(object):
@@ -19,7 +19,7 @@ class UrlsIndex(object):
     all declared patterns will be grouped under the default one.
     """
 
-    _urlpatterns = {}  # type: Dict[str, List[django.urls.URLPattern]]
+    _urlpatterns: Dict[str, List[URLPattern]] = {}
     scope = "default"
 
     @classmethod

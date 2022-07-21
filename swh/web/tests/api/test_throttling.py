@@ -1,12 +1,12 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import pytest
 
-from django.conf.urls import url
 from django.test.utils import override_settings
+from django.urls import re_path as url
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView

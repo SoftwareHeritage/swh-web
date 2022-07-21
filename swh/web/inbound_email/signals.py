@@ -7,7 +7,7 @@ from enum import Enum, auto
 
 import django.dispatch
 
-email_received = django.dispatch.Signal(providing_args=["message"])
+email_received = django.dispatch.Signal()
 """This signal is sent by the `process_inbound_email` management command.
 
 Arguments:

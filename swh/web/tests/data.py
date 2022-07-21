@@ -335,9 +335,7 @@ def _init_tests_data():
                         mappings=[],
                     )
                     idx_storage.origin_intrinsic_metadata_add([origin_metadata])
-                    search.origin_update(
-                        [{"url": origin["url"], "intrinsic_metadata": metadata}]
-                    )
+                    search.origin_update([{"url": origin["url"], "jsonld": metadata}])
 
                     ORIGIN_MASTER_REVISION[origin["url"]] = hash_to_hex(
                         branch_data.target

@@ -108,15 +108,3 @@ def test_parse_hash_with_algorithms(mocker):
     assert sha == b"123"
 
     mock_hash.assert_called_once_with("sha256:123")
-
-
-def test_parse_uuid4():
-    actual_uuid = query.parse_uuid4("7c33636b-8f11-4bda-89d9-ba8b76a42cec")
-
-    assert actual_uuid == "7c33636b-8f11-4bda-89d9-ba8b76a42cec"
-
-
-def test_parse_uuid4_ko():
-    with pytest.raises(BadInputExc) as e:
-        query.parse_uuid4("7c33636b-8f11-4bda-89d9-ba8b76a42")
-    assert e.match("badly formed hexadecimal UUID string")

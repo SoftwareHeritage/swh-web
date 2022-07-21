@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ from django.core import exceptions
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import APIException
 
 from swh.web.config import get_config
 
@@ -131,7 +131,7 @@ def swh_handle500(request):
 
 
 def sentry_capture_exception(exc):
-    if not isinstance(
+    if isinstance(
         exc,
         (
             exceptions.ObjectDoesNotExist,
@@ -139,9 +139,15 @@ def sentry_capture_exception(exc):
             exceptions.PermissionDenied,
             BadInputExc,
             NotFoundExc,
-            AuthenticationFailed,
         ),
     ):
+        # ignore noisy exceptions we cannot do anything about
+        pass
+    elif isinstance(exc, APIException) and 400 <= exc.status_code < 500:
+        # ignore client errors (4xx status codes)
+        pass
+    else:
+        # log everything else
         sentry_sdk.capture_exception(exc)
 
 
