@@ -159,7 +159,7 @@ def make_api_response(
                 doc_data["endpoint_path"][-1]["path"] += "/doc/"
 
         response = render(
-            request, "api/apidoc.html", doc_data, status=doc_data["status_code"]
+            request, "apidoc.html", doc_data, status=doc_data["status_code"]
         )
 
     # otherwise simply return the raw data and let DRF picks

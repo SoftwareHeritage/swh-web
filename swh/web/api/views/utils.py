@@ -74,7 +74,7 @@ def api_lookup(
 
 @api_view(["GET", "HEAD"])
 def api_home(request: Request):
-    return Response({}, template_name="api/api.html")
+    return Response({}, template_name="api.html")
 
 
 APIUrls.add_url_pattern(r"^api/$", api_home, view_name="api-1-homepage")
@@ -88,4 +88,4 @@ def api_endpoints(request):
         doc["doc_intro"] = doc["docstring"].split("\n\n")[0]
     # Return a list of routes with consistent ordering
     env = {"doc_routes": sorted(routes.items())}
-    return Response(env, template_name="api/endpoints.html")
+    return Response(env, template_name="api-endpoints.html")
