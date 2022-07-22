@@ -11,25 +11,23 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import re_path as url
 
-from swh.web.admin.adminurls import admin_route
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.config import get_config
 
 
-def _can_list_deposits(user):
+def can_list_deposits(user):
     return user.is_staff or user.has_perm(ADMIN_LIST_DEPOSIT_PERMISSION)
 
 
-@admin_route(r"deposit/", view_name="admin-deposit")
-@user_passes_test(_can_list_deposits, login_url=settings.LOGIN_URL)
-def _admin_origin_save(request):
-    return render(request, "admin/deposit.html")
+@user_passes_test(can_list_deposits, login_url=settings.LOGIN_URL)
+def admin_deposit(request):
+    return render(request, "deposit-admin.html")
 
 
-@admin_route(r"deposit/list/", view_name="admin-deposit-list")
-@user_passes_test(_can_list_deposits, login_url=settings.LOGIN_URL)
-def _admin_deposit_list(request):
+@user_passes_test(can_list_deposits, login_url=settings.LOGIN_URL)
+def admin_deposit_list(request):
     config = get_config()["deposit"]
     private_api_url = config["private_api_url"].rstrip("/") + "/"
     deposits_list_url = private_api_url + "deposits/datatables/"
@@ -42,3 +40,9 @@ def _admin_deposit_list(request):
     ).json()
 
     return JsonResponse(deposits)
+
+
+urlpatterns = [
+    url(r"^admin/deposit/$", admin_deposit, name="admin-deposit"),
+    url(r"^admin/deposit/list/$", admin_deposit_list, name="admin-deposit-list"),
+]

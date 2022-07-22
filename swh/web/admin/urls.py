@@ -8,7 +8,6 @@ from django.shortcuts import redirect
 from django.urls import re_path as url
 
 from swh.web.admin.adminurls import AdminUrls
-import swh.web.admin.deposit  # noqa
 
 
 def _admin_default_view(request):
