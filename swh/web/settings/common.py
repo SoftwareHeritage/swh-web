@@ -322,8 +322,8 @@ WEBPACK_LOADER = {
     }
 }
 
-LOGIN_URL = "/admin/login/"
-LOGIN_REDIRECT_URL = "admin"
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "swh-web-homepage"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 

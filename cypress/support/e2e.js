@@ -19,7 +19,7 @@ Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
 });
 
 function loginUser(username, password) {
-  const url = '/admin/login/';
+  const url = '/login/';
   return cy.request({
     url: url,
     method: 'GET'
