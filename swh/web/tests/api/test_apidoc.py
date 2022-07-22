@@ -97,9 +97,7 @@ def apidoc_route(request, myarg, myotherarg, akw=0):
 
 def test_apidoc_route_doc(client):
     url = reverse("api-1-some-doc-route-doc")
-    check_html_get_response(
-        client, url, status_code=200, template_used="api/apidoc.html"
-    )
+    check_html_get_response(client, url, status_code=200, template_used="apidoc.html")
 
 
 def test_apidoc_route_fn(api_client):
@@ -138,9 +136,7 @@ def apidoc_full_stack(request, myarg, myotherarg, akw=0):
 
 def test_apidoc_full_stack_doc(client):
     url = reverse("api-1-some-complete-doc-route-doc")
-    check_html_get_response(
-        client, url, status_code=200, template_used="api/apidoc.html"
-    )
+    check_html_get_response(client, url, status_code=200, template_used="apidoc.html")
 
 
 def test_apidoc_full_stack_fn(api_client):
@@ -163,9 +159,7 @@ def test_apidoc_post_only(client):
     # a dedicated view accepting GET requests should have
     # been created to display the HTML documentation
     url = reverse("api-1-test-post-only-doc")
-    check_html_get_response(
-        client, url, status_code=200, template_used="api/apidoc.html"
-    )
+    check_html_get_response(client, url, status_code=200, template_used="apidoc.html")
 
 
 def test_api_doc_parse_httpdomain():
@@ -364,7 +358,7 @@ def apidoc_test_post_endpoint(request):
 def test_apidoc_input_output_doc(client):
     url = reverse("api-1-post-endpoint-doc")
     rv = check_html_get_response(
-        client, url, status_code=200, template_used="api/apidoc.html"
+        client, url, status_code=200, template_used="apidoc.html"
     )
 
     input_html_doc = textwrap.indent(
@@ -449,7 +443,7 @@ def apidoc_test_endpoint_with_links_in_doc(request):
 def test_apidoc_with_links(client):
     url = reverse("api-1-endpoint-links-in-doc")
     rv = check_html_get_response(
-        client, url, status_code=200, template_used="api/apidoc.html"
+        client, url, status_code=200, template_used="apidoc.html"
     )
 
     html = prettify_html(rv.content)
