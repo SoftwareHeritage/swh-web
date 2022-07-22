@@ -29,11 +29,11 @@ from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import gen_path_info, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_person, new_swh_date
-from swh.web.tests.utils import check_html_get_response
+from swh.web.utils import gen_path_info, reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_root_directory_view(client, archive_data, directory):

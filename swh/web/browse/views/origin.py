@@ -13,15 +13,15 @@ from swh.web.browse.snapshot_context import (
     browse_snapshot_directory,
     get_snapshot_context,
 )
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import (
+from swh.web.utils import (
+    archive,
     format_utc_iso_date,
     parse_iso8601_date_to_utc,
     redirect_to_new_route,
     reverse,
 )
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.origin_visits import get_origin_visits
 
 
 @browse_route(

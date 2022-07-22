@@ -15,7 +15,7 @@ from swh.model.model import (
     RevisionType,
     TimestampWithTimezone,
 )
-from swh.web.common import converters
+from swh.web.utils import converters
 
 
 def test_fmap():

@@ -23,8 +23,8 @@ from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
-from swh.web.common import archive
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
+from swh.web.utils import archive
 
 API_GRAPH_PERM = "swh.web.api.graph"
 

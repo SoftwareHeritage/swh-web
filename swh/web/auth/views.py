@@ -27,9 +27,9 @@ from swh.auth.django.views import get_oidc_login_data, oidc_login_view
 from swh.auth.keycloak import KeycloakError, keycloak_error_message
 from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import decrypt_data, encrypt_data
-from swh.web.common.exc import ForbiddenExc
-from swh.web.common.utils import reverse
 from swh.web.config import get_config
+from swh.web.utils import reverse
+from swh.web.utils.exc import ForbiddenExc
 
 
 def oidc_generate_bearer_token(request: HttpRequest) -> HttpResponse:

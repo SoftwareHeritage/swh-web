@@ -9,13 +9,13 @@ import pytest
 
 from swh.model.swhids import CoreSWHID
 from swh.vault.exc import NotFoundExc
-from swh.web.common.utils import reverse
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_responses,
     check_http_get_response,
     check_http_post_response,
 )
+from swh.web.utils import reverse
 
 #####################
 # Current API:
@@ -73,7 +73,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
 def test_api_vault_cook_notfound(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):
-    mock_vault = mocker.patch("swh.web.common.archive.vault")
+    mock_vault = mocker.patch("swh.web.utils.archive.vault")
     mock_vault.cook.side_effect = NotFoundExc("object not found")
     mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
     mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
@@ -273,7 +273,7 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
 def test_api_vault_cook_notfound_legacy(
     api_client, mocker, directory, revision, unknown_directory, unknown_revision
 ):
-    mock_vault = mocker.patch("swh.web.common.archive.vault")
+    mock_vault = mocker.patch("swh.web.utils.archive.vault")
     mock_vault.cook.side_effect = NotFoundExc("object not found")
     mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
     mock_vault.progress.side_effect = NotFoundExc("cooking request not found")

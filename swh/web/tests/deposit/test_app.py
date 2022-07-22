@@ -7,10 +7,10 @@ import pytest
 
 from django.urls import get_resolver
 
-from swh.web.common.utils import reverse
 from swh.web.deposit.urls import urlpatterns
 from swh.web.tests.django_asserts import assert_not_contains
-from swh.web.tests.utils import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response
+from swh.web.utils import reverse
 
 
 @pytest.mark.django_db

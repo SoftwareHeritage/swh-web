@@ -14,9 +14,8 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse
+from swh.web.utils import archive, reverse
+from swh.web.utils.exc import NotFoundExc
 
 
 @api_route(

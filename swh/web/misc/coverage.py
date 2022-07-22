@@ -15,15 +15,15 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
-from swh.web.common import archive
-from swh.web.common.utils import (
+from swh.web.config import scheduler
+from swh.web.utils import (
+    archive,
     django_cache,
     get_deposits_list,
     is_swh_web_development,
     is_swh_web_production,
     reverse,
 )
-from swh.web.config import scheduler
 
 _swh_arch_overview_doc = (
     "https://docs.softwareheritage.org/devel/architecture/overview.html"

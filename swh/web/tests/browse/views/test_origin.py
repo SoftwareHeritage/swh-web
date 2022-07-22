@@ -22,12 +22,12 @@ from swh.model.model import (
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_origin, new_snapshot, visit_dates
-from swh.web.tests.utils import check_html_get_response
+from swh.web.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits):
@@ -452,10 +452,10 @@ def test_browse_visits_origin_not_found(client, new_origin):
 
 def test_browse_origin_directory_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
+    mock_archive = mocker.patch("swh.web.utils.origin_visits.archive")
     mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
 

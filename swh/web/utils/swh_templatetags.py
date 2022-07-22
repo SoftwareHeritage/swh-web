@@ -9,9 +9,9 @@ import re
 from django import template
 from django.utils.safestring import mark_safe
 
-from swh.web.common.converters import SWHDjangoJSONEncoder
-from swh.web.common.utils import rst_to_html
 from swh.web.save_code_now.origin_save import get_savable_visit_types
+from swh.web.utils import rst_to_html
+from swh.web.utils.converters import SWHDjangoJSONEncoder
 
 register = template.Library()
 

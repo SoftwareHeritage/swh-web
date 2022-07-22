@@ -15,14 +15,9 @@ from django.urls import re_path as url
 from django.views.generic.base import RedirectView
 
 from swh.web.browse.identifiers import swhid_browse
-from swh.web.common.exc import (
-    swh_handle400,
-    swh_handle403,
-    swh_handle404,
-    swh_handle500,
-)
-from swh.web.common.utils import origin_visit_types
 from swh.web.config import get_config
+from swh.web.utils import origin_visit_types
+from swh.web.utils.exc import swh_handle400, swh_handle403, swh_handle404, swh_handle500
 
 swh_web_config = get_config()
 

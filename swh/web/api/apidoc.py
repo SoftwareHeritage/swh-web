@@ -19,7 +19,7 @@ from rest_framework.decorators import api_view
 
 from swh.web.api.apiresponse import make_api_response
 from swh.web.api.apiurls import APIUrls
-from swh.web.common.utils import parse_rst
+from swh.web.utils import parse_rst
 
 
 class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):

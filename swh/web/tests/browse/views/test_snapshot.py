@@ -28,11 +28,11 @@ from swh.model.model import (
 )
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date, visit_dates
-from swh.web.tests.utils import check_html_get_response
+from swh.web.utils import reverse
 
 
 @pytest.mark.parametrize(

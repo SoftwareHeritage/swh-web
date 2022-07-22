@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.common import highlightjs
+from swh.web.utils import highlightjs
 
 
 def test_get_hljs_language_from_mime_type():

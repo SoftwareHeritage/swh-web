@@ -11,7 +11,7 @@ from pygments.lexers import get_all_lexers, get_lexer_for_filename
 
 from django.contrib.staticfiles.finders import find
 
-from swh.web.common.exc import sentry_capture_exception
+from swh.web.utils.exc import sentry_capture_exception
 
 
 @functools.lru_cache()

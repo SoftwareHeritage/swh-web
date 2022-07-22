@@ -25,11 +25,19 @@ from swh.web.browse.utils import (
     get_directory_entries,
     get_readme_to_display,
 )
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.origin_visits import get_origin_visit
-from swh.web.common.typing import (
+from swh.web.config import get_config
+from swh.web.utils import (
+    archive,
+    django_cache,
+    format_utc_iso_date,
+    gen_path_info,
+    reverse,
+    swh_object_icons,
+)
+from swh.web.utils.exc import BadInputExc, NotFoundExc, http_status_code_message
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.origin_visits import get_origin_visit
+from swh.web.utils.typing import (
     DirectoryMetadata,
     OriginInfo,
     SnapshotBranchInfo,
@@ -37,14 +45,6 @@ from swh.web.common.typing import (
     SnapshotReleaseInfo,
     SWHObjectInfo,
 )
-from swh.web.common.utils import (
-    django_cache,
-    format_utc_iso_date,
-    gen_path_info,
-    reverse,
-    swh_object_icons,
-)
-from swh.web.config import get_config
 
 _empty_snapshot_id = Snapshot(branches={}).id.hex()
 
@@ -181,7 +181,7 @@ def process_snapshot_branches(
 
     Args:
         snapshot: A dict describing a snapshot as returned for instance by
-            :func:`swh.web.common.archive.lookup_snapshot`
+            :func:`swh.web.utils.archive.lookup_snapshot`
 
     Returns:
         A tuple whose first member is the sorted list of branches
@@ -416,7 +416,7 @@ def get_snapshot_context(
         A dict filled with snapshot context information.
 
     Raises:
-        swh.web.common.exc.NotFoundExc: if no snapshot is found for the visit
+        swh.web.utils.exc.NotFoundExc: if no snapshot is found for the visit
             of an origin.
     """
     assert origin_url is not None or snapshot_id is not None

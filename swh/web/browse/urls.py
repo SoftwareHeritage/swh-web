@@ -15,7 +15,7 @@ import swh.web.browse.views.origin  # noqa
 import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
-from swh.web.common.utils import origin_visit_types, reverse
+from swh.web.utils import origin_visit_types, reverse
 
 
 def _browse_help_view(request: HttpRequest) -> HttpResponse:

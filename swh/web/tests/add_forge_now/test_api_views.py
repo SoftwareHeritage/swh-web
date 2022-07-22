@@ -13,15 +13,15 @@ import iso8601
 import pytest
 
 from swh.web.add_forge_now.models import Request, RequestHistory
-from swh.web.common.utils import reverse
 from swh.web.config import get_config
 from swh.web.inbound_email.utils import get_address_for_pk
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_response,
     check_http_get_response,
     check_http_post_response,
 )
+from swh.web.utils import reverse
 
 
 @pytest.mark.django_db

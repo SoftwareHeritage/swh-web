@@ -5,7 +5,7 @@
 
 from typing import List, Optional
 
-from swh.web.common.urlsindex import UrlsIndex
+from swh.web.utils.urlsindex import UrlsIndex
 
 
 class BrowseUrls(UrlsIndex):

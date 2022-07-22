@@ -7,8 +7,8 @@ import json
 
 import pytest
 
-from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_http_get_response
+from swh.web.tests.helpers import check_http_get_response
+from swh.web.utils import reverse
 
 from .test_api_views import create_add_forge_request
 

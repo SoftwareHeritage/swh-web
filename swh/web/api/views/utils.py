@@ -12,7 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from swh.web.api.apiurls import APIUrls, api_route
-from swh.web.common.exc import NotFoundExc
+from swh.web.utils.exc import NotFoundExc
 
 EnrichFunction = Callable[[Dict[str, str], Optional[HttpRequest]], Dict[str, str]]
 

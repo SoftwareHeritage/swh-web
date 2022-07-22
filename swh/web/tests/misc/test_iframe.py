@@ -7,9 +7,9 @@ import random
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
-from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response
+from swh.web.utils import reverse
 
 
 def test_content_swhid_iframe(client, content_swhid):

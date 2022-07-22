@@ -7,7 +7,6 @@ from urllib.parse import unquote
 
 import pytest
 
-from swh.web.common.utils import reverse
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -18,7 +17,8 @@ from swh.web.save_code_now.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.save_code_now.origin_save import can_save_origin
-from swh.web.tests.utils import check_http_get_response, check_http_post_response
+from swh.web.tests.helpers import check_http_get_response, check_http_post_response
+from swh.web.utils import reverse
 
 _authorized_origin_url = "https://scm.ourproject.org/anonscm/"
 _unauthorized_origin_url = "https://www.softwareheritage.org/"

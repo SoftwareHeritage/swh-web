@@ -60,21 +60,21 @@ Configuration and settings
 Common utilities
 """"""""""""""""
 
-    * :mod:`swh.web.common.converters`: conversion module used to transform raw data
-      to serializable ones. It is used by :mod:`swh.web.common.archive`: to convert data
+    * :mod:`swh.web.utils.converters`: conversion module used to transform raw data
+      to serializable ones. It is used by :mod:`swh.web.utils.archive`: to convert data
       before transmitting then to Django views.
-    * :mod:`swh.web.common.exc`: module defining exceptions used in the web applications.
-    * :mod:`swh.web.common.highlightjs`: utility module to ease the use of the highlightjs_
+    * :mod:`swh.web.utils.exc`: module defining exceptions used in the web applications.
+    * :mod:`swh.web.utils.highlightjs`: utility module to ease the use of the highlightjs_
       library in produced Django views.
-    * :mod:`swh.web.common.query`: Utilities to parse data from HTTP endpoints. It is used
-      by :mod:`swh.web.common.archive`.
-    * :mod:`swh.web.common.archive`: Orchestration layer used by views module
+    * :mod:`swh.web.utils.query`: Utilities to parse data from HTTP endpoints. It is used
+      by :mod:`swh.web.utils.archive`.
+    * :mod:`swh.web.utils.archive`: Orchestration layer used by views module
       in charge of communication with :mod:`swh.storage` to retrieve information and
       perform conversion for the upper layer.
-    * :mod:`swh.web.common.swh_templatetags`: Custom Django template tags library for swh.
-    * :mod:`swh.web.common.urlsindex`: Utilities to help the registering of endpoints
+    * :mod:`swh.web.utils.swh_templatetags`: Custom Django template tags library for swh.
+    * :mod:`swh.web.utils.urlsindex`: Utilities to help the registering of endpoints
       for the web applications
-    * :mod:`swh.web.common.utils`: Utility functions used in the web applications implementation
+    * :mod:`swh.web.utils`: Utility functions used in the web applications implementation
 
 
 swh-web API application

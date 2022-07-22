@@ -16,8 +16,8 @@ from swh.web.browse.snapshot_context import (
     browse_snapshot_releases,
     get_snapshot_context,
 )
-from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import redirect_to_new_route, reverse
+from swh.web.utils import redirect_to_new_route, reverse
+from swh.web.utils.exc import BadInputExc
 
 
 def get_snapshot_from_request(request: HttpRequest) -> str:

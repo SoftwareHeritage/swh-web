@@ -7,11 +7,11 @@ import pytest
 
 from django.test import modify_settings
 
-from swh.web.common.utils import reverse
+from swh.web.utils import reverse
 
 
 @modify_settings(
-    MIDDLEWARE={"remove": ["swh.web.common.middlewares.ExceptionMiddleware"]}
+    MIDDLEWARE={"remove": ["swh.web.utils.middlewares.ExceptionMiddleware"]}
 )
 def test_exception_middleware_disabled(client, mocker, snapshot):
     mock_browse_snapshot_directory = mocker.patch(

@@ -17,9 +17,8 @@ from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import archive, converters
-from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.utils import SWHID_RE, reverse
+from swh.web.utils import SWHID_RE, archive, converters, reverse
+from swh.web.utils.exc import BadInputExc, NotFoundExc
 
 
 @api_route(

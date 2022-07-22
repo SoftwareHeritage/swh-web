@@ -5,7 +5,7 @@
 
 from django.db import models
 
-from swh.web.common.typing import SaveOriginRequestInfo
+from swh.web.utils.typing import SaveOriginRequestInfo
 
 
 class SaveAuthorizedOrigin(models.Model):

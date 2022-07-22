@@ -12,9 +12,9 @@ from rest_framework.response import Response
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api.apidoc import _parse_httpdomain_doc, api_doc
 from swh.web.api.apiurls import api_route
-from swh.web.common.exc import BadInputExc, ForbiddenExc, NotFoundExc
-from swh.web.common.utils import prettify_html, reverse
-from swh.web.tests.utils import check_api_get_responses, check_html_get_response
+from swh.web.tests.helpers import check_api_get_responses, check_html_get_response
+from swh.web.utils import prettify_html, reverse
+from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc
 
 _httpdomain_doc = """
 .. http:get:: /api/1/revision/(sha1_git)/

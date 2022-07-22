@@ -14,9 +14,8 @@ from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive, query
-from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import SWHID_RE, reverse
+from swh.web.utils import SWHID_RE, archive, query, reverse
+from swh.web.utils.exc import BadInputExc
 
 ######################################################
 # Common

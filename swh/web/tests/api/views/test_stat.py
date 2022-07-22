@@ -4,9 +4,9 @@
 # See top-level LICENSE file for more information
 
 from swh.storage.exc import StorageAPIError, StorageDBError
-from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_api_get_responses
+from swh.web.tests.helpers import check_api_get_responses
+from swh.web.utils import reverse
+from swh.web.utils.exc import BadInputExc
 
 
 def test_api_1_stat_counters_raise_error(api_client, mocker):

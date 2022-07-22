@@ -19,15 +19,15 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api import utils
-from swh.web.common.exc import (
+from swh.web.config import get_config
+from swh.web.utils import gen_path_info, shorten_path
+from swh.web.utils.exc import (
     BadInputExc,
     ForbiddenExc,
     LargePayloadExc,
     NotFoundExc,
     sentry_capture_exception,
 )
-from swh.web.common.utils import gen_path_info, shorten_path
-from swh.web.config import get_config
 
 logger = logging.getLogger("django")
 

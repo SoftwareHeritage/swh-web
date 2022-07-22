@@ -8,13 +8,13 @@ from base64 import b64encode
 import pytest
 
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
-from swh.web.common.utils import reverse
 from swh.web.config import get_config
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_html_get_response,
     check_http_get_response,
     create_django_permission,
 )
+from swh.web.utils import reverse
 
 
 def test_deposit_admin_view_not_available_for_anonymous_user(client):

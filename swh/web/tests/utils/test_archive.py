@@ -27,12 +27,12 @@ from swh.model.model import (
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.typing import OriginInfo, PagedResult
 from swh.web.tests.conftest import ctags_json_missing, fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
+from swh.web.utils import archive
+from swh.web.utils.exc import BadInputExc, NotFoundExc
+from swh.web.utils.typing import OriginInfo, PagedResult
 
 
 def test_lookup_multiple_hashes_all_present(contents):
@@ -1034,7 +1034,7 @@ def test_search_origin_use_ql(mocker, origin):
 
     ORIGIN = [{"url": origin["url"]}]
 
-    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
     mock_archive_search.origin_search.return_value = PagedResult(
         results=ORIGIN,
         next_page_token=None,

@@ -20,17 +20,17 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     re_encode_content,
 )
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import (
+from swh.web.tests.data import get_content
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
+from swh.web.utils import (
     format_utc_iso_date,
     gen_path_info,
     parse_iso8601_date_to_utc,
     reverse,
 )
-from swh.web.tests.data import get_content
-from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_html_get_response, check_http_get_response
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_content_view_text(client, archive_data, content_text):
@@ -752,10 +752,10 @@ def test_content_dispaly_empty_query_string_with_snapshot(
 
 def test_browse_origin_content_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
+    mock_archive = mocker.patch("swh.web.utils.origin_visits.archive")
     mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse(
         "browse-content",
@@ -771,7 +771,7 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
 
 def test_browse_origin_content_unknown_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = [{"visit": 1}]
 
