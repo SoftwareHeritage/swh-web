@@ -12,8 +12,10 @@ from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin
 from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
-from swh.web.common.exc import BadInputExc
-from swh.web.common.identifiers import (
+from swh.web.tests.data import random_sha1
+from swh.web.utils import reverse
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.identifiers import (
     gen_swhid,
     get_swhid,
     get_swhids_info,
@@ -21,9 +23,7 @@ from swh.web.common.identifiers import (
     parse_object_type,
     resolve_swhid,
 )
-from swh.web.common.typing import SWHObjectInfo
-from swh.web.common.utils import reverse
-from swh.web.tests.data import random_sha1
+from swh.web.utils.typing import SWHObjectInfo
 
 
 def test_gen_swhid(content):

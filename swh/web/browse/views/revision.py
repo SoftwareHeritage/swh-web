@@ -28,16 +28,16 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, http_status_code_message
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import RevisionMetadata, SnapshotContext, SWHObjectInfo
-from swh.web.common.utils import (
+from swh.web.utils import (
+    archive,
     format_utc_iso_date,
     gen_path_info,
     reverse,
     swh_object_icons,
 )
+from swh.web.utils.exc import NotFoundExc, http_status_code_message
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.typing import RevisionMetadata, SnapshotContext, SWHObjectInfo
 
 
 def _gen_content_url(

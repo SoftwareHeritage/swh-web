@@ -40,7 +40,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     re_encode_content,
 )
-from swh.web.common import archive
+from swh.web.utils import archive
 
 # Module used to initialize data that will be provided as tests input
 

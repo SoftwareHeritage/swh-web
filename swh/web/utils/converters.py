@@ -19,7 +19,7 @@ from swh.model.model import (
 )
 from swh.model.swhids import ObjectType
 from swh.storage.interface import PartialBranches
-from swh.web.common.typing import OriginInfo, OriginVisitInfo
+from swh.web.utils.typing import OriginInfo, OriginVisitInfo
 
 
 def _group_checksums(data):
@@ -224,7 +224,7 @@ def from_release(release: Release) -> Dict[str, Any]:
 
 class SWHDjangoJSONEncoder(DjangoJSONEncoder):
     """Wrapper around DjangoJSONEncoder to serialize SWH-specific types
-    found in :class:`swh.web.common.typing.SWHObjectInfo`."""
+    found in :class:`swh.web.utils.typing.SWHObjectInfo`."""
 
     def default(self, o):
         if isinstance(o, ObjectType):

@@ -10,7 +10,6 @@ import random
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
 import pytest
 
-from swh.web.common.utils import reverse
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -30,7 +29,8 @@ from swh.web.save_code_now.origin_save import (
     get_savable_visit_types,
 )
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_http_get_response
+from swh.web.tests.helpers import check_http_get_response
+from swh.web.utils import reverse
 
 
 @pytest.mark.django_db

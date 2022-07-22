@@ -18,11 +18,10 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, NotFoundExc, http_status_code_message
-from swh.web.common.identifiers import get_swhid, get_swhids_info
-from swh.web.common.typing import SnapshotContext, SWHObjectInfo
-from swh.web.common.utils import gen_path_info, reverse
+from swh.web.utils import archive, gen_path_info, reverse
+from swh.web.utils.exc import BadInputExc, NotFoundExc, http_status_code_message
+from swh.web.utils.identifiers import get_swhid, get_swhids_info
+from swh.web.utils.typing import SnapshotContext, SWHObjectInfo
 
 
 def _get_content_rendering_data(cnt_swhid: QualifiedSWHID, path: str) -> Dict[str, Any]:

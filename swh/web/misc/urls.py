@@ -14,10 +14,10 @@ from django.shortcuts import render
 from django.urls import re_path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from swh.web.common import archive
-from swh.web.common.exc import sentry_capture_exception
 from swh.web.config import get_config
 from swh.web.misc.metrics import prometheus_metrics
+from swh.web.utils import archive
+from swh.web.utils.exc import sentry_capture_exception
 
 
 def _jslicenses(request):

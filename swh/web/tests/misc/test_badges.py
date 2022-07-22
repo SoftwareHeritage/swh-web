@@ -8,13 +8,12 @@ from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ObjectType, QualifiedSWHID
-from swh.web.common import archive
-from swh.web.common.identifiers import resolve_swhid
-from swh.web.common.utils import reverse
 from swh.web.misc.badges import _badge_config, _get_logo_data
 from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.helpers import check_http_get_response
 from swh.web.tests.strategies import new_origin
-from swh.web.tests.utils import check_http_get_response
+from swh.web.utils import archive, reverse
+from swh.web.utils.identifiers import resolve_swhid
 
 
 def test_content_badge(client, content):

@@ -15,16 +15,30 @@ from django.test.utils import override_settings
 from django.urls import re_path as url
 from django.urls.exceptions import NoReverseMatch
 
-from swh.web.common import utils
-from swh.web.common.exc import BadInputExc
 from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
+from swh.web.utils import (
+    cache,
+    django_cache,
+    format_utc_iso_date,
+    gen_path_info,
+    get_deposits_list,
+    is_swh_web_development,
+    is_swh_web_production,
+    is_swh_web_staging,
+    origin_visit_types,
+    parse_iso8601_date_to_utc,
+    reverse,
+    rst_to_html,
+    shorten_path,
+)
+from swh.web.utils.exc import BadInputExc
 
 
 def test_shorten_path_noop():
     noops = ["/api/", "/browse/", "/content/symbol/foobar/"]
 
     for noop in noops:
-        assert utils.shorten_path(noop) == noop
+        assert shorten_path(noop) == noop
 
 
 def test_shorten_path_sha1():
@@ -38,7 +52,7 @@ def test_shorten_path_sha1():
     ]
 
     for template in templates:
-        assert utils.shorten_path(template % sha1) == template % short_sha1
+        assert shorten_path(template % sha1) == template % short_sha1
 
 
 def test_shorten_path_sha256():
@@ -52,7 +66,7 @@ def test_shorten_path_sha256():
     ]
 
     for template in templates:
-        assert utils.shorten_path(template % sha256) == template % short_sha256
+        assert shorten_path(template % sha256) == template % short_sha256
 
 
 @pytest.mark.parametrize(
@@ -73,7 +87,7 @@ def test_shorten_path_sha256():
     ],
 )
 def test_parse_iso8601_date_to_utc_ok(input_timestamp, output_date):
-    assert utils.parse_iso8601_date_to_utc(input_timestamp) == output_date
+    assert parse_iso8601_date_to_utc(input_timestamp) == output_date
 
 
 @pytest.mark.parametrize(
@@ -81,13 +95,12 @@ def test_parse_iso8601_date_to_utc_ok(input_timestamp, output_date):
 )
 def test_parse_iso8601_date_to_utc_ko(invalid_iso8601_timestamp):
     with pytest.raises(BadInputExc):
-        utils.parse_iso8601_date_to_utc(invalid_iso8601_timestamp)
+        parse_iso8601_date_to_utc(invalid_iso8601_timestamp)
 
 
 def test_format_utc_iso_date():
     assert (
-        utils.format_utc_iso_date("2017-05-04T13:27:13+02:00")
-        == "04 May 2017, 11:27:13 UTC"
+        format_utc_iso_date("2017-05-04T13:27:13+02:00") == "04 May 2017, 11:27:13 UTC"
     )
 
 
@@ -99,11 +112,11 @@ def test_gen_path_info():
         {"name": "swh-environment", "path": "home/user/swh-environment"},
         {"name": "swh-web", "path": "home/user/swh-environment/swh-web"},
     ]
-    path_info = utils.gen_path_info(input_path)
+    path_info = gen_path_info(input_path)
     assert path_info == expected_result
 
     input_path = "home/user/swh-environment/swh-web"
-    path_info = utils.gen_path_info(input_path)
+    path_info = gen_path_info(input_path)
     assert path_info == expected_result
 
 
@@ -140,7 +153,7 @@ def test_rst_to_html():
         "</div>"
     )
 
-    assert utils.rst_to_html(rst) == expected_html
+    assert rst_to_html(rst) == expected_html
 
 
 def sample_test_view(request, string, number):
@@ -169,9 +182,7 @@ urlpatterns = [
 def test_reverse_url_args_only_ok():
     string = "foo"
     number = 55
-    url = utils.reverse(
-        "sample-test-view", url_args={"string": string, "number": number}
-    )
+    url = reverse("sample-test-view", url_args={"string": string, "number": number})
     assert url == f"/sample/test/{string}/view/{number}/"
 
 
@@ -179,12 +190,12 @@ def test_reverse_url_args_only_ok():
 def test_reverse_url_args_only_ko():
     string = "foo"
     with pytest.raises(NoReverseMatch):
-        utils.reverse("sample-test-view", url_args={"string": string, "number": string})
+        reverse("sample-test-view", url_args={"string": string, "number": string})
 
 
 @override_settings(ROOT_URLCONF=__name__)
 def test_reverse_no_url_args():
-    url = utils.reverse("sample-test-view-no-url-args")
+    url = reverse("sample-test-view-no-url-args")
     assert url == "/sample/test/view/no/url/args/"
 
 
@@ -192,12 +203,12 @@ def test_reverse_no_url_args():
 def test_reverse_query_params_only():
     start = 0
     scope = "foo"
-    url = utils.reverse(
+    url = reverse(
         "sample-test-view-no-url-args", query_params={"start": start, "scope": scope}
     )
     assert url == f"/sample/test/view/no/url/args/?scope={scope}&start={start}"
 
-    url = utils.reverse(
+    url = reverse(
         "sample-test-view-no-url-args", query_params={"start": start, "scope": None}
     )
     assert url == f"/sample/test/view/no/url/args/?start={start}"
@@ -206,9 +217,7 @@ def test_reverse_query_params_only():
 @override_settings(ROOT_URLCONF=__name__)
 def test_reverse_query_params_encode():
     libname = "libstc++"
-    url = utils.reverse(
-        "sample-test-view-no-url-args", query_params={"libname": libname}
-    )
+    url = reverse("sample-test-view-no-url-args", query_params={"libname": libname})
     assert url == f"/sample/test/view/no/url/args/?libname={quote(libname, safe='/;:')}"
 
 
@@ -218,7 +227,7 @@ def test_reverse_url_args_query_params():
     number = 55
     start = 10
     scope = "bar"
-    url = utils.reverse(
+    url = reverse(
         "sample-test-view",
         url_args={"string": string, "number": number},
         query_params={"start": start, "scope": scope},
@@ -228,8 +237,8 @@ def test_reverse_url_args_query_params():
 
 @override_settings(ROOT_URLCONF=__name__)
 def test_reverse_absolute_uri(request_factory):
-    request = request_factory.get(utils.reverse("sample-test-view-no-url-args"))
-    url = utils.reverse("sample-test-view-no-url-args", request=request)
+    request = request_factory.get(reverse("sample-test-view-no-url-args"))
+    url = reverse("sample-test-view-no-url-args", request=request)
     assert url == f"http://{request.META['SERVER_NAME']}/sample/test/view/no/url/args/"
 
 
@@ -286,36 +295,36 @@ def test_get_deposits_list(requests_mock):
         },
     )
 
-    assert utils.get_deposits_list() == deposits_data["results"]
+    assert get_deposits_list() == deposits_data["results"]
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
 def test_origin_visit_types(mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        search = mocker.patch("swh.web.common.utils.search")
+        search = mocker.patch("swh.web.utils.search")
         search.return_value = None
-        assert utils.origin_visit_types() == []
+        assert origin_visit_types() == []
     else:
         # see swh/web/tests/data.py for origins added for tests
-        assert utils.origin_visit_types() == ["git", "tar"]
+        assert origin_visit_types() == ["git", "tar"]
 
 
 @pytest.mark.parametrize("server_name", ["localhost", "127.0.0.1", "testserver"])
 def test_is_swh_web_development(request_factory, server_name):
     request = request_factory.get("/", SERVER_NAME=server_name)
-    assert utils.is_swh_web_development(request)
+    assert is_swh_web_development(request)
 
 
 @pytest.mark.parametrize("server_name", SWH_WEB_STAGING_SERVER_NAMES)
 def test_is_swh_web_staging(request_factory, server_name):
     request = request_factory.get("/", SERVER_NAME=server_name)
-    assert utils.is_swh_web_staging(request)
+    assert is_swh_web_staging(request)
 
 
 def test_is_swh_web_production(request_factory):
     request = request_factory.get("/", SERVER_NAME=SWH_WEB_SERVER_NAME)
-    assert utils.is_swh_web_production(request)
+    assert is_swh_web_production(request)
 
 
 def add(x, y):
@@ -326,9 +335,9 @@ def test_django_cache(mocker):
     """Decorated function should be called once and returned value
     put in django cache."""
     spy_add = mocker.spy(sys.modules[__name__], "add")
-    spy_cache_set = mocker.spy(utils.cache, "set")
+    spy_cache_set = mocker.spy(cache, "set")
 
-    cached_add = utils.django_cache()(add)
+    cached_add = django_cache()(add)
 
     val = cached_add(1, 2)
     val2 = cached_add(1, 2)
@@ -342,9 +351,9 @@ def test_django_cache_invalidate_cache_pred(mocker):
     """Decorated function should be called twice and returned value
     put in django cache twice."""
     spy_add = mocker.spy(sys.modules[__name__], "add")
-    spy_cache_set = mocker.spy(utils.cache, "set")
+    spy_cache_set = mocker.spy(cache, "set")
 
-    cached_add = utils.django_cache(invalidate_cache_pred=lambda val: val == 3)(add)
+    cached_add = django_cache(invalidate_cache_pred=lambda val: val == 3)(add)
 
     val = cached_add(1, 2)
     val2 = cached_add(1, 2)
@@ -358,9 +367,9 @@ def test_django_cache_raise_exception(mocker):
     """Decorated function should be called twice, exceptions should be
     raised and no value put in django cache"""
     spy_add = mocker.spy(sys.modules[__name__], "add")
-    spy_cache_set = mocker.spy(utils.cache, "set")
+    spy_cache_set = mocker.spy(cache, "set")
 
-    cached_add = utils.django_cache()(add)
+    cached_add = django_cache()(add)
 
     with pytest.raises(TypeError):
         cached_add(1, "2")
@@ -377,11 +386,11 @@ def test_django_cache_catch_exception(mocker):
     raised, specified fallback value should be returned and no value put
     in django cache"""
     spy_add = mocker.spy(sys.modules[__name__], "add")
-    spy_cache_set = mocker.spy(utils.cache, "set")
+    spy_cache_set = mocker.spy(cache, "set")
 
-    cached_add = utils.django_cache(
-        catch_exception=True, exception_return_value=math.nan
-    )(add)
+    cached_add = django_cache(catch_exception=True, exception_return_value=math.nan)(
+        add
+    )
 
     val = cached_add(1, "2")
     val2 = cached_add(1, "2")

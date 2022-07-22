@@ -6,8 +6,8 @@
 import pytest
 
 from swh.model import hashutil
-from swh.web.common import query
-from swh.web.common.exc import BadInputExc
+from swh.web.utils import query
+from swh.web.utils.exc import BadInputExc
 
 
 def test_parse_hash_malformed_query_with_more_than_2_parts():
@@ -71,7 +71,7 @@ def test_parse_hash_check_algo_unknown_one():
 
 
 def test_parse_hash_with_algorithms_or_throws_bad_query(mocker):
-    mock_hash = mocker.patch("swh.web.common.query.parse_hash")
+    mock_hash = mocker.patch("swh.web.utils.query.parse_hash")
     mock_hash.side_effect = BadInputExc("Error input")
 
     with pytest.raises(BadInputExc) as e:
@@ -84,7 +84,7 @@ def test_parse_hash_with_algorithms_or_throws_bad_query(mocker):
 
 
 def test_parse_hash_with_algorithms_or_throws_bad_algo(mocker):
-    mock_hash = mocker.patch("swh.web.common.query.parse_hash")
+    mock_hash = mocker.patch("swh.web.utils.query.parse_hash")
     mock_hash.return_value = "sha1", "123"
 
     with pytest.raises(BadInputExc) as e:
@@ -97,7 +97,7 @@ def test_parse_hash_with_algorithms_or_throws_bad_algo(mocker):
 
 
 def test_parse_hash_with_algorithms(mocker):
-    mock_hash = mocker.patch("swh.web.common.query.parse_hash")
+    mock_hash = mocker.patch("swh.web.utils.query.parse_hash")
     mock_hash.return_value = ("sha256", b"123")
 
     algo, sha = query.parse_hash_with_algorithms_or_throws(

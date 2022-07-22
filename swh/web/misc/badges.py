@@ -15,10 +15,9 @@ from django.urls import re_path as url
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.identifiers import parse_object_type, resolve_swhid
-from swh.web.common.utils import reverse
+from swh.web.utils import archive, reverse
+from swh.web.utils.exc import BadInputExc, NotFoundExc
+from swh.web.utils.identifiers import parse_object_type, resolve_swhid
 
 _orange = "#f36a24"
 _blue = "#0172b2"

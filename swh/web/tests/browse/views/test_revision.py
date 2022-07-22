@@ -13,11 +13,11 @@ from django.utils.html import escape
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import Revision, RevisionType, TimestampWithTimezone
 from swh.model.swhids import ObjectType
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date
-from swh.web.tests.utils import check_html_get_response
+from swh.web.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_revision_browse(client, archive_data, revision):

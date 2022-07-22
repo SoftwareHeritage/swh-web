@@ -7,10 +7,9 @@ from typing import List, Optional
 
 from django.core.cache import cache
 
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.typing import OriginInfo, OriginVisitInfo
-from swh.web.common.utils import parse_iso8601_date_to_utc
+from swh.web.utils import archive, parse_iso8601_date_to_utc
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.typing import OriginInfo, OriginVisitInfo
 
 
 def get_origin_visits(
@@ -32,10 +31,10 @@ def get_origin_visits(
         A list of dict describing the origin visits
 
     Raises:
-        swh.web.common.exc.NotFoundExc: if the origin is not found
+        swh.web.utils.exc.NotFoundExc: if the origin is not found
     """
 
-    from swh.web.common import archive
+    from swh.web.utils import archive
 
     origin_url = archive.lookup_origin(
         origin_info, lookup_similar_urls=lookup_similar_urls
@@ -113,7 +112,7 @@ def get_origin_visit(
         A dict containing the visit info.
 
     Raises:
-        swh.web.common.exc.NotFoundExc: if no visit can be found
+        swh.web.utils.exc.NotFoundExc: if no visit can be found
     """
     # returns the latest full visit with a valid snapshot
     visit = archive.lookup_origin_visit_latest(

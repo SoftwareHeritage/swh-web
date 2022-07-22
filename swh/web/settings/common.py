@@ -15,7 +15,6 @@ from typing import Any, Dict
 
 from django.utils import encoding
 
-from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
 
 # Fix django-js-reverse 0.9.1 compatibility with django 4.x
@@ -46,7 +45,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 SWH_BASE_DJANGO_APPS = [
     "swh.web.auth",
     "swh.web.browse",
-    "swh.web.common",
+    "swh.web.utils",
     "swh.web.api",
 ]
 SWH_EXTRA_DJANGO_APPS = [
@@ -82,8 +81,8 @@ MIDDLEWARE = [
     "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "swh.web.common.middlewares.ThrottlingHeadersMiddleware",
-    "swh.web.common.middlewares.ExceptionMiddleware",
+    "swh.web.utils.middlewares.ThrottlingHeadersMiddleware",
+    "swh.web.utils.middlewares.ExceptionMiddleware",
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -119,10 +118,10 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "swh.web.common.utils.context_processor",
+                "swh.web.utils.context_processor",
             ],
             "libraries": {
-                "swh_templatetags": "swh.web.common.swh_templatetags",
+                "swh_templatetags": "swh.web.utils.swh_templatetags",
             },
         },
     },
@@ -341,6 +340,7 @@ AUTHENTICATION_BACKENDS = [
     "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
 ]
 
+OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]
 SWH_AUTH_REALM_NAME = swh_web_config["keycloak"]["realm_name"]
 SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID

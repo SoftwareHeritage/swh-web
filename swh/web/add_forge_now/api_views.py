@@ -24,8 +24,8 @@ from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStat
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import is_add_forge_now_moderator
-from swh.web.common.exc import BadInputExc
-from swh.web.common.utils import reverse
+from swh.web.utils import reverse
+from swh.web.utils.exc import BadInputExc
 
 
 def _block_while_testing():

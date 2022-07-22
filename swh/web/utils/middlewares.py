@@ -6,8 +6,8 @@
 
 from htmlmin import minify
 
-from swh.web.common.exc import handle_view_exception, sentry_capture_exception
-from swh.web.common.utils import prettify_html
+from swh.web.utils import prettify_html
+from swh.web.utils.exc import handle_view_exception, sentry_capture_exception
 
 
 class HtmlPrettifyMiddleware(object):

@@ -9,10 +9,10 @@ import json
 import pytest
 
 from swh.auth.django.utils import oidc_user_from_profile
-from swh.web.common.utils import reverse
 from swh.web.save_code_now.models import SaveOriginRequest
 from swh.web.save_code_now.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDED
-from swh.web.tests.utils import check_http_get_response
+from swh.web.tests.helpers import check_http_get_response
+from swh.web.utils import reverse
 
 VISIT_TYPES = ("git", "svn", "hg", "cvs", "bzr")
 PRIVILEGED_VISIT_TYPES = tuple(list(VISIT_TYPES) + ["archives"])

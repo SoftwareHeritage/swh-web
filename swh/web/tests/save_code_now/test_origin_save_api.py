@@ -13,8 +13,6 @@ from django.utils import timezone
 
 from swh.web.api.throttling import SwhWebUserRateThrottle
 from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION, SWH_AMBASSADOR_PERMISSION
-from swh.web.common.typing import OriginExistenceCheckInfo
-from swh.web.common.utils import reverse
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -31,12 +29,14 @@ from swh.web.save_code_now.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.settings.tests import save_origin_rate_post
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_response,
     check_api_post_responses,
     create_django_permission,
 )
+from swh.web.utils import reverse
+from swh.web.utils.typing import OriginExistenceCheckInfo
 
 pytestmark = pytest.mark.django_db
 

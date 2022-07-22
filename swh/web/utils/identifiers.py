@@ -11,15 +11,9 @@ from typing_extensions import TypedDict
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import ObjectType, QualifiedSWHID
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc
-from swh.web.common.typing import (
-    SnapshotContext,
-    SWHIDContext,
-    SWHIDInfo,
-    SWHObjectInfo,
-)
-from swh.web.common.utils import reverse
+from swh.web.utils import archive, reverse
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.typing import SnapshotContext, SWHIDContext, SWHIDInfo, SWHObjectInfo
 
 
 def parse_object_type(object_type: str) -> ObjectType:

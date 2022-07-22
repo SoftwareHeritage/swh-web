@@ -11,16 +11,16 @@ import pytest
 
 from swh.model.model import OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
-from swh.web.common.typing import OriginInfo
 from swh.web.tests.strategies import new_origin, new_snapshots
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.origin_visits import get_origin_visit, get_origin_visits
+from swh.web.utils.typing import OriginInfo
 
 
 @settings(max_examples=1)
 @given(new_origin(), new_snapshots(3))
 def test_get_origin_visits(mocker, archive_data, new_origin, new_snapshots):
-    from swh.web.common import archive
+    from swh.web.utils import archive
 
     mocker.patch.object(archive, "MAX_LIMIT", 2)
 
@@ -239,7 +239,7 @@ def test_get_origin_visit_latest_snapshot(mocker, origin_with_multiple_visits):
     first_visit = origin_visits[0]
     latest_visit = origin_visits[-1]
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = origin_visits
 

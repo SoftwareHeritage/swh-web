@@ -6,7 +6,7 @@
 import pytest
 
 from swh.web.api.apiresponse import compute_link_header
-from swh.web.common.swh_templatetags import (
+from swh.web.utils.swh_templatetags import (
     docstring_display,
     urlize_header_links,
     urlize_links_and_mails,

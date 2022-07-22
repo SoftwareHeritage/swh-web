@@ -10,10 +10,10 @@ from pkg_resources import get_distribution
 import pytest
 
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
-from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_http_get_response, create_django_permission
+from swh.web.tests.helpers import check_http_get_response, create_django_permission
+from swh.web.utils import reverse
 
 swh_web_version = get_distribution("swh.web").version
 
@@ -59,7 +59,7 @@ def test_layout_with_oidc_auth_enabled(client):
 def test_layout_without_oidc_auth_enabled(client, mocker):
     config = deepcopy(get_config())
     config["keycloak"]["server_url"] = ""
-    mock_get_config = mocker.patch("swh.web.common.utils.get_config")
+    mock_get_config = mocker.patch("swh.web.utils.get_config")
     mock_get_config.return_value = config
 
     url = reverse("swh-web-homepage")

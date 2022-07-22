@@ -14,9 +14,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from django.contrib.auth.decorators import user_passes_test
 from django.http.request import HttpRequest
 
-from swh.web.common.exc import ForbiddenExc
-
-OIDC_SWH_WEB_CLIENT_ID = "swh-web"
+from swh.web.utils.exc import ForbiddenExc
 
 SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"

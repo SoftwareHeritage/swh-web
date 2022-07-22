@@ -11,7 +11,6 @@ import pytest
 from django.core.management import call_command
 
 from swh.core.api.classes import stream_results
-from swh.web.common.typing import SaveOriginRequestInfo
 from swh.web.config import get_config
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -22,6 +21,7 @@ from swh.web.save_code_now.models import (
     VISIT_STATUS_FULL,
     VISIT_STATUS_PARTIAL,
 )
+from swh.web.utils.typing import SaveOriginRequestInfo
 
 MODULE_FQDN = "swh.web.save_code_now.management.commands"
 COMMAND_NAME = "refresh_savecodenow_statuses"

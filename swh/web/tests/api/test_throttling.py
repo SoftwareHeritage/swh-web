@@ -25,7 +25,7 @@ from swh.web.settings.tests import (
     scope3_limiter_rate,
     scope3_limiter_rate_post,
 )
-from swh.web.tests.utils import create_django_permission
+from swh.web.tests.helpers import create_django_permission
 from swh.web.urls import urlpatterns
 
 

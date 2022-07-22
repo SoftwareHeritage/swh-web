@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
 from swh.web.api.apiresponse import make_api_response
-from swh.web.common.urlsindex import UrlsIndex
+from swh.web.utils.urlsindex import UrlsIndex
 
 
 class APIUrls(UrlsIndex):

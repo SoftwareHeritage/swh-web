@@ -20,16 +20,22 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import archive, highlightjs, query
-from swh.web.common.exc import (
+from swh.web.utils import (
+    archive,
+    gen_path_info,
+    highlightjs,
+    query,
+    reverse,
+    swh_object_icons,
+)
+from swh.web.utils.exc import (
     BadInputExc,
     NotFoundExc,
     http_status_code_message,
     sentry_capture_exception,
 )
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import ContentMetadata, SWHObjectInfo
-from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.typing import ContentMetadata, SWHObjectInfo
 
 
 @browse_route(

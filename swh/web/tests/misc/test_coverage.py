@@ -16,11 +16,11 @@ from django.conf import settings
 from django.utils.html import escape
 
 from swh.scheduler.model import LastVisitStatus, ListedOrigin, OriginVisitStats
-from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_SERVER_NAME
 from swh.web.misc.coverage import deposited_origins, legacy_origins, listed_origins
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_html_get_response, check_http_get_response
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
+from swh.web.utils import reverse
 
 
 def test_coverage_view_no_metrics(client, swh_scheduler):

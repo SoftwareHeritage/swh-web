@@ -12,8 +12,8 @@ from typing import Callable
 
 from django.core.management.base import BaseCommand
 
-from swh.web.common.exc import sentry_capture_exception
 from swh.web.inbound_email import signals
+from swh.web.utils.exc import sentry_capture_exception
 
 logger = logging.getLogger(__name__)
 

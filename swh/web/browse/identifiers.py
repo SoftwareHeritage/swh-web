@@ -6,7 +6,7 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 
-from swh.web.common.identifiers import resolve_swhid
+from swh.web.utils.identifiers import resolve_swhid
 
 
 def swhid_browse(request: HttpRequest, swhid: str) -> HttpResponse:

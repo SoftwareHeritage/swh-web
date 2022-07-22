@@ -15,13 +15,13 @@ from django.core.management import call_command
 from django.db import transaction
 
 from swh.model.model import Person
-from swh.web.common.utils import reverse
 from swh.web.mailmap.models import UserMailmap, UserMailmapEvent
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_post_response,
     check_http_get_response,
     check_http_post_response,
 )
+from swh.web.utils import reverse
 
 
 @pytest.mark.django_db(transaction=True)

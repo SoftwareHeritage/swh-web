@@ -15,12 +15,6 @@ import requests
 
 from swh.core.pytest_plugin import get_response_cb
 from swh.scheduler.utils import create_oneshot_task_dict
-from swh.web.common.exc import BadInputExc
-from swh.web.common.typing import (
-    OriginExistenceCheckInfo,
-    OriginVisitInfo,
-    SaveOriginRequestInfo,
-)
 from swh.web.config import get_config
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -44,6 +38,12 @@ from swh.web.save_code_now.origin_save import (
     get_save_origin_task_info,
     origin_exists,
     refresh_save_origin_request_statuses,
+)
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.typing import (
+    OriginExistenceCheckInfo,
+    OriginVisitInfo,
+    SaveOriginRequestInfo,
 )
 
 _es_url = "http://esnode1.internal.softwareheritage.org:9200"

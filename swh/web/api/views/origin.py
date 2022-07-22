@@ -18,11 +18,10 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
-from swh.web.common.exc import BadInputExc
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.typing import OriginInfo
-from swh.web.common.utils import origin_visit_types, reverse
+from swh.web.utils import archive, origin_visit_types, reverse
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.origin_visits import get_origin_visits
+from swh.web.utils.typing import OriginInfo
 
 DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information

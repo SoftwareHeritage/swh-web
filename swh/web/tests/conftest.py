@@ -21,6 +21,7 @@ from hypothesis import settings as hypothesis_settings
 import pytest
 from pytest_django.fixtures import SettingsWrapper
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.test.utils import setup_databases
@@ -43,11 +44,7 @@ from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     MAILMAP_PERMISSION,
-    OIDC_SWH_WEB_CLIENT_ID,
 )
-from swh.web.common import converters
-from swh.web.common.typing import OriginVisitInfo
-from swh.web.common.utils import browsers_supported_image_mimes
 from swh.web.config import get_config
 from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
 from swh.web.tests.data import (
@@ -58,7 +55,9 @@ from swh.web.tests.data import (
     random_sha1_bytes,
     random_sha256,
 )
-from swh.web.tests.utils import create_django_permission
+from swh.web.tests.helpers import create_django_permission
+from swh.web.utils import browsers_supported_image_mimes, converters
+from swh.web.utils.typing import OriginVisitInfo
 
 os.environ["LC_ALL"] = "C.UTF-8"
 
@@ -1024,7 +1023,7 @@ def keycloak_oidc(keycloak_oidc, mocker):
 
     keycloak_oidc.server_url = keycloak_config["server_url"]
     keycloak_oidc.realm_name = keycloak_config["realm_name"]
-    keycloak_oidc.client_id = OIDC_SWH_WEB_CLIENT_ID
+    keycloak_oidc.client_id = settings.OIDC_SWH_WEB_CLIENT_ID
 
     keycloak_oidc_client = mocker.patch("swh.web.auth.views.keycloak_oidc_client")
     keycloak_oidc_client.return_value = keycloak_oidc

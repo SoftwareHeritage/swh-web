@@ -15,9 +15,9 @@ from django.http.response import StreamingHttpResponse
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
-from swh.web.common.utils import reverse
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
-from swh.web.tests.utils import check_http_get_response
+from swh.web.tests.helpers import check_http_get_response
+from swh.web.utils import reverse
 
 
 def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_mock):

@@ -11,8 +11,8 @@ import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
 
 from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION, API_SAVE_ORIGIN_PERMISSION
-from swh.web.common.exc import sentry_capture_exception
 from swh.web.config import get_config
+from swh.web.utils.exc import sentry_capture_exception
 
 APIView = TypeVar("APIView", bound="rest_framework.views.APIView")
 Request = rest_framework.request.Request

@@ -8,10 +8,10 @@ import random
 from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response
+from swh.web.utils import format_utc_iso_date, reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_release_browse(client, archive_data, release):

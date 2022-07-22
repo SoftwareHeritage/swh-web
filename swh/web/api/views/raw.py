@@ -22,9 +22,8 @@ from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import SWHID_RE
+from swh.web.utils import SWHID_RE, archive
+from swh.web.utils.exc import NotFoundExc
 
 
 @api_route(

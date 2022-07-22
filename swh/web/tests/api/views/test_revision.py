@@ -15,10 +15,10 @@ from swh.model.model import (
     TimestampWithTimezone,
 )
 from swh.web.api.utils import enrich_content, enrich_directory_entry, enrich_revision
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
+from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
 from swh.web.tests.strategies import new_person, new_swh_date
-from swh.web.tests.utils import check_api_get_responses, check_http_get_response
+from swh.web.utils import reverse
 
 
 def test_api_revision(api_client, archive_data, revision):

@@ -11,9 +11,9 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import archive
-from swh.web.common.exc import LargePayloadExc
-from swh.web.common.identifiers import get_swhid, group_swhids, resolve_swhid
+from swh.web.utils import archive
+from swh.web.utils.exc import LargePayloadExc
+from swh.web.utils.identifiers import get_swhid, group_swhids, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")

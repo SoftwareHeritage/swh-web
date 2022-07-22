@@ -9,20 +9,21 @@ import uuid
 
 import pytest
 
+from django.conf import settings
 from django.http import QueryDict
 
 from swh.auth.keycloak import KeycloakError
 from swh.web.auth.models import OIDCUserOfflineTokens
-from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID, decrypt_data
-from swh.web.common.utils import reverse
+from swh.web.auth.utils import decrypt_data
 from swh.web.config import get_config
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_html_get_response,
     check_http_get_response,
     check_http_post_response,
 )
 from swh.web.urls import _default_view as homepage_view
+from swh.web.utils import reverse
 
 
 def _check_oidc_login_code_flow_data(
@@ -36,7 +37,7 @@ def _check_oidc_login_code_flow_data(
     # check redirect url is valid
     assert urljoin(response["location"], parsed_url.path) == authorization_url
     assert "client_id" in query_dict
-    assert query_dict["client_id"] == OIDC_SWH_WEB_CLIENT_ID
+    assert query_dict["client_id"] == settings.OIDC_SWH_WEB_CLIENT_ID
     assert "response_type" in query_dict
     assert query_dict["response_type"] == "code"
     assert "redirect_uri" in query_dict

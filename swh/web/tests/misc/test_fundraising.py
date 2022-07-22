@@ -3,9 +3,9 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response
+from swh.web.utils import reverse
 
 
 def test_fundraising_banner(client, requests_mock):

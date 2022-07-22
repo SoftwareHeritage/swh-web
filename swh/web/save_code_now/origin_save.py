@@ -20,15 +20,6 @@ from django.db.models import Q, QuerySet
 from django.utils.html import escape
 
 from swh.scheduler.utils import create_oneshot_task_dict
-from swh.web.common import archive
-from swh.web.common.exc import (
-    BadInputExc,
-    ForbiddenExc,
-    NotFoundExc,
-    sentry_capture_exception,
-)
-from swh.web.common.typing import OriginExistenceCheckInfo, SaveOriginRequestInfo
-from swh.web.common.utils import SWH_WEB_METRICS_REGISTRY, parse_iso8601_date_to_utc
 from swh.web.config import get_config, scheduler
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -46,6 +37,14 @@ from swh.web.save_code_now.models import (
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
 )
+from swh.web.utils import SWH_WEB_METRICS_REGISTRY, archive, parse_iso8601_date_to_utc
+from swh.web.utils.exc import (
+    BadInputExc,
+    ForbiddenExc,
+    NotFoundExc,
+    sentry_capture_exception,
+)
+from swh.web.utils.typing import OriginExistenceCheckInfo, SaveOriginRequestInfo
 
 logger = logging.getLogger(__name__)
 
@@ -676,7 +675,7 @@ def get_save_origin_requests(
 
     Raises:
         BadInputExc: the visit type or origin url is invalid
-        swh.web.common.exc.NotFoundExc: no save requests can be found for the
+        swh.web.utils.exc.NotFoundExc: no save requests can be found for the
             given origin
 
     Returns:

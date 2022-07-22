@@ -20,9 +20,9 @@ from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_ali
 from swh.storage.interface import OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
-from swh.web.common import converters, query
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.typing import (
+from swh.web.utils import converters, query
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.typing import (
     OriginInfo,
     OriginMetadataInfo,
     OriginVisitInfo,
@@ -604,7 +604,7 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
     else:
         raise TypeError('"origin" must be an int or a string.')
 
-    from swh.web.common.origin_visits import get_origin_visit
+    from swh.web.utils.origin_visits import get_origin_visit
 
     visit = get_origin_visit(origin, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit["snapshot"], branch_name)
@@ -659,7 +659,7 @@ def lookup_revision_log(rev_sha1_git, limit):
 
     Raises:
         ValueError: if the identifier provided is not of sha1 nature.
-        swh.web.common.exc.NotFoundExc: if there is no revision with the
+        swh.web.utils.exc.NotFoundExc: if there is no revision with the
             provided sha1_git.
 
     """
@@ -682,7 +682,7 @@ def lookup_revision_log_by(origin, branch_name, timestamp, limit):
         list: Revision log as list of revision dicts
 
     Raises:
-        swh.web.common.exc.NotFoundExc: if no revision corresponds to the
+        swh.web.utils.exc.NotFoundExc: if no revision corresponds to the
             criterion
 
     """
@@ -1364,7 +1364,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         dictionary for the directory object type.
 
     Raises:
-        swh.web.common.exc.NotFoundExc: if the object could not be found in
+        swh.web.utils.exc.NotFoundExc: if the object could not be found in
             the archive
         BadInputExc: if the object identifier is invalid
     """
