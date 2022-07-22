@@ -36,7 +36,6 @@ def _default_view(request):
 
 
 urlpatterns = [
-    url(r"^admin/", include("swh.web.admin.urls")),
     url(r"^favicon\.ico/$", favicon_view),
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
