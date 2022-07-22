@@ -9,7 +9,6 @@ from django_js_reverse.views import urls_js
 
 from django.conf import settings
 from django.conf.urls import handler400, handler403, handler404, handler500, include
-from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
 from django.urls import re_path as url
@@ -53,8 +52,6 @@ urlpatterns = [
         name="browse-swhid",
     ),
     url(r"^", include("swh.web.misc.urls")),
-    url(r"^", include("swh.web.auth.views")),
-    url(r"^logout/$", LogoutView.as_view(template_name="logout.html"), name="logout"),
 ]
 
 for app in settings.SWH_DJANGO_APPS:

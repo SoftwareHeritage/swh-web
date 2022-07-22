@@ -7,7 +7,7 @@
 
 const $ = Cypress.$;
 
-const defaultRedirect = '/admin/origin/save/requests/';
+const defaultRedirect = '/';
 
 let url;
 
@@ -18,7 +18,7 @@ function logout() {
 
 describe('Test Admin Login/logout', function() {
   before(function() {
-    url = this.Urls.admin();
+    url = this.Urls.login();
   });
 
   it('should redirect to default page', function() {
@@ -78,10 +78,10 @@ describe('Test Admin Login/logout', function() {
   it('should prevent unauthorized access after logout', function() {
     cy.visit(this.Urls.admin_origin_save_requests())
       .location('pathname')
-      .should('be.equal', '/admin/login/');
+      .should('be.equal', '/login/');
     cy.visit(this.Urls.admin_deposit())
       .location('pathname')
-      .should('be.equal', '/admin/login/');
+      .should('be.equal', '/login/');
   });
 
   it('should redirect to correct page after login', function() {

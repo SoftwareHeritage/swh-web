@@ -297,7 +297,7 @@ def test_oidc_profile_view(client, keycloak_oidc):
     keycloak_oidc.client_permissions = client_permissions
     client.login(code="", code_verifier="", redirect_uri="")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="auth/profile.html"
+        client, url, status_code=200, template_used="profile.html"
     )
     user = resp.wsgi_request.user
     kc_account_url = (

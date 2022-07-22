@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.contrib.auth.views import LoginView
+
 from django.shortcuts import redirect
 from django.urls import re_path as url
 
@@ -17,7 +17,6 @@ def _admin_default_view(request):
 
 urlpatterns = [
     url(r"^$", _admin_default_view, name="admin"),
-    url(r"^login/$", LoginView.as_view(template_name="login.html"), name="login"),
 ]
 
 urlpatterns += AdminUrls.get_url_patterns()
