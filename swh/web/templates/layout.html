@@ -243,7 +243,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </li>
                 {% endif %}
               {% endif %}
-              {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
+              {% if "swh.web.deposit" in SWH_DJANGO_APPS and user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
                 <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
                   <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>

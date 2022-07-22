@@ -28,7 +28,7 @@ def test_deposit_admin_view_available_for_staff_user(client, staff_user):
     client.force_login(staff_user)
     url = reverse("admin-deposit")
     check_html_get_response(
-        client, url, status_code=200, template_used="admin/deposit.html"
+        client, url, status_code=200, template_used="deposit-admin.html"
     )
 
 
@@ -40,7 +40,7 @@ def test_deposit_admin_view_available_for_user_with_permission(client, regular_u
     client.force_login(regular_user)
     url = reverse("admin-deposit")
     check_html_get_response(
-        client, url, status_code=200, template_used="admin/deposit.html"
+        client, url, status_code=200, template_used="deposit-admin.html"
     )
 
 

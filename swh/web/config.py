@@ -165,6 +165,7 @@ DEFAULT_CONFIG = {
             "add_forge_now",
             "mailmap",
             "save_code_now",
+            "deposit",
         ],
     ),
 }

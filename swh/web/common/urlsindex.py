@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import defaultdict
 from typing import Dict, List
 
 from django.shortcuts import redirect
@@ -10,7 +11,7 @@ from django.urls import URLPattern
 from django.urls import re_path as url
 
 
-class UrlsIndex(object):
+class UrlsIndex:
     """
     Simple helper class for centralizing url patterns of a Django
     web application.
@@ -19,7 +20,7 @@ class UrlsIndex(object):
     all declared patterns will be grouped under the default one.
     """
 
-    _urlpatterns: Dict[str, List[URLPattern]] = {}
+    _urlpatterns: Dict[str, List[URLPattern]] = defaultdict(list)
     scope = "default"
 
     @classmethod
