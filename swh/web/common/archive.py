@@ -67,31 +67,6 @@ def lookup_multiple_hashes(hashes):
     return hashes
 
 
-def lookup_expression(expression, last_sha1, per_page):
-    """Lookup expression in raw content.
-
-    Args:
-        expression (str): An expression to lookup through raw indexed
-        content
-        last_sha1 (str): Last sha1 seen
-        per_page (int): Number of results per page
-
-    Yields:
-        ctags whose content match the expression
-
-    """
-
-    limit = min(per_page, MAX_LIMIT)
-    ctags = idx_storage.content_ctags_search(
-        expression, last_sha1=last_sha1, limit=limit
-    )
-    for ctag in ctags:
-        ctag = converters.from_swh(ctag, hashess={"id"})
-        ctag["sha1"] = ctag["id"]
-        ctag.pop("id")
-        yield ctag
-
-
 def lookup_hash(q: str) -> Dict[str, Any]:
     """Check if the storage contains a given content checksum and return it if found.
 
@@ -145,29 +120,6 @@ def _lookup_content_sha1(q: str) -> Optional[bytes]:
             return None
         return hashes.sha1
     return hash_
-
-
-def lookup_content_ctags(q):
-    """Return ctags information from a specified content.
-
-    Args:
-        q: query string of the form <hash_algo:hash>
-
-    Yields:
-        ctags information (dict) list if the content is found.
-
-    """
-    sha1 = _lookup_content_sha1(q)
-
-    if not sha1:
-        return None
-
-    ctags = list(idx_storage.content_ctags_get([sha1]))
-    if not ctags:
-        return None
-
-    for ctag in ctags:
-        yield converters.from_swh(ctag, hashess={"id"})
 
 
 def lookup_content_filetype(q):

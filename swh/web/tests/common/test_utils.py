@@ -35,7 +35,6 @@ def test_shorten_path_sha1():
         "/api/1/content/sha1:%s/",
         "/api/1/content/sha1_git:%s/",
         "/api/1/directory/%s/",
-        "/api/1/content/sha1:%s/ctags/",
     ]
 
     for template in templates:

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,7 +13,6 @@ from typing import Dict, List, Optional, Set
 
 from swh.core.config import merge_configs
 from swh.counters import get_counters
-from swh.indexer.ctags import CtagsIndexer
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.storage import get_indexer_storage
@@ -105,23 +104,6 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
             "version": "3.1.0rc2-31-ga2cbb8c",
             "configuration": {
                 "command_line": "nomossa <filepath>",
-            },
-        },
-    },
-)
-
-
-_TEST_CTAGS_INDEXER_CONFIG = merge_configs(
-    _TEST_INDEXER_BASE_CONFIG,
-    {
-        "workdir": "/tmp/swh/indexer.ctags",
-        "languages": {"c": "c"},
-        "tools": {
-            "name": "universal-ctags",
-            "version": "~git7859817b",
-            "configuration": {
-                "command_line": """ctags --fields=+lnz --sort=no --links=no """
-                """--output-format=json <filepath>"""
             },
         },
     },
@@ -497,7 +479,6 @@ def _init_indexers(tests_data):
     for idx_name, idx_class, idx_config in (
         ("mimetype_indexer", MimetypeIndexer, _TEST_MIMETYPE_INDEXER_CONFIG),
         ("license_indexer", FossologyLicenseIndexer, _TEST_LICENSE_INDEXER_CONFIG),
-        ("ctags_indexer", CtagsIndexer, _TEST_CTAGS_INDEXER_CONFIG),
     ):
         idx = idx_class(config=idx_config)
         idx.storage = tests_data["storage"]
