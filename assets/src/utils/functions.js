@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -165,4 +165,20 @@ export function getHumanReadableDate(data) {
   // Example: 3/24/2022, 10:31:08 AM
   const date = new Date(data);
   return date.toLocaleString();
+}
+
+export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
+  // Display link. It's up to the caller to sanitize sanitizedUrl first.
+  if (type === 'display' && sanitizedUrl) {
+    const encodedSanitizedUrl = encodeURI(sanitizedUrl);
+    if (!linkText) {
+      linkText = encodedSanitizedUrl;
+    }
+    let attrs = '';
+    if (openInNewTab) {
+      attrs = 'target="_blank" rel="noopener noreferrer"';
+    }
+    return `<a href="${encodedSanitizedUrl}" ${attrs}>${linkText}</a>`;
+  }
+  return sanitizedUrl;
 }
