@@ -6,7 +6,7 @@
  */
 
 import {handleFetchError, errorMessageFromResponse, csrfPost,
-        getHumanReadableDate} from 'utils/functions';
+        getHumanReadableDate, genLink} from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {swhSpinnerSrc} from 'utils/constants';
 
@@ -107,16 +107,9 @@ export function populateRequestBrowseList() {
         {
           data: 'forge_url',
           name: 'forge_url',
-          render: function(data, type, row) {
-            if (type === 'display') {
-              let html = '';
-              const sanitizedURL = $.fn.dataTable.render.text().display(data);
-              html += sanitizedURL;
-              html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
-                '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
-              return html;
-            }
-            return data;
+          render: (data, type, row) => {
+            const sanitizedURL = $.fn.dataTable.render.text().display(data);
+            return genLink(sanitizedURL, type, true);
           }
         },
         {

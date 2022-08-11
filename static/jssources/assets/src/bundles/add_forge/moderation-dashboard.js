@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {getHumanReadableDate} from 'utils/functions';
+import {getHumanReadableDate, genLink} from 'utils/functions';
 
 export function onModerationPageLoad() {
   populateModerationList();
@@ -48,7 +48,10 @@ export async function populateModerationList() {
         {
           data: 'forge_url',
           name: 'forge_url',
-          render: $.fn.dataTable.render.text()
+          render: (data, type, row) => {
+            const sanitizedURL = $.fn.dataTable.render.text().display(data);
+            return genLink(sanitizedURL, type, true);
+          }
         },
         {
           data: 'last_moderator',

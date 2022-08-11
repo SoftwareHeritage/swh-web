@@ -6,7 +6,7 @@
 import pytest
 
 from swh.web.common.utils import reverse
-from swh.web.tests.conftest import ctags_json_missing, fossology_missing
+from swh.web.tests.conftest import fossology_missing
 from swh.web.tests.data import random_content
 from swh.web.tests.utils import (
     check_api_get_responses,
@@ -59,94 +59,6 @@ def test_api_content_language_sha_not_found(api_client):
         "reason": "No language information found for content "
         "sha1:%s." % unknown_content_["sha1"],
     }
-
-
-@pytest.mark.skip  # Language indexer is disabled
-@pytest.mark.skipif(
-    ctags_json_missing, reason="requires ctags with json output support"
-)
-def test_api_content_symbol(api_client, indexer_data, contents_with_ctags):
-    expected_data = {}
-    for content_sha1 in contents_with_ctags["sha1s"]:
-        indexer_data.content_add_ctags(content_sha1)
-        for ctag in indexer_data.content_get_ctags(content_sha1):
-            if ctag["name"] == contents_with_ctags["symbol_name"]:
-                expected_data[content_sha1] = ctag
-                break
-    url = reverse(
-        "api-1-content-symbol",
-        url_args={"q": contents_with_ctags["symbol_name"]},
-        query_params={"per_page": 100},
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
-
-    for entry in rv.data:
-        content_sha1 = entry["sha1"]
-        expected_entry = expected_data[content_sha1]
-        for key, view_name in (
-            ("content_url", "api-1-content"),
-            ("data_url", "api-1-content-raw"),
-            ("license_url", "api-1-content-license"),
-            ("language_url", "api-1-content-language"),
-            ("filetype_url", "api-1-content-filetype"),
-        ):
-            expected_entry[key] = reverse(
-                view_name,
-                url_args={"q": "sha1:%s" % content_sha1},
-                request=rv.wsgi_request,
-            )
-        expected_entry["sha1"] = content_sha1
-        del expected_entry["id"]
-        assert entry == expected_entry
-    assert "Link" not in rv
-
-    url = reverse(
-        "api-1-content-symbol",
-        url_args={"q": contents_with_ctags["symbol_name"]},
-        query_params={"per_page": 2},
-    )
-
-    rv = check_api_get_responses(api_client, url, status_code=200)
-
-    next_url = (
-        reverse(
-            "api-1-content-symbol",
-            url_args={"q": contents_with_ctags["symbol_name"]},
-            query_params={"last_sha1": rv.data[1]["sha1"], "per_page": 2},
-            request=rv.wsgi_request,
-        ),
-    )
-    assert rv["Link"] == '<%s>; rel="next"' % next_url
-
-
-def test_api_content_symbol_not_found(api_client):
-    url = reverse("api-1-content-symbol", url_args={"q": "bar"})
-    rv = check_api_get_responses(api_client, url, status_code=404)
-    assert rv.data == {
-        "exception": "NotFoundExc",
-        "reason": "No indexed raw content match expression 'bar'.",
-    }
-    assert "Link" not in rv
-
-
-@pytest.mark.skipif(
-    ctags_json_missing, reason="requires ctags with json output support"
-)
-def test_api_content_ctags(api_client, indexer_data, content):
-    indexer_data.content_add_ctags(content["sha1"])
-    url = reverse(
-        "api-1-content-ctags", url_args={"q": "sha1_git:%s" % content["sha1_git"]}
-    )
-    rv = check_api_get_responses(api_client, url, status_code=200)
-    content_url = reverse(
-        "api-1-content",
-        url_args={"q": "sha1:%s" % content["sha1"]},
-        request=rv.wsgi_request,
-    )
-    expected_data = list(indexer_data.content_get_ctags(content["sha1"]))
-    for e in expected_data:
-        e["content_url"] = content_url
-    assert rv.data == expected_data
 
 
 @pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")

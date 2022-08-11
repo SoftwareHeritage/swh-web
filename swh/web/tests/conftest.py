@@ -10,7 +10,6 @@ import json
 import os
 import random
 import shutil
-from subprocess import PIPE, run
 import sys
 import time
 from typing import Any, Dict, List, Optional
@@ -58,12 +57,6 @@ from swh.web.tests.data import (
 from swh.web.tests.utils import create_django_permission
 
 os.environ["LC_ALL"] = "C.UTF-8"
-
-# Used to skip some tests
-ctags_json_missing = (
-    shutil.which("ctags") is None
-    or b"+json" not in run(["ctags", "--version"], stdout=PIPE).stdout
-)
 
 fossology_missing = shutil.which("nomossa") is None
 
@@ -442,35 +435,6 @@ def content_utf8_detected_as_binary():
     """
 
     return random.choice(_content_utf8_detected_as_binary())
-
-
-@pytest.fixture(scope="function")
-def contents_with_ctags():
-    """
-    Fixture returning contents ingested into the test archive.
-    Those contents are ctags compatible, that is running ctags on those lay results.
-    """
-    return {
-        "sha1s": [
-            "0ab37c02043ebff946c1937523f60aadd0844351",
-            "15554cf7608dde6bfefac7e3d525596343a85b6f",
-            "2ce837f1489bdfb8faf3ebcc7e72421b5bea83bd",
-            "30acd0b47fc25e159e27a980102ddb1c4bea0b95",
-            "4f81f05aaea3efb981f9d90144f746d6b682285b",
-            "5153aa4b6e4455a62525bc4de38ed0ff6e7dd682",
-            "59d08bafa6a749110dfb65ba43a61963d5a5bf9f",
-            "7568285b2d7f31ae483ae71617bd3db873deaa2c",
-            "7ed3ee8e94ac52ba983dd7690bdc9ab7618247b4",
-            "8ed7ef2e7ff9ed845e10259d08e4145f1b3b5b03",
-            "9b3557f1ab4111c8607a4f2ea3c1e53c6992916c",
-            "9c20da07ed14dc4fcd3ca2b055af99b2598d8bdd",
-            "c20ceebd6ec6f7a19b5c3aebc512a12fbdc9234b",
-            "e89e55a12def4cd54d5bff58378a3b5119878eb7",
-            "e8c0654fe2d75ecd7e0b01bee8a8fc60a130097e",
-            "eb6595e559a1d34a2b41e8d4835e0e4f98a5d2b5",
-        ],
-        "symbol_name": "ABS",
-    }
 
 
 @pytest.fixture(scope="function")
@@ -1030,7 +994,6 @@ class _IndexerData:
         self.idx_storage = tests_data["idx_storage"]
         self.mimetype_indexer = tests_data["mimetype_indexer"]
         self.license_indexer = tests_data["license_indexer"]
-        self.ctags_indexer = tests_data["ctags_indexer"]
 
     def content_add_mimetype(self, cnt_id):
         self.mimetype_indexer.run([hash_to_bytes(cnt_id)])
@@ -1049,15 +1012,6 @@ class _IndexerData:
         licenses = self.idx_storage.content_fossology_license_get([cnt_id_bytes])
         for license in licenses:
             yield converters.from_swh(license.to_dict(), hashess={"id"})
-
-    def content_add_ctags(self, cnt_id):
-        self.ctags_indexer.run([hash_to_bytes(cnt_id)])
-
-    def content_get_ctags(self, cnt_id):
-        cnt_id_bytes = hash_to_bytes(cnt_id)
-        ctags = self.idx_storage.content_ctags_get([cnt_id_bytes])
-        for ctag in ctags:
-            yield converters.from_swh(ctag, hashess={"id"})
 
 
 @pytest.fixture
