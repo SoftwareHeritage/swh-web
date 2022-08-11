@@ -219,7 +219,7 @@ def _directory_browse(
 
     return render(
         request,
-        "browse/directory.html",
+        "browse-directory.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

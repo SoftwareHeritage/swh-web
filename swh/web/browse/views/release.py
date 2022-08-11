@@ -229,7 +229,7 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/release.html",
+        "browse-release.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

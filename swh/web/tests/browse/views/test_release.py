@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -90,7 +90,7 @@ def _release_browse_checks(
     message_lines = message.split("\n")
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/release.html"
+        client, url, status_code=200, template_used="browse-release.html"
     )
     assert_contains(resp, author_name)
     assert_contains(resp, format_utc_iso_date(release_date))

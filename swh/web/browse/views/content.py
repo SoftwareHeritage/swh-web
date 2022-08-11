@@ -435,7 +435,7 @@ def content_display(
 
     return render(
         request,
-        "browse/content.html",
+        "browse-content.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"] if swhids_info else "",

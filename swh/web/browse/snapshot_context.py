@@ -937,7 +937,7 @@ def browse_snapshot_directory(
 
     return render(
         request,
-        "browse/directory.html",
+        "browse-directory.html",
         {
             "heading": heading,
             "swh_object_name": "Directory",
@@ -1095,7 +1095,7 @@ def browse_snapshot_log(
 
     return render(
         request,
-        "browse/revision-log.html",
+        "browse-revision-log.html",
         {
             "heading": heading,
             "swh_object_name": "Revisions history",
@@ -1217,7 +1217,7 @@ def browse_snapshot_branches(
 
     return render(
         request,
-        "browse/branches.html",
+        "browse-branches.html",
         {
             "heading": heading,
             "swh_object_name": "Branches",
@@ -1360,7 +1360,7 @@ def browse_snapshot_releases(
 
     return render(
         request,
-        "browse/releases.html",
+        "browse-releases.html",
         {
             "heading": heading,
             "top_panel_visible": False,

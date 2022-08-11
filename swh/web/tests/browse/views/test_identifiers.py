@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -183,7 +183,7 @@ def test_legacy_swhid_browse(archive_data, client, origin):
 
     resp = check_html_get_response(client, url, status_code=302)
     resp = check_html_get_response(
-        client, resp["location"], status_code=200, template_used="browse/content.html"
+        client, resp["location"], status_code=200, template_used="browse-content.html"
     )
 
     swhid = gen_swhid(
@@ -203,7 +203,7 @@ def test_legacy_swhid_browse(archive_data, client, origin):
 
     resp = check_html_get_response(client, url, status_code=302)
     resp = check_html_get_response(
-        client, resp["location"], status_code=200, template_used="browse/content.html"
+        client, resp["location"], status_code=200, template_used="browse-content.html"
     )
 
     assert_contains(resp, swhid)

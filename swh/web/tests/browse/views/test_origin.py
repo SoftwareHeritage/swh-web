@@ -35,7 +35,7 @@ def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits)
     url = reverse("browse-origin-visits", query_params={"origin_url": origin_url})
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/origin-visits.html"
+        client, url, status_code=200, template_used="browse-origin-visits.html"
     )
 
     visits = archive_data.origin_visit_get(origin_url)
@@ -385,7 +385,7 @@ def test_origin_snapshot_null_branch(
     )
 
     check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
 
@@ -486,7 +486,7 @@ def test_browse_origin_directory_not_found(client, origin):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=404, template_used="browse/directory.html"
+        client, url, status_code=404, template_used="browse-directory.html"
     )
     assert re.search("Directory.*not found", resp.content.decode("utf-8"))
 
@@ -532,7 +532,7 @@ def test_browse_origin_content_directory_empty_snapshot(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used=f"browse/{object_type}.html"
+        client, url, status_code=200, template_used=f"browse-{object_type}.html"
     )
     assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
 
@@ -561,7 +561,7 @@ def test_origin_empty_snapshot(client, archive_data, new_origin):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
@@ -605,7 +605,7 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     resp_content = resp.content.decode("utf-8")
     assert re.search("snapshot.*is empty", resp_content)
@@ -626,7 +626,7 @@ def test_origin_release_browse(client, archive_data, origin_with_releases):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(resp, release_data["name"])
     assert_contains(resp, release["target"])
@@ -706,7 +706,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(
         resp, f"Revision {unknown_revision } could not be found in the archive."
@@ -848,7 +848,7 @@ def _origin_directory_view_test_helper(
     url = reverse("browse-origin-directory", query_params=query_params)
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(resp, '<td class="swh-directory">', count=len(dirs))
     assert_contains(resp, '<td class="swh-content">', count=len(files))
@@ -975,7 +975,7 @@ def _origin_directory_view_test_helper(
     client.logout()
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     # None of the above should be present for logged-out users
     for snippet in extrinsic_metadata_snippets:
@@ -984,7 +984,7 @@ def _origin_directory_view_test_helper(
     client.force_login(staff_user)
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
     # But they should for staff users
@@ -1018,5 +1018,5 @@ def test_browse_pull_request_branch(
         query_params={"origin_url": origin_url, "branch": pr_branch},
     )
     check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )

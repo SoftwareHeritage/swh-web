@@ -7,10 +7,10 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-{% include "includes/revision-info.html" %}
+{% include "./revision-info.html" %}
 
 {% if snapshot_context and snapshot_context.is_empty %}
-  {% include "includes/empty-snapshot.html" %}
+  {% include "./empty-snapshot.html" %}
 {% else %}
   {% if not iframe_mode %}
     <div class="card">

@@ -20,14 +20,14 @@ from swh.web.utils import origin_visit_types, reverse
 
 def _browse_help_view(request: HttpRequest) -> HttpResponse:
     return render(
-        request, "browse/help.html", {"heading": "How to browse the archive ?"}
+        request, "browse-help.html", {"heading": "How to browse the archive ?"}
     )
 
 
 def _browse_search_view(request: HttpRequest) -> HttpResponse:
     return render(
         request,
-        "browse/search.html",
+        "browse-search.html",
         {
             "heading": "Search software origins to browse",
             "visit_types": origin_visit_types(),
@@ -38,7 +38,7 @@ def _browse_search_view(request: HttpRequest) -> HttpResponse:
 def _browse_vault_view(request: HttpRequest) -> HttpResponse:
     return render(
         request,
-        "browse/vault-ui.html",
+        "browse-vault-ui.html",
         {"heading": "Download archive content from the Vault"},
     )
 

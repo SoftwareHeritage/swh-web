@@ -1,16 +1,16 @@
 {% comment %}
-Copyright (C) 2017-2021  The Software Heritage developers
+Copyright (C) 2017-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
 {% if not iframe_mode %}
-  {% include "includes/revision-info.html" %}
+  {% include "./revision-info.html" %}
 {% endif %}
 
 {% if snapshot_context and snapshot_context.is_empty %}
-  {% include "includes/empty-snapshot.html" %}
+  {% include "./empty-snapshot.html" %}
 {% elif dirs|length > 0 or files|length > 0 %}
   <div class="table-responsive">
     <table class="table swh-table swh-directory-table">

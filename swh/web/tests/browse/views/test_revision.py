@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -72,7 +72,7 @@ def test_revision_log_browse(client, archive_data, revision):
         nb_log_entries = len(revision_log_sorted)
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/revision-log.html"
+        client, url, status_code=200, template_used="browse-revision-log.html"
     )
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
     assert_contains(resp, '<a class="page-link">Newer</a>')
@@ -96,7 +96,7 @@ def test_revision_log_browse(client, archive_data, revision):
         return
 
     resp = check_html_get_response(
-        client, next_page_url, status_code=200, template_used="browse/revision-log.html"
+        client, next_page_url, status_code=200, template_used="browse-revision-log.html"
     )
 
     prev_page_url = reverse(
@@ -130,7 +130,7 @@ def test_revision_log_browse(client, archive_data, revision):
         return
 
     resp = check_html_get_response(
-        client, next_page_url, status_code=200, template_used="browse/revision-log.html"
+        client, next_page_url, status_code=200, template_used="browse-revision-log.html"
     )
 
     prev_page_url = reverse(
@@ -233,7 +233,7 @@ def _revision_browse_checks(
         history_url = reverse("browse-revision-log", url_args={"sha1_git": revision})
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/revision.html"
+        client, url, status_code=200, template_used="browse-revision.html"
     )
     assert_contains(resp, author_name)
     assert_contains(resp, committer_name)
@@ -310,7 +310,7 @@ def test_revision_invalid_path(client, archive_data, revision):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=404, template_used="browse/revision.html"
+        client, url, status_code=404, template_used="browse-revision.html"
     )
 
     directory = archive_data.revision_get(revision)["directory"]
@@ -340,7 +340,7 @@ def test_revision_metadata_display(archive_data, client, directory, person, date
     url = reverse("browse-revision", url_args={"sha1_git": hash_to_hex(revision.id)})
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/revision.html"
+        client, url, status_code=200, template_used="browse-revision.html"
     )
     assert_contains(resp, "swh-metadata-popover")
     assert_contains(resp, escape(json.dumps(metadata, indent=4)))

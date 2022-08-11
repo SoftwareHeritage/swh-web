@@ -282,7 +282,7 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/revision-log.html",
+        "browse-revision-log.html",
         {
             "heading": "Revision history",
             "swh_object_id": swh_rev_id,
@@ -564,7 +564,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/revision.html",
+        "browse-revision.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

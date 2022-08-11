@@ -270,7 +270,7 @@ def _origin_visits_browse(
 
     return render(
         request,
-        "browse/origin-visits.html",
+        "browse-origin-visits.html",
         {
             "heading": heading,
             "swh_object_name": "Visits",

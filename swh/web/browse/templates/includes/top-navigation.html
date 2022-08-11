@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -104,7 +104,7 @@ See top-level LICENSE file for more information
   {% endif %}
 
   <div id="swh-breadcrumbs-container" class="flex-grow-1">
-    {% include "includes/breadcrumbs.html" %}
+    {% include "./breadcrumbs.html" %}
   </div>
 
   <div class="btn-group swh-actions-dropdown ml-auto">
@@ -126,17 +126,17 @@ See top-level LICENSE file for more information
     {% endif %}
     {% if show_actions %}
       {% if not snapshot_context or not snapshot_context.is_empty %}
-        {% include "includes/vault-create-tasks.html" %}
+        {% include "./vault-create-tasks.html" %}
       {% endif %}
       {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
-        {% include "includes/take-new-snapshot.html" %}
+        {% include "./take-new-snapshot.html" %}
       {% endif %}
-      {% include "includes/show-metadata.html" %}
+      {% include "./show-metadata.html" %}
     {% endif %}
   </div>
 </div>
 
-{% include "includes/show-swhids.html" %}
+{% include "./show-swhids.html" %}
 
 <script>
   var snapshotContext = false;

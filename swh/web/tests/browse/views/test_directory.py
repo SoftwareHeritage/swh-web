@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -159,7 +159,7 @@ def test_directory_with_invalid_path(client, directory):
     )
 
     resp = check_html_get_response(
-        client, dir_url, status_code=404, template_used="browse/directory.html"
+        client, dir_url, status_code=404, template_used="browse-directory.html"
     )
     error_message = (
         f"Directory entry with path {path} from root directory {directory} not found"
@@ -188,7 +188,7 @@ def test_permalink_box_context(client, tests_data, directory):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(resp, 'id="swhid-context-option-directory"')
 
@@ -224,7 +224,7 @@ def test_directory_origin_snapshot_branch_browse(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
     _check_origin_snapshot_related_html(
@@ -294,7 +294,7 @@ def test_drectory_origin_snapshot_release_browse(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
     _check_origin_snapshot_related_html(
@@ -375,7 +375,7 @@ def test_directory_origin_snapshot_revision_browse(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
     assert_contains(resp, f"Revision: <strong>{branch_info['revision']}</strong>")
@@ -438,7 +438,7 @@ def _directory_view_checks(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
 
     assert_contains(
@@ -561,5 +561,5 @@ def test_browse_directory_snapshot_context_release_directory_target(
     )
 
     check_html_get_response(
-        client, browse_url, status_code=200, template_used="browse/directory.html"
+        client, browse_url, status_code=200, template_used="browse-directory.html"
     )
