@@ -30,7 +30,7 @@ from swh.storage.utils import now
 from swh.web.common import archive
 from swh.web.common.exc import BadInputExc, NotFoundExc
 from swh.web.common.typing import OriginInfo, PagedResult
-from swh.web.tests.conftest import ctags_json_missing, fossology_missing
+from swh.web.tests.conftest import fossology_missing
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 
@@ -88,71 +88,12 @@ def test_search_hash_exist(content):
     assert {"found": True} == actual_lookup
 
 
-@pytest.mark.skipif(
-    ctags_json_missing, reason="requires ctags with json output support"
-)
-def test_lookup_content_ctags(indexer_data, contents_with_ctags):
-    content_sha1 = random.choice(contents_with_ctags["sha1s"])
-    indexer_data.content_add_ctags(content_sha1)
-    actual_ctags = list(archive.lookup_content_ctags("sha1:%s" % content_sha1))
-
-    expected_data = list(indexer_data.content_get_ctags(content_sha1))
-    for ctag in expected_data:
-        ctag["id"] = content_sha1
-
-    assert actual_ctags == expected_data
-
-
-def test_lookup_content_ctags_no_hash():
-    unknown_content_ = random_content()
-
-    actual_ctags = list(
-        archive.lookup_content_ctags("sha1:%s" % unknown_content_["sha1"])
-    )
-
-    assert actual_ctags == []
-
-
 def test_lookup_content_filetype(indexer_data, content):
     indexer_data.content_add_mimetype(content["sha1"])
     actual_filetype = archive.lookup_content_filetype(content["sha1"])
 
     expected_filetype = indexer_data.content_get_mimetype(content["sha1"])
     assert actual_filetype == expected_filetype
-
-
-def test_lookup_expression(indexer_data, contents_with_ctags):
-    per_page = 10
-    expected_ctags = []
-
-    for content_sha1 in contents_with_ctags["sha1s"]:
-        if len(expected_ctags) == per_page:
-            break
-        indexer_data.content_add_ctags(content_sha1)
-        for ctag in indexer_data.content_get_ctags(content_sha1):
-            if len(expected_ctags) == per_page:
-                break
-            if ctag["name"] == contents_with_ctags["symbol_name"]:
-                del ctag["id"]
-                ctag["sha1"] = content_sha1
-                expected_ctags.append(ctag)
-
-    actual_ctags = list(
-        archive.lookup_expression(
-            contents_with_ctags["symbol_name"], last_sha1=None, per_page=10
-        )
-    )
-
-    assert actual_ctags == expected_ctags
-
-
-def test_lookup_expression_no_result():
-    expected_ctags = []
-
-    actual_ctags = list(
-        archive.lookup_expression("barfoo", last_sha1=None, per_page=10)
-    )
-    assert actual_ctags == expected_ctags
 
 
 @pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")

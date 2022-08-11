@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {getHumanReadableDate} from 'utils/functions';
+import {getHumanReadableDate, genLink} from 'utils/functions';
 
 function genSwhLink(data, type, linkText = '') {
   if (type === 'display' && data && data.startsWith('swh')) {
@@ -15,21 +15,6 @@ function genSwhLink(data, type, linkText = '') {
       linkText = formattedSWHID;
     }
     return `<a href="${browseUrl}">${linkText}</a>`;
-  }
-  return data;
-}
-
-function genLink(data, type, openInNewTab = false, linkText = '') {
-  if (type === 'display' && data) {
-    const sData = encodeURI(data);
-    if (!linkText) {
-      linkText = sData;
-    }
-    let attrs = '';
-    if (openInNewTab) {
-      attrs = 'target="_blank" rel="noopener noreferrer"';
-    }
-    return `<a href="${sData}" ${attrs}>${linkText}</a>`;
   }
   return data;
 }

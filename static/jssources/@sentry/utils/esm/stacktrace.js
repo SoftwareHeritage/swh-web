@@ -16,8 +16,12 @@ function createStackParser(...parsers) {
     var frames = [];
 
     for (var line of stack.split('\n').slice(skipFirst)) {
+      // https://github.com/getsentry/sentry-javascript/issues/5459
+      // Remove webpack (error: *) wrappers
+      var cleanedLine = line.replace(/\(error: (.*)\)/, '$1');
+
       for (var parser of sortedParsers) {
-        var frame = parser(line);
+        var frame = parser(cleanedLine);
 
         if (frame) {
           frames.push(frame);
@@ -97,7 +101,7 @@ function getFunctionName(fn) {
 
 function node(getModule) {
   var FILENAME_MATCH = /^\s*[-]{4,}$/;
-  var FULL_MATCH = /at (?:async )?(?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?|([^)]+))\)?/;
+  var FULL_MATCH = /at (?:async )?(?:(.+?)\s+\()?(?:(.+):(\d+):(\d+)?|([^)]+))\)?/;
 
     return (line) => {
     if (line.match(FILENAME_MATCH)) {

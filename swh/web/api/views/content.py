@@ -16,7 +16,6 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 from swh.web.common import archive
 from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import reverse
 
 
 @api_route(
@@ -168,22 +167,6 @@ def api_content_license(request: Request, q: str):
     )
 
 
-@api_route(r"/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/ctags/", "api-1-content-ctags")
-@api_doc("/content/ctags/", tags=["hidden"])
-def api_content_ctags(request: Request, q: str):
-    """
-    Get information about all `Ctags <http://ctags.sourceforge.net/>`_-style
-    symbols defined in a content object.
-    """
-    return api_lookup(
-        archive.lookup_content_ctags,
-        q,
-        notfound_msg="No ctags symbol found for content {}.".format(q),
-        enrich_fn=utils.enrich_metadata_endpoint,
-        request=request,
-    )
-
-
 @api_route(
     r"/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/",
     "api-1-content-raw",
@@ -231,53 +214,6 @@ def api_content_raw(request: Request, q: str):
         content_type="application/octet-stream",
         as_attachment=True,
     )
-
-
-@api_route(r"/content/symbol/(?P<q>.+)/", "api-1-content-symbol")
-@api_doc("/content/symbol/", tags=["hidden"])
-def api_content_symbol(request: Request, q: str):
-    """Search content objects by `Ctags <http://ctags.sourceforge.net/>`_-style
-    symbol (e.g., function name, data type, method, ...).
-
-    """
-    result = {}
-    last_sha1 = request.query_params.get("last_sha1", None)
-    per_page = int(request.query_params.get("per_page", "10"))
-
-    def lookup_exp(exp, last_sha1=last_sha1, per_page=per_page):
-        exp = list(archive.lookup_expression(exp, last_sha1, per_page))
-        return exp if exp else None
-
-    symbols = api_lookup(
-        lookup_exp,
-        q,
-        notfound_msg="No indexed raw content match expression '{}'.".format(q),
-        enrich_fn=functools.partial(utils.enrich_content, top_url=True),
-        request=request,
-    )
-
-    if symbols:
-        nb_symbols = len(symbols)
-
-        if nb_symbols == per_page:
-            query_params = {}
-            new_last_sha1 = symbols[-1]["sha1"]
-            query_params["last_sha1"] = new_last_sha1
-            if request.query_params.get("per_page"):
-                query_params["per_page"] = per_page
-
-            result["headers"] = {
-                "link-next": reverse(
-                    "api-1-content-symbol",
-                    url_args={"q": q},
-                    query_params=query_params,
-                    request=request,
-                )
-            }
-
-    result.update({"results": symbols})
-
-    return result
 
 
 @api_route(r"/content/known/search/", "api-1-content-known", methods=["POST"])
