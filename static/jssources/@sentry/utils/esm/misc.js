@@ -13,67 +13,20 @@ import { snipLine } from './string.js';
  */
 function uuid4() {
   var global = getGlobalObject() ;
-  var crypto = global.crypto || global.msCrypto;
+  var crypto = (global.crypto || global.msCrypto) ;
 
-  if (!(crypto === void 0) && crypto.getRandomValues) {
-    // Use window.crypto API if available
-    var arr = new Uint16Array(8);
-    crypto.getRandomValues(arr);
-
-    // set 4 in byte 7
-        arr[3] = (arr[3] & 0xfff) | 0x4000;
-    // set 2 most significant bits of byte 9 to '10'
-        arr[4] = (arr[4] & 0x3fff) | 0x8000;
-
-    var pad = (num) => {
-      let v = num.toString(16);
-      while (v.length < 4) {
-        v = `0${v}`;
-      }
-      return v;
-    };
-
-    return (
-      pad(arr[0]) + pad(arr[1]) + pad(arr[2]) + pad(arr[3]) + pad(arr[4]) + pad(arr[5]) + pad(arr[6]) + pad(arr[7])
-    );
+  if (crypto && crypto.randomUUID) {
+    return crypto.randomUUID().replace(/-/g, '');
   }
+
+  var getRandomByte =
+    crypto && crypto.getRandomValues ? () => crypto.getRandomValues(new Uint8Array(1))[0] : () => Math.random() * 16;
+
   // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
-  return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        var r = (Math.random() * 16) | 0;
-        var v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-/**
- * Parses string form of URL into an object
- * // borrowed from https://tools.ietf.org/html/rfc3986#appendix-B
- * // intentionally using regex and not <a/> href parsing trick because React Native and other
- * // environments where DOM might not be available
- * @returns parsed URL object
- */
-function parseUrl(url)
-
- {
-  if (!url) {
-    return {};
-  }
-
-  var match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
-
-  if (!match) {
-    return {};
-  }
-
-  // coerce to undefined values to empty string so we don't get 'undefined'
-  var query = match[6] || '';
-  var fragment = match[8] || '';
-  return {
-    host: match[4],
-    path: match[5],
-    protocol: match[2],
-    relative: match[5] + query + fragment, // everything minus origin
-  };
+  // Concatenating the following numbers as strings results in '10000000100040008000100000000000'
+  return (([1e7] ) + 1e3 + 4e3 + 8e3 + 1e11).replace(/[018]/g, c =>
+        ((c ) ^ ((getRandomByte() & 15) >> ((c ) / 4))).toString(16),
+  );
 }
 
 function getFirstException(event) {
@@ -192,16 +145,6 @@ function addContextToFrame(lines, frame, linesOfContext = 5) {
 }
 
 /**
- * Strip the query string and fragment off of a given URL or path (if present)
- *
- * @param urlPath Full URL or path, including possible query string and/or fragment
- * @returns URL or path without query string or fragment
- */
-function stripUrlQueryAndFragment(urlPath) {
-    return urlPath.split(/[\?#]/, 1)[0];
-}
-
-/**
  * Checks whether or not we've already captured the given exception (note: not an identical exception - the very object
  * in question), and marks it captured if not.
  *
@@ -238,5 +181,5 @@ function checkOrSetAlreadyCaught(exception) {
   return false;
 }
 
-export { addContextToFrame, addExceptionMechanism, addExceptionTypeValue, checkOrSetAlreadyCaught, getEventDescription, parseSemver, parseUrl, stripUrlQueryAndFragment, uuid4 };
+export { addContextToFrame, addExceptionMechanism, addExceptionTypeValue, checkOrSetAlreadyCaught, getEventDescription, parseSemver, uuid4 };
 //# sourceMappingURL=misc.js.map

@@ -51,7 +51,7 @@ User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
 To: ${requestData.forge_contact_email}
 Cc: ${requestInboundEmailAddress}
 Reply-To: ${requestInboundEmailAddress}
-Subject: Software Heritage archival request for test.example.com
+Subject: Software Heritage archival notification for test.example.com
 Content-Language: en-US
 From: Test Admin <admin@example.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -59,21 +59,26 @@ Content-Transfer-Encoding: 7bit
 
 Dear forge administrator,
 
-The mission of Software Heritage is to collect, preserve and share all the
-publicly available source code (see https://www.softwareheritage.org for more
-information).
+The mission of Software Heritage is to collect, preserve and share all
+the publicly available source code (see
+https://www.softwareheritage.org for more information).
 
-We just received a request to add the forge hosted at https://test.example.com to the
-list of software origins that are archived, and it is our understanding that you
-are the contact person for this forge.
+We just received a request to add the forge hosted at <%= forgeUrl %>
+to the list of software origins that are archived, and it is our
+understanding that you are the contact person for this forge.
 
-In order to archive the forge contents, we will have to periodically pull the
-public repositories it contains and clone them into the
+In order to archive the forge contents, we will have to periodically
+pull the public repositories it contains and clone them into the
 Software Heritage archive.
 
-Would you be so kind as to reply to this message to acknowledge the reception
-of this email and let us know if there are any special steps we should take in
-order to properly archive the public repositories hosted on your infrastructure?
+Please let us know if there are any technical issues to consider before
+ we launch the archival of the public repositories hosted on your
+ infrastructure.(use "Reply all" to ensure our system will process
+ your answer properly)
+
+In the absence of an answer to this message, we will start to archive
+your forge in the coming weeks (only the publicly accessible
+repositories will be archived)
 
 Thank you in advance for your help.
 
@@ -135,7 +140,7 @@ describe('Test add forge now request dashboard load', function() {
 
     cy.get('#contactForgeAdmin')
       .should('have.attr', 'emailsubject')
-      .and('include', `Software Heritage archival request for ${requestForgeDomain}`);
+      .and('include', `Software Heritage archival notification for ${requestForgeDomain}`);
   });
 
   it('should not show any error message', function() {

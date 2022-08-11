@@ -58,7 +58,7 @@ async function populateRequestDetails(requestId) {
     // Setting data for the email, now adding static data
     $('#contactForgeAdmin').attr('emailTo', forgeRequest.forge_contact_email);
     $('#contactForgeAdmin').attr('emailCc', forgeRequest.inbound_email_address);
-    $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival request for ${forgeRequest.forge_domain}`);
+    $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival notification for ${forgeRequest.forge_domain}`);
     populateRequestHistory(data.history);
     populateDecisionSelectOption(forgeRequest.status);
   } catch (e) {
