@@ -112,6 +112,9 @@ class Request(models.Model):
         help_text="Where did you find this contact information (url, ...)",
     )
 
+    last_moderator = models.TextField(default="None")
+    last_modified_date = models.DateTimeField(null=True)
+
     class Meta:
         app_label = APP_LABEL
         db_table = "add_forge_request"

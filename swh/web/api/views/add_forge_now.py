@@ -9,7 +9,6 @@ from typing import Any, Dict, Union
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models.query import QuerySet
 from django.forms import CharField, ModelForm
 from django.http import HttpResponseBadRequest
 from django.http.request import HttpRequest
@@ -66,36 +65,9 @@ class AddForgeNowRequestSerializer(serializers.ModelSerializer):
     inbound_email_address = serializers.CharField()
     forge_domain = serializers.CharField()
 
-    last_moderator = serializers.SerializerMethodField()
-    last_modified_date = serializers.SerializerMethodField()
-    history: Dict[int, QuerySet] = {}
-
     class Meta:
         model = AddForgeRequest
         fields = "__all__"
-
-    def _gethistory(self, request):
-        if request.id not in self.history:
-            self.history[request.id] = AddForgeNowRequestHistory.objects.filter(
-                request=request
-            ).order_by("id")
-        return self.history[request.id]
-
-    def get_last_moderator(self, request):
-        last_history_with_moderator = (
-            self._gethistory(request).filter(actor_role="MODERATOR").last()
-        )
-        return (
-            last_history_with_moderator.actor if last_history_with_moderator else "None"
-        )
-
-    def get_last_modified_date(self, request):
-        last_history = self._gethistory(request).last()
-        return (
-            last_history.date.isoformat().replace("+00:00", "Z")
-            if last_history
-            else None
-        )
 
 
 class AddForgeNowRequestPublicSerializer(serializers.ModelSerializer):
@@ -205,6 +177,9 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
     request_history.actor_role = AddForgeNowRequestActorRole.SUBMITTER.name
     request_history.save()
 
+    add_forge_request.last_modified_date = request_history.date
+    add_forge_request.save()
+
     data = AddForgeNowRequestSerializer(add_forge_request).data
 
     return Response(data=data, status=201)
@@ -292,7 +267,10 @@ def api_add_forge_request_update(
 
     if request_history.new_status is not None:
         add_forge_request.status = request_history.new_status
-        add_forge_request.save()
+
+    add_forge_request.last_moderator = request_history.actor
+    add_forge_request.last_modified_date = request_history.date
+    add_forge_request.save()
 
     data = AddForgeNowRequestSerializer(add_forge_request).data
     return Response(data=data, status=200)
