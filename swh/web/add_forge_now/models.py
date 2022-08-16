@@ -105,7 +105,7 @@ class Request(models.Model):
     submitter_forward_username = models.BooleanField(default=False)
     # FIXME: shall we do create a user model inside the webapp instead?
     forge_type = models.TextField()
-    forge_url = models.TextField()
+    forge_url = models.URLField()
     forge_contact_email = models.EmailField()
     forge_contact_name = models.TextField()
     forge_contact_comment = models.TextField(

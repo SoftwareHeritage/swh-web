@@ -45,7 +45,7 @@ See top-level LICENSE file for more information
               Forge URL
             </label>
             <input type="text" class="form-control" id="swh-input-forge-url"
-                   name="forge_url" required>
+                   name="forge_url" oninput="swh.add_forge.validateForgeUrl(this)" required>
             <small class="form-text text-muted">
               Remote URL of the forge.
             </small>

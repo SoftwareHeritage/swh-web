@@ -17,6 +17,7 @@ MIGRATION_0003 = "0003_request_submitter_forward_username"
 MIGRATION_0005 = "0005_prepare_inbound_email"
 MIGRATION_0006 = "0006_request_add_new_fields"
 MIGRATION_0007 = "0007_rename_denied_request_status"
+MIGRATION_0008 = "0008_turn_request_forge_url_into_url_field"
 
 
 def now() -> datetime:
@@ -211,3 +212,41 @@ def test_add_forge_now_denied_status_renamed_to_unsuccesful(migrator):
         last_modified_date=datetime.now(timezone.utc),
     )
     req.clean_fields()
+
+
+def test_add_forge_now_url_validation(migrator):
+
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0007))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    from swh.web.add_forge_now.models import RequestStatus
+
+    request = Request(
+        status=RequestStatus.PENDING.name,
+        submitter_name="dudess",
+        submitter_email="dudess@orga.org",
+        forge_type="cgit",
+        forge_url="foo",
+        forge_contact_email="forge@example.org",
+        forge_contact_name="forge",
+        forge_contact_comment="bar",
+        last_modified_date=datetime.now(timezone.utc),
+    )
+    request.clean_fields()
+
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0008))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    request = Request(
+        status=RequestStatus.PENDING.name,
+        submitter_name="johndoe",
+        submitter_email="johndoe@example.org",
+        forge_type="cgit",
+        forge_url="foobar",
+        forge_contact_email="forge@example.org",
+        forge_contact_name="forge",
+        forge_contact_comment="bar",
+        last_modified_date=datetime.now(timezone.utc),
+    )
+    with pytest.raises(ValidationError, match="Enter a valid URL."):
+        request.clean_fields()
