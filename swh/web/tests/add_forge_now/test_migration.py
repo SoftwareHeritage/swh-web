@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 
 import pytest
 
+from django.core.exceptions import ValidationError
+
 from swh.web.add_forge_now.apps import APP_LABEL
 
 MIGRATION_0001 = "0001_initial"
@@ -14,6 +16,7 @@ MIGRATION_0002 = "0002_authorized_null_comment"
 MIGRATION_0003 = "0003_request_submitter_forward_username"
 MIGRATION_0005 = "0005_prepare_inbound_email"
 MIGRATION_0006 = "0006_request_add_new_fields"
+MIGRATION_0007 = "0007_rename_denied_request_status"
 
 
 def now() -> datetime:
@@ -166,3 +169,45 @@ def test_add_forge_now_add_new_fields_to_request(migrator):
         history = history.order_by("id")
         assert request.last_modified_date == history.last().date
         assert request.last_moderator == history.last().actor
+
+
+def test_add_forge_now_denied_status_renamed_to_unsuccesful(migrator):
+
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0006))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    from swh.web.add_forge_now.models import RequestStatus
+
+    req = Request(
+        status=RequestStatus.UNSUCCESSFUL.name,
+        submitter_name="dudess",
+        submitter_email="dudess@orga.org",
+        forge_type="cgit",
+        forge_url="https://example.org/forge",
+        forge_contact_email="forge@example.org",
+        forge_contact_name="forge",
+        forge_contact_comment=(
+            "Discovered on the main forge homepag, following contact link."
+        ),
+        last_modified_date=datetime.now(timezone.utc),
+    )
+    with pytest.raises(ValidationError):
+        req.clean_fields()
+
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0007))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    req = Request(
+        status=RequestStatus.UNSUCCESSFUL.name,
+        submitter_name="dudess",
+        submitter_email="dudess@orga.org",
+        forge_type="cgit",
+        forge_url="https://example.org/forge",
+        forge_contact_email="forge@example.org",
+        forge_contact_name="forge",
+        forge_contact_comment=(
+            "Discovered on the main forge homepag, following contact link."
+        ),
+        last_modified_date=datetime.now(timezone.utc),
+    )
+    req.clean_fields()

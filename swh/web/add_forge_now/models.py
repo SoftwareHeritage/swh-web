@@ -32,7 +32,7 @@ class RequestStatus(enum.Enum):
     FIRST_ORIGIN_LOADED = "First origin loaded"
     REJECTED = "Rejected"
     SUSPENDED = "Suspended"
-    DENIED = "Denied"
+    UNSUCCESSFUL = "Unsuccessful"
 
     @classmethod
     def choices(cls):
@@ -47,6 +47,7 @@ class RequestStatus(enum.Enum):
                 self.ACCEPTED,
                 self.REJECTED,
                 self.SUSPENDED,
+                self.UNSUCCESSFUL,
             ],
             self.ACCEPTED: [self.SCHEDULED],
             self.SCHEDULED: [
@@ -58,7 +59,7 @@ class RequestStatus(enum.Enum):
             self.FIRST_ORIGIN_LOADED: [],
             self.REJECTED: [],
             self.SUSPENDED: [self.PENDING],
-            self.DENIED: [],
+            self.UNSUCCESSFUL: [],
         }
         return next_statuses[self]  # type: ignore
 

@@ -24,7 +24,7 @@ export function formatRequestStatusName(status) {
     'FIRST_ORIGIN_LOADED': 'First origin loaded',
     'REJECTED': 'Rejected',
     'SUSPENDED': 'Suspended',
-    'DENIED': 'Denied'
+    'UNSUCCESSFUL': 'Unsuccessful'
   };
   return status in statusLabel ? statusLabel[status] : status;
 }
