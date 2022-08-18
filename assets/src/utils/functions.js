@@ -96,17 +96,27 @@ export function htmlAlert(type, message, closable = false) {
   return `<div class="alert alert-${type} ${extraClasses}" role="alert">${message}${closeButton}</div>`;
 }
 
-export function isValidURL(string) {
+export function validateUrl(url, allowedProtocols = []) {
+  let originUrl = null;
+  let validUrl = true;
+
   try {
-    new URL(string);
-  } catch (_) {
-    return false;
+    originUrl = new URL(url);
+  } catch (TypeError) {
+    validUrl = false;
   }
-  return true;
+
+  if (validUrl && allowedProtocols.length) {
+    validUrl = (
+      allowedProtocols.find(protocol => protocol === originUrl.protocol) !== undefined
+    );
+  }
+
+  return validUrl ? originUrl : null;
 }
 
 export async function isArchivedOrigin(originPath) {
-  if (!isValidURL(originPath)) {
+  if (!validateUrl(originPath)) {
     // Not a valid URL, return immediately
     return false;
   } else {

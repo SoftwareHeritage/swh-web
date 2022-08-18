@@ -105,7 +105,7 @@ export function populateDecisionSelectOption(currentStatus) {
     'FIRST_ORIGIN_LOADED': [],
     'REJECTED': [],
     'SUSPENDED': ['PENDING'],
-    'DENIED': []
+    'UNSUCCESSFUL': []
   };
 
   // Determine the possible next status out of the current one

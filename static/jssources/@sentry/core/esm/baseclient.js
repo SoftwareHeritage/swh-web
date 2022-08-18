@@ -542,7 +542,16 @@ class BaseClient {
         return finalEvent.event_id;
       },
       reason => {
-        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(reason);
+        if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
+          // If something's gone wrong, log the error as a warning. If it's just us having used a `SentryError` for
+          // control flow, log just the message (no stack) as a log-level log.
+          var sentryError = reason ;
+          if (sentryError.logLevel === 'log') {
+            logger.log(sentryError.message);
+          } else {
+            logger.warn(sentryError);
+          }
+        }
         return undefined;
       },
     );
@@ -565,7 +574,7 @@ class BaseClient {
     const { beforeSend, sampleRate } = this.getOptions();
 
     if (!this._isEnabled()) {
-      return rejectedSyncPromise(new SentryError('SDK not enabled, will not capture event.'));
+      return rejectedSyncPromise(new SentryError('SDK not enabled, will not capture event.', 'log'));
     }
 
     var isTransaction = event.type === 'transaction';
@@ -577,6 +586,7 @@ class BaseClient {
       return rejectedSyncPromise(
         new SentryError(
           `Discarding event because it's not included in the random sample (sampling rate = ${sampleRate})`,
+          'log',
         ),
       );
     }
@@ -585,7 +595,7 @@ class BaseClient {
       .then(prepared => {
         if (prepared === null) {
           this.recordDroppedEvent('event_processor', event.type || 'error');
-          throw new SentryError('An event processor returned null, will not send event.');
+          throw new SentryError('An event processor returned null, will not send event.', 'log');
         }
 
         var isInternalException = hint.data && (hint.data ).__sentry__ === true;
@@ -599,7 +609,7 @@ class BaseClient {
       .then(processedEvent => {
         if (processedEvent === null) {
           this.recordDroppedEvent('before_send', event.type || 'error');
-          throw new SentryError('`beforeSend` returned `null`, will not send event.');
+          throw new SentryError('`beforeSend` returned `null`, will not send event.', 'log');
         }
 
         var session = scope && scope.getSession();
