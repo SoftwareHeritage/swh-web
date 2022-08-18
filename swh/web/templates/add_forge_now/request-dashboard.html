@@ -9,6 +9,7 @@ See top-level LICENSE file for more information
 
 {% load render_bundle from webpack_loader %}
 {% load static %}
+{% load swh_templatetags %}
 
 {% block header %}
 {% render_bundle 'add_forge' %}
@@ -116,6 +117,6 @@ See top-level LICENSE file for more information
 </div>
 <script>
   swh.webapp.initPage('add-forge-now-moderation');
-  swh.add_forge.onRequestDashboardLoad("{{ request_id }}");
+  swh.add_forge.onRequestDashboardLoad("{{ request_id }}", {{ next_statuses_for | jsonify }});
 </script>
 {% endblock %}

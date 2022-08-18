@@ -5,15 +5,15 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, getHumanReadableDate} from 'utils/functions';
-import emailTempate from './forge-admin-email.ejs';
+import {csrfPost, getHumanReadableDate, handleFetchError} from 'utils/functions';
 import requestHistoryItem from './add-request-history-item.ejs';
+import emailTempate from './forge-admin-email.ejs';
 
 let forgeRequest;
 
-export function onRequestDashboardLoad(requestId) {
+export function onRequestDashboardLoad(requestId, nextStatusesFor) {
   $(document).ready(() => {
-    populateRequestDetails(requestId);
+    populateRequestDetails(requestId, nextStatusesFor);
 
     $('#contactForgeAdmin').click((event) => {
       contactForgeAdmin(event);
@@ -29,7 +29,7 @@ export function onRequestDashboardLoad(requestId) {
         $('#userMessage').text('The request status has been updated ');
         $('#userMessage').removeClass('badge-danger');
         $('#userMessage').addClass('badge-success');
-        populateRequestDetails(requestId);
+        populateRequestDetails(requestId, nextStatusesFor);
       } catch (response) {
         $('#userMessage').text('Sorry; Updating the request failed');
         $('#userMessage').removeClass('badge-success');
@@ -39,7 +39,7 @@ export function onRequestDashboardLoad(requestId) {
   });
 }
 
-async function populateRequestDetails(requestId) {
+async function populateRequestDetails(requestId, nextStatusesFor) {
   try {
     const response = await fetch(Urls.api_1_add_forge_request_get(requestId));
     handleFetchError(response);
@@ -60,7 +60,7 @@ async function populateRequestDetails(requestId) {
     $('#contactForgeAdmin').attr('emailCc', forgeRequest.inbound_email_address);
     $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival notification for ${forgeRequest.forge_domain}`);
     populateRequestHistory(data.history);
-    populateDecisionSelectOption(forgeRequest.status);
+    populateDecisionSelectOption(forgeRequest.status, nextStatusesFor);
   } catch (e) {
     if (e instanceof Response) {
       // The fetch request failed (in handleFetchError), show the error message
@@ -86,27 +86,7 @@ function populateRequestHistory(history) {
   });
 }
 
-export function populateDecisionSelectOption(currentStatus) {
-  const nextStatusesFor = {
-    'PENDING': ['WAITING_FOR_FEEDBACK', 'REJECTED', 'SUSPENDED'],
-    'WAITING_FOR_FEEDBACK': ['FEEDBACK_TO_HANDLE'],
-    'FEEDBACK_TO_HANDLE': [
-      'WAITING_FOR_FEEDBACK',
-      'ACCEPTED',
-      'REJECTED',
-      'SUSPENDED'
-    ],
-    'ACCEPTED': ['SCHEDULED'],
-    'SCHEDULED': [
-      'FIRST_LISTING_DONE',
-      'FIRST_ORIGIN_LOADED'
-    ],
-    'FIRST_LISTING_DONE': ['FIRST_ORIGIN_LOADED'],
-    'FIRST_ORIGIN_LOADED': [],
-    'REJECTED': [],
-    'SUSPENDED': ['PENDING'],
-    'UNSUCCESSFUL': []
-  };
+export function populateDecisionSelectOption(currentStatus, nextStatusesFor) {
 
   // Determine the possible next status out of the current one
   const nextStatuses = nextStatusesFor[currentStatus];
