@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import copy
 import datetime
 import threading
 import time
@@ -197,6 +198,27 @@ def test_add_forge_request_create_duplicate(api_client, regular_user):
 
     requests = Request.objects.all()
     assert len(requests) == 1
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+def test_add_forge_request_create_invalid_forge_url(api_client, regular_user):
+    api_client.force_login(regular_user)
+    url = reverse("api-1-add-forge-request-create")
+
+    forge_data = copy.deepcopy(ADD_FORGE_DATA_FORGE1)
+    forge_data["forge_url"] = "foo"
+
+    resp = check_api_post_response(
+        api_client,
+        url,
+        data=forge_data,
+        status_code=400,
+    )
+
+    assert resp.data == {
+        "exception": "BadInputExc",
+        "reason": '{"forge_url": ["Enter a valid URL."]}',
+    }
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

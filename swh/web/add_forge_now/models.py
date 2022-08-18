@@ -32,7 +32,7 @@ class RequestStatus(enum.Enum):
     FIRST_ORIGIN_LOADED = "First origin loaded"
     REJECTED = "Rejected"
     SUSPENDED = "Suspended"
-    DENIED = "Denied"
+    UNSUCCESSFUL = "Unsuccessful"
 
     @classmethod
     def choices(cls):
@@ -47,6 +47,7 @@ class RequestStatus(enum.Enum):
                 self.ACCEPTED,
                 self.REJECTED,
                 self.SUSPENDED,
+                self.UNSUCCESSFUL,
             ],
             self.ACCEPTED: [self.SCHEDULED],
             self.SCHEDULED: [
@@ -58,7 +59,7 @@ class RequestStatus(enum.Enum):
             self.FIRST_ORIGIN_LOADED: [],
             self.REJECTED: [],
             self.SUSPENDED: [self.PENDING],
-            self.DENIED: [],
+            self.UNSUCCESSFUL: [],
         }
         return next_statuses[self]  # type: ignore
 
@@ -104,13 +105,16 @@ class Request(models.Model):
     submitter_forward_username = models.BooleanField(default=False)
     # FIXME: shall we do create a user model inside the webapp instead?
     forge_type = models.TextField()
-    forge_url = models.TextField()
+    forge_url = models.URLField()
     forge_contact_email = models.EmailField()
     forge_contact_name = models.TextField()
     forge_contact_comment = models.TextField(
         null=True,
         help_text="Where did you find this contact information (url, ...)",
     )
+
+    last_moderator = models.TextField(default="None")
+    last_modified_date = models.DateTimeField(null=True)
 
     class Meta:
         app_label = APP_LABEL

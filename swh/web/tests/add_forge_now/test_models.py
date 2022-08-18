@@ -20,6 +20,16 @@ from swh.web.add_forge_now.models import Request, RequestStatus
             ],
         ),
         (RequestStatus.WAITING_FOR_FEEDBACK, [RequestStatus.FEEDBACK_TO_HANDLE]),
+        (
+            RequestStatus.FEEDBACK_TO_HANDLE,
+            [
+                RequestStatus.WAITING_FOR_FEEDBACK,
+                RequestStatus.ACCEPTED,
+                RequestStatus.REJECTED,
+                RequestStatus.SUSPENDED,
+                RequestStatus.UNSUCCESSFUL,
+            ],
+        ),
     ],
 )
 def test_allowed_next_statuses(current_status, allowed_next_statuses):

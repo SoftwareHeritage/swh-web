@@ -25,12 +25,16 @@ def create_add_forge_requests(client, regular_user, regular_user2):
             "forge_contact_name": f"gitlab.example{i:02d}.org admin",
             "forge_contact_comment": "user marked as owner in forge members",
         }
-        create_add_forge_request(
-            client,
-            regular_user,
-            data=request,
+
+        requests.append(
+            json.loads(
+                create_add_forge_request(
+                    client,
+                    regular_user,
+                    data=request,
+                ).content
+            )
         )
-        requests.append(request)
 
         request = {
             "forge_type": "gitea",
@@ -39,12 +43,16 @@ def create_add_forge_requests(client, regular_user, regular_user2):
             "forge_contact_name": f"gitea.example{i:02d}.org admin",
             "forge_contact_comment": "user marked as owner in forge members",
         }
-        create_add_forge_request(
-            client,
-            regular_user2,
-            data=request,
+
+        requests.append(
+            json.loads(
+                create_add_forge_request(
+                    client,
+                    regular_user2,
+                    data=request,
+                ).content
+            )
         )
-        requests.append(request)
     return requests
 
 
@@ -107,18 +115,25 @@ def test_add_forge_request_list_datatables(
     assert data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
     assert data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
     assert "submitter_name" in data["data"][0]
+    assert "last_moderator" in data["data"][0]
+    assert "last_modified_date" in data["data"][0]
+
+    return data
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.parametrize("order_field", ["forge_url", "last_modified_date"])
 def test_add_forge_request_list_datatables_ordering(
-    client, regular_user, regular_user2
+    client, add_forge_moderator, admin_user, order_field
 ):
-    requests = create_add_forge_requests(client, regular_user, regular_user2)
-    requests_sorted = list(sorted(requests, key=lambda d: d["forge_url"]))
-    forge_urls_asc = [request["forge_url"] for request in requests_sorted]
+    requests = create_add_forge_requests(client, add_forge_moderator, admin_user)
+    requests_sorted = list(sorted(requests, key=lambda d: d[order_field]))
+    forge_urls_asc = [request[order_field] for request in requests_sorted]
     forge_urls_desc = list(reversed(forge_urls_asc))
 
     length = 10
+
+    client.force_login(admin_user)
 
     for direction in ("asc", "desc"):
         for i in range(4):
@@ -130,11 +145,10 @@ def test_add_forge_request_list_datatables_ordering(
                     "start": i * length,
                     "order[0][column]": 2,
                     "order[0][dir]": direction,
-                    "columns[2][name]": "forge_url",
+                    "columns[2][name]": order_field,
                 },
             )
 
-            client.force_login(regular_user)
             resp = check_http_get_response(client, url, status_code=200)
             data = json.loads(resp.content)
 
@@ -143,7 +157,7 @@ def test_add_forge_request_list_datatables_ordering(
             assert data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
             assert len(data["data"]) == length
 
-            page_forge_urls = [request["forge_url"] for request in data["data"]]
+            page_forge_urls = [request[order_field] for request in data["data"]]
             if direction == "asc":
                 expected_forge_urls = forge_urls_asc[i * length : (i + 1) * length]
             else:

@@ -43,7 +43,7 @@ describe('Browse requests list tests', function() {
     cy.visit(this.addForgeNowUrl);
 
     // create requests for the user 'user'
-    populateForm('gitlab', 'gitlab.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitlab', 'https://gitlab.org', 'admin', 'admin@example.org', 'on', '');
     cy.get('#requestCreateForm').submit();
 
     // user requests filter checkbox should be in the DOM
@@ -62,9 +62,9 @@ describe('Browse requests list tests', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
 
-    populateForm('gitea', 'gitea.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitea', 'https://gitea.org', 'admin', 'admin@example.org', 'on', '');
     cy.get('#requestCreateForm').submit();
-    populateForm('cgit', 'cgit.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('cgit', 'https://cgit.org', 'admin', 'admin@example.org', 'on', '');
     cy.get('#requestCreateForm').submit();
 
     // user requests filter checkbox should be in the DOM
@@ -208,7 +208,7 @@ describe('Test add-forge-request creation', function() {
   it('should update browse list on successful submission', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
     cy.get('#requestCreateForm').submit();
 
     cy.visit(this.addForgeNowUrl);
@@ -225,7 +225,7 @@ describe('Test add-forge-request creation', function() {
   it('should show error message on conflict', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
     cy.get('#requestCreateForm').submit();
 
     cy.get('#requestCreateForm').submit(); // Submitting the same data again
@@ -250,7 +250,7 @@ describe('Test add-forge-request creation', function() {
     cy.visit(this.addForgeNowUrl);
 
     populateForm(
-      'bitbucket', 'gitlab.com', 'test', 'test@example.com', 'off', 'comment'
+      'bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'off', 'comment'
     );
     cy.get('#requestCreateForm').submit();
 
@@ -259,6 +259,18 @@ describe('Test add-forge-request creation', function() {
         .should('have.class', 'badge-danger')
         .should('contain', 'field is required');
     });
+  });
+
+  it('should bot validate form when forge URL is invalid', function() {
+    cy.userLogin();
+    cy.visit(this.addForgeNowUrl);
+    populateForm('bitbucket', 'bitbucket.org', 'test', 'test@example.com', 'on', 'test comment');
+    cy.get('#requestCreateForm').submit();
+
+    cy.get('#swh-input-forge-url')
+      .then(input => {
+        assert.isFalse(input[0].checkValidity());
+      });
   });
 
 });

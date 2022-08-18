@@ -5,11 +5,13 @@
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, handleFetchError, isGitRepoUrl, htmlAlert,
-        getCanonicalOriginURL, getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
-import artifactFormRowTemplate from './artifact-form-row.ejs';
+import {
+  csrfPost, getCanonicalOriginURL, getHumanReadableDate, handleFetchError,
+  htmlAlert, isGitRepoUrl, validateUrl
+} from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
+import artifactFormRowTemplate from './artifact-form-row.ejs';
 
 let saveRequestsTable;
 
@@ -352,21 +354,11 @@ export function initOriginSave() {
 
 export function validateSaveOriginUrl(input) {
   const originType = $('#swh-input-visit-type').val();
-  let originUrl = null;
-  let validUrl = true;
+  const allowedProtocols = ['http:', 'https:', 'svn:', 'git:', 'rsync:',
+                            'pserver:', 'ssh:', 'bzr:'];
+  const originUrl = validateUrl(input.value.trim(), allowedProtocols);
 
-  try {
-    originUrl = new URL(input.value.trim());
-  } catch (TypeError) {
-    validUrl = false;
-  }
-
-  if (validUrl) {
-    const allowedProtocols = ['http:', 'https:', 'svn:', 'git:', 'rsync:', 'pserver:', 'ssh:', 'bzr:'];
-    validUrl = (
-      allowedProtocols.find(protocol => protocol === originUrl.protocol) !== undefined
-    );
-  }
+  let validUrl = originUrl !== null;
 
   if (validUrl && originType === 'git') {
     validUrl = isGitRepoUrl(originUrl);
