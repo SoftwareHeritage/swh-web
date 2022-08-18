@@ -24,7 +24,7 @@ from swh.web.utils import archive
     "api-1-directory",
     checksum_args=["sha1_git"],
 )
-@api_doc("/directory/")
+@api_doc("/directory/", category="Archive")
 @format_docstring()
 def api_directory(request: Request, sha1_git: str, path: Optional[str] = None):
     """

@@ -15,7 +15,7 @@ from swh.web.utils import archive
 @api_route(
     r"/release/(?P<sha1_git>[0-9a-f]+)/", "api-1-release", checksum_args=["sha1_git"]
 )
-@api_doc("/release/")
+@api_doc("/release/", category="Archive")
 @format_docstring()
 def api_release(request: Request, sha1_git: str):
     """

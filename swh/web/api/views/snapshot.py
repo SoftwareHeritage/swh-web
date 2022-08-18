@@ -18,7 +18,7 @@ from swh.web.utils import archive, reverse
     "api-1-snapshot",
     checksum_args=["snapshot_id"],
 )
-@api_doc("/snapshot/")
+@api_doc("/snapshot/", category="Archive")
 @format_docstring()
 def api_snapshot(request: Request, snapshot_id: str):
     """

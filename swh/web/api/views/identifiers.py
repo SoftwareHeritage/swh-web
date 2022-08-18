@@ -17,7 +17,7 @@ from swh.web.utils.identifiers import get_swhid, group_swhids, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")
-@api_doc("/resolve/")
+@api_doc("/resolve/", category="Archive")
 @format_docstring()
 def api_resolve_swhid(request: Request, swhid: str):
     """
@@ -74,7 +74,7 @@ def api_resolve_swhid(request: Request, swhid: str):
 
 
 @api_route(r"/known/", "api-1-known", methods=["POST"])
-@api_doc("/known/")
+@api_doc("/known/", category="Archive")
 @format_docstring()
 def api_swhid_known(request: Request):
     """

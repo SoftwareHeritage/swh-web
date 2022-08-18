@@ -61,7 +61,7 @@ DOC_RETURN_ORIGIN_VISIT_ARRAY += """
 
 
 @api_route(r"/origins/", "api-1-origins")
-@api_doc("/origins/", noargs=True)
+@api_doc("/origins/", category="Archive", noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origins(request: Request):
     """
@@ -116,7 +116,7 @@ def api_origins(request: Request):
 
 
 @api_route(r"/origin/(?P<origin_url>.+)/get/", "api-1-origin")
-@api_doc("/origin/")
+@api_doc("/origin/", category="Archive")
 @format_docstring(return_origin=DOC_RETURN_ORIGIN)
 def api_origin(request: Request, origin_url: str):
     """
@@ -173,7 +173,7 @@ def _visit_types() -> str:
     "api-1-origin-search",
     throttle_scope="swh_api_origin_search",
 )
-@api_doc("/origin/search/")
+@api_doc("/origin/search/", category="Archive")
 @format_docstring(
     return_origin_array=DOC_RETURN_ORIGIN_ARRAY, visit_types=_visit_types()
 )
@@ -255,7 +255,7 @@ def api_origin_search(request: Request, url_pattern: str):
 
 
 @api_route(r"/origin/metadata-search/", "api-1-origin-metadata-search")
-@api_doc("/origin/metadata-search/", noargs=True)
+@api_doc("/origin/metadata-search/", category="Metadata", noargs=True)
 @format_docstring(return_origin_array=DOC_RETURN_ORIGIN_ARRAY)
 def api_origin_metadata_search(request: Request):
     """
@@ -299,7 +299,7 @@ def api_origin_metadata_search(request: Request):
 
 
 @api_route(r"/origin/(?P<origin_url>.+)/visits/", "api-1-origin-visits")
-@api_doc("/origin/visits/")
+@api_doc("/origin/visits/", category="Archive")
 @format_docstring(return_origin_visit_array=DOC_RETURN_ORIGIN_VISIT_ARRAY)
 def api_origin_visits(request: Request, origin_url: str):
     """
@@ -391,7 +391,7 @@ def api_origin_visits(request: Request, origin_url: str):
     "api-1-origin-visit-latest",
     throttle_scope="swh_api_origin_visit_latest",
 )
-@api_doc("/origin/visit/latest/")
+@api_doc("/origin/visit/latest/", category="Archive")
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
 def api_origin_visit_latest(request: Request, origin_url: str):
     """
@@ -435,7 +435,7 @@ def api_origin_visit_latest(request: Request, origin_url: str):
 @api_route(
     r"/origin/(?P<origin_url>.+)/visit/(?P<visit_id>[0-9]+)/", "api-1-origin-visit"
 )
-@api_doc("/origin/visit/")
+@api_doc("/origin/visit/", category="Archive")
 @format_docstring(return_origin_visit=DOC_RETURN_ORIGIN_VISIT)
 def api_origin_visit(request: Request, visit_id: str, origin_url: str):
     """
@@ -477,7 +477,7 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
 @api_route(
     r"/origin/(?P<origin_url>.+)/intrinsic-metadata/", "api-origin-intrinsic-metadata"
 )
-@api_doc("/origin/intrinsic-metadata/")
+@api_doc("/origin/intrinsic-metadata/", category="Metadata")
 @format_docstring()
 def api_origin_intrinsic_metadata(request: Request, origin_url: str):
     """

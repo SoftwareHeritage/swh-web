@@ -107,7 +107,7 @@ class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
     "api-1-add-forge-request-create",
     methods=["POST"],
 )
-@api_doc("/add-forge/request/create")
+@api_doc("/add-forge/request/create", category="Request archival")
 @format_docstring()
 @transaction.atomic
 def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpResponse:
@@ -190,7 +190,7 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
     "api-1-add-forge-request-update",
     methods=["POST"],
 )
-@api_doc("/add-forge/request/update", tags=["hidden"])
+@api_doc("/add-forge/request/update", category="Request archival", tags=["hidden"])
 @format_docstring()
 @transaction.atomic
 def api_add_forge_request_update(
@@ -281,7 +281,7 @@ def api_add_forge_request_update(
     "api-1-add-forge-request-list",
     methods=["GET"],
 )
-@api_doc("/add-forge/request/list")
+@api_doc("/add-forge/request/list", category="Request archival")
 @format_docstring()
 def api_add_forge_request_list(request: Request):
     """
@@ -352,7 +352,7 @@ def api_add_forge_request_list(request: Request):
     "api-1-add-forge-request-get",
     methods=["GET"],
 )
-@api_doc("/add-forge/request/get")
+@api_doc("/add-forge/request/get", category="Request archival")
 @format_docstring()
 def api_add_forge_request_get(request: Request, id: int):
     """

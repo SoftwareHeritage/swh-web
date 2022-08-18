@@ -81,13 +81,13 @@ _exception_http_code = {
 def test_apidoc_nodoc_failure():
     with pytest.raises(Exception):
 
-        @api_doc("/my/nodoc/url/")
+        @api_doc("/my/nodoc/url/", "test")
         def apidoc_nodoc_tester(request, arga=0, argb=0):
             return Response(arga + argb)
 
 
 @api_route(r"/some/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/", "api-1-some-doc-route")
-@api_doc("/some/doc/route/")
+@api_doc("/some/doc/route/", category="test")
 def apidoc_route(request, myarg, myotherarg, akw=0):
     """
     Sample doc
@@ -106,7 +106,7 @@ def test_apidoc_route_fn(api_client):
 
 
 @api_route(r"/test/error/(?P<exc_name>.+)/", "api-1-test-error")
-@api_doc("/test/error/")
+@api_doc("/test/error/", category="test")
 def apidoc_test_error_route(request, exc_name):
     """
     Sample doc
@@ -126,7 +126,7 @@ def test_apidoc_error(api_client):
     r"/some/full/(?P<myarg>[0-9]+)/(?P<myotherarg>[0-9]+)/",
     "api-1-some-complete-doc-route",
 )
-@api_doc("/some/complete/doc/route/")
+@api_doc("/some/complete/doc/route/", category="test")
 def apidoc_full_stack(request, myarg, myotherarg, akw=0):
     """
     Sample doc
@@ -147,7 +147,7 @@ def test_apidoc_full_stack_fn(api_client):
 
 
 @api_route(r"/test/post/only/", "api-1-test-post-only", methods=["POST"])
-@api_doc("/test/post/only/")
+@api_doc("/test/post/only/", category="test")
 def apidoc_test_post_only(request, exc_name):
     """
     Sample doc
@@ -337,7 +337,7 @@ def test_api_doc_parse_httpdomain():
 
 
 @api_route(r"/post/endpoint/", "api-1-post-endpoint", methods=["POST"])
-@api_doc("/post/endpoint/")
+@api_doc("/post/endpoint/", category="test")
 def apidoc_test_post_endpoint(request):
     """
     .. http:post:: /api/1/post/endpoint/
@@ -427,7 +427,7 @@ def test_apidoc_input_output_doc(client):
 
 
 @api_route(r"/endpoint/links/in/doc/", "api-1-endpoint-links-in-doc")
-@api_doc("/endpoint/links/in/doc/")
+@api_doc("/endpoint/links/in/doc/", category="test")
 def apidoc_test_endpoint_with_links_in_doc(request):
     """
     .. http:get:: /api/1/post/endpoint/

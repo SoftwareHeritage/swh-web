@@ -18,7 +18,7 @@ import docutils.utils
 from rest_framework.decorators import api_view
 
 from swh.web.api.apiresponse import make_api_response
-from swh.web.api.apiurls import APIUrls
+from swh.web.api.apiurls import APIUrls, CategoryId
 from swh.web.utils import parse_rst
 
 
@@ -316,6 +316,8 @@ class APIDocException(Exception):
 
 def api_doc(
     route: str,
+    *,
+    category: CategoryId,
     noargs: bool = False,
     tags: List[str] = [],
     api_version: str = "1",
@@ -351,6 +353,7 @@ def api_doc(
             doc_desc = doc_data["description"]
             APIUrls.add_doc_route(
                 route,
+                category,
                 re.split(r"\.\s", doc_desc)[0],
                 noargs=noargs,
                 api_version=api_version,

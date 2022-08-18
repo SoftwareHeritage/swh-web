@@ -40,7 +40,7 @@ def _savable_visit_types() -> str:
     throttle_scope="swh_save_origin",
     never_cache=True,
 )
-@api_doc("/origin/save/")
+@api_doc("/origin/save/", category="Request archival")
 @format_docstring(visit_types=_savable_visit_types())
 def api_save_origin(request: Request, visit_type: str, origin_url: str):
     """

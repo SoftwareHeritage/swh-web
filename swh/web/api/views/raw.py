@@ -31,7 +31,7 @@ from swh.web.utils.exc import NotFoundExc
     "api-1-raw-object",
     throttle_scope="swh_raw_object",
 )
-@api_doc("/raw/")
+@api_doc("/raw/", category="Archive")
 @format_docstring()
 def api_raw_object(request: Request, swhid: str):
     """

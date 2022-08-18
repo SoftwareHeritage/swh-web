@@ -36,7 +36,9 @@ See top-level LICENSE file for more information
   </p>
 </div>
 
-<div class="swh-api-1-doc table-responsive">
+{% for category, routes in doc_routes %}
+  <h2>{{ category }}</h2>
+
   <table class="table table-striped search-res swh-table" width="100%">
     <col width="200">
     <thead class="thead-default">
@@ -44,14 +46,14 @@ See top-level LICENSE file for more information
       <th class="d-none d-sm-table-cell">Description</th>
     </thead>
     <tbody>
-      {% for route, doc in doc_routes %}
+      {% for doc in routes %}
         <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-1-doc-route-{{ tag }} {% endfor %}">
           {% if "upcoming" in doc.tags %}
-            <td id="{{ route }}">
+            <td id="{{ doc.route_view_name }}">
               {% url doc.route_view_name %}
             </td>
           {% else %}
-            <td id="{{ route }}">
+            <td id="{{ doc.route_view_name }}">
               <a href="{% url doc.route_view_name %}">
                 {{ doc.route }}
               </a>
@@ -67,17 +69,10 @@ See top-level LICENSE file for more information
       {% endfor %}
     </tbody>
   </table>
-</div>
+{% endfor %}
 
 <script type="text/javascript">
   swh.webapp.initPage('api');
   swh.webapp.highlightCode(false);
-  $(document).ready(function() {
-    $('table.swh-table').DataTable({
-      "paging": false,
-      "info": false,
-      "order": [[0, "asc"]]
-    });
-  });
 </script>
 {% endblock %}

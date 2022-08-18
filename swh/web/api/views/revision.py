@@ -42,7 +42,7 @@ DOC_RETURN_REVISION_ARRAY = DOC_RETURN_REVISION.replace(":>json", ":>jsonarr")
 @api_route(
     r"/revision/(?P<sha1_git>[0-9a-f]+)/", "api-1-revision", checksum_args=["sha1_git"]
 )
-@api_doc("/revision/")
+@api_doc("/revision/", category="Archive")
 @format_docstring(return_revision=DOC_RETURN_REVISION)
 def api_revision(request: Request, sha1_git: str):
     """
@@ -85,7 +85,7 @@ def api_revision(request: Request, sha1_git: str):
     "api-1-revision-raw-message",
     checksum_args=["sha1_git"],
 )
-@api_doc("/revision/raw/", tags=["hidden"])
+@api_doc("/revision/raw/", category="Archive", tags=["hidden"])
 def api_revision_raw_message(request: Request, sha1_git: str):
     """Return the raw data of the message of revision identified by sha1_git"""
     raw = archive.lookup_revision_message(sha1_git)
@@ -104,7 +104,7 @@ def api_revision_raw_message(request: Request, sha1_git: str):
     "api-1-revision-directory",
     checksum_args=["sha1_git"],
 )
-@api_doc("/revision/directory/")
+@api_doc("/revision/directory/", category="Archive")
 @format_docstring()
 def api_revision_directory(
     request: Request, sha1_git: str, dir_path: Optional[str] = None
@@ -162,7 +162,7 @@ def api_revision_directory(
     "api-1-revision-log",
     checksum_args=["sha1_git"],
 )
-@api_doc("/revision/log/")
+@api_doc("/revision/log/", category="Archive")
 @format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
 def api_revision_log(request: Request, sha1_git: str):
     """

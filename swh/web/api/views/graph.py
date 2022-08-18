@@ -77,7 +77,7 @@ def _resolve_origin_swhids_in_graph_response(
 
 
 @api_route(r"/graph/", "api-1-graph-doc")
-@api_doc("/graph/")
+@api_doc("/graph/", category="Miscellaneous")
 def api_graph(request: Request) -> None:
     """
     .. http:get:: /api/1/graph/(graph_query)/

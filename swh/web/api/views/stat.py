@@ -11,7 +11,7 @@ from swh.web.utils import archive
 
 
 @api_route(r"/stat/counters/", "api-1-stat-counters")
-@api_doc("/stat/counters/", noargs=True)
+@api_doc("/stat/counters/", category="Miscellaneous", noargs=True)
 @format_docstring()
 def api_stats(request: Request):
     """
