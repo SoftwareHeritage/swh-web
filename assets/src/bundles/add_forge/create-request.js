@@ -5,10 +5,12 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, errorMessageFromResponse, csrfPost,
-        getHumanReadableDate, genLink} from 'utils/functions';
-import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {swhSpinnerSrc} from 'utils/constants';
+import {
+  csrfPost, errorMessageFromResponse, genLink, getHumanReadableDate,
+  handleFetchError, validateUrl
+} from 'utils/functions';
+import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 
 let requestBrowseTable;
 
@@ -121,4 +123,12 @@ export function populateRequestBrowseList() {
         }
       ]
     });
+}
+
+export function validateForgeUrl(input) {
+  let customValidity = '';
+  if (!validateUrl(input.value.trim(), ['http', 'https'])) {
+    customValidity = 'The provided forge URL is not valid.';
+  }
+  input.setCustomValidity(customValidity);
 }
