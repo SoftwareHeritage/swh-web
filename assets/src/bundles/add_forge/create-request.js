@@ -70,7 +70,6 @@ export function populateRequestBrowseList() {
       },
       retrieve: true,
       searching: true,
-      info: false,
       // Layout configuration, see [1] for more details
       // [1] https://datatables.net/reference/option/dom
       dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
@@ -121,7 +120,8 @@ export function populateRequestBrowseList() {
             return swh.add_forge.formatRequestStatusName(data);
           }
         }
-      ]
+      ],
+      order: [[0, 'desc']]
     });
 }
 

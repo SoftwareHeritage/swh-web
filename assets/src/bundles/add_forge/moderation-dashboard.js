@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {getHumanReadableDate, genLink} from 'utils/functions';
+import {genLink, getHumanReadableDate} from 'utils/functions';
 
 export function onModerationPageLoad() {
   populateModerationList();
@@ -20,7 +20,6 @@ export async function populateModerationList() {
       serverSide: true,
       processing: true,
       searching: true,
-      info: false,
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {
@@ -70,6 +69,7 @@ export async function populateModerationList() {
             return swh.add_forge.formatRequestStatusName(data);
           }
         }
-      ]
+      ],
+      order: [[0, 'desc']]
     });
 }
