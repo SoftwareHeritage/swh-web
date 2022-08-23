@@ -14,8 +14,6 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from django.contrib.auth.decorators import user_passes_test
 from django.http.request import HttpRequest
 
-from swh.web.utils.exc import ForbiddenExc
-
 SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
 ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
@@ -109,6 +107,8 @@ def any_permission_required(*perms):
     def check_perms(user):
         if any(user.has_perm(perm) for perm in perms):
             return True
+        from swh.web.utils.exc import ForbiddenExc
+
         raise ForbiddenExc
 
     return user_passes_test(check_perms)
