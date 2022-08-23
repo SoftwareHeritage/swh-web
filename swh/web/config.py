@@ -163,6 +163,7 @@ DEFAULT_CONFIG = {
             "swh.web.mailmap",
             "swh.web.save_code_now",
             "swh.web.deposit",
+            "swh.web.badges",
         ],
     ),
 }

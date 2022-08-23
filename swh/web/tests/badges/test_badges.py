@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021  The Software Heritage developers
+# Copyright (C) 2019-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ from hypothesis import given
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ObjectType, QualifiedSWHID
-from swh.web.misc.badges import _badge_config, _get_logo_data
+from swh.web.badges import badge_config, get_logo_data
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import check_http_get_response
 from swh.web.tests.strategies import new_origin
@@ -173,8 +173,8 @@ def _check_generated_badge(response, object_type, object_id, error=None):
 
     assert_contains(response, "<svg ")
     assert_contains(response, "</svg>")
-    assert_contains(response, _get_logo_data())
-    assert_contains(response, _badge_config[object_type]["color"])
-    assert_contains(response, _badge_config[object_type]["title"])
+    assert_contains(response, get_logo_data())
+    assert_contains(response, badge_config[object_type]["color"])
+    assert_contains(response, badge_config[object_type]["title"])
     assert_contains(response, text)
     assert_contains(response, link)

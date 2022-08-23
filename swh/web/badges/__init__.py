@@ -10,7 +10,6 @@ from pybadges import badge
 
 from django.contrib.staticfiles import finders
 from django.http import HttpRequest, HttpResponse
-from django.urls import re_path as url
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
@@ -25,7 +24,7 @@ _red = "#cd5741"
 
 _swh_logo_data = None
 
-_badge_config = {
+badge_config = {
     "content": {
         "color": _blue,
         "title": "Archived source file",
@@ -54,7 +53,7 @@ _badge_config = {
 }
 
 
-def _get_logo_data() -> str:
+def get_logo_data() -> str:
     """
     Get data-URI for Software Heritage SVG logo to embed it in
     the generated badges.
@@ -69,7 +68,7 @@ def _get_logo_data() -> str:
     return _swh_logo_data
 
 
-def _swh_badge(
+def swh_badge(
     request: HttpRequest,
     object_type: str,
     object_id: str,
@@ -145,17 +144,17 @@ def _swh_badge(
     badge_data = badge(
         left_text=left_text,
         right_text=right_text,
-        right_color=_badge_config[object_type]["color"],
+        right_color=badge_config[object_type]["color"],
         whole_link=request.build_absolute_uri(whole_link),
-        whole_title=_badge_config[object_type]["title"],
-        logo=_get_logo_data(),
+        whole_title=badge_config[object_type]["title"],
+        logo=get_logo_data(),
         embed_logo=True,
     )
 
     return HttpResponse(badge_data, content_type="image/svg+xml")
 
 
-def _swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:
+def swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:
     """
     Generate a Software Heritage badge for a given object SWHID.
 
@@ -168,18 +167,4 @@ def _swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:
             *image/svg+xml* containing the SVG badge data. If any error
             occurs, a status code of 400 will be returned.
     """
-    return _swh_badge(request, "", "", object_swhid)
-
-
-urlpatterns = [
-    url(
-        r"^badge/(?P<object_type>[a-z]+)/(?P<object_id>.+)/$",
-        _swh_badge,
-        name="swh-badge",
-    ),
-    url(
-        r"^badge/(?P<object_swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
-        _swh_badge_swhid,
-        name="swh-badge-swhid",
-    ),
-]
+    return swh_badge(request, "", "", object_swhid)
