@@ -11,6 +11,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
+from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
@@ -67,7 +68,7 @@ def _get_directory_rendering_data(
                 path=(path or "/") + d["name"] + "/",
             )
             d["url"] = reverse(
-                "swhid-iframe",
+                "browse-swhid-iframe",
                 url_args={"swhid": str(dir_swhid)},
                 query_params={"focus_swhid": str(focus_swhid)},
             )
@@ -84,7 +85,7 @@ def _get_directory_rendering_data(
             lines=(focus_swhid.lines if object_id == focus_swhid.object_id else None),
         )
         f["url"] = reverse(
-            "swhid-iframe",
+            "browse-swhid-iframe",
             url_args={"swhid": str(cnt_swhid)},
             query_params={"focus_swhid": str(focus_swhid)},
         )
@@ -135,7 +136,7 @@ def _get_breacrumbs_data(
                 "object_id": root_dir_swhid.object_id.hex(),
                 "path": "/",
                 "url": reverse(
-                    "swhid-iframe",
+                    "browse-swhid-iframe",
                     url_args={"swhid": str(root_dir_swhid)},
                     query_params={
                         "focus_swhid": str(focus_swhid)
@@ -162,7 +163,7 @@ def _get_breacrumbs_data(
                     "object_id": dir_swhid.object_id.hex(),
                     "path": dir_swhid.path.decode("utf-8") if dir_swhid.path else "",
                     "url": reverse(
-                        "swhid-iframe",
+                        "browse-swhid-iframe",
                         url_args={"swhid": str(dir_swhid)},
                         query_params={"focus_swhid": str(focus_swhid)},
                     ),
@@ -181,6 +182,10 @@ def _get_breacrumbs_data(
     return breadcrumbs, root_dir
 
 
+@browse_route(
+    r"embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/",
+    view_name="browse-swhid-iframe",
+)
 @xframe_options_exempt
 def swhid_iframe(request, swhid: str):
     """Django view that can be embedded in an iframe to display objects archived
@@ -308,7 +313,7 @@ def swhid_iframe(request, swhid: str):
 
     return render(
         request,
-        "misc/iframe.html",
+        "browse-iframe.html",
         {
             **view_data,
             "iframe_mode": True,
@@ -334,6 +339,6 @@ urlpatterns = [
     url(
         r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
         swhid_iframe,
-        name="swhid-iframe",
+        name="browse-swhid-iframe",
     ),
 ]

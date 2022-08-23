@@ -11,6 +11,7 @@ from swh.web.browse.browseurls import BrowseUrls
 from swh.web.browse.identifiers import swhid_browse
 import swh.web.browse.views.content  # noqa
 import swh.web.browse.views.directory  # noqa
+import swh.web.browse.views.iframe  # noqa
 import swh.web.browse.views.origin  # noqa
 import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
@@ -47,6 +48,10 @@ def _browse_origin_save_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse("origin-save"))
 
 
+def _browse_swhid_iframe_legacy(request: HttpRequest, swhid: str) -> HttpResponse:
+    return redirect(reverse("browse-swhid-iframe", url_args={"swhid": swhid}))
+
+
 urlpatterns = [
     url(r"^browse/$", _browse_search_view),
     url(r"^browse/help/$", _browse_help_view, name="browse-help"),
@@ -58,6 +63,11 @@ urlpatterns = [
         r"^browse/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
         swhid_browse,
         name="browse-swhid-legacy",
+    ),
+    url(
+        r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        _browse_swhid_iframe_legacy,
+        name="browse-swhid-iframe-legacy",
     ),
 ]
 

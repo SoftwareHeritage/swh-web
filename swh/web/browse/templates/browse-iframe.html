@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2021  The Software Heritage developers
+Copyright (C) 2021-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -25,7 +25,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2021  The Software Heritage developers
+Copyright (C) 2021-2022  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -129,7 +129,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <div class="ml-auto d-flex align-items-center">
                   {% if swhid != focus_swhid %}
-                    <a class="d-flex align-items-center pr-2" href="{% url 'swhid-iframe' focus_swhid %}"
+                    <a class="d-flex align-items-center pr-2" href="{% url 'browse-swhid-iframe' focus_swhid %}"
                         title="Reset view to its original state">
                       <div class="d-none d-lg-block">Reset view</div>
                       <i class="mdi mdi-refresh" aria-hidden="true"></i>

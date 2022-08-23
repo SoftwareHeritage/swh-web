@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2021  The Software Heritage developers
+Copyright (C) 2017-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -77,7 +77,7 @@ See top-level LICENSE file for more information
                     {% endif %}
                     {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
                       <a class="float-right" style="cursor: pointer;"
-                         onclick="swh.webapp.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).parent().parent().find('.swhid').text())">
+                         onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).parent().parent().find('.swhid').text())">
                         Iframe embedding
                       </a>
                     {% endif %}
