@@ -35,7 +35,10 @@ async function getMetadataForOrigin(originUrl, baseUrl) {
 };
 
 function getDatabase() {
-  return new sqlite3.Database('./swh-web-test.sqlite3');
+  const db = new sqlite3.Database('./swh-web-test.sqlite3');
+  // to prevent "database is locked" error when running tests
+  db.run('PRAGMA journal_mode = WAL;');
+  return db;
 }
 
 module.exports = (on, config) => {

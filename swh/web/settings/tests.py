@@ -129,6 +129,16 @@ if not _pytest:
     settings.DATABASES["default"].update(
         {"ENGINE": "django.db.backends.sqlite3", "NAME": "swh-web-test.sqlite3"}
     )
+
+    # to prevent "database is locked" error when running cypress tests
+    from django.db.backends.signals import connection_created
+
+    def activate_wal_journal_mode(sender, connection, **kwargs):
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode = WAL;")
+
+    connection_created.connect(activate_wal_journal_mode)
+
 else:
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
