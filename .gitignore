@@ -33,7 +33,7 @@ dist/
 package-lock.json
 yarn-error.log
 cypress/mochawesome/
-.nyc_output/
+.nyc_output*/
 cypress/coverage*/
 cypress/fixtures/source*.json
 cypress/junit/
