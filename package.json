@@ -167,13 +167,6 @@
     "cover 99.5%",
     "not dead"
   ],
-  "nyc": {
-    "report-dir": "cypress/coverage",
-    "exclude": [
-      "assets/src/bundles/vendors/index.js",
-      "assets/src/thirdparty/**/*.js"
-    ]
-  },
   "engines": {
     "node": ">=14.0.0"
   }
