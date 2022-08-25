@@ -226,6 +226,9 @@ describe('Test Admin Origin Save', function() {
     const originUrl = `https://example.org/${Date.now()}`;
     const rejectionNote = 'The provided URL does not target a git repository.';
 
+    const rejectUrl = this.Urls.admin_origin_save_request_reject('git', originUrl);
+    cy.intercept('POST', rejectUrl).as('rejectSaveRequest');
+
     // anonymous user creates a request put in pending state
     cy.visit(this.Urls.origin_save());
 
@@ -256,6 +259,8 @@ describe('Test Admin Origin Save', function() {
 
     cy.get('#swh-web-modal-confirm-ok-btn')
       .click();
+
+    cy.wait('@rejectSaveRequest');
 
     // checks rejection note has been saved to swh-web database
     cy.request(this.Urls.api_1_save_origin('git', originUrl))
