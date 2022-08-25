@@ -16,8 +16,12 @@ from django.conf import settings
 from django.utils.html import escape
 
 from swh.scheduler.model import LastVisitStatus, ListedOrigin, OriginVisitStats
+from swh.web.archive_coverage.views import (
+    deposited_origins,
+    legacy_origins,
+    listed_origins,
+)
 from swh.web.config import SWH_WEB_SERVER_NAME
-from swh.web.misc.coverage import deposited_origins, legacy_origins, listed_origins
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
@@ -30,7 +34,7 @@ def test_coverage_view_no_metrics(client, swh_scheduler):
     """
     url = reverse("swh-coverage")
     check_html_get_response(
-        client, url, status_code=200, template_used="misc/coverage.html"
+        client, url, status_code=200, template_used="archive-coverage.html"
     )
 
 
@@ -43,7 +47,7 @@ def archive_coverage_data(mocker, swh_scheduler):
     that will be consumed by the archive coverage view.
     """
     # mock calls to get nixguix origin counts
-    mock_archive = mocker.patch("swh.web.misc.coverage.archive")
+    mock_archive = mocker.patch("swh.web.archive_coverage.views.archive")
     mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
     mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
 
@@ -98,7 +102,7 @@ def archive_coverage_data(mocker, swh_scheduler):
                     "status": "done",
                 }
             )
-    get_deposits_list = mocker.patch("swh.web.misc.coverage.get_deposits_list")
+    get_deposits_list = mocker.patch("swh.web.archive_coverage.views.get_deposits_list")
     get_deposits_list.return_value = deposits
 
 
@@ -107,7 +111,7 @@ def test_coverage_view_with_metrics(client, archive_coverage_data):
     # check view gets rendered without errors
     url = reverse("swh-coverage")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/coverage.html"
+        client, url, status_code=200, template_used="archive-coverage.html"
     )
 
     # check logos and origins search links are present in the rendered page
@@ -153,7 +157,7 @@ def test_coverage_view_with_focus(client, archive_coverage_data):
     # check view gets rendered without errors
     url = reverse("swh-coverage", query_params={"focus": ",".join(focus)})
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/coverage.html"
+        client, url, status_code=200, template_used="archive-coverage.html"
     )
 
     # check focused elements
@@ -174,7 +178,7 @@ def test_coverage_view_with_focus(client, archive_coverage_data):
 @pytest.fixture
 def archive_coverage_data_with_non_visited_origins(mocker, swh_scheduler):
     # mock calls to get nixguix origin counts
-    mock_archive = mocker.patch("swh.web.misc.coverage.archive")
+    mock_archive = mocker.patch("swh.web.archive_coverage.views.archive")
     mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
     mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
 
@@ -223,7 +227,7 @@ def archive_coverage_data_with_non_visited_origins(mocker, swh_scheduler):
     swh_scheduler.update_metrics()
 
     # set deposit origins as empty
-    get_deposits_list = mocker.patch("swh.web.misc.coverage.get_deposits_list")
+    get_deposits_list = mocker.patch("swh.web.archive_coverage.views.get_deposits_list")
     get_deposits_list.return_value = []
 
 
@@ -239,7 +243,7 @@ def test_coverage_view_filter_out_non_visited_origins(
         client,
         url,
         status_code=200,
-        template_used="misc/coverage.html",
+        template_used="archive-coverage.html",
         server_name=SWH_WEB_SERVER_NAME,
     )
 

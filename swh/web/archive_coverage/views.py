@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
-from django.urls import re_path as url
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -383,7 +382,7 @@ def _search_url(query: str, visit_type: str) -> str:
 
 @xframe_options_exempt
 @never_cache
-def _swh_coverage(request: HttpRequest) -> HttpResponse:
+def swh_coverage(request: HttpRequest) -> HttpResponse:
     use_cache = is_swh_web_production(request)
     listers_metrics = _get_listers_metrics(use_cache)
 
@@ -484,7 +483,7 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
 
     return render(
         request,
-        "misc/coverage.html",
+        "archive-coverage.html",
         {
             "origins": {
                 "Regular crawling": listed_origins,
@@ -494,8 +493,3 @@ def _swh_coverage(request: HttpRequest) -> HttpResponse:
             "focus": focus,
         },
     )
-
-
-urlpatterns = [
-    url(r"^coverage/$", _swh_coverage, name="swh-coverage"),
-]

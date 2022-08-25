@@ -52,11 +52,15 @@ See top-level LICENSE file for more information
 </p>
 </div>
 
-<div class="p-3">
-<h4>Content</h4>
+{% if "swh.web.archive_coverage" in SWH_DJANGO_APPS %}
 
-<iframe class="swh-coverage-list" src="{% url 'swh-coverage' %}"></iframe>
-</div>
+  <div class="p-3">
+  <h4>Content</h4>
+
+  <iframe class="swh-coverage-iframe" src="{% url 'swh-coverage' %}"></iframe>
+  </div>
+
+{% endif %}
 
 <div class="p-3">
 <h4>Size</h4>

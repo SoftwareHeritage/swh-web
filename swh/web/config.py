@@ -164,6 +164,7 @@ DEFAULT_CONFIG = {
             "swh.web.save_code_now",
             "swh.web.deposit",
             "swh.web.badges",
+            "swh.web.archive_coverage",
         ],
     ),
 }
