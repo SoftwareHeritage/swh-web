@@ -10,6 +10,11 @@ const {execFileSync} = require('child_process');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 
+let buildId = process.env.CYPRESS_PARALLEL_BUILD_ID;
+if (buildId === undefined) {
+  buildId = '';
+}
+
 async function httpGet(url) {
   const response = await axios.get(url);
   return response.data;
@@ -35,7 +40,7 @@ async function getMetadataForOrigin(originUrl, baseUrl) {
 };
 
 function getDatabase() {
-  const db = new sqlite3.Database('./swh-web-test.sqlite3');
+  const db = new sqlite3.Database(`./swh-web-test${buildId}.sqlite3`);
   // to prevent "database is locked" error when running tests
   db.run('PRAGMA journal_mode = WAL;');
   return db;

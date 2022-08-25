@@ -126,8 +126,12 @@ if not _pytest:
     )
 
     # using sqlite3 for frontend tests
+    build_id = os.environ.get("CYPRESS_PARALLEL_BUILD_ID", "")
     settings.DATABASES["default"].update(
-        {"ENGINE": "django.db.backends.sqlite3", "NAME": "swh-web-test.sqlite3"}
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": f"swh-web-test{build_id}.sqlite3",
+        }
     )
 
     # to prevent "database is locked" error when running cypress tests
