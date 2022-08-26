@@ -1,6 +1,7 @@
 const {defineConfig} = require('cypress');
 
 module.exports = defineConfig({
+  projectId: 'swh-web',
   video: false,
   viewportWidth: 1920,
   viewportHeight: 1080,
