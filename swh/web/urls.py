@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from importlib.util import find_spec
+from typing import List, Union
 
 from django_js_reverse.views import urls_js
 
@@ -11,6 +12,7 @@ from django.conf import settings
 from django.conf.urls import handler400, handler403, handler404, handler500, include
 from django.contrib.staticfiles.views import serve
 from django.shortcuts import render
+from django.urls import URLPattern, URLResolver
 from django.urls import re_path as url
 from django.views.generic.base import RedirectView
 
@@ -30,7 +32,19 @@ def _default_view(request):
     return render(request, "homepage.html", {"visit_types": origin_visit_types()})
 
 
-urlpatterns = [
+urlpatterns: List[Union[URLPattern, URLResolver]] = []
+
+# Register URLs for each SWH Django application
+for app in settings.SWH_DJANGO_APPS:
+    app_urls = app + ".urls"
+    try:
+        app_urls_spec = find_spec(app_urls)
+        if app_urls_spec is not None:
+            urlpatterns.append(url(r"^", include(app_urls)))
+    except ModuleNotFoundError:
+        assert False, f"Django application {app} not found !"
+
+urlpatterns += [
     url(r"^favicon\.ico/$", favicon_view),
     url(r"^$", _default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js_reverse"),
@@ -47,16 +61,6 @@ urlpatterns = [
     ),
     url(r"^", include("swh.web.misc.urls")),
 ]
-
-# Register URLs for each SWH Django application
-for app in settings.SWH_DJANGO_APPS:
-    app_urls = app + ".urls"
-    try:
-        app_urls_spec = find_spec(app_urls)
-        if app_urls_spec is not None:
-            urlpatterns.append(url(r"^", include(app_urls)))
-    except ModuleNotFoundError:
-        assert False, f"Django application {app} not found !"
 
 
 # allow to serve assets through django staticfiles

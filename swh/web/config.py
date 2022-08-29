@@ -165,6 +165,7 @@ DEFAULT_CONFIG = {
             "swh.web.deposit",
             "swh.web.badges",
             "swh.web.archive_coverage",
+            "swh.web.metrics",
         ],
     ),
 }

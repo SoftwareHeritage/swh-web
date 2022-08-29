@@ -17,7 +17,6 @@ import docutils.utils
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 from pkg_resources import get_distribution
-from prometheus_client.registry import CollectorRegistry
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -36,8 +35,6 @@ from swh.web.auth.utils import (
 )
 from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
-
-SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
 SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
 

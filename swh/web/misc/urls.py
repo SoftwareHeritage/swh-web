@@ -15,7 +15,6 @@ from django.urls import re_path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.web.config import get_config
-from swh.web.misc.metrics import prometheus_metrics
 from swh.web.utils import archive
 from swh.web.utils.exc import sentry_capture_exception
 
@@ -63,7 +62,6 @@ def hiring_banner(request):
 urlpatterns = [
     url(r"^jslicenses/$", _jslicenses, name="jslicenses"),
     url(r"^stat_counters/$", _stat_counters, name="stat-counters"),
-    url(r"^metrics/prometheus/$", prometheus_metrics, name="metrics-prometheus"),
     url(r"^", include("swh.web.misc.fundraising")),
     url(r"^hiring/banner/$", hiring_banner, name="swh-hiring-banner"),
 ]
@@ -72,6 +70,7 @@ urlpatterns = [
 # when running end to end tests through cypress, declare some extra
 # endpoints to provide input data for some of those tests
 if get_config()["e2e_tests_mode"]:
+
     from swh.web.tests.views import (
         get_content_code_data_all_exts,
         get_content_code_data_all_filenames,

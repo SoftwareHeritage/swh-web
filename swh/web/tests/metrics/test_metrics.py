@@ -10,6 +10,12 @@ import random
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
 import pytest
 
+from swh.web.metrics.prometheus import (
+    ACCEPTED_SAVE_REQUESTS_DELAY_METRIC,
+    ACCEPTED_SAVE_REQUESTS_METRIC,
+    SUBMITTED_SAVE_REQUESTS_METRIC,
+    get_savable_visit_types,
+)
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -21,12 +27,6 @@ from swh.web.save_code_now.models import (
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
     SaveOriginRequest,
-)
-from swh.web.save_code_now.origin_save import (
-    ACCEPTED_SAVE_REQUESTS_DELAY_METRIC,
-    ACCEPTED_SAVE_REQUESTS_METRIC,
-    SUBMITTED_SAVE_REQUESTS_METRIC,
-    get_savable_visit_types,
 )
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import check_http_get_response
