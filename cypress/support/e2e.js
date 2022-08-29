@@ -5,8 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import 'cypress-hmr-restarter';
 import '@cypress/code-coverage/support';
+import 'cypress-hmr-restarter';
 
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
@@ -100,7 +100,10 @@ before(function() {
     Object.assign(this, testsData);
   });
 
+  cy.intercept('/jsreverse/').as('jsReverse');
+
   cy.visit('/').window().then(async win => {
+    cy.wait('@jsReverse');
     this.Urls = win.Urls;
   });
 });
