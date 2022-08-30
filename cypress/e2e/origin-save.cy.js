@@ -505,6 +505,8 @@ describe('Origin Save Tests', function() {
   it('should show only user requests when filter is activated', function() {
     cy.intercept('POST', '/api/1/origin/save/**')
       .as('saveRequest');
+    cy.intercept(this.Urls.origin_save_requests_list('all') + '**')
+      .as('saveRequestsList');
 
     const originAnonymousUser = 'https://some.git.server/project/';
     const originAuthUser = 'https://other.git.server/project/';
@@ -533,6 +535,8 @@ describe('Origin Save Tests', function() {
     // activate filter and check filtered user requests
     cy.get('#swh-save-requests-user-filter')
       .click({force: true});
+    cy.wait('@saveRequestsList');
+
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(1);
       expect($(rows[0].cells[2]).text()).to.contain(originAuthUser);
@@ -541,6 +545,8 @@ describe('Origin Save Tests', function() {
     // deactivate filter and check unfiltered user requests
     cy.get('#swh-save-requests-user-filter')
       .click({force: true});
+    cy.wait('@saveRequestsList');
+
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(2);
     });
