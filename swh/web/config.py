@@ -166,6 +166,7 @@ DEFAULT_CONFIG = {
             "swh.web.badges",
             "swh.web.archive_coverage",
             "swh.web.metrics",
+            "swh.web.banners",
         ],
     ),
 }

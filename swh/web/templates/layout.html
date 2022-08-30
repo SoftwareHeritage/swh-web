@@ -138,10 +138,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </li>
         </ul>
       </div>
-      <div class="swh-banner">
-        {% include "misc/hiring-banner.html" %}
-      </div>
-      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top" id="swh-navbar">
+      {% if "swh.web.banners" in SWH_DJANGO_APPS %}
+        <div class="swh-banner">
+          {% include "hiring-banner.html" %}
+        </div>
+      {% endif %}
+      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar
+                 {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-navbar-banner {% endif %}">
         <div class="navbar-header">
           <a class="nav-link swh-push-menu" data-widget="pushmenu" data-enable-remember="true" href="#">
             <i class="mdi mdi-24px mdi-menu mdi-fw" aria-hidden="true"></i>
@@ -169,7 +172,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </nav>
     </div>
 
-    <aside class="swh-sidebar main-sidebar sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
+    <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} main-sidebar-banner {% endif %}
+                  sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
         <img class="brand-image" src="{% static 'img/swh-logo.png' %}">
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
@@ -269,9 +273,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <section class="content">
         <div class="container" id="swh-web-content">
           {% if swh_web_staging %}
-            <div class="swh-corner-ribbon">Staging<br/>v{{ swh_web_version }}</div>
+            <div class="swh-corner-ribbon
+                        {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner {% endif %}">
+              Staging<br/>v{{ swh_web_version }}
+            </div>
           {% elif swh_web_dev %}
-            <div class="swh-corner-ribbon">Development<br/>v{{ swh_web_version|split:"+"|first }}</div>
+            <div class="swh-corner-ribbon
+                       {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner {% endif %}">
+              Development<br/>v{{ swh_web_version|split:"+"|first }}
+            </div>
           {% endif %}
           {% block content %}{% endblock %}
         </div>

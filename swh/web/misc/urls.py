@@ -7,12 +7,10 @@ import json
 
 import requests
 
-from django.conf.urls import include
 from django.contrib.staticfiles import finders
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import re_path as url
-from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.web.config import get_config
 from swh.web.utils import archive
@@ -45,25 +43,9 @@ def _stat_counters(request):
     return JsonResponse(counters)
 
 
-@xframe_options_exempt
-def hiring_banner(request):
-
-    lang = request.GET.get("lang")
-
-    return render(
-        request,
-        "misc/hiring-banner-iframe.html",
-        {
-            "lang": lang if lang else "en",
-        },
-    )
-
-
 urlpatterns = [
     url(r"^jslicenses/$", _jslicenses, name="jslicenses"),
     url(r"^stat_counters/$", _stat_counters, name="stat-counters"),
-    url(r"^", include("swh.web.misc.fundraising")),
-    url(r"^hiring/banner/$", hiring_banner, name="swh-hiring-banner"),
 ]
 
 

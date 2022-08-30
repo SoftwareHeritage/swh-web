@@ -236,7 +236,7 @@ a.dropdown-left::before {
     margin-left: 0;
 }
 
-#swh-navbar {
+.swh-navbar {
     border-style: solid;
     border-top-style: none;
     border-left-style: none;
@@ -252,11 +252,15 @@ a.dropdown-left::before {
     width: 100%;
     padding: 5px;
     margin-bottom: 10px;
-    margin-top: 60px;
+    margin-top: 30px;
     justify-content: normal;
     flex-wrap: nowrap;
     height: 72px;
     overflow: hidden;
+}
+
+.swh-navbar-banner {
+    margin-top: 60px !important;
 }
 
 #back-to-top {
@@ -365,6 +369,10 @@ a.dropdown-left::before {
 }
 
 .main-sidebar {
+    margin-top: 30px;
+}
+
+.main-sidebar-banner {
     margin-top: 60px;
 }
 
@@ -763,11 +771,15 @@ div.d3-tooltip {
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 85px;
+    top: 55px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
     z-index: 2000;
+}
+
+.swh-corner-ribbon-banner {
+    top: 85px;
 }
 
 @media screen and (max-width: 600px) {

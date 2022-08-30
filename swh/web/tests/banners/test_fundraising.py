@@ -16,7 +16,7 @@ def test_fundraising_banner(client, requests_mock):
     )
     url = reverse("swh-fundraising-banner")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/fundraising-banner.html"
+        client, url, status_code=200, template_used="fundraising-banner.html"
     )
     assert_contains(resp, f'aria-valuenow="{nb_donations}"')
 
@@ -30,13 +30,13 @@ def test_fundraising_banner_languages(client, requests_mock):
 
     url = reverse("swh-fundraising-banner")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/fundraising-banner.html"
+        client, url, status_code=200, template_used="fundraising-banner.html"
     )
     assert_contains(resp, "Become a donor")
 
     url = reverse("swh-fundraising-banner", query_params={"lang": "fr"})
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/fundraising-banner.html"
+        client, url, status_code=200, template_used="fundraising-banner.html"
     )
     assert_contains(resp, "Devenez donateur")
 
@@ -48,6 +48,6 @@ def test_fundraising_banner_give_api_error(client, requests_mock):
     )
     url = reverse("swh-fundraising-banner")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="misc/fundraising-banner.html"
+        client, url, status_code=200, template_used="fundraising-banner.html"
     )
     assert_not_contains(resp, 'class="progress-bar"')

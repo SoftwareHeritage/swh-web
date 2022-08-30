@@ -6,7 +6,6 @@
 import requests
 
 from django.shortcuts import render
-from django.urls import re_path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.web.config import get_config
@@ -43,7 +42,7 @@ def fundraising_banner(request):
 
     return render(
         request,
-        "misc/fundraising-banner.html",
+        "fundraising-banner.html",
         {
             "nb_donations": nb_donations,
             "donations_goal": donations_goal,
@@ -57,6 +56,15 @@ def fundraising_banner(request):
     )
 
 
-urlpatterns = [
-    url(r"^fundraising/banner/$", fundraising_banner, name="swh-fundraising-banner"),
-]
+@xframe_options_exempt
+def hiring_banner(request):
+
+    lang = request.GET.get("lang")
+
+    return render(
+        request,
+        "hiring-banner-iframe.html",
+        {
+            "lang": lang if lang else "en",
+        },
+    )
