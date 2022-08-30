@@ -176,7 +176,7 @@ export function initPage(page) {
 
 export function initHomePage() {
   $(document).ready(async() => {
-    $('.swh-coverage-list').iFrameResize({heightCalculationMethod: 'taggedElement'});
+    $('.swh-coverage-iframe').iFrameResize({heightCalculationMethod: 'taggedElement'});
     const response = await fetch(Urls.stat_counters());
     const data = await response.json();
 
