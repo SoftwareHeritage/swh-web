@@ -160,6 +160,90 @@ def test_revision_log_browse(client, archive_data, revision):
         )
 
 
+def test_revision_log_browse_snapshot_context(client, archive_data, origin):
+    """Check snapshot context is preserved when browsing revision log view."""
+    snapshot = archive_data.snapshot_get_latest(origin["url"])
+    revision = snapshot["branches"]["refs/heads/master"]["target"]
+
+    per_page = 10
+    revision_log = archive_data.revision_log(revision)
+
+    revision_log_sorted = sorted(
+        revision_log,
+        key=lambda rev: -parse_iso8601_date_to_utc(rev["committer_date"]).timestamp(),
+    )
+
+    url = reverse(
+        "browse-revision-log",
+        url_args={"sha1_git": revision},
+        query_params={
+            "per_page": per_page,
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+        },
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse-revision-log.html"
+    )
+
+    for log in revision_log_sorted[:per_page]:
+        revision_url = reverse(
+            "browse-revision",
+            url_args={
+                "sha1_git": log["id"],
+            },
+            query_params={
+                "origin_url": origin["url"],
+                "snapshot": snapshot["id"],
+            },
+        )
+        assert_contains(resp, escape(revision_url))
+
+    if len(revision_log_sorted) <= per_page:
+        return
+
+    next_page_url = reverse(
+        "browse-revision-log",
+        url_args={"sha1_git": revision},
+        query_params={
+            "offset": per_page,
+            "per_page": per_page,
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+        },
+    )
+    assert_contains(resp, escape(next_page_url))
+
+    resp = check_html_get_response(
+        client, next_page_url, status_code=200, template_used="browse-revision-log.html"
+    )
+
+    prev_page_url = reverse(
+        "browse-revision-log",
+        url_args={"sha1_git": revision},
+        query_params={
+            "offset": 0,
+            "per_page": per_page,
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+        },
+    )
+    next_page_url = reverse(
+        "browse-revision-log",
+        url_args={"sha1_git": revision},
+        query_params={
+            "offset": 2 * per_page,
+            "per_page": per_page,
+            "origin_url": origin["url"],
+            "snapshot": snapshot["id"],
+        },
+    )
+
+    assert_contains(resp, escape(prev_page_url))
+    assert_contains(resp, escape(next_page_url))
+
+
 @given(new_origin())
 def test_revision_request_errors(client, revision, unknown_revision, new_origin):
     url = reverse("browse-revision", url_args={"sha1_git": unknown_revision})

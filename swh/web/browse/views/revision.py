@@ -259,6 +259,8 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "per_page": str(per_page),
                 "offset": str(offset + per_page),
                 "revs_ordering": revs_ordering or None,
+                "origin_url": origin_url,
+                "snapshot": snapshot_id,
             },
         )
 
@@ -271,10 +273,12 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "per_page": str(per_page),
                 "offset": str(offset - per_page),
                 "revs_ordering": revs_ordering or None,
+                "origin_url": origin_url,
+                "snapshot": snapshot_id,
             },
         )
 
-    revision_log_data = format_log_entries(revision_log, per_page)
+    revision_log_data = format_log_entries(revision_log, per_page, snapshot_context)
 
     swh_rev_id = str(
         CoreSWHID(object_type=ObjectType.REVISION, object_id=hash_to_bytes(sha1_git))
