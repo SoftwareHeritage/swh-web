@@ -7,23 +7,12 @@ import json
 
 import requests
 
-from django.contrib.staticfiles import finders
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.urls import re_path as url
 
 from swh.web.config import get_config
 from swh.web.utils import archive
 from swh.web.utils.exc import sentry_capture_exception
-
-
-def _jslicenses(request):
-    jslicenses_file = finders.find("jssources/jslicenses.json")
-    jslicenses_data = json.load(open(jslicenses_file))
-    jslicenses_data = sorted(
-        jslicenses_data.items(), key=lambda item: item[0].split("/")[-1]
-    )
-    return render(request, "misc/jslicenses.html", {"jslicenses_data": jslicenses_data})
 
 
 def _stat_counters(request):
@@ -44,7 +33,6 @@ def _stat_counters(request):
 
 
 urlpatterns = [
-    url(r"^jslicenses/$", _jslicenses, name="jslicenses"),
     url(r"^stat_counters/$", _stat_counters, name="stat-counters"),
 ]
 

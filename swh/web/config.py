@@ -167,6 +167,7 @@ DEFAULT_CONFIG = {
             "swh.web.archive_coverage",
             "swh.web.metrics",
             "swh.web.banners",
+            "swh.web.jslicenses",
         ],
     ),
 }
