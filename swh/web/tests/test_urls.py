@@ -7,6 +7,9 @@ import pytest
 
 from django.urls import get_resolver
 
+from swh.web.tests.helpers import check_http_get_response
+from swh.web.utils import reverse
+
 
 def test_swh_web_urls_have_trailing_slash():
     urls = set(
@@ -25,3 +28,8 @@ def test_urls_registration_error_for_not_found_django_app(django_settings):
         AssertionError, match=f"Django application {app_name} not found !"
     ):
         django_settings.SWH_DJANGO_APPS = django_settings.SWH_DJANGO_APPS + [app_name]
+
+
+def test_stat_counters_view(client):
+    url = reverse("stat-counters")
+    check_http_get_response(client, url, status_code=200)
