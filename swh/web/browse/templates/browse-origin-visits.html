@@ -13,7 +13,7 @@ See top-level LICENSE file for more information
 
 {% block header %}
 {{ block.super }}
-{% render_bundle 'origin' %}
+{% render_bundle 'origin_visits' %}
 {% endblock %}
 
 {% block swh-browse-content %}
@@ -48,7 +48,7 @@ See top-level LICENSE file for more information
       <input class="custom-control-input" type="radio" id="swh-all-visits" name="swh-visits"
              value="option3" checked>
       <label class="custom-control-label font-weight-normal" for="swh-all-visits"
-             onclick="swh.origin.showAllVisits(event)">
+             onclick="swh.origin_visits.showAllVisits(event)">
         Show all visits
       </label>
     </div>
@@ -56,7 +56,7 @@ See top-level LICENSE file for more information
       <input class="custom-control-input" type="radio" id="swh-full-visits-different-snapshots"
              name="swh-visits" value="option1">
       <label class="custom-control-label font-weight-normal" for="swh-full-visits-different-snapshots"
-             onclick="swh.origin.showFullVisitsDifferentSnapshots(event)">
+             onclick="swh.origin_visits.showFullVisitsDifferentSnapshots(event)">
         Show full visits with different snapshots
       </label>
     </div>
@@ -64,7 +64,7 @@ See top-level LICENSE file for more information
       <input class="custom-control-input" type="radio" id="swh-full-visits" name="swh-visits"
              value="option2">
       <label class="custom-control-label font-weight-normal" for="swh-full-visits"
-             onclick="swh.origin.showFullVisits(event)">
+             onclick="swh.origin_visits.showFullVisits(event)">
         Show all full visits
       </label>
     </div>
@@ -87,6 +87,6 @@ See top-level LICENSE file for more information
 <script>
   // all origin visits
   var visits = {{ origin_visits|jsonify }};
-  swh.origin.initVisitsReporting(visits);
+  swh.origin_visits.initVisitsReporting(visits);
 </script>
 {% endblock %}

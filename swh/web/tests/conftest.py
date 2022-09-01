@@ -128,12 +128,27 @@ def pytest_configure(config):
     if os.path.exists(webpack_stats):
         return
 
-    bundles_dir = os.path.join(test_dir, "../../../assets/src/bundles")
-    if not os.path.exists(bundles_dir):
-        # location of the bundles folder when running tests with tox
-        bundles_dir = os.path.join(data_dir, "assets/src/bundles")
+    django_apps_dir = os.path.join(test_dir, "../../../swh/web")
+    if not os.path.exists(django_apps_dir):
+        # location of the applications folder when running tests with tox
+        django_apps_dir = os.path.join(data_dir, "swh/web")
 
-    _, bundles, _ = next(os.walk(bundles_dir))
+    bundles = []
+    _, apps, _ = next(os.walk(django_apps_dir))
+    for app in apps:
+        app_assets_dir = os.path.join(django_apps_dir, app, "assets")
+        if os.path.exists(app_assets_dir):
+            if os.path.exists(os.path.join(app_assets_dir, "index.js")):
+                bundles.append(app)
+            else:
+                _, app_bundles, _ = next(os.walk(app_assets_dir))
+                for app_bundle in app_bundles:
+                    if os.path.exists(
+                        os.path.join(app_assets_dir, app_bundle, "index.js")
+                    ):
+                        bundles.append(app_bundle)
+
+    print(bundles)
 
     mock_webpack_stats = {
         "status": "done",

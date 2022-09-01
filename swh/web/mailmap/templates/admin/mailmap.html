@@ -12,7 +12,7 @@ See top-level LICENSE file for more information
 
 {% block header %}
 {{ block.super }}
-{% render_bundle 'admin' %}
+{% render_bundle 'mailmap' %}
 {% endblock %}
 
 {% block title %} Mailmap administration &ndash; Software Heritage archive {% endblock %}
@@ -27,7 +27,7 @@ See top-level LICENSE file for more information
     on their emails.
   </p>
   <div class="float-right">
-    <button class="btn btn-default" id="swh-add-new-mailmap" onclick="swh.admin.addNewMailmap()">
+    <button class="btn btn-default" id="swh-add-new-mailmap" onclick="swh.mailmap.addNewMailmap()">
       Add new mailmap
     </button>
   </div>
@@ -49,6 +49,6 @@ See top-level LICENSE file for more information
   </div>
   <script>
     swh.webapp.initPage('mailmap-admin');
-    swh.admin.initMailmapUI();
+    swh.mailmap.initMailmapUI();
   </script>
 {% endblock content %}

@@ -12,8 +12,7 @@ See top-level LICENSE file for more information
 
 {% block header %}
 {{ block.super }}
-{% render_bundle 'admin' %}
-{% render_bundle 'save' %}
+{% render_bundle 'save_code_now' %}
 {% endblock %}
 
 {% block title %} Save origin administration {% endblock %}
@@ -36,6 +35,6 @@ See top-level LICENSE file for more information
 
 <script>
   swh.webapp.initPage('origin-save-admin');
-  swh.admin.initOriginSaveAdmin();
+  swh.save_code_now.initOriginSaveAdmin();
 </script>
 {% endblock %}

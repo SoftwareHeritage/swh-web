@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2021  The Software Heritage developers
+Copyright (C) 2018-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ See top-level LICENSE file for more information
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
 {% block header %}
-{% render_bundle 'save' %}
+{% render_bundle 'save_code_now' %}
 {% endblock %}
 
 {% block navbar-content %}
@@ -33,7 +33,7 @@ See top-level LICENSE file for more information
     <div class="col-md-1"></div>
     <div class="form-group col-md-2">
       <label for="swh-input-visit-type">Origin type</label>
-      <select id="swh-input-visit-type" class="form-control" required onchange="swh.save.maybeRequireExtraInputs();">
+      <select id="swh-input-visit-type" class="form-control" required onchange="swh.save_code_now.maybeRequireExtraInputs();">
         {% for visit_type in visit_types %}
           <option value="{{ visit_type }}">{{ visit_type }}</option>
         {% endfor %}
@@ -42,7 +42,7 @@ See top-level LICENSE file for more information
     </div>
     <div class="form-group col-md-6">
       <label for="swh-input-origin-url">Origin url</label>
-      <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.save.validateSaveOriginUrl(this)" required>
+      <input type="text" class="form-control" id="swh-input-origin-url" oninput="swh.save_code_now.validateSaveOriginUrl(this)" required>
       <div class="invalid-feedback">The origin url is not valid or does not reference a code repository</div>
     </div>
     <div class="col-md-2">
@@ -82,7 +82,7 @@ See top-level LICENSE file for more information
 
 <script>
   swh.webapp.initPage('origin-save');
-  swh.save.initOriginSave();
+  swh.save_code_now.initOriginSave();
 </script>
 
 {% endblock %}

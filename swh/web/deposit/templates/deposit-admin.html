@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2021  The Software Heritage developers
+Copyright (C) 2018-2022  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ See top-level LICENSE file for more information
 
 {% block header %}
 {{ block.super }}
-{% render_bundle 'admin' %}
+{% render_bundle 'deposit' %}
 {% endblock %}
 
 {% block title %} Deposit administration {% endblock %}
@@ -58,6 +58,6 @@ See top-level LICENSE file for more information
   <p id="swh-admin-deposit-list-error"></p>
   <script>
     swh.webapp.initPage('deposit-admin');
-    swh.admin.initDepositAdmin({{ request.user.username|jsonify }}, {{ request.user.is_staff|jsonify }});
+    swh.deposit.initDepositAdmin({{ request.user.username|jsonify }}, {{ request.user.is_staff|jsonify }});
   </script>
 {% endblock content %}

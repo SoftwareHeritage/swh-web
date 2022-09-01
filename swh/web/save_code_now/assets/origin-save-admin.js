@@ -5,9 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, htmlAlert,
-        getHumanReadableDate} from 'utils/functions';
 import {swhSpinnerSrc} from 'utils/constants';
+import {csrfPost, getHumanReadableDate, handleFetchError, htmlAlert} from 'utils/functions';
 
 let authorizedOriginTable;
 let unauthorizedOriginTable;
@@ -124,7 +123,7 @@ export function initOriginSaveAdmin() {
             row.note != null) {
           return `<i class="mdi mdi-information-outline swh-save-request-info" aria-hidden="true"
                      style="cursor: pointer"
-                     onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
+                     onclick="swh.save_code_now.displaySaveRequestInfo(event, ${row.id})"></i>`;
         } else {
           return '';
         }

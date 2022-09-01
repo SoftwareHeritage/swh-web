@@ -46,7 +46,7 @@ async function populateRequestDetails(requestId, nextStatusesFor) {
     const data = await response.json();
     forgeRequest = data.request;
 
-    $('#requestStatus').text(swh.add_forge.formatRequestStatusName(forgeRequest.status));
+    $('#requestStatus').text(swh.add_forge_now.formatRequestStatusName(forgeRequest.status));
     $('#requestType').text(forgeRequest.forge_type);
     $('#requestURL').text(forgeRequest.forge_url);
     $('#requestContactName').text(forgeRequest.forge_contact_name);
@@ -93,7 +93,7 @@ export function populateDecisionSelectOption(currentStatus, nextStatusesFor) {
 
   function addStatusOption(status, index) {
     // Push the next possible status options
-    const label = swh.add_forge.formatRequestStatusName(status);
+    const label = swh.add_forge_now.formatRequestStatusName(status);
     $('#decisionOptions').append(
       `<option value="${status}">${label}</option>`
     );

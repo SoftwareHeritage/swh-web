@@ -208,7 +208,7 @@ export function initOriginSave() {
                   row.note != null) {
                 return `<i class="mdi mdi-information-outline swh-save-request-info"
                            aria-hidden="true" style="cursor: pointer"
-                           onclick="swh.save.displaySaveRequestInfo(event, ${row.id})"></i>`;
+                           onclick="swh.save_code_now.displaySaveRequestInfo(event, ${row.id})"></i>`;
               } else {
                 return '';
               }
@@ -219,7 +219,7 @@ export function initOriginSave() {
               if (row.save_request_status === 'accepted') {
                 const saveAgainButton =
                   '<button class="btn btn-default btn-sm swh-save-origin-again" type="button" ' +
-                  `onclick="swh.save.fillSaveRequestFormAndScroll(` +
+                  `onclick="swh.save_code_now.fillSaveRequestFormAndScroll(` +
                   `'${row.visit_type}', '${row.origin_url}');">` +
                   '<i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>' +
                   'Save again</button>';

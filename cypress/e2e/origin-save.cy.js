@@ -134,7 +134,7 @@ describe('Origin Save Tests', function() {
     ];
     cy.window().then(win => {
       inputValues.forEach(function(input, index, array) {
-        const actualValue = win.swh.save.formatValuePerType(input.type, input.value);
+        const actualValue = win.swh.save_code_now.formatValuePerType(input.type, input.value);
         assert.equal(actualValue, input.expectedValue);
       });
     });

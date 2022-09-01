@@ -11,7 +11,7 @@ See top-level LICENSE file for more information
 {% load static %}
 
 {% block header %}
-{% render_bundle 'add_forge' %}
+{% render_bundle 'add_forge_now' %}
 {% endblock %}
 
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
@@ -42,7 +42,7 @@ See top-level LICENSE file for more information
 
 <script>
   swh.webapp.initPage('add-forge-now-moderation');
-  swh.add_forge.onModerationPageLoad();
+  swh.add_forge_now.onModerationPageLoad();
 </script>
 
 {% endblock %}
