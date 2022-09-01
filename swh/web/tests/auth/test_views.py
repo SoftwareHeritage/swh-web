@@ -22,8 +22,8 @@ from swh.web.tests.helpers import (
     check_http_get_response,
     check_http_post_response,
 )
-from swh.web.urls import _default_view as homepage_view
 from swh.web.utils import reverse
+from swh.web.webapp.urls import default_view as homepage_view
 
 
 def _check_oidc_login_code_flow_data(

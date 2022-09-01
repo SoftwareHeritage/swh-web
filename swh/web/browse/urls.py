@@ -60,6 +60,17 @@ urlpatterns = [
         _browse_swhid_iframe_legacy,
         name="browse-swhid-iframe-legacy",
     ),
+    # keep legacy SWHID resolving URL with trailing slash for backward compatibility
+    url(
+        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)/$",
+        swhid_browse,
+        name="browse-swhid-legacy",
+    ),
+    url(
+        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)$",
+        swhid_browse,
+        name="browse-swhid",
+    ),
 ]
 
 urlpatterns += BrowseUrls.get_url_patterns()

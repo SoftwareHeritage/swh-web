@@ -51,7 +51,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       swh.webapp.sentryInit(SWH_CONFIG.sentry_dsn);
     </script>
 
-    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+    <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
 
     <script>
       swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});

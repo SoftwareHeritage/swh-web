@@ -43,9 +43,11 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 # Application definition
 
 SWH_BASE_DJANGO_APPS = [
+    "swh.web.webapp",
     "swh.web.auth",
     "swh.web.browse",
     "swh.web.utils",
+    "swh.web.tests",
     "swh.web.api",
 ]
 SWH_EXTRA_DJANGO_APPS = [
