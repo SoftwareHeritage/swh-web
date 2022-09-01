@@ -36,14 +36,6 @@ def _browse_search_view(request: HttpRequest) -> HttpResponse:
     )
 
 
-def _browse_vault_view(request: HttpRequest) -> HttpResponse:
-    return render(
-        request,
-        "browse-vault-ui.html",
-        {"heading": "Download archive content from the Vault"},
-    )
-
-
 def _browse_origin_save_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse("origin-save"))
 
@@ -56,7 +48,6 @@ urlpatterns = [
     url(r"^browse/$", _browse_search_view),
     url(r"^browse/help/$", _browse_help_view, name="browse-help"),
     url(r"^browse/search/$", _browse_search_view, name="browse-search"),
-    url(r"^browse/vault/$", _browse_vault_view, name="browse-vault"),
     # for backward compatibility
     url(r"^browse/origin/save/$", _browse_origin_save_view, name="browse-origin-save"),
     url(

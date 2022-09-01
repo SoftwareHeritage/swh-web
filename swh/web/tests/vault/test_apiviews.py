@@ -22,7 +22,7 @@ from swh.web.utils import reverse
 
 
 def test_api_vault_cook(api_client, mocker, directory, revision):
-    mock_archive = mocker.patch("swh.web.api.views.vault.archive")
+    mock_archive = mocker.patch("swh.web.vault.api_views.archive")
 
     for bundle_type, swhid, content_type, in (
         ("flat", f"swh:1:dir:{directory}", "application/gzip"),
@@ -183,7 +183,7 @@ def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint)
 
 
 def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
-    mock_archive = mocker.patch("swh.web.api.views.vault.archive")
+    mock_archive = mocker.patch("swh.web.vault.api_views.archive")
 
     for obj_type, bundle_type, response_obj_type, obj_id in (
         ("directory", "flat", "directory", directory),

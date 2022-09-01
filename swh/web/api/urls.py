@@ -17,6 +17,5 @@ import swh.web.api.views.release  # noqa
 import swh.web.api.views.revision  # noqa
 import swh.web.api.views.snapshot  # noqa
 import swh.web.api.views.stat  # noqa
-import swh.web.api.views.vault  # noqa
 
 urlpatterns = APIUrls.get_url_patterns()

@@ -168,6 +168,7 @@ DEFAULT_CONFIG = {
             "swh.web.metrics",
             "swh.web.banners",
             "swh.web.jslicenses",
+            "swh.web.vault",
         ],
     ),
 }

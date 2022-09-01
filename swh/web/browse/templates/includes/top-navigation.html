@@ -125,8 +125,10 @@ See top-level LICENSE file for more information
       </select>
     {% endif %}
     {% if show_actions %}
-      {% if not snapshot_context or not snapshot_context.is_empty %}
-        {% include "./vault-create-tasks.html" %}
+      {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+        {% if not snapshot_context or not snapshot_context.is_empty %}
+          {% include "includes/vault-create-tasks.html" %}
+        {% endif %}
       {% endif %}
       {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
         {% include "./take-new-snapshot.html" %}

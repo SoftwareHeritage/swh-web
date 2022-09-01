@@ -199,12 +199,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Search</p>
               </a>
             </li>
-            <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
-              <a href="{% url 'browse-vault' %}" class="nav-link swh-vault-link">
-                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
-                <p>Downloads</p>
-              </a>
-            </li>
+            {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+              <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
+                <a href="{% url 'vault' %}" class="nav-link swh-vault-link">
+                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
+                  <p>Downloads</p>
+                </a>
+              </li>
+            {% endif %}
             {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
               <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
                 <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">

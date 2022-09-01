@@ -7,7 +7,7 @@
 
 import * as EmailValidator from 'email-validator';
 
-import {handleFetchError, csrfPost, htmlAlert} from 'utils/functions';
+import {csrfPost, handleFetchError, htmlAlert} from 'utils/functions';
 
 const alertStyle = {
   'position': 'fixed',
@@ -99,7 +99,7 @@ async function addVaultCookingTask(objectType, cookingTask) {
       const cookingTaskCreatedAlert =
           $(htmlAlert('success',
                       'Archive cooking request successfully submitted.<br/>' +
-                      `Go to the <a href="${Urls.browse_vault()}">Downloads</a> page ` +
+                      `Go to the <a href="${Urls.vault()}">Downloads</a> page ` +
                       'to get the download link once it is ready.',
                       true));
       cookingTaskCreatedAlert.css(alertStyle);
