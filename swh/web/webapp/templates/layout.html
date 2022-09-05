@@ -249,13 +249,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </li>
                 {% endif %}
               {% endif %}
-              {% if "swh.web.deposit" in SWH_DJANGO_APPS and user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
-                <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
-                  <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
-                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
-                    <p>Deposit</p>
-                  </a>
-                </li>
+              {% if "swh.web.deposit" in SWH_DJANGO_APPS %}
+                {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
+                  <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
+                    <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
+                      <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
+                      <p>Deposit</p>
+                    </a>
+                  </li>
+                {% endif %}
               {% endif %}
               {% if "swh.web.mailmap" in SWH_DJANGO_APPS and MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
                 <li class="nav-item swh-mailmap-admin-item" title="Mailmap administration">

@@ -14,7 +14,7 @@ from swh.web.utils import reverse
 
 
 @pytest.mark.django_db
-def test_deposit_deactivate(client, staff_user, django_settings):
+def test_deposit_deactivate(client, admin_user, django_settings):
     """Check Add forge now feature is deactivated when the swh.web.deposit django
     application is not in installed apps."""
 
@@ -23,7 +23,7 @@ def test_deposit_deactivate(client, staff_user, django_settings):
     ]
 
     url = reverse("swh-web-homepage")
-    client.force_login(staff_user)
+    client.force_login(admin_user)
     resp = check_html_get_response(client, url, status_code=200)
     assert_not_contains(resp, "swh-deposit-admin-item")
 
