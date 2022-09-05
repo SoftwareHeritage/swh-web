@@ -102,9 +102,10 @@ before(function() {
 
   cy.intercept('/jsreverse/').as('jsReverse');
 
-  cy.visit('/').window().then(async win => {
-    cy.wait('@jsReverse');
-    this.Urls = win.Urls;
+  cy.visit('/');
+  cy.wait('@jsReverse');
+  cy.window().its('Urls').then(Urls => {
+    this.Urls = Urls;
   });
 });
 
