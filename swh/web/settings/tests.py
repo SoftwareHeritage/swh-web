@@ -85,6 +85,19 @@ swh_web_config.update(
             "server_url": "http://localhost:8080/auth/" if _pytest else "",
             "realm_name": "SoftwareHeritage",
         },
+        "swh_extra_django_apps": [
+            "swh.web.add_forge_now",
+            "swh.web.archive_coverage",
+            "swh.web.badges",
+            "swh.web.banners",
+            "swh.web.deposit",
+            "swh.web.inbound_email",
+            "swh.web.jslicenses",
+            "swh.web.mailmap",
+            "swh.web.metrics",
+            "swh.web.save_code_now",
+            "swh.web.vault",
+        ],
     }
 )
 
