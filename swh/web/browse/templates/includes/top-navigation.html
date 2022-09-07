@@ -131,7 +131,7 @@ See top-level LICENSE file for more information
         {% endif %}
       {% endif %}
       {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
-        {% include "./take-new-snapshot.html" %}
+        {% include "includes/take-new-snapshot.html" %}
       {% endif %}
       {% include "./show-metadata.html" %}
     {% endif %}
