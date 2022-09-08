@@ -1226,11 +1226,18 @@ def reload_urlconf():
     from django.conf import settings
 
     clear_url_caches()
-    urlconf = settings.ROOT_URLCONF
-    if urlconf in sys.modules:
-        reload(sys.modules[urlconf])
-    else:
-        import_module(urlconf)
+    # force reloading of all URLs as they depend on django settings
+    # and swh-web configuration
+    urlconfs = [settings.ROOT_URLCONF]
+    urlconfs += [f"{app}.urls" for app in settings.SWH_DJANGO_APPS]
+    for urlconf in urlconfs:
+        try:
+            if urlconf in sys.modules:
+                reload(sys.modules[urlconf])
+            else:
+                import_module(urlconf)
+        except ModuleNotFoundError:
+            pass
 
 
 class SwhSettingsWrapper(SettingsWrapper):

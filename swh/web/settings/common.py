@@ -80,7 +80,6 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "swh.web.utils.middlewares.ThrottlingHeadersMiddleware",
@@ -323,7 +322,26 @@ WEBPACK_LOADER = {
     }
 }
 
-LOGIN_URL = "/login/"
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+oidc_enabled = bool(get_config()["keycloak"]["server_url"])
+
+if not oidc_enabled:
+    LOGIN_URL = "login"
+    LOGOUT_URL = "logout"
+else:
+    LOGIN_URL = "oidc-login"
+    LOGOUT_URL = "oidc-logout"
+    AUTHENTICATION_BACKENDS.append(
+        "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
+    )
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("django.contrib.auth.middleware.AuthenticationMiddleware") + 1,
+        "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
+    )
+
 LOGIN_REDIRECT_URL = "swh-web-homepage"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -336,11 +354,6 @@ JS_REVERSE_JS_MINIFY = False
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r"^/(badge|api)/.*$"
-
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
-]
 
 OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]

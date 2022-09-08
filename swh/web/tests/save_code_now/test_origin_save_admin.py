@@ -7,6 +7,8 @@ from urllib.parse import unquote
 
 import pytest
 
+from django.conf import settings
+
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -34,7 +36,7 @@ def populated_db():
 
 
 def check_not_login(client, url):
-    login_url = reverse("login", query_params={"next": url})
+    login_url = reverse(settings.LOGIN_URL, query_params={"next": url})
 
     resp = check_http_post_response(client, url, status_code=302)
     assert unquote(resp.url) == login_url

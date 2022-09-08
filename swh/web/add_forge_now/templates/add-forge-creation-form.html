@@ -13,12 +13,11 @@ See top-level LICENSE file for more information
       <p class="text-primary">
         You must be logged in to submit an add forge request. Please
         <a id="loginLink" class="link-primary"
-        {% if oidc_enabled and 'remote_user' in request.GET %}
-          href="{% url 'oidc-login' %}?next={% url 'forge-add-create' %}"
-        {% else %}
-          href="{% url 'login' %}?next={% url 'forge-add-create' %}"
-        {% endif %}>log in</a>
+           href="{% url login_url %}?next={% url 'forge-add-create' %}">
+          log in
+        </a>
       </p>
+
     {% else %}
 
       <form method="POST" action="{% url 'api-1-add-forge-request-create' %}"

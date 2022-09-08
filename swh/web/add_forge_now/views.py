@@ -5,7 +5,6 @@
 
 from typing import Any, Dict, List
 
-from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -116,11 +115,7 @@ def create_request_help(request):
     )
 
 
-@user_passes_test(
-    is_add_forge_now_moderator,
-    redirect_field_name="next_path",
-    login_url=settings.LOGIN_URL,
-)
+@user_passes_test(is_add_forge_now_moderator)
 def create_request_message_source(request: HttpRequest, id: int) -> HttpResponse:
     """View to retrieve the message source for a given request history entry"""
 

@@ -38,9 +38,11 @@ See top-level LICENSE file for more information
     <li class="list-inline-item">
       <a href="#rate-limiting">Rate limiting</a>
     </li>
-    <li class="list-inline-item">
-      <a href="#authentication">Authentication</a>
-    </li>
+    {% if oidc_enabled %}
+      <li class="list-inline-item">
+        <a href="#authentication">Authentication</a>
+      </li>
+    {% endif %}
   </ul>
 
   <h4 id="endpoint-index">Endpoint index</h4>
@@ -277,28 +279,30 @@ X-RateLimit-Limit: 120
 X-RateLimit-Remaining: 119
 X-RateLimit-Reset: 1620639052</code></pre>
 
-  <h4 id="authentication">Authentication</h4>
-  <p>
-    It is possible to perform authenticated requests to the Web API through the use of a bearer token
-    sent in HTTP Authorization headers.
-    <br/>
-    To obtain such a token, an account to the
-    <a href="{% url 'oidc-login' %}">Software Heritage Authentication service</a> must be created.
-    <br/>
-    To generate and manage bearer tokens, a dedicated interface is available on the
-    <a href="{% url 'oidc-profile' %}#tokens">user profile page</a> once logged in.
-  </p>
-  <p>
-    The following shows how to perform an authenticated request to the Web API using <code>curl</code>.
-    <pre>export TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhMTMxYTQ1My1hM2IyLTQwMTUtO...
-curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}api/...</pre>
-  </p>
-  <p>
-    Authenticated requests can be used to lift rate limiting if the user account has the adequate
-    permission.
-    If you are in such a need, please <a href="https://www.softwareheritage.org/contact/">contact us</a>
-    and we will review your request.
-  </p>
+  {% if oidc_enabled %}
+    <h4 id="authentication">Authentication</h4>
+    <p>
+      It is possible to perform authenticated requests to the Web API through the use of a bearer token
+      sent in HTTP Authorization headers.
+      <br/>
+      To obtain such a token, an account to the
+      <a href="{% url 'oidc-login' %}">Software Heritage Authentication service</a> must be created.
+      <br/>
+      To generate and manage bearer tokens, a dedicated interface is available on the
+      <a href="{% url 'oidc-profile' %}#tokens">user profile page</a> once logged in.
+    </p>
+    <p>
+      The following shows how to perform an authenticated request to the Web API using <code>curl</code>.
+      <pre>export TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhMTMxYTQ1My1hM2IyLTQwMTUtO...
+  curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}api/...</pre>
+    </p>
+    <p>
+      Authenticated requests can be used to lift rate limiting if the user account has the adequate
+      permission.
+      If you are in such a need, please <a href="https://www.softwareheritage.org/contact/">contact us</a>
+      and we will review your request.
+    </p>
+  {% endif %}
 
 </div>
 <script>

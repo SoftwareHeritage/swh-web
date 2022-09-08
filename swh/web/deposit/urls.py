@@ -7,7 +7,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
 
-from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -21,12 +20,12 @@ def can_list_deposits(user):
     return user.is_staff or user.has_perm(ADMIN_LIST_DEPOSIT_PERMISSION)
 
 
-@user_passes_test(can_list_deposits, login_url=settings.LOGIN_URL)
+@user_passes_test(can_list_deposits)
 def admin_deposit(request):
     return render(request, "deposit-admin.html")
 
 
-@user_passes_test(can_list_deposits, login_url=settings.LOGIN_URL)
+@user_passes_test(can_list_deposits)
 def admin_deposit_list(request):
     config = get_config()["deposit"]
     private_api_url = config["private_api_url"].rstrip("/") + "/"

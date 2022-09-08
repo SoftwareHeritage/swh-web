@@ -112,27 +112,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <span id="swh-current-status-description">Operational</span>
               <i class="swh-current-status-indicator green"></i>
             </a>
-            {% url 'logout' as logout_url %}
             {% if user.is_authenticated %}
               Logged in as
               {% if 'OIDC' in user.backend %}
                 <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
-                <a href=  "{% url 'oidc-logout' %}?next_path={% url 'logout' %}?remote_user=1">logout</a>
+                <a href=  "{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
               {% else %}
                 <strong id="swh-login">{{ user.username }}</strong>,
-                <a href="{{ logout_url }}">logout</a>
-              {% endif %}
-            {% elif oidc_enabled %}
-              {% if request.path != logout_url %}
-                <a id="swh-login" href="{% url 'oidc-login' %}?next_path={{ request.build_absolute_uri }}">login</a>
-              {% else %}
-                <a id="swh-login" href="{% url 'oidc-login' %}">login</a>
+                <a href="{% url logout_url %}">logout</a>
               {% endif %}
             {% else %}
-              {% if request.path != logout_url %}
-                <a id="swh-login" href="{% url 'login' %}?next={{ request.build_absolute_uri }}">login</a>
+              {% if request.resolver_match.url_name != logout_url %}
+                <a id="swh-login" href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
               {% else %}
-                <a id="swh-login" href="{% url 'login' %}">login</a>
+                <a id="swh-login" href="{% url login_url %}">login</a>
               {% endif %}
             {% endif %}
           </li>

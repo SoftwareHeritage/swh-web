@@ -281,7 +281,7 @@ def test_oidc_profile_view_anonymous_user(client):
     requesting profile view.
     """
     url = reverse("oidc-profile")
-    login_url = reverse("oidc-login", query_params={"next_path": url})
+    login_url = reverse("oidc-login", query_params={"next": url})
     resp = check_http_get_response(client, url, status_code=302)
     assert resp["location"] == login_url
 

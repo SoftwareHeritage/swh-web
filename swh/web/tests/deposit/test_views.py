@@ -7,6 +7,8 @@ from base64 import b64encode
 
 import pytest
 
+from django.conf import settings
+
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.config import get_config
 from swh.web.tests.helpers import (
@@ -20,7 +22,7 @@ from swh.web.utils import reverse
 def test_deposit_admin_view_not_available_for_anonymous_user(client):
     url = reverse("admin-deposit")
     resp = check_html_get_response(client, url, status_code=302)
-    assert resp["location"] == reverse("login", query_params={"next": url})
+    assert resp["location"] == reverse(settings.LOGIN_URL, query_params={"next": url})
 
 
 @pytest.mark.django_db

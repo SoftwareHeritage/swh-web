@@ -9,6 +9,8 @@ import random
 from pkg_resources import get_distribution
 import pytest
 
+from django.conf import settings
+
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
 from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
@@ -56,15 +58,23 @@ def test_layout_with_oidc_auth_enabled(client):
     assert_contains(resp, reverse("oidc-login"))
 
 
-def test_layout_without_oidc_auth_enabled(client, mocker):
+def test_layout_without_oidc_auth_enabled(client, django_settings, mocker):
     config = deepcopy(get_config())
     config["keycloak"]["server_url"] = ""
-    mock_get_config = mocker.patch("swh.web.utils.get_config")
+    mock_get_config = mocker.patch("swh.web.config.get_config")
     mock_get_config.return_value = config
+
+    django_settings.LOGIN_URL = "login"
+    django_settings.LOGOUT_URL = "logout"
+    django_settings.MIDDLEWARE = [
+        mid
+        for mid in django_settings.MIDDLEWARE
+        if mid != "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware"
+    ]
 
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
-    assert_contains(resp, reverse("login"))
+    assert_contains(resp, reverse(settings.LOGIN_URL))
 
 
 def test_layout_swh_web_version_number_display(client):

@@ -319,6 +319,8 @@ def context_processor(request):
         "lang": "en",
         "sidebar_state": request.COOKIES.get("sidebar-state", "expanded"),
         "SWH_DJANGO_APPS": settings.SWH_DJANGO_APPS,
+        "login_url": settings.LOGIN_URL,
+        "logout_url": settings.LOGOUT_URL,
     }
 
 

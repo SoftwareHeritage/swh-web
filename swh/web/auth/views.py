@@ -150,6 +150,6 @@ def oidc_revoke_bearer_tokens(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=401)
 
 
-@login_required(login_url="/oidc/login/", redirect_field_name="next_path")
+@login_required(login_url="oidc-login")
 def oidc_profile_view(request: HttpRequest) -> HttpResponse:
     return render(request, "profile.html")

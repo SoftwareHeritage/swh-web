@@ -159,3 +159,6 @@ if not _pytest:
 else:
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
+
+LOGIN_URL = "login" if not _pytest else "oidc-login"
+LOGOUT_URL = "logout" if not _pytest else "oidc-logout"
