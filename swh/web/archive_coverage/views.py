@@ -44,11 +44,38 @@ listed_origins: Dict[str, Any] = {
     ),
     "origins": [
         {
+            "type": "arch",
+            "info_url": "https://archlinux.org/",
+            "info": "source packages from the Arch Linux distribution",
+            "search_pattern": {
+                "default": "https://archlinux.org/packages/",
+            },
+        },
+        {
+            "type": "aur",
+            "info_url": "https://aur.archlinux.org/",
+            "info": "source packages from the Arch Linux User Repository",
+            "search_pattern": {
+                "default": "https://aur.archlinux.org/packages/",
+            },
+        },
+        {
             "type": "bitbucket",
             "info_url": "https://bitbucket.org",
             "info": "public repositories from Bitbucket",
             "search_pattern": {
                 "default": "https://bitbucket.org/",
+            },
+        },
+        {
+            "type": "bower",
+            "info_url": "https://bower.io/",
+            "info": (
+                "git repositories of packages referenced by Bower, "
+                "a package manager for the web"
+            ),
+            "search_pattern": {
+                "default": "",
             },
         },
         {
@@ -65,6 +92,14 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from The Comprehensive R Archive Network",
             "search_pattern": {
                 "default": "https://cran.r-project.org/",
+            },
+        },
+        {
+            "type": "crates",
+            "info_url": "https://crates.io/",
+            "info": "source packages from The Rust community's crate registry",
+            "search_pattern": {
+                "default": "https://crates.io/crates/",
             },
         },
         {
@@ -100,6 +135,22 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "gogs",
+            "info_url": "https://gogs.io/",
+            "info": "public repositories from multiple Gogs instances",
+            "search_pattern": {
+                "default": "gogs",
+            },
+        },
+        {
+            "type": "golang",
+            "info_url": "https://go.dev/",
+            "info": "source packages from the official Go package manager",
+            "search_pattern": {
+                "default": "https://pkg.go.dev/",
+            },
+        },
+        {
             "type": "guix",
             "info_url": "https://guix.gnu.org",
             "info": "source code tarballs used to build the Guix package collection",
@@ -114,6 +165,14 @@ listed_origins: Dict[str, Any] = {
             "info": "releases from the GNU project (as of August 2015)",
             "search_pattern": {
                 "default": "gnu",
+            },
+        },
+        {
+            "type": "hackage",
+            "info_url": "https://hackage.haskell.org",
+            "info": "source packages from The Haskell Package Repository",
+            "search_pattern": {
+                "default": "https://hackage.haskell.org/package/",
             },
         },
         {
@@ -186,6 +245,14 @@ listed_origins: Dict[str, Any] = {
             "info": "public repositories from multiple Phabricator instances",
             "search_pattern": {
                 "default": "phabricator",
+            },
+        },
+        {
+            "type": "pubdev",
+            "info_url": "https://pub.dev",
+            "info": "source packages from the official repository for Dart and Flutter apps",
+            "search_pattern": {
+                "default": "https://pub.dev",
             },
         },
         {
