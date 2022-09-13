@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import enum
-from typing import List
+from typing import Dict, List
 from urllib.parse import urlparse
 
 from django.db import models
@@ -38,30 +38,40 @@ class RequestStatus(enum.Enum):
     def choices(cls):
         return tuple((variant.name, variant.value) for variant in cls)
 
-    def allowed_next_statuses(self) -> List[RequestStatus]:
-        next_statuses = {
-            self.PENDING: [self.WAITING_FOR_FEEDBACK, self.REJECTED, self.SUSPENDED],
-            self.WAITING_FOR_FEEDBACK: [self.FEEDBACK_TO_HANDLE],
-            self.FEEDBACK_TO_HANDLE: [
-                self.WAITING_FOR_FEEDBACK,
-                self.ACCEPTED,
-                self.REJECTED,
-                self.SUSPENDED,
-                self.UNSUCCESSFUL,
+    @classmethod
+    def next_statuses(cls) -> Dict[RequestStatus, List[RequestStatus]]:
+        return {
+            cls.PENDING: [cls.WAITING_FOR_FEEDBACK, cls.REJECTED, cls.SUSPENDED],
+            cls.WAITING_FOR_FEEDBACK: [cls.FEEDBACK_TO_HANDLE],
+            cls.FEEDBACK_TO_HANDLE: [
+                cls.WAITING_FOR_FEEDBACK,
+                cls.ACCEPTED,
+                cls.REJECTED,
+                cls.SUSPENDED,
+                cls.UNSUCCESSFUL,
             ],
-            self.ACCEPTED: [self.SCHEDULED],
-            self.SCHEDULED: [
-                self.FIRST_LISTING_DONE,
+            cls.ACCEPTED: [cls.SCHEDULED],
+            cls.SCHEDULED: [
+                cls.FIRST_LISTING_DONE,
                 # in case of race condition between lister and loader:
-                self.FIRST_ORIGIN_LOADED,
+                cls.FIRST_ORIGIN_LOADED,
             ],
-            self.FIRST_LISTING_DONE: [self.FIRST_ORIGIN_LOADED],
-            self.FIRST_ORIGIN_LOADED: [],
-            self.REJECTED: [],
-            self.SUSPENDED: [self.PENDING],
-            self.UNSUCCESSFUL: [],
+            cls.FIRST_LISTING_DONE: [cls.FIRST_ORIGIN_LOADED],
+            cls.FIRST_ORIGIN_LOADED: [],
+            cls.REJECTED: [],
+            cls.SUSPENDED: [cls.PENDING],
+            cls.UNSUCCESSFUL: [],
         }
-        return next_statuses[self]  # type: ignore
+
+    @classmethod
+    def next_statuses_str(cls) -> Dict[str, List[str]]:
+        return {
+            key.name: [value.name for value in values]
+            for key, values in cls.next_statuses().items()
+        }
+
+    def allowed_next_statuses(self) -> List[RequestStatus]:
+        return self.next_statuses()[self]
 
 
 class RequestActorRole(enum.Enum):

@@ -5,14 +5,14 @@
 
 import pytest
 
-from swh.web.common.utils import reverse
 from swh.web.tests.conftest import fossology_missing
 from swh.web.tests.data import random_content
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_responses,
     check_http_get_response,
 )
+from swh.web.utils import reverse
 
 
 def test_api_content_filetype(api_client, indexer_data, content):

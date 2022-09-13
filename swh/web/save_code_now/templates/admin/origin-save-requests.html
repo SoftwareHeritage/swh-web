@@ -1,0 +1,93 @@
+{% extends "./origin-save-common.html" %}
+
+{% comment %}
+Copyright (C) 2018-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+
+{% block tab_content %}
+  <div id="swh-origin-save-requests" class="tab-pane active">
+    <ul class="nav nav-pills mt-3 mb-3" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="swh-save-requests-pending-tab" data-toggle="pill" href="#swh-save-requests-pending" role="tab" aria-controls="swh-save-requests-pending" aria-selected="true">Pending</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="swh-save-requests-accepted-tab" data-toggle="pill" href="#swh-save-requests-accepted" role="tab" aria-controls="swh-save-requests-accepted" aria-selected="false">Accepted</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="swh-save-requests-rejected-tab" data-toggle="pill" href="#swh-save-requests-rejected" role="tab" aria-controls="swh-save-requests-rejected" aria-selected="false">Rejected</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="swh-save-requests-pending" role="tabpanel" aria-labelledby="swh-save-requests-pending-tab">
+        <table id="swh-origin-save-pending-requests" class="table swh-table swh-table-striped" width="100%">
+          <thead>
+            <tr>
+              <th></th>
+              <th data-priority="2">Date</th>
+              <th data-priority="3">Type</th>
+              <th data-priority="1">Url</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-6">
+          </div>
+          <div class="col-md-2">
+            <button id="swh-accept-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.save_code_now.acceptOriginSaveRequest()" disabled>Accept selected</button>
+          </div>
+          <div class="col-md-2">
+            <button id="swh-reject-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.save_code_now.rejectOriginSaveRequest()" disabled>Reject selected</button>
+          </div>
+          <div class="col-md-2">
+            <button id="swh-remove-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.save_code_now.removePendingOriginSaveRequest()" disabled>Remove selected</button>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="swh-save-requests-accepted" role="tabpanel" aria-labelledby="swh-save-requests-accepted-tab">
+        <table id="swh-origin-save-accepted-requests" class="table swh-table swh-table-striped" width="100%">
+          <thead>
+            <tr>
+              <th></th>
+              <th data-priority="3">Date</th>
+              <th data-priority="4">Type</th>
+              <th data-priority="1">Url</th>
+              <th data-priority="2">Status</th>
+              <th data-priority="5">Info</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+          </div>
+          <div class="col-md-2">
+            <button id="swh-remove-accepted-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.save_code_now.removeAcceptedOriginSaveRequest()" disabled>Remove selected</button>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="swh-save-requests-rejected" role="tabpanel" aria-labelledby="swh-save-requests-rejected-tab">
+        <table id="swh-origin-save-rejected-requests" class="table swh-table swh-table-striped" width="100%">
+          <thead>
+            <tr>
+              <th></th>
+              <th data-priority="2">Date</th>
+              <th data-priority="3">Type</th>
+              <th data-priority="1">Url</th>
+              <th data-priority="4">Info</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="row text-right mt-3">
+          <div class="col-md-10">
+          </div>
+          <div class="col-md-2">
+            <button id="swh-remove-rejected-save-origin-request" class="btn btn-default swh-action-need-selection" onclick="swh.save_code_now.removeRejectedOriginSaveRequest()" disabled>Remove selected</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

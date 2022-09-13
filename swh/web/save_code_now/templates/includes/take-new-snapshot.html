@@ -1,0 +1,74 @@
+{% comment %}
+Copyright (C) 2019-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+{% load swh_templatetags %}
+
+{% if snapshot_context and snapshot_context.visit_info and snapshot_context.visit_info.type|visit_type_savable %}
+
+  <button id="swh-take-new-snashot" class="btn btn-default btn-sm" type="button" tabindex="-1" data-toggle="modal" data-target="#swh-take-new-snapshot-modal">
+    <i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>
+    Save again
+  </button>
+
+  <div class="modal fade" id="swh-take-new-snapshot-modal" tabindex="-1" role="dialog" aria-labelledby="swh-take-new-snapshot-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="swh-take-new-snapshot-modal-label">Take a new snapshot of a software origin</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            If the archived software origin currently browsed is not synchronized with its upstream
+            version (for instance when new commits have been issued), you can explicitly request Software
+            Heritage to take a new snapshot of it.
+          <p>
+          </p>
+            Use the form below to proceed. Once a request has been submitted and accepted, it will be processed as soon as possible.
+            You can then check its processing state by visiting this <a href="{% url 'origin-save' %}#requests">dedicated page</a>.
+          </p>
+          <form id="swh-take-new-snapshot-form" class="mt-3">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="form-group col-md-3">
+                <label for="swh-input-visit-type">Visit type</label>
+                <input id="swh-input-visit-type" class="form-control" value="{{ snapshot_context.visit_info.type }}" disabled>
+              </div>
+              <div class="form-group col-md-9">
+                <label for="swh-input-origin-url">Origin url</label>
+                <input type="text" class="form-control" id="swh-input-origin-url" value="{{ snapshot_context.origin_info.url }}" disabled>
+              </div>
+            </div>
+              <div class="form-row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 form-group">
+                  <label for="swh-take-new-snapshot-submit">&#8203;</label>
+                  <button type="submit" id="swh-take-new-snapshot-save-submit" class="btn btn-default btn-block">Submit</button>
+                </div>
+                <div class="col-md-4"></div>
+              </div>
+          </form>
+          <div class="swh-processing-save-request text-center" style="display: none;">
+            <img src="{% static 'img/swh-spinner.gif' %}">
+            <p>Processing "take a new snapshot" request ...</p>
+          </div>
+          <div id="swh-take-new-snapshot-request-status">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    swh.save_code_now.initTakeNewSnapshot();
+  </script>
+
+
+{% endif %}

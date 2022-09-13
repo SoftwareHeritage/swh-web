@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -155,6 +155,22 @@ DEFAULT_CONFIG = {
     "give": ("dict", {"public_key": "", "token": ""}),
     "features": ("dict", {"add_forge_now": True}),
     "add_forge_now": ("dict", {"email_address": "add-forge-now@example.com"}),
+    "swh_extra_django_apps": (
+        "list",
+        [
+            "swh.web.add_forge_now",
+            "swh.web.archive_coverage",
+            "swh.web.badges",
+            "swh.web.banners",
+            "swh.web.deposit",
+            "swh.web.inbound_email",
+            "swh.web.jslicenses",
+            "swh.web.mailmap",
+            "swh.web.metrics",
+            "swh.web.save_code_now",
+            "swh.web.vault",
+        ],
+    ),
 }
 
 swhweb_config: Dict[str, Any] = {}
@@ -223,11 +239,3 @@ def scheduler():
 def counters():
     """Return the current application's counters."""
     return get_config()["counters"]
-
-
-def is_feature_enabled(feature_name: str) -> bool:
-    """Determine whether a feature is enabled or not. If feature_name is not found at all,
-    it's considered disabled.
-
-    """
-    return get_config()["features"].get(feature_name, False)

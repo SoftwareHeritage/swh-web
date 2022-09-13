@@ -5,7 +5,7 @@
 
 from requests.utils import parse_header_links
 
-from swh.web.tests.utils import check_api_get_responses
+from swh.web.tests.helpers import check_api_get_responses
 
 
 def scroll_results(api_client, url):

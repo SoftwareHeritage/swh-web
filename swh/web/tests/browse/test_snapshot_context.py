@@ -16,14 +16,14 @@ from swh.web.browse.snapshot_context import (
     get_snapshot_context,
 )
 from swh.web.browse.utils import gen_revision_url
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.origin_visits import get_origin_visit, get_origin_visits
-from swh.web.common.typing import (
+from swh.web.utils import format_utc_iso_date, reverse
+from swh.web.utils.identifiers import gen_swhid
+from swh.web.utils.origin_visits import get_origin_visit, get_origin_visits
+from swh.web.utils.typing import (
     SnapshotBranchInfo,
     SnapshotContext,
     SnapshotReleaseInfo,
 )
-from swh.web.common.utils import format_utc_iso_date, reverse
 
 
 def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_visits):

@@ -1,4 +1,4 @@
-# Copyright (C) 2021 The Software Heritage developers
+# Copyright (C) 2022 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,11 +28,11 @@ from swh.model.model import (
 )
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date, visit_dates
-from swh.web.tests.utils import check_html_get_response
+from swh.web.utils import reverse
 
 
 @pytest.mark.parametrize(
@@ -49,7 +49,7 @@ def test_snapshot_browse_with_id(client, browse_context, template_used, snapshot
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used=f"browse/{template_used}"
+        client, url, status_code=200, template_used=f"browse-{template_used}"
     )
     assert_contains(resp, f"swh:1:snp:{snapshot}")
 
@@ -147,7 +147,7 @@ def _origin_branches_test_helper(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
+        client, url, status_code=200, template_used="browse-branches.html"
     )
 
     origin_branches = origin_snapshot[0]
@@ -252,7 +252,7 @@ def test_snapshot_branches_pagination_with_alias(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
+        client, url, status_code=200, template_used="browse-branches.html"
     )
     assert_contains(resp, '<ul class="pagination')
 
@@ -264,7 +264,7 @@ def test_pull_request_branches_filtering(
     # check no pull request branches are displayed in the Branches / Releases dropdown
     url = reverse("browse-origin-directory", query_params={"origin_url": origin_url})
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/directory.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_not_contains(resp, "refs/pull/")
 
@@ -276,7 +276,7 @@ def test_pull_request_branches_filtering(
         query_params={"origin_url": origin_url},
     )
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/branches.html"
+        client, url, status_code=200, template_used="browse-branches.html"
     )
     assert_not_contains(resp, "refs/pull/")
 
@@ -306,7 +306,7 @@ def _origin_releases_test_helper(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/releases.html"
+        client, url, status_code=200, template_used="browse-releases.html"
     )
 
     origin_releases = origin_snapshot[1]
@@ -395,7 +395,7 @@ def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
     )
 
     resp = check_html_get_response(
-        client, snp_url, status_code=200, template_used="browse/directory.html"
+        client, snp_url, status_code=200, template_used="browse-directory.html"
     )
     assert_not_contains(resp, log_url)
 
@@ -443,6 +443,6 @@ def test_browse_snapshot_log_when_revisions(
     )
 
     resp = check_html_get_response(
-        client, snp_url, status_code=200, template_used="browse/directory.html"
+        client, snp_url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(resp, log_url)

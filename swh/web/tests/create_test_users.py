@@ -13,7 +13,7 @@ from swh.web.auth.utils import (
     MAILMAP_ADMIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
 )
-from swh.web.tests.utils import create_django_permission
+from swh.web.tests.helpers import create_django_permission
 
 User = get_user_model()
 

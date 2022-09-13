@@ -17,8 +17,8 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     re_encode_content,
 )
-from swh.web.common.utils import reverse
 from swh.web.tests.data import get_tests_data
+from swh.web.utils import reverse
 
 
 def test_get_mimetype_and_encoding_for_content():

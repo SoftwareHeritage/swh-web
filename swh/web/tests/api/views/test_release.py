@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import ObjectType, Person, Release, TimestampWithTimezone
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.utils import check_api_get_responses, check_http_get_response
+from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
+from swh.web.utils import reverse
 
 
 def test_api_release(api_client, archive_data, release):

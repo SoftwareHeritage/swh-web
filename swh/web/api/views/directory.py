@@ -11,7 +11,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
+from swh.web.utils import archive
 
 
 @api_route(
@@ -24,7 +24,7 @@ from swh.web.common import archive
     "api-1-directory",
     checksum_args=["sha1_git"],
 )
-@api_doc("/directory/")
+@api_doc("/directory/", category="Archive")
 @format_docstring()
 def api_directory(request: Request, sha1_git: str, path: Optional[str] = None):
     """

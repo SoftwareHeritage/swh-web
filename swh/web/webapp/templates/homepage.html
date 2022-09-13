@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2017-2020  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{% render_bundle 'browse' %}
+{% endblock %}
+
+{% block title %}Welcome to the Software Heritage archive{% endblock %}
+
+{% block navbar-content %}
+
+<h4>Welcome to the Software Heritage archive</h4>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="p-3 swh-search-box swh-background-gray">
+<h4>Search</h4>
+
+{% include "includes/origin-search-form.html" %}
+</div>
+
+<p class="text-right">
+... or check our
+<a id="swh-web-api-link" style="color: #e20026;" href="{% url 'api-1-homepage' %}">
+  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-cogs"></i>Web API
+</a>
+</p>
+
+
+<div class="p-3">
+<h4>Overview</h4>
+
+<p>
+  The long term goal of the Software Heritage initiative is to <strong>collect</strong>
+  all publicly available software in source code form together with its
+  development history, replicate it massively to ensure its <strong>preservation</strong>,
+  and <strong>share</strong> it with everyone who needs it.
+
+  The Software Heritage archive is growing over time as we crawl new source code from software
+  projects and development forges.
+</p>
+</div>
+
+{% if "swh.web.archive_coverage" in SWH_DJANGO_APPS %}
+
+  <div class="p-3">
+  <h4>Content</h4>
+
+  <iframe class="swh-coverage-iframe" src="{% url 'swh-coverage' %}"></iframe>
+  </div>
+
+{% endif %}
+
+<div class="p-3">
+<h4>Size</h4>
+
+<p>
+  As of today the archive already contains and keeps safe for you the following amount
+  of objects:
+
+  <div class="row">
+    <div class="col-md-4 text-center">
+      <h5>Source files</h5>
+      <span id="swh-content-count" class="swh-counter">0</span>
+      <div id="swh-content-count-history" class="d3-wrapper swh-counter-history"></div>
+    </div>
+    <div class="col-md-4 swh-counter-container text-center">
+      <h5>Commits</h5>
+      <span id="swh-revision-count" class="swh-counter">0</span>
+      <div id="swh-revision-count-history" class="d3-wrapper swh-counter-history"></div>
+    </div>
+    <div class="col-md-4 swh-counter-container text-center">
+      <h5>Projects</h5>
+      <span id="swh-origin-count" class="swh-counter">0</span>
+      <div id="swh-origin-count-history" class="d3-wrapper swh-counter-history"></div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-4 text-center">
+      <h5>Directories</h5>
+      <span id="swh-directory-count" class="swh-counter">0</span>
+    </div>
+    <div class="col-md-4 swh-counter-container text-center">
+      <h5>Authors</h5>
+      <span id="swh-person-count" class="swh-counter">0</span>
+    </div>
+    <div class="col-md-4 swh-counter-container text-center">
+      <h5>Releases</h5>
+      <span id="swh-release-count" class="swh-counter">0</span>
+    </div>
+  </div>
+
+  <p class="mt-3" style="font-size: 13px">
+    Note: the counters and graphs above are based on heuristics that might not reflect the exact
+    size of the archive. While the long-term trends shown and ballpark figures are reliable,
+    individual point-in-time values might not be.
+  </p>
+
+</p>
+</div>
+
+<script>
+  swh.webapp.initHomePage();
+</script>
+{% endblock %}

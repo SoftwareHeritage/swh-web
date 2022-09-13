@@ -1,0 +1,85 @@
+{% extends "./browse.html" %}
+
+{% comment %}
+Copyright (C) 2017-2022 The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% block swh-browse-content %}
+  <div class="table-responsive mt-3 mb-3">
+    <div class="form-group row float-right">
+      {% include "./includes/branch-search.html" %}
+    </div>
+    <table class="table swh-table swh-table-striped">
+      <thead>
+        <tr>
+          <th><i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Name</th>
+          <th>Target</th>
+          <th>Message</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if displayed_releases|length > 0 %}
+          {% for release in displayed_releases %}
+            <tr class="swh-release-entry swh-tr-hover-highlight">
+              <td class="swh-release-name">
+                <a href="{{ release.release_url }}">
+                  {% if release.alias %}
+                    <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                  {% else %}
+                    <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                  {% endif %}
+                  {{ release.name }}
+                </a>
+              </td>
+              <td class="swh-release-target">
+                <a href="{{ release.target_url }}">
+                  <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true" title="{{ release.tooltip }}"></i>{{ release.target|slice:":7" }}
+                </a>
+              </td>
+              <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow" title="{{ release.message }}">
+                {{ release.message }}
+              </td>
+              <td class="swh-release-date">
+                {{ release.date }}
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td>
+              {% if search_string %}
+                No release names containing {{search_string}} have been found!
+              {% else %}
+                The list of releases is empty!
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+
+{% block swh-browse-after-content %}
+  {% if prev_releases_url or next_releases_url %}
+    <ul class="pagination justify-content-center">
+      {% if prev_releases_url %}
+        <li class="page-item"><a class="page-link" href="{{ prev_releases_url }}">Previous</a></li>
+      {% else %}
+        <li class="page-item disabled"><a class="page-link">Previous</a></li>
+      {% endif %}
+
+      {% if next_releases_url %}
+        <li class="page-item"><a class="page-link" href="{{ next_releases_url }}">Next</a></li>
+      {% else %}
+        <li class="page-item disabled"><a class="page-link">Next</a></li>
+      {% endif %}
+    </ul>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2015-2019  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% block title %} Endpoints &ndash; Software Heritage API {% endblock %}
+
+{% block navbar-content %}
+<div class="bread-crumbs">
+  <ul>
+    <li><a href="/api/"><h4>Web API</h4></a></li>
+    <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
+    <li class="bc-no-root">endpoints</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="swh-api-1-doc">
+  <p>
+    Below you can find a list of the available endpoints for version 1 of the
+    Software Heritage API. For a more general introduction please refer to
+    the <a href="/api/">API overview</a>.
+  </p>
+
+  <p>
+    Endpoints marked "available" are considered stable for the current version
+    of the API; endpoints marked "upcoming" are work in progress that will be
+    stabilized in the near future.
+  </p>
+</div>
+
+{% for category, routes in doc_routes %}
+  <h2>{{ category }}</h2>
+
+  <table class="table table-striped search-res swh-table" width="100%">
+    <col width="200">
+    <thead class="thead-default">
+      <th>Endpoint</th>
+      <th class="d-none d-sm-table-cell">Description</th>
+    </thead>
+    <tbody>
+      {% for doc in routes %}
+        <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-1-doc-route-{{ tag }} {% endfor %}">
+          {% if "upcoming" in doc.tags %}
+            <td id="{{ doc.route_view_name }}">
+              {% url doc.route_view_name %}
+            </td>
+          {% else %}
+            <td id="{{ doc.route_view_name }}">
+              <a href="{% url doc.route_view_name %}">
+                {{ doc.route }}
+              </a>
+              {% if "deprecated" in doc.tags %}(deprecated){% endif %}
+            </td>
+          {% endif %}
+          <td class="d-none d-sm-table-cell">
+            <a href="{% url doc.route_view_name %}">
+              {{ doc.doc_intro | docstring_display | safe }}
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
+
+<script type="text/javascript">
+  swh.webapp.initPage('api');
+  swh.webapp.highlightCode(false);
+</script>
+{% endblock %}

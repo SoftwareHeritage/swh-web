@@ -10,10 +10,10 @@ from hypothesis import given
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import Snapshot
 from swh.web.api.utils import enrich_snapshot
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
+from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
 from swh.web.tests.strategies import new_snapshot
-from swh.web.tests.utils import check_api_get_responses, check_http_get_response
+from swh.web.utils import reverse
 
 
 def test_api_snapshot(api_client, archive_data, snapshot):

@@ -11,13 +11,13 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import archive
-from swh.web.common.exc import LargePayloadExc
-from swh.web.common.identifiers import get_swhid, group_swhids, resolve_swhid
+from swh.web.utils import archive
+from swh.web.utils.exc import LargePayloadExc
+from swh.web.utils.identifiers import get_swhid, group_swhids, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")
-@api_doc("/resolve/")
+@api_doc("/resolve/", category="Archive")
 @format_docstring()
 def api_resolve_swhid(request: Request, swhid: str):
     """
@@ -74,7 +74,7 @@ def api_resolve_swhid(request: Request, swhid: str):
 
 
 @api_route(r"/known/", "api-1-known", methods=["POST"])
-@api_doc("/known/")
+@api_doc("/known/", category="Archive")
 @format_docstring()
 def api_swhid_known(request: Request):
     """

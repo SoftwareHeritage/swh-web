@@ -67,9 +67,14 @@ describe('Browse requests list tests', function() {
     populateForm('cgit', 'https://cgit.org', 'admin', 'admin@example.org', 'on', '');
     cy.get('#requestCreateForm').submit();
 
+    cy.intercept(this.Urls.add_forge_request_list_datatables() + '**')
+      .as('addForgeRequestsList');
+
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
     cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+
+    cy.wait('@addForgeRequestsList');
 
     // check unfiltered user requests
     cy.get('tbody tr').then(rows => {
@@ -78,6 +83,8 @@ describe('Browse requests list tests', function() {
 
     cy.get('#swh-add-forge-user-filter')
       .uncheck({force: true});
+
+    cy.wait('@addForgeRequestsList');
 
     // Users now sees everything
     cy.get('tbody tr').then(rows => {

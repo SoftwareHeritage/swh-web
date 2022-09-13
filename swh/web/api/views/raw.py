@@ -22,9 +22,8 @@ from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.utils import SWHID_RE
+from swh.web.utils import SWHID_RE, archive
+from swh.web.utils.exc import NotFoundExc
 
 
 @api_route(
@@ -32,7 +31,7 @@ from swh.web.common.utils import SWHID_RE
     "api-1-raw-object",
     throttle_scope="swh_raw_object",
 )
-@api_doc("/raw/")
+@api_doc("/raw/", category="Archive")
 @format_docstring()
 def api_raw_object(request: Request, swhid: str):
     """

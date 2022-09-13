@@ -174,7 +174,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
     updateVaultItemList(this.vaultItems);
 
-    cy.visit(this.Urls.browse_vault());
+    cy.visit(this.Urls.vault());
 
     cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
       .click();
@@ -183,7 +183,7 @@ describe('Vault Cooking User Interface Tests', function() {
   it('should display and upgrade previous cooking tasks from the legacy format', function() {
     updateVaultItemList(this.legacyVaultItems);
 
-    cy.visit(this.Urls.browse_vault());
+    cy.visit(this.Urls.vault());
 
     // Check it is displayed
     cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
@@ -246,7 +246,7 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('contain', 'Archive cooking request successfully submitted.');
 
       // Go to Downloads page
-      cy.visit(this.Urls.browse_vault());
+      cy.visit(this.Urls.vault());
 
       cy.wait('@checkVaultCookingTask').then(() => {
         testStatus(this.directory, progressbarColors['new'], 'new', 'new');
@@ -334,7 +334,7 @@ describe('Vault Cooking User Interface Tests', function() {
         .should('contain', 'Archive cooking request successfully submitted.');
 
       // Go to Downloads page
-      cy.visit(this.Urls.browse_vault());
+      cy.visit(this.Urls.vault());
 
       cy.wait('@checkVaultCookingTask').then(() => {
         testStatus(this.revision, progressbarColors['new'], 'new', 'new');
@@ -454,7 +454,7 @@ describe('Vault Cooking User Interface Tests', function() {
       }
     }).as('fetchCookedArchive');
 
-    cy.visit(this.Urls.browse_vault())
+    cy.visit(this.Urls.vault())
       .get(`#vault-task-${CSS.escape(this.revision)} .vault-dl-link button`)
       .click();
 
@@ -483,7 +483,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
     updateVaultItemList(this.vaultItems);
 
-    cy.visit(this.Urls.browse_vault())
+    cy.visit(this.Urls.vault())
       .get(`#vault-task-${CSS.escape(this.revision)}`)
       .find('input[type="checkbox"]')
       .click({force: true});
