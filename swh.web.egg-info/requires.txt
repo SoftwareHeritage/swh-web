@@ -20,7 +20,7 @@ requests
 sentry-sdk
 typing-extensions
 psycopg2<2.9
-swh.auth[django]>=0.5.3
+swh.auth[django]>=0.6.7
 swh.core>=0.0.95
 swh.counters>=0.5.1
 swh.indexer>=2.0.0

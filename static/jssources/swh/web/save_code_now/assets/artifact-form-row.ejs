@@ -1,0 +1,31 @@
+<%# Copyright (C) 2021 The Software Heritage developers See the AUTHORS file at the top-level directory of this
+  distribution License: GNU Affero General Public License version 3, or any later version See top-level LICENSE file for
+  more information %>
+
+  <div class="swh-save-origin-archives-form swh-save-origin-artifact-form form-row">
+    <div class="form-group col-md-7">
+      <label for="swh-input-artifact-url-<%= formId %>">Artifact url</label>
+      <input type="text" class="form-control" id="swh-input-artifact-url-<%= formId %>" required>
+      <div class="invalid-feedback">The artifact url is mandatory</div>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="swh-input-artifact-version-<%= formId %>">Artifact version</label>
+      <input type="text" class="form-control" id="swh-input-artifact-version-<%= formId %>" required>
+      <div class="invalid-feedback">The artifact version is mandatory</div>
+    </div>
+    <div class="col-md-2">
+      <% if (deletableRow) { %>
+        <label for="swh-remove-archive-artifact-<%= formId %>">&nbsp;</label>
+        <button id="swh-remove-archive-artifact-<%= formId %>" type="button" class="btn btn-default btn-block"
+          onclick="swh.save_code_now.deleteArtifactFormRow(event)">
+          <i class="mdi mdi-file-remove mdi-fw" aria-hidden="true"></i>Remove artifact
+        </button>
+        <% } else { %>
+          <label for="swh-add-archive-artifact">&nbsp;</label>
+          <button id="swh-add-archive-artifact" type="button" class="btn btn-default btn-block"
+            onclick="swh.save_code_now.addArtifactFormRow()">
+            <i class="mdi mdi-file-plus mdi-fw" aria-hidden="true"></i>Add artifact
+          </button>
+          <% } %>
+    </div>
+  </div>

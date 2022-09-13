@@ -5,8 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
-import 'cypress-hmr-restarter';
 import '@cypress/code-coverage/support';
+import 'cypress-hmr-restarter';
 
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
@@ -19,7 +19,7 @@ Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
 });
 
 function loginUser(username, password) {
-  const url = '/admin/login/';
+  const url = '/login/';
   return cy.request({
     url: url,
     method: 'GET'
@@ -100,8 +100,12 @@ before(function() {
     Object.assign(this, testsData);
   });
 
-  cy.visit('/').window().then(async win => {
-    this.Urls = win.Urls;
+  cy.intercept('/jsreverse/').as('jsReverse');
+
+  cy.visit('/');
+  cy.wait('@jsReverse');
+  cy.window().its('Urls').then(Urls => {
+    this.Urls = Urls;
   });
 });
 

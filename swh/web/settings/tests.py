@@ -85,6 +85,19 @@ swh_web_config.update(
             "server_url": "http://localhost:8080/auth/" if _pytest else "",
             "realm_name": "SoftwareHeritage",
         },
+        "swh_extra_django_apps": [
+            "swh.web.add_forge_now",
+            "swh.web.archive_coverage",
+            "swh.web.badges",
+            "swh.web.banners",
+            "swh.web.deposit",
+            "swh.web.inbound_email",
+            "swh.web.jslicenses",
+            "swh.web.mailmap",
+            "swh.web.metrics",
+            "swh.web.save_code_now",
+            "swh.web.vault",
+        ],
     }
 )
 
@@ -126,9 +139,26 @@ if not _pytest:
     )
 
     # using sqlite3 for frontend tests
+    build_id = os.environ.get("CYPRESS_PARALLEL_BUILD_ID", "")
     settings.DATABASES["default"].update(
-        {"ENGINE": "django.db.backends.sqlite3", "NAME": "swh-web-test.sqlite3"}
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": f"swh-web-test{build_id}.sqlite3",
+        }
     )
+
+    # to prevent "database is locked" error when running cypress tests
+    from django.db.backends.signals import connection_created
+
+    def activate_wal_journal_mode(sender, connection, **kwargs):
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode = WAL;")
+
+    connection_created.connect(activate_wal_journal_mode)
+
 else:
     # Silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
+
+LOGIN_URL = "login" if not _pytest else "oidc-login"
+LOGOUT_URL = "logout" if not _pytest else "oidc-logout"

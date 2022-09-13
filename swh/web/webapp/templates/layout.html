@@ -1,0 +1,324 @@
+{% comment %}
+Copyright (C) 2015-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<!DOCTYPE html>
+
+{% load js_reverse %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load swh_templatetags %}
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %}</title>
+
+    {% render_bundle 'vendors' %}
+    {% render_bundle 'webapp' %}
+    {% render_bundle 'guided_tour' %}
+
+    <script>
+/*
+@licstart  The following is the entire license notice for the JavaScript code in this page.
+
+Copyright (C) 2015-2022  The Software Heritage developers
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+@licend  The above is the entire license notice for the JavaScript code in this page.
+*/
+    </script>
+
+    <script>
+      SWH_CONFIG = {{swh_client_config|jsonify}};
+      swh.webapp.sentryInit(SWH_CONFIG.sentry_dsn);
+    </script>
+
+    <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
+
+    <script>
+      swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});
+    </script>
+
+    {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
+
+    {% include "includes/favicon.html" %}
+
+    {% block header %}{% endblock %}
+
+    {% if swh_web_prod %}
+
+      <!-- Matomo -->
+      <script type="text/javascript">
+        var _paq = window._paq = window._paq || [];
+        _paq.push(['trackPageView']);
+        (function() {
+          var u="https://piwik.inria.fr/";
+          _paq.push(['setTrackerUrl', u+'matomo.php']);
+          _paq.push(['setSiteId', '59']);
+          var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+      </script>
+      <!-- End Matomo Code -->
+
+    {% endif %}
+
+  </head>
+
+  <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %} sidebar-collapse {% endif %}">
+    <a id="top"></a>
+    <div class="wrapper">
+      <div class="swh-top-bar">
+        <ul>
+          <li class="swh-position-left">
+            <div id="swh-full-width-switch-container" class="custom-control custom-switch d-none d-lg-block d-xl-block">
+              <input type="checkbox" class="custom-control-input" id="swh-full-width-switch" onclick="swh.webapp.fullWidthToggled(event)">
+              <label class="custom-control-label font-weight-normal" for="swh-full-width-switch">Full width</label>
+            </div>
+          </li>
+          <li>
+            <a href="https://www.softwareheritage.org">Home</a>
+          </li>
+          <li>
+            <a href="https://forge.softwareheritage.org/">Development</a>
+          </li>
+          <li>
+            <a href="https://docs.softwareheritage.org/devel/">Documentation</a>
+          </li>
+          <li>
+            <a class="swh-donate-link" href="https://www.softwareheritage.org/donate">Donate</a>
+          </li>
+          <li class="swh-position-right">
+            <a href="{{ status.server_url }}" target="_blank"
+              class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
+              <span id="swh-current-status-description">Operational</span>
+              <i class="swh-current-status-indicator green"></i>
+            </a>
+            {% if user.is_authenticated %}
+              Logged in as
+              {% if 'OIDC' in user.backend %}
+                <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
+                <a href=  "{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
+              {% else %}
+                <strong id="swh-login">{{ user.username }}</strong>,
+                <a href="{% url logout_url %}">logout</a>
+              {% endif %}
+            {% else %}
+              {% if request.resolver_match.url_name != logout_url %}
+                <a id="swh-login" href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
+              {% else %}
+                <a id="swh-login" href="{% url login_url %}">login</a>
+              {% endif %}
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+      {% if "swh.web.banners" in SWH_DJANGO_APPS %}
+        <div class="swh-banner">
+          {% include "hiring-banner.html" %}
+        </div>
+      {% endif %}
+      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar
+                 {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-navbar-banner {% endif %}">
+        <div class="navbar-header">
+          <a class="nav-link swh-push-menu" data-widget="pushmenu" data-enable-remember="true" href="#">
+            <i class="mdi mdi-24px mdi-menu mdi-fw" aria-hidden="true"></i>
+          </a>
+        </div>
+        <div class="navbar" style="width: 94%;">
+          <div class="swh-navbar-content">
+            {% block navbar-content %}{% endblock %}
+            {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+              <form class="form-horizontal d-none d-md-flex input-group swh-search-navbar needs-validation"
+                  id="swh-origins-search-top">
+                <input class="form-control"
+                  placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
+                  type="text" id="swh-origins-search-top-input"
+                  oninput="swh.webapp.validateSWHIDInput(this)" required/>
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit">
+                  <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} main-sidebar-banner {% endif %}
+                  sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
+      <a href="{% url 'swh-web-homepage' %}" class="brand-link">
+        <img class="brand-image" src="{% static 'img/swh-logo.png' %}">
+        <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
+          <span class="first-word">Software</span> <span class="second-word">Heritage</span>
+        </div>
+      </a>
+
+      <a href="/" class="swh-words-logo">
+        <div class="swh-words-logo-swh">
+          <span class="first-word">Software</span>
+          <span class="second-word">Heritage</span>
+        </div>
+        <span>Archive</span>
+      </a>
+
+      <div class="sidebar">
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <li class="nav-header">Features</li>
+            <li class="nav-item swh-search-item" title="Search archived software">
+              <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-magnify"></i>
+                <p>Search</p>
+              </a>
+            </li>
+            {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+              <li class="nav-item swh-vault-item" title="Download archived software from the Vault">
+                <a href="{% url 'vault' %}" class="nav-link swh-vault-link">
+                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-download"></i>
+                  <p>Downloads</p>
+                </a>
+              </li>
+            {% endif %}
+            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+              <li class="nav-item swh-origin-save-item" title="Request the saving of a software origin into the archive">
+                <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
+                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
+                  <p>Save code now</p>
+                </a>
+              </li>
+            {% endif %}
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+            <li class="nav-item swh-add-forge-now-item" title="Request adding a new forge listing">
+              <a href="{% url 'forge-add-create' %}" class="nav-link swh-add-forge-now-link">
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                <p>Add forge now</p>
+              </a>
+            </li>
+            {% endif %}
+            <li class="nav-item swh-help-item" title="How to browse the archive ?">
+              <a href="#" class="nav-link swh-help-link" onclick="swh.guided_tour.guidedTourButtonClick(event)">
+                <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
+                <p>Help</p>
+              </a>
+            </li>
+            {% if user.is_authenticated %}
+              <li class="nav-header">Administration</li>
+              {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
+                <li class="nav-item swh-origin-save-admin-item" title="Save code now administration">
+                  <a href="{% url 'admin-origin-save-requests' %}" class="nav-link swh-origin-save-admin-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-camera"></i>
+                    <p>Save code now</p>
+                  </a>
+                </li>
+              {% endif %}
+              {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+                {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-add-forge-now-moderation-item" title="Add forge now moderation">
+                  <a href="{% url 'add-forge-now-requests-moderation' %}" class="nav-link swh-add-forge-now-moderation-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                  </a>
+                </li>
+                {% endif %}
+              {% endif %}
+              {% if "swh.web.deposit" in SWH_DJANGO_APPS %}
+                {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
+                  <li class="nav-item swh-deposit-admin-item" title="Deposit administration">
+                    <a href="{% url 'admin-deposit' %}" class="nav-link swh-deposit-admin-link">
+                      <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
+                      <p>Deposit</p>
+                    </a>
+                  </li>
+                {% endif %}
+              {% endif %}
+              {% if "swh.web.mailmap" in SWH_DJANGO_APPS and MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-mailmap-admin-item" title="Mailmap administration">
+                  <a href="{% url 'admin-mailmap' %}" class="nav-link swh-mailmap-admin-link">
+                    <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-email"></i>
+                    <p>Mailmap</p>
+                  </a>
+                </li>
+              {% endif %}
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="content-wrapper">
+      <section class="content">
+        <div class="container" id="swh-web-content">
+          {% if swh_web_staging %}
+            <div class="swh-corner-ribbon
+                        {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner {% endif %}">
+              Staging<br/>v{{ swh_web_version }}
+            </div>
+          {% elif swh_web_dev %}
+            <div class="swh-corner-ribbon
+                       {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner {% endif %}">
+              Development<br/>v{{ swh_web_version|split:"+"|first }}
+            </div>
+          {% endif %}
+          {% block content %}{% endblock %}
+        </div>
+      </section>
+    </div>
+
+    {% include "includes/global-modals.html" %}
+
+    <footer class="footer">
+      <div class="container text-center">
+        <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
+        Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
+        License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
+        AGPLv3+</a>. <br/> The source code of Software Heritage <em>itself</em>
+        is available on
+        our <a href="https://forge.softwareheritage.org/">development
+        forge</a>. <br/> The source code files <em>archived</em> by Software
+        Heritage are available under their own copyright and licenses. <br/>
+        <span class="link-color">Terms of use: </span>
+        <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
+        <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
+        <a href="https://www.softwareheritage.org/contact/">Contact</a>-
+        {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
+          <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+        {% endif %}
+        <a href="{% url 'api-1-homepage' %}">Web API</a><br/>
+        {% if "production" not in DJANGO_SETTINGS_MODULE  %}
+          swh-web v{{ swh_web_version }}
+        {% endif %}
+      </div>
+    </footer>
+    <div id="back-to-top">
+      <a href="#top"><img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" /></a>
+    </div>
+    <script>
+      swh.webapp.setContainerFullWidth();
+      var statusServerURL = {{ status.server_url|jsonify }};
+      var statusJsonPath = {{ status.json_path|jsonify }};
+      swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
+    </script>
+  </body>
+
+</html>

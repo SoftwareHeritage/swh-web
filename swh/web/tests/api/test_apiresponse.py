@@ -18,10 +18,10 @@ from swh.web.api.apiresponse import (
     make_api_response,
     transform,
 )
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_http_get_response, check_http_post_response
+from swh.web.tests.helpers import check_http_get_response, check_http_post_response
+from swh.web.utils import reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_compute_link_header():

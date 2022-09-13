@@ -5,10 +5,13 @@
 
 from datetime import datetime
 
+import pytest
+
 APP_NAME = "swh_web_auth"
 
 MIGRATION_0005 = "0005_usermailmapevent"
 MIGRATION_0006 = "0006_fix_mailmap_admin_user_id"
+MIGRATION_0007 = "0007_mailmap_django_app"
 
 
 def test_fix_mailmap_admin_user_id(migrator):
@@ -36,3 +39,16 @@ def test_fix_mailmap_admin_user_id(migrator):
 
     assert UserMailmap.objects.filter(user_id=user_id).count() == 0
     assert UserMailmap.objects.filter(user_id=None).count() == 1
+
+
+def test_mailmap_django_app(migrator):
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0006))
+    UserMailmap = state.apps.get_model(APP_NAME, "UserMailmap")
+    assert UserMailmap
+
+    # UserMailmap model moved to swh_web_mailmap django application
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0007))
+    with pytest.raises(
+        LookupError, match="App 'swh_web_auth' doesn't have a 'UserMailmap' model."
+    ):
+        state.apps.get_model(APP_NAME, "UserMailmap")

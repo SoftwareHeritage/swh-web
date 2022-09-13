@@ -13,7 +13,7 @@ swh.web.egg-info
 docs/build/
 docs/uri-scheme.md
 docs/dev-info.md
-*.sqlite3
+*.sqlite3*
 .vscode/
 .directory
 node_modules/
@@ -33,8 +33,8 @@ dist/
 package-lock.json
 yarn-error.log
 cypress/mochawesome/
-.nyc_output/
-cypress/coverage/
+.nyc_output*/
+cypress/coverage*/
 cypress/fixtures/source*.json
 cypress/junit/
 cypress/downloads/

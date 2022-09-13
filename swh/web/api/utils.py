@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from django.http import HttpRequest
 
 from swh.model.model import Origin
-from swh.web.common.query import parse_hash
-from swh.web.common.typing import OriginInfo
-from swh.web.common.utils import resolve_branch_alias, reverse
+from swh.web.utils import resolve_branch_alias, reverse
+from swh.web.utils.query import parse_hash
+from swh.web.utils.typing import OriginInfo
 
 
 def filter_field_keys(data, field_keys):

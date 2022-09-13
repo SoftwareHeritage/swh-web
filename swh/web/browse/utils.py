@@ -14,17 +14,18 @@ import magic
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
-from swh.web.common import archive, highlightjs
-from swh.web.common.exc import NotFoundExc, sentry_capture_exception
-from swh.web.common.typing import SnapshotContext
-from swh.web.common.utils import (
+from swh.web.config import get_config
+from swh.web.utils import (
+    archive,
     browsers_supported_image_mimes,
     django_cache,
     format_utc_iso_date,
+    highlightjs,
     reverse,
     rst_to_html,
 )
-from swh.web.config import get_config
+from swh.web.utils.exc import NotFoundExc, sentry_capture_exception
+from swh.web.utils.typing import SnapshotContext
 
 
 @django_cache()

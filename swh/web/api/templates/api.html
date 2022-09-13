@@ -1,0 +1,311 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2015-2020 The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block title %} Overview &ndash; Software Heritage API {% endblock %}
+
+{% block navbar-content %} <h4>Web API</h4> {% endblock %}
+
+{% block content %}
+<div class="swh-api-1-doc">
+  <ul class="list-inline">
+    <li class="list-inline-item">
+      <a href="#endpoint-index">Endpoint index</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#data-model">Data model</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#version">Version</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#schema">Schema</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#parameters">Parameters</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#errors">Errors</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#pagination">Pagination</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#rate-limiting">Rate limiting</a>
+    </li>
+    {% if oidc_enabled %}
+      <li class="list-inline-item">
+        <a href="#authentication">Authentication</a>
+      </li>
+    {% endif %}
+  </ul>
+
+  <h4 id="endpoint-index">Endpoint index</h4>
+  <p>
+    You can jump directly to the <strong> <a href="/api/1/">endpoint index</a> </strong>, which
+    lists all available API functionalities, or read on for more general information about the API.
+  </p>
+
+  <h4 id="data-model">Data model</h4>
+  <p>
+    The <a href="https://www.softwareheritage.org/">Software Heritage</a> project harvests publicly
+    available source code by tracking software distribution channels such as version control
+    systems, tarball releases, and distribution packages.
+  </p>
+  <p>
+    All retrieved source code and related metadata are stored in the Software Heritage archive, that
+    is conceptually a <a href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle DAG</a>. All nodes
+    in the graph are content-addressable, i.e., their node identifiers are computed by hashing their
+    content and, transitively, that of all nodes reachable from them; and no node or edge is ever
+    removed from the graph: the Software Heritage archive is an append-only data structure.
+  </p>
+  <p>
+    The following types of objects (i.e., graph nodes) can be found in the Software Heritage archive
+    <small>(for more information see the <a
+        href="https://wiki.softwareheritage.org/index.php?title=Glossary">Software Heritage
+        glossary</a>)</small>:
+  </p>
+  <ul>
+    <li>
+      <strong>Content</strong>: a specific version of a file stored in the archive, identified by
+      its cryptographic hashes (currently: SHA1, Git-like "salted" SHA1, SHA256). Note that content
+      objects are nameless; their names are context-dependent and stored as part of directory
+      entries (see below).
+      <br />
+      <em>Also known as:</em> "blob"
+    </li>
+    <li>
+      <strong>Directory</strong>: a list of directory entries, where each entry can point to content
+      objects ("file entries"), revisions ("revision entries"), or transitively to other directories
+      ("directory entries"). All entries are associated to the local name of the entry (i.e., a
+      relative path without any path separator) and permission metadata (e.g., chmod value or
+      equivalent).
+    </li>
+    <li>
+      <strong>Revision</strong>: a point in time snapshot of the content of a directory, together
+      with associated development metadata (e.g., author, timestamp, log message, etc).
+      <br />
+      <em>Also known as:</em> "commit".
+    </li>
+    <li>
+      <strong>Release</strong>: a revision that has been marked as noteworthy with a specific name
+      (e.g., a version number), together with associated development metadata (e.g., author,
+      timestamp, etc).
+      <br />
+      <em>Also known as:</em> "tag"</li>
+    <li>
+      <strong>Origin</strong>: an Internet-based location from which a coherent set of objects
+      (contents, revisions, releases, etc.) archived by Software Heritage has been obtained. Origins
+      are currently identified by URLs.
+    </li>
+    <li>
+      <strong>Visit</strong>: the passage of Software Heritage on a given origin, to retrieve all
+      source code and metadata available there at the time. A visit object stores the state of all
+      visible branches (if any) available at the origin at visit time; each of them points to a
+      revision object in the archive. Future visits of the same origin will create new visit
+      objects, without removing previous ones.
+    </li>
+    <li>
+      <strong>Person</strong>: an entity referenced by a revision as either the author or the
+      committer of the corresponding change. A person is associated to a full name and/or an email
+      address.
+    </li>
+  </ul>
+
+  <h4 id="version">Version</h4>
+  <p>The current version of the API is<strong>v1</strong>.</p>
+  <p>
+    <strong>Warning:</strong> this version of the API is not to be considered stable yet.
+    Non-backward compatible changes might happen even without changing the API version number.
+  </p>
+
+  <h4 id="schema">Schema</h4>
+  <p>API access is over HTTPS.</p>
+  <p>
+    All API endpoints are rooted at
+    <a href="https://archive.softwareheritage.org/api/1/"
+      class="uri">https://archive.softwareheritage.org/api/1/</a>.
+  </p>
+  <p>Data is sent and received as JSON by default.</p>
+  <p>Example:</p>
+  <ul>
+    <li>
+      <p>from the command line:</p>
+      <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/stat/counters/</code></pre>
+    </li>
+  </ul>
+
+  <h4 id="response-format-override">Response format override</h4>
+  <p>
+    The response format can be overridden using the <code>Accept</code> request header. In
+    particular, <code>Accept: text/html</code> (that web browsers send by default) requests HTML
+    pretty-printing, whereas <code>Accept: application/yaml</code> requests YAML-encoded responses.
+  </p>
+  <p>Example:</p>
+  <ul>
+    <li>
+      <a href="/api/1/stat/counters/" class="uri">/api/1/stat/counters/</a>
+    </li>
+    <li>
+      <p>from the command line:</p>
+      <pre><code class="shell">curl -i -H &#39;Accept: application/yaml&#39; https://archive.softwareheritage.org/api/1/stat/counters/</code></pre>
+    </li>
+  </ul>
+  <h4 id="parameters">Parameters</h4>
+  <p>
+    Some API endpoints can be tweaked by passing optional parameters. For GET requests, optional
+    parameters can be passed as an HTTP query string.
+  </p>
+  <p>
+    The optional parameter <code>fields</code> is accepted by all endpoints that return dictionaries
+    and can be used to restrict the list of fields returned by the API, in case you are not
+    interested in all of them. By default, all available fields are returned.
+  </p>
+  <p>Example:</p>
+  <ul>
+    <li>
+      <a href="/api/1/stat/counters/?fields=content,directory,revision"
+        class="uri">/api/1/stat/counters/?fields=content,directory,revision</a>
+    </li>
+    <li>
+      <p>from the command line:</p>
+      <pre><code class="shell">curl https://archive.softwareheritage.org/api/1/stat/counters/?fields=content,directory,revision</code></pre>
+    </li>
+  </ul>
+
+  <h4 id="errors">Errors</h4>
+  <p>
+    While API endpoints will return different kinds of errors depending on their own semantics, some
+    error patterns are common across all endpoints.
+  </p>
+  <p>
+    Sending malformed data, including syntactically incorrect object identifiers, will result in a
+    <code>400 Bad Request</code> HTTP response. Example:
+  </p>
+  <ul>
+    <li>
+      <a href="/api/1/content/deadbeef/" class="uri">/api/1/content/deadbeef/</a> (client error:
+      "deadbeef" is too short to be a syntactically valid object identifier)
+    </li>
+    <li>
+      <p>from the command line:</p>
+      <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/content/deadbeef/</code></pre>
+    </li>
+  </ul>
+  <p>
+    Requesting non existent resources will result in a <code>404 Not Found</code> HTTP response.
+    Example:
+  </p>
+  <ul>
+    <li>
+      <a href="/api/1/content/0123456789abcdef0123456789abcdef01234567/"
+        class="uri">/api/1/content/0123456789abcdef0123456789abcdef01234567/</a>
+      (error: no object with that identifier is available [yet?])
+    </li>
+    <li>
+      <p>from the command line:</p>
+      <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/</code></pre>
+    </li>
+  </ul>
+  <p>
+    Unavailability of the underlying storage backend will result in a <code>503 Service
+      Unavailable</code> HTTP response.
+  </p>
+
+  <h4 id="utf8-decoding-errors">UTF-8 decoding errors</h4>
+  <p>
+    While attempting to decode UTF-8 strings from raw bytes stored in the archive, some errors might
+    happen when generating an API response. In that case, an extra field
+    <code>decoding_failures</code> will be added to each concerned JSON object (possibly nested). It
+    will contain the list of its key names where UTF-8 decoding failed.
+  </p>
+  <p>
+    A string that could not be decoded will have the bytes of its invalid UTF-8 sequences escaped as
+    <code>\\x&lt;hex value&gt;</code>.
+  </p>
+
+  </h4>
+  <h4 id="pagination">Pagination</h4>
+  <p>Requests that might potentially return many items will be paginated.</p>
+  <p>
+    Page size is set to a default (usually: 10 items), but might be overridden with the
+    <code>per_page</code> query parameter up to a maximum (usually: 50 items). Example:
+  </p>
+  <pre><code class="shell">curl https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2</code></pre>
+  <p>
+    To navigate through paginated results, a <code>Link</code> HTTP response header is available to
+    link the current result page to the next one. Example:
+  </p>
+  <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2 | grep ^Link:
+Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</code></pre>
+
+  <h4 id="rate-limiting">Rate limiting</h4>
+  <p>
+    Due to limited resource availability on the back end side, API usage is currently rate limited.
+    API users can be either anonymous or authenticated. For rate-limiting purposes, anonymous users
+    are identified by their origin IP address; authenticated users identify themselves via user-specific
+    credentials, like <a href="#authentication">authentication tokens</a>.<br/>
+    A higher rate-limit quota is available by default for authenticated users.
+  </p>
+
+  <p>
+    Three HTTP response fields will inform you about the current state of limits that apply to your
+    current rate limiting bucket:
+  </p>
+  <ul>
+    <li>
+      <code>X-RateLimit-Limit</code>: maximum number of permitted requests per hour
+      (<b>120</b> for anonymous users, <b>1200</b> for authenticated users)
+    </li>
+    <li>
+      <code>X-RateLimit-Remaining</code>: number of permitted requests remaining before the next
+      reset
+    </li>
+    <li>
+      <code>X-RateLimit-Reset</code>: the time (expressed in <a
+        href="https://en.wikipedia.org/wiki/Unix_time">Unix
+        time</a> seconds) at which the current rate limiting will expire, resetting to a fresh
+      <code>X-RateLimit-Limit</code>
+    </li>
+  </ul>
+  <p>Example:</p>
+  <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 119
+X-RateLimit-Reset: 1620639052</code></pre>
+
+  {% if oidc_enabled %}
+    <h4 id="authentication">Authentication</h4>
+    <p>
+      It is possible to perform authenticated requests to the Web API through the use of a bearer token
+      sent in HTTP Authorization headers.
+      <br/>
+      To obtain such a token, an account to the
+      <a href="{% url 'oidc-login' %}">Software Heritage Authentication service</a> must be created.
+      <br/>
+      To generate and manage bearer tokens, a dedicated interface is available on the
+      <a href="{% url 'oidc-profile' %}#tokens">user profile page</a> once logged in.
+    </p>
+    <p>
+      The following shows how to perform an authenticated request to the Web API using <code>curl</code>.
+      <pre>export TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhMTMxYTQ1My1hM2IyLTQwMTUtO...
+  curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}api/...</pre>
+    </p>
+    <p>
+      Authenticated requests can be used to lift rate limiting if the user account has the adequate
+      permission.
+      If you are in such a need, please <a href="https://www.softwareheritage.org/contact/">contact us</a>
+      and we will review your request.
+    </p>
+  {% endif %}
+
+</div>
+<script>
+  swh.webapp.initPage('api');
+</script>
+{% endblock %}

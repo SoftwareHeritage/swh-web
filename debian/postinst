@@ -14,5 +14,6 @@ if [ -f /var/lib/swh/web.sqlite3 ]; then
         # use fake migrations after django app labels renaming in v0.0.279
         MIGRATE_EXTRA_OPTS="--fake"
     fi
+    django-admin rename_app --settings=swh.web.settings.production swh_web_common swh_web_save_code_now
     django-admin migrate --settings=swh.web.settings.production $MIGRATE_EXTRA_OPTS
 fi

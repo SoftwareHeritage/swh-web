@@ -28,16 +28,16 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, http_status_code_message
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import RevisionMetadata, SnapshotContext, SWHObjectInfo
-from swh.web.common.utils import (
+from swh.web.utils import (
+    archive,
     format_utc_iso_date,
     gen_path_info,
     reverse,
     swh_object_icons,
 )
+from swh.web.utils.exc import NotFoundExc, http_status_code_message
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.typing import RevisionMetadata, SnapshotContext, SWHObjectInfo
 
 
 def _gen_content_url(
@@ -259,6 +259,8 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "per_page": str(per_page),
                 "offset": str(offset + per_page),
                 "revs_ordering": revs_ordering or None,
+                "origin_url": origin_url,
+                "snapshot": snapshot_id,
             },
         )
 
@@ -271,10 +273,12 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "per_page": str(per_page),
                 "offset": str(offset - per_page),
                 "revs_ordering": revs_ordering or None,
+                "origin_url": origin_url,
+                "snapshot": snapshot_id,
             },
         )
 
-    revision_log_data = format_log_entries(revision_log, per_page)
+    revision_log_data = format_log_entries(revision_log, per_page, snapshot_context)
 
     swh_rev_id = str(
         CoreSWHID(object_type=ObjectType.REVISION, object_id=hash_to_bytes(sha1_git))
@@ -282,7 +286,7 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/revision-log.html",
+        "browse-revision-log.html",
         {
             "heading": "Revision history",
             "swh_object_id": swh_rev_id,
@@ -564,7 +568,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/revision.html",
+        "browse-revision.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

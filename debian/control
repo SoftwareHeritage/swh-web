@@ -35,7 +35,7 @@ Build-Depends: curl,
                python3-sphinxcontrib.httpdomain,
                python3-typing-extensions (>= 3.7.4~),
                python3-yaml,
-               python3-swh.auth.django (>= 0.6.2~),
+               python3-swh.auth.django (>= 0.6.7~),
                python3-swh.core (>= 0.15.0~),
                python3-swh.core.db.pytestplugin,
                python3-swh.counters (>= 0.9.0~),
@@ -51,7 +51,7 @@ Homepage: https://forge.softwareheritage.org/diffusion/DWUI/
 
 Package: python3-swh.web
 Architecture: all
-Depends: python3-swh.auth.django (>= 0.6.2~),
+Depends: python3-swh.auth.django (>= 0.6.7~),
          python3-swh.core (>= 0.15.0~),
          python3-swh.counters (>= 0.9.0~),
          python3-swh.model (>= 3.0.0~),

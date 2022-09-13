@@ -5,21 +5,19 @@
 
 from typing import Any, Dict, List
 
-from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.urls import re_path as url
 
-from swh.web.add_forge_now.models import Request as AddForgeRequest
-from swh.web.add_forge_now.models import RequestHistory
-from swh.web.api.views.add_forge_now import (
+from swh.web.add_forge_now.api_views import (
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
 )
+from swh.web.add_forge_now.models import Request as AddForgeRequest
+from swh.web.add_forge_now.models import RequestHistory
 from swh.web.auth.utils import is_add_forge_now_moderator
 
 
@@ -94,7 +92,7 @@ def create_request_create(request):
 
     return render(
         request,
-        "add_forge_now/creation_form.html",
+        "add-forge-creation-form.html",
         {"forge_types": FORGE_TYPES},
     )
 
@@ -104,7 +102,7 @@ def create_request_list(request):
 
     return render(
         request,
-        "add_forge_now/list.html",
+        "add-forge-list.html",
     )
 
 
@@ -113,15 +111,11 @@ def create_request_help(request):
 
     return render(
         request,
-        "add_forge_now/help.html",
+        "add-forge-help.html",
     )
 
 
-@user_passes_test(
-    is_add_forge_now_moderator,
-    redirect_field_name="next_path",
-    login_url=settings.LOGIN_URL,
-)
+@user_passes_test(is_add_forge_now_moderator)
 def create_request_message_source(request: HttpRequest, id: int) -> HttpResponse:
     """View to retrieve the message source for a given request history entry"""
 
@@ -141,20 +135,3 @@ def create_request_message_source(request: HttpRequest, id: int) -> HttpResponse
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
-
-
-urlpatterns = [
-    url(
-        r"^add-forge/request/list/datatables/$",
-        add_forge_request_list_datatables,
-        name="add-forge-request-list-datatables",
-    ),
-    url(r"^add-forge/request/create/$", create_request_create, name="forge-add-create"),
-    url(r"^add-forge/request/list/$", create_request_list, name="forge-add-list"),
-    url(
-        r"^add-forge/request/message-source/(?P<id>\d+)/$",
-        create_request_message_source,
-        name="forge-add-message-source",
-    ),
-    url(r"^add-forge/request/help/$", create_request_help, name="forge-add-help"),
-]

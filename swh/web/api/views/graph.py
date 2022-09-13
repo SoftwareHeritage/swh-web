@@ -23,8 +23,8 @@ from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
-from swh.web.common import archive
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
+from swh.web.utils import archive
 
 API_GRAPH_PERM = "swh.web.api.graph"
 
@@ -66,6 +66,8 @@ def _resolve_origin_swhids_in_graph_response(
             yield (json.dumps(processed_line) + "\n").encode()
     elif content_type == "text/plain":
         for line in response.iter_lines():
+            if not line:
+                continue
             processed_line = []
             swhids = line.decode("utf-8").split(" ")
             for swhid in swhids:
@@ -77,7 +79,7 @@ def _resolve_origin_swhids_in_graph_response(
 
 
 @api_route(r"/graph/", "api-1-graph-doc")
-@api_doc("/graph/")
+@api_doc("/graph/", category="Miscellaneous")
 def api_graph(request: Request) -> None:
     """
     .. http:get:: /api/1/graph/(graph_query)/

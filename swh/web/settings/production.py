@@ -18,7 +18,7 @@ from .common import (
 from .common import *  # noqa
 
 MIDDLEWARE += [
-    "swh.web.common.middlewares.HtmlMinifyMiddleware",
+    "swh.web.utils.middlewares.HtmlMinifyMiddleware",
 ]
 
 if swh_web_config.get("throttling", {}).get("cache_uri"):
@@ -67,5 +67,6 @@ DATABASES = {
 
 WEBPACK_LOADER["DEFAULT"]["CACHE"] = not DEBUG
 
-LOGIN_URL = "/oidc/login/"
-LOGIN_REDIRECT_URL = "/oidc/profile/"
+LOGIN_URL = "oidc-login"
+LOGIN_REDIRECT_URL = "oidc-profile"
+LOGOUT_URL = "oidc-logout"

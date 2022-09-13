@@ -9,13 +9,13 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
+from swh.web.utils import archive
 
 
 @api_route(
     r"/release/(?P<sha1_git>[0-9a-f]+)/", "api-1-release", checksum_args=["sha1_git"]
 )
-@api_doc("/release/")
+@api_doc("/release/", category="Archive")
 @format_docstring()
 def api_release(request: Request, sha1_git: str):
     """

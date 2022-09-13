@@ -1,0 +1,127 @@
+{% comment %}
+Copyright (C) 2017-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+
+{% if swhids_info %}
+
+  <div id="swh-identifiers" style="display: none;">
+    {% if swhids_info|length > 1 %}
+      <a id="swhids-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks</a>
+    {% else %}
+      <a id="swhids-handle" class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"><i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink</a>
+    {% endif %}
+    <div id="swh-identifiers-content">
+      <p>
+        To
+        <a target="_blank" rel="noopener noreferrer"
+           href="https://www.softwareheritage.org/howto-archive-and-reference-your-code/">
+          reference or cite
+        </a>
+        the objects present in the Software Heritage archive, permalinks based on
+        <a target="_blank" rel="noopener noreferrer"
+           href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html">
+          SoftWare Heritage persistent IDentifiers (SWHIDs)
+        </a>
+        must be used instead of copying and pasting the url from the address bar of the browser (as there is no guarantee the current URI
+        scheme will remain the same over time).
+        <br/>
+        <br/>
+        Select below a type of object currently browsed in order to display its associated SWHID and permalink.
+      </p>
+
+      <ul id="swhid-object-types" class="nav nav-pills ml-auto p-2">
+        {% for swhid_info in swhids_info %}
+          {% if forloop.first %}
+            <li class="nav-item">
+              <a class="nav-link active" href="#swhid-tab-{{ swhid_info.object_type.name.lower }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw" aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="#swhid-tab-{{ swhid_info.object_type.name.lower }}" data-toggle="tab" onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw" aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <div class="tab-content">
+        {% for swhid_info in swhids_info %}
+          {% if forloop.first %}
+            <div class="tab-pane active" id="swhid-tab-{{ swhid_info.object_type.name.lower }}">
+          {% else %}
+            <div class="tab-pane" id="swhid-tab-{{ swhid_info.object_type.name.lower }}">
+          {% endif %}
+            <div class="card">
+              <div class="card-body swhid-ui">
+                {% if not iframe_mode %}
+                  <div class="row">
+                    {% if "swh.web.badges" in SWH_DJANGO_APPS %}
+                      <div class="swh-badges">
+                        {% if snapshot_context and snapshot_context.origin_info %}
+                          <img class="swh-badge swh-badge-origin"
+                              src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
+                              onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
+                              title="Click to display badge integration info">
+                        {% endif %}
+                        {% if swhid_info.object_id %}
+                          <img class="swh-badge swh-badge-{{ swhid_info.object_type.name.lower }}"
+                              src="{% url 'swh-badge' swhid_info.object_type.name.lower swhid_info.object_id %}"
+                              onclick="swh.webapp.showBadgeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())"
+                              title="Click to display badge integration info">
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                    {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
+                      <a class="ml-auto float-right" style="cursor: pointer;"
+                        onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
+                        Iframe embedding
+                      </a>
+                    {% endif %}
+                  </div>
+
+                {% endif %}
+                {% if swhid_info.object_id %}
+                  <pre><a class="swhid" target="_blank" rel="noopener noreferrer" id="{{ swhid_info.swhid }}" href="{{ swhid_info.swhid_url }}">{{ swhid_info.swhid }}</a></pre>
+                {% endif %}
+                {% if swhid_info.swhid_with_context is not None %}
+                  <div class="float-left">
+                    <form id="swhid-options">
+                      <div class="custom-control custom-checkbox swhid-option">
+                        <input class="custom-control-input swhid-context-option" value="option-origin" type="checkbox"
+                              id="swhid-context-option-{{ swhid_info.object_type.name.lower }}"
+                              data-swhid-with-context="{{ swhid_info.swhid_with_context }}"
+                              data-swhid-with-context-url="{{ swhid_info.swhid_with_context_url }}"
+                              onclick="swh.browse.swhIdContextOptionToggled(event)">
+                        <label class="custom-control-label font-weight-normal" for="swhid-context-option-{{ swhid_info.object_type.name.lower }}">Add contextual information</label>
+                      </div>
+                    </form>
+                  </div>
+                {% endif %}
+                <div id="swhid-copy-buttons" class="float-right">
+                  <button type="button" class="btn btn-default btn-sm btn-swhid-copy"
+                          title="Copy SWHID to clipboard">
+                    <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy identifier
+                  <button type="button" class="btn btn-default btn-sm btn-swhid-url-copy"
+                          title="Copy url resolving the SWHID to clipboard">
+                    <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy permalink
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <script>
+    swh.webapp.setSwhIdsContext({{ swhids_info|jsonify }});
+  </script>
+{% endif %}

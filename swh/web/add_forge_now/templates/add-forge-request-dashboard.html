@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+{% load static %}
+{% load swh_templatetags %}
+
+{% block header %}
+{% render_bundle 'add_forge_now' %}
+{% endblock %}
+
+{% block title %}{{heading}} &ndash; Software Heritage archive{% endblock %}
+
+{% block navbar-content %}
+<h4>Add forge now request dashboard</h4>
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div id="fetchError" class="row d-none">
+    <h3>Error fetching information about the request</h3>
+  </div>
+  <div class="row" id="requestDetails">
+    <div id="ForgeRequestActions" class="request-actions">
+      <div>
+        <div class="accordion" id="requestHistory">
+        </div>
+      </div>
+      <div>
+        <form method="POST"
+              action="{% url 'api-1-add-forge-request-update' request_id %}"
+              style="padding-top: 5px;" id="updateRequestForm">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="decisionOptions" class="swh-required-label">Choose your decision</label>
+                <select class="form-control" id="decisionOptions" name="new_status">
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-md-12">
+                <label for="swh-input-forge-comment" class="swh-required-label">Comment</label>
+                <textarea class="form-control" id="updateComment" name="text" rows="3" required></textarea>
+                <small class="form-text text-muted">
+                  Enter a comment related to your decision.
+                </small>
+              </div>
+            </div>
+            <div class="form-group col-md-6">
+              <button type="submit" class="btn btn-default mb-2">Submit</button>
+            </div>
+
+            <div class="form-row">
+              <div class="col-md-12">
+                <h3 class="text-center">
+                  <span id="userMessage" class="badge"></span>
+                </h3>
+              </div>
+            </div>
+          </form>
+
+      </div>
+    </div>
+    <div id="ForgeRequestDetails" class="col-md-2 details-pane">
+      <div>
+        <strong>Request status</strong>
+      </div>
+      <small class="details-text" id="requestStatus"></small>
+      <hr />
+      <div>
+        <strong>Forge type</strong>
+      </div>
+      <small class="details-text" id="requestType"></small>
+      <hr />
+      <div>
+        <strong>Forge URL</strong>
+      </div>
+      <small class="details-text" id="requestURL"></small>
+      <hr />
+      <div>
+        <strong>Contact name</strong>
+      </div>
+      <small class="details-text" id="requestContactName"></small>
+      <hr />
+      <div>
+        <strong>Consent to use name</strong>
+      </div>
+      <small class="details-text" id="requestContactConsent"></small>
+      <hr />
+      <div>
+        <strong>Contact email</strong>
+      </div>
+      <small class="details-text" id="requestContactEmail"></small>
+      <hr />
+      <div>
+        <strong>Message</strong>
+      </div>
+      <p><small id="submitterMessage" class="details-text"></small></p>
+      <hr />
+      <div>
+        <button class="btn btn-link" id="contactForgeAdmin"
+                emailSubject="" emailTo="" emailCc="">
+          Send message to the forge
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  swh.webapp.initPage('add-forge-now-moderation');
+  swh.add_forge_now.onRequestDashboardLoad("{{ request_id }}", {{ next_statuses_for | jsonify }});
+</script>
+{% endblock %}

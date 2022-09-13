@@ -17,16 +17,15 @@ from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import archive, converters
-from swh.web.common.exc import BadInputExc, NotFoundExc
-from swh.web.common.utils import SWHID_RE, reverse
+from swh.web.utils import SWHID_RE, archive, converters, reverse
+from swh.web.utils.exc import BadInputExc, NotFoundExc
 
 
 @api_route(
     f"/raw-extrinsic-metadata/swhid/(?P<target>{SWHID_RE})/",
     "api-1-raw-extrinsic-metadata-swhid",
 )
-@api_doc("/raw-extrinsic-metadata/swhid/")
+@api_doc("/raw-extrinsic-metadata/swhid/", category="Metadata")
 @format_docstring()
 def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
     """
@@ -223,7 +222,7 @@ def api_raw_extrinsic_metadata_get(request: Request, id: str):
     f"/raw-extrinsic-metadata/swhid/(?P<target>{SWHID_RE})/authorities/",
     "api-1-raw-extrinsic-metadata-swhid-authorities",
 )
-@api_doc("/raw-extrinsic-metadata/swhid/authorities/")
+@api_doc("/raw-extrinsic-metadata/swhid/authorities/", category="Metadata")
 @format_docstring()
 def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
     """
@@ -290,7 +289,7 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
     "/raw-extrinsic-metadata/origin/(?P<origin_url>.*)/authorities/",
     "api-1-raw-extrinsic-metadata-origin-authorities",
 )
-@api_doc("/raw-extrinsic-metadata/origin/authorities/")
+@api_doc("/raw-extrinsic-metadata/origin/authorities/", category="Metadata")
 @format_docstring()
 def api_raw_extrinsic_metadata_origin_authorities(request: Request, origin_url: str):
     """

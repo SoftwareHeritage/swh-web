@@ -5,7 +5,7 @@
 
 from typing import List, Optional
 
-from swh.web.common.urlsindex import UrlsIndex
+from swh.web.utils.urlsindex import UrlsIndex
 
 
 class BrowseUrls(UrlsIndex):
@@ -30,7 +30,7 @@ def browse_route(
         view_name: the name of the Django view associated to the routes used
             to reverse the url
     """
-    url_patterns = tuple("^" + url_pattern + "$" for url_pattern in url_patterns)
+    url_patterns = tuple("^browse/" + url_pattern + "$" for url_pattern in url_patterns)
     view_name = view_name
 
     def decorator(f):
