@@ -5,10 +5,10 @@
 
 
 from swh.model.swhids import ObjectType
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import reverse
 from swh.web.tests.data import random_sha1
-from swh.web.tests.utils import check_api_get_responses, check_api_post_responses
+from swh.web.tests.helpers import check_api_get_responses, check_api_post_responses
+from swh.web.utils import reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_swhid_resolve_success(

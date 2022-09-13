@@ -10,7 +10,7 @@ from swh.web.api.apiurls import api_route
 
 
 @api_route(r"/ping/", "api-1-ping")
-@api_doc("/ping/", noargs=True)
+@api_doc("/ping/", category="Miscellaneous", noargs=True)
 def ping(request: Request):
     """
     .. http:get:: /api/1/ping/

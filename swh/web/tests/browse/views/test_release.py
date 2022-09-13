@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,10 +8,10 @@ import random
 from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import format_utc_iso_date, reverse
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.utils import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response
+from swh.web.utils import format_utc_iso_date, reverse
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_release_browse(client, archive_data, release):
@@ -90,7 +90,7 @@ def _release_browse_checks(
     message_lines = message.split("\n")
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/release.html"
+        client, url, status_code=200, template_used="browse-release.html"
     )
     assert_contains(resp, author_name)
     assert_contains(resp, format_utc_iso_date(release_date))

@@ -19,11 +19,10 @@ from swh.web.browse.utils import (
     gen_release_link,
     gen_revision_link,
 )
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc, sentry_capture_exception
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import ReleaseMetadata, SnapshotContext, SWHObjectInfo
-from swh.web.common.utils import format_utc_iso_date, reverse
+from swh.web.utils import archive, format_utc_iso_date, reverse
+from swh.web.utils.exc import NotFoundExc, sentry_capture_exception
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.typing import ReleaseMetadata, SnapshotContext, SWHObjectInfo
 
 
 @browse_route(
@@ -230,7 +229,7 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     return render(
         request,
-        "browse/release.html",
+        "browse-release.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

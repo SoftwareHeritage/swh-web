@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2018-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load swh_templatetags %}
+{% load render_bundle from webpack_loader %}
+
+{% block header %}
+{{ block.super }}
+{% render_bundle 'deposit' %}
+{% endblock %}
+
+{% block title %} Deposit administration {% endblock %}
+
+{% block navbar-content %}
+<h4>Deposit administration</h4>
+{% endblock %}
+
+{% block content %}
+  <p>
+    The table below displays the list of software artifacts deposited to
+    Software Heritage.
+  </p>
+
+  <div>
+	  Toggle column:
+    <a class="toggle-col" href="#" data-column="0">id</a> -
+    <a class="toggle-col" href="#" data-column="1">type</a> -
+    <a class="toggle-col" href="#" data-column="2">uri</a> -
+    <a class="toggle-col" href="#" data-column="3">reception date</a> -
+    <a class="toggle-col" href="#" data-column="4">status</a> -
+    <a class="toggle-col" href="#" data-column="5">metadata</a> -
+    <a class="toggle-col col-hidden" href="#" data-column="6">status detail</a> -
+    <a class="toggle-col col-hidden" href="#" data-column="7">directory</a> -
+    <a class="toggle-col col-hidden" href="#" data-column="8">directory with context</a>
+  </div>
+  <br/>
+  <table id="swh-admin-deposit-list" class="table swh-table swh-table-striped" width="100%">
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>type</th>
+        <th>uri</th>
+        <th>reception date</th>
+        <th>status</th>
+        <th>metadata</th>
+        <th>status detail</th>
+        <th>directory</th>
+        <th>directory with context</th>
+      </tr>
+    </thead>
+  </table>
+  <p id="swh-admin-deposit-list-error"></p>
+  <script>
+    swh.webapp.initPage('deposit-admin');
+    swh.deposit.initDepositAdmin({{ request.user.username|jsonify }}, {{ request.user.is_staff|jsonify }});
+  </script>
+{% endblock content %}

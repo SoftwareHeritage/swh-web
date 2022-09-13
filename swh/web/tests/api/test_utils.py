@@ -8,8 +8,8 @@ import random
 from swh.model.hashutil import DEFAULT_ALGORITHMS
 from swh.model.model import Origin
 from swh.web.api import utils
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import resolve_branch_alias, reverse
+from swh.web.utils import resolve_branch_alias, reverse
+from swh.web.utils.origin_visits import get_origin_visits
 
 url_map = [
     {

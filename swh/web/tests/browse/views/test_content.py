@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -20,17 +20,17 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     re_encode_content,
 )
-from swh.web.common.exc import NotFoundExc
-from swh.web.common.identifiers import gen_swhid
-from swh.web.common.utils import (
+from swh.web.tests.data import get_content
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
+from swh.web.utils import (
     format_utc_iso_date,
     gen_path_info,
     parse_iso8601_date_to_utc,
     reverse,
 )
-from swh.web.tests.data import get_content
-from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.utils import check_html_get_response, check_http_get_response
+from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.identifiers import gen_swhid
 
 
 def test_content_view_text(client, archive_data, content_text):
@@ -47,7 +47,7 @@ def test_content_view_text(client, archive_data, content_text):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     content_display = _process_content_for_display(archive_data, content_text)
@@ -79,7 +79,7 @@ def test_content_view_no_highlight(
         )
 
         resp = check_html_get_response(
-            client, url, status_code=200, template_used="browse/content.html"
+            client, url, status_code=200, template_used="browse-content.html"
         )
 
         content_display = _process_content_for_display(archive_data, content)
@@ -105,7 +105,7 @@ def test_content_view_no_utf8_text(client, archive_data, content_text_non_utf8):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     content_display = _process_content_for_display(archive_data, content_text_non_utf8)
@@ -126,7 +126,7 @@ def test_content_view_image(client, archive_data, content_image_type):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     content_display = _process_content_for_display(archive_data, content_image_type)
@@ -145,7 +145,7 @@ def test_content_view_image_no_rendering(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     mimetype = content_unsupported_image_type_rendering["mimetype"]
@@ -169,7 +169,7 @@ def test_content_view_text_with_path(client, archive_data, content_text):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     assert_contains(resp, '<nav class="bread-crumbs')
@@ -234,7 +234,7 @@ def test_content_view_text_with_path(client, archive_data, content_text):
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     assert_not_contains(resp, '<nav class="bread-crumbs')
@@ -343,7 +343,7 @@ def test_content_request_errors(
 
     url = reverse("browse-content", url_args={"query_string": unknown_content["sha1"]})
     check_html_get_response(
-        client, url, status_code=404, template_used="browse/content.html"
+        client, url, status_code=404, template_used="browse-content.html"
     )
 
 
@@ -360,7 +360,7 @@ def test_content_bytes_missing(client, archive_data, mocker, content):
     url = reverse("browse-content", url_args={"query_string": content["sha1"]})
 
     check_html_get_response(
-        client, url, status_code=404, template_used="browse/content.html"
+        client, url, status_code=404, template_used="browse-content.html"
     )
 
 
@@ -397,7 +397,7 @@ def test_content_too_large(client, mocker):
     url_raw = reverse("browse-content-raw", url_args={"query_string": content_sha1})
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     assert_contains(resp, "Content is too large to be displayed")
@@ -426,7 +426,7 @@ def test_content_utf8_detected_as_binary_display(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     content_display = _process_content_for_display(
@@ -465,7 +465,7 @@ def test_content_origin_snapshot_branch_browse(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     _check_origin_snapshot_related_html(
@@ -545,7 +545,7 @@ def test_content_origin_snapshot_release_browse(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     _check_origin_snapshot_related_html(
@@ -752,10 +752,10 @@ def test_content_dispaly_empty_query_string_with_snapshot(
 
 def test_browse_origin_content_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = []
-    mock_archive = mocker.patch("swh.web.common.origin_visits.archive")
+    mock_archive = mocker.patch("swh.web.utils.origin_visits.archive")
     mock_archive.lookup_origin_visit_latest.return_value = None
     url = reverse(
         "browse-content",
@@ -771,7 +771,7 @@ def test_browse_origin_content_no_visit(client, mocker, origin):
 
 def test_browse_origin_content_unknown_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
-        "swh.web.common.origin_visits.get_origin_visits"
+        "swh.web.utils.origin_visits.get_origin_visits"
     )
     mock_get_origin_visits.return_value = [{"visit": 1}]
 
@@ -940,7 +940,7 @@ def _origin_content_view_test_helper(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     assert type(content["data"]) == str
@@ -1031,7 +1031,7 @@ def _origin_content_view_test_helper(
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse/content.html"
+        client, url, status_code=200, template_used="browse-content.html"
     )
 
     snapshot = archive_data.snapshot_get(origin_visit["snapshot"])
@@ -1111,5 +1111,5 @@ def test_browse_content_snapshot_context_release_directory_target(
     )
 
     check_html_get_response(
-        client, browse_url, status_code=200, template_used="browse/content.html"
+        client, browse_url, status_code=200, template_used="browse-content.html"
     )

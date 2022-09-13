@@ -13,15 +13,14 @@ from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
-from swh.web.common import archive
-from swh.web.common.exc import (
+from swh.web.utils import archive, gen_path_info, reverse, swh_object_icons
+from swh.web.utils.exc import (
     NotFoundExc,
     http_status_code_message,
     sentry_capture_exception,
 )
-from swh.web.common.identifiers import get_swhids_info
-from swh.web.common.typing import DirectoryMetadata, SWHObjectInfo
-from swh.web.common.utils import gen_path_info, reverse, swh_object_icons
+from swh.web.utils.identifiers import get_swhids_info
+from swh.web.utils.typing import DirectoryMetadata, SWHObjectInfo
 
 
 def _directory_browse(
@@ -220,7 +219,7 @@ def _directory_browse(
 
     return render(
         request,
-        "browse/directory.html",
+        "browse-directory.html",
         {
             "heading": heading,
             "swh_object_id": swhids_info[0]["swhid"],

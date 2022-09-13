@@ -17,9 +17,6 @@ from swh.search.interface import PagedResult
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
 from swh.web.api.utils import enrich_origin, enrich_origin_visit
-from swh.web.common.exc import BadInputExc
-from swh.web.common.origin_visits import get_origin_visits
-from swh.web.common.utils import reverse
 from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.data import (
     INDEXER_TOOL,
@@ -28,8 +25,11 @@ from swh.web.tests.data import (
     ORIGIN_METADATA_KEY,
     ORIGIN_METADATA_VALUE,
 )
+from swh.web.tests.helpers import check_api_get_responses
 from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
-from swh.web.tests.utils import check_api_get_responses
+from swh.web.utils import reverse
+from swh.web.utils.exc import BadInputExc
+from swh.web.utils.origin_visits import get_origin_visits
 
 
 def test_api_lookup_origin_visits_raise_error(api_client, origin, mocker):
@@ -452,7 +452,7 @@ def test_api_origin_not_found(api_client, new_origin):
 def test_api_origin_search(api_client, mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.archive.search", None)
+        mocker.patch("swh.web.utils.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -504,7 +504,7 @@ def test_api_origin_search(api_client, mocker, backend):
 def test_api_origin_search_words(api_client, mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.archive.search", None)
+        mocker.patch("swh.web.utils.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -554,7 +554,7 @@ def test_api_origin_search_words(api_client, mocker, backend):
 def test_api_origin_search_visit_type(api_client, mocker, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.archive.search", None)
+        mocker.patch("swh.web.utils.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -590,7 +590,7 @@ def test_api_origin_search_use_ql(api_client, mocker):
 
     ORIGINS = [{"url": origin} for origin in expected_origins]
 
-    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
     mock_archive_search.origin_search.return_value = PagedResult(
         results=ORIGINS,
         next_page_token=None,
@@ -612,7 +612,7 @@ def test_api_origin_search_use_ql(api_client, mocker):
 
 
 def test_api_origin_search_ql_syntax_error(api_client, mocker):
-    mock_archive_search = mocker.patch("swh.web.common.archive.search")
+    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
     mock_archive_search.origin_search.side_effect = SearchQuerySyntaxError(
         "Invalid syntax"
     )
@@ -641,7 +641,7 @@ def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backe
 
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.archive.search", None)
+        mocker.patch("swh.web.utils.archive.search", None)
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -667,7 +667,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
         )
     else:
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.common.archive.search", None)
+        mocker.patch("swh.web.utils.archive.search", None)
 
         archive_data.origin_add(
             [Origin(url="http://foobar/{}".format(i)) for i in range(2000)]
@@ -685,7 +685,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
 def test_api_origin_metadata_search(api_client, mocker, backend):
 
-    mock_config = mocker.patch("swh.web.common.archive.config")
+    mock_config = mocker.patch("swh.web.utils.archive.config")
     mock_config.get_config.return_value = {
         "search_config": {"metadata_backend": backend}
     }
@@ -729,7 +729,7 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
 
 
 def test_api_origin_metadata_search_limit(api_client, mocker):
-    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
     oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
 
     oimsft.side_effect = lambda conjunction, limit: [
@@ -779,7 +779,7 @@ def test_api_origin_intrinsic_metadata(api_client, origin):
 
 
 def test_api_origin_metadata_search_invalid(api_client, mocker):
-    mock_idx_storage = mocker.patch("swh.web.common.archive.idx_storage")
+    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
     url = reverse("api-1-origin-metadata-search")
     check_api_get_responses(api_client, url, status_code=400)
     mock_idx_storage.assert_not_called()
@@ -788,7 +788,7 @@ def test_api_origin_metadata_search_invalid(api_client, mocker):
 @pytest.mark.parametrize("backend", ["swh-counters", "swh-storage"])
 def test_api_stat_counters(api_client, mocker, backend):
 
-    mock_config = mocker.patch("swh.web.common.archive.config")
+    mock_config = mocker.patch("swh.web.utils.archive.config")
     mock_config.get_config.return_value = {"counters_backend": backend}
 
     url = reverse("api-1-stat-counters")

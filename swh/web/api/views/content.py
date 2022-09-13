@@ -14,8 +14,8 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
-from swh.web.common.exc import NotFoundExc
+from swh.web.utils import archive
+from swh.web.utils.exc import NotFoundExc
 
 
 @api_route(
@@ -23,7 +23,7 @@ from swh.web.common.exc import NotFoundExc
     "api-1-content-filetype",
     checksum_args=["q"],
 )
-@api_doc("/content/filetype/")
+@api_doc("/content/filetype/", category="Metadata")
 @format_docstring()
 def api_content_filetype(request: Request, q: str):
     """
@@ -73,7 +73,7 @@ def api_content_filetype(request: Request, q: str):
     "api-1-content-language",
     checksum_args=["q"],
 )
-@api_doc("/content/language/")
+@api_doc("/content/language/", category="Metadata")
 @format_docstring()
 def api_content_language(request: Request, q: str):
     """
@@ -124,7 +124,7 @@ def api_content_language(request: Request, q: str):
     "api-1-content-license",
     checksum_args=["q"],
 )
-@api_doc("/content/license/")
+@api_doc("/content/license/", category="Metadata")
 @format_docstring()
 def api_content_license(request: Request, q: str):
     """
@@ -172,7 +172,7 @@ def api_content_license(request: Request, q: str):
     "api-1-content-raw",
     checksum_args=["q"],
 )
-@api_doc("/content/raw/")
+@api_doc("/content/raw/", category="Archive")
 def api_content_raw(request: Request, q: str):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/raw/
@@ -218,7 +218,7 @@ def api_content_raw(request: Request, q: str):
 
 @api_route(r"/content/known/search/", "api-1-content-known", methods=["POST"])
 @api_route(r"/content/known/(?P<q>(?!search).+)/", "api-1-content-known")
-@api_doc("/content/known/", tags=["hidden"])
+@api_doc("/content/known/", category="Archive", tags=["hidden"])
 @format_docstring()
 def api_check_content_known(request: Request, q: Optional[str] = None):
     """
@@ -288,7 +288,7 @@ def api_check_content_known(request: Request, q: Optional[str] = None):
 @api_route(
     r"/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/", "api-1-content", checksum_args=["q"]
 )
-@api_doc("/content/")
+@api_doc("/content/", category="Archive")
 @format_docstring()
 def api_content_metadata(request: Request, q: str):
     """

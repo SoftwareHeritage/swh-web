@@ -7,11 +7,11 @@ from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.common import archive
+from swh.web.utils import archive
 
 
 @api_route(r"/stat/counters/", "api-1-stat-counters")
-@api_doc("/stat/counters/", noargs=True)
+@api_doc("/stat/counters/", category="Miscellaneous", noargs=True)
 @format_docstring()
 def api_stats(request: Request):
     """

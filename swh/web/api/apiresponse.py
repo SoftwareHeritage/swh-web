@@ -19,15 +19,15 @@ from rest_framework.utils.encoders import JSONEncoder
 
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api import utils
-from swh.web.common.exc import (
+from swh.web.config import get_config
+from swh.web.utils import gen_path_info, shorten_path
+from swh.web.utils.exc import (
     BadInputExc,
     ForbiddenExc,
     LargePayloadExc,
     NotFoundExc,
     sentry_capture_exception,
 )
-from swh.web.common.utils import gen_path_info, shorten_path
-from swh.web.config import get_config
 
 logger = logging.getLogger("django")
 
@@ -159,7 +159,7 @@ def make_api_response(
                 doc_data["endpoint_path"][-1]["path"] += "/doc/"
 
         response = render(
-            request, "api/apidoc.html", doc_data, status=doc_data["status_code"]
+            request, "apidoc.html", doc_data, status=doc_data["status_code"]
         )
 
     # otherwise simply return the raw data and let DRF picks

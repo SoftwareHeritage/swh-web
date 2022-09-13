@@ -1,0 +1,69 @@
+{% comment %}
+Copyright (C) 2017-2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% if not iframe_mode %}
+  {% include "./revision-info.html" %}
+{% endif %}
+
+{% if snapshot_context and snapshot_context.is_empty %}
+  {% include "./empty-snapshot.html" %}
+{% elif dirs|length > 0 or files|length > 0 %}
+  <div class="table-responsive">
+    <table class="table swh-table swh-directory-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th class="d-none d-md-table-cell">Mode</th>
+          <th class="d-none d-sm-table-cell">Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dirs %}
+          <tr class="swh-directory-entry swh-tr-hover-highlight">
+            <td class="swh-directory">
+              <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
+              <a href="{{ d.url | safe }}">
+                {{ d.name }}
+              </a>
+            </td>
+            <td class="d-none d-md-table-cell">
+            </td>
+            <td class="d-none d-sm-table-cell">
+            </td>
+          </tr>
+        {% endfor %}
+        {% for f in files %}
+          <tr class="swh-directory-entry swh-tr-hover-highlight">
+            <td class="swh-content">
+              <i class="{{ swh_object_icons.content }} mdi-fw" aria-hidden="true"></i>
+              <a href="{{ f.url | safe }}">
+                {{ f.name }}
+              </a>
+            </td>
+            <td class="d-none d-md-table-cell">
+              {{ f.perms }}
+            </td>
+            <td class="d-none d-sm-table-cell">
+              {% if f.length is not None %}{{ f.length|filesizeformat }}{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if not iframe_mode %}
+    <hr class="mt-0 mb-2">
+  {% endif %}
+{% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
+  <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
+  <br/>
+  <i>Its associated directory can not be displayed.</i>
+{% elif error_code != 200 %}
+  {% include "includes/http-error.html" %}
+{% elif dirs|length == 0 and files|length == 0 %}
+  <i>Directory is empty</i>
+{% endif %}

@@ -19,21 +19,17 @@ from django.http.response import (
     JsonResponse,
 )
 from django.shortcuts import render
-from django.urls import re_path as url
 from django.views.decorators.http import require_http_methods
 
 from swh.auth.django.models import OIDCUser
 from swh.auth.django.utils import keycloak_oidc_client
 from swh.auth.django.views import get_oidc_login_data, oidc_login_view
-from swh.auth.django.views import urlpatterns as auth_urlpatterns
 from swh.auth.keycloak import KeycloakError, keycloak_error_message
 from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import decrypt_data, encrypt_data
-from swh.web.common.exc import ForbiddenExc
-from swh.web.common.utils import reverse
 from swh.web.config import get_config
-
-from .mailmap import urlpatterns as mailmap_urlpatterns
+from swh.web.utils import reverse
+from swh.web.utils.exc import ForbiddenExc
 
 
 def oidc_generate_bearer_token(request: HttpRequest) -> HttpResponse:
@@ -154,44 +150,6 @@ def oidc_revoke_bearer_tokens(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=401)
 
 
-@login_required(login_url="/oidc/login/", redirect_field_name="next_path")
-def _oidc_profile_view(request: HttpRequest) -> HttpResponse:
-    return render(request, "auth/profile.html")
-
-
-urlpatterns = (
-    auth_urlpatterns
-    + [
-        url(
-            r"^oidc/generate-bearer-token/$",
-            oidc_generate_bearer_token,
-            name="oidc-generate-bearer-token",
-        ),
-        url(
-            r"^oidc/generate-bearer-token-complete/$",
-            oidc_generate_bearer_token_complete,
-            name="oidc-generate-bearer-token-complete",
-        ),
-        url(
-            r"^oidc/list-bearer-token/$",
-            oidc_list_bearer_tokens,
-            name="oidc-list-bearer-tokens",
-        ),
-        url(
-            r"^oidc/get-bearer-token/$",
-            oidc_get_bearer_token,
-            name="oidc-get-bearer-token",
-        ),
-        url(
-            r"^oidc/revoke-bearer-tokens/$",
-            oidc_revoke_bearer_tokens,
-            name="oidc-revoke-bearer-tokens",
-        ),
-        url(
-            r"^oidc/profile/$",
-            _oidc_profile_view,
-            name="oidc-profile",
-        ),
-    ]
-    + mailmap_urlpatterns
-)
+@login_required(login_url="oidc-login")
+def oidc_profile_view(request: HttpRequest) -> HttpResponse:
+    return render(request, "profile.html")

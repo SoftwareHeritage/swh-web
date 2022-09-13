@@ -1,0 +1,36 @@
+<%#
+	Copyright (C) 2022  The Software Heritage developers
+	See the AUTHORS file at the top-level directory of this distribution
+	License: GNU Affero General Public License version 3, or any later version
+	See top-level LICENSE file for more information
+%>
+<div class="history-item">
+	<div class="card border-dark">
+		<div class="card-header" id="historyItem<%= index %>">
+			<h2 class="mb-0">
+				<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#historyItemBody<%= index %>"
+								aria-expanded="true" aria-controls="collapse$<%= index %>">
+								From <%= event.actor %> (<%= event.actor_role %>) on <%= getHumanReadableDate(event.date) %>
+					<%if (event.new_status !== null) { %>
+					<span style="padding-left: 10px;">New status:</span> <%= swh.add_forge_now.formatRequestStatusName(event.new_status) %>
+					<% } %>
+				</button>
+			</h2>
+		</div>
+		<div id="historyItemBody<%= index%>" class="collapse" aria-labelledby="historyItem<%= index %>" data-parent="#requestHistory">
+			<div class="card-body">
+				<%if (event.text) { %>
+				<pre><%= event.text %></pre>
+				<% } %>
+				<%if (event.message_source_url !== null) { %>
+				<p><a href="<%= event.message_source_url %>">Open original message in email client</a></p>
+				<% } %>
+				<%if (event.new_status !== null) { %>
+					<p>
+						<span>Status changed to:</span> <strong><%= swh.add_forge_now.formatRequestStatusName(event.new_status) %></strong>
+					</p>
+				<% } %>
+			</div>
+		</div>
+	</div>
+</div>

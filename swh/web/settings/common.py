@@ -8,13 +8,13 @@
 Django common settings for swh-web.
 """
 
+from importlib.util import find_spec
 import os
 import sys
 from typing import Any, Dict
 
 from django.utils import encoding
 
-from swh.web.auth.utils import OIDC_SWH_WEB_CLIENT_ID
 from swh.web.config import get_config
 
 # Fix django-js-reverse 0.9.1 compatibility with django 4.x
@@ -42,6 +42,24 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 
 # Application definition
 
+SWH_BASE_DJANGO_APPS = [
+    "swh.web.webapp",
+    "swh.web.auth",
+    "swh.web.browse",
+    "swh.web.utils",
+    "swh.web.tests",
+    "swh.web.api",
+]
+SWH_EXTRA_DJANGO_APPS = [
+    app
+    for app in swh_web_config["swh_extra_django_apps"]
+    if app not in SWH_BASE_DJANGO_APPS
+]
+# swh.web.api must be the last loaded application due to the way
+# its URLS are registered
+SWH_DJANGO_APPS = SWH_EXTRA_DJANGO_APPS + SWH_BASE_DJANGO_APPS
+
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,16 +68,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "swh.web.common",
-    "swh.web.inbound_email",
-    "swh.web.api",
-    "swh.web.auth",
-    "swh.web.browse",
-    "swh.web.add_forge_now",
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
-]
+] + SWH_DJANGO_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -68,11 +80,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "swh.web.common.middlewares.ThrottlingHeadersMiddleware",
-    "swh.web.common.middlewares.ExceptionMiddleware",
+    "swh.web.utils.middlewares.ThrottlingHeadersMiddleware",
+    "swh.web.utils.middlewares.ExceptionMiddleware",
 ]
 
 # Compress all assets (static ones and dynamically generated html)
@@ -84,10 +95,23 @@ if swh_web_config["serve_assets"]:
 
 ROOT_URLCONF = "swh.web.urls"
 
+SWH_APP_TEMPLATES = [os.path.join(PROJECT_DIR, "../templates")]
+# Add templates directory from each SWH Django application
+for app in SWH_DJANGO_APPS:
+    try:
+        app_spec = find_spec(app)
+        assert app_spec is not None, f"Django application {app} not found !"
+        assert app_spec.origin is not None
+        SWH_APP_TEMPLATES.append(
+            os.path.join(os.path.dirname(app_spec.origin), "templates")
+        )
+    except ModuleNotFoundError:
+        assert False, f"Django application {app} not found !"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(PROJECT_DIR, "../templates")],
+        "DIRS": SWH_APP_TEMPLATES,
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -95,10 +119,10 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "swh.web.common.utils.context_processor",
+                "swh.web.utils.context_processor",
             ],
             "libraries": {
-                "swh_templatetags": "swh.web.common.swh_templatetags",
+                "swh_templatetags": "swh.web.utils.swh_templatetags",
             },
         },
     },
@@ -298,8 +322,27 @@ WEBPACK_LOADER = {
     }
 }
 
-LOGIN_URL = "/admin/login/"
-LOGIN_REDIRECT_URL = "admin"
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+oidc_enabled = bool(get_config()["keycloak"]["server_url"])
+
+if not oidc_enabled:
+    LOGIN_URL = "login"
+    LOGOUT_URL = "logout"
+else:
+    LOGIN_URL = "oidc-login"
+    LOGOUT_URL = "oidc-logout"
+    AUTHENTICATION_BACKENDS.append(
+        "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
+    )
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("django.contrib.auth.middleware.AuthenticationMiddleware") + 1,
+        "swh.auth.django.middlewares.OIDCSessionExpiredMiddleware",
+    )
+
+LOGIN_REDIRECT_URL = "swh-web-homepage"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
@@ -312,11 +355,7 @@ JS_REVERSE_JS_MINIFY = False
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r"^/(badge|api)/.*$"
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "swh.auth.django.backends.OIDCAuthorizationCodePKCEBackend",
-]
-
+OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]
 SWH_AUTH_REALM_NAME = swh_web_config["keycloak"]["realm_name"]
 SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID

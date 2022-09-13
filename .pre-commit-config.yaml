@@ -5,7 +5,7 @@ repos:
     rev: v4.1.0
     hooks:
       - id: trailing-whitespace
-        exclude: '.eml$'
+        exclude: ".eml$"
       - id: check-json
       - id: check-yaml
 
@@ -26,7 +26,7 @@ repos:
               yarn.lock|
               package.json
           )$
-        args: [-L edn]
+        args: [-L edn, -L crate]
         stages: [commit]
 
   - repo: local

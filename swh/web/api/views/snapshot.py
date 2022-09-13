@@ -9,9 +9,8 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
-from swh.web.common import archive
-from swh.web.common.utils import reverse
 from swh.web.config import get_config
+from swh.web.utils import archive, reverse
 
 
 @api_route(
@@ -19,7 +18,7 @@ from swh.web.config import get_config
     "api-1-snapshot",
     checksum_args=["snapshot_id"],
 )
-@api_doc("/snapshot/")
+@api_doc("/snapshot/", category="Archive")
 @format_docstring()
 def api_snapshot(request: Request, snapshot_id: str):
     """

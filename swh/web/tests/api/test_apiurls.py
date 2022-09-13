@@ -5,8 +5,8 @@
 
 
 from swh.web.api.apiurls import api_route
-from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_api_get_responses
+from swh.web.tests.helpers import check_api_get_responses
+from swh.web.utils import reverse
 
 
 @api_route(r"/some/route/(?P<int_arg>[0-9]+)/", "api-1-some-route")

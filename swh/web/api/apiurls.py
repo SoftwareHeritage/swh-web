@@ -6,12 +6,18 @@
 import functools
 from typing import Dict, List, Optional
 
+from typing_extensions import Literal
+
 from django.http.response import HttpResponseBase
 from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
 from swh.web.api.apiresponse import make_api_response
-from swh.web.common.urlsindex import UrlsIndex
+from swh.web.utils.urlsindex import UrlsIndex
+
+CategoryId = Literal[
+    "Archive", "Batch download", "Metadata", "Request archival", "Miscellaneous", "test"
+]
 
 
 class APIUrls(UrlsIndex):
@@ -35,6 +41,7 @@ class APIUrls(UrlsIndex):
     def add_doc_route(
         cls,
         route: str,
+        category: CategoryId,
         docstring: str,
         noargs: bool = False,
         api_version: str = "1",
@@ -49,6 +56,7 @@ class APIUrls(UrlsIndex):
         route_view_name = "api-%s-%s" % (api_version, route_name)
         if route not in cls._apidoc_routes:
             d = {
+                "category": category,
                 "docstring": docstring,
                 "route": "/api/%s%s" % (api_version, route),
                 "route_view_name": route_view_name,
@@ -60,7 +68,7 @@ class APIUrls(UrlsIndex):
 
 def api_route(
     url_pattern: str,
-    view_name: Optional[str] = None,
+    view_name: str,
     methods: List[str] = ["GET", "HEAD", "OPTIONS"],
     throttle_scope: str = "swh_api",
     api_version: str = "1",
@@ -83,7 +91,7 @@ def api_route(
 
     """
 
-    url_pattern = "^" + api_version + url_pattern + "$"
+    url_pattern = "^api/" + api_version + url_pattern + "$"
 
     def decorator(f):
         # create a DRF view from the wrapped function

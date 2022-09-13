@@ -98,6 +98,15 @@ function genOriginSaveResponse({
   };
 };
 
+function loadSaveRequestsListPage() {
+  // click on tab to visit requests list page
+  cy.get('#swh-origin-save-requests-list-tab').click();
+  // two XHR requests are sent by datatables when initializing requests table
+  cy.wait(['@saveRequestsList', '@saveRequestsList']);
+  // ensure datatable got rendered
+  cy.wait(100);
+}
+
 describe('Origin Save Tests', function() {
   before(function() {
     url = this.Urls.origin_save();
@@ -125,7 +134,7 @@ describe('Origin Save Tests', function() {
     ];
     cy.window().then(win => {
       inputValues.forEach(function(input, index, array) {
-        const actualValue = win.swh.save.formatValuePerType(input.type, input.value);
+        const actualValue = win.swh.save_code_now.formatValuePerType(input.type, input.value);
         assert.equal(actualValue, input.expectedValue);
       });
     });
@@ -277,8 +286,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display origin save info in the requests table', function() {
-    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
+
+    loadSaveRequestsListPage();
+
     cy.get('tbody tr').then(rows => {
       let i = 0;
       for (const row of rows) {
@@ -320,10 +332,12 @@ describe('Origin Save Tests', function() {
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };
+
     cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
       .as('saveRequestsList');
-    cy.get('#swh-origin-save-requests-list-tab').click();
-    cy.wait('@saveRequestsList');
+
+    loadSaveRequestsListPage();
+
     cy.get('tbody tr').then(rows => {
       const firstRowCells = rows[0].cells;
       const browseOriginUrl = `${this.Urls.browse_origin()}?origin_url=${encodeURIComponent(originUrl)}`;
@@ -349,8 +363,9 @@ describe('Origin Save Tests', function() {
     };
     cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
       .as('saveRequestsList');
-    cy.get('#swh-origin-save-requests-list-tab').click();
-    cy.wait('@saveRequestsList');
+
+    loadSaveRequestsListPage();
+
     cy.get('tbody tr').then(rows => {
       const firstRowCells = rows[0].cells;
       const tooltip = 'origin was successfully loaded, waiting for data to be available in database';
@@ -360,14 +375,18 @@ describe('Origin Save Tests', function() {
   });
 
   it('should display/close task info popover when clicking on the info button', function() {
-    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
-    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
+    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'})
+      .as('saveTaskInfo');
 
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    loadSaveRequestsListPage();
+
     cy.get('.swh-save-request-info')
       .eq(0)
       .click();
 
+    cy.wait('@saveTaskInfo');
     cy.get('.swh-save-request-info-popover')
       .should('be.visible');
 
@@ -380,14 +399,18 @@ describe('Origin Save Tests', function() {
   });
 
   it('should hide task info popover when clicking on the close button', function() {
-    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
-    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
+    cy.intercept('/save/task/info/**', {fixture: 'save-task-info'})
+      .as('saveTaskInfo');
 
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    loadSaveRequestsListPage();
+
     cy.get('.swh-save-request-info')
       .eq(0)
       .click();
 
+    cy.wait('@saveTaskInfo');
     cy.get('.swh-save-request-info-popover')
       .should('be.visible');
 
@@ -399,9 +422,11 @@ describe('Origin Save Tests', function() {
   });
 
   it('should fill save request form when clicking on "Save again" button', function() {
-    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
 
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    loadSaveRequestsListPage();
+
     cy.get('.swh-save-origin-again')
       .eq(0)
       .click();
@@ -419,7 +444,8 @@ describe('Origin Save Tests', function() {
     const originUrl = 'https://gitlab.inria.fr/solverstack/maphys/maphys/';
     const badVisitType = 'hg';
     const goodVisitType = 'git';
-    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin(badVisitType, originUrl),
                      visitType: badVisitType,
                      saveRequestStatus: 'accepted',
@@ -431,7 +457,8 @@ describe('Origin Save Tests', function() {
 
     makeOriginSaveRequest(badVisitType, originUrl);
 
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    loadSaveRequestsListPage();
+
     cy.wait('@saveRequest').then(() => {
       cy.get('.swh-save-origin-again')
         .eq(0)
@@ -478,6 +505,8 @@ describe('Origin Save Tests', function() {
   it('should show only user requests when filter is activated', function() {
     cy.intercept('POST', '/api/1/origin/save/**')
       .as('saveRequest');
+    cy.intercept(this.Urls.origin_save_requests_list('all') + '**')
+      .as('saveRequestsList');
 
     const originAnonymousUser = 'https://some.git.server/project/';
     const originAuthUser = 'https://other.git.server/project/';
@@ -506,6 +535,8 @@ describe('Origin Save Tests', function() {
     // activate filter and check filtered user requests
     cy.get('#swh-save-requests-user-filter')
       .click({force: true});
+    cy.wait('@saveRequestsList');
+
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(1);
       expect($(rows[0].cells[2]).text()).to.contain(originAuthUser);
@@ -514,6 +545,8 @@ describe('Origin Save Tests', function() {
     // deactivate filter and check unfiltered user requests
     cy.get('#swh-save-requests-user-filter')
       .click({force: true});
+    cy.wait('@saveRequestsList');
+
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(2);
     });

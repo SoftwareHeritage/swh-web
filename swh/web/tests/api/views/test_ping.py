@@ -3,8 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.common.utils import reverse
-from swh.web.tests.utils import check_api_get_responses
+from swh.web.tests.helpers import check_api_get_responses
+from swh.web.utils import reverse
 
 
 def test_api_1_ping(api_client):

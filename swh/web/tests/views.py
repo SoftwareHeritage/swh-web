@@ -16,8 +16,8 @@ from swh.model import from_disk
 from swh.model.from_disk import DiskBackedContent
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import Content
-from swh.web.common.highlightjs import get_hljs_language_from_filename
 from swh.web.tests.data import get_tests_data
+from swh.web.utils.highlightjs import get_hljs_language_from_filename
 
 _content_code_data_exts: Dict[str, Dict[str, str]] = {}
 _content_code_data_filenames: Dict[str, Dict[str, str]] = {}

@@ -10,13 +10,13 @@ import pytest
 from swh.model.hashutil import hash_to_bytes
 from swh.web.api.throttling import SwhWebUserRateThrottle
 from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION
-from swh.web.common.utils import reverse
 from swh.web.settings.tests import api_raw_object_rate
-from swh.web.tests.utils import (
+from swh.web.tests.helpers import (
     check_api_get_responses,
     check_http_get_response,
     create_django_permission,
 )
+from swh.web.utils import reverse
 
 
 @pytest.fixture

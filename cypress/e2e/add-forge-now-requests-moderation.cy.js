@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-const defaultRedirect = '/admin/login/';
+const defaultRedirect = '/login/';
 
 let addForgeModerationUrl;
 let listAddForgeRequestsUrl;

@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% comment %}
+Copyright (C) 2022  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load render_bundle from webpack_loader %}
+{% load static %}
+
+{% block header %}
+{% render_bundle 'add_forge_now' %}
+{% endblock %}
+
+{% block title %}
+Add forge now – Software Heritage archive
+{% endblock %}
+
+{% block navbar-content %}
+<h4>Request the addition of a forge into the archive</h4>
+{% endblock %}
+
+{% block content %}
+<div class="row mt-3">
+  <p>
+    “Add forge now” provides a service for Software Heritage users to save a
+    complete forge in the Software Heritage archive by requesting the addition
+    of the forge URL into the list of regularly visited forges.
+  </p>
+  {% if not user.is_authenticated %}
+    <p>
+      You can submit an “Add forge now” request only when you are authenticated,
+      please login to submit the request.
+    </p>
+  {% endif %}
+</div>
+
+<!-- Tabs in the page -->
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-create' %}active{% endif %}"
+       href="{% url 'forge-add-create' %}" id="swh-add-forge-tab">
+      Submit a Request
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-list' %}active{% endif %}"
+       href="{% url 'forge-add-list' %}" id="swh-add-forge-requests-list-tab">
+      Browse Requests
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-help' %}active{% endif %}"
+       href="{% url 'forge-add-help' %}" id="swh-add-forge-requests-help-tab">
+      Help
+    </a>
+  </li>
+</ul>
+
+<div class="tab-content">
+  {% block tab_content %}
+  {% endblock %}
+</div>
+
+<script>
+  swh.webapp.initPage('add-forge-now');
+  swh.add_forge_now.onCreateRequestPageLoad();
+</script>
+
+{% endblock %}

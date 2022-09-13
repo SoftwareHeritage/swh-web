@@ -12,7 +12,7 @@ from django.core.cache import cache
 from .common import *  # noqa
 from .common import MIDDLEWARE
 
-MIDDLEWARE += ["swh.web.common.middlewares.HtmlPrettifyMiddleware"]
+MIDDLEWARE += ["swh.web.utils.middlewares.HtmlPrettifyMiddleware"]
 
 AUTH_PASSWORD_VALIDATORS = []  # disable any pwd validation mechanism
 
