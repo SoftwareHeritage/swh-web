@@ -66,6 +66,8 @@ def _resolve_origin_swhids_in_graph_response(
             yield (json.dumps(processed_line) + "\n").encode()
     elif content_type == "text/plain":
         for line in response.iter_lines():
+            if not line:
+                continue
             processed_line = []
             swhids = line.decode("utf-8").split(" ")
             for swhid in swhids:

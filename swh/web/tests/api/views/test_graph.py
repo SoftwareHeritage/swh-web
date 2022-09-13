@@ -185,20 +185,29 @@ def test_graph_response_resolve_origins(
 
     _authenticate_graph_user(api_client, keycloak_oidc)
 
-    for graph_query, response_text, content_type in (
+    for graph_query, response_text, strip_empty_lines, content_type in (
         (
             f"visit/nodes/{snapshot_swhid}",
             f"{snapshot_swhid}\n{origin_swhid}\n",
+            False,
+            "text/plain",
+        ),
+        (
+            f"visit/nodes/{snapshot_swhid}",
+            f"{snapshot_swhid}\n{origin_swhid}\n\n",  # empty line at the end
+            True,
             "text/plain",
         ),
         (
             f"visit/edges/{snapshot_swhid}",
             f"{snapshot_swhid} {origin_swhid}\n",
+            False,
             "text/plain",
         ),
         (
             f"visit/paths/{snapshot_swhid}",
             f'["{snapshot_swhid}", "{origin_swhid}"]\n',
+            False,
             "application/x-ndjson",
         ),
     ):
@@ -232,10 +241,13 @@ def test_graph_response_resolve_origins(
         resp = check_http_get_response(api_client, url, status_code=200)
         assert isinstance(resp, StreamingHttpResponse)
         assert resp["Content-Type"] == content_type
-        assert (
-            b"".join(resp.streaming_content)
-            == response_text.replace(origin_swhid, origin["url"]).encode()
-        )
+
+        expected_response = response_text.replace(origin_swhid, origin["url"])
+
+        if strip_empty_lines:
+            expected_response = expected_response.replace("\n\n", "\n")
+
+        assert b"".join(resp.streaming_content) == expected_response.encode()
 
 
 def test_graph_response_resolve_origins_nothing_to_do(
