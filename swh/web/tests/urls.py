@@ -6,18 +6,19 @@
 from django.urls import re_path as url
 
 from swh.web.config import get_config
-from swh.web.tests.views import (
-    get_content_code_data_all_exts,
-    get_content_code_data_all_filenames,
-    get_content_code_data_by_ext,
-    get_content_code_data_by_filename,
-    get_content_other_data_by_ext,
-)
 
 urlpatterns = []
 # when running end to end tests through cypress, declare some extra
 # endpoints to provide input data for some of those tests
 if get_config()["e2e_tests_mode"]:
+    from swh.web.tests.views import (
+        get_content_code_data_all_exts,
+        get_content_code_data_all_filenames,
+        get_content_code_data_by_ext,
+        get_content_code_data_by_filename,
+        get_content_other_data_by_ext,
+    )
+
     urlpatterns = [
         url(
             r"^tests/data/content/code/extension/(?P<ext>.+)/$",
