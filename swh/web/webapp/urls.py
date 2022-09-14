@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 import json
+import logging
 
 from django_js_reverse.views import urls_js
 import requests
@@ -16,12 +17,15 @@ from django.views.generic.base import RedirectView
 
 from swh.web.config import get_config
 from swh.web.utils import archive, origin_visit_types
+from swh.web.utils.exc import sentry_capture_exception
 
 swh_web_config = get_config()
 
 SWH_FAVICON = "img/icons/swh-logo-32x32.png"
 
 favicon_view = RedirectView.as_view(url=static(SWH_FAVICON), permanent=True)
+
+logger = logging.getLogger(__name__)
 
 
 def default_view(request):
@@ -33,9 +37,12 @@ def stat_counters(request):
     url = get_config()["history_counters_url"]
     stat_counters_history = {}
 
-    if url:
+    try:
         response = requests.get(url, timeout=5)
         stat_counters_history = json.loads(response.text)
+    except Exception as exc:
+        logger.exception(exc)
+        sentry_capture_exception(exc)
 
     counters = {
         "stat_counters": stat_counters,
