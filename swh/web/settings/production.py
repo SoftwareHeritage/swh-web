@@ -66,7 +66,3 @@ DATABASES = {
 }
 
 WEBPACK_LOADER["DEFAULT"]["CACHE"] = not DEBUG
-
-LOGIN_URL = "oidc-login"
-LOGIN_REDIRECT_URL = "oidc-profile"
-LOGOUT_URL = "oidc-logout"

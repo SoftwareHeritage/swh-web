@@ -64,7 +64,7 @@ function createTransport(
       result => result,
       error => {
         if (error instanceof SentryError) {
-          (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Skipped sending event due to full buffer');
+          (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Skipped sending event because buffer is full.');
           recordEnvelopeLoss('queue_overflow');
           return resolvedSyncPromise();
         } else {

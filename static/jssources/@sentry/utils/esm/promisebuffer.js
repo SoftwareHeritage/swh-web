@@ -34,7 +34,7 @@ function makePromiseBuffer(limit) {
    */
   function add(taskProducer) {
     if (!isReady()) {
-      return rejectedSyncPromise(new SentryError('Not adding Promise due to buffer limit reached.'));
+      return rejectedSyncPromise(new SentryError('Not adding Promise because buffer limit was reached.'));
     }
 
     // start the task and add its promise to the queue

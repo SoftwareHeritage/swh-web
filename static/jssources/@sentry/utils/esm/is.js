@@ -17,9 +17,15 @@ function isError(wat) {
       return isInstanceOf(wat, Error);
   }
 }
-
-function isBuiltin(wat, ty) {
-  return objectToString.call(wat) === `[object ${ty}]`;
+/**
+ * Checks whether given value is an instance of the given built-in class.
+ *
+ * @param wat The value to be checked
+ * @param className
+ * @returns A boolean representing the result.
+ */
+function isBuiltin(wat, className) {
+  return objectToString.call(wat) === `[object ${className}]`;
 }
 
 /**
