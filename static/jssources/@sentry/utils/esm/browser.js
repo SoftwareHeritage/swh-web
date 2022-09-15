@@ -116,5 +116,29 @@ function getLocationHref() {
   }
 }
 
-export { getLocationHref, htmlTreeAsString };
+/**
+ * Gets a DOM element by using document.querySelector.
+ *
+ * This wrapper will first check for the existance of the function before
+ * actually calling it so that we don't have to take care of this check,
+ * every time we want to access the DOM.
+ *
+ * Reason: DOM/querySelector is not available in all environments.
+ *
+ * We have to cast to any because utils can be consumed by a variety of environments,
+ * and we don't want to break TS users. If you know what element will be selected by
+ * `document.querySelector`, specify it as part of the generic call. For example,
+ * `var element = getDomElement<Element>('selector');`
+ *
+ * @param selector the selector string passed on to document.querySelector
+ */
+function getDomElement(selector) {
+  var global = getGlobalObject();
+  if (global.document && global.document.querySelector) {
+    return global.document.querySelector(selector) ;
+  }
+  return null;
+}
+
+export { getDomElement, getLocationHref, htmlTreeAsString };
 //# sourceMappingURL=browser.js.map

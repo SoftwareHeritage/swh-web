@@ -89,19 +89,16 @@ The Software Heritage team
 
 describe('Test add forge now request dashboard load', function() {
 
-  before(function() {
-    // Create an add-forge-request object in the DB
-    createDummyRequest(this.Urls);
-  });
-
   beforeEach(function() {
-    const url = this.Urls.add_forge_now_request_dashboard(requestId);
-    // request dashboard require admin permissions to view
-    cy.adminLogin();
-    cy.intercept(`${this.Urls.api_1_add_forge_request_get(requestId)}**`).as('forgeRequestGet');
-    cy.visit(url);
-    cy.get('.swh-add-forge-now-moderation-item')
-      .should('have.class', 'active');
+    createDummyRequest(this.Urls).then(() => {
+      const url = this.Urls.add_forge_now_request_dashboard(requestId);
+      // request dashboard require admin permissions to view
+      cy.adminLogin();
+      cy.intercept(`${this.Urls.api_1_add_forge_request_get(requestId)}**`).as('forgeRequestGet');
+      cy.visit(url);
+      cy.get('.swh-add-forge-now-moderation-item')
+        .should('have.class', 'active');
+    });
   });
 
   it('should load add forge request details', function() {

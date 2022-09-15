@@ -5,23 +5,18 @@
  * See top-level LICENSE file for more information
  */
 
-const defaultRedirect = '/login/';
-
-let addForgeModerationUrl;
-let listAddForgeRequestsUrl;
-
 function logout() {
   cy.contains('a', 'logout')
     .click();
 }
 
 describe('Test "Add Forge Now" moderation Login/logout', function() {
-  before(function() {
-    addForgeModerationUrl = this.Urls.add_forge_now_requests_moderation();
+  beforeEach(function() {
+    this.addForgeModerationUrl = this.Urls.add_forge_now_requests_moderation();
   });
 
   it('should redirect to default page', function() {
-    cy.visit(addForgeModerationUrl)
+    cy.visit(this.addForgeModerationUrl)
       .get('input[name="username"]')
       .type('admin')
       .get('input[name="password"]')
@@ -30,62 +25,62 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
       .submit();
 
     cy.location('pathname')
-      .should('be.equal', addForgeModerationUrl);
+      .should('be.equal', this.addForgeModerationUrl);
   });
 
   it('should redirect to correct page after login', function() {
-    cy.visit(addForgeModerationUrl)
+    cy.visit(this.addForgeModerationUrl)
       .location('pathname')
-      .should('be.equal', defaultRedirect);
+      .should('be.equal', this.Urls.login());
 
     cy.adminLogin();
-    cy.visit(addForgeModerationUrl)
+    cy.visit(this.addForgeModerationUrl)
       .location('pathname')
-      .should('be.equal', addForgeModerationUrl);
+      .should('be.equal', this.addForgeModerationUrl);
 
     logout();
   });
 
   it('should not display moderation link in sidebar when anonymous', function() {
-    cy.visit(addForgeModerationUrl);
-    cy.get(`.sidebar a[href="${addForgeModerationUrl}"]`)
+    cy.visit(this.addForgeModerationUrl);
+    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('not.exist');
   });
 
   it('should not display moderation link when connected as unprivileged user', function() {
     cy.userLogin();
-    cy.visit(addForgeModerationUrl);
+    cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${addForgeModerationUrl}"]`)
+    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('not.exist');
 
   });
 
   it('should display moderation link in sidebar when connected as privileged user', function() {
     cy.addForgeModeratorLogin();
-    cy.visit(addForgeModerationUrl);
+    cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${addForgeModerationUrl}"]`)
+    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('exist');
   });
 
   it('should display moderation link in sidebar when connected as staff member', function() {
     cy.adminLogin();
-    cy.visit(addForgeModerationUrl);
+    cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${addForgeModerationUrl}"]`)
+    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('exist');
   });
 });
 
 describe('Test "Add Forge Now" moderation listing', function() {
-  before(function() {
-    addForgeModerationUrl = this.Urls.add_forge_now_requests_moderation();
-    listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
+  beforeEach(function() {
+    this.addForgeModerationUrl = this.Urls.add_forge_now_requests_moderation();
+    this.listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
   });
 
   it('should list add-forge-now requests', function() {
-    cy.intercept(`${listAddForgeRequestsUrl}**`, {fixture: 'add-forge-now-requests'}).as('listRequests');
+    cy.intercept(`${this.listAddForgeRequestsUrl}**`, {fixture: 'add-forge-now-requests'}).as('listRequests');
 
     let expectedRequests;
     cy.readFile('cypress/fixtures/add-forge-now-requests.json').then((result) => {
@@ -93,7 +88,7 @@ describe('Test "Add Forge Now" moderation listing', function() {
     });
 
     cy.addForgeModeratorLogin();
-    cy.visit(addForgeModerationUrl);
+    cy.visit(this.addForgeModerationUrl);
 
     cy.get('.swh-add-forge-now-moderation-item')
       .should('have.class', 'active');

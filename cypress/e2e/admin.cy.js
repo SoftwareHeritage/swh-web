@@ -7,22 +7,18 @@
 
 const $ = Cypress.$;
 
-const defaultRedirect = '/';
-
-let url;
-
 function logout() {
   cy.contains('a', 'logout')
     .click();
 }
 
 describe('Test Admin Login/logout', function() {
-  before(function() {
-    url = this.Urls.login();
+  beforeEach(function() {
+    this.url = this.Urls.login();
   });
 
   it('should redirect to default page', function() {
-    cy.visit(url)
+    cy.visit(this.url)
       .get('input[name="username"]')
       .type('admin')
       .get('input[name="password"]')
@@ -31,14 +27,14 @@ describe('Test Admin Login/logout', function() {
       .submit();
 
     cy.location('pathname')
-      .should('be.equal', defaultRedirect);
+      .should('be.equal', this.Urls.swh_web_homepage());
 
     logout();
   });
 
   it('should display admin-origin-save and deposit in sidebar', function() {
     cy.adminLogin();
-    cy.visit(url);
+    cy.visit(this.url);
 
     cy.get(`.sidebar a[href="${this.Urls.admin_origin_save_requests()}"]`)
       .should('be.visible');
@@ -51,7 +47,7 @@ describe('Test Admin Login/logout', function() {
 
   it('should display username on top-right', function() {
     cy.adminLogin();
-    cy.visit(url);
+    cy.visit(this.url);
 
     cy.get('.swh-position-right')
       .should('contain', 'admin');
@@ -64,12 +60,12 @@ describe('Test Admin Login/logout', function() {
       expect(win.swh.webapp.isUserLoggedIn()).to.be.false;
     });
     cy.adminLogin();
-    cy.visit(url);
+    cy.visit(this.url);
     cy.window().then(win => {
       expect(win.swh.webapp.isUserLoggedIn()).to.be.true;
     });
     logout();
-    cy.visit(url);
+    cy.visit(this.url);
     cy.window().then(win => {
       expect(win.swh.webapp.isUserLoggedIn()).to.be.false;
     });

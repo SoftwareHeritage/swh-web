@@ -181,5 +181,15 @@ function checkOrSetAlreadyCaught(exception) {
   return false;
 }
 
-export { addContextToFrame, addExceptionMechanism, addExceptionTypeValue, checkOrSetAlreadyCaught, getEventDescription, parseSemver, uuid4 };
+/**
+ * Checks whether the given input is already an array, and if it isn't, wraps it in one.
+ *
+ * @param maybeArray Input to turn into an array, if necessary
+ * @returns The input, if already an array, or an array with the input as the only element, if not
+ */
+function arrayify(maybeArray) {
+  return Array.isArray(maybeArray) ? maybeArray : [maybeArray];
+}
+
+export { addContextToFrame, addExceptionMechanism, addExceptionTypeValue, arrayify, checkOrSetAlreadyCaught, getEventDescription, parseSemver, uuid4 };
 //# sourceMappingURL=misc.js.map
