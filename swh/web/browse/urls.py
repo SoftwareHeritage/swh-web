@@ -16,7 +16,7 @@ import swh.web.browse.views.origin  # noqa
 import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
-from swh.web.utils import origin_visit_types, reverse
+from swh.web.utils import is_swh_web_production, origin_visit_types, reverse
 
 
 def _browse_help_view(request: HttpRequest) -> HttpResponse:
@@ -31,7 +31,7 @@ def _browse_search_view(request: HttpRequest) -> HttpResponse:
         "browse-search.html",
         {
             "heading": "Search software origins to browse",
-            "visit_types": origin_visit_types(),
+            "visit_types": origin_visit_types(use_cache=is_swh_web_production(request)),
         },
     )
 
