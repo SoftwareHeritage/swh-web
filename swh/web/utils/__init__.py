@@ -497,16 +497,25 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
 _origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours
 
 
-@django_cache(
-    timeout=_origin_visit_types_cache_timeout,
-    catch_exception=True,
-    exception_return_value=[],
-)
-def origin_visit_types() -> List[str]:
+def origin_visit_types(use_cache: bool = True) -> List[str]:
     """Return the exhaustive list of visit types for origins
     ingested into the archive.
+
+    Args:
+        use_cache: if :const:`True`, store visit types in django
+            cache for 24 hours.
     """
-    return sorted(search().visit_types_count().keys())
+
+    @django_cache(
+        timeout=_origin_visit_types_cache_timeout,
+        catch_exception=True,
+        exception_return_value=[],
+        invalidate_cache_pred=lambda val: not use_cache,
+    )
+    def _origin_visit_types_internal() -> List[str]:
+        return sorted(search().visit_types_count().keys())
+
+    return _origin_visit_types_internal()
 
 
 def redirect_to_new_route(request, new_route, permanent=True):
