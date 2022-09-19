@@ -18,7 +18,7 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive, origin_visit_types, reverse
+from swh.web.utils import archive, graphql, origin_visit_types, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
 from swh.web.utils.typing import OriginInfo
@@ -106,6 +106,7 @@ def api_origins(request: Request):
     next_page_token = page_result.next_page_token
 
     headers: Dict[str, str] = {}
+
     if next_page_token is not None:
         headers["link-next"] = reverse(
             "api-1-origins",
@@ -140,16 +141,19 @@ def api_origin(request: Request, origin_url: str):
             :swh_web_api:`origin/https://github.com/python/cpython/get/`
 
     """
-    ori_dict = {"url": origin_url}
-
-    error_msg = "Origin with url %s not found." % ori_dict["url"]
-
-    return api_lookup(
-        archive.lookup_origin,
-        ori_dict,
-        lookup_similar_urls=False,
-        notfound_msg=error_msg,
-        enrich_fn=enrich_origin,
+    query = """
+    query GetOrigin($url: String!) {
+      origin(url: $url) {
+        url
+      }
+    }
+    """
+    return graphql.get_one(
+        query,
+        {"url": origin_url},
+        query_root="origin",
+        enrich=enrich_origin,
+        error_msg=f"Origin with url {origin_url} not found.",
         request=request,
     )
 
@@ -424,7 +428,6 @@ def api_origin_visit_latest(request: Request, origin_url: str):
 
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/latest/`
     """
-
     require_snapshot = request.query_params.get("require_snapshot", "false")
     return api_lookup(
         archive.lookup_origin_visit_latest,

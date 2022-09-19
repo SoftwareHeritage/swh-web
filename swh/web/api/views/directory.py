@@ -75,6 +75,7 @@ def api_directory(request: Request, sha1_git: str, path: Optional[str] = None):
             :swh_web_api:`directory/977fc4b98c0e85816348cebd3b12026407c368b6/`
     """
     if path:
+        # query directory entry
         error_msg_path = (
             "Entry with path %s relative to directory " "with sha1_git %s not found."
         ) % (path, sha1_git)
@@ -87,6 +88,7 @@ def api_directory(request: Request, sha1_git: str, path: Optional[str] = None):
             request=request,
         )
     else:
+        # query directory
         error_msg_nopath = "Directory with sha1_git %s not found." % sha1_git
         return api_lookup(
             archive.lookup_directory,

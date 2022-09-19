@@ -10,7 +10,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_snapshot
 from swh.web.api.views.utils import api_lookup
 from swh.web.config import get_config
-from swh.web.utils import archive, reverse
+from swh.web.utils import archive, graphql, reverse
 
 
 @api_route(
@@ -69,37 +69,52 @@ def api_snapshot(request: Request, snapshot_id: str):
             :swh_web_api:`snapshot/6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a/`
     """
 
-    snapshot_content_max_size = get_config()["snapshot_content_max_size"]
-
-    branches_from = request.GET.get("branches_from", "")
-    branches_count = int(request.GET.get("branches_count", snapshot_content_max_size))
-    target_types_str = request.GET.get("target_types", None)
-    target_types = target_types_str.split(",") if target_types_str else None
-
-    results = api_lookup(
-        archive.lookup_snapshot,
-        snapshot_id,
-        branches_from,
-        branches_count,
-        target_types,
-        branch_name_exclude_prefix=None,
-        notfound_msg="Snapshot with id {} not found.".format(snapshot_id),
-        enrich_fn=enrich_snapshot,
+    query = """
+    query GetSnapshot($swhid: SWHID!) {
+      snapshot(swhid: $swhid) {
+        id
+      }
+    }
+    """
+    return graphql.get_one(
+        query,
+        {"swhid": f"swh:1:snp:{snapshot_id}"},
+        query_root="snapshot",
+        error_msg=f"Snapshot with sha1_git {snapshot_id} not found.",
         request=request,
     )
 
-    response = {"results": results, "headers": {}}
+    # snapshot_content_max_size = get_config()["snapshot_content_max_size"]
 
-    if results["next_branch"] is not None:
-        response["headers"]["link-next"] = reverse(
-            "api-1-snapshot",
-            url_args={"snapshot_id": snapshot_id},
-            query_params={
-                "branches_from": results["next_branch"],
-                "branches_count": str(branches_count),
-                "target_types": ",".join(target_types) if target_types else None,
-            },
-            request=request,
-        )
+    # branches_from = request.GET.get("branches_from", "")
+    # branches_count = int(request.GET.get("branches_count", snapshot_content_max_size))
+    # target_types_str = request.GET.get("target_types", None)
+    # target_types = target_types_str.split(",") if target_types_str else None
 
-    return response
+    # results = api_lookup(
+    #     archive.lookup_snapshot,
+    #     snapshot_id,
+    #     branches_from,
+    #     branches_count,
+    #     target_types,
+    #     branch_name_exclude_prefix=None,
+    #     notfound_msg="Snapshot with id {} not found.".format(snapshot_id),
+    #     enrich_fn=enrich_snapshot,
+    #     request=request,
+    # )
+
+    # response = {"results": results, "headers": {}}
+
+    # if results["next_branch"] is not None:
+    #     response["headers"]["link-next"] = reverse(
+    #         "api-1-snapshot",
+    #         url_args={"snapshot_id": snapshot_id},
+    #         query_params={
+    #             "branches_from": results["next_branch"],
+    #             "branches_count": str(branches_count),
+    #             "target_types": ",".join(target_types) if target_types else None,
+    #         },
+    #         request=request,
+    #     )
+
+    # return response

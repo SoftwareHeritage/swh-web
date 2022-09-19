@@ -12,7 +12,7 @@ from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive
+from swh.web.utils import archive, graphql
 
 DOC_RETURN_REVISION = """
         :>json object author: information about the author of the revision
@@ -71,11 +71,20 @@ def api_revision(request: Request, sha1_git: str):
 
             :swh_web_api:`revision/aafb16d69fd30ff58afdd69036a26047f3aebdc6/`
     """
-    return api_lookup(
-        archive.lookup_revision,
-        sha1_git,
-        notfound_msg="Revision with sha1_git {} not found.".format(sha1_git),
-        enrich_fn=utils.enrich_revision,
+    query = """
+    query GetRevision($swhid: SWHID!) {
+      revision(swhid: $swhid) {
+        date
+        id
+      }
+    }
+    """
+    return graphql.get_one(
+        query,
+        {"swhid": f"swh:1:rev:{sha1_git}"},
+        query_root="revision",
+        enrich=utils.enrich_revision,
+        error_msg=f"Revision with sha1_git {sha1_git} not found.",
         request=request,
     )
 

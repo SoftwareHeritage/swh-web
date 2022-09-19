@@ -5,11 +5,12 @@
 
 from rest_framework.request import Request
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive
+from swh.web.utils import graphql
 
 
 @api_route(
@@ -52,11 +53,19 @@ def api_release(request: Request, sha1_git: str):
 
             :swh_web_api:`release/208f61cc7a5dbc9879ae6e5c2f95891e270f09ef/`
     """
-    error_msg = "Release with sha1_git %s not found." % sha1_git
-    return api_lookup(
-        archive.lookup_release,
-        sha1_git,
-        notfound_msg=error_msg,
-        enrich_fn=utils.enrich_release,
+    query = """
+    query GetRelease($swhid: SWHID!) {
+      release(swhid: $swhid) {
+        date
+        id
+      }
+    }
+    """
+    return graphql.get_one(
+        query,
+        {"swhid": f"swh:1:rel:{sha1_git}"},
+        query_root="release",
+        enrich=utils.enrich_release,
+        error_msg=f"Release with {sha1_git} not found.",
         request=request,
     )
