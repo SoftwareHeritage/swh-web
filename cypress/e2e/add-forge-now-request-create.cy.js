@@ -7,7 +7,9 @@
 
 function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-forge-type').select(type);
-  cy.get('#swh-input-forge-url').clear().type(url);
+  if (url) {
+    cy.get('#swh-input-forge-url').clear().type(url);
+  }
   cy.get('#swh-input-forge-contact-name').clear().type(contact);
   cy.get('#swh-input-forge-contact-email').clear().type(email);
   if (comment) {
@@ -16,10 +18,28 @@ function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-consent-check').click({force: consent === 'on'});
 }
 
+function submitForm() {
+  cy.get('#requestCreateForm input[type=submit]').click();
+  cy.get('#requestCreateForm').then($form => {
+    if ($form[0].checkValidity()) {
+      cy.wait('@addForgeRequestCreate');
+    }
+  });
+}
+
+function initTest(testEnv) {
+  testEnv.addForgeNowUrl = testEnv.Urls.forge_add_create();
+  testEnv.addForgeNowRequestCreateUrl = testEnv.Urls.api_1_add_forge_request_create();
+  testEnv.listAddForgeRequestsUrl = testEnv.Urls.add_forge_request_list_datatables();
+  cy.intercept('POST', testEnv.addForgeNowRequestCreateUrl + '**')
+      .as('addForgeRequestCreate');
+  cy.intercept(testEnv.listAddForgeRequestsUrl + '**')
+      .as('addForgeRequestsList');
+}
+
 describe('Browse requests list tests', function() {
   beforeEach(function() {
-    this.addForgeNowUrl = this.Urls.forge_add_create();
-    this.listAddForgeRequestsUrl = this.Urls.add_forge_request_list_datatables();
+    initTest(this);
   });
 
   it('should not show user requests filter checkbox for anonymous users', function() {
@@ -44,7 +64,7 @@ describe('Browse requests list tests', function() {
 
     // create requests for the user 'user'
     populateForm('gitlab', 'https://gitlab.org', 'admin', 'admin@example.org', 'on', '');
-    cy.get('#requestCreateForm').submit();
+    submitForm();
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
@@ -63,12 +83,9 @@ describe('Browse requests list tests', function() {
     cy.visit(this.addForgeNowUrl);
 
     populateForm('gitea', 'https://gitea.org', 'admin', 'admin@example.org', 'on', '');
-    cy.get('#requestCreateForm').submit();
+    submitForm();
     populateForm('cgit', 'https://cgit.org', 'admin', 'admin@example.org', 'on', '');
-    cy.get('#requestCreateForm').submit();
-
-    cy.intercept(this.Urls.add_forge_request_list_datatables() + '**')
-      .as('addForgeRequestsList');
+    submitForm();
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
@@ -95,7 +112,7 @@ describe('Browse requests list tests', function() {
 
 describe('Test add-forge-request creation', function() {
   beforeEach(function() {
-    this.addForgeNowUrl = this.Urls.forge_add_create();
+    initTest(this);
   });
 
   it('should show all the tabs for every user', function() {
@@ -216,10 +233,13 @@ describe('Test add-forge-request creation', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestCreateForm').submit();
+    submitForm();
 
     cy.visit(this.addForgeNowUrl);
     cy.get('#swh-add-forge-requests-list-tab').click();
+
+    cy.wait('@addForgeRequestsList');
+
     cy.get('#add-forge-request-browse')
       .should('be.visible')
       .should('contain', 'gitlab.com');
@@ -233,9 +253,9 @@ describe('Test add-forge-request creation', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestCreateForm').submit();
+    submitForm();
 
-    cy.get('#requestCreateForm').submit(); // Submitting the same data again
+    submitForm(); // Submitting the same data again
 
     cy.get('#userMessage')
       .should('have.class', 'badge-danger')
@@ -245,34 +265,24 @@ describe('Test add-forge-request creation', function() {
   it('should show error message', function() {
     cy.userLogin();
 
-    cy.intercept('POST', `${this.Urls.api_1_add_forge_request_create()}**`,
-                 {
-                   body: {
-                     'exception': 'BadInputExc',
-                     'reason': '{"add-forge-comment": ["This field is required"]}'
-                   },
-                   statusCode: 400
-                 }).as('errorRequest');
-
     cy.visit(this.addForgeNowUrl);
 
     populateForm(
-      'bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'off', 'comment'
+      'bitbucket', '', 'test', 'test@example.com', 'off', 'comment'
     );
-    cy.get('#requestCreateForm').submit();
+    submitForm();
 
-    cy.wait('@errorRequest').then((xhr) => {
-      cy.get('#userMessage')
-        .should('have.class', 'badge-danger')
-        .should('contain', 'field is required');
-    });
+    cy.get('#requestCreateForm').then(
+      $form => expect($form[0].checkValidity()).to.be.false
+    );
+
   });
 
-  it('should bot validate form when forge URL is invalid', function() {
+  it('should not validate form when forge URL is invalid', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'bitbucket.org', 'test', 'test@example.com', 'on', 'test comment');
-    cy.get('#requestCreateForm').submit();
+    submitForm();
 
     cy.get('#swh-input-forge-url')
       .then(input => {

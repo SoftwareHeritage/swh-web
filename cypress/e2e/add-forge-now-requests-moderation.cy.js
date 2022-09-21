@@ -21,8 +21,8 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
       .type('admin')
       .get('input[name="password"]')
       .type('admin')
-      .get('.container form')
-      .submit();
+      .get('.container form button[type=submit]')
+      .click();
 
     cy.location('pathname')
       .should('be.equal', this.addForgeModerationUrl);
