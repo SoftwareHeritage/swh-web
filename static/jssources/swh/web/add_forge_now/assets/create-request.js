@@ -127,7 +127,7 @@ export function populateRequestBrowseList() {
 
 export function validateForgeUrl(input) {
   let customValidity = '';
-  if (!validateUrl(input.value.trim(), ['http', 'https'])) {
+  if (!validateUrl(input.value.trim(), ['http:', 'https:'])) {
     customValidity = 'The provided forge URL is not valid.';
   }
   input.setCustomValidity(customValidity);
