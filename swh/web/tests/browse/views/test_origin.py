@@ -50,6 +50,8 @@ def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits)
 
     _check_origin_link(resp, origin_url)
 
+    assert_contains(resp, "swh-take-new-snashot")
+
 
 @pytest.mark.django_db
 def test_origin_root_directory_view(
