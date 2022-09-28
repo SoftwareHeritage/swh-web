@@ -108,6 +108,45 @@ describe('Browse requests list tests', function() {
       expect(rows.length).to.eq(2 + 1);
     });
   });
+
+  it('should display search link when first forge origin has been loaded', function() {
+    const forgeUrl = 'https://cgit.example.org';
+    cy.intercept(this.listAddForgeRequestsUrl + '**', {body: {
+      'recordsTotal': 1,
+      'draw': 1,
+      'recordsFiltered': 1,
+      'data': [
+        {
+          'id': 1,
+          'inbound_email_address': 'add-forge-now+15.yPalKD34nGJ-FYHwKXdmPQVkQ2c@example.org',
+          'status': 'FIRST_ORIGIN_LOADED',
+          'submission_date': '2022-09-22T05:31:47.566000Z',
+          'submitter_name': 'johndoe',
+          'submitter_email': 'johndoe@example.org',
+          'submitter_forward_username': true,
+          'forge_type': 'cgit',
+          'forge_url': forgeUrl,
+          'forge_contact_email': 'admin@example.org',
+          'forge_contact_name': 'Admin',
+          'last_modified_date': '2022-09-22T05:31:47.576000Z'
+        }
+      ]
+    }}).as('addForgeRequestsList');
+
+    cy.visit(this.addForgeNowUrl);
+
+    cy.get('#swh-add-forge-requests-list-tab').click();
+
+    cy.wait('@addForgeRequestsList');
+
+    let originsSearchUrl = `${this.Urls.browse_search()}?q=${encodeURIComponent(forgeUrl)}`;
+    originsSearchUrl += '&with_visit=true&with_content=true';
+
+    cy.get('.swh-search-forge-origins')
+      .should('have.attr', 'href', originsSearchUrl);
+
+  });
+
 });
 
 describe('Test add-forge-request creation', function() {
