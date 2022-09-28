@@ -617,6 +617,27 @@ class BaseClient {
           this._updateSessionFromEvent(session, processedEvent);
         }
 
+        // None of the Sentry built event processor will update transaction name,
+        // so if the transaction name has been changed by an event processor, we know
+        // it has to come from custom event processor added by a user
+        var transactionInfo = processedEvent.transaction_info;
+        if (isTransaction && transactionInfo && processedEvent.transaction !== event.transaction) {
+          var source = 'custom';
+          processedEvent.transaction_info = {
+            ...transactionInfo,
+            source,
+            changes: [
+              ...transactionInfo.changes,
+              {
+                source,
+                // use the same timestamp as the processed event.
+                timestamp: processedEvent.timestamp ,
+                propagations: transactionInfo.propagations,
+              },
+            ],
+          };
+        }
+
         this.sendEvent(processedEvent, hint);
         return processedEvent;
       })

@@ -1,3 +1,4 @@
+import { getCurrentHub } from '@sentry/core';
 import { isEvent, extractExceptionKeysForMessage, normalizeToSize, addExceptionMechanism, resolvedSyncPromise, isErrorEvent, isDOMError, isDOMException, addExceptionTypeValue, isError, isPlainObject } from '@sentry/utils';
 
 /**
@@ -32,6 +33,10 @@ function eventFromPlainObject(
   syntheticException,
   isUnhandledRejection,
 ) {
+  var hub = getCurrentHub();
+  var client = hub.getClient();
+  var normalizeDepth = client && client.getOptions().normalizeDepth;
+
   var event = {
     exception: {
       values: [
@@ -44,7 +49,7 @@ function eventFromPlainObject(
       ],
     },
     extra: {
-      __serialized__: normalizeToSize(exception),
+      __serialized__: normalizeToSize(exception, normalizeDepth),
     },
   };
 
