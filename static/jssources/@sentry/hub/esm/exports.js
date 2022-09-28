@@ -162,13 +162,7 @@ function startTransaction(
   context,
   customSamplingContext,
 ) {
-  return getCurrentHub().startTransaction(
-    {
-      metadata: { source: 'custom' },
-      ...context,
-    },
-    customSamplingContext,
-  );
+  return getCurrentHub().startTransaction({ ...context }, customSamplingContext);
 }
 
 export { addBreadcrumb, captureEvent, captureException, captureMessage, configureScope, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withScope };

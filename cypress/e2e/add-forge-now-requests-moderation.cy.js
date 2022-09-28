@@ -21,8 +21,8 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
       .type('admin')
       .get('input[name="password"]')
       .type('admin')
-      .get('.container form')
-      .submit();
+      .get('.container form button[type=submit]')
+      .click();
 
     cy.location('pathname')
       .should('be.equal', this.addForgeModerationUrl);
@@ -115,6 +115,47 @@ describe('Test "Add Forge Now" moderation listing', function() {
         expect(request.forge_url).to.be.equal(expectedRequest['forge_url']);
       });
     });
+  });
+
+  it('should display useful links in requests table', function() {
+    const forgeUrl = 'https://cgit.example.org';
+    const requestId = 1;
+    cy.intercept(this.listAddForgeRequestsUrl + '**', {body: {
+      'recordsTotal': 1,
+      'draw': 1,
+      'recordsFiltered': 1,
+      'data': [
+        {
+          'id': requestId,
+          'inbound_email_address': 'add-forge-now+15.yPalKD34nGJ-FYHwKXdmPQVkQ2c@example.org',
+          'status': 'FIRST_ORIGIN_LOADED',
+          'submission_date': '2022-09-22T05:31:47.566000Z',
+          'submitter_name': 'johndoe',
+          'submitter_email': 'johndoe@example.org',
+          'submitter_forward_username': true,
+          'forge_type': 'cgit',
+          'forge_url': forgeUrl,
+          'forge_contact_email': 'admin@example.org',
+          'forge_contact_name': 'Admin',
+          'last_modified_date': '2022-09-22T05:31:47.576000Z',
+          'last_moderator': 'foo@softwareheritage.org'
+        }
+      ]
+    }}).as('addForgeRequestsList');
+
+    cy.addForgeModeratorLogin();
+    cy.visit(this.addForgeModerationUrl);
+
+    cy.wait('@addForgeRequestsList');
+
+    let originsSearchUrl = `${this.Urls.browse_search()}?q=${encodeURIComponent(forgeUrl)}`;
+    originsSearchUrl += '&with_visit=true&with_content=true';
+
+    cy.get('.swh-forge-request-dashboard-link')
+      .should('have.attr', 'href', this.Urls.add_forge_now_request_dashboard(requestId));
+
+    cy.get('.swh-search-forge-origins')
+      .should('have.attr', 'href', originsSearchUrl);
   });
 
 });

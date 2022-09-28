@@ -191,8 +191,8 @@ describe('Test navbar', function() {
     cy.get('#swh-origins-search-top-input')
       .type(keyword);
 
-    cy.get('.swh-search-navbar')
-      .submit();
+    cy.get('#swh-origins-search-top button[type=submit]')
+      .click({force: true});
 
     cy.url()
       .should('include', `${this.Urls.browse_search()}?q=${keyword}`);

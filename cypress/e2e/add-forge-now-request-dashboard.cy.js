@@ -192,7 +192,7 @@ describe('Test add forge now request dashboard load', function() {
 function populateAndSubmitForm() {
   cy.get('#decisionOptions').select('WAITING_FOR_FEEDBACK');
   cy.get('#updateComment').type('This is an update comment');
-  cy.get('#updateRequestForm').submit();
+  cy.get('#updateRequestForm button[type=submit]').click();
 }
 
 describe('Test add forge now request update', function() {
@@ -301,7 +301,7 @@ describe('Test add forge now request update', function() {
                  {forceNetworkError: true})
       .as('updateFailedRequest');
     cy.get('#updateComment').type('This is an update comment');
-    cy.get('#updateRequestForm').submit();
+    cy.get('#updateRequestForm button[type=submit]').click();
 
     cy.wait('@updateFailedRequest');
     cy.get('#userMessage')

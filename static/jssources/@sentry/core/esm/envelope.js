@@ -1,4 +1,4 @@
-import { dsnToString, createEnvelope, dropUndefinedKeys, getSentryBaggageItems } from '@sentry/utils';
+import { dsnToString, createEnvelope, dropUndefinedKeys } from '@sentry/utils';
 
 /** Extract sdk info from from the API metadata */
 function getSdkMetadataForEnvelopeHeader(metadata) {
@@ -86,8 +86,7 @@ function createEventEnvelopeHeaders(
   tunnel,
   dsn,
 ) {
-  var baggage = event.sdkProcessingMetadata && event.sdkProcessingMetadata.baggage;
-  var dynamicSamplingContext = baggage && getSentryBaggageItems(baggage);
+  var dynamicSamplingContext = event.sdkProcessingMetadata && event.sdkProcessingMetadata.dynamicSamplingContext;
 
   return {
     event_id: event.event_id ,
@@ -96,7 +95,7 @@ function createEventEnvelopeHeaders(
     ...(!!tunnel && { dsn: dsnToString(dsn) }),
     ...(event.type === 'transaction' &&
       dynamicSamplingContext && {
-        trace: dropUndefinedKeys({ ...dynamicSamplingContext }) ,
+        trace: dropUndefinedKeys({ ...dynamicSamplingContext }),
       }),
   };
 }
