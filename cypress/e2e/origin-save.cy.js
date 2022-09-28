@@ -30,8 +30,8 @@ function makeOriginSaveRequest(originType, originUrl) {
     .type(originUrl)
     .get('#swh-input-visit-type')
     .select(originType)
-    .get('#swh-save-origin-form')
-    .submit();
+    .get('#swh-save-origin-form button[type=submit]')
+    .click();
 }
 
 function checkAlertVisible(alertType, msg) {
@@ -618,8 +618,8 @@ describe('Origin Save Tests', function() {
       .get('#swh-input-artifact-version-0')
       .clear()
       .type(artifactVersion)
-      .get('#swh-save-origin-form')
-      .submit();
+      .get('#swh-save-origin-form button[type=submit]')
+      .click();
 
     cy.wait('@saveRequest').then(() => {
       checkAlertVisible('success', saveCodeMsg['success']);
@@ -696,8 +696,8 @@ describe('Origin Save Tests', function() {
     }).as('saveRequest');
 
     // submit form
-    cy.get('#swh-save-origin-form')
-      .submit();
+    cy.get('#swh-save-origin-form button[type=submit]')
+      .click();
 
     // submission should be successful
     cy.wait('@saveRequest').then(() => {
@@ -776,8 +776,8 @@ describe('Origin Save Tests', function() {
         .type(originUrl);
 
       // submit form
-      cy.get('#swh-save-origin-form')
-        .submit();
+      cy.get('#swh-save-origin-form button[type=submit]')
+        .click();
 
       // submission should be successful
       cy.wait('@ghWebApiRequest')

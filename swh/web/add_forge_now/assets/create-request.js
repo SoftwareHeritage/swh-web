@@ -119,6 +119,19 @@ export function populateRequestBrowseList() {
           render: function(data, type, row, meta) {
             return swh.add_forge_now.formatRequestStatusName(data);
           }
+        },
+        {
+          render: (data, type, row) => {
+            if (row.status === 'FIRST_ORIGIN_LOADED') {
+              const sanitizedURL = $.fn.dataTable.render.text().display(row.forge_url);
+              let originsSearchUrl = `${Urls.browse_search()}?q=${encodeURIComponent(sanitizedURL)}`;
+              originsSearchUrl += '&with_visit=true&with_content=true';
+              return `<a href="${originsSearchUrl}" target="_blank" rel="noopener noreferrer" ` +
+                     'class="swh-search-forge-origins" title="Search for origins listed from that forge">' +
+                     '<i class="mdi mdi-magnify" aria-hidden="true"></i></a>';
+            }
+            return '';
+          }
         }
       ],
       order: [[0, 'desc']]
