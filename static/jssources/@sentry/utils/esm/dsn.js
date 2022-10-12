@@ -1,7 +1,7 @@
 import { SentryError } from './error.js';
 
 /** Regular expression used to parse a Dsn. */
-var DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+))?@)([\w.-]+)(?::(\d+))?\/(.+)/;
+var DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+)?)?@)([\w.-]+)(?::(\d+))?\/(.+)/;
 
 function isValidProtocol(protocol) {
   return protocol === 'http' || protocol === 'https';

@@ -1,6 +1,8 @@
 import { getCurrentHub } from '@sentry/core';
 import { addInstrumentationHandler, htmlTreeAsString, severityLevelFromString, safeJoin, getGlobalObject, parseUrl } from '@sentry/utils';
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 /** JSDoc */
 
 var BREADCRUMB_INTEGRATION_ID = 'Breadcrumbs';
@@ -24,7 +26,6 @@ class Breadcrumbs  {
    * Options of the breadcrumbs integration.
    */
   // This field is public, because we use it in the browser client to check if the `sentry` option is enabled.
-  
 
   /**
    * @inheritDoc
@@ -72,8 +73,10 @@ class Breadcrumbs  {
  * A HOC that creaes a function that creates breadcrumbs from DOM API calls.
  * This is a HOC so that we get access to dom options in the closure.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _domBreadcrumb(dom) {
-    function _innerDomBreadcrumb(handlerData) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function _innerDomBreadcrumb(handlerData) {
     let target;
     let keyAttrs = typeof dom === 'object' ? dom.serializeAttribute : undefined;
 
@@ -113,6 +116,7 @@ function _domBreadcrumb(dom) {
 /**
  * Creates breadcrumbs from console API calls
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _consoleBreadcrumb(handlerData) {
   var breadcrumb = {
     category: 'console',
@@ -143,6 +147,7 @@ function _consoleBreadcrumb(handlerData) {
 /**
  * Creates breadcrumbs from XHR API calls
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _xhrBreadcrumb(handlerData) {
   if (handlerData.endTimestamp) {
     // We only capture complete, non-sentry requests
@@ -175,6 +180,7 @@ function _xhrBreadcrumb(handlerData) {
 /**
  * Creates breadcrumbs from fetch API calls
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _fetchBreadcrumb(handlerData) {
   // We only capture complete fetch requests
   if (!handlerData.endTimestamp) {
@@ -220,6 +226,7 @@ function _fetchBreadcrumb(handlerData) {
 /**
  * Creates breadcrumbs from history API calls
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _historyBreadcrumb(handlerData) {
   var global = getGlobalObject();
   let from = handlerData.from;

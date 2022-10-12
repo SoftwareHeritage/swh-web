@@ -99,11 +99,13 @@ function getFunctionName(fn) {
   }
 }
 
+// eslint-disable-next-line complexity
 function node(getModule) {
   var FILENAME_MATCH = /^\s*[-]{4,}$/;
   var FULL_MATCH = /at (?:async )?(?:(.+?)\s+\()?(?:(.+):(\d+):(\d+)?|([^)]+))\)?/;
 
-    return (line) => {
+  // eslint-disable-next-line complexity
+  return (line) => {
     if (line.match(FILENAME_MATCH)) {
       return {
         filename: line,
@@ -126,7 +128,8 @@ function node(getModule) {
 
       let methodStart = functionName.lastIndexOf('.');
       if (functionName[methodStart - 1] === '.') {
-                methodStart--;
+        // eslint-disable-next-line no-plusplus
+        methodStart--;
       }
 
       if (methodStart > 0) {

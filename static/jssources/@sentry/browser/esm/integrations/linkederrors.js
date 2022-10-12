@@ -20,12 +20,10 @@ class LinkedErrors  {
   /**
    * @inheritDoc
    */
-  
 
   /**
    * @inheritDoc
    */
-  
 
   /**
    * @inheritDoc

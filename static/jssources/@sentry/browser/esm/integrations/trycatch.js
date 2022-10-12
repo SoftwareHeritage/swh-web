@@ -46,7 +46,6 @@ class TryCatch  {
    __init() {this.name = TryCatch.id;}
 
   /** JSDoc */
-  
 
   /**
    * @inheritDoc
@@ -95,7 +94,8 @@ class TryCatch  {
 
 /** JSDoc */
 function _wrapTimeFunction(original) {
-    return function ( ...args) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function ( ...args) {
     var originalCallback = args[0];
     args[0] = wrap(originalCallback, {
       mechanism: {
@@ -109,9 +109,12 @@ function _wrapTimeFunction(original) {
 }
 
 /** JSDoc */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _wrapRAF(original) {
-    return function ( callback) {
-        return original.apply(this, [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function ( callback) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return original.apply(this, [
       wrap(callback, {
         mechanism: {
           data: {
@@ -128,13 +131,16 @@ function _wrapRAF(original) {
 
 /** JSDoc */
 function _wrapXHR(originalSend) {
-    return function ( ...args) {
-        var xhr = this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function ( ...args) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    var xhr = this;
     var xmlHttpRequestProps = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
 
     xmlHttpRequestProps.forEach(prop => {
       if (prop in xhr && typeof xhr[prop] === 'function') {
-                fill(xhr, prop, function (original) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fill(xhr, prop, function (original) {
           var wrapOptions = {
             mechanism: {
               data: {
@@ -164,10 +170,13 @@ function _wrapXHR(originalSend) {
 
 /** JSDoc */
 function _wrapEventTarget(target) {
-    var global = getGlobalObject() ;
-    var proto = global[target] && global[target].prototype;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  var global = getGlobalObject() ;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  var proto = global[target] && global[target].prototype;
 
-    if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
+  if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
     return;
   }
 
@@ -175,7 +184,8 @@ function _wrapEventTarget(target) {
 
  {
     return function (
-            
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       eventName,
       fn,
       options,
@@ -187,7 +197,8 @@ function _wrapEventTarget(target) {
           //  introduce a bug here, because bind returns a new function that doesn't have our
           //  flags(like __sentry_original__) attached. `wrap` checks for those flags to avoid unnecessary wrapping.
           //  Without those flags, every call to addEventListener wraps the function again, causing a memory leak.
-                    fn.handleEvent = wrap(fn.handleEvent, {
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          fn.handleEvent = wrap(fn.handleEvent, {
             mechanism: {
               data: {
                 function: 'handleEvent',
@@ -205,7 +216,8 @@ function _wrapEventTarget(target) {
 
       return original.apply(this, [
         eventName,
-                wrap(fn , {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        wrap(fn , {
           mechanism: {
             data: {
               function: 'addEventListener',
@@ -226,9 +238,11 @@ function _wrapEventTarget(target) {
     'removeEventListener',
     function (
       originalRemoveEventListener,
-          ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) {
       return function (
-                
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         eventName,
         fn,
         options,

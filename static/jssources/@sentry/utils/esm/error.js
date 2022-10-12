@@ -1,7 +1,6 @@
 /** An error emitted by Sentry SDKs and related utilities. */
 class SentryError extends Error {
   /** Display name of this error instance. */
-  
 
    constructor( message, logLevel = 'warn') {
     super(message);this.message = message;;

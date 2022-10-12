@@ -57,9 +57,6 @@ function createEventEnvelope(
   var sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
   var eventType = event.type || 'event';
 
-  const { transactionSampling } = event.sdkProcessingMetadata || {};
-  const { method: samplingMethod, rate: sampleRate } = transactionSampling || {};
-
   enhanceEventWithSdkInfo(event, metadata && metadata.sdk);
 
   var envelopeHeaders = createEventEnvelopeHeaders(event, sdkInfo, tunnel, dsn);
@@ -70,13 +67,7 @@ function createEventEnvelope(
   // of this `delete`, lest we miss putting it back in the next time the property is in use.)
   delete event.sdkProcessingMetadata;
 
-  var eventItem = [
-    {
-      type: eventType,
-      sample_rates: [{ id: samplingMethod, rate: sampleRate }],
-    },
-    event,
-  ];
+  var eventItem = [{ type: eventType }, event];
   return createEnvelope(envelopeHeaders, [eventItem]);
 }
 

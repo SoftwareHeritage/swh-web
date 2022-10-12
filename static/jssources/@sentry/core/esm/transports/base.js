@@ -35,7 +35,8 @@ function createTransport(
       return resolvedSyncPromise();
     }
 
-        var filteredEnvelope = createEnvelope(envelope[0], filteredEnvelopeItems );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    var filteredEnvelope = createEnvelope(envelope[0], filteredEnvelopeItems );
 
     // Creates client report for each item in an envelope
     var recordEnvelopeLoss = (reason) => {

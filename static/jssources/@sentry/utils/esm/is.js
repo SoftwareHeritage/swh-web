@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/unbound-method
 var objectToString = Object.prototype.toString;
 
 /**
@@ -132,7 +133,8 @@ function isRegExp(wat) {
  * @param wat A value to be checked.
  */
 function isThenable(wat) {
-    return Boolean(wat && wat.then && typeof wat.then === 'function');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return Boolean(wat && wat.then && typeof wat.then === 'function');
 }
 
 /**

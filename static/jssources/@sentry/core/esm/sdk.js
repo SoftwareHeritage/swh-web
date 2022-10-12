@@ -1,5 +1,5 @@
-import { getCurrentHub } from '@sentry/hub';
 import { logger } from '@sentry/utils';
+import { getCurrentHub } from './hub.js';
 
 /** A class object that can instantiate Client objects. */
 
@@ -19,7 +19,8 @@ function initAndBind(
       logger.enable();
     } else {
       // use `console.warn` rather than `logger.warn` since by non-debug bundles have all `logger.x` statements stripped
-            console.warn('[Sentry] Cannot initialize SDK with `debug` option using a non-debug bundle.');
+      // eslint-disable-next-line no-console
+      console.warn('[Sentry] Cannot initialize SDK with `debug` option using a non-debug bundle.');
     }
   }
   var hub = getCurrentHub();

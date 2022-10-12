@@ -10,7 +10,6 @@
 
 // global swh-web custom stylesheets
 import './breadcrumbs.css';
-import './coverage.css';
 import './webapp.css';
 
 // utility js modules

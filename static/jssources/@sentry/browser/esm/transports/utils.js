@@ -1,4 +1,4 @@
-import { getGlobalObject, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
+import { getGlobalObject, isNativeFetch, logger } from '@sentry/utils';
 
 var global = getGlobalObject();
 let cachedFetchImpl;
@@ -46,6 +46,8 @@ function getNativeFetchImplementation() {
     return cachedFetchImpl;
   }
 
+  /* eslint-disable @typescript-eslint/unbound-method */
+
   // Fast path to avoid DOM I/O
   if (isNativeFetch(global.fetch)) {
     return (cachedFetchImpl = global.fetch.bind(global));
@@ -53,7 +55,8 @@ function getNativeFetchImplementation() {
 
   var document = global.document;
   let fetchImpl = global.fetch;
-    if (document && typeof document.createElement === 'function') {
+  // eslint-disable-next-line deprecation/deprecation
+  if (document && typeof document.createElement === 'function') {
     try {
       var sandbox = document.createElement('iframe');
       sandbox.hidden = true;
@@ -70,34 +73,8 @@ function getNativeFetchImplementation() {
   }
 
   return (cachedFetchImpl = fetchImpl.bind(global));
-  }
-
-/**
- * Sends sdk client report using sendBeacon or fetch as a fallback if available
- *
- * @param url report endpoint
- * @param body report payload
- */
-function sendReport(url, body) {
-  var isRealNavigator = Object.prototype.toString.call(global && global.navigator) === '[object Navigator]';
-  var hasSendBeacon = isRealNavigator && typeof global.navigator.sendBeacon === 'function';
-
-  if (hasSendBeacon) {
-    // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-    var sendBeacon = global.navigator.sendBeacon.bind(global.navigator);
-    sendBeacon(url, body);
-  } else if (supportsFetch()) {
-    var fetch = getNativeFetchImplementation();
-    fetch(url, {
-      body,
-      method: 'POST',
-      credentials: 'omit',
-      keepalive: true,
-    }).then(null, error => {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(error);
-    });
-  }
+  /* eslint-enable @typescript-eslint/unbound-method */
 }
 
-export { getNativeFetchImplementation, sendReport };
+export { getNativeFetchImplementation };
 //# sourceMappingURL=utils.js.map

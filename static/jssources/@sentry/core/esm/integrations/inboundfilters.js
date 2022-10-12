@@ -142,7 +142,8 @@ function _getPossibleEventMessages(event) {
 function _isSentryError(event) {
   try {
     // @ts-ignore can't be a sentry error if undefined
-        return event.exception.values[0].type === 'SentryError';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return event.exception.values[0].type === 'SentryError';
   } catch (e) {
     // ignore
   }

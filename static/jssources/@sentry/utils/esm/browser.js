@@ -8,7 +8,6 @@ import { isString } from './is.js';
  * @returns generated DOM path
  */
 function htmlTreeAsString(elem, keyAttrs) {
-  
 
   // try/catch both:
   // - accessing event.target (see getsentry/raven-js#838, #768)
@@ -25,7 +24,8 @@ function htmlTreeAsString(elem, keyAttrs) {
     var sepLength = separator.length;
     let nextStr;
 
-        while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
+    // eslint-disable-next-line no-plusplus
+    while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
       nextStr = _htmlElementAsString(currentElem, keyAttrs);
       // bail out if
       // - nextStr is the 'html' element
@@ -53,7 +53,7 @@ function htmlTreeAsString(elem, keyAttrs) {
  * @returns generated DOM path
  */
 function _htmlElementAsString(el, keyAttrs) {
-  var elem = el 
+  var elem = el
 
 ;
 
@@ -85,7 +85,8 @@ function _htmlElementAsString(el, keyAttrs) {
       out.push(`#${elem.id}`);
     }
 
-        className = elem.className;
+    // eslint-disable-next-line prefer-const
+    className = elem.className;
     if (className && isString(className)) {
       classes = className.split(/\s+/);
       for (i = 0; i < classes.length; i++) {
@@ -132,6 +133,7 @@ function getLocationHref() {
  *
  * @param selector the selector string passed on to document.querySelector
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDomElement(selector) {
   var global = getGlobalObject();
   if (global.document && global.document.querySelector) {

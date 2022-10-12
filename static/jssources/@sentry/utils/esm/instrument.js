@@ -132,7 +132,8 @@ function instrumentFetch() {
         ...handlerData,
       });
 
-            return originalFetch.apply(global, args).then(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      return originalFetch.apply(global, args).then(
         (response) => {
           triggerHandlers('fetch', {
             ...handlerData,
@@ -157,6 +158,7 @@ function instrumentFetch() {
   });
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /** Extract `method` from fetch call arguments */
 function getFetchMethod(fetchArgs = []) {
   if ('Request' in global && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
@@ -178,6 +180,7 @@ function getFetchUrl(fetchArgs = []) {
   }
   return String(fetchArgs[0]);
 }
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 /** JSDoc */
 function instrumentXHR() {
@@ -189,15 +192,18 @@ function instrumentXHR() {
 
   fill(xhrproto, 'open', function (originalOpen) {
     return function ( ...args) {
-            var xhr = this;
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      var xhr = this;
       var url = args[1];
       var xhrInfo = (xhr.__sentry_xhr__ = {
-                method: isString(args[0]) ? args[0].toUpperCase() : args[0],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        method: isString(args[0]) ? args[0].toUpperCase() : args[0],
         url: args[1],
       });
 
       // if Sentry key appears in URL, don't capture it as a request
-            if (isString(url) && xhrInfo.method === 'POST' && url.match(/sentry_key/)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (isString(url) && xhrInfo.method === 'POST' && url.match(/sentry_key/)) {
         xhr.__sentry_own_request__ = true;
       }
 
@@ -443,14 +449,16 @@ function instrumentDOM() {
   // could potentially prevent the event from bubbling up to our global listeners. This way, our handler are still
   // guaranteed to fire at least once.)
   ['EventTarget', 'Node'].forEach((target) => {
-        var proto = (global )[target] && (global )[target].prototype;
-        if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    var proto = (global )[target] && (global )[target].prototype;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
+    if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
       return;
     }
 
     fill(proto, 'addEventListener', function (originalAddEventListener) {
       return function (
-        
+
         type,
         listener,
         options,
@@ -483,7 +491,7 @@ function instrumentDOM() {
       'removeEventListener',
       function (originalRemoveEventListener) {
         return function (
-          
+
           type,
           listener,
           options,
@@ -500,7 +508,8 @@ function instrumentDOM() {
                 if (handlerForType.refCount <= 0) {
                   originalRemoveEventListener.call(this, type, handlerForType.handler, options);
                   handlerForType.handler = undefined;
-                  delete handlers[type];                 }
+                  delete handlers[type]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
+                }
 
                 // If there are no longer any custom handlers of any type on this element, cleanup everything.
                 if (Object.keys(handlers).length === 0) {
@@ -535,7 +544,8 @@ function instrumentError() {
     });
 
     if (_oldOnErrorHandler) {
-            return _oldOnErrorHandler.apply(this, arguments);
+      // eslint-disable-next-line prefer-rest-params
+      return _oldOnErrorHandler.apply(this, arguments);
     }
 
     return false;
@@ -551,7 +561,8 @@ function instrumentUnhandledRejection() {
     triggerHandlers('unhandledrejection', e);
 
     if (_oldOnUnhandledRejectionHandler) {
-            return _oldOnUnhandledRejectionHandler.apply(this, arguments);
+      // eslint-disable-next-line prefer-rest-params
+      return _oldOnUnhandledRejectionHandler.apply(this, arguments);
     }
 
     return true;

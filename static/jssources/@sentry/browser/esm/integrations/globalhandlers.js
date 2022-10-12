@@ -3,6 +3,8 @@ import { addInstrumentationHandler, isString, isPrimitive, isErrorEvent, getLoca
 import { eventFromUnknownInput } from '../eventbuilder.js';
 import { shouldIgnoreOnError } from '../helpers.js';
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 /** Global handlers */
 class GlobalHandlers  {
   /**
@@ -16,7 +18,6 @@ class GlobalHandlers  {
    __init() {this.name = GlobalHandlers.id;}
 
   /** JSDoc */
-  
 
   /**
    * Stores references functions to installing handlers. Will set to undefined
@@ -44,7 +45,8 @@ class GlobalHandlers  {
 
     // We can disable guard-for-in as we construct the options object above + do checks against
     // `this._installFunc` for the property.
-        for (var key in options) {
+    // eslint-disable-next-line guard-for-in
+    for (var key in options) {
       var installFunc = this._installFunc[key ];
       if (installFunc && options[key ]) {
         globalHandlerLog(key);
@@ -59,7 +61,8 @@ class GlobalHandlers  {
 function _installGlobalOnErrorHandler() {
   addInstrumentationHandler(
     'error',
-        (data) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (data) => {
       const [hub, stackParser, attachStacktrace] = getHubAndOptions();
       if (!hub.getIntegration(GlobalHandlers)) {
         return;
@@ -90,7 +93,8 @@ function _installGlobalOnErrorHandler() {
 function _installGlobalOnUnhandledRejectionHandler() {
   addInstrumentationHandler(
     'unhandledrejection',
-        (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (e) => {
       const [hub, stackParser, attachStacktrace] = getHubAndOptions();
       if (!hub.getIntegration(GlobalHandlers)) {
         return;
@@ -155,6 +159,7 @@ function _eventFromRejectionWithPrimitive(reason) {
 /**
  * This function creates a stack from an old, error-less onerror handler.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _eventFromIncompleteOnError(msg, url, line, column) {
   var ERROR_TYPES_RE =
     /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
@@ -184,6 +189,7 @@ function _eventFromIncompleteOnError(msg, url, line, column) {
 }
 
 /** JSDoc */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _enhanceEventWithInitialFrame(event, url, line, column) {
   // event.exception
   var e = (event.exception = event.exception || {});

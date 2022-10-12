@@ -29,7 +29,8 @@ function snipLine(line, colno) {
     return newLine;
   }
   if (colno > lineLength) {
-        colno = lineLength;
+    // eslint-disable-next-line no-param-reassign
+    colno = lineLength;
   }
 
   let start = Math.max(colno - 60, 0);
@@ -62,13 +63,15 @@ function snipLine(line, colno) {
  * @param delimiter string to be placed in-between values
  * @returns Joined values
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function safeJoin(input, delimiter) {
   if (!Array.isArray(input)) {
     return '';
   }
 
   var output = [];
-    for (let i = 0; i < input.length; i++) {
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
+  for (let i = 0; i < input.length; i++) {
     var value = input[i];
     try {
       output.push(String(value));
