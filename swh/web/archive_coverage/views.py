@@ -87,6 +87,25 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "conda",
+            "info_url": "https://conda.io/",
+            "info": (
+                "source packages from the Conda open source package management "
+                "system and environment management"
+            ),
+            "search_pattern": {
+                "default": "https://anaconda.org/",
+            },
+        },
+        {
+            "type": "cpan",
+            "info_url": "https://www.cpan.org/",
+            "info": "source packages from The Comprehensive Perl Archive Network",
+            "search_pattern": {
+                "default": "https://metacpan.org/",
+            },
+        },
+        {
             "type": "CRAN",
             "info_url": "https://cran.r-project.org",
             "info": "source packages from The Comprehensive R Archive Network",
@@ -256,11 +275,27 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "puppet",
+            "info_url": "https://forge.puppet.com/",
+            "info": "source packages from the Puppet Forge",
+            "search_pattern": {
+                "default": "https://forge.puppet.com/modules/",
+            },
+        },
+        {
             "type": "pypi",
             "info_url": "https://pypi.org",
             "info": "source packages from the Python Package Index",
             "search_pattern": {
                 "default": "https://pypi.org",
+            },
+        },
+        {
+            "type": "rubygems",
+            "info_url": "https://rubygems.org",
+            "info": "source packages from the Ruby community's gem hosting service",
+            "search_pattern": {
+                "default": "https://rubygems.org/gems/",
             },
         },
         {

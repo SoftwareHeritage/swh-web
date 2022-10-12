@@ -1,8 +1,9 @@
-import { updateSession, Scope } from '@sentry/hub';
 import { makeDsn, logger, checkOrSetAlreadyCaught, isPrimitive, resolvedSyncPromise, addItemToEnvelope, createAttachmentEnvelopeItem, SyncPromise, uuid4, dateTimestampInSeconds, normalize, truncate, rejectedSyncPromise, SentryError, isThenable, isPlainObject } from '@sentry/utils';
 import { getEnvelopeEndpointWithUrlEncodedAuth } from './api.js';
 import { createEventEnvelope, createSessionEnvelope } from './envelope.js';
 import { setupIntegrations } from './integration.js';
+import { Scope } from './scope.js';
+import { updateSession } from './session.js';
 
 var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
 
@@ -39,10 +40,8 @@ var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been capt
  */
 class BaseClient {
   /** Options passed to the SDK. */
-  
 
   /** The client Dsn, if specified in options. Without this Dsn, the SDK will be disabled. */
-  
 
   /** Array of set up integrations. */
    __init() {this._integrations = {};}
@@ -79,7 +78,8 @@ class BaseClient {
   /**
    * @inheritDoc
    */
-     captureException(exception, hint, scope) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+   captureException(exception, hint, scope) {
     // ensure we haven't captured this very object before
     if (checkOrSetAlreadyCaught(exception)) {
       (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(ALREADY_SEEN_ERROR);
@@ -104,7 +104,8 @@ class BaseClient {
    */
    captureMessage(
     message,
-        level,
+    // eslint-disable-next-line deprecation/deprecation
+    level,
     hint,
     scope,
   ) {
@@ -707,7 +708,7 @@ class BaseClient {
   /**
    * @inheritDoc
    */
-    
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 
 }
 

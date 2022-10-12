@@ -36,7 +36,8 @@ function parseUrl(url)
  * @returns URL or path without query string or fragment
  */
 function stripUrlQueryAndFragment(urlPath) {
-    return urlPath.split(/[\?#]/, 1)[0];
+  // eslint-disable-next-line no-useless-escape
+  return urlPath.split(/[\?#]/, 1)[0];
 }
 
 /**

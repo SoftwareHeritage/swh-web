@@ -1,5 +1,7 @@
 import { isThenable } from './is.js';
 
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+
 /** SyncPromise internal states */
 var States; (function (States) {
   /** Pending */
@@ -43,7 +45,6 @@ function rejectedSyncPromise(reason) {
 class SyncPromise {
    __init() {this._state = States.PENDING;}
    __init2() {this._handlers = [];}
-  
 
    constructor(
     executor,
@@ -173,7 +174,8 @@ class SyncPromise {
       }
 
       if (this._state === States.RESOLVED) {
-                handler[1](this._value );
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        handler[1](this._value );
       }
 
       if (this._state === States.REJECTED) {

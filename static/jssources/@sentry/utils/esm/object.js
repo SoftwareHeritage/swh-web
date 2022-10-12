@@ -265,7 +265,8 @@ function objectify(wat) {
 
     // this will catch the remaining primitives: `String`, `Number`, and `Boolean`
     case isPrimitive(wat):
-            objectified = new (wat ).constructor(wat);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      objectified = new (wat ).constructor(wat);
       break;
 
     // by process of elimination, at this point we know that `wat` must already be an object

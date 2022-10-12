@@ -25,7 +25,8 @@ function uuid4() {
   // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
   // Concatenating the following numbers as strings results in '10000000100040008000100000000000'
   return (([1e7] ) + 1e3 + 4e3 + 8e3 + 1e11).replace(/[018]/g, c =>
-        ((c ) ^ ((getRandomByte() & 15) >> ((c ) / 4))).toString(16),
+    // eslint-disable-next-line no-bitwise
+    ((c ) ^ ((getRandomByte() & 15) >> ((c ) / 4))).toString(16),
   );
 }
 
@@ -166,7 +167,8 @@ function addContextToFrame(lines, frame, linesOfContext = 5) {
  * @returns `true` if the exception has already been captured, `false` if not (with the side effect of marking it seen)
  */
 function checkOrSetAlreadyCaught(exception) {
-    if (exception && (exception ).__sentry_captured__) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (exception && (exception ).__sentry_captured__) {
     return true;
   }
 

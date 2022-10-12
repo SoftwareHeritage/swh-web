@@ -24,8 +24,10 @@ function isNodeEnv() {
  *
  * @param request The module path to resolve
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
 function dynamicRequire(mod, request) {
-    return mod.require(request);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return mod.require(request);
 }
 
 /**

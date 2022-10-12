@@ -1,5 +1,6 @@
-import { addGlobalEventProcessor, getCurrentHub } from '@sentry/hub';
 import { arrayify, logger } from '@sentry/utils';
+import { getCurrentHub } from './hub.js';
+import { addGlobalEventProcessor } from './scope.js';
 
 var installedIntegrations = [];
 
