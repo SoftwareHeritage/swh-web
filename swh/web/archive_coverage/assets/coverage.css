@@ -65,7 +65,7 @@
 }
 
 .swh-coverage-focus {
-    border: 2px solid #e20026;
+    border: 2px solid #e20026 !important;
 }
 
 /* Thin scrollbar for chromium based browsers */
