@@ -36,7 +36,8 @@ function wrap(
 
  = {},
   before,
-  ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) {
   // for future readers what this does is wrap a function and then create
   // a bi-directional wrapping between them.
   //
@@ -67,7 +68,8 @@ function wrap(
     return fn;
   }
 
-    // It is important that `sentryWrapped` is not an arrow function to preserve the context of `this`
+  /* eslint-disable prefer-rest-params */
+  // It is important that `sentryWrapped` is not an arrow function to preserve the context of `this`
   var sentryWrapped = function () {
     var args = Array.prototype.slice.call(arguments);
 
@@ -76,7 +78,8 @@ function wrap(
         before.apply(this, arguments);
       }
 
-            var wrappedArguments = args.map((arg) => wrap(arg, options));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+      var wrappedArguments = args.map((arg) => wrap(arg, options));
 
       // Attempt to invoke user-land function
       // NOTE: If you are a Sentry user, and you are seeing this stack frame, it
@@ -107,7 +110,8 @@ function wrap(
       throw ex;
     }
   };
-  
+  /* eslint-enable prefer-rest-params */
+
   // Accessing some objects may throw
   // ref: https://github.com/getsentry/sentry-javascript/issues/1168
   try {
@@ -116,7 +120,8 @@ function wrap(
         sentryWrapped[property] = fn[property];
       }
     }
-  } catch (_oO) {} 
+  } catch (_oO) {} // eslint-disable-line no-empty
+
   // Signal that this function has been wrapped/filled already
   // for both debugging and to prevent it to being wrapped/filled twice
   markFunctionWrapped(sentryWrapped, fn);
@@ -133,7 +138,8 @@ function wrap(
         },
       });
     }
-      } catch (_oO) {}
+    // eslint-disable-next-line no-empty
+  } catch (_oO) {}
 
   return sentryWrapped;
 }

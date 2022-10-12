@@ -72,6 +72,7 @@ function supportsFetch() {
 /**
  * isNativeFetch checks if the given function is a native implementation of fetch()
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 function isNativeFetch(func) {
   return func && /^function fetch\(\)\s+\{\s+\[native code\]\s+\}$/.test(func.toString());
 }
@@ -90,7 +91,8 @@ function supportsNativeFetch() {
   var global = getGlobalObject();
 
   // Fast path to avoid DOM I/O
-    if (isNativeFetch(global.fetch)) {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  if (isNativeFetch(global.fetch)) {
     return true;
   }
 
@@ -98,13 +100,15 @@ function supportsNativeFetch() {
   // so create a "pure" iframe to see if that has native fetch
   let result = false;
   var doc = global.document;
-    if (doc && typeof (doc.createElement ) === 'function') {
+  // eslint-disable-next-line deprecation/deprecation
+  if (doc && typeof (doc.createElement ) === 'function') {
     try {
       var sandbox = doc.createElement('iframe');
       sandbox.hidden = true;
       doc.head.appendChild(sandbox);
       if (sandbox.contentWindow && sandbox.contentWindow.fetch) {
-                result = isNativeFetch(sandbox.contentWindow.fetch);
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        result = isNativeFetch(sandbox.contentWindow.fetch);
       }
       doc.head.removeChild(sandbox);
     } catch (err) {
@@ -163,9 +167,12 @@ function supportsHistory() {
   //       a try/catch block*, will cause Chrome to output an error to console.error
   // borrowed from: https://github.com/angular/angular.js/pull/13945/files
   var global = getGlobalObject();
-      var chrome = (global ).chrome;
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  var chrome = (global ).chrome;
   var isChromePackagedApp = chrome && chrome.app && chrome.app.runtime;
-    var hasHistoryApi = 'history' in global && !!global.history.pushState && !!global.history.replaceState;
+  /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+  var hasHistoryApi = 'history' in global && !!global.history.pushState && !!global.history.replaceState;
 
   return !isChromePackagedApp && hasHistoryApi;
 }

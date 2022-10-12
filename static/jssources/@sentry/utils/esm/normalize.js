@@ -22,6 +22,7 @@ import { getFunctionName } from './stacktrace.js';
  * object in the normallized output.
  * @returns A normalized version of the object, or `"**non-serializable**"` if any errors are thrown during normalization.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalize(input, depth = +Infinity, maxProperties = +Infinity) {
   try {
     // since we're at the outermost level, we don't provide a key
@@ -33,7 +34,8 @@ function normalize(input, depth = +Infinity, maxProperties = +Infinity) {
 
 /** JSDoc */
 function normalizeToSize(
-    object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  object,
   // Default Node.js REPL depth
   depth = 3,
   // 100kB, as 200kB is max payload size, so half sounds reasonable
@@ -177,11 +179,13 @@ function stringifyValue(
       return '[Global]';
     }
 
-        if (typeof window !== 'undefined' && value === window) {
+    // eslint-disable-next-line no-restricted-globals
+    if (typeof window !== 'undefined' && value === window) {
       return '[Window]';
     }
 
-        if (typeof document !== 'undefined' && value === document) {
+    // eslint-disable-next-line no-restricted-globals
+    if (typeof document !== 'undefined' && value === document) {
       return '[Document]';
     }
 
@@ -224,10 +228,12 @@ function stringifyValue(
 
 /** Calculates bytes size of input string */
 function utf8Length(value) {
-    return ~-encodeURI(value).split(/%..|./).length;
+  // eslint-disable-next-line no-bitwise
+  return ~-encodeURI(value).split(/%..|./).length;
 }
 
 /** Calculates bytes size of input object */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function jsonSize(value) {
   return utf8Length(JSON.stringify(value));
 }

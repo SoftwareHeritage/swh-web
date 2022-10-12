@@ -156,7 +156,8 @@ function eventFromException(
 function eventFromMessage(
   stackParser,
   message,
-    level = 'info',
+  // eslint-disable-next-line deprecation/deprecation
+  level = 'info',
   hint,
   attachStacktrace,
 ) {

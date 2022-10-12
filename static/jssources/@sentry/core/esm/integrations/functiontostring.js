@@ -18,9 +18,11 @@ class FunctionToString  {constructor() { FunctionToString.prototype.__init.call(
    * @inheritDoc
    */
    setupOnce() {
-        originalFunctionToString = Function.prototype.toString;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    originalFunctionToString = Function.prototype.toString;
 
-        Function.prototype.toString = function ( ...args) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Function.prototype.toString = function ( ...args) {
       var context = getOriginalFunction(this) || this;
       return originalFunctionToString.apply(context, args);
     };

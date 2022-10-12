@@ -58,7 +58,8 @@ function makeLogger() {
 
   if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
     CONSOLE_LEVELS.forEach(name => {
-            logger[name] = (...args) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logger[name] = (...args) => {
         if (enabled) {
           consoleSandbox(() => {
             global.console[name](`${PREFIX}[${name}]:`, ...args);

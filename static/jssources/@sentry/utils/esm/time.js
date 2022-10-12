@@ -148,7 +148,8 @@ var browserPerformanceTimeOrigin = (() => {
   // Also as of writing, performance.timing is not available in Web Workers in mainstream browsers, so it is not always
   // a valid fallback. In the absence of an initial time provided by the browser, fallback to the current time from the
   // Date API.
-    var navigationStart = performance.timing && performance.timing.navigationStart;
+  // eslint-disable-next-line deprecation/deprecation
+  var navigationStart = performance.timing && performance.timing.navigationStart;
   var hasNavigationStart = typeof navigationStart === 'number';
   // if navigationStart isn't available set delta to threshold so it isn't used
   var navigationStartDelta = hasNavigationStart ? Math.abs(navigationStart + performanceNow - dateNow) : threshold;

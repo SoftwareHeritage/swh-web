@@ -1,0 +1,83 @@
+/**
+ * Copyright (C) 2021-2022  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.swh-coverage {
+    padding-top: 0.3rem;
+    border: none;
+    overflow: visible;
+}
+
+.swh-coverage a {
+    text-decoration: none;
+}
+
+.swh-coverage-col {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.swh-coverage-header {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.swh-coverage-logo {
+    display: block;
+    width: 100%;
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+
+    /* polyfill for old browsers, see https://github.com/bfred-it/object-fit-images */
+    font-family: "object-fit: contain;";
+}
+
+.swh-coverage-iframe {
+    width: 100%;
+    height: 320px;
+    border: none;
+}
+
+.swh-coverage-chevron {
+    position: absolute;
+    right: 0;
+}
+
+.swh-coverage .card-header .mdi {
+    transition: 0.3s transform ease-in-out;
+}
+
+.swh-coverage .card-header .collapsed .mdi {
+    transform: rotate(90deg);
+}
+
+.swh-coverage-info-body {
+    max-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin; /* Firefox only */
+    padding: 0;
+}
+
+.swh-coverage-focus {
+    border: 2px solid #e20026 !important;
+}
+
+/* Thin scrollbar for chromium based browsers */
+
+.swh-coverage-info-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.swh-coverage-info-body::-webkit-scrollbar-track {
+    background: #eff0f1;
+}
+
+.swh-coverage-info-body::-webkit-scrollbar-thumb {
+    background: #909396;
+}

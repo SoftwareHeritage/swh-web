@@ -150,7 +150,8 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
   script.src = getReportDialogEndpoint(dsn, options);
 
   if (options.onLoad) {
-        script.onload = options.onLoad;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    script.onload = options.onLoad;
   }
 
   var injectionPoint = global.document.head || global.document.body;
@@ -227,6 +228,7 @@ function close(timeout) {
  *
  * @returns The result of wrapped function call.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function wrap(fn) {
   return wrap$1(fn)();
 }

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Helper to decycle json objects
  */
@@ -12,7 +15,8 @@ function memoBuilder() {
       inner.add(obj);
       return false;
     }
-        for (let i = 0; i < inner.length; i++) {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < inner.length; i++) {
       var value = inner[i];
       if (value === obj) {
         return true;

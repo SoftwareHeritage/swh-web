@@ -82,7 +82,8 @@ function makePromiseBuffer(limit) {
       // if all promises resolve in time, cancel the timer and resolve to `true`
       buffer.forEach(item => {
         void resolvedSyncPromise(item).then(() => {
-                    if (!--counter) {
+          // eslint-disable-next-line no-plusplus
+          if (!--counter) {
             clearTimeout(capturedSetTimeout);
             resolve(true);
           }
