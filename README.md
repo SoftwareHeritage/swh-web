@@ -67,6 +67,7 @@ One easy way to install them is to use the `pip` tool:
 $ pip install -r requirements.txt -r requirements-test.txt
 ```
 
+
 ### Frontend requirements
 
 To compile the frontend assets, you need to have
