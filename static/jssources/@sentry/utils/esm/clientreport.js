@@ -11,7 +11,7 @@ function createClientReportEnvelope(
   dsn,
   timestamp,
 ) {
-  var clientReportItem = [
+  const clientReportItem = [
     { type: 'client_report' },
     {
       timestamp: timestamp || dateTimestampInSeconds(),

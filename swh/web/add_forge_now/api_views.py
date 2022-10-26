@@ -125,7 +125,7 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
 
         :<json string forge_type: the type of forge
         :<json string forge_url: the base URL of the forge
-        :<json string forge_contact_email: email of an administator of the forge to
+        :<json string forge_contact_email: email of an administrator of the forge to
             contact
         :<json string forge_contact_name: the name of the administrator
         :<json string forge_contact_comment: to explain how Software Heritage can

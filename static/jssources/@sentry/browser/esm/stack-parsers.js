@@ -1,16 +1,16 @@
 import { createStackParser } from '@sentry/utils';
 
 // global reference to slice
-var UNKNOWN_FUNCTION = '?';
+const UNKNOWN_FUNCTION = '?';
 
-var OPERA10_PRIORITY = 10;
-var OPERA11_PRIORITY = 20;
-var CHROME_PRIORITY = 30;
-var WINJS_PRIORITY = 40;
-var GECKO_PRIORITY = 50;
+const OPERA10_PRIORITY = 10;
+const OPERA11_PRIORITY = 20;
+const CHROME_PRIORITY = 30;
+const WINJS_PRIORITY = 40;
+const GECKO_PRIORITY = 50;
 
 function createFrame(filename, func, lineno, colno) {
-  var frame = {
+  const frame = {
     filename,
     function: func,
     // All browser frames are considered in_app
@@ -29,18 +29,18 @@ function createFrame(filename, func, lineno, colno) {
 }
 
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
-var chromeRegex =
+const chromeRegex =
   /^\s*at (?:(.*\).*?|.*?) ?\((?:address at )?)?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-var chromeEvalRegex = /\((\S*)(?::(\d+))(?::(\d+))\)/;
+const chromeEvalRegex = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 
-var chrome = line => {
-  var parts = chromeRegex.exec(line);
+const chrome = line => {
+  const parts = chromeRegex.exec(line);
 
   if (parts) {
-    var isEval = parts[2] && parts[2].indexOf('eval') === 0; // start of line
+    const isEval = parts[2] && parts[2].indexOf('eval') === 0; // start of line
 
     if (isEval) {
-      var subMatch = chromeEvalRegex.exec(parts[2]);
+      const subMatch = chromeEvalRegex.exec(parts[2]);
 
       if (subMatch) {
         // throw out eval line/column and use top-most line/column number
@@ -60,22 +60,22 @@ var chrome = line => {
   return;
 };
 
-var chromeStackLineParser = [CHROME_PRIORITY, chrome];
+const chromeStackLineParser = [CHROME_PRIORITY, chrome];
 
 // gecko regex: `(?:bundle|\d+\.js)`: `bundle` is for react native, `\d+\.js` also but specifically for ram bundles because it
 // generates filenames without a prefix like `file://` the filenames in the stacktrace are just 42.js
 // We need this specific case for now because we want no other regex to match.
-var geckoREgex =
+const geckoREgex =
   /^\s*(.*?)(?:\((.*?)\))?(?:^|@)?((?:file|https?|blob|chrome|webpack|resource|moz-extension|safari-extension|safari-web-extension|capacitor)?:\/.*?|\[native code\]|[^@]*(?:bundle|\d+\.js)|\/[\w\-. /=]+)(?::(\d+))?(?::(\d+))?\s*$/i;
-var geckoEvalRegex = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
+const geckoEvalRegex = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
-var gecko = line => {
-  var parts = geckoREgex.exec(line);
+const gecko = line => {
+  const parts = geckoREgex.exec(line);
 
   if (parts) {
-    var isEval = parts[3] && parts[3].indexOf(' > eval') > -1;
+    const isEval = parts[3] && parts[3].indexOf(' > eval') > -1;
     if (isEval) {
-      var subMatch = geckoEvalRegex.exec(parts[3]);
+      const subMatch = geckoEvalRegex.exec(parts[3]);
 
       if (subMatch) {
         // throw out eval line/column and use top-most line number
@@ -96,43 +96,43 @@ var gecko = line => {
   return;
 };
 
-var geckoStackLineParser = [GECKO_PRIORITY, gecko];
+const geckoStackLineParser = [GECKO_PRIORITY, gecko];
 
-var winjsRegex =
+const winjsRegex =
   /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
-var winjs = line => {
-  var parts = winjsRegex.exec(line);
+const winjs = line => {
+  const parts = winjsRegex.exec(line);
 
   return parts
     ? createFrame(parts[2], parts[1] || UNKNOWN_FUNCTION, +parts[3], parts[4] ? +parts[4] : undefined)
     : undefined;
 };
 
-var winjsStackLineParser = [WINJS_PRIORITY, winjs];
+const winjsStackLineParser = [WINJS_PRIORITY, winjs];
 
-var opera10Regex = / line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i;
+const opera10Regex = / line (\d+).*script (?:in )?(\S+)(?:: in function (\S+))?$/i;
 
-var opera10 = line => {
-  var parts = opera10Regex.exec(line);
+const opera10 = line => {
+  const parts = opera10Regex.exec(line);
   return parts ? createFrame(parts[2], parts[3] || UNKNOWN_FUNCTION, +parts[1]) : undefined;
 };
 
-var opera10StackLineParser = [OPERA10_PRIORITY, opera10];
+const opera10StackLineParser = [OPERA10_PRIORITY, opera10];
 
-var opera11Regex =
+const opera11Regex =
   / line (\d+), column (\d+)\s*(?:in (?:<anonymous function: ([^>]+)>|([^)]+))\(.*\))? in (.*):\s*$/i;
 
-var opera11 = line => {
-  var parts = opera11Regex.exec(line);
+const opera11 = line => {
+  const parts = opera11Regex.exec(line);
   return parts ? createFrame(parts[5], parts[3] || parts[4] || UNKNOWN_FUNCTION, +parts[1], +parts[2]) : undefined;
 };
 
-var opera11StackLineParser = [OPERA11_PRIORITY, opera11];
+const opera11StackLineParser = [OPERA11_PRIORITY, opera11];
 
-var defaultStackLineParsers = [chromeStackLineParser, geckoStackLineParser, winjsStackLineParser];
+const defaultStackLineParsers = [chromeStackLineParser, geckoStackLineParser, winjsStackLineParser];
 
-var defaultStackParser = createStackParser(...defaultStackLineParsers);
+const defaultStackParser = createStackParser(...defaultStackLineParsers);
 
 /**
  * Safari web extensions, starting version unknown, can produce "frames-only" stacktraces.
@@ -154,9 +154,9 @@ var defaultStackParser = createStackParser(...defaultStackLineParsers);
  * Unfortunately "just" changing RegExp is too complicated now and making it pass all tests
  * and fix this case seems like an impossible, or at least way too time-consuming task.
  */
-var extractSafariExtensionDetails = (func, filename) => {
-  var isSafariExtension = func.indexOf('safari-extension') !== -1;
-  var isSafariWebExtension = func.indexOf('safari-web-extension') !== -1;
+const extractSafariExtensionDetails = (func, filename) => {
+  const isSafariExtension = func.indexOf('safari-extension') !== -1;
+  const isSafariWebExtension = func.indexOf('safari-web-extension') !== -1;
 
   return isSafariExtension || isSafariWebExtension
     ? [

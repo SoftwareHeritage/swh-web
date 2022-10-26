@@ -5,7 +5,7 @@ import { setupIntegrations } from './integration.js';
 import { Scope } from './scope.js';
 import { updateSession } from './session.js';
 
-var ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
+const ALREADY_SEEN_ERROR = "Not capturing exception because it's already been captured.";
 
 /**
  * Base implementation for all JavaScript SDK clients.
@@ -64,7 +64,7 @@ class BaseClient {
     this._options = options;
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
-      var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, options);
+      const url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, options);
       this._transport = options.transport({
         recordDroppedEvent: this.recordDroppedEvent.bind(this),
         ...options.transportOptions,
@@ -111,7 +111,7 @@ class BaseClient {
   ) {
     let eventId = hint && hint.event_id;
 
-    var promisedEvent = isPrimitive(message)
+    const promisedEvent = isPrimitive(message)
       ? this.eventFromMessage(String(message), level, hint)
       : this.eventFromException(message, hint);
 
@@ -190,7 +190,7 @@ class BaseClient {
    * @inheritDoc
    */
    flush(timeout) {
-    var transport = this._transport;
+    const transport = this._transport;
     if (transport) {
       return this._isClientDoneProcessing(timeout).then(clientFinished => {
         return transport.flush(timeout).then(transportFlushed => clientFinished && transportFlushed);
@@ -248,7 +248,7 @@ class BaseClient {
     if (this._dsn) {
       let env = createEventEnvelope(event, this._dsn, this._options._metadata, this._options.tunnel);
 
-      for (var attachment of hint.attachments || []) {
+      for (const attachment of hint.attachments || []) {
         env = addItemToEnvelope(
           env,
           createAttachmentEnvelopeItem(
@@ -267,7 +267,7 @@ class BaseClient {
    */
    sendSession(session) {
     if (this._dsn) {
-      var env = createSessionEnvelope(session, this._dsn, this._options._metadata, this._options.tunnel);
+      const env = createSessionEnvelope(session, this._dsn, this._options._metadata, this._options.tunnel);
       this._sendEnvelope(env);
     }
   }
@@ -283,7 +283,7 @@ class BaseClient {
       // A correct type for map-based implementation if we want to go that route
       // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
       // With typescript 4.1 we could even use template literal types
-      var key = `${reason}:${category}`;
+      const key = `${reason}:${category}`;
       (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Adding outcome: "${key}"`);
 
       // The following works because undefined + 1 === NaN and NaN is falsy
@@ -295,13 +295,13 @@ class BaseClient {
    _updateSessionFromEvent(session, event) {
     let crashed = false;
     let errored = false;
-    var exceptions = event.exception && event.exception.values;
+    const exceptions = event.exception && event.exception.values;
 
     if (exceptions) {
       errored = true;
 
-      for (var ex of exceptions) {
-        var mechanism = ex.mechanism;
+      for (const ex of exceptions) {
+        const mechanism = ex.mechanism;
         if (mechanism && mechanism.handled === false) {
           crashed = true;
           break;
@@ -312,8 +312,8 @@ class BaseClient {
     // A session is updated and that session update is sent in only one of the two following scenarios:
     // 1. Session with non terminal status and 0 errors + an error occurred -> Will set error count to 1 and send update
     // 2. Session with non terminal status and 1 error + a crash occurred -> Will set status crashed and send update
-    var sessionNonTerminal = session.status === 'ok';
-    var shouldUpdateAndSend = (sessionNonTerminal && session.errors === 0) || (sessionNonTerminal && crashed);
+    const sessionNonTerminal = session.status === 'ok';
+    const shouldUpdateAndSend = (sessionNonTerminal && session.errors === 0) || (sessionNonTerminal && crashed);
 
     if (shouldUpdateAndSend) {
       updateSession(session, {
@@ -337,9 +337,9 @@ class BaseClient {
    _isClientDoneProcessing(timeout) {
     return new SyncPromise(resolve => {
       let ticked = 0;
-      var tick = 1;
+      const tick = 1;
 
-      var interval = setInterval(() => {
+      const interval = setInterval(() => {
         if (this._numProcessing == 0) {
           clearInterval(interval);
           resolve(true);
@@ -375,7 +375,7 @@ class BaseClient {
    */
    _prepareEvent(event, hint, scope) {
     const { normalizeDepth = 3, normalizeMaxBreadth = 1000 } = this.getOptions();
-    var prepared = {
+    const prepared = {
       ...event,
       event_id: event.event_id || hint.event_id || uuid4(),
       timestamp: event.timestamp || dateTimestampInSeconds(),
@@ -398,7 +398,7 @@ class BaseClient {
     // {@link Hub.addEventProcessor} gets the finished prepared event.
     if (finalScope) {
       // Collect attachments from the hint and scope
-      var attachments = [...(hint.attachments || []), ...finalScope.getAttachments()];
+      const attachments = [...(hint.attachments || []), ...finalScope.getAttachments()];
 
       if (attachments.length) {
         hint.attachments = attachments;
@@ -431,7 +431,7 @@ class BaseClient {
       return null;
     }
 
-    var normalized = {
+    const normalized = {
       ...event,
       ...(event.breadcrumbs && {
         breadcrumbs: event.breadcrumbs.map(b => ({
@@ -489,7 +489,7 @@ class BaseClient {
    * @param event event instance to be enhanced
    */
    _applyClientOptions(event) {
-    var options = this.getOptions();
+    const options = this.getOptions();
     const { environment, release, dist, maxValueLength = 250 } = options;
 
     if (!('environment' in event)) {
@@ -508,12 +508,12 @@ class BaseClient {
       event.message = truncate(event.message, maxValueLength);
     }
 
-    var exception = event.exception && event.exception.values && event.exception.values[0];
+    const exception = event.exception && event.exception.values && event.exception.values[0];
     if (exception && exception.value) {
       exception.value = truncate(exception.value, maxValueLength);
     }
 
-    var request = event.request;
+    const request = event.request;
     if (request && request.url) {
       request.url = truncate(request.url, maxValueLength);
     }
@@ -524,7 +524,7 @@ class BaseClient {
    * @param event The event that will be filled with all integrations.
    */
    _applyIntegrationsMetadata(event) {
-    var integrationsArray = Object.keys(this._integrations);
+    const integrationsArray = Object.keys(this._integrations);
     if (integrationsArray.length > 0) {
       event.sdk = event.sdk || {};
       event.sdk.integrations = [...(event.sdk.integrations || []), ...integrationsArray];
@@ -546,7 +546,7 @@ class BaseClient {
         if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
           // If something's gone wrong, log the error as a warning. If it's just us having used a `SentryError` for
           // control flow, log just the message (no stack) as a log-level log.
-          var sentryError = reason ;
+          const sentryError = reason ;
           if (sentryError.logLevel === 'log') {
             logger.log(sentryError.message);
           } else {
@@ -578,7 +578,7 @@ class BaseClient {
       return rejectedSyncPromise(new SentryError('SDK not enabled, will not capture event.', 'log'));
     }
 
-    var isTransaction = event.type === 'transaction';
+    const isTransaction = event.type === 'transaction';
     // 1.0 === 100% events are sent
     // 0.0 === 0% events are sent
     // Sampling for transaction happens somewhere else
@@ -599,12 +599,12 @@ class BaseClient {
           throw new SentryError('An event processor returned null, will not send event.', 'log');
         }
 
-        var isInternalException = hint.data && (hint.data ).__sentry__ === true;
+        const isInternalException = hint.data && (hint.data ).__sentry__ === true;
         if (isInternalException || isTransaction || !beforeSend) {
           return prepared;
         }
 
-        var beforeSendResult = beforeSend(prepared, hint);
+        const beforeSendResult = beforeSend(prepared, hint);
         return _ensureBeforeSendRv(beforeSendResult);
       })
       .then(processedEvent => {
@@ -613,7 +613,7 @@ class BaseClient {
           throw new SentryError('`beforeSend` returned `null`, will not send event.', 'log');
         }
 
-        var session = scope && scope.getSession();
+        const session = scope && scope.getSession();
         if (!isTransaction && session) {
           this._updateSessionFromEvent(session, processedEvent);
         }
@@ -621,9 +621,9 @@ class BaseClient {
         // None of the Sentry built event processor will update transaction name,
         // so if the transaction name has been changed by an event processor, we know
         // it has to come from custom event processor added by a user
-        var transactionInfo = processedEvent.transaction_info;
+        const transactionInfo = processedEvent.transaction_info;
         if (isTransaction && transactionInfo && processedEvent.transaction !== event.transaction) {
-          var source = 'custom';
+          const source = 'custom';
           processedEvent.transaction_info = {
             ...transactionInfo,
             source,
@@ -693,7 +693,7 @@ class BaseClient {
    * Clears outcomes on this client and returns them.
    */
    _clearOutcomes() {
-    var outcomes = this._outcomes;
+    const outcomes = this._outcomes;
     this._outcomes = {};
     return Object.keys(outcomes).map(key => {
       const [reason, category] = key.split(':') ;
@@ -716,7 +716,7 @@ class BaseClient {
  * Verifies that return value of configured `beforeSend` is of expected type.
  */
 function _ensureBeforeSendRv(rv) {
-  var nullErr = '`beforeSend` method has to return `null` or a valid event.';
+  const nullErr = '`beforeSend` method has to return `null` or a valid event.';
   if (isThenable(rv)) {
     return rv.then(
       event => {

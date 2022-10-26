@@ -1,5 +1,10 @@
-import { getGlobalObject } from './global.js';
 import { isString } from './is.js';
+import { GLOBAL_OBJ } from './worldwide.js';
+
+/**
+ * TODO: Move me to @sentry/browser when @sentry/utils no longer contains any browser code
+ */
+const WINDOW = GLOBAL_OBJ ;
 
 /**
  * Given a child DOM element, returns a query-selector statement describing that
@@ -15,13 +20,13 @@ function htmlTreeAsString(elem, keyAttrs) {
   // - can throw an exception in some circumstances.
   try {
     let currentElem = elem ;
-    var MAX_TRAVERSE_HEIGHT = 5;
-    var MAX_OUTPUT_LEN = 80;
-    var out = [];
+    const MAX_TRAVERSE_HEIGHT = 5;
+    const MAX_OUTPUT_LEN = 80;
+    const out = [];
     let height = 0;
     let len = 0;
-    var separator = ' > ';
-    var sepLength = separator.length;
+    const separator = ' > ';
+    const sepLength = separator.length;
     let nextStr;
 
     // eslint-disable-next-line no-plusplus
@@ -53,11 +58,11 @@ function htmlTreeAsString(elem, keyAttrs) {
  * @returns generated DOM path
  */
 function _htmlElementAsString(el, keyAttrs) {
-  var elem = el
+  const elem = el
 
 ;
 
-  var out = [];
+  const out = [];
   let className;
   let classes;
   let key;
@@ -71,7 +76,7 @@ function _htmlElementAsString(el, keyAttrs) {
   out.push(elem.tagName.toLowerCase());
 
   // Pairs of attribute keys defined in `serializeAttribute` and their values on element.
-  var keyAttrPairs =
+  const keyAttrPairs =
     keyAttrs && keyAttrs.length
       ? keyAttrs.filter(keyAttr => elem.getAttribute(keyAttr)).map(keyAttr => [keyAttr, elem.getAttribute(keyAttr)])
       : null;
@@ -94,7 +99,7 @@ function _htmlElementAsString(el, keyAttrs) {
       }
     }
   }
-  var allowedAttrs = ['type', 'name', 'title', 'alt'];
+  const allowedAttrs = ['type', 'name', 'title', 'alt'];
   for (i = 0; i < allowedAttrs.length; i++) {
     key = allowedAttrs[i];
     attr = elem.getAttribute(key);
@@ -109,9 +114,8 @@ function _htmlElementAsString(el, keyAttrs) {
  * A safe form of location.href
  */
 function getLocationHref() {
-  var global = getGlobalObject();
   try {
-    return global.document.location.href;
+    return WINDOW.document.location.href;
   } catch (oO) {
     return '';
   }
@@ -129,18 +133,17 @@ function getLocationHref() {
  * We have to cast to any because utils can be consumed by a variety of environments,
  * and we don't want to break TS users. If you know what element will be selected by
  * `document.querySelector`, specify it as part of the generic call. For example,
- * `var element = getDomElement<Element>('selector');`
+ * `const element = getDomElement<Element>('selector');`
  *
  * @param selector the selector string passed on to document.querySelector
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDomElement(selector) {
-  var global = getGlobalObject();
-  if (global.document && global.document.querySelector) {
-    return global.document.querySelector(selector) ;
+  if (WINDOW.document && WINDOW.document.querySelector) {
+    return WINDOW.document.querySelector(selector) ;
   }
   return null;
 }
 
-export { getDomElement, getLocationHref, htmlTreeAsString };
+export { WINDOW, getDomElement, getLocationHref, htmlTreeAsString };
 //# sourceMappingURL=browser.js.map

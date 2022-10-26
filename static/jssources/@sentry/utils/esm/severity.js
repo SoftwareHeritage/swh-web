@@ -8,7 +8,7 @@
 // create a circular dependency between `@sentry/types` and `@sentry/utils` (also not good). So a TODO accompanying the
 // type, reminding anyone who changes it to change this list also, will have to do.
 
-var validSeverityLevels = ['fatal', 'error', 'warning', 'log', 'info', 'debug'];
+const validSeverityLevels = ['fatal', 'error', 'warning', 'log', 'info', 'debug'];
 
 /**
  * Converts a string-based level into a member of the deprecated {@link Severity} enum.

@@ -1,7 +1,7 @@
-import { getGlobalObject, fill, getFunctionName, getOriginalFunction } from '@sentry/utils';
+import { fill, WINDOW, getFunctionName, getOriginalFunction } from '@sentry/utils';
 import { wrap } from '../helpers.js';
 
-var DEFAULT_EVENT_TARGET = [
+const DEFAULT_EVENT_TARGET = [
   'EventTarget',
   'Window',
   'Node',
@@ -66,27 +66,25 @@ class TryCatch  {
    * and provide better metadata.
    */
    setupOnce() {
-    var global = getGlobalObject();
-
     if (this._options.setTimeout) {
-      fill(global, 'setTimeout', _wrapTimeFunction);
+      fill(WINDOW, 'setTimeout', _wrapTimeFunction);
     }
 
     if (this._options.setInterval) {
-      fill(global, 'setInterval', _wrapTimeFunction);
+      fill(WINDOW, 'setInterval', _wrapTimeFunction);
     }
 
     if (this._options.requestAnimationFrame) {
-      fill(global, 'requestAnimationFrame', _wrapRAF);
+      fill(WINDOW, 'requestAnimationFrame', _wrapRAF);
     }
 
-    if (this._options.XMLHttpRequest && 'XMLHttpRequest' in global) {
+    if (this._options.XMLHttpRequest && 'XMLHttpRequest' in WINDOW) {
       fill(XMLHttpRequest.prototype, 'send', _wrapXHR);
     }
 
-    var eventTargetOption = this._options.eventTarget;
+    const eventTargetOption = this._options.eventTarget;
     if (eventTargetOption) {
-      var eventTarget = Array.isArray(eventTargetOption) ? eventTargetOption : DEFAULT_EVENT_TARGET;
+      const eventTarget = Array.isArray(eventTargetOption) ? eventTargetOption : DEFAULT_EVENT_TARGET;
       eventTarget.forEach(_wrapEventTarget);
     }
   }
@@ -96,7 +94,7 @@ class TryCatch  {
 function _wrapTimeFunction(original) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function ( ...args) {
-    var originalCallback = args[0];
+    const originalCallback = args[0];
     args[0] = wrap(originalCallback, {
       mechanism: {
         data: { function: getFunctionName(original) },
@@ -134,14 +132,14 @@ function _wrapXHR(originalSend) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function ( ...args) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    var xhr = this;
-    var xmlHttpRequestProps = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
+    const xhr = this;
+    const xmlHttpRequestProps = ['onload', 'onerror', 'onprogress', 'onreadystatechange'];
 
     xmlHttpRequestProps.forEach(prop => {
       if (prop in xhr && typeof xhr[prop] === 'function') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fill(xhr, prop, function (original) {
-          var wrapOptions = {
+          const wrapOptions = {
             mechanism: {
               data: {
                 function: prop,
@@ -153,7 +151,7 @@ function _wrapXHR(originalSend) {
           };
 
           // If Instrument integration has been called before TryCatch, get the name of original function
-          var originalFunction = getOriginalFunction(original);
+          const originalFunction = getOriginalFunction(original);
           if (originalFunction) {
             wrapOptions.mechanism.data.handler = getFunctionName(originalFunction);
           }
@@ -171,9 +169,9 @@ function _wrapXHR(originalSend) {
 /** JSDoc */
 function _wrapEventTarget(target) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  var global = getGlobalObject() ;
+  const globalObject = WINDOW ;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  var proto = global[target] && global[target].prototype;
+  const proto = globalObject[target] && globalObject[target].prototype;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
   if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
@@ -264,9 +262,9 @@ function _wrapEventTarget(target) {
          * then we have to detach both of them. Otherwise, if we'd detach only wrapped one, it'd be impossible
          * to get rid of the initial handler and it'd stick there forever.
          */
-        var wrappedEventHandler = fn ;
+        const wrappedEventHandler = fn ;
         try {
-          var originalEventHandler = wrappedEventHandler && wrappedEventHandler.__sentry_wrapped__;
+          const originalEventHandler = wrappedEventHandler && wrappedEventHandler.__sentry_wrapped__;
           if (originalEventHandler) {
             originalRemoveEventListener.call(this, eventName, originalEventHandler, options);
           }

@@ -9,7 +9,7 @@ function makeFetchTransport(
   nativeFetch = getNativeFetchImplementation(),
 ) {
   function makeRequest(request) {
-    var requestOptions = {
+    const requestOptions = {
       body: request.body,
       method: 'POST',
       referrerPolicy: 'origin',

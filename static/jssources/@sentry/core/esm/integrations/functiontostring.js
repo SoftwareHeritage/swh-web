@@ -23,7 +23,7 @@ class FunctionToString  {constructor() { FunctionToString.prototype.__init.call(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Function.prototype.toString = function ( ...args) {
-      var context = getOriginalFunction(this) || this;
+      const context = getOriginalFunction(this) || this;
       return originalFunctionToString.apply(context, args);
     };
   }

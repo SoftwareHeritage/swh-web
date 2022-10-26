@@ -10,9 +10,9 @@ import { timestampInSeconds, uuid4, dropUndefinedKeys } from '@sentry/utils';
  */
 function makeSession(context) {
   // Both timestamp and started are in seconds since the UNIX epoch.
-  var startingTime = timestampInSeconds();
+  const startingTime = timestampInSeconds();
 
-  var session = {
+  const session = {
     sid: uuid4(),
     init: true,
     timestamp: startingTime,
@@ -77,7 +77,7 @@ function updateSession(session, context = {}) {
   } else if (typeof context.duration === 'number') {
     session.duration = context.duration;
   } else {
-    var duration = session.timestamp - session.started;
+    const duration = session.timestamp - session.started;
     session.duration = duration >= 0 ? duration : 0;
   }
   if (context.release) {

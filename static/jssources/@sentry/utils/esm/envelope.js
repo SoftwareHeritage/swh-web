@@ -28,15 +28,15 @@ function forEachEnvelopeItem(
   envelope,
   callback,
 ) {
-  var envelopeItems = envelope[1];
+  const envelopeItems = envelope[1];
   envelopeItems.forEach((envelopeItem) => {
-    var envelopeItemType = envelopeItem[0].type;
+    const envelopeItemType = envelopeItem[0].type;
     callback(envelopeItem, envelopeItemType);
   });
 }
 
 function encodeUTF8(input, textEncoder) {
-  var utf8 = textEncoder || new TextEncoder();
+  const utf8 = textEncoder || new TextEncoder();
   return utf8.encode(input);
 }
 
@@ -57,7 +57,7 @@ function serializeEnvelope(envelope, textEncoder) {
     }
   }
 
-  for (var item of items) {
+  for (const item of items) {
     const [itemHeaders, payload] = item;
 
     append(`\n${JSON.stringify(itemHeaders)}\n`);
@@ -82,11 +82,11 @@ function serializeEnvelope(envelope, textEncoder) {
 }
 
 function concatBuffers(buffers) {
-  var totalLength = buffers.reduce((acc, buf) => acc + buf.length, 0);
+  const totalLength = buffers.reduce((acc, buf) => acc + buf.length, 0);
 
-  var merged = new Uint8Array(totalLength);
+  const merged = new Uint8Array(totalLength);
   let offset = 0;
-  for (var buffer of buffers) {
+  for (const buffer of buffers) {
     merged.set(buffer, offset);
     offset += buffer.length;
   }
@@ -101,7 +101,7 @@ function createAttachmentEnvelopeItem(
   attachment,
   textEncoder,
 ) {
-  var buffer = typeof attachment.data === 'string' ? encodeUTF8(attachment.data, textEncoder) : attachment.data;
+  const buffer = typeof attachment.data === 'string' ? encodeUTF8(attachment.data, textEncoder) : attachment.data;
 
   return [
     dropUndefinedKeys({
@@ -115,7 +115,7 @@ function createAttachmentEnvelopeItem(
   ];
 }
 
-var ITEM_TYPE_TO_DATA_CATEGORY_MAP = {
+const ITEM_TYPE_TO_DATA_CATEGORY_MAP = {
   session: 'session',
   sessions: 'session',
   attachment: 'attachment',

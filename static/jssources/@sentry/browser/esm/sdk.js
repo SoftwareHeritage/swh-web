@@ -1,5 +1,5 @@
-import { Integrations, getIntegrationsToSetup, initAndBind, getCurrentHub, getReportDialogEndpoint } from '@sentry/core';
-import { getGlobalObject, stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
+import { Integrations, getIntegrationsToSetup, initAndBind, getReportDialogEndpoint, getCurrentHub } from '@sentry/core';
+import { WINDOW, stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
 import { BrowserClient } from './client.js';
 import { wrap as wrap$1 } from './helpers.js';
 import './integrations/index.js';
@@ -14,7 +14,7 @@ import { HttpContext } from './integrations/httpcontext.js';
 import { makeFetchTransport } from './transports/fetch.js';
 import { makeXHRTransport } from './transports/xhr.js';
 
-var defaultIntegrations = [
+const defaultIntegrations = [
   new Integrations.InboundFilters(),
   new Integrations.FunctionToString(),
   new TryCatch(),
@@ -87,10 +87,9 @@ function init(options = {}) {
     options.defaultIntegrations = defaultIntegrations;
   }
   if (options.release === undefined) {
-    var window = getGlobalObject();
     // This supports the variable that sentry-webpack-plugin injects
-    if (window.SENTRY_RELEASE && window.SENTRY_RELEASE.id) {
-      options.release = window.SENTRY_RELEASE.id;
+    if (WINDOW.SENTRY_RELEASE && WINDOW.SENTRY_RELEASE.id) {
+      options.release = WINDOW.SENTRY_RELEASE.id;
     }
   }
   if (options.autoSessionTracking === undefined) {
@@ -100,7 +99,7 @@ function init(options = {}) {
     options.sendClientReports = true;
   }
 
-  var clientOptions = {
+  const clientOptions = {
     ...options,
     stackParser: stackParserFromStackParserOptions(options.stackParser || defaultStackParser),
     integrations: getIntegrationsToSetup(options),
@@ -121,14 +120,13 @@ function init(options = {}) {
  */
 function showReportDialog(options = {}, hub = getCurrentHub()) {
   // doesn't work without a document (React Native)
-  var global = getGlobalObject();
-  if (!global.document) {
+  if (!WINDOW.document) {
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Global document not defined in showReportDialog call');
     return;
   }
 
   const { client, scope } = hub.getStackTop();
-  var dsn = options.dsn || (client && client.getDsn());
+  const dsn = options.dsn || (client && client.getDsn());
   if (!dsn) {
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('DSN not configured for showReportDialog call');
     return;
@@ -145,7 +143,7 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
     options.eventId = hub.lastEventId();
   }
 
-  var script = global.document.createElement('script');
+  const script = WINDOW.document.createElement('script');
   script.async = true;
   script.src = getReportDialogEndpoint(dsn, options);
 
@@ -154,7 +152,7 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
     script.onload = options.onLoad;
   }
 
-  var injectionPoint = global.document.head || global.document.body;
+  const injectionPoint = WINDOW.document.head || WINDOW.document.body;
   if (injectionPoint) {
     injectionPoint.appendChild(script);
   } else {
@@ -196,7 +194,7 @@ function onLoad(callback) {
  * doesn't (or if there's no client defined).
  */
 function flush(timeout) {
-  var client = getCurrentHub().getClient();
+  const client = getCurrentHub().getClient();
   if (client) {
     return client.flush(timeout);
   }
@@ -213,7 +211,7 @@ function flush(timeout) {
  * doesn't (or if there's no client defined).
  */
 function close(timeout) {
-  var client = getCurrentHub().getClient();
+  const client = getCurrentHub().getClient();
   if (client) {
     return client.close(timeout);
   }
@@ -242,16 +240,13 @@ function startSessionOnHub(hub) {
  * Enable automatic Session Tracking for the initial page load.
  */
 function startSessionTracking() {
-  var window = getGlobalObject();
-  var document = window.document;
-
-  if (typeof document === 'undefined') {
+  if (typeof WINDOW.document === 'undefined') {
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
       logger.warn('Session tracking in non-browser environment with @sentry/browser is not supported.');
     return;
   }
 
-  var hub = getCurrentHub();
+  const hub = getCurrentHub();
 
   // The only way for this to be false is for there to be a version mismatch between @sentry/browser (>= 6.0.0) and
   // @sentry/hub (< 5.27.0). In the simple case, there won't ever be such a mismatch, because the two packages are

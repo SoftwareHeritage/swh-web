@@ -9,7 +9,7 @@ import { SyncPromise } from '@sentry/utils';
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readyState}
  */
-var XHR_READYSTATE_DONE = 4;
+const XHR_READYSTATE_DONE = 4;
 
 /**
  * Creates a Transport that uses the XMLHttpRequest API to send events to Sentry.
@@ -17,7 +17,7 @@ var XHR_READYSTATE_DONE = 4;
 function makeXHRTransport(options) {
   function makeRequest(request) {
     return new SyncPromise((resolve, reject) => {
-      var xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
 
       xhr.onerror = reject;
 
@@ -35,7 +35,7 @@ function makeXHRTransport(options) {
 
       xhr.open('POST', options.url);
 
-      for (var header in options.headers) {
+      for (const header in options.headers) {
         if (Object.prototype.hasOwnProperty.call(options.headers, header)) {
           xhr.setRequestHeader(header, options.headers[header]);
         }

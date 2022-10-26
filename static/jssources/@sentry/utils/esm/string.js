@@ -24,7 +24,7 @@ function truncate(str, max = 0) {
  */
 function snipLine(line, colno) {
   let newLine = line;
-  var lineLength = newLine.length;
+  const lineLength = newLine.length;
   if (lineLength <= 150) {
     return newLine;
   }
@@ -69,10 +69,10 @@ function safeJoin(input, delimiter) {
     return '';
   }
 
-  var output = [];
+  const output = [];
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < input.length; i++) {
-    var value = input[i];
+    const value = input[i];
     try {
       output.push(String(value));
     } catch (e) {

@@ -20,8 +20,8 @@ class Dedupe  {constructor() { Dedupe.prototype.__init.call(this); }
    * @inheritDoc
    */
    setupOnce(addGlobalEventProcessor, getCurrentHub) {
-    var eventProcessor = currentEvent => {
-      var self = getCurrentHub().getIntegration(Dedupe);
+    const eventProcessor = currentEvent => {
+      const self = getCurrentHub().getIntegration(Dedupe);
       if (self) {
         // Juuust in case something goes wrong
         try {
@@ -62,8 +62,8 @@ function _shouldDropEvent(currentEvent, previousEvent) {
 
 /** JSDoc */
 function _isSameMessageEvent(currentEvent, previousEvent) {
-  var currentMessage = currentEvent.message;
-  var previousMessage = previousEvent.message;
+  const currentMessage = currentEvent.message;
+  const previousMessage = previousEvent.message;
 
   // If neither event has a message property, they were both exceptions, so bail out
   if (!currentMessage && !previousMessage) {
@@ -92,8 +92,8 @@ function _isSameMessageEvent(currentEvent, previousEvent) {
 
 /** JSDoc */
 function _isSameExceptionEvent(currentEvent, previousEvent) {
-  var previousException = _getExceptionFromEvent(previousEvent);
-  var currentException = _getExceptionFromEvent(currentEvent);
+  const previousException = _getExceptionFromEvent(previousEvent);
+  const currentException = _getExceptionFromEvent(currentEvent);
 
   if (!previousException || !currentException) {
     return false;
@@ -139,8 +139,8 @@ function _isSameStacktrace(currentEvent, previousEvent) {
 
   // Otherwise, compare the two
   for (let i = 0; i < previousFrames.length; i++) {
-    var frameA = previousFrames[i];
-    var frameB = currentFrames[i];
+    const frameA = previousFrames[i];
+    const frameB = currentFrames[i];
 
     if (
       frameA.filename !== frameB.filename ||
@@ -188,7 +188,7 @@ function _getExceptionFromEvent(event) {
 
 /** JSDoc */
 function _getFramesFromEvent(event) {
-  var exception = event.exception;
+  const exception = event.exception;
 
   if (exception) {
     try {
