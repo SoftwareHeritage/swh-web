@@ -1,6 +1,5 @@
-import { getGlobalObject, isNativeFetch, logger } from '@sentry/utils';
+import { isNativeFetch, WINDOW, logger } from '@sentry/utils';
 
-var global = getGlobalObject();
 let cachedFetchImpl;
 
 /**
@@ -9,9 +8,9 @@ let cachedFetchImpl;
  * this chain becomes orphaned and there is no possible way to capture it's rejections
  * other than allowing it bubble up to this very handler. eg.
  *
- * var f = window.fetch;
+ * const f = window.fetch;
  * window.fetch = function () {
- *   var p = f.apply(this, arguments);
+ *   const p = f.apply(this, arguments);
  *
  *   p.then(function() {
  *     console.log('hi.');
@@ -49,19 +48,19 @@ function getNativeFetchImplementation() {
   /* eslint-disable @typescript-eslint/unbound-method */
 
   // Fast path to avoid DOM I/O
-  if (isNativeFetch(global.fetch)) {
-    return (cachedFetchImpl = global.fetch.bind(global));
+  if (isNativeFetch(WINDOW.fetch)) {
+    return (cachedFetchImpl = WINDOW.fetch.bind(WINDOW));
   }
 
-  var document = global.document;
-  let fetchImpl = global.fetch;
+  const document = WINDOW.document;
+  let fetchImpl = WINDOW.fetch;
   // eslint-disable-next-line deprecation/deprecation
   if (document && typeof document.createElement === 'function') {
     try {
-      var sandbox = document.createElement('iframe');
+      const sandbox = document.createElement('iframe');
       sandbox.hidden = true;
       document.head.appendChild(sandbox);
-      var contentWindow = sandbox.contentWindow;
+      const contentWindow = sandbox.contentWindow;
       if (contentWindow && contentWindow.fetch) {
         fetchImpl = contentWindow.fetch;
       }
@@ -72,7 +71,7 @@ function getNativeFetchImplementation() {
     }
   }
 
-  return (cachedFetchImpl = fetchImpl.bind(global));
+  return (cachedFetchImpl = fetchImpl.bind(WINDOW));
   /* eslint-enable @typescript-eslint/unbound-method */
 }
 

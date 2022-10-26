@@ -41,13 +41,13 @@ class GlobalHandlers  {
    */
    setupOnce() {
     Error.stackTraceLimit = 50;
-    var options = this._options;
+    const options = this._options;
 
     // We can disable guard-for-in as we construct the options object above + do checks against
     // `this._installFunc` for the property.
     // eslint-disable-next-line guard-for-in
-    for (var key in options) {
-      var installFunc = this._installFunc[key ];
+    for (const key in options) {
+      const installFunc = this._installFunc[key ];
       if (installFunc && options[key ]) {
         globalHandlerLog(key);
         installFunc();
@@ -72,7 +72,7 @@ function _installGlobalOnErrorHandler() {
         return;
       }
 
-      var event =
+      const event =
         error === undefined && isString(msg)
           ? _eventFromIncompleteOnError(msg, url, line, column)
           : _enhanceEventWithInitialFrame(
@@ -124,7 +124,7 @@ function _installGlobalOnUnhandledRejectionHandler() {
         return true;
       }
 
-      var event = isPrimitive(error)
+      const event = isPrimitive(error)
         ? _eventFromRejectionWithPrimitive(error)
         : eventFromUnknownInput(stackParser, error, undefined, attachStacktrace, true);
 
@@ -161,20 +161,20 @@ function _eventFromRejectionWithPrimitive(reason) {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _eventFromIncompleteOnError(msg, url, line, column) {
-  var ERROR_TYPES_RE =
+  const ERROR_TYPES_RE =
     /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;
 
   // If 'message' is ErrorEvent, get real message from inside
   let message = isErrorEvent(msg) ? msg.message : msg;
   let name = 'Error';
 
-  var groups = message.match(ERROR_TYPES_RE);
+  const groups = message.match(ERROR_TYPES_RE);
   if (groups) {
     name = groups[1];
     message = groups[2];
   }
 
-  var event = {
+  const event = {
     exception: {
       values: [
         {
@@ -192,19 +192,19 @@ function _eventFromIncompleteOnError(msg, url, line, column) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _enhanceEventWithInitialFrame(event, url, line, column) {
   // event.exception
-  var e = (event.exception = event.exception || {});
+  const e = (event.exception = event.exception || {});
   // event.exception.values
-  var ev = (e.values = e.values || []);
+  const ev = (e.values = e.values || []);
   // event.exception.values[0]
-  var ev0 = (ev[0] = ev[0] || {});
+  const ev0 = (ev[0] = ev[0] || {});
   // event.exception.values[0].stacktrace
-  var ev0s = (ev0.stacktrace = ev0.stacktrace || {});
+  const ev0s = (ev0.stacktrace = ev0.stacktrace || {});
   // event.exception.values[0].stacktrace.frames
-  var ev0sf = (ev0s.frames = ev0s.frames || []);
+  const ev0sf = (ev0s.frames = ev0s.frames || []);
 
-  var colno = isNaN(parseInt(column, 10)) ? undefined : column;
-  var lineno = isNaN(parseInt(line, 10)) ? undefined : line;
-  var filename = isString(url) && url.length > 0 ? url : getLocationHref();
+  const colno = isNaN(parseInt(column, 10)) ? undefined : column;
+  const lineno = isNaN(parseInt(line, 10)) ? undefined : line;
+  const filename = isString(url) && url.length > 0 ? url : getLocationHref();
 
   // event.exception.values[0].stacktrace.frames
   if (ev0sf.length === 0) {
@@ -235,9 +235,9 @@ function addMechanismAndCapture(hub, error, event, type) {
 }
 
 function getHubAndOptions() {
-  var hub = getCurrentHub();
-  var client = hub.getClient();
-  var options = (client && client.getOptions()) || {
+  const hub = getCurrentHub();
+  const client = hub.getClient();
+  const options = (client && client.getOptions()) || {
     stackParser: () => [],
     attachStacktrace: false,
   };

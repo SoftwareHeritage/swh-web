@@ -1,11 +1,11 @@
 import { getCurrentHub } from '@sentry/core';
-import { addInstrumentationHandler, htmlTreeAsString, severityLevelFromString, safeJoin, getGlobalObject, parseUrl } from '@sentry/utils';
+import { addInstrumentationHandler, htmlTreeAsString, severityLevelFromString, safeJoin, parseUrl, WINDOW } from '@sentry/utils';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 /** JSDoc */
 
-var BREADCRUMB_INTEGRATION_ID = 'Breadcrumbs';
+const BREADCRUMB_INTEGRATION_ID = 'Breadcrumbs';
 
 /**
  * Default Breadcrumbs instrumentations
@@ -118,7 +118,7 @@ function _domBreadcrumb(dom) {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _consoleBreadcrumb(handlerData) {
-  var breadcrumb = {
+  const breadcrumb = {
     category: 'console',
     data: {
       arguments: handlerData.args,
@@ -228,12 +228,11 @@ function _fetchBreadcrumb(handlerData) {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _historyBreadcrumb(handlerData) {
-  var global = getGlobalObject();
   let from = handlerData.from;
   let to = handlerData.to;
-  var parsedLoc = parseUrl(global.location.href);
+  const parsedLoc = parseUrl(WINDOW.location.href);
   let parsedFrom = parseUrl(from);
-  var parsedTo = parseUrl(to);
+  const parsedTo = parseUrl(to);
 
   // Initial pushState doesn't provide `from` information
   if (!parsedFrom.path) {

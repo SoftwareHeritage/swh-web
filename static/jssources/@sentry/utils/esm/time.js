@@ -1,4 +1,4 @@
-import { getGlobalObject } from './global.js';
+import { WINDOW } from './browser.js';
 import { dynamicRequire, isNodeEnv } from './node.js';
 
 /**
@@ -12,7 +12,7 @@ import { dynamicRequire, isNodeEnv } from './node.js';
  * than a previously returned value. We do not try to emulate a monotonic behavior in order to facilitate debugging. It
  * is more obvious to explain "why does my span have negative duration" than "why my spans have zero duration".
  */
-var dateTimestampSource = {
+const dateTimestampSource = {
   nowSeconds: () => Date.now() / 1000,
 };
 
@@ -28,7 +28,7 @@ var dateTimestampSource = {
  * Wrapping the native API works around differences in behavior from different browsers.
  */
 function getBrowserPerformance() {
-  const { performance } = getGlobalObject();
+  const { performance } = WINDOW;
   if (!performance || !performance.now) {
     return undefined;
   }
@@ -54,7 +54,7 @@ function getBrowserPerformance() {
   // BUG: despite our best intentions, this workaround has its limitations. It mostly addresses timings of pageload
   // transactions, but ignores the skew built up over time that can aversely affect timestamps of navigation
   // transactions of long-lived web pages.
-  var timeOrigin = Date.now() - performance.now();
+  const timeOrigin = Date.now() - performance.now();
 
   return {
     now: () => performance.now(),
@@ -68,7 +68,7 @@ function getBrowserPerformance() {
  */
 function getNodePerformance() {
   try {
-    var perfHooks = dynamicRequire(module, 'perf_hooks') ;
+    const perfHooks = dynamicRequire(module, 'perf_hooks') ;
     return perfHooks.performance;
   } catch (_) {
     return undefined;
@@ -78,9 +78,9 @@ function getNodePerformance() {
 /**
  * The Performance API implementation for the current platform, if available.
  */
-var platformPerformance = isNodeEnv() ? getNodePerformance() : getBrowserPerformance();
+const platformPerformance = isNodeEnv() ? getNodePerformance() : getBrowserPerformance();
 
-var timestampSource =
+const timestampSource =
   platformPerformance === undefined
     ? dateTimestampSource
     : {
@@ -90,7 +90,7 @@ var timestampSource =
 /**
  * Returns a timestamp in seconds since the UNIX epoch using the Date API.
  */
-var dateTimestampInSeconds = dateTimestampSource.nowSeconds.bind(dateTimestampSource);
+const dateTimestampInSeconds = dateTimestampSource.nowSeconds.bind(dateTimestampSource);
 
 /**
  * Returns a timestamp in seconds since the UNIX epoch using either the Performance or Date APIs, depending on the
@@ -103,15 +103,15 @@ var dateTimestampInSeconds = dateTimestampSource.nowSeconds.bind(dateTimestampSo
  * skew can grow to arbitrary amounts like days, weeks or months.
  * See https://github.com/getsentry/sentry-javascript/issues/2590.
  */
-var timestampInSeconds = timestampSource.nowSeconds.bind(timestampSource);
+const timestampInSeconds = timestampSource.nowSeconds.bind(timestampSource);
 
 // Re-exported with an old name for backwards-compatibility.
-var timestampWithMs = timestampInSeconds;
+const timestampWithMs = timestampInSeconds;
 
 /**
  * A boolean that is true when timestampInSeconds uses the Performance API to produce monotonic timestamps.
  */
-var usingPerformanceAPI = platformPerformance !== undefined;
+const usingPerformanceAPI = platformPerformance !== undefined;
 
 /**
  * Internal helper to store what is the source of browserPerformanceTimeOrigin below. For debugging only.
@@ -122,26 +122,26 @@ let _browserPerformanceTimeOriginMode;
  * The number of milliseconds since the UNIX epoch. This value is only usable in a browser, and only when the
  * performance API is available.
  */
-var browserPerformanceTimeOrigin = (() => {
+const browserPerformanceTimeOrigin = (() => {
   // Unfortunately browsers may report an inaccurate time origin data, through either performance.timeOrigin or
   // performance.timing.navigationStart, which results in poor results in performance data. We only treat time origin
   // data as reliable if they are within a reasonable threshold of the current time.
 
-  const { performance } = getGlobalObject();
+  const { performance } = WINDOW;
   if (!performance || !performance.now) {
     _browserPerformanceTimeOriginMode = 'none';
     return undefined;
   }
 
-  var threshold = 3600 * 1000;
-  var performanceNow = performance.now();
-  var dateNow = Date.now();
+  const threshold = 3600 * 1000;
+  const performanceNow = performance.now();
+  const dateNow = Date.now();
 
   // if timeOrigin isn't available set delta to threshold so it isn't used
-  var timeOriginDelta = performance.timeOrigin
+  const timeOriginDelta = performance.timeOrigin
     ? Math.abs(performance.timeOrigin + performanceNow - dateNow)
     : threshold;
-  var timeOriginIsReliable = timeOriginDelta < threshold;
+  const timeOriginIsReliable = timeOriginDelta < threshold;
 
   // While performance.timing.navigationStart is deprecated in favor of performance.timeOrigin, performance.timeOrigin
   // is not as widely supported. Namely, performance.timeOrigin is undefined in Safari as of writing.
@@ -149,11 +149,11 @@ var browserPerformanceTimeOrigin = (() => {
   // a valid fallback. In the absence of an initial time provided by the browser, fallback to the current time from the
   // Date API.
   // eslint-disable-next-line deprecation/deprecation
-  var navigationStart = performance.timing && performance.timing.navigationStart;
-  var hasNavigationStart = typeof navigationStart === 'number';
+  const navigationStart = performance.timing && performance.timing.navigationStart;
+  const hasNavigationStart = typeof navigationStart === 'number';
   // if navigationStart isn't available set delta to threshold so it isn't used
-  var navigationStartDelta = hasNavigationStart ? Math.abs(navigationStart + performanceNow - dateNow) : threshold;
-  var navigationStartIsReliable = navigationStartDelta < threshold;
+  const navigationStartDelta = hasNavigationStart ? Math.abs(navigationStart + performanceNow - dateNow) : threshold;
+  const navigationStartIsReliable = navigationStartDelta < threshold;
 
   if (timeOriginIsReliable || navigationStartIsReliable) {
     // Use the more reliable time origin

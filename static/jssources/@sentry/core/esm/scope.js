@@ -1,10 +1,10 @@
-import { isPlainObject, dateTimestampInSeconds, getGlobalSingleton, SyncPromise, logger, isThenable, arrayify } from '@sentry/utils';
+import { isPlainObject, dateTimestampInSeconds, SyncPromise, logger, isThenable, arrayify, getGlobalSingleton } from '@sentry/utils';
 import { updateSession } from './session.js';
 
 /**
  * Default value for maximum number of breadcrumbs added to an event.
  */
-var DEFAULT_MAX_BREADCRUMBS = 100;
+const DEFAULT_MAX_BREADCRUMBS = 100;
 
 /**
  * Holds additional event information. {@link Scope.applyToEvent} will be
@@ -65,7 +65,7 @@ class Scope  {
    * @param scope to clone.
    */
    static clone(scope) {
-    var newScope = new Scope();
+    const newScope = new Scope();
     if (scope) {
       newScope._breadcrumbs = [...scope._breadcrumbs];
       newScope._tags = { ...scope._tags };
@@ -243,7 +243,7 @@ class Scope  {
    getTransaction() {
     // Often, this span (if it exists at all) will be a transaction, but it's not guaranteed to be. Regardless, it will
     // have a pointer to the currently-active transaction.
-    var span = this.getSpan();
+    const span = this.getSpan();
     return span && span.transaction;
   }
 
@@ -276,7 +276,7 @@ class Scope  {
     }
 
     if (typeof captureContext === 'function') {
-      var updatedScope = (captureContext )(this);
+      const updatedScope = (captureContext )(this);
       return updatedScope instanceof Scope ? updatedScope : this;
     }
 
@@ -343,14 +343,14 @@ class Scope  {
    * @inheritDoc
    */
    addBreadcrumb(breadcrumb, maxBreadcrumbs) {
-    var maxCrumbs = typeof maxBreadcrumbs === 'number' ? maxBreadcrumbs : DEFAULT_MAX_BREADCRUMBS;
+    const maxCrumbs = typeof maxBreadcrumbs === 'number' ? maxBreadcrumbs : DEFAULT_MAX_BREADCRUMBS;
 
     // No data has been changed, so don't notify scope listeners
     if (maxCrumbs <= 0) {
       return this;
     }
 
-    var mergedBreadcrumb = {
+    const mergedBreadcrumb = {
       timestamp: dateTimestampInSeconds(),
       ...breadcrumb,
     };
@@ -424,7 +424,7 @@ class Scope  {
     // errors with transaction and it relies on that.
     if (this._span) {
       event.contexts = { trace: this._span.getTraceContext(), ...event.contexts };
-      var transactionName = this._span.transaction && this._span.transaction.name;
+      const transactionName = this._span.transaction && this._span.transaction.name;
       if (transactionName) {
         event.tags = { transaction: transactionName, ...event.tags };
       }
@@ -459,11 +459,11 @@ class Scope  {
     index = 0,
   ) {
     return new SyncPromise((resolve, reject) => {
-      var processor = processors[index];
+      const processor = processors[index];
       if (event === null || typeof processor !== 'function') {
         resolve(event);
       } else {
-        var result = processor({ ...event }, hint) ;
+        const result = processor({ ...event }, hint) ;
 
         (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
           processor.id &&

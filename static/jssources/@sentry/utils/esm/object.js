@@ -18,8 +18,8 @@ function fill(source, name, replacementFactory) {
     return;
   }
 
-  var original = source[name] ;
-  var wrapped = replacementFactory(original) ;
+  const original = source[name] ;
+  const wrapped = replacementFactory(original) ;
 
   // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
   // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
@@ -59,7 +59,7 @@ function addNonEnumerableProperty(obj, name, value) {
  * @param original the original function that gets wrapped
  */
 function markFunctionWrapped(wrapped, original) {
-  var proto = original.prototype || {};
+  const proto = original.prototype || {};
   wrapped.prototype = original.prototype = proto;
   addNonEnumerableProperty(wrapped, '__sentry_original__', original);
 }
@@ -108,7 +108,7 @@ function convertToPlainObject(
       ...getOwnProperties(value),
     };
   } else if (isEvent(value)) {
-    var newObj
+    const newObj
 
  = {
       type: value.type,
@@ -139,8 +139,8 @@ function serializeEventTarget(target) {
 /** Filters out all but an object's own properties */
 function getOwnProperties(obj) {
   if (typeof obj === 'object' && obj !== null) {
-    var extractedProps = {};
-    for (var property in obj) {
+    const extractedProps = {};
+    for (const property in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, property)) {
         extractedProps[property] = (obj )[property];
       }
@@ -157,7 +157,7 @@ function getOwnProperties(obj) {
  * eg. `Non-error exception captured with keys: foo, bar, baz`
  */
 function extractExceptionKeysForMessage(exception, maxLength = 40) {
-  var keys = Object.keys(convertToPlainObject(exception));
+  const keys = Object.keys(convertToPlainObject(exception));
   keys.sort();
 
   if (!keys.length) {
@@ -169,7 +169,7 @@ function extractExceptionKeysForMessage(exception, maxLength = 40) {
   }
 
   for (let includedKeys = keys.length; includedKeys > 0; includedKeys--) {
-    var serialized = keys.slice(0, includedKeys).join(', ');
+    const serialized = keys.slice(0, includedKeys).join(', ');
     if (serialized.length > maxLength) {
       continue;
     }
@@ -192,7 +192,7 @@ function dropUndefinedKeys(inputValue) {
   // This map keeps track of what already visited nodes map to.
   // Our Set - based memoBuilder doesn't work here because we want to the output object to have the same circular
   // references as the input object.
-  var memoizationMap = new Map();
+  const memoizationMap = new Map();
 
   // This function just proxies `_dropUndefinedKeys` to keep the `memoBuilder` out of this function's API
   return _dropUndefinedKeys(inputValue, memoizationMap);
@@ -201,16 +201,16 @@ function dropUndefinedKeys(inputValue) {
 function _dropUndefinedKeys(inputValue, memoizationMap) {
   if (isPlainObject(inputValue)) {
     // If this node has already been visited due to a circular reference, return the object it was mapped to in the new object
-    var memoVal = memoizationMap.get(inputValue);
+    const memoVal = memoizationMap.get(inputValue);
     if (memoVal !== undefined) {
       return memoVal ;
     }
 
-    var returnValue = {};
+    const returnValue = {};
     // Store the mapping of this value in case we visit it again, in case of circular data
     memoizationMap.set(inputValue, returnValue);
 
-    for (var key of Object.keys(inputValue)) {
+    for (const key of Object.keys(inputValue)) {
       if (typeof inputValue[key] !== 'undefined') {
         returnValue[key] = _dropUndefinedKeys(inputValue[key], memoizationMap);
       }
@@ -221,12 +221,12 @@ function _dropUndefinedKeys(inputValue, memoizationMap) {
 
   if (Array.isArray(inputValue)) {
     // If this node has already been visited due to a circular reference, return the array it was mapped to in the new object
-    var memoVal = memoizationMap.get(inputValue);
+    const memoVal = memoizationMap.get(inputValue);
     if (memoVal !== undefined) {
       return memoVal ;
     }
 
-    var returnValue = [];
+    const returnValue = [];
     // Store the mapping of this value in case we visit it again, in case of circular data
     memoizationMap.set(inputValue, returnValue);
 

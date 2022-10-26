@@ -32,14 +32,14 @@ function createSessionEnvelope(
   metadata,
   tunnel,
 ) {
-  var sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
-  var envelopeHeaders = {
+  const sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
+  const envelopeHeaders = {
     sent_at: new Date().toISOString(),
     ...(sdkInfo && { sdk: sdkInfo }),
     ...(!!tunnel && { dsn: dsnToString(dsn) }),
   };
 
-  var envelopeItem =
+  const envelopeItem =
     'aggregates' in session ? [{ type: 'sessions' }, session] : [{ type: 'session' }, session];
 
   return createEnvelope(envelopeHeaders, [envelopeItem]);
@@ -54,12 +54,12 @@ function createEventEnvelope(
   metadata,
   tunnel,
 ) {
-  var sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
-  var eventType = event.type || 'event';
+  const sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
+  const eventType = event.type || 'event';
 
   enhanceEventWithSdkInfo(event, metadata && metadata.sdk);
 
-  var envelopeHeaders = createEventEnvelopeHeaders(event, sdkInfo, tunnel, dsn);
+  const envelopeHeaders = createEventEnvelopeHeaders(event, sdkInfo, tunnel, dsn);
 
   // Prevent this data (which, if it exists, was used in earlier steps in the processing pipeline) from being sent to
   // sentry. (Note: Our use of this property comes and goes with whatever we might be debugging, whatever hacks we may
@@ -67,7 +67,7 @@ function createEventEnvelope(
   // of this `delete`, lest we miss putting it back in the next time the property is in use.)
   delete event.sdkProcessingMetadata;
 
-  var eventItem = [{ type: eventType }, event];
+  const eventItem = [{ type: eventType }, event];
   return createEnvelope(envelopeHeaders, [eventItem]);
 }
 
@@ -77,7 +77,7 @@ function createEventEnvelopeHeaders(
   tunnel,
   dsn,
 ) {
-  var dynamicSamplingContext = event.sdkProcessingMetadata && event.sdkProcessingMetadata.dynamicSamplingContext;
+  const dynamicSamplingContext = event.sdkProcessingMetadata && event.sdkProcessingMetadata.dynamicSamplingContext;
 
   return {
     event_id: event.event_id ,

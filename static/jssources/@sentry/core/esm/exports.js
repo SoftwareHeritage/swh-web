@@ -33,8 +33,8 @@ function captureMessage(
 ) {
   // This is necessary to provide explicit scopes upgrade, without changing the original
   // arity of the `captureMessage(message, level)` method.
-  var level = typeof captureContext === 'string' ? captureContext : undefined;
-  var context = typeof captureContext !== 'string' ? { captureContext } : undefined;
+  const level = typeof captureContext === 'string' ? captureContext : undefined;
+  const context = typeof captureContext !== 'string' ? { captureContext } : undefined;
   return getCurrentHub().captureMessage(message, level, context);
 }
 

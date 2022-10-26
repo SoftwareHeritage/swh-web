@@ -1,10 +1,6 @@
-import { getGlobalObject } from './global.js';
 import { addNonEnumerableProperty } from './object.js';
 import { snipLine } from './string.js';
-
-/**
- * Extended Window interface that allows for Crypto API usage in IE browsers
- */
+import { GLOBAL_OBJ } from './worldwide.js';
 
 /**
  * UUID4 generator
@@ -12,14 +8,14 @@ import { snipLine } from './string.js';
  * @returns string Generated UUID4.
  */
 function uuid4() {
-  var global = getGlobalObject() ;
-  var crypto = (global.crypto || global.msCrypto) ;
+  const gbl = GLOBAL_OBJ ;
+  const crypto = gbl.crypto || gbl.msCrypto;
 
   if (crypto && crypto.randomUUID) {
     return crypto.randomUUID().replace(/-/g, '');
   }
 
-  var getRandomByte =
+  const getRandomByte =
     crypto && crypto.getRandomValues ? () => crypto.getRandomValues(new Uint8Array(1))[0] : () => Math.random() * 16;
 
   // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#2117523
@@ -44,7 +40,7 @@ function getEventDescription(event) {
     return message;
   }
 
-  var firstException = getFirstException(event);
+  const firstException = getFirstException(event);
   if (firstException) {
     if (firstException.type && firstException.value) {
       return `${firstException.type}: ${firstException.value}`;
@@ -62,9 +58,9 @@ function getEventDescription(event) {
  * @hidden
  */
 function addExceptionTypeValue(event, value, type) {
-  var exception = (event.exception = event.exception || {});
-  var values = (exception.values = exception.values || []);
-  var firstException = (values[0] = values[0] || {});
+  const exception = (event.exception = event.exception || {});
+  const values = (exception.values = exception.values || []);
+  const firstException = (values[0] = values[0] || {});
   if (!firstException.value) {
     firstException.value = value || '';
   }
@@ -81,23 +77,23 @@ function addExceptionTypeValue(event, value, type) {
  * @hidden
  */
 function addExceptionMechanism(event, newMechanism) {
-  var firstException = getFirstException(event);
+  const firstException = getFirstException(event);
   if (!firstException) {
     return;
   }
 
-  var defaultMechanism = { type: 'generic', handled: true };
-  var currentMechanism = firstException.mechanism;
+  const defaultMechanism = { type: 'generic', handled: true };
+  const currentMechanism = firstException.mechanism;
   firstException.mechanism = { ...defaultMechanism, ...currentMechanism, ...newMechanism };
 
   if (newMechanism && 'data' in newMechanism) {
-    var mergedData = { ...(currentMechanism && currentMechanism.data), ...newMechanism.data };
+    const mergedData = { ...(currentMechanism && currentMechanism.data), ...newMechanism.data };
     firstException.mechanism.data = mergedData;
   }
 }
 
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-var SEMVER_REGEXP =
+const SEMVER_REGEXP =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 
 /**
@@ -109,10 +105,10 @@ var SEMVER_REGEXP =
  * @param input string representation of a semver version
  */
 function parseSemver(input) {
-  var match = input.match(SEMVER_REGEXP) || [];
-  var major = parseInt(match[1], 10);
-  var minor = parseInt(match[2], 10);
-  var patch = parseInt(match[3], 10);
+  const match = input.match(SEMVER_REGEXP) || [];
+  const major = parseInt(match[1], 10);
+  const minor = parseInt(match[2], 10);
+  const patch = parseInt(match[3], 10);
   return {
     buildmetadata: match[5],
     major: isNaN(major) ? undefined : major,
@@ -130,9 +126,9 @@ function parseSemver(input) {
  * @param linesOfContext number of context lines we want to add pre/post
  */
 function addContextToFrame(lines, frame, linesOfContext = 5) {
-  var lineno = frame.lineno || 0;
-  var maxLines = lines.length;
-  var sourceLine = Math.max(Math.min(maxLines, lineno - 1), 0);
+  const lineno = frame.lineno || 0;
+  const maxLines = lines.length;
+  const sourceLine = Math.max(Math.min(maxLines, lineno - 1), 0);
 
   frame.pre_context = lines
     .slice(Math.max(0, sourceLine - linesOfContext), sourceLine)

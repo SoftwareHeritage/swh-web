@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/unbound-method
-var objectToString = Object.prototype.toString;
+const objectToString = Object.prototype.toString;
 
 /**
  * Checks whether given value's type is one of a few Error or Error-like

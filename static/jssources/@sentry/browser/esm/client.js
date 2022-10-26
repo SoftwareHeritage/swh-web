@@ -1,9 +1,7 @@
 import { BaseClient, SDK_VERSION, getCurrentHub, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
-import { getGlobalObject, getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { WINDOW, getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
-
-var globalObject = getGlobalObject();
 
 /**
  * The Sentry Browser SDK Client.
@@ -32,9 +30,9 @@ class BrowserClient extends BaseClient {
 
     super(options);
 
-    if (options.sendClientReports && globalObject.document) {
-      globalObject.document.addEventListener('visibilitychange', () => {
-        if (globalObject.document.visibilityState === 'hidden') {
+    if (options.sendClientReports && WINDOW.document) {
+      WINDOW.document.addEventListener('visibilitychange', () => {
+        if (WINDOW.document.visibilityState === 'hidden') {
           this._flushOutcomes();
         }
       });
@@ -70,7 +68,7 @@ class BrowserClient extends BaseClient {
     // bundles, if it is not used by the SDK.
     // This all sadly is a bit ugly, but we currently don't have a "pre-send" hook on the integrations so we do it this
     // way for now.
-    var breadcrumbIntegration = this.getIntegrationById(BREADCRUMB_INTEGRATION_ID) ;
+    const breadcrumbIntegration = this.getIntegrationById(BREADCRUMB_INTEGRATION_ID) ;
     if (
       breadcrumbIntegration &&
       // We check for definedness of `options`, even though it is not strictly necessary, because that access to
@@ -107,7 +105,7 @@ class BrowserClient extends BaseClient {
    * Sends client reports as an envelope.
    */
    _flushOutcomes() {
-    var outcomes = this._clearOutcomes();
+    const outcomes = this._clearOutcomes();
 
     if (outcomes.length === 0) {
       (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('No outcomes to send');
@@ -121,17 +119,16 @@ class BrowserClient extends BaseClient {
 
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('Sending outcomes:', outcomes);
 
-    var url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options);
-    var envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
+    const url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options);
+    const envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
 
     try {
-      var global = getGlobalObject();
-      var isRealNavigator = Object.prototype.toString.call(global && global.navigator) === '[object Navigator]';
-      var hasSendBeacon = isRealNavigator && typeof global.navigator.sendBeacon === 'function';
+      const isRealNavigator = Object.prototype.toString.call(WINDOW && WINDOW.navigator) === '[object Navigator]';
+      const hasSendBeacon = isRealNavigator && typeof WINDOW.navigator.sendBeacon === 'function';
       // Make sure beacon is not used if user configures custom transport options
       if (hasSendBeacon && !this._options.transportOptions) {
         // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-        var sendBeacon = global.navigator.sendBeacon.bind(global.navigator);
+        const sendBeacon = WINDOW.navigator.sendBeacon.bind(WINDOW.navigator);
         sendBeacon(url, serializeEnvelope(envelope));
       } else {
         // If beacon is not supported or if they are using the tunnel option

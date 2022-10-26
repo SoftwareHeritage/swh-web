@@ -1,12 +1,9 @@
-import { getGlobalObject, getGlobalSingleton } from './global.js';
-
-// TODO: Implement different loggers for different environments
-var global = getGlobalObject();
+import { GLOBAL_OBJ, getGlobalSingleton } from './worldwide.js';
 
 /** Prefix for logging strings */
-var PREFIX = 'Sentry Logger ';
+const PREFIX = 'Sentry Logger ';
 
-var CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert', 'trace'] ;
+const CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert', 'trace'] ;
 
 /**
  * Temporarily disable sentry console instrumentations.
@@ -15,21 +12,19 @@ var CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert', 'trace'
  * @returns The results of the callback
  */
 function consoleSandbox(callback) {
-  var global = getGlobalObject();
-
-  if (!('console' in global)) {
+  if (!('console' in GLOBAL_OBJ)) {
     return callback();
   }
 
-  var originalConsole = global.console ;
-  var wrappedLevels = {};
+  const originalConsole = GLOBAL_OBJ.console ;
+  const wrappedLevels = {};
 
   // Restore all wrapped console methods
   CONSOLE_LEVELS.forEach(level => {
     // TODO(v7): Remove this check as it's only needed for Node 6
-    var originalWrappedFunc =
+    const originalWrappedFunc =
       originalConsole[level] && (originalConsole[level] ).__sentry_original__;
-    if (level in global.console && originalWrappedFunc) {
+    if (level in originalConsole && originalWrappedFunc) {
       wrappedLevels[level] = originalConsole[level] ;
       originalConsole[level] = originalWrappedFunc ;
     }
@@ -47,7 +42,7 @@ function consoleSandbox(callback) {
 
 function makeLogger() {
   let enabled = false;
-  var logger = {
+  const logger = {
     enable: () => {
       enabled = true;
     },
@@ -62,7 +57,7 @@ function makeLogger() {
       logger[name] = (...args) => {
         if (enabled) {
           consoleSandbox(() => {
-            global.console[name](`${PREFIX}[${name}]:`, ...args);
+            GLOBAL_OBJ.console[name](`${PREFIX}[${name}]:`, ...args);
           });
         }
       };

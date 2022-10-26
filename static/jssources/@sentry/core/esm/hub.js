@@ -1,4 +1,4 @@
-import { uuid4, dateTimestampInSeconds, consoleSandbox, logger, getGlobalObject, getGlobalSingleton, isNodeEnv } from '@sentry/utils';
+import { uuid4, dateTimestampInSeconds, consoleSandbox, logger, GLOBAL_OBJ, isNodeEnv, getGlobalSingleton } from '@sentry/utils';
 import { Scope } from './scope.js';
 import { closeSession, makeSession, updateSession } from './session.js';
 
@@ -10,13 +10,13 @@ import { closeSession, makeSession, updateSession } from './session.js';
  *
  * @hidden
  */
-var API_VERSION = 4;
+const API_VERSION = 4;
 
 /**
  * Default maximum number of breadcrumbs added to an event. Can be overwritten
  * with {@link Options.maxBreadcrumbs}.
  */
-var DEFAULT_BREADCRUMBS = 100;
+const DEFAULT_BREADCRUMBS = 100;
 
 /**
  * A layer in the process stack.
@@ -58,7 +58,7 @@ class Hub  {
    * @inheritDoc
    */
    bindClient(client) {
-    var top = this.getStackTop();
+    const top = this.getStackTop();
     top.client = client;
     if (client && client.setupIntegrations) {
       client.setupIntegrations();
@@ -70,7 +70,7 @@ class Hub  {
    */
    pushScope() {
     // We want to clone the content of prev scope
-    var scope = Scope.clone(this.getScope());
+    const scope = Scope.clone(this.getScope());
     this.getStack().push({
       client: this.getClient(),
       scope,
@@ -90,7 +90,7 @@ class Hub  {
    * @inheritDoc
    */
    withScope(callback) {
-    var scope = this.pushScope();
+    const scope = this.pushScope();
     try {
       callback(scope);
     } finally {
@@ -125,8 +125,8 @@ class Hub  {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
    captureException(exception, hint) {
-    var eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
-    var syntheticException = new Error('Sentry syntheticException');
+    const eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
+    const syntheticException = new Error('Sentry syntheticException');
     this._withClient((client, scope) => {
       client.captureException(
         exception,
@@ -151,8 +151,8 @@ class Hub  {
     level,
     hint,
   ) {
-    var eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
-    var syntheticException = new Error(message);
+    const eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
+    const syntheticException = new Error(message);
     this._withClient((client, scope) => {
       client.captureMessage(
         message,
@@ -173,7 +173,7 @@ class Hub  {
    * @inheritDoc
    */
    captureEvent(event, hint) {
-    var eventId = hint && hint.event_id ? hint.event_id : uuid4();
+    const eventId = hint && hint.event_id ? hint.event_id : uuid4();
     if (event.type !== 'transaction') {
       this._lastEventId = eventId;
     }
@@ -205,9 +205,9 @@ class Hub  {
 
     if (maxBreadcrumbs <= 0) return;
 
-    var timestamp = dateTimestampInSeconds();
-    var mergedBreadcrumb = { timestamp, ...breadcrumb };
-    var finalBreadcrumb = beforeBreadcrumb
+    const timestamp = dateTimestampInSeconds();
+    const mergedBreadcrumb = { timestamp, ...breadcrumb };
+    const finalBreadcrumb = beforeBreadcrumb
       ? (consoleSandbox(() => beforeBreadcrumb(mergedBreadcrumb, hint)) )
       : mergedBreadcrumb;
 
@@ -220,7 +220,7 @@ class Hub  {
    * @inheritDoc
    */
    setUser(user) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setUser(user);
   }
 
@@ -228,7 +228,7 @@ class Hub  {
    * @inheritDoc
    */
    setTags(tags) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setTags(tags);
   }
 
@@ -236,7 +236,7 @@ class Hub  {
    * @inheritDoc
    */
    setExtras(extras) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setExtras(extras);
   }
 
@@ -244,7 +244,7 @@ class Hub  {
    * @inheritDoc
    */
    setTag(key, value) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setTag(key, value);
   }
 
@@ -252,7 +252,7 @@ class Hub  {
    * @inheritDoc
    */
    setExtra(key, extra) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setExtra(key, extra);
   }
 
@@ -261,7 +261,7 @@ class Hub  {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
    setContext(name, context) {
-    var scope = this.getScope();
+    const scope = this.getScope();
     if (scope) scope.setContext(name, context);
   }
 
@@ -279,7 +279,7 @@ class Hub  {
    * @inheritDoc
    */
    run(callback) {
-    var oldHub = makeMain(this);
+    const oldHub = makeMain(this);
     try {
       callback(this);
     } finally {
@@ -291,7 +291,7 @@ class Hub  {
    * @inheritDoc
    */
    getIntegration(integration) {
-    var client = this.getClient();
+    const client = this.getClient();
     if (!client) return null;
     try {
       return client.getIntegration(integration);
@@ -332,9 +332,9 @@ class Hub  {
    * @inheritDoc
    */
    endSession() {
-    var layer = this.getStackTop();
-    var scope = layer && layer.scope;
-    var session = scope && scope.getSession();
+    const layer = this.getStackTop();
+    const scope = layer && layer.scope;
+    const session = scope && scope.getSession();
     if (session) {
       closeSession(session);
     }
@@ -354,10 +354,9 @@ class Hub  {
     const { release, environment } = (client && client.getOptions()) || {};
 
     // Will fetch userAgent if called from browser sdk
-    var global = getGlobalObject();
-    const { userAgent } = global.navigator || {};
+    const { userAgent } = GLOBAL_OBJ.navigator || {};
 
-    var session = makeSession({
+    const session = makeSession({
       release,
       environment,
       ...(scope && { user: scope.getUser() }),
@@ -367,7 +366,7 @@ class Hub  {
 
     if (scope) {
       // End existing session if there's one
-      var currentSession = scope.getSession && scope.getSession();
+      const currentSession = scope.getSession && scope.getSession();
       if (currentSession && currentSession.status === 'ok') {
         updateSession(currentSession, { status: 'exited' });
       }
@@ -385,8 +384,8 @@ class Hub  {
    * when Tracing is used.
    */
    shouldSendDefaultPii() {
-    var client = this.getClient();
-    var options = client && client.getOptions();
+    const client = this.getClient();
+    const options = client && client.getOptions();
     return Boolean(options && options.sendDefaultPii);
   }
 
@@ -397,7 +396,7 @@ class Hub  {
     const { scope, client } = this.getStackTop();
     if (!scope) return;
 
-    var session = scope.getSession();
+    const session = scope.getSession();
     if (session) {
       if (client && client.captureSession) {
         client.captureSession(session);
@@ -424,8 +423,8 @@ class Hub  {
   // @ts-ignore Function lacks ending return statement and return type does not include 'undefined'. ts(2366)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
    _callExtensionMethod(method, ...args) {
-    var carrier = getMainCarrier();
-    var sentry = carrier.__SENTRY__;
+    const carrier = getMainCarrier();
+    const sentry = carrier.__SENTRY__;
     if (sentry && sentry.extensions && typeof sentry.extensions[method] === 'function') {
       return sentry.extensions[method].apply(this, args);
     }
@@ -441,12 +440,11 @@ class Hub  {
  * at the call-site. We always access the carrier through this function, so we can guarantee that `__SENTRY__` is there.
  **/
 function getMainCarrier() {
-  var carrier = getGlobalObject();
-  carrier.__SENTRY__ = carrier.__SENTRY__ || {
+  GLOBAL_OBJ.__SENTRY__ = GLOBAL_OBJ.__SENTRY__ || {
     extensions: {},
     hub: undefined,
   };
-  return carrier;
+  return GLOBAL_OBJ;
 }
 
 /**
@@ -455,8 +453,8 @@ function getMainCarrier() {
  * @returns The old replaced hub
  */
 function makeMain(hub) {
-  var registry = getMainCarrier();
-  var oldHub = getHubFromCarrier(registry);
+  const registry = getMainCarrier();
+  const oldHub = getHubFromCarrier(registry);
   setHubOnCarrier(registry, hub);
   return oldHub;
 }
@@ -470,7 +468,7 @@ function makeMain(hub) {
  */
 function getCurrentHub() {
   // Get main carrier (global for every environment)
-  var registry = getMainCarrier();
+  const registry = getMainCarrier();
 
   // If there's no hub, or its an old API, assign a new one
   if (!hasHubOnCarrier(registry) || getHubFromCarrier(registry).isOlderThan(API_VERSION)) {
@@ -491,8 +489,8 @@ function getCurrentHub() {
  */
 function getHubFromActiveDomain(registry) {
   try {
-    var sentry = getMainCarrier().__SENTRY__;
-    var activeDomain = sentry && sentry.extensions && sentry.extensions.domain && sentry.extensions.domain.active;
+    const sentry = getMainCarrier().__SENTRY__;
+    const activeDomain = sentry && sentry.extensions && sentry.extensions.domain && sentry.extensions.domain.active;
 
     // If there's no active domain, just return global hub
     if (!activeDomain) {
@@ -501,7 +499,7 @@ function getHubFromActiveDomain(registry) {
 
     // If there's no hub on current domain, or it's an old API, assign a new one
     if (!hasHubOnCarrier(activeDomain) || getHubFromCarrier(activeDomain).isOlderThan(API_VERSION)) {
-      var registryHubTopStack = getHubFromCarrier(registry).getStackTop();
+      const registryHubTopStack = getHubFromCarrier(registry).getStackTop();
       setHubOnCarrier(activeDomain, new Hub(registryHubTopStack.client, Scope.clone(registryHubTopStack.scope)));
     }
 
@@ -539,7 +537,7 @@ function getHubFromCarrier(carrier) {
  */
 function setHubOnCarrier(carrier, hub) {
   if (!carrier) return false;
-  var __SENTRY__ = (carrier.__SENTRY__ = carrier.__SENTRY__ || {});
+  const __SENTRY__ = (carrier.__SENTRY__ = carrier.__SENTRY__ || {});
   __SENTRY__.hub = hub;
   return true;
 }

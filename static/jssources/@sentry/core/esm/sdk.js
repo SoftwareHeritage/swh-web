@@ -23,13 +23,13 @@ function initAndBind(
       console.warn('[Sentry] Cannot initialize SDK with `debug` option using a non-debug bundle.');
     }
   }
-  var hub = getCurrentHub();
-  var scope = hub.getScope();
+  const hub = getCurrentHub();
+  const scope = hub.getScope();
   if (scope) {
     scope.update(options.initialScope);
   }
 
-  var client = new clientClass(options);
+  const client = new clientClass(options);
   hub.bindClient(client);
 }
 

@@ -1,7 +1,5 @@
 import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
-import { getGlobalObject } from '@sentry/utils';
-
-var global = getGlobalObject();
+import { WINDOW } from '@sentry/utils';
 
 /** HttpContext integration collects information about HTTP request headers */
 class HttpContext  {constructor() { HttpContext.prototype.__init.call(this); }
@@ -22,21 +20,21 @@ class HttpContext  {constructor() { HttpContext.prototype.__init.call(this); }
     addGlobalEventProcessor((event) => {
       if (getCurrentHub().getIntegration(HttpContext)) {
         // if none of the information we want exists, don't bother
-        if (!global.navigator && !global.location && !global.document) {
+        if (!WINDOW.navigator && !WINDOW.location && !WINDOW.document) {
           return event;
         }
 
         // grab as much info as exists and add it to the event
-        var url = (event.request && event.request.url) || (global.location && global.location.href);
-        const { referrer } = global.document || {};
-        const { userAgent } = global.navigator || {};
+        const url = (event.request && event.request.url) || (WINDOW.location && WINDOW.location.href);
+        const { referrer } = WINDOW.document || {};
+        const { userAgent } = WINDOW.navigator || {};
 
-        var headers = {
+        const headers = {
           ...(event.request && event.request.headers),
           ...(referrer && { Referer: referrer }),
           ...(userAgent && { 'User-Agent': userAgent }),
         };
-        var request = { ...(url && { url }), headers };
+        const request = { ...(url && { url }), headers };
 
         return { ...event, request };
       }

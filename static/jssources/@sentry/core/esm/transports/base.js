@@ -1,6 +1,6 @@
-import { makePromiseBuffer, forEachEnvelopeItem, envelopeItemTypeToDataCategory, isRateLimited, resolvedSyncPromise, createEnvelope, serializeEnvelope, logger, updateRateLimits, SentryError } from '@sentry/utils';
+import { forEachEnvelopeItem, envelopeItemTypeToDataCategory, isRateLimited, resolvedSyncPromise, createEnvelope, serializeEnvelope, logger, updateRateLimits, SentryError, makePromiseBuffer } from '@sentry/utils';
 
-var DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
+const DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
 
 /**
  * Creates an instance of a Sentry `Transport`
@@ -15,14 +15,14 @@ function createTransport(
 ) {
   let rateLimits = {};
 
-  var flush = (timeout) => buffer.drain(timeout);
+  const flush = (timeout) => buffer.drain(timeout);
 
   function send(envelope) {
-    var filteredEnvelopeItems = [];
+    const filteredEnvelopeItems = [];
 
     // Drop rate limited items from envelope
     forEachEnvelopeItem(envelope, (item, type) => {
-      var envelopeItemDataCategory = envelopeItemTypeToDataCategory(type);
+      const envelopeItemDataCategory = envelopeItemTypeToDataCategory(type);
       if (isRateLimited(rateLimits, envelopeItemDataCategory)) {
         options.recordDroppedEvent('ratelimit_backoff', envelopeItemDataCategory);
       } else {
@@ -36,16 +36,16 @@ function createTransport(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    var filteredEnvelope = createEnvelope(envelope[0], filteredEnvelopeItems );
+    const filteredEnvelope = createEnvelope(envelope[0], filteredEnvelopeItems );
 
     // Creates client report for each item in an envelope
-    var recordEnvelopeLoss = (reason) => {
+    const recordEnvelopeLoss = (reason) => {
       forEachEnvelopeItem(filteredEnvelope, (_, type) => {
         options.recordDroppedEvent(reason, envelopeItemTypeToDataCategory(type));
       });
     };
 
-    var requestTask = () =>
+    const requestTask = () =>
       makeRequest({ body: serializeEnvelope(filteredEnvelope, options.textEncoder) }).then(
         response => {
           // We don't want to throw on NOK responses, but we want to at least log them

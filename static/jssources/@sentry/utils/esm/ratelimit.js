@@ -1,6 +1,6 @@
 // Intentionally keeping the key broad, as we don't know for sure what rate limit headers get returned from backend
 
-var DEFAULT_RETRY_AFTER = 60 * 1000; // 60 seconds
+const DEFAULT_RETRY_AFTER = 60 * 1000; // 60 seconds
 
 /**
  * Extracts Retry-After value from the request header or returns default value
@@ -9,12 +9,12 @@ var DEFAULT_RETRY_AFTER = 60 * 1000; // 60 seconds
  *
  */
 function parseRetryAfterHeader(header, now = Date.now()) {
-  var headerDelay = parseInt(`${header}`, 10);
+  const headerDelay = parseInt(`${header}`, 10);
   if (!isNaN(headerDelay)) {
     return headerDelay * 1000;
   }
 
-  var headerDate = Date.parse(`${header}`);
+  const headerDate = Date.parse(`${header}`);
   if (!isNaN(headerDate)) {
     return headerDate - now;
   }
@@ -45,14 +45,14 @@ function updateRateLimits(
   { statusCode, headers },
   now = Date.now(),
 ) {
-  var updatedRateLimits = {
+  const updatedRateLimits = {
     ...limits,
   };
 
   // "The name is case-insensitive."
   // https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
-  var rateLimitHeader = headers && headers['x-sentry-rate-limits'];
-  var retryAfterHeader = headers && headers['retry-after'];
+  const rateLimitHeader = headers && headers['x-sentry-rate-limits'];
+  const retryAfterHeader = headers && headers['retry-after'];
 
   if (rateLimitHeader) {
     /**
@@ -67,14 +67,14 @@ function updateRateLimits(
      *     <scope> is what's being limited (org, project, or key) - ignored by SDK
      *     <reason_code> is an arbitrary string like "org_quota" - ignored by SDK
      */
-    for (var limit of rateLimitHeader.trim().split(',')) {
+    for (const limit of rateLimitHeader.trim().split(',')) {
       const [retryAfter, categories] = limit.split(':', 2);
-      var headerDelay = parseInt(retryAfter, 10);
-      var delay = (!isNaN(headerDelay) ? headerDelay : 60) * 1000; // 60sec default
+      const headerDelay = parseInt(retryAfter, 10);
+      const delay = (!isNaN(headerDelay) ? headerDelay : 60) * 1000; // 60sec default
       if (!categories) {
         updatedRateLimits.all = now + delay;
       } else {
-        for (var category of categories.split(';')) {
+        for (const category of categories.split(';')) {
           updatedRateLimits[category] = now + delay;
         }
       }

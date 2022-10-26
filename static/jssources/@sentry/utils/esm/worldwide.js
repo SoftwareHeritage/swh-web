@@ -1,6 +1,6 @@
-/** Internal */
+/** Internal global with common properties and Sentry extensions  */
 
-// The code below for 'isGlobalObj' and 'GLOBAL' was copied from core-js before modification
+// The code below for 'isGlobalObj' and 'GLOBAL_OBJ' was copied from core-js before modification
 // https://github.com/zloirock/core-js/blob/1b944df55282cdc99c90db5f49eb0b6eda2cc0a3/packages/core-js/internals/global.js
 // core-js has the following licence:
 //
@@ -29,7 +29,8 @@ function isGlobalObj(obj) {
   return obj && obj.Math == Math ? obj : undefined;
 }
 
-var GLOBAL =
+/** Get's the global object for the current JavaScript runtime */
+const GLOBAL_OBJ =
   (typeof globalThis == 'object' && isGlobalObj(globalThis)) ||
   // eslint-disable-next-line no-restricted-globals
   (typeof window == 'object' && isGlobalObj(window)) ||
@@ -41,12 +42,10 @@ var GLOBAL =
   {};
 
 /**
- * Safely get global scope object
- *
- * @returns Global scope object
+ * @deprecated Use GLOBAL_OBJ instead. This will be removed in v8
  */
 function getGlobalObject() {
-  return GLOBAL ;
+  return GLOBAL_OBJ ;
 }
 
 /**
@@ -57,15 +56,15 @@ function getGlobalObject() {
  *
  * @param name name of the global singleton on __SENTRY__
  * @param creator creator Factory function to create the singleton if it doesn't already exist on `__SENTRY__`
- * @param obj (Optional) The global object on which to look for `__SENTRY__`, if not `getGlobalObject`'s return value
+ * @param obj (Optional) The global object on which to look for `__SENTRY__`, if not `GLOBAL_OBJ`'s return value
  * @returns the singleton
  */
 function getGlobalSingleton(name, creator, obj) {
-  var global = (obj || GLOBAL) ;
-  var __SENTRY__ = (global.__SENTRY__ = global.__SENTRY__ || {});
-  var singleton = __SENTRY__[name] || (__SENTRY__[name] = creator());
+  const gbl = (obj || GLOBAL_OBJ) ;
+  const __SENTRY__ = (gbl.__SENTRY__ = gbl.__SENTRY__ || {});
+  const singleton = __SENTRY__[name] || (__SENTRY__[name] = creator());
   return singleton;
 }
 
-export { getGlobalObject, getGlobalSingleton };
-//# sourceMappingURL=global.js.map
+export { GLOBAL_OBJ, getGlobalObject, getGlobalSingleton };
+//# sourceMappingURL=worldwide.js.map

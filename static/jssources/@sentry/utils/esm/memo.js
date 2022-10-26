@@ -5,8 +5,8 @@
  * Helper to decycle json objects
  */
 function memoBuilder() {
-  var hasWeakSet = typeof WeakSet === 'function';
-  var inner = hasWeakSet ? new WeakSet() : [];
+  const hasWeakSet = typeof WeakSet === 'function';
+  const inner = hasWeakSet ? new WeakSet() : [];
   function memoize(obj) {
     if (hasWeakSet) {
       if (inner.has(obj)) {
@@ -17,7 +17,7 @@ function memoBuilder() {
     }
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < inner.length; i++) {
-      var value = inner[i];
+      const value = inner[i];
       if (value === obj) {
         return true;
       }

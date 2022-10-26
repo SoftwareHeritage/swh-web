@@ -5,11 +5,11 @@ import { isThenable } from './is.js';
 /** SyncPromise internal states */
 var States; (function (States) {
   /** Pending */
-  var PENDING = 0; States[States["PENDING"] = PENDING] = "PENDING";
+  const PENDING = 0; States[States["PENDING"] = PENDING] = "PENDING";
   /** Resolved / OK */
-  var RESOLVED = 1; States[States["RESOLVED"] = RESOLVED] = "RESOLVED";
+  const RESOLVED = 1; States[States["RESOLVED"] = RESOLVED] = "RESOLVED";
   /** Rejected / Error */
-  var REJECTED = 2; States[States["REJECTED"] = REJECTED] = "REJECTED";
+  const REJECTED = 2; States[States["REJECTED"] = REJECTED] = "REJECTED";
 })(States || (States = {}));
 
 // Overloads so we can call resolvedSyncPromise without arguments and generic argument
@@ -165,7 +165,7 @@ class SyncPromise {
       return;
     }
 
-    var cachedHandlers = this._handlers.slice();
+    const cachedHandlers = this._handlers.slice();
     this._handlers = [];
 
     cachedHandlers.forEach(handler => {
