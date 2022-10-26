@@ -174,7 +174,9 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
         error_code = 403
     if isinstance(exc, NotFoundExc):
         error_code = 404
-
+    else:
+        # some NotFoundExc texts have HTML links we want to preserve
+        error_description = escape(error_description)
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:
         resp.traceback = error_description  # type: ignore[attr-defined]
