@@ -108,7 +108,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
-    "cy2": "^3.1.4",
+    "cy2": "~2.1.0",
     "cypress": "^10.11.0",
     "cypress-hmr-restarter": "^2.0.4",
     "cypress-multi-reporters": "^1.6.1",

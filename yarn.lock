@@ -3170,16 +3170,13 @@ cssstyle@^2.3.0:
   dependencies:
     cssom "~0.3.6"
 
-cy2@^3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/cy2/-/cy2-3.1.4.tgz#ee90b72fbab20cb9cd218177fb8b05314c62f7cd"
-  integrity sha512-LvqdiEbCYK+k7llElyouynluw7j2s6kMC3aY0FKeAf+p3ceTsblRer9QNCxcH1eActj1W9ZbM8QFN24zWqSqsw==
+cy2@~2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/cy2/-/cy2-2.1.0.tgz#fa9383eede9670620b564eed507d8ac423b9fffa"
+  integrity sha512-rDPDyUF8sri0xUiwA5bF9rmVevwtl7kuuLfVXRVX86SZkqLerBd4vrc4/uyOhA9w5pvEGrMwV/8VgBfVmPw8sA==
   dependencies:
-    acorn "^8.8.0"
     debug "^4.3.2"
-    escodegen "^2.0.0"
-    estraverse "^5.3.0"
-    js-yaml "^4.1.0"
+    js-yaml "^4.0.0"
     npm-which "^3.0.1"
 
 cypress-hmr-restarter@^2.0.4:
@@ -4535,11 +4532,6 @@ estraverse@^5.1.0, estraverse@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-5.2.0.tgz#307df42547e6cc7324d3cf03c155d5cdb8c53880"
   integrity sha512-BxbNGGNm0RyRYvUdHpIwv9IWzeM9XClbOxwoATuFdOE7ZE6wHL+HQ5T8hoPM+zHvmKzzsEqhgy0GrQ5X13afiQ==
-
-estraverse@^5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-5.3.0.tgz#2eea5290702f26ab8fe5370370ff86c965d21123"
-  integrity sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA==
 
 estraverse@~1.5.0:
   version "1.5.1"
@@ -6458,7 +6450,7 @@ js-yaml@3.14.1, js-yaml@^3.13.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-js-yaml@4.1.0, js-yaml@^4.1.0:
+js-yaml@4.1.0, js-yaml@^4.0.0, js-yaml@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
   integrity sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==
