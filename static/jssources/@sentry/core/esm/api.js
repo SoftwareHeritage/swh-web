@@ -1,11 +1,11 @@
 import { urlEncode, makeDsn, dsnToString } from '@sentry/utils';
 
-var SENTRY_API_VERSION = '7';
+const SENTRY_API_VERSION = '7';
 
 /** Returns the prefix to construct Sentry ingestion API endpoints. */
 function getBaseApiEndpoint(dsn) {
-  var protocol = dsn.protocol ? `${dsn.protocol}:` : '';
-  var port = dsn.port ? `:${dsn.port}` : '';
+  const protocol = dsn.protocol ? `${dsn.protocol}:` : '';
+  const port = dsn.port ? `:${dsn.port}` : '';
   return `${protocol}//${dsn.host}${port}${dsn.path ? `/${dsn.path}` : ''}/api/`;
 }
 
@@ -40,8 +40,8 @@ function getEnvelopeEndpointWithUrlEncodedAuth(
   // const { tunnel, _metadata = {} } = options;
   // return tunnel ? tunnel : `${_getIngestEndpoint(dsn)}?${_encodedAuth(dsn, _metadata.sdk)}`;
 
-  var tunnel = typeof tunnelOrOptions === 'string' ? tunnelOrOptions : tunnelOrOptions.tunnel;
-  var sdkInfo =
+  const tunnel = typeof tunnelOrOptions === 'string' ? tunnelOrOptions : tunnelOrOptions.tunnel;
+  const sdkInfo =
     typeof tunnelOrOptions === 'string' || !tunnelOrOptions._metadata ? undefined : tunnelOrOptions._metadata.sdk;
 
   return tunnel ? tunnel : `${_getIngestEndpoint(dsn)}?${_encodedAuth(dsn, sdkInfo)}`;
@@ -54,17 +54,17 @@ function getReportDialogEndpoint(
 
 ,
 ) {
-  var dsn = makeDsn(dsnLike);
-  var endpoint = `${getBaseApiEndpoint(dsn)}embed/error-page/`;
+  const dsn = makeDsn(dsnLike);
+  const endpoint = `${getBaseApiEndpoint(dsn)}embed/error-page/`;
 
   let encodedOptions = `dsn=${dsnToString(dsn)}`;
-  for (var key in dialogOptions) {
+  for (const key in dialogOptions) {
     if (key === 'dsn') {
       continue;
     }
 
     if (key === 'user') {
-      var user = dialogOptions.user;
+      const user = dialogOptions.user;
       if (!user) {
         continue;
       }

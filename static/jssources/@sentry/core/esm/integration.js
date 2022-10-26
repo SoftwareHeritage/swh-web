@@ -2,7 +2,7 @@ import { arrayify, logger } from '@sentry/utils';
 import { getCurrentHub } from './hub.js';
 import { addGlobalEventProcessor } from './scope.js';
 
-var installedIntegrations = [];
+const installedIntegrations = [];
 
 /** Map of integrations assigned to a client */
 
@@ -13,12 +13,12 @@ var installedIntegrations = [];
  * @private
  */
 function filterDuplicates(integrations) {
-  var integrationsByName = {};
+  const integrationsByName = {};
 
   integrations.forEach(currentInstance => {
     const { name } = currentInstance;
 
-    var existingInstance = integrationsByName[name];
+    const existingInstance = integrationsByName[name];
 
     // We want integrations later in the array to overwrite earlier ones of the same type, except that we never want a
     // default instance to overwrite an existing user instance
@@ -34,8 +34,8 @@ function filterDuplicates(integrations) {
 
 /** Gets integrations to install */
 function getIntegrationsToSetup(options) {
-  var defaultIntegrations = options.defaultIntegrations || [];
-  var userIntegrations = options.integrations;
+  const defaultIntegrations = options.defaultIntegrations || [];
+  const userIntegrations = options.integrations;
 
   // We flag default instances, so that later we can tell them apart from any user-created instances of the same class
   defaultIntegrations.forEach(integration => {
@@ -52,13 +52,13 @@ function getIntegrationsToSetup(options) {
     integrations = defaultIntegrations;
   }
 
-  var finalIntegrations = filterDuplicates(integrations);
+  const finalIntegrations = filterDuplicates(integrations);
 
   // The `Debug` integration prints copies of the `event` and `hint` which will be passed to `beforeSend`. It therefore
   // has to run after all other integrations, so that the changes of all event processors will be reflected in the
   // printed values. For lack of a more elegant way to guarantee that, we therefore locate it and, assuming it exists,
   // pop it out of its current spot and shove it onto the end of the array.
-  var debugIndex = finalIntegrations.findIndex(integration => integration.name === 'Debug');
+  const debugIndex = finalIntegrations.findIndex(integration => integration.name === 'Debug');
   if (debugIndex !== -1) {
     const [debugInstance] = finalIntegrations.splice(debugIndex, 1);
     finalIntegrations.push(debugInstance);
@@ -74,7 +74,7 @@ function getIntegrationsToSetup(options) {
  * @param withDefault should enable default integrations
  */
 function setupIntegrations(integrations) {
-  var integrationIndex = {};
+  const integrationIndex = {};
 
   integrations.forEach(integration => {
     integrationIndex[integration.name] = integration;

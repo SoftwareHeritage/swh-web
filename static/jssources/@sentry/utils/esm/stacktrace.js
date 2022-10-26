@@ -1,6 +1,6 @@
 import { _optionalChain } from './buildPolyfills';
 
-var STACKTRACE_LIMIT = 50;
+const STACKTRACE_LIMIT = 50;
 
 /**
  * Creates a stack parser with the supplied line parsers
@@ -10,18 +10,18 @@ var STACKTRACE_LIMIT = 50;
  *
  */
 function createStackParser(...parsers) {
-  var sortedParsers = parsers.sort((a, b) => a[0] - b[0]).map(p => p[1]);
+  const sortedParsers = parsers.sort((a, b) => a[0] - b[0]).map(p => p[1]);
 
   return (stack, skipFirst = 0) => {
-    var frames = [];
+    const frames = [];
 
-    for (var line of stack.split('\n').slice(skipFirst)) {
+    for (const line of stack.split('\n').slice(skipFirst)) {
       // https://github.com/getsentry/sentry-javascript/issues/5459
       // Remove webpack (error: *) wrappers
-      var cleanedLine = line.replace(/\(error: (.*)\)/, '$1');
+      const cleanedLine = line.replace(/\(error: (.*)\)/, '$1');
 
-      for (var parser of sortedParsers) {
-        var frame = parser(cleanedLine);
+      for (const parser of sortedParsers) {
+        const frame = parser(cleanedLine);
 
         if (frame) {
           frames.push(frame);
@@ -57,8 +57,8 @@ function stripSentryFramesAndReverse(stack) {
 
   let localStack = stack;
 
-  var firstFrameFunction = localStack[0].function || '';
-  var lastFrameFunction = localStack[localStack.length - 1].function || '';
+  const firstFrameFunction = localStack[0].function || '';
+  const lastFrameFunction = localStack[localStack.length - 1].function || '';
 
   // If stack starts with one of our API calls, remove it (starts, meaning it's the top of the stack - aka last call)
   if (firstFrameFunction.indexOf('captureMessage') !== -1 || firstFrameFunction.indexOf('captureException') !== -1) {
@@ -81,7 +81,7 @@ function stripSentryFramesAndReverse(stack) {
     .reverse();
 }
 
-var defaultFunctionName = '<anonymous>';
+const defaultFunctionName = '<anonymous>';
 
 /**
  * Safely extract function name from itself
@@ -101,8 +101,8 @@ function getFunctionName(fn) {
 
 // eslint-disable-next-line complexity
 function node(getModule) {
-  var FILENAME_MATCH = /^\s*[-]{4,}$/;
-  var FULL_MATCH = /at (?:async )?(?:(.+?)\s+\()?(?:(.+):(\d+):(\d+)?|([^)]+))\)?/;
+  const FILENAME_MATCH = /^\s*[-]{4,}$/;
+  const FULL_MATCH = /at (?:async )?(?:(.+?)\s+\()?(?:(.+):(\d+):(\d+)?|([^)]+))\)?/;
 
   // eslint-disable-next-line complexity
   return (line) => {
@@ -112,7 +112,7 @@ function node(getModule) {
       };
     }
 
-    var lineMatch = line.match(FULL_MATCH);
+    const lineMatch = line.match(FULL_MATCH);
     if (!lineMatch) {
       return undefined;
     }
@@ -135,7 +135,7 @@ function node(getModule) {
       if (methodStart > 0) {
         object = functionName.substr(0, methodStart);
         method = functionName.substr(methodStart + 1);
-        var objectEnd = object.indexOf('.Module');
+        const objectEnd = object.indexOf('.Module');
         if (objectEnd > 0) {
           functionName = functionName.substr(objectEnd + 1);
           object = object.substr(0, objectEnd);
@@ -159,15 +159,15 @@ function node(getModule) {
       functionName = typeName ? `${typeName}.${methodName}` : methodName;
     }
 
-    var filename = _optionalChain([lineMatch, 'access', _ => _[2], 'optionalAccess', _2 => _2.startsWith, 'call', _3 => _3('file://')]) ? lineMatch[2].substr(7) : lineMatch[2];
-    var isNative = lineMatch[5] === 'native';
-    var isInternal =
+    const filename = _optionalChain([lineMatch, 'access', _ => _[2], 'optionalAccess', _2 => _2.startsWith, 'call', _3 => _3('file://')]) ? lineMatch[2].substr(7) : lineMatch[2];
+    const isNative = lineMatch[5] === 'native';
+    const isInternal =
       isNative || (filename && !filename.startsWith('/') && !filename.startsWith('.') && filename.indexOf(':\\') !== 1);
 
     // in_app is all that's not an internal Node function or a module within node_modules
     // note that isNative appears to return true even for node core libraries
     // see https://github.com/getsentry/raven-node/issues/176
-    var in_app = !isInternal && filename !== undefined && !filename.includes('node_modules/');
+    const in_app = !isInternal && filename !== undefined && !filename.includes('node_modules/');
 
     return {
       filename,

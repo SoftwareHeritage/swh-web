@@ -6,7 +6,7 @@ import { rejectedSyncPromise, SyncPromise, resolvedSyncPromise } from './syncpro
  * @param limit max number of promises that can be stored in the buffer
  */
 function makePromiseBuffer(limit) {
-  var buffer = [];
+  const buffer = [];
 
   function isReady() {
     return limit === undefined || buffer.length < limit;
@@ -38,7 +38,7 @@ function makePromiseBuffer(limit) {
     }
 
     // start the task and add its promise to the queue
-    var task = taskProducer();
+    const task = taskProducer();
     if (buffer.indexOf(task) === -1) {
       buffer.push(task);
     }
@@ -73,7 +73,7 @@ function makePromiseBuffer(limit) {
       }
 
       // wait for `timeout` ms and then resolve to `false` (if not cancelled first)
-      var capturedSetTimeout = setTimeout(() => {
+      const capturedSetTimeout = setTimeout(() => {
         if (timeout && timeout > 0) {
           resolve(false);
         }

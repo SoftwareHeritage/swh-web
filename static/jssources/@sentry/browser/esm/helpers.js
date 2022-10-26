@@ -52,7 +52,7 @@ function wrap(
   try {
     // if we're dealing with a function that was previously wrapped, return
     // the original wrapper.
-    var wrapper = fn.__sentry_wrapped__;
+    const wrapper = fn.__sentry_wrapped__;
     if (wrapper) {
       return wrapper;
     }
@@ -70,8 +70,8 @@ function wrap(
 
   /* eslint-disable prefer-rest-params */
   // It is important that `sentryWrapped` is not an arrow function to preserve the context of `this`
-  var sentryWrapped = function () {
-    var args = Array.prototype.slice.call(arguments);
+  const sentryWrapped = function () {
+    const args = Array.prototype.slice.call(arguments);
 
     try {
       if (before && typeof before === 'function') {
@@ -79,7 +79,7 @@ function wrap(
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      var wrappedArguments = args.map((arg) => wrap(arg, options));
+      const wrappedArguments = args.map((arg) => wrap(arg, options));
 
       // Attempt to invoke user-land function
       // NOTE: If you are a Sentry user, and you are seeing this stack frame, it
@@ -115,7 +115,7 @@ function wrap(
   // Accessing some objects may throw
   // ref: https://github.com/getsentry/sentry-javascript/issues/1168
   try {
-    for (var property in fn) {
+    for (const property in fn) {
       if (Object.prototype.hasOwnProperty.call(fn, property)) {
         sentryWrapped[property] = fn[property];
       }
@@ -130,7 +130,7 @@ function wrap(
 
   // Restore original function name (not all browsers allow that)
   try {
-    var descriptor = Object.getOwnPropertyDescriptor(sentryWrapped, 'name') ;
+    const descriptor = Object.getOwnPropertyDescriptor(sentryWrapped, 'name') ;
     if (descriptor.configurable) {
       Object.defineProperty(sentryWrapped, 'name', {
         get() {

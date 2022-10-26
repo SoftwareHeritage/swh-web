@@ -1,11 +1,9 @@
-import { getGlobalObject } from './global.js';
+import { WINDOW } from './browser.js';
 import { isInstanceOf, isString } from './is.js';
 import { logger, CONSOLE_LEVELS } from './logger.js';
 import { fill } from './object.js';
 import { getFunctionName } from './stacktrace.js';
 import { supportsNativeFetch, supportsHistory } from './supports.js';
-
-var global = getGlobalObject();
 
 /**
  * Instrument native APIs to call handlers that can be used to create breadcrumbs, APM spans etc.
@@ -18,8 +16,8 @@ var global = getGlobalObject();
  *  - UnhandledRejection API
  */
 
-var handlers = {};
-var instrumented = {};
+const handlers = {};
+const instrumented = {};
 
 /** Instruments given API */
 function instrument(type) {
@@ -74,7 +72,7 @@ function triggerHandlers(type, data) {
     return;
   }
 
-  for (var handler of handlers[type] || []) {
+  for (const handler of handlers[type] || []) {
     try {
       handler(data);
     } catch (e) {
@@ -89,22 +87,22 @@ function triggerHandlers(type, data) {
 
 /** JSDoc */
 function instrumentConsole() {
-  if (!('console' in global)) {
+  if (!('console' in WINDOW)) {
     return;
   }
 
   CONSOLE_LEVELS.forEach(function (level) {
-    if (!(level in global.console)) {
+    if (!(level in WINDOW.console)) {
       return;
     }
 
-    fill(global.console, level, function (originalConsoleMethod) {
+    fill(WINDOW.console, level, function (originalConsoleMethod) {
       return function (...args) {
         triggerHandlers('console', { args, level });
 
         // this fails for some browsers. :(
         if (originalConsoleMethod) {
-          originalConsoleMethod.apply(global.console, args);
+          originalConsoleMethod.apply(WINDOW.console, args);
         }
       };
     });
@@ -117,9 +115,9 @@ function instrumentFetch() {
     return;
   }
 
-  fill(global, 'fetch', function (originalFetch) {
+  fill(WINDOW, 'fetch', function (originalFetch) {
     return function (...args) {
-      var handlerData = {
+      const handlerData = {
         args,
         fetchData: {
           method: getFetchMethod(args),
@@ -133,7 +131,7 @@ function instrumentFetch() {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      return originalFetch.apply(global, args).then(
+      return originalFetch.apply(WINDOW, args).then(
         (response) => {
           triggerHandlers('fetch', {
             ...handlerData,
@@ -161,7 +159,7 @@ function instrumentFetch() {
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /** Extract `method` from fetch call arguments */
 function getFetchMethod(fetchArgs = []) {
-  if ('Request' in global && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
+  if ('Request' in WINDOW && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
     return String(fetchArgs[0].method).toUpperCase();
   }
   if (fetchArgs[1] && fetchArgs[1].method) {
@@ -175,7 +173,7 @@ function getFetchUrl(fetchArgs = []) {
   if (typeof fetchArgs[0] === 'string') {
     return fetchArgs[0];
   }
-  if ('Request' in global && isInstanceOf(fetchArgs[0], Request)) {
+  if ('Request' in WINDOW && isInstanceOf(fetchArgs[0], Request)) {
     return fetchArgs[0].url;
   }
   return String(fetchArgs[0]);
@@ -184,18 +182,18 @@ function getFetchUrl(fetchArgs = []) {
 
 /** JSDoc */
 function instrumentXHR() {
-  if (!('XMLHttpRequest' in global)) {
+  if (!('XMLHttpRequest' in WINDOW)) {
     return;
   }
 
-  var xhrproto = XMLHttpRequest.prototype;
+  const xhrproto = XMLHttpRequest.prototype;
 
   fill(xhrproto, 'open', function (originalOpen) {
     return function ( ...args) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
-      var xhr = this;
-      var url = args[1];
-      var xhrInfo = (xhr.__sentry_xhr__ = {
+      const xhr = this;
+      const url = args[1];
+      const xhrInfo = (xhr.__sentry_xhr__ = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         method: isString(args[0]) ? args[0].toUpperCase() : args[0],
         url: args[1],
@@ -207,7 +205,7 @@ function instrumentXHR() {
         xhr.__sentry_own_request__ = true;
       }
 
-      var onreadystatechangeHandler = function () {
+      const onreadystatechangeHandler = function () {
         if (xhr.readyState === 4) {
           try {
             // touching statusCode in some platforms throws
@@ -266,11 +264,11 @@ function instrumentHistory() {
     return;
   }
 
-  var oldOnPopState = global.onpopstate;
-  global.onpopstate = function ( ...args) {
-    var to = global.location.href;
+  const oldOnPopState = WINDOW.onpopstate;
+  WINDOW.onpopstate = function ( ...args) {
+    const to = WINDOW.location.href;
     // keep track of the current URL state, as we always receive only the updated state
-    var from = lastHref;
+    const from = lastHref;
     lastHref = to;
     triggerHandlers('history', {
       from,
@@ -291,11 +289,11 @@ function instrumentHistory() {
   /** @hidden */
   function historyReplacementFunction(originalHistoryFunction) {
     return function ( ...args) {
-      var url = args.length > 2 ? args[2] : undefined;
+      const url = args.length > 2 ? args[2] : undefined;
       if (url) {
         // coerce to string (this is what pushState does)
-        var from = lastHref;
-        var to = String(url);
+        const from = lastHref;
+        const to = String(url);
         // keep track of the current URL state, as we always receive only the updated state
         lastHref = to;
         triggerHandlers('history', {
@@ -307,11 +305,11 @@ function instrumentHistory() {
     };
   }
 
-  fill(global.history, 'pushState', historyReplacementFunction);
-  fill(global.history, 'replaceState', historyReplacementFunction);
+  fill(WINDOW.history, 'pushState', historyReplacementFunction);
+  fill(WINDOW.history, 'replaceState', historyReplacementFunction);
 }
 
-var debounceDuration = 1000;
+const debounceDuration = 1000;
 let debounceTimerID;
 let lastCapturedEvent;
 
@@ -359,7 +357,7 @@ function shouldSkipDOMEvent(event) {
   }
 
   try {
-    var target = event.target ;
+    const target = event.target ;
 
     if (!target || !target.tagName) {
       return true;
@@ -399,7 +397,7 @@ function makeDOMEventHandler(handler, globalListener = false) {
       return;
     }
 
-    var name = event.type === 'keypress' ? 'input' : event.type;
+    const name = event.type === 'keypress' ? 'input' : event.type;
 
     // If there is no debounce timer, it means that we can safely capture the new event and store it for future comparisons.
     if (debounceTimerID === undefined) {
@@ -423,7 +421,7 @@ function makeDOMEventHandler(handler, globalListener = false) {
 
     // Start a new debounce timer that will prevent us from capturing multiple events that should be grouped together.
     clearTimeout(debounceTimerID);
-    debounceTimerID = global.setTimeout(() => {
+    debounceTimerID = WINDOW.setTimeout(() => {
       debounceTimerID = undefined;
     }, debounceDuration);
   };
@@ -431,17 +429,17 @@ function makeDOMEventHandler(handler, globalListener = false) {
 
 /** JSDoc */
 function instrumentDOM() {
-  if (!('document' in global)) {
+  if (!('document' in WINDOW)) {
     return;
   }
 
   // Make it so that any click or keypress that is unhandled / bubbled up all the way to the document triggers our dom
   // handlers. (Normally we have only one, which captures a breadcrumb for each click or keypress.) Do this before
   // we instrument `addEventListener` so that we don't end up attaching this handler twice.
-  var triggerDOMHandler = triggerHandlers.bind(null, 'dom');
-  var globalDOMEventHandler = makeDOMEventHandler(triggerDOMHandler, true);
-  global.document.addEventListener('click', globalDOMEventHandler, false);
-  global.document.addEventListener('keypress', globalDOMEventHandler, false);
+  const triggerDOMHandler = triggerHandlers.bind(null, 'dom');
+  const globalDOMEventHandler = makeDOMEventHandler(triggerDOMHandler, true);
+  WINDOW.document.addEventListener('click', globalDOMEventHandler, false);
+  WINDOW.document.addEventListener('keypress', globalDOMEventHandler, false);
 
   // After hooking into click and keypress events bubbled up to `document`, we also hook into user-handled
   // clicks & keypresses, by adding an event listener of our own to any element to which they add a listener. That
@@ -450,7 +448,7 @@ function instrumentDOM() {
   // guaranteed to fire at least once.)
   ['EventTarget', 'Node'].forEach((target) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    var proto = (global )[target] && (global )[target].prototype;
+    const proto = (WINDOW )[target] && (WINDOW )[target].prototype;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
     if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
       return;
@@ -465,12 +463,12 @@ function instrumentDOM() {
       ) {
         if (type === 'click' || type == 'keypress') {
           try {
-            var el = this ;
-            var handlers = (el.__sentry_instrumentation_handlers__ = el.__sentry_instrumentation_handlers__ || {});
-            var handlerForType = (handlers[type] = handlers[type] || { refCount: 0 });
+            const el = this ;
+            const handlers = (el.__sentry_instrumentation_handlers__ = el.__sentry_instrumentation_handlers__ || {});
+            const handlerForType = (handlers[type] = handlers[type] || { refCount: 0 });
 
             if (!handlerForType.handler) {
-              var handler = makeDOMEventHandler(triggerDOMHandler);
+              const handler = makeDOMEventHandler(triggerDOMHandler);
               handlerForType.handler = handler;
               originalAddEventListener.call(this, type, handler, options);
             }
@@ -498,9 +496,9 @@ function instrumentDOM() {
         ) {
           if (type === 'click' || type == 'keypress') {
             try {
-              var el = this ;
-              var handlers = el.__sentry_instrumentation_handlers__ || {};
-              var handlerForType = handlers[type];
+              const el = this ;
+              const handlers = el.__sentry_instrumentation_handlers__ || {};
+              const handlerForType = handlers[type];
 
               if (handlerForType) {
                 handlerForType.refCount -= 1;
@@ -532,9 +530,9 @@ function instrumentDOM() {
 let _oldOnErrorHandler = null;
 /** JSDoc */
 function instrumentError() {
-  _oldOnErrorHandler = global.onerror;
+  _oldOnErrorHandler = WINDOW.onerror;
 
-  global.onerror = function (msg, url, line, column, error) {
+  WINDOW.onerror = function (msg, url, line, column, error) {
     triggerHandlers('error', {
       column,
       error,
@@ -555,9 +553,9 @@ function instrumentError() {
 let _oldOnUnhandledRejectionHandler = null;
 /** JSDoc */
 function instrumentUnhandledRejection() {
-  _oldOnUnhandledRejectionHandler = global.onunhandledrejection;
+  _oldOnUnhandledRejectionHandler = WINDOW.onunhandledrejection;
 
-  global.onunhandledrejection = function (e) {
+  WINDOW.onunhandledrejection = function (e) {
     triggerHandlers('unhandledrejection', e);
 
     if (_oldOnUnhandledRejectionHandler) {

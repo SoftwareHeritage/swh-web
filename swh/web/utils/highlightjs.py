@@ -8,10 +8,9 @@ import json
 from typing import Dict
 
 from pygments.lexers import get_all_lexers, get_lexer_for_filename
+from pygments.util import ClassNotFound
 
 from django.contrib.staticfiles.finders import find
-
-from swh.web.utils.exc import sentry_capture_exception
 
 
 @functools.lru_cache()
@@ -140,8 +139,8 @@ def get_hljs_language_from_filename(filename):
         # try to find a Pygment lexer
         try:
             lexer = get_lexer_for_filename(filename)
-        except Exception as exc:
-            sentry_capture_exception(exc)
+        except ClassNotFound:
+            pass
         # if there is a correspondence between the lexer and an hljs
         # language, return it
         if lexer and lexer.name in _pygments_lexer_to_hljs_language:

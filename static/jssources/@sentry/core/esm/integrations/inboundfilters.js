@@ -2,7 +2,7 @@ import { logger, getEventDescription, isMatchingPattern } from '@sentry/utils';
 
 // "Script error." is hard coded into browsers for errors that it can't read.
 // this is the result of a script being pulled in from an external domain and CORS.
-var DEFAULT_IGNORE_ERRORS = [/^Script error\.?$/, /^Javascript error: Script error\.? on line 0$/];
+const DEFAULT_IGNORE_ERRORS = [/^Script error\.?$/, /^Javascript error: Script error\.? on line 0$/];
 
 /** Options for the InboundFilters integration */
 
@@ -24,14 +24,14 @@ class InboundFilters  {
    * @inheritDoc
    */
    setupOnce(addGlobalEventProcessor, getCurrentHub) {
-    var eventProcess = (event) => {
-      var hub = getCurrentHub();
+    const eventProcess = (event) => {
+      const hub = getCurrentHub();
       if (hub) {
-        var self = hub.getIntegration(InboundFilters);
+        const self = hub.getIntegration(InboundFilters);
         if (self) {
-          var client = hub.getClient();
-          var clientOptions = client ? client.getOptions() : {};
-          var options = _mergeOptions(self._options, clientOptions);
+          const client = hub.getClient();
+          const clientOptions = client ? client.getOptions() : {};
+          const options = _mergeOptions(self._options, clientOptions);
           return _shouldDropEvent(event, options) ? null : event;
         }
       }
@@ -110,7 +110,7 @@ function _isDeniedUrl(event, denyUrls) {
   if (!denyUrls || !denyUrls.length) {
     return false;
   }
-  var url = _getEventFilterUrl(event);
+  const url = _getEventFilterUrl(event);
   return !url ? false : denyUrls.some(pattern => isMatchingPattern(url, pattern));
 }
 
@@ -119,7 +119,7 @@ function _isAllowedUrl(event, allowUrls) {
   if (!allowUrls || !allowUrls.length) {
     return true;
   }
-  var url = _getEventFilterUrl(event);
+  const url = _getEventFilterUrl(event);
   return !url ? true : allowUrls.some(pattern => isMatchingPattern(url, pattern));
 }
 
@@ -152,7 +152,7 @@ function _isSentryError(event) {
 
 function _getLastValidUrl(frames = []) {
   for (let i = frames.length - 1; i >= 0; i--) {
-    var frame = frames[i];
+    const frame = frames[i];
 
     if (frame && frame.filename !== '<anonymous>' && frame.filename !== '[native code]') {
       return frame.filename || null;

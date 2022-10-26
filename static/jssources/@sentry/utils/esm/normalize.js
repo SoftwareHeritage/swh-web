@@ -41,7 +41,7 @@ function normalizeToSize(
   // 100kB, as 200kB is max payload size, so half sounds reasonable
   maxSize = 100 * 1024,
 ) {
-  var normalized = normalize(object, depth);
+  const normalized = normalize(object, depth);
 
   if (jsonSize(normalized) > maxSize) {
     return normalizeToSize(object, depth - 1, maxSize);
@@ -73,7 +73,7 @@ function visit(
     return value ;
   }
 
-  var stringified = stringifyValue(key, value);
+  const stringified = stringifyValue(key, value);
 
   // Anything we could potentially dig into more (objects or arrays) will have come back as `"[object XXXX]"`.
   // Everything else will have already been serialized, so if we don't see that pattern, we're done.
@@ -102,10 +102,10 @@ function visit(
   }
 
   // If the value has a `toJSON` method, we call it to extract more information
-  var valueWithToJSON = value ;
+  const valueWithToJSON = value ;
   if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
     try {
-      var jsonValue = valueWithToJSON.toJSON();
+      const jsonValue = valueWithToJSON.toJSON();
       // We need to normalize the return value of `.toJSON()` in case it has circular references
       return visit('', jsonValue, depth - 1, maxProperties, memo);
     } catch (err) {
@@ -116,14 +116,14 @@ function visit(
   // At this point we know we either have an object or an array, we haven't seen it before, and we're going to recurse
   // because we haven't yet reached the max depth. Create an accumulator to hold the results of visiting each
   // property/entry, and keep track of the number of items we add to it.
-  var normalized = (Array.isArray(value) ? [] : {}) ;
+  const normalized = (Array.isArray(value) ? [] : {}) ;
   let numAdded = 0;
 
   // Before we begin, convert`Error` and`Event` instances into plain objects, since some of each of their relevant
   // properties are non-enumerable and otherwise would get missed.
-  var visitable = convertToPlainObject(value );
+  const visitable = convertToPlainObject(value );
 
-  for (var visitKey in visitable) {
+  for (const visitKey in visitable) {
     // Avoid iterating over fields in the prototype if they've somehow been exposed to enumeration.
     if (!Object.prototype.hasOwnProperty.call(visitable, visitKey)) {
       continue;
@@ -135,7 +135,7 @@ function visit(
     }
 
     // Recursively visit all the child nodes
-    var visitValue = visitable[visitKey];
+    const visitValue = visitable[visitKey];
     normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memo);
 
     numAdded += 1;

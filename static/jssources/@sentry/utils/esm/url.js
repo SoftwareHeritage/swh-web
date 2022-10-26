@@ -12,15 +12,15 @@ function parseUrl(url)
     return {};
   }
 
-  var match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
+  const match = url.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
 
   if (!match) {
     return {};
   }
 
   // coerce to undefined values to empty string so we don't get 'undefined'
-  var query = match[6] || '';
-  var fragment = match[8] || '';
+  const query = match[6] || '';
+  const fragment = match[8] || '';
   return {
     host: match[4],
     path: match[5],

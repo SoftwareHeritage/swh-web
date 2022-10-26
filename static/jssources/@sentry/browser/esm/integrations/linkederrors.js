@@ -2,8 +2,8 @@ import { getCurrentHub, addGlobalEventProcessor } from '@sentry/core';
 import { isInstanceOf } from '@sentry/utils';
 import { exceptionFromError } from '../eventbuilder.js';
 
-var DEFAULT_KEY = 'cause';
-var DEFAULT_LIMIT = 5;
+const DEFAULT_KEY = 'cause';
+const DEFAULT_LIMIT = 5;
 
 /** Adds SDK info to an event. */
 class LinkedErrors  {
@@ -37,12 +37,12 @@ class LinkedErrors  {
    * @inheritDoc
    */
    setupOnce() {
-    var client = getCurrentHub().getClient();
+    const client = getCurrentHub().getClient();
     if (!client) {
       return;
     }
     addGlobalEventProcessor((event, hint) => {
-      var self = getCurrentHub().getIntegration(LinkedErrors);
+      const self = getCurrentHub().getIntegration(LinkedErrors);
       return self ? _handler(client.getOptions().stackParser, self._key, self._limit, event, hint) : event;
     });
   }
@@ -61,7 +61,7 @@ function _handler(
   if (!event.exception || !event.exception.values || !hint || !isInstanceOf(hint.originalException, Error)) {
     return event;
   }
-  var linkedErrors = _walkErrorTree(parser, limit, hint.originalException , key);
+  const linkedErrors = _walkErrorTree(parser, limit, hint.originalException , key);
   event.exception.values = [...linkedErrors, ...event.exception.values];
   return event;
 }
@@ -79,7 +79,7 @@ function _walkErrorTree(
   if (!isInstanceOf(error[key], Error) || stack.length + 1 >= limit) {
     return stack;
   }
-  var exception = exceptionFromError(parser, error[key]);
+  const exception = exceptionFromError(parser, error[key]);
   return _walkErrorTree(parser, limit, error[key], key, [exception, ...stack]);
 }
 

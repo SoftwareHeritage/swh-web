@@ -1,7 +1,7 @@
 import { SentryError } from './error.js';
 
 /** Regular expression used to parse a Dsn. */
-var DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+)?)?@)([\w.-]+)(?::(\d+))?\/(.+)/;
+const DSN_REGEX = /^(?:(\w+):)\/\/(?:(\w+)(?::(\w+)?)?@)([\w.-]+)(?::(\d+))?\/(.+)/;
 
 function isValidProtocol(protocol) {
   return protocol === 'http' || protocol === 'https';
@@ -31,7 +31,7 @@ function dsnToString(dsn, withPassword = false) {
  * @returns Dsn as DsnComponents
  */
 function dsnFromString(str) {
-  var match = DSN_REGEX.exec(str);
+  const match = DSN_REGEX.exec(str);
 
   if (!match) {
     throw new SentryError(`Invalid Sentry Dsn: ${str}`);
@@ -41,14 +41,14 @@ function dsnFromString(str) {
   let path = '';
   let projectId = lastPath;
 
-  var split = projectId.split('/');
+  const split = projectId.split('/');
   if (split.length > 1) {
     path = split.slice(0, -1).join('/');
     projectId = split.pop() ;
   }
 
   if (projectId) {
-    var projectMatch = projectId.match(/^\d+/);
+    const projectMatch = projectId.match(/^\d+/);
     if (projectMatch) {
       projectId = projectMatch[0];
     }
@@ -76,7 +76,7 @@ function validateDsn(dsn) {
 
   const { port, projectId, protocol } = dsn;
 
-  var requiredComponents = ['protocol', 'publicKey', 'host', 'projectId'];
+  const requiredComponents = ['protocol', 'publicKey', 'host', 'projectId'];
   requiredComponents.forEach(component => {
     if (!dsn[component]) {
       throw new SentryError(`Invalid Sentry Dsn: ${component} missing`);
@@ -100,7 +100,7 @@ function validateDsn(dsn) {
 
 /** The Sentry Dsn, identifying a Sentry instance and project. */
 function makeDsn(from) {
-  var components = typeof from === 'string' ? dsnFromString(from) : dsnFromComponents(from);
+  const components = typeof from === 'string' ? dsnFromString(from) : dsnFromComponents(from);
   validateDsn(components);
   return components;
 }
