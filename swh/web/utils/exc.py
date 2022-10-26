@@ -5,10 +5,12 @@
 
 import logging
 import traceback
+from typing import Optional
 
 import sentry_sdk
 
 from django.core import exceptions
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -74,7 +76,9 @@ http_status_code_message = {
 }
 
 
-def _generate_error_page(request, error_code, error_description):
+def _generate_error_page(
+    request: HttpRequest, error_code: int, error_description: str
+) -> HttpResponse:
     return render(
         request,
         "error.html",
@@ -87,7 +91,9 @@ def _generate_error_page(request, error_code, error_description):
     )
 
 
-def swh_handle400(request, exception=None):
+def swh_handle400(
+    request: HttpRequest, exception: Optional[Exception] = None
+) -> HttpResponse:
     """
     Custom Django HTTP error 400 handler for swh-web.
     """
@@ -99,7 +105,7 @@ def swh_handle400(request, exception=None):
     return _generate_error_page(request, 400, error_description)
 
 
-def swh_handle403(request, exception=None):
+def swh_handle403(request, exception: Optional[Exception] = None) -> HttpResponse:
     """
     Custom Django HTTP error 403 handler for swh-web.
     """
@@ -109,7 +115,7 @@ def swh_handle403(request, exception=None):
     return _generate_error_page(request, 403, error_description)
 
 
-def swh_handle404(request, exception=None):
+def swh_handle404(request, exception: Optional[Exception] = None) -> HttpResponse:
     """
     Custom Django HTTP error 404 handler for swh-web.
     """
@@ -119,7 +125,7 @@ def swh_handle404(request, exception=None):
     return _generate_error_page(request, 404, error_description)
 
 
-def swh_handle500(request):
+def swh_handle500(request: HttpRequest) -> HttpResponse:
     """
     Custom Django HTTP error 500 handler for swh-web.
     """
@@ -130,7 +136,7 @@ def swh_handle500(request):
     return _generate_error_page(request, 500, error_description)
 
 
-def sentry_capture_exception(exc):
+def sentry_capture_exception(exc: Exception) -> None:
     if isinstance(
         exc,
         (
@@ -151,7 +157,7 @@ def sentry_capture_exception(exc):
         sentry_sdk.capture_exception(exc)
 
 
-def handle_view_exception(request, exc):
+def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     """
     Function used to generate an error page when an exception
     was raised inside a swh-web browse view.
@@ -171,5 +177,5 @@ def handle_view_exception(request, exc):
 
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:
-        resp.traceback = error_description
+        resp.traceback = error_description  # type: ignore[attr-defined]
     return resp
