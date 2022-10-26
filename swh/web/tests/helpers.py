@@ -140,6 +140,7 @@ def check_api_post_response(
     status_code: int,
     content_type: str = "*/*",
     data: Optional[Dict[str, Any]] = None,
+    **headers,
 ) -> HttpResponseBase:
     """Helper function to check Web API response for a POST request
     for all accepted content types.
@@ -158,6 +159,7 @@ def check_api_post_response(
             data=data,
             format="json",
             HTTP_ACCEPT=content_type,
+            **headers,
         ),
         status_code=status_code,
         content_type=content_type,
@@ -169,6 +171,7 @@ def check_api_post_responses(
     url: str,
     status_code: int,
     data: Optional[Dict[str, Any]] = None,
+    **headers,
 ) -> Response:
     """Helper function to check Web API responses for POST requests
     for all accepted content types (JSON, YAML).
@@ -183,12 +186,22 @@ def check_api_post_responses(
     """
     # check JSON response
     response_json = check_api_post_response(
-        api_client, url, status_code, content_type="application/json", data=data
+        api_client,
+        url,
+        status_code,
+        content_type="application/json",
+        data=data,
+        **headers,
     )
 
     # check YAML response
     check_api_post_response(
-        api_client, url, status_code, content_type="application/yaml", data=data
+        api_client,
+        url,
+        status_code,
+        content_type="application/yaml",
+        data=data,
+        **headers,
     )
 
     return cast(Response, response_json)

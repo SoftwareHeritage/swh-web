@@ -822,12 +822,6 @@ def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
 
-# Custom data directory for requests_mock
-@pytest.fixture
-def datadir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), "resources")
-
-
 class _ArchiveData:
     """
     Helper class to manage data from a sample test archive.
