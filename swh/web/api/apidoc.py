@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -15,11 +15,12 @@ import docutils.nodes
 import docutils.parsers.rst
 import docutils.utils
 
+from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 
 from swh.web.api.apiresponse import make_api_response
 from swh.web.api.apiurls import APIUrls, CategoryId
-from swh.web.utils import parse_rst
+from swh.web.utils import parse_rst, reverse
 
 
 class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
@@ -368,10 +369,21 @@ def api_doc(
             return make_api_response(request, None, doc_data)
 
         route_name = "%s-doc" % route[1:-1].replace("/", "-")
-        urlpattern = f"^{api_version}{route}doc/$"
+        urlpattern = f"^api/{api_version}{route}doc/$"
 
         view_name = "api-%s-%s" % (api_version, route_name)
         APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
+
+        # for backward compatibility as previous apidoc URLs were missing
+        # the /api prefix
+        old_view_name = view_name.replace("api-", "")
+        old_urlpattern = f"^{api_version}{route}doc/$"
+
+        @api_view(["GET", "HEAD"])
+        def old_doc_view(request):
+            return redirect(reverse(view_name))
+
+        APIUrls.add_url_pattern(old_urlpattern, old_doc_view, old_view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2015-2020 The Software Heritage developers
+Copyright (C) 2015-2022 The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -19,7 +19,7 @@ See top-level LICENSE file for more information
     <li class="bc-no-root"><a href="/api/1/">endpoints</a></li>
     {% for endpoint in endpoint_path %}
       <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
-      {% if endpoint.name != 'stat' and endpoint.name != 'vault' and endpoint.path != 'vault/revision/doc/' %}
+      {% if endpoint.path %}
         <li class="bc-no-root"><a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a></li>
       {% else %}
         <li class="bc-no-root"><span>{{ endpoint.name }}</span></li>
