@@ -16,6 +16,7 @@ from django.utils.html import escape
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
     ObjectType,
+    Origin,
     OriginVisit,
     OriginVisitStatus,
     Release,
@@ -175,7 +176,7 @@ def _origin_branches_test_helper(
 
         browse_revision_url = reverse(
             "browse-revision",
-            url_args={"sha1_git": branch["revision"]},
+            url_args={"sha1_git": branch["target"]},
             query_params=query_params,
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
@@ -446,3 +447,205 @@ def test_browse_snapshot_log_when_revisions(
         client, snp_url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(resp, log_url)
+
+
+@pytest.mark.parametrize(
+    "aliased,with_origin,with_branch_query_param",
+    [
+        (False, False, False),
+        (False, False, True),
+        (False, True, False),
+        (False, True, True),
+        (True, False, False),
+        (True, False, True),
+        (True, True, False),
+        (True, True, True),
+    ],
+)
+def test_browse_snapshot_single_branch_targeting_content(
+    client, archive_data, content_text, aliased, with_origin, with_branch_query_param
+):
+
+    branch_name = "HEAD"
+
+    if not aliased:
+        snapshot = Snapshot(
+            branches={
+                branch_name.encode(): SnapshotBranch(
+                    target=hash_to_bytes(content_text["sha1_git"]),
+                    target_type=TargetType.CONTENT,
+                ),
+            },
+        )
+    else:
+        snapshot = Snapshot(
+            branches={
+                branch_name.encode(): SnapshotBranch(
+                    target=b"content",
+                    target_type=TargetType.ALIAS,
+                ),
+                branch_name.encode(): SnapshotBranch(
+                    target=hash_to_bytes(content_text["sha1_git"]),
+                    target_type=TargetType.CONTENT,
+                ),
+            },
+        )
+
+    archive_data.snapshot_add([snapshot])
+
+    query_params = {}
+    if with_branch_query_param:
+        query_params["branch"] = branch_name
+
+    if with_origin:
+        origin_url = "https://git.example.org/user/project"
+        archive_data.origin_add([Origin(url=origin_url)])
+        date = now()
+        visit = OriginVisit(origin=origin_url, date=date, type="git")
+        visit = archive_data.origin_visit_add([visit])[0]
+        visit_status = OriginVisitStatus(
+            origin=origin_url,
+            visit=visit.visit,
+            date=date,
+            status="full",
+            snapshot=snapshot.id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
+        query_params["origin_url"] = origin_url
+        url = reverse("browse-origin-directory", query_params=query_params)
+    else:
+        url = reverse(
+            "browse-snapshot-directory",
+            url_args={"snapshot_id": snapshot.id.hex()},
+            query_params=query_params,
+        )
+
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=302,
+    )
+
+    if with_origin:
+        query_params["origin_url"] = origin_url
+    else:
+        query_params["snapshot"] = snapshot.id.hex()
+
+    assert resp["location"] == reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{content_text['sha1_git']}"},
+        query_params=query_params,
+    )
+
+    resp = check_html_get_response(
+        client,
+        resp["location"],
+        status_code=200,
+    )
+
+    assert_contains(resp, escape(content_text["raw_data"].decode()))
+
+    if with_origin:
+        log_url = reverse("browse-origin-log", query_params=query_params)
+    else:
+        log_url = reverse(
+            "browse-snapshot-log",
+            url_args={"snapshot_id": snapshot.id.hex()},
+            query_params=query_params,
+        )
+
+    assert_not_contains(resp, log_url)
+
+
+@pytest.mark.parametrize(
+    "aliased,with_origin,with_branch_query_param",
+    [
+        (False, False, False),
+        (False, False, True),
+        (False, True, False),
+        (False, True, True),
+        (True, False, False),
+        (True, False, True),
+        (True, True, False),
+        (True, True, True),
+    ],
+)
+def test_browse_snapshot_single_branch_targeting_directory(
+    client, archive_data, directory, aliased, with_origin, with_branch_query_param
+):
+
+    branch_name = "HEAD"
+
+    if not aliased:
+        snapshot = Snapshot(
+            branches={
+                branch_name.encode(): SnapshotBranch(
+                    target=hash_to_bytes(directory),
+                    target_type=TargetType.DIRECTORY,
+                ),
+            },
+        )
+    else:
+        snapshot = Snapshot(
+            branches={
+                branch_name.encode(): SnapshotBranch(
+                    target=b"directory",
+                    target_type=TargetType.ALIAS,
+                ),
+                b"directory": SnapshotBranch(
+                    target=hash_to_bytes(directory),
+                    target_type=TargetType.DIRECTORY,
+                ),
+            },
+        )
+
+    archive_data.snapshot_add([snapshot])
+
+    query_params = {}
+    if with_branch_query_param:
+        query_params["branch"] = branch_name
+
+    if with_origin:
+        origin_url = "https://git.example.org/user/project"
+        archive_data.origin_add([Origin(url=origin_url)])
+        date = now()
+        visit = OriginVisit(origin=origin_url, date=date, type="git")
+        visit = archive_data.origin_visit_add([visit])[0]
+        visit_status = OriginVisitStatus(
+            origin=origin_url,
+            visit=visit.visit,
+            date=date,
+            status="full",
+            snapshot=snapshot.id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
+        query_params["origin_url"] = origin_url
+        url = reverse("browse-origin-directory", query_params=query_params)
+    else:
+        url = reverse(
+            "browse-snapshot-directory",
+            url_args={"snapshot_id": snapshot.id.hex()},
+            query_params=query_params,
+        )
+
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=200,
+    )
+
+    directory_data = archive_data.directory_get(directory)
+
+    for entry in directory_data["content"]:
+        assert_contains(resp, entry["name"])
+
+    if with_origin:
+        log_url = reverse("browse-origin-log", query_params=query_params)
+    else:
+        log_url = reverse(
+            "browse-snapshot-log",
+            url_args={"snapshot_id": snapshot.id.hex()},
+            query_params=query_params,
+        )
+
+    assert_not_contains(resp, log_url)

@@ -55,8 +55,10 @@ class SnapshotBranchInfo(TypedDict):
     """branch name"""
     alias: bool
     """define if the branch is an alias"""
-    revision: str
-    """branch heading revision"""
+    target_type: str
+    """branch target type: content, directory or revision"""
+    target: str
+    """branch target id"""
     url: Optional[str]
     """optional browse URL (content, directory, ...) scoped to branch"""
 
@@ -127,8 +129,8 @@ class SnapshotContext(TypedDict):
     """common URL arguments when browsing snapshot content"""
     visit_info: Optional[OriginVisitInfo]
     """optional origin visit info associated to the snapshot"""
-    directory_url: Optional[str]
-    """optional root directory URL associated to the snapshot"""
+    browse_url: Optional[str]
+    """optional browse URL associated to the snapshot"""
 
 
 class SWHObjectInfo(TypedDict):

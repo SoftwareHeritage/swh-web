@@ -42,7 +42,8 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
                     SnapshotBranchInfo(
                         name=branch,
                         alias=alias,
-                        revision=branch_data["target"],
+                        target_type="revision",
+                        target=branch_data["target"],
                         directory=rev_data["directory"],
                         date=format_utc_iso_date(rev_data["date"]),
                         message=rev_data["message"],
@@ -108,7 +109,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         root_directory = None
         for branch in branches:
             if branch["name"] == "HEAD":
-                revision_id = branch["revision"]
+                revision_id = branch["target"]
                 root_directory = branch["directory"]
             branch["url"] = reverse(
                 f"browse-snapshot-{browse_context}",
@@ -151,7 +152,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
             snapshot_swhid=snapshot_swhid,
             url_args=url_args,
             visit_info=None,
-            directory_url=directory_url,
+            browse_url=directory_url,
         )
 
         if revision_id:
@@ -213,7 +214,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
         root_directory = None
         for branch in branches:
             if branch["name"] == "HEAD":
-                revision_id = branch["revision"]
+                revision_id = branch["target"]
                 root_directory = branch["directory"]
             branch["url"] = reverse(
                 f"browse-origin-{browse_context}",
@@ -266,7 +267,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
             snapshot_swhid=snapshot_swhid,
             url_args={},
             visit_info=visit_info,
-            directory_url=directory_url,
+            browse_url=directory_url,
         )
 
         if revision_id:
@@ -307,14 +308,14 @@ def _check_branch_release_revision_parameters(
     expected_branch = dict(base_expected_context)
     expected_branch["branch"] = branch["name"]
     expected_branch["branch_alias"] = branch["alias"]
-    expected_branch["revision_id"] = branch["revision"]
+    expected_branch["revision_id"] = branch["target"]
     expected_branch["revision_info"] = _get_revision_info(
-        archive_data, branch["revision"]
+        archive_data, branch["target"]
     )
     expected_branch["root_directory"] = branch["directory"]
     expected_branch["query_params"] = {"branch": branch["name"], **query_params}
     expected_branch["revision_info"]["revision_url"] = gen_revision_url(
-        branch["revision"], expected_branch
+        branch["target"], expected_branch
     )
 
     assert snapshot_context == expected_branch
@@ -345,7 +346,7 @@ def _check_branch_release_revision_parameters(
 
         assert snapshot_context == expected_release
 
-    revision_log = archive_data.revision_log(branch["revision"])
+    revision_log = archive_data.revision_log(branch["target"])
     revision = revision_log[-1]
 
     snapshot_context = get_snapshot_context(
@@ -369,7 +370,8 @@ def _check_branch_release_revision_parameters(
         SnapshotBranchInfo(
             name=revision["id"],
             alias=False,
-            revision=revision["id"],
+            target_type="revision",
+            target=revision["id"],
             directory=revision["directory"],
             date=revision["date"],
             message=revision["message"],

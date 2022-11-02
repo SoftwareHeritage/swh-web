@@ -55,11 +55,11 @@ See top-level LICENSE file for more information
                   </a>
                 </li>
               {% endfor %}
-              {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.revision %}
+              {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.branch %}
                 <li>
                   <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
                   Branches list truncated to {{ snapshot_context.branches|length }} entries,
-                  {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.revision }}
+                  {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.branch }}
                   were omitted.
                 </li>
               {% endif %}

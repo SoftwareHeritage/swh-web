@@ -206,7 +206,7 @@ def test_directory_origin_snapshot_branch_browse(
         branch for branch in branches if branch["name"] == "refs/heads/master"
     )
 
-    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory = archive_data.revision_get(branch_info["target"])["directory"]
     directory_content = archive_data.directory_ls(directory)
     directory_subdir = random.choice(
         [e for e in directory_content if e["type"] == "dir"]
@@ -239,7 +239,7 @@ def test_directory_origin_snapshot_branch_browse(
         metadata={
             "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["target"]),
             "path": "/",
         },
     )
@@ -247,7 +247,7 @@ def test_directory_origin_snapshot_branch_browse(
 
     rev_swhid = gen_swhid(
         ObjectType.REVISION,
-        branch_info["revision"],
+        branch_info["target"],
         metadata={
             "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
@@ -357,7 +357,7 @@ def test_directory_origin_snapshot_revision_browse(
         branch for branch in branches if branch["name"] == "refs/heads/master"
     )
 
-    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory = archive_data.revision_get(branch_info["target"])["directory"]
     directory_content = archive_data.directory_ls(directory)
     directory_subdir = random.choice(
         [e for e in directory_content if e["type"] == "dir"]
@@ -369,7 +369,7 @@ def test_directory_origin_snapshot_revision_browse(
         query_params={
             "origin_url": origin_url,
             "snapshot": snapshot["id"],
-            "revision": branch_info["revision"],
+            "revision": branch_info["target"],
             "path": directory_subdir["name"],
         },
     )
@@ -378,7 +378,7 @@ def test_directory_origin_snapshot_revision_browse(
         client, url, status_code=200, template_used="browse-directory.html"
     )
 
-    assert_contains(resp, f"Revision: <strong>{branch_info['revision']}</strong>")
+    assert_contains(resp, f"Revision: <strong>{branch_info['target']}</strong>")
 
 
 def _check_origin_snapshot_related_html(

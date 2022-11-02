@@ -987,6 +987,10 @@ class _ArchiveData:
         counts = dict.fromkeys(("alias", "release", "revision"), 0)
         counts.update(self.storage.snapshot_count_branches(hash_to_bytes(snapshot_id)))
         counts.pop(None, None)
+        counts["branch"] = sum(
+            counts.get(target_type, 0)
+            for target_type in ("content", "directory", "revision")
+        )
         return counts
 
 
