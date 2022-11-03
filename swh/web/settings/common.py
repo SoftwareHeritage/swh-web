@@ -40,24 +40,23 @@ DEBUG_PROPAGATE_EXCEPTIONS = swh_web_config["debug"]
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
 
-# Application definition
+# Applications definition
 
 SWH_BASE_DJANGO_APPS = [
-    "swh.web.webapp",
+    "swh.web.api",
     "swh.web.auth",
     "swh.web.browse",
-    "swh.web.utils",
     "swh.web.tests",
-    "swh.web.api",
+    "swh.web.utils",
+    "swh.web.webapp",
 ]
 SWH_EXTRA_DJANGO_APPS = [
     app
     for app in swh_web_config["swh_extra_django_apps"]
     if app not in SWH_BASE_DJANGO_APPS
 ]
-# swh.web.api must be the last loaded application due to the way
-# its URLS are registered
-SWH_DJANGO_APPS = SWH_EXTRA_DJANGO_APPS + SWH_BASE_DJANGO_APPS
+
+SWH_DJANGO_APPS = SWH_BASE_DJANGO_APPS + SWH_EXTRA_DJANGO_APPS
 
 
 INSTALLED_APPS = [

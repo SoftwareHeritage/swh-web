@@ -19,7 +19,7 @@ from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 
 from swh.web.api.apiresponse import make_api_response
-from swh.web.api.apiurls import APIUrls, CategoryId
+from swh.web.api.apiurls import CategoryId, api_urls
 from swh.web.utils import parse_rst, reverse
 
 
@@ -352,7 +352,7 @@ def api_doc(
         if "hidden" not in tags_set:
             doc_data = get_doc_data(f, route, noargs)
             doc_desc = doc_data["description"]
-            APIUrls.add_doc_route(
+            api_urls.add_doc_route(
                 route,
                 category,
                 re.split(r"\.\s", doc_desc)[0],
@@ -372,7 +372,7 @@ def api_doc(
         urlpattern = f"^api/{api_version}{route}doc/$"
 
         view_name = "api-%s-%s" % (api_version, route_name)
-        APIUrls.add_url_pattern(urlpattern, doc_view, view_name)
+        api_urls.add_url_pattern(urlpattern, doc_view, view_name)
 
         # for backward compatibility as previous apidoc URLs were missing
         # the /api prefix
@@ -383,7 +383,7 @@ def api_doc(
         def old_doc_view(request):
             return redirect(reverse(view_name))
 
-        APIUrls.add_url_pattern(old_urlpattern, old_doc_view, old_view_name)
+        api_urls.add_url_pattern(old_urlpattern, old_doc_view, old_view_name)
 
         @wraps(f)
         def documented_view(request, **kwargs):

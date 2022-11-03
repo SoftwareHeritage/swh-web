@@ -9,9 +9,11 @@ from typing import Any, Dict, Tuple
 from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc
-from swh.web.api.apiurls import api_route
+from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.save_code_now.origin_save import create_save_origin_request
 from swh.web.utils.exc import BadInputExc
+
+webhooks_api_urls = APIUrls()
 
 
 class OriginSaveWebhookReceiver(abc.ABC):
@@ -65,6 +67,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
             f"/origin/save/webhook/{self.FORGE_TYPE.lower()}/",
             f"api-1-origin-save-webhook-{self.FORGE_TYPE.lower()}",
             methods=["POST"],
+            api_urls=webhooks_api_urls,
         )(self)
 
     def __call__(

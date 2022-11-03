@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from swh.web.api.apiurls import APIUrls, api_route
+from swh.web.api.apiurls import api_route, api_urls
 from swh.web.utils.exc import NotFoundExc
 
 EnrichFunction = Callable[[Dict[str, str], Optional[HttpRequest]], Dict[str, str]]
@@ -77,14 +77,14 @@ def api_home(request: Request):
     return Response({}, template_name="api.html")
 
 
-APIUrls.add_url_pattern(r"^api/$", api_home, view_name="api-1-homepage")
+api_urls.add_url_pattern(r"^api/$", api_home, view_name="api-1-homepage")
 
 
 @api_route(r"/", "api-1-endpoints")
 def api_endpoints(request):
     """Display the list of opened api endpoints."""
     routes_by_category = {}
-    for route, doc in APIUrls.get_app_endpoints().items():
+    for route, doc in api_urls.get_app_endpoints().items():
         doc["doc_intro"] = doc["docstring"].split("\n\n")[0]
         routes_by_category.setdefault(doc["category"], []).append(doc)
 

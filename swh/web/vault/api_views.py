@@ -12,7 +12,7 @@ from rest_framework.request import Request
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
-from swh.web.api.apiurls import api_route
+from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import SWHID_RE, archive, query, reverse
 from swh.web.utils.exc import BadInputExc
@@ -61,6 +61,8 @@ def _vault_response(
     return d
 
 
+vault_api_urls = APIUrls()
+
 ######################################################
 # Flat bundles
 
@@ -71,6 +73,7 @@ def _vault_response(
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
     never_cache=True,
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/", category="Batch download")
 @format_docstring()
@@ -146,6 +149,7 @@ def api_vault_cook_flat(request: Request, swhid: str):
     checksum_args=["dir_id"],
     throttle_scope="swh_vault_cooking",
     never_cache=True,
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/directory/", category="Batch download", tags=["deprecated"])
 @format_docstring()
@@ -172,6 +176,7 @@ def api_vault_cook_directory(request: Request, dir_id: str):
 @api_route(
     f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/",
     "api-1-vault-fetch-flat",
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/raw/", category="Batch download")
 def api_vault_fetch_flat(request: Request, swhid: str):
@@ -211,6 +216,7 @@ def api_vault_fetch_flat(request: Request, swhid: str):
     r"/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/",
     "api-1-vault-fetch-directory",
     checksum_args=["dir_id"],
+    api_urls=vault_api_urls,
 )
 @api_doc(
     "/vault/directory/raw/", category="Batch download", tags=["hidden", "deprecated"]
@@ -240,6 +246,7 @@ def api_vault_fetch_directory(request: Request, dir_id: str):
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
     never_cache=True,
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/", category="Batch download")
 @format_docstring()
@@ -315,6 +322,7 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
     checksum_args=["rev_id"],
     throttle_scope="swh_vault_cooking",
     never_cache=True,
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/revision/gitfast/", category="Batch download", tags=["deprecated"])
 @format_docstring()
@@ -341,6 +349,7 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
 @api_route(
     f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/",
     "api-1-vault-fetch-gitfast",
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/raw/", category="Batch download")
 def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
@@ -380,6 +389,7 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
     r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/",
     "api-1-vault-fetch-revision_gitfast",
     checksum_args=["rev_id"],
+    api_urls=vault_api_urls,
 )
 @api_doc(
     "/vault/revision_gitfast/raw/",
@@ -408,6 +418,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
     never_cache=True,
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/", category="Batch download")
 @format_docstring()
@@ -483,6 +494,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 @api_route(
     f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/",
     "api-1-vault-fetch-git-bare",
+    api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/raw/", category="Batch download")
 def api_vault_fetch_revision_git_bare(request: Request, swhid: str):

@@ -3,9 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import List, Union
-
-from django.urls import URLPattern, URLResolver
 
 # register Web API endpoints
 import swh.web.save_origin_webhooks.bitbucket  # noqa
@@ -14,4 +11,8 @@ import swh.web.save_origin_webhooks.github  # noqa
 import swh.web.save_origin_webhooks.gitlab  # noqa
 import swh.web.save_origin_webhooks.sourceforge  # noqa
 
-urlpatterns: List[Union[URLPattern, URLResolver]] = []
+from swh.web.save_origin_webhooks.generic_receiver import (  # isort: skip
+    webhooks_api_urls,
+)
+
+urlpatterns = webhooks_api_urls.get_url_patterns()

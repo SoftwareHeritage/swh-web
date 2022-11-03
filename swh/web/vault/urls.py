@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import re_path as url
 
 # register Web API endpoints
-import swh.web.vault.api_views  # noqa
+from swh.web.vault.api_views import vault_api_urls
 
 
 def vault_view(request: HttpRequest) -> HttpResponse:
@@ -27,4 +27,5 @@ urlpatterns = [
     url(r"^vault/$", vault_view, name="vault"),
     # for backward compatibility
     url(r"^browse/vault/$", browse_vault_view, name="browse-vault"),
+    *vault_api_urls.get_url_patterns(),
 ]

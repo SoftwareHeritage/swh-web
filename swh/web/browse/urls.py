@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import re_path as url
 
-from swh.web.browse.browseurls import BrowseUrls
+from swh.web.browse.browseurls import browse_urls
 from swh.web.browse.identifiers import swhid_browse
 import swh.web.browse.views.content  # noqa
 import swh.web.browse.views.directory  # noqa
@@ -71,6 +71,5 @@ urlpatterns = [
         swhid_browse,
         name="browse-swhid",
     ),
+    *browse_urls.get_url_patterns(),
 ]
-
-urlpatterns += BrowseUrls.get_url_patterns()
