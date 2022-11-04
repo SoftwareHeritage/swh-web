@@ -16,8 +16,8 @@ from swh.search.exc import SearchQuerySyntaxError
 from swh.search.interface import PagedResult
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.storage.utils import now
+from swh.web.api.tests.views.utils import scroll_results
 from swh.web.api.utils import enrich_origin, enrich_origin_visit
-from swh.web.tests.api.views.utils import scroll_results
 from swh.web.tests.data import (
     INDEXER_TOOL,
     ORIGIN_MASTER_DIRECTORY,

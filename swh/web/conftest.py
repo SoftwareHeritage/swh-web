@@ -10,7 +10,6 @@ from importlib import import_module, reload
 import json
 import os
 import random
-import shutil
 import sys
 import time
 from typing import Any, Dict, List, Optional
@@ -60,8 +59,6 @@ from swh.web.utils import browsers_supported_image_mimes, converters
 from swh.web.utils.typing import OriginVisitInfo
 
 os.environ["LC_ALL"] = "C.UTF-8"
-
-fossology_missing = shutil.which("nomossa") is None
 
 # Register some hypothesis profiles
 hypothesis_settings.register_profile("default", hypothesis_settings())
@@ -122,13 +119,13 @@ def pytest_configure(config):
 
     if not os.path.exists(static_dir):
         # location of the static folder when running tests locally with pytest
-        static_dir = os.path.join(test_dir, "../../../static")
+        static_dir = os.path.join(test_dir, "../../static")
 
     webpack_stats = os.path.join(static_dir, "webpack-stats.json")
     if os.path.exists(webpack_stats):
         return
 
-    django_apps_dir = os.path.join(test_dir, "../../../swh/web")
+    django_apps_dir = os.path.join(test_dir, "../../swh/web")
     if not os.path.exists(django_apps_dir):
         # location of the applications folder when running tests with tox
         django_apps_dir = os.path.join(data_dir, "swh/web")
@@ -147,8 +144,6 @@ def pytest_configure(config):
                         os.path.join(app_assets_dir, app_bundle, "index.js")
                     ):
                         bundles.append(app_bundle)
-
-    print(bundles)
 
     mock_webpack_stats = {
         "status": "done",

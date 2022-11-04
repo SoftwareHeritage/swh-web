@@ -319,7 +319,7 @@ def test_get_pks_from_message_logging(caplog):
 def test_get_message_plaintext(
     filename: str, expected_parts: List[bytes], expected_absent: List[bytes]
 ):
-    with open_binary("swh.web.tests.inbound_email.resources", filename) as f:
+    with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
         message = email.message_from_binary_file(f, policy=email.policy.default)
 
     assert isinstance(message, EmailMessage)

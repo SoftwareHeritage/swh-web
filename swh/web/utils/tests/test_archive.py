@@ -27,8 +27,8 @@ from swh.model.model import (
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
-from swh.web.tests.conftest import fossology_missing
 from swh.web.tests.data import random_content, random_sha1
+from swh.web.tests.helpers import fossology_missing
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 from swh.web.utils import archive
 from swh.web.utils.exc import BadInputExc, NotFoundExc

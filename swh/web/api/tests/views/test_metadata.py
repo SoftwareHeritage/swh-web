@@ -10,7 +10,7 @@ import pytest
 
 from swh.model.hypothesis_strategies import raw_extrinsic_metadata
 from swh.model.model import Origin
-from swh.web.tests.api.views.utils import scroll_results
+from swh.web.api.tests.views.utils import scroll_results
 from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
 from swh.web.utils import reverse
 
