@@ -125,7 +125,7 @@ See top-level LICENSE file for more information
       </select>
     {% endif %}
     {% if show_actions %}
-      {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+      {% if "swh.web.vault" in SWH_DJANGO_APPS and vault_cooking %}
         {% if not snapshot_context or not snapshot_context.is_empty %}
           {% include "includes/vault-create-tasks.html" %}
         {% endif %}
