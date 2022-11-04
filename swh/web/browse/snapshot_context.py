@@ -1202,7 +1202,7 @@ def browse_snapshot_branches(
         snapshot_context["snapshot_id"],
         branches_from,
         PER_PAGE + 1,
-        target_types=["revision", "alias"],
+        target_types=["content", "directory", "revision", "alias"],
         branch_name_include_substring=branch_name_include,
     )
     displayed_branches: List[Dict[str, Any]] = []
@@ -1211,23 +1211,33 @@ def browse_snapshot_branches(
         displayed_branches = [dict(branch) for branch in branches]
 
     for branch in displayed_branches:
-        rev_query_params = {}
+        query_params = {"snapshot": snapshot_id, "branch": branch["name"]}
         if origin_info:
-            rev_query_params["origin_url"] = origin_info["url"]
+            query_params["origin_url"] = origin_info["url"]
 
-        revision_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": branch["target"]},
-            query_params=query_params,
-        )
-
-        query_params["branch"] = branch["name"]
         directory_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
         )
-        del query_params["branch"]
-        branch["revision_url"] = revision_url
         branch["directory_url"] = directory_url
+        del query_params["branch"]
+
+        if branch["target_type"] in ("directory", "revision"):
+            target_url = reverse(
+                f"browse-{branch['target_type']}",
+                url_args={"sha1_git": branch["target"]},
+                query_params=query_params,
+            )
+        elif branch["target_type"] == "content":
+            target_url = reverse(
+                "browse-content",
+                url_args={"query_string": f"sha1_git:{branch['target']}"},
+                query_params=query_params,
+            )
+        branch["target_url"] = target_url
+        branch["tooltip"] = (
+            f"The branch {branch['name']} targets "
+            f"{branch['target_type']} {branch['target']}"
+        )
 
     if origin_info:
         browse_view_name = "browse-origin-branches"

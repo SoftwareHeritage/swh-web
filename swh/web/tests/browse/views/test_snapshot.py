@@ -125,25 +125,60 @@ def test_snapshot_browse_without_id_and_origin(client, browse_context):
     )
 
 
-def test_snapshot_browse_branches(client, archive_data, origin):
-    snapshot = archive_data.snapshot_get_latest(origin["url"])
+def test_snapshot_browse_branches_targeting_revisions(client, archive_data, origin):
+    _origin_branches_test_helper(client, archive_data, origin["url"])
+
+
+def test_snapshot_browse_branches_targeting_multiple_types(
+    client, archive_data, content_text, directory, revision
+):
+    snapshot = Snapshot(
+        branches={
+            b"content": SnapshotBranch(
+                target=hash_to_bytes(content_text["sha1_git"]),
+                target_type=TargetType.CONTENT,
+            ),
+            b"directory": SnapshotBranch(
+                target=hash_to_bytes(directory),
+                target_type=TargetType.DIRECTORY,
+            ),
+            b"revision": SnapshotBranch(
+                target=hash_to_bytes(revision),
+                target_type=TargetType.REVISION,
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    origin_url = "https://git.example.org/user/project"
+    archive_data.origin_add([Origin(url=origin_url)])
+    date = now()
+    visit = OriginVisit(origin=origin_url, date=date, type="git")
+    visit = archive_data.origin_visit_add([visit])[0]
+    visit_status = OriginVisitStatus(
+        origin=origin_url,
+        visit=visit.visit,
+        date=date,
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    _origin_branches_test_helper(client, archive_data, origin_url)
+
+
+def _origin_branches_test_helper(client, archive_data, origin_url):
+
+    snapshot = archive_data.snapshot_get_latest(origin_url)
 
     snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
     snapshot_content = process_snapshot_branches(snapshot)
 
-    _origin_branches_test_helper(
-        client, origin, snapshot_content, snapshot_sizes, snapshot_id=snapshot["id"]
-    )
-
-
-def _origin_branches_test_helper(
-    client, origin_info, origin_snapshot, snapshot_sizes, snapshot_id
-):
-    query_params = {"origin_url": origin_info["url"], "snapshot": snapshot_id}
+    query_params = {"origin_url": origin_url, "snapshot": snapshot["id"]}
 
     url = reverse(
         "browse-snapshot-branches",
-        url_args={"snapshot_id": snapshot_id},
+        url_args={"snapshot_id": snapshot["id"]},
         query_params=query_params,
     )
 
@@ -151,12 +186,12 @@ def _origin_branches_test_helper(
         client, url, status_code=200, template_used="browse-branches.html"
     )
 
-    origin_branches = origin_snapshot[0]
-    origin_releases = origin_snapshot[1]
+    origin_branches = snapshot_content[0]
+    origin_releases = snapshot_content[1]
     origin_branches_url = reverse("browse-origin-branches", query_params=query_params)
 
     assert_contains(resp, f'href="{escape(origin_branches_url)}"')
-    assert_contains(resp, f"Branches ({snapshot_sizes['revision']})")
+    assert_contains(resp, f"Branches ({snapshot_sizes['branch']})")
 
     origin_releases_url = reverse("browse-origin-releases", query_params=query_params)
 
@@ -174,14 +209,29 @@ def _origin_branches_test_helper(
         )
         assert_contains(resp, '<a href="%s">' % escape(browse_branch_url))
 
-        browse_revision_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": branch["target"]},
-            query_params=query_params,
-        )
-        assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
+        if branch["target_type"] == "revision":
+            browse_revision_url = reverse(
+                "browse-revision",
+                url_args={"sha1_git": branch["target"]},
+                query_params=query_params,
+            )
+            assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
+        elif branch["target_type"] == "directory":
+            browse_directory_url = reverse(
+                "browse-directory",
+                url_args={"sha1_git": branch["target"]},
+                query_params=query_params,
+            )
+            assert_contains(resp, '<a href="%s">' % escape(browse_directory_url))
+        elif branch["target_type"] == "content":
+            browse_content_url = reverse(
+                "browse-content",
+                url_args={"query_string": f"sha1_git:{branch['target']}"},
+                query_params=query_params,
+            )
+            assert_contains(resp, '<a href="%s">' % escape(browse_content_url))
 
-    _check_origin_link(resp, origin_info["url"])
+    _check_origin_link(resp, origin_url)
 
 
 def _check_origin_link(resp, origin_url):
