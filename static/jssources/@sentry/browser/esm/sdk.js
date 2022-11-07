@@ -1,7 +1,7 @@
 import { Integrations, getIntegrationsToSetup, initAndBind, getReportDialogEndpoint, getCurrentHub } from '@sentry/core';
-import { WINDOW, stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
+import { stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
 import { BrowserClient } from './client.js';
-import { wrap as wrap$1 } from './helpers.js';
+import { WINDOW, wrap as wrap$1 } from './helpers.js';
 import './integrations/index.js';
 import { defaultStackParser } from './stack-parsers.js';
 import './transports/index.js';

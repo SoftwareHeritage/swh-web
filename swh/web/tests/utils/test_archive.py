@@ -996,13 +996,16 @@ def test_lookup_snapshot_sizes(archive_data, snapshot):
 
     expected_sizes = {
         "alias": 0,
+        "branch": 0,
         "release": 0,
         "revision": 0,
     }
 
-    for branch_name, branch_info in branches.items():
+    for _, branch_info in branches.items():
         if branch_info is not None:
             expected_sizes[branch_info["target_type"]] += 1
+            if branch_info["target_type"] in ("content", "directory", "revision"):
+                expected_sizes["branch"] += 1
 
     assert archive.lookup_snapshot_sizes(snapshot) == expected_sizes
 
@@ -1031,7 +1034,7 @@ def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
     )
     archive_data.snapshot_add([snapshot])
 
-    expected_sizes = {"alias": 0, "release": 0, "revision": 2}
+    expected_sizes = {"alias": 0, "branch": 2, "release": 0, "revision": 2}
 
     assert (
         archive.lookup_snapshot_sizes(

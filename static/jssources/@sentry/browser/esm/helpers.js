@@ -1,5 +1,7 @@
 import { withScope, captureException } from '@sentry/core';
-import { getOriginalFunction, addExceptionTypeValue, addExceptionMechanism, markFunctionWrapped, addNonEnumerableProperty } from '@sentry/utils';
+import { GLOBAL_OBJ, getOriginalFunction, addExceptionTypeValue, addExceptionMechanism, markFunctionWrapped, addNonEnumerableProperty } from '@sentry/utils';
+
+const WINDOW = GLOBAL_OBJ ;
 
 let ignoreOnError = 0;
 
@@ -148,5 +150,5 @@ function wrap(
  * All properties the report dialog supports
  */
 
-export { ignoreNextOnError, shouldIgnoreOnError, wrap };
+export { WINDOW, ignoreNextOnError, shouldIgnoreOnError, wrap };
 //# sourceMappingURL=helpers.js.map

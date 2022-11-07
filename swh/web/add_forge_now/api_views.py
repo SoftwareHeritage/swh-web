@@ -22,7 +22,7 @@ from swh.web.add_forge_now.models import RequestActorRole as AddForgeNowRequestA
 from swh.web.add_forge_now.models import RequestHistory as AddForgeNowRequestHistory
 from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStatus
 from swh.web.api.apidoc import api_doc, format_docstring
-from swh.web.api.apiurls import api_route
+from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.auth.utils import is_add_forge_now_moderator
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
@@ -102,10 +102,14 @@ class AddForgeNowRequestHistoryPublicSerializer(serializers.ModelSerializer):
         fields = ("id", "date", "new_status", "actor_role")
 
 
+add_forge_now_api_urls = APIUrls()
+
+
 @api_route(
     r"/add-forge/request/create/",
     "api-1-add-forge-request-create",
     methods=["POST"],
+    api_urls=add_forge_now_api_urls,
 )
 @api_doc("/add-forge/request/create", category="Request archival")
 @format_docstring()
@@ -189,6 +193,7 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
     r"/add-forge/request/(?P<id>[0-9]+)/update/",
     "api-1-add-forge-request-update",
     methods=["POST"],
+    api_urls=add_forge_now_api_urls,
 )
 @api_doc("/add-forge/request/update", category="Request archival", tags=["hidden"])
 @format_docstring()
@@ -280,6 +285,7 @@ def api_add_forge_request_update(
     r"/add-forge/request/list/",
     "api-1-add-forge-request-list",
     methods=["GET"],
+    api_urls=add_forge_now_api_urls,
 )
 @api_doc("/add-forge/request/list", category="Request archival")
 @format_docstring()
@@ -351,6 +357,7 @@ def api_add_forge_request_list(request: Request):
     r"/add-forge/request/(?P<id>[0-9]+)/get/",
     "api-1-add-forge-request-get",
     methods=["GET"],
+    api_urls=add_forge_now_api_urls,
 )
 @api_doc("/add-forge/request/get", category="Request archival")
 @format_docstring()

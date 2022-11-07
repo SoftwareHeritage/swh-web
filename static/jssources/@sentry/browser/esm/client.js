@@ -1,6 +1,7 @@
 import { BaseClient, SDK_VERSION, getCurrentHub, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
-import { WINDOW, getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
+import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
 
 /**

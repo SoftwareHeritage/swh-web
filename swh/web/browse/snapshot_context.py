@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
@@ -65,7 +65,7 @@ def _get_branch(
             snapshot_id,
             branches_from=branch_name,
             branches_count=1,
-            target_types=["revision", "alias"],
+            target_types=["revision", "alias", "content", "directory"],
             # pull request branches must be browsable even if they are hidden
             # by default in branches list
             branch_name_exclude_prefix=None,
@@ -127,7 +127,7 @@ def _branch_not_found(
     if branch_type == "branch":
         branch_type = "Branch"
         branch_type_plural = "branches"
-        target_type = "revision"
+        target_type = "branch"
     else:
         branch_type = "Release"
         branch_type_plural = "releases"
@@ -202,17 +202,19 @@ def process_snapshot_branches(
             continue
         target_id = target["target"]
         target_type = target["target_type"]
-        if target_type == "revision":
+        if target_type in ("content", "directory", "revision"):
             branches[branch_name] = SnapshotBranchInfo(
                 name=branch_name,
                 alias=False,
-                revision=target_id,
+                target_type=target_type,
+                target=target_id,
                 date=None,
                 directory=None,
                 message=None,
                 url=None,
             )
-            revision_to_branch[target_id].add(branch_name)
+            if target_type == "revision":
+                revision_to_branch[target_id].add(branch_name)
         elif target_type == "release":
             release_to_branch[target_id].add(branch_name)
         elif target_type == "alias":
@@ -237,7 +239,8 @@ def process_snapshot_branches(
         branches[branch] = SnapshotBranchInfo(
             name=branch,
             alias=alias,
-            revision=revision["id"],
+            target_type="revision",
+            target=revision["id"],
             directory=revision["directory"],
             date=format_utc_iso_date(revision["date"]),
             message=revision["message"],
@@ -268,7 +271,7 @@ def process_snapshot_branches(
 
     resolved_aliases = {}
 
-    for branch_alias, branch_target in branch_aliases.items():
+    for branch_alias, _ in branch_aliases.items():
         resolved_alias = archive.lookup_snapshot_alias(snapshot["id"], branch_alias)
         resolved_aliases[branch_alias] = resolved_alias
         if resolved_alias is None:
@@ -283,6 +286,17 @@ def process_snapshot_branches(
         elif target_type == "release":
             release = archive.lookup_release(target)
             _add_release_info(branch_alias, release, alias=True)
+        elif target_type in ("content", "directory"):
+            branches[branch_name] = SnapshotBranchInfo(
+                name=branch_alias,
+                alias=True,
+                target_type=target_type,
+                target=target,
+                date=None,
+                directory=None,
+                message=None,
+                url=None,
+            )
 
         if branch_alias in branches:
             branches[branch_alias]["name"] = branch_alias
@@ -468,7 +482,7 @@ def get_snapshot_context(
             )
 
         visit_url = reverse("browse-origin-directory", query_params=query_params)
-        visit_info["url"] = directory_url = visit_url
+        visit_info["url"] = browse_url = visit_url
 
         branches_url = reverse("browse-origin-branches", query_params=query_params)
 
@@ -477,7 +491,7 @@ def get_snapshot_context(
         assert snapshot_id is not None
         branches, releases, aliases = get_snapshot_content(snapshot_id)
         url_args = {"snapshot_id": snapshot_id}
-        directory_url = reverse("browse-snapshot-directory", url_args=url_args)
+        browse_url = reverse("browse-snapshot-directory", url_args=url_args)
         branches_url = reverse("browse-snapshot-branches", url_args=url_args)
 
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
@@ -490,7 +504,11 @@ def get_snapshot_context(
 
     snapshot_sizes = _get_snapshot_sizes(snapshot_id)
 
-    is_empty = (snapshot_sizes["release"] + snapshot_sizes["revision"]) == 0
+    snapshot_total_size = sum(
+        v for k, v in snapshot_sizes.items() if k not in ("alias", "branch")
+    )
+
+    is_empty = snapshot_total_size == 0
 
     swh_snp_id = str(
         CoreSWHID(object_type=ObjectType.SNAPSHOT, object_id=hash_to_bytes(snapshot_id))
@@ -507,8 +525,6 @@ def get_snapshot_context(
     release_id = None
     root_directory = None
 
-    snapshot_total_size = snapshot_sizes["release"] + snapshot_sizes["revision"]
-
     if path is not None:
         query_params["path"] = path
 
@@ -520,7 +536,8 @@ def get_snapshot_context(
             SnapshotBranchInfo(
                 name=revision_id,
                 alias=False,
-                revision=revision_id,
+                target_type="revision",
+                target=revision_id,
                 directory=root_directory,
                 date=revision["date"],
                 message=revision["message"],
@@ -568,17 +585,24 @@ def get_snapshot_context(
                 )
             else:
                 branch_name = branch["name"]
-                revision_id = branch["revision"]
-                root_directory = branch["directory"]
+                if branch["target_type"] == "revision":
+                    revision_id = branch["target"]
+                    root_directory = branch["directory"]
+                elif branch["target_type"] == "directory":
+                    root_directory = branch["target"]
         elif head is not None:
             # otherwise, browse branch targeted by the HEAD alias if it exists
-            if head["target_type"] == "revision":
-                # HEAD alias targets a revision
-                head_rev = archive.lookup_revision(head["target"])
+            if head["target_type"] in ("content", "directory", "revision"):
                 branch_name = "HEAD"
-                revision_id = head_rev["id"]
-                root_directory = head_rev["directory"]
-            else:
+                if head["target_type"] == "revision":
+                    # HEAD alias targets a revision
+                    head_rev = archive.lookup_revision(head["target"])
+                    revision_id = head_rev["id"]
+                    root_directory = head_rev["directory"]
+                elif head["target_type"] == "directory":
+                    # HEAD alias targets a directory
+                    root_directory = head["target"]
+            elif head["target_type"] == "release":
                 # HEAD alias targets a release
                 release_name = archive.lookup_release(head["target"])["name"]
                 head_rel = _get_release(releases, release_name, snapshot_id)
@@ -604,8 +628,13 @@ def get_snapshot_context(
             # fallback to browse first branch otherwise
             branch = branches[0]
             branch_name = branch["name"]
-            revision_id = branch["revision"]
-            root_directory = branch["directory"]
+            revision_id = (
+                branch["target"] if branch["target_type"] == "revision" else None
+            )
+            if branch["target_type"] == "revision":
+                root_directory = branch["directory"]
+            elif branch["target_type"] == "directory":
+                root_directory = branch["target"]
         elif releases:
             # fallback to browse last release otherwise
             release = releases[-1]
@@ -621,7 +650,7 @@ def get_snapshot_context(
     for b in branches:
         branch_query_params = dict(query_params)
         branch_query_params.pop("release", None)
-        if b["name"] != b["revision"]:
+        if b["name"] != b["target"]:
             branch_query_params.pop("revision", None)
             branch_query_params["branch"] = b["name"]
         b["url"] = reverse(
@@ -657,7 +686,7 @@ def get_snapshot_context(
                 revision_info["message_header"] = ""
 
     snapshot_context = SnapshotContext(
-        directory_url=directory_url,
+        browse_url=browse_url,
         branch=branch_name,
         branch_alias=branch_name in aliases,
         branches=branches,
@@ -759,6 +788,27 @@ def browse_snapshot_directory(
     )
 
     root_directory = snapshot_context["root_directory"]
+
+    if root_directory is None and snapshot_context["branch"] is not None:
+        branch_info = [
+            branch
+            for branch in snapshot_context["branches"]
+            if branch["name"] == snapshot_context["branch"]
+        ]
+        # special case where the branch to browse targets a content instead of a directory
+        if branch_info and branch_info[0]["target_type"] == "content":
+            # redirect to browse content view
+            if "origin_url" not in snapshot_context["query_params"]:
+                snapshot_id = snapshot_context["snapshot_id"]
+                snapshot_context["query_params"]["snapshot"] = snapshot_id
+            return redirect(
+                reverse(
+                    "browse-content",
+                    url_args={"query_string": f"sha1_git:{branch_info[0]['target']}"},
+                    query_params=snapshot_context["query_params"],
+                )
+            )
+
     sha1_git = root_directory
     error_info: Dict[str, Any] = {
         "status_code": 200,
@@ -1152,7 +1202,7 @@ def browse_snapshot_branches(
         snapshot_context["snapshot_id"],
         branches_from,
         PER_PAGE + 1,
-        target_types=["revision", "alias"],
+        target_types=["content", "directory", "revision", "alias"],
         branch_name_include_substring=branch_name_include,
     )
     displayed_branches: List[Dict[str, Any]] = []
@@ -1161,23 +1211,33 @@ def browse_snapshot_branches(
         displayed_branches = [dict(branch) for branch in branches]
 
     for branch in displayed_branches:
-        rev_query_params = {}
+        query_params = {"snapshot": snapshot_id, "branch": branch["name"]}
         if origin_info:
-            rev_query_params["origin_url"] = origin_info["url"]
+            query_params["origin_url"] = origin_info["url"]
 
-        revision_url = reverse(
-            "browse-revision",
-            url_args={"sha1_git": branch["revision"]},
-            query_params=query_params,
-        )
-
-        query_params["branch"] = branch["name"]
         directory_url = reverse(
             browse_view_name, url_args=url_args, query_params=query_params
         )
-        del query_params["branch"]
-        branch["revision_url"] = revision_url
         branch["directory_url"] = directory_url
+        del query_params["branch"]
+
+        if branch["target_type"] in ("directory", "revision"):
+            target_url = reverse(
+                f"browse-{branch['target_type']}",
+                url_args={"sha1_git": branch["target"]},
+                query_params=query_params,
+            )
+        elif branch["target_type"] == "content":
+            target_url = reverse(
+                "browse-content",
+                url_args={"query_string": f"sha1_git:{branch['target']}"},
+                query_params=query_params,
+            )
+        branch["target_url"] = target_url
+        branch["tooltip"] = (
+            f"The branch {branch['name']} targets "
+            f"{branch['target_type']} {branch['target']}"
+        )
 
     if origin_info:
         browse_view_name = "browse-origin-branches"

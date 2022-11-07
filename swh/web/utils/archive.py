@@ -1097,6 +1097,12 @@ def lookup_snapshot_sizes(
     # when null branches are present in the snapshot
     branch_counts.pop(None, None)
     snapshot_sizes.update(branch_counts)
+
+    snapshot_sizes["branch"] = sum(
+        snapshot_sizes.get(target_type, 0)
+        for target_type in ("content", "directory", "revision")
+    )
+
     return snapshot_sizes
 
 

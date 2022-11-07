@@ -7,13 +7,7 @@ from typing import List, Optional
 
 from swh.web.utils.urlsindex import UrlsIndex
 
-
-class BrowseUrls(UrlsIndex):
-    """
-    Class to manage swh-web browse application urls.
-    """
-
-    scope = "browse"
+browse_urls = UrlsIndex()
 
 
 def browse_route(
@@ -36,10 +30,10 @@ def browse_route(
     def decorator(f):
         # register the route and its view in the browse endpoints index
         for url_pattern in url_patterns:
-            BrowseUrls.add_url_pattern(url_pattern, f, view_name)
+            browse_urls.add_url_pattern(url_pattern, f, view_name)
 
         if checksum_args:
-            BrowseUrls.add_redirect_for_checksum_args(
+            browse_urls.add_redirect_for_checksum_args(
                 view_name, url_patterns, checksum_args
             )
 

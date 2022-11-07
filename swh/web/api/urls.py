@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 
-from swh.web.api.apiurls import APIUrls
+from swh.web.api.apiurls import api_urls
 import swh.web.api.views.content  # noqa
 import swh.web.api.views.directory  # noqa
 import swh.web.api.views.graph  # noqa
@@ -18,4 +18,4 @@ import swh.web.api.views.revision  # noqa
 import swh.web.api.views.snapshot  # noqa
 import swh.web.api.views.stat  # noqa
 
-urlpatterns = APIUrls.get_url_patterns()
+urlpatterns = api_urls.get_url_patterns()

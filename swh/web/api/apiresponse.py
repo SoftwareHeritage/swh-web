@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import get_resolver
 from django.utils.cache import add_never_cache_headers
 from django.utils.html import escape
 from rest_framework.exceptions import APIException
@@ -152,9 +153,16 @@ def make_api_response(
 
         # generate breadcrumbs data
         if "route" in doc_data:
+            all_view_names = set(get_resolver().reverse_dict.keys())
             doc_data["endpoint_path"] = gen_path_info(doc_data["route"])
             for i in range(len(doc_data["endpoint_path"]) - 1):
-                doc_data["endpoint_path"][i]["path"] += "/doc/"
+                view_name = "api-1-" + "-".join(
+                    [doc_data["endpoint_path"][i]["name"] for i in range(i + 1)]
+                )
+                if view_name in all_view_names:
+                    doc_data["endpoint_path"][i]["path"] += "/doc/"
+                else:
+                    doc_data["endpoint_path"][i]["path"] = ""
             if not doc_data["noargs"]:
                 doc_data["endpoint_path"][-1]["path"] += "/doc/"
 

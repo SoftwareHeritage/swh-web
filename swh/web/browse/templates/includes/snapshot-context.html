@@ -37,12 +37,12 @@ See top-level LICENSE file for more information
 
 <ul class="nav nav-tabs" id="swh-snapshot-context-nav" style="padding-left: 5px;">
   <li class="nav-item">
-    <a class="nav-link" id="swh-browse-code-nav-link" href="{{ snapshot_context.directory_url }}">
+    <a class="nav-link" id="swh-browse-code-nav-link" href="{{ snapshot_context.browse_url }}">
       <i class="mdi mdi-code-tags mdi-fw" aria-hidden="true"></i>
       Code
     </a>
   </li>
-  {% if not snapshot_context.snapshot_sizes.revision %}
+  {% if not snapshot_context.snapshot_sizes.branch %}
     <li class="nav-item">
       <a class="nav-link disabled" id="swh-browse-snapshot-branches-nav-link" href="#">
         <i class="{{ swh_object_icons.branches }} mdi-fw" aria-hidden="true"></i>
@@ -53,7 +53,7 @@ See top-level LICENSE file for more information
     <li class="nav-item">
       <a class="nav-link" id="swh-browse-snapshot-branches-nav-link" href="{{ snapshot_context.branches_url }}">
         <i class="{{ swh_object_icons.branches }} mdi-fw" aria-hidden="true"></i>
-        Branches ({{ snapshot_context.snapshot_sizes.revision}})
+        Branches ({{ snapshot_context.snapshot_sizes.branch}})
       </a>
     </li>
   {% endif %}

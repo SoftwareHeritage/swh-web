@@ -20,7 +20,7 @@ from swh.web.save_code_now.admin_views import (
 )
 
 # register Web API endpoints
-import swh.web.save_code_now.api_views  # noqa
+from swh.web.save_code_now.api_views import save_code_now_api_urls
 from swh.web.save_code_now.views import (
     origin_save_help_view,
     origin_save_list_view,
@@ -96,4 +96,5 @@ urlpatterns = [
         admin_origin_save_request_remove,
         name="admin-origin-save-request-remove",
     ),
+    *save_code_now_api_urls.get_url_patterns(),
 ]

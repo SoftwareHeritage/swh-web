@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api.apidoc import _parse_httpdomain_doc, api_doc
 from swh.web.api.apiurls import api_route
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_api_get_responses, check_html_get_response
 from swh.web.utils import prettify_html, reverse
 from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc
@@ -96,8 +97,24 @@ def apidoc_route(request, myarg, myotherarg, akw=0):
 
 
 def test_apidoc_route_doc(client):
-    url = reverse("api-1-some-doc-route-doc")
-    check_html_get_response(client, url, status_code=200, template_used="apidoc.html")
+    api_view_name = "api-1-some-doc-route-doc"
+    doc_url = reverse(api_view_name)
+    assert doc_url == "/api/1/some/doc/route/doc/"
+    resp = check_html_get_response(
+        client, doc_url, status_code=200, template_used="apidoc.html"
+    )
+
+    # check apidoc breadcrumbs links
+    api_view_name_split = api_view_name.split("-")
+    for i in range(2, len(api_view_name_split) - 1):
+        sub_doc_url = "/" + ("/".join(api_view_name_split[:i])) + "/doc/"
+        assert_not_contains(resp, f'<a href="{sub_doc_url}">')
+    assert_contains(resp, f'<a href="{doc_url}">')
+
+    # check previous erroneous URL now redirects to the fixed one
+    url = reverse("1-some-doc-route-doc")
+    resp = check_html_get_response(client, url, status_code=302)
+    assert resp["location"] == doc_url
 
 
 def test_apidoc_route_fn(api_client):
