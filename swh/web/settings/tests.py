@@ -96,6 +96,7 @@ swh_web_config.update(
             "swh.web.mailmap",
             "swh.web.metrics",
             "swh.web.save_code_now",
+            "swh.web.save_origin_webhooks",
             "swh.web.vault",
         ],
     }

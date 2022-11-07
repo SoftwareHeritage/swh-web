@@ -11,7 +11,7 @@ from swh.web.add_forge_now.admin_views import (
 )
 
 # register Web API endpoints
-import swh.web.add_forge_now.api_views  # noqa
+from swh.web.add_forge_now.api_views import add_forge_now_api_urls
 from swh.web.add_forge_now.views import (
     add_forge_request_list_datatables,
     create_request_create,
@@ -44,4 +44,4 @@ urlpatterns = [
         add_forge_now_request_dashboard,
         name="add-forge-now-request-dashboard",
     ),
-]
+] + add_forge_now_api_urls.get_url_patterns()

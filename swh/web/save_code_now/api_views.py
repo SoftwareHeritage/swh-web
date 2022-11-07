@@ -9,7 +9,7 @@ from typing import Optional, cast
 from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
-from swh.web.api.apiurls import api_route
+from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.auth.utils import (
     API_SAVE_ORIGIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
@@ -33,12 +33,16 @@ def _savable_visit_types() -> str:
     return docstring
 
 
+save_code_now_api_urls = APIUrls()
+
+
 @api_route(
     r"/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/",
     "api-1-save-origin",
     methods=["GET", "POST"],
     throttle_scope="swh_save_origin",
     never_cache=True,
+    api_urls=save_code_now_api_urls,
 )
 @api_doc("/origin/save/", category="Request archival")
 @format_docstring(visit_types=_savable_visit_types())

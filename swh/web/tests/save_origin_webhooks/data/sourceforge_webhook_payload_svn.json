@@ -1,0 +1,37 @@
+{
+  "size": 1,
+  "commits": [
+    {
+      "id": "r1",
+      "url": "https://sourceforge.net/p/webhook-test-svn/code/1/",
+      "timestamp": "2022-10-25T15:53:04Z",
+      "message": "Add initial directories",
+      "author": {
+        "name": "johndoe",
+        "email": "",
+        "username": ""
+      },
+      "committer": {
+        "name": "johndoe",
+        "email": "",
+        "username": ""
+      },
+      "added": [
+        "/branches",
+        "/tags",
+        "/trunk"
+      ],
+      "removed": [],
+      "modified": [],
+      "copied": [],
+      "renamed": []
+    }
+  ],
+  "before": "",
+  "after": "r1",
+  "repository": {
+    "name": "Code",
+    "full_name": "/p/webhook-test-svn/code/",
+    "url": "https://sourceforge.net/p/webhook-test-svn/code/"
+  }
+}

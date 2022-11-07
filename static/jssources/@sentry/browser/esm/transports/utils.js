@@ -1,6 +1,7 @@
-import { isNativeFetch, WINDOW, logger } from '@sentry/utils';
+import { isNativeFetch, logger } from '@sentry/utils';
+import { WINDOW } from '../helpers.js';
 
-let cachedFetchImpl;
+let cachedFetchImpl = undefined;
 
 /**
  * A special usecase for incorrectly wrapped Fetch APIs in conjunction with ad-blockers.
@@ -75,5 +76,10 @@ function getNativeFetchImplementation() {
   /* eslint-enable @typescript-eslint/unbound-method */
 }
 
-export { getNativeFetchImplementation };
+/** Clears cached fetch impl */
+function clearCachedFetchImplementation() {
+  cachedFetchImpl = undefined;
+}
+
+export { clearCachedFetchImplementation, getNativeFetchImplementation };
 //# sourceMappingURL=utils.js.map

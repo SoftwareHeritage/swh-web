@@ -1,5 +1,6 @@
 import { createTransport } from '@sentry/core';
-import { getNativeFetchImplementation } from './utils.js';
+import { rejectedSyncPromise } from '@sentry/utils';
+import { clearCachedFetchImplementation, getNativeFetchImplementation } from './utils.js';
 
 /**
  * Creates a Transport that uses the Fetch API to send events to Sentry.
@@ -27,13 +28,18 @@ function makeFetchTransport(
       ...options.fetchOptions,
     };
 
-    return nativeFetch(options.url, requestOptions).then(response => ({
-      statusCode: response.status,
-      headers: {
-        'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
-        'retry-after': response.headers.get('Retry-After'),
-      },
-    }));
+    try {
+      return nativeFetch(options.url, requestOptions).then(response => ({
+        statusCode: response.status,
+        headers: {
+          'x-sentry-rate-limits': response.headers.get('X-Sentry-Rate-Limits'),
+          'retry-after': response.headers.get('Retry-After'),
+        },
+      }));
+    } catch (e) {
+      clearCachedFetchImplementation();
+      return rejectedSyncPromise(e);
+    }
   }
 
   return createTransport(options, makeRequest);

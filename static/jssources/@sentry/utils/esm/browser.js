@@ -1,10 +1,8 @@
 import { isString } from './is.js';
-import { GLOBAL_OBJ } from './worldwide.js';
+import { getGlobalObject } from './worldwide.js';
 
-/**
- * TODO: Move me to @sentry/browser when @sentry/utils no longer contains any browser code
- */
-const WINDOW = GLOBAL_OBJ ;
+// eslint-disable-next-line deprecation/deprecation
+const WINDOW = getGlobalObject();
 
 /**
  * Given a child DOM element, returns a query-selector statement describing that
@@ -145,5 +143,5 @@ function getDomElement(selector) {
   return null;
 }
 
-export { WINDOW, getDomElement, getLocationHref, htmlTreeAsString };
+export { getDomElement, getLocationHref, htmlTreeAsString };
 //# sourceMappingURL=browser.js.map

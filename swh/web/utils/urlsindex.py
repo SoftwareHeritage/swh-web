@@ -3,54 +3,50 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from collections import defaultdict
-from typing import Dict, List
+from typing import Callable, List
 
+from django.http.response import HttpResponseBase
 from django.shortcuts import redirect
 from django.urls import URLPattern
 from django.urls import re_path as url
 
 
 class UrlsIndex:
-    """
-    Simple helper class for centralizing url patterns of a Django
-    web application.
+    """Simple helper class for centralizing URL patterns of a Django web application."""
 
-    Derived classes should override the 'scope' class attribute otherwise
-    all declared patterns will be grouped under the default one.
-    """
+    def __init__(self):
+        self.urlpatterns: List[URLPattern] = []
 
-    _urlpatterns: Dict[str, List[URLPattern]] = defaultdict(list)
-    scope = "default"
-
-    @classmethod
-    def add_url_pattern(cls, url_pattern, view, view_name=None):
+    def add_url_pattern(
+        self,
+        url_pattern: str,
+        view: Callable[..., HttpResponseBase],
+        view_name: str = "",
+    ) -> None:
         """
-        Class method that adds an url pattern to the current scope.
+        Adds an URL pattern.
 
         Args:
-            url_pattern: regex describing a Django url
+            url_pattern: regex describing a Django URL
             view: function implementing the Django view
-            view_name: name of the view used to reverse the url
+            view_name: name of the view used to reverse the URL
         """
-        if cls.scope not in cls._urlpatterns:
-            cls._urlpatterns[cls.scope] = []
         if view_name:
-            cls._urlpatterns[cls.scope].append(url(url_pattern, view, name=view_name))
+            self.urlpatterns.append(url(url_pattern, view, name=view_name))
         else:
-            cls._urlpatterns[cls.scope].append(url(url_pattern, view))
+            self.urlpatterns.append(url(url_pattern, view))
 
-    @classmethod
-    def add_redirect_for_checksum_args(cls, view_name, url_patterns, checksum_args):
+    def add_redirect_for_checksum_args(
+        self, view_name: str, url_patterns: List[str], checksum_args: List[str]
+    ) -> None:
         """
-        Class method that redirects to view with lowercase checksums
-        when upper/mixed case checksums are passed as url arguments.
+        Adds redirection to view with lowercase checksums when upper/mixed case
+        checksums are passed as url arguments.
 
         Args:
-            view_name (str): name of the view to redirect requests
-            url_patterns (List[str]): regexps describing the view urls
-            checksum_args (List[str]): url argument names corresponding
-                                       to checksum values
+            view_name: name of the view to redirect requests
+            url_patterns: regexps describing the view URLs
+            checksum_args: url argument names corresponding to checksum values
         """
         new_view_name = view_name + "-uppercase-checksum"
         for url_pattern in url_patterns:
@@ -62,15 +58,10 @@ class UrlsIndex:
                     kwargs[checksum_arg] = checksum_upper.lower()
                 return redirect(view_name, *args, **kwargs)
 
-            cls.add_url_pattern(url_pattern_upper, view_redirect, new_view_name)
+            self.add_url_pattern(url_pattern_upper, view_redirect, new_view_name)
 
-    @classmethod
-    def get_url_patterns(cls):
+    def get_url_patterns(self) -> List[URLPattern]:
         """
-        Class method that returns the list of url pattern associated to
-        the current scope.
-
-        Returns:
-            The list of url patterns associated to the current scope
+        Returns the list of registered URL patterns.
         """
-        return cls._urlpatterns[cls.scope]
+        return self.urlpatterns

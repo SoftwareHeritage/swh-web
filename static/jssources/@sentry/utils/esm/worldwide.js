@@ -42,7 +42,7 @@ const GLOBAL_OBJ =
   {};
 
 /**
- * @deprecated Use GLOBAL_OBJ instead. This will be removed in v8
+ * @deprecated Use GLOBAL_OBJ instead or WINDOW from @sentry/browser. This will be removed in v8
  */
 function getGlobalObject() {
   return GLOBAL_OBJ ;
