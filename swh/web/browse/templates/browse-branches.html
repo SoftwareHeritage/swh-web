@@ -19,7 +19,7 @@ See top-level LICENSE file for more information
       <thead>
         <tr>
           <th><i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>Name</th>
-          <th>Revision</th>
+          <th>Target</th>
           <th>Message</th>
           <th>Date</th>
         </tr>
@@ -38,9 +38,10 @@ See top-level LICENSE file for more information
                   {{ branch.name }}
                 </a>
               </td>
-              <td>
-                <a href="{{ branch.revision_url }}">
-                  {{ branch.revision|slice:":7" }}
+              <td class="swh-branch-target">
+                <a href="{{ branch.target_url }}">
+                  <i class="{{ swh_object_icons|key_value:branch.target_type }} mdi-fw"
+                     aria-hidden="true" title="{{ branch.tooltip }}"></i>{{ branch.target|slice:":7" }}
                 </a>
               </td>
               <td class="swh-branch-message swh-table-cell-text-overflow" title="{{ branch.message }}">

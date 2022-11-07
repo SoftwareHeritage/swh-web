@@ -1,5 +1,5 @@
-import { fill, WINDOW, getFunctionName, getOriginalFunction } from '@sentry/utils';
-import { wrap } from '../helpers.js';
+import { fill, getFunctionName, getOriginalFunction } from '@sentry/utils';
+import { WINDOW, wrap } from '../helpers.js';
 
 const DEFAULT_EVENT_TARGET = [
   'EventTarget',

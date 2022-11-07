@@ -1,5 +1,8 @@
-import { WINDOW } from './browser.js';
 import { logger } from './logger.js';
+import { getGlobalObject } from './worldwide.js';
+
+// eslint-disable-next-line deprecation/deprecation
+const WINDOW = getGlobalObject();
 
 /**
  * Tells whether current environment supports ErrorEvent objects

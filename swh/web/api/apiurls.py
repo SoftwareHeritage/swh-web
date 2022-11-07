@@ -21,25 +21,15 @@ CategoryId = Literal[
 
 
 class APIUrls(UrlsIndex):
-    """
-    Class to manage API documentation URLs.
+    """Class to manage API URLs and endpoint documentation URLs."""
 
-    - Indexes all routes documented using apidoc's decorators.
-    - Tracks endpoint/request processing method relationships for use in
-      generating related urls in API documentation
+    apidoc_routes: Dict[str, Dict[str, str]] = {}
 
-    """
+    def get_app_endpoints(self) -> Dict[str, Dict[str, str]]:
+        return self.apidoc_routes
 
-    _apidoc_routes: Dict[str, Dict[str, str]] = {}
-    scope = "api"
-
-    @classmethod
-    def get_app_endpoints(cls) -> Dict[str, Dict[str, str]]:
-        return cls._apidoc_routes
-
-    @classmethod
     def add_doc_route(
-        cls,
+        self,
         route: str,
         category: CategoryId,
         docstring: str,
@@ -54,7 +44,7 @@ class APIUrls(UrlsIndex):
         if not noargs:
             route_name = "%s-doc" % route_name
         route_view_name = "api-%s-%s" % (api_version, route_name)
-        if route not in cls._apidoc_routes:
+        if route not in self.apidoc_routes:
             d = {
                 "category": category,
                 "docstring": docstring,
@@ -63,7 +53,10 @@ class APIUrls(UrlsIndex):
             }
             for k, v in kwargs.items():
                 d[k] = v
-            cls._apidoc_routes[route] = d
+            self.apidoc_routes[route] = d
+
+
+api_urls = APIUrls()
 
 
 def api_route(
@@ -74,6 +67,7 @@ def api_route(
     api_version: str = "1",
     checksum_args: Optional[List[str]] = None,
     never_cache: bool = False,
+    api_urls: APIUrls = api_urls,
 ):
     """
     Decorator to ease the registration of an API endpoint
@@ -122,10 +116,10 @@ def api_route(
         api_view_f.http_method_names = methods
 
         # register the route and its view in the endpoints index
-        APIUrls.add_url_pattern(url_pattern, api_view_f, view_name)
+        api_urls.add_url_pattern(url_pattern, api_view_f, view_name)
 
         if checksum_args:
-            APIUrls.add_redirect_for_checksum_args(
+            api_urls.add_redirect_for_checksum_args(
                 view_name, [url_pattern], checksum_args
             )
         return f

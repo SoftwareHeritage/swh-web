@@ -1,0 +1,62 @@
+{
+  "object_kind": "push",
+  "event_name": "push",
+  "before": "1b0392a66f1439bac26c0845a083fe64f01a00fe",
+  "after": "87b5530bd21f10330bc1437296295205112088c5",
+  "ref": "refs/heads/main",
+  "checkout_sha": "87b5530bd21f10330bc1437296295205112088c5",
+  "message": null,
+  "user_id": 4775591,
+  "user_name": "John Doe",
+  "user_username": "johndoe",
+  "user_email": "",
+  "user_avatar": "",
+  "project_id": 39639957,
+  "project": {
+    "id": 39639957,
+    "name": "webhook-test",
+    "description": "",
+    "web_url": "https://gitlab.com/johndoe/test",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:johndoe/test.git",
+    "git_http_url": "https://gitlab.com/johndoe/test.git",
+    "namespace": "John Doe",
+    "visibility_level": 20,
+    "path_with_namespace": "johndoe/test",
+    "default_branch": "main",
+    "ci_config_path": "",
+    "homepage": "https://gitlab.com/johndoe/test",
+    "url": "git@gitlab.com:johndoe/test.git",
+    "ssh_url": "git@gitlab.com:johndoe/test.git",
+    "http_url": "https://gitlab.com/johndoe/test.git"
+  },
+  "commits": [
+    {
+      "id": "87b5530bd21f10330bc1437296295205112088c5",
+      "message": "Remove line to trigger webhook when pushing commit\n",
+      "title": "Remove line to trigger webhook when pushing commit",
+      "timestamp": "2022-10-25T17:24:50+02:00",
+      "url": "https://gitlab.com/johndoe/test/-/commit/87b5530bd21f10330bc1437296295205112088c5",
+      "author": {
+        "name": "John Doe",
+        "email": "[REDACTED]"
+      },
+      "added": [],
+      "modified": [
+        "README.md"
+      ],
+      "removed": []
+    }
+  ],
+  "total_commits_count": 1,
+  "push_options": {},
+  "repository": {
+    "name": "webhook-test",
+    "url": "git@gitlab.com:johndoe/test.git",
+    "description": "",
+    "homepage": "https://gitlab.com/johndoe/test",
+    "git_http_url": "https://gitlab.com/johndoe/test.git",
+    "git_ssh_url": "git@gitlab.com:johndoe/test.git",
+    "visibility_level": 20
+  }
+}

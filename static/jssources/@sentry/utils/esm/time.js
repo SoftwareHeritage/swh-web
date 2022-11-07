@@ -1,5 +1,8 @@
-import { WINDOW } from './browser.js';
 import { dynamicRequire, isNodeEnv } from './node.js';
+import { getGlobalObject } from './worldwide.js';
+
+// eslint-disable-next-line deprecation/deprecation
+const WINDOW = getGlobalObject();
 
 /**
  * An object that can return the current timestamp in seconds since the UNIX epoch.

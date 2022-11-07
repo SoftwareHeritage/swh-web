@@ -447,7 +447,7 @@ def test_content_origin_snapshot_branch_browse(
     branches, releases, _ = process_snapshot_branches(snapshot)
     branch_info = random.choice(branches)
 
-    directory = archive_data.revision_get(branch_info["revision"])["directory"]
+    directory = archive_data.revision_get(branch_info["target"])["directory"]
     directory_content = archive_data.directory_ls(directory)
     directory_file = random.choice(
         [e for e in directory_content if e["type"] == "file"]
@@ -480,7 +480,7 @@ def test_content_origin_snapshot_branch_browse(
         metadata={
             "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["target"]),
             "path": f"/{directory_file['name']}",
         },
     )
@@ -492,14 +492,14 @@ def test_content_origin_snapshot_branch_browse(
         metadata={
             "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),
-            "anchor": gen_swhid(ObjectType.REVISION, branch_info["revision"]),
+            "anchor": gen_swhid(ObjectType.REVISION, branch_info["target"]),
         },
     )
     assert_contains(resp, dir_swhid)
 
     rev_swhid = gen_swhid(
         ObjectType.REVISION,
-        branch_info["revision"],
+        branch_info["target"],
         metadata={
             "origin": origin_url,
             "visit": gen_swhid(ObjectType.SNAPSHOT, snapshot["id"]),

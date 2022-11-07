@@ -1,0 +1,36 @@
+{
+  "size": 1,
+  "commits": [
+    {
+      "id": "c4e59883381e38e79e9c0418e759392da565629d",
+      "url": "https://sourceforge.net/p/webhook-test-hg/code/ci/c4e59883381e38e79e9c0418e759392da565629d/",
+      "timestamp": "2022-10-25T15:59:02Z",
+      "message": "Initial commit",
+      "author": {
+        "name": "johndoe",
+        "email": "john.doe@example.org",
+        "username": ""
+      },
+      "committer": {
+        "name": "johndoe",
+        "email": "john.doe@example.org",
+        "username": ""
+      },
+      "added": [
+        "README"
+      ],
+      "removed": [],
+      "modified": [],
+      "copied": [],
+      "renamed": []
+    }
+  ],
+  "before": "",
+  "after": "c4e59883381e38e79e9c0418e759392da565629d",
+  "repository": {
+    "name": "Code",
+    "full_name": "/p/webhook-test-hg/code/",
+    "url": "https://sourceforge.net/p/webhook-test-hg/code/"
+  },
+  "ref": "refs/heads/default"
+}

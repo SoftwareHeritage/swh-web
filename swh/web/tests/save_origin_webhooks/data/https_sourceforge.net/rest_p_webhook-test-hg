@@ -1,0 +1,80 @@
+{
+  "shortname": "webhook-test-hg",
+  "name": "webhook-test-hg",
+  "_id": "63580743079e46f00071122b",
+  "url": "https://sourceforge.net/p/webhook-test-hg/",
+  "private": false,
+  "short_description": "",
+  "creation_date": "2022-10-25",
+  "summary": "",
+  "external_homepage": "https://webhook-test-hg.sourceforge.io",
+  "video_url": "",
+  "socialnetworks": [],
+  "status": "active",
+  "moved_to_url": "",
+  "preferred_support_tool": "",
+  "preferred_support_url": "",
+  "developers": [
+    {
+      "username": "johndoe",
+      "name": "John Doe",
+      "url": "https://sourceforge.net/u/johndoe/"
+    }
+  ],
+  "tools": [
+    {
+      "name": "activity",
+      "mount_point": "activity",
+      "url": "https://sourceforge.net/p/webhook-test-hg/activity/",
+      "mount_label": "Activity",
+      "api_url": "https://sourceforge.net/rest/p/webhook-test-hg/activity/"
+    },
+    {
+      "name": "summary",
+      "mount_point": "summary",
+      "url": "https://sourceforge.net/p/webhook-test-hg/summary/",
+      "mount_label": "Summary",
+      "sourceforge_group_id": 3568128
+    },
+    {
+      "name": "files-sf",
+      "mount_point": "files-sf",
+      "url": "https://sourceforge.net/p/webhook-test-hg/files-sf/",
+      "mount_label": "Files"
+    },
+    {
+      "name": "reviews",
+      "mount_point": "reviews",
+      "url": "https://sourceforge.net/p/webhook-test-hg/reviews/",
+      "mount_label": "Reviews"
+    },
+    {
+      "name": "support",
+      "mount_point": "support",
+      "url": "https://sourceforge.net/p/webhook-test-hg/support/",
+      "mount_label": "Support"
+    },
+    {
+      "name": "hg",
+      "mount_point": "code",
+      "url": "https://sourceforge.net/p/webhook-test-hg/code/",
+      "mount_label": "Code",
+      "api_url": "https://sourceforge.net/rest/p/webhook-test-hg/code/",
+      "clone_url_ro": "http://hg.code.sf.net/p/webhook-test-hg/code"
+    }
+  ],
+  "labels": [],
+  "categories": {
+    "audience": [],
+    "developmentstatus": [],
+    "environment": [],
+    "language": [],
+    "license": [],
+    "translation": [],
+    "os": [],
+    "database": [],
+    "topic": []
+  },
+  "icon_url": null,
+  "screenshots": []
+}

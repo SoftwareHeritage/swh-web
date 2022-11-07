@@ -822,12 +822,6 @@ def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
 
-# Custom data directory for requests_mock
-@pytest.fixture
-def datadir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), "resources")
-
-
 class _ArchiveData:
     """
     Helper class to manage data from a sample test archive.
@@ -993,6 +987,10 @@ class _ArchiveData:
         counts = dict.fromkeys(("alias", "release", "revision"), 0)
         counts.update(self.storage.snapshot_count_branches(hash_to_bytes(snapshot_id)))
         counts.pop(None, None)
+        counts["branch"] = sum(
+            counts.get(target_type, 0)
+            for target_type in ("content", "directory", "revision")
+        )
         return counts
 
 
