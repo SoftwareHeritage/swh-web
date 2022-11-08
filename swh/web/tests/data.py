@@ -270,6 +270,15 @@ def _init_tests_data():
             visit_type="tar",
         )
 
+    # origin used in cypress test for origins search
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url="https://example.org/project/download.php?version=2.0",
+        visit_type="tar",
+    )
+
     sha1s: Set[Sha1] = set()
     directories = set()
     revisions = set()

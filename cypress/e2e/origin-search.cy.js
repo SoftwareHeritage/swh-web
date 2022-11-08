@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2021  The Software Heritage developers
+ * Copyright (C) 2019-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -309,6 +309,30 @@ describe('Test origin-search', function() {
         }
       });
     }
+  });
+
+  it('should encode origin argument in latest visit URL queried by XHR', function() {
+    // origin added in tests data by Python
+    const originUrl = 'https://example.org/project/download.php?version=2.0';
+    cy.intercept(`**/api/1/origin/${encodeURIComponent(originUrl)}/visit/latest/**`)
+      .as('checkOriginVisit');
+
+    doSearch(originUrl);
+
+    cy.wait('@checkOriginVisit');
+
+    cy.get('.swh-search-result-entry')
+            .should('have.length', 1);
+
+    cy.get('.swh-search-result-entry#origin-0 .swh-origin-visit-type')
+            .should('have.text', 'tar');
+
+    cy.get('.swh-search-result-entry#origin-0 td a')
+            .should('have.text', originUrl);
+
+    cy.get('.swh-search-result-entry#origin-0 .swh-visit-status')
+      .should('have.text', 'Archived');
+
   });
 
   context('Test pagination', function() {
