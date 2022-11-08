@@ -2,7 +2,7 @@
 
 export PYBUILD_NAME=swh.web
 export PYBUILD_OPTION=--test-pytest
-export PYBUILD_TEST_ARGS=--hypothesis-profile=swh-web-fast ./swh/web/tests
+export PYBUILD_TEST_ARGS=--hypothesis-profile=swh-web-fast ./swh/web
 export PYBUILD_BEFORE_TEST=ln -s {dir}/static/ {build_dir}/static && \
 ln -s {dir}/assets/ {build_dir}/assets
 export PYBUILD_AFTER_TEST=rm {build_dir}/static && rm {build_dir}/assets
