@@ -1,4 +1,4 @@
-TEST_DIRS := ./swh/web/tests
+TEST_DIRS := ./swh/web/
 TESTFLAGS = --hypothesis-profile=swh-web-fast
 TESTFULL_FLAGS = --hypothesis-profile=swh-web
 YARN ?= yarn
