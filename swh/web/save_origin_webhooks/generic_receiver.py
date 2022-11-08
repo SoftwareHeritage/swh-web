@@ -88,7 +88,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
             )
 
         content_type = request.headers.get("Content-Type")
-        if content_type != "application/json":
+        if content_type and not content_type.startswith("application/json"):
             raise BadInputExc(
                 f"Invalid content type '{content_type}' for the POST request sent by "
                 f"{self.FORGE_TYPE} webhook, it should be 'application/json'."

@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import shutil
 from typing import Any, Dict, Optional, cast
 
 from django.contrib.auth.models import Permission
@@ -265,3 +266,6 @@ def create_django_permission(perm_name: str) -> Permission:
         content_type=content_type,
         id=1000 + Permission.objects.count(),
     )
+
+
+fossology_missing = shutil.which("nomossa") is None

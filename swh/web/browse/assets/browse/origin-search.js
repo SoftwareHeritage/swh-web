@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2022  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, errorMessageFromResponse, isArchivedOrigin} from 'utils/functions';
+import {errorMessageFromResponse, handleFetchError, isArchivedOrigin} from 'utils/functions';
 
 const limit = 100;
 const linksPrev = [];
@@ -53,7 +53,7 @@ async function populateOriginSearchResultsTable(origins) {
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
-      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url);
+      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(encodeURIComponent(origin.url));
       latestSnapshotUrl += '?require_snapshot=true';
       promises.push(fetch(latestSnapshotUrl));
     }
