@@ -53,7 +53,7 @@ async function populateOriginSearchResultsTable(origins) {
       tableRow += '</tr>';
       table.append(tableRow);
       // get async latest visit snapshot and update visit status icon
-      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(encodeURIComponent(origin.url));
+      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url.replace('?', '%3F'));
       latestSnapshotUrl += '?require_snapshot=true';
       promises.push(fetch(latestSnapshotUrl));
     }
