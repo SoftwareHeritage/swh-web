@@ -311,10 +311,10 @@ describe('Test origin-search', function() {
     }
   });
 
-  it('should encode origin argument in latest visit URL queried by XHR', function() {
+  it('should encode ? in origin URL provided as argument in latest visit URL queried by XHR', function() {
     // origin added in tests data by Python
     const originUrl = 'https://example.org/project/download.php?version=2.0';
-    cy.intercept(`**/api/1/origin/${encodeURIComponent(originUrl)}/visit/latest/**`)
+    cy.intercept(`**/api/1/origin/${originUrl.replace('?', '%3F')}/visit/latest/**`)
       .as('checkOriginVisit');
 
     doSearch(originUrl);
