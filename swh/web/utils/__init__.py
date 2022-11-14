@@ -305,7 +305,7 @@ def context_processor(request):
         "oidc_enabled": bool(config["keycloak"]["server_url"]),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
-        "site_base_url": request.build_absolute_uri("/"),
+        "site_base_url": request.build_absolute_uri("/")[:-1],
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
         "status": config["status"],
         "swh_web_dev": is_swh_web_development(request),
