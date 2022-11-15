@@ -114,6 +114,9 @@ function searchOriginsFirst(searchQueryText, limit) {
     baseSearchUrl.searchParams.append('use_ql', useSearchQL ?? false);
   }
 
+  // As we only use the 'url' field of results, tell the server not to send metadata
+  baseSearchUrl.searchParams.append('fields', 'url');
+
   const withVisit = $('#swh-search-origins-with-visit').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);
   baseSearchUrl.searchParams.append('with_visit', withVisit);

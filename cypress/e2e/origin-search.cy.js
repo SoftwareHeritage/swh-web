@@ -199,9 +199,11 @@ describe('Test origin-search', function() {
         const searchText = 'plugin';
         doSearch(searchText);
         cy.wait('@originMetadataSearch').then((req) => {
-          expect(req.response.body[0].metadata.metadata.description).to.equal(
-            'Line numbering plugin for Highlight.js'
-            // metadata is defined in _TEST_ORIGINS variable in swh/web/tests/data.py
+          expect(req.response.body).to.deep.equal(
+            [
+              {'url': 'https://github.com/wcoder/highlightjs-line-numbers.js'}
+            ]
+            // origins are defined in _TEST_ORIGINS variable in swh/web/tests/data.py
           );
         });
       });
