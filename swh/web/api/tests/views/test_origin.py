@@ -1,9 +1,10 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from datetime import timedelta
+import itertools
 import json
 
 from hypothesis import given
@@ -726,6 +727,73 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         )
 
         assert response == expected
+
+
+def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker):
+    """Tests the origin search for results present in swh-search but not
+    returned by ``origin_intrinsic_metadata_get`` (which happens when results
+    come from extrinsic metadata).
+    """
+
+    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
+    mock_idx_storage.origin_intrinsic_metadata_get.return_value = []
+    mock_idx_storage.origin_intrinsic_metadata_search_fulltext.side_effect = (
+        AssertionError("origin_intrinsic_metadata_search_fulltext was called")
+    )
+
+    mock_config = mocker.patch("swh.web.utils.archive.config")
+    mock_config.get_config.return_value = {
+        "search_config": {"metadata_backend": "swh-search"}
+    }
+
+    url = reverse(
+        "api-1-origin-metadata-search",
+        query_params={"fulltext": ORIGIN_METADATA_VALUE},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    rv.data = sorted(rv.data, key=lambda d: d["url"])
+
+    expected_data = sorted(
+        [
+            {"url": origin_url, "metadata": {}}
+            for origin_url in sorted(ORIGIN_MASTER_REVISION.keys())
+        ],
+        key=lambda d: d["url"],
+    )
+
+    assert expected_data == rv.data
+
+
+@pytest.mark.parametrize(
+    "backend,fields",
+    itertools.product(["swh-search", "swh-indexer-storage"], ["url", "url,foobar"]),
+)
+def test_api_origin_metadata_search_url_only(api_client, mocker, backend, fields):
+    """Checks that idx_storage.origin_intrinsic_metadata_get is not called when
+    its results are not needed"""
+    mocker.patch(
+        "swh.web.utils.archive.idx_storage.origin_intrinsic_metadata_get",
+        side_effect=AssertionError("origin_intrinsic_metadata_get was called"),
+    )
+
+    mock_config = mocker.patch("swh.web.utils.archive.config")
+    mock_config.get_config.return_value = {
+        "search_config": {"metadata_backend": backend}
+    }
+
+    url = reverse(
+        "api-1-origin-metadata-search",
+        query_params={"fulltext": ORIGIN_METADATA_VALUE, "fields": fields},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    rv.data = sorted(rv.data, key=lambda d: d["url"])
+
+    expected_data = sorted(
+        [{"url": origin_url} for origin_url in sorted(ORIGIN_MASTER_REVISION.keys())],
+        key=lambda d: d["url"],
+    )
+
+    assert expected_data == rv.data
 
 
 def test_api_origin_metadata_search_limit(api_client, mocker):

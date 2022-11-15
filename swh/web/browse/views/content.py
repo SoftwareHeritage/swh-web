@@ -5,9 +5,10 @@
 
 import difflib
 from distutils.util import strtobool
+import io
 from typing import Any, Dict, Optional
 
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from swh.model.hashutil import hash_to_hex
@@ -43,7 +44,7 @@ from swh.web.utils.typing import ContentMetadata, SWHObjectInfo
     view_name="browse-content-raw",
     checksum_args=["query_string"],
 )
-def content_raw(request: HttpRequest, query_string: str) -> HttpResponse:
+def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
     """Django view that produces a raw display of a content identified
     by its hash value.
 
@@ -63,13 +64,27 @@ def content_raw(request: HttpRequest, query_string: str) -> HttpResponse:
         content_data["mimetype"].startswith("text/")
         or content_data["mimetype"] == "inode/x-empty"
     ):
-        response = HttpResponse(content_data["raw_data"], content_type="text/plain")
-        response["Content-disposition"] = "filename=%s" % filename
+        content_type = "text/plain"
+        as_attachment = False
     else:
-        response = HttpResponse(
-            content_data["raw_data"], content_type="application/octet-stream"
+        content_type = "application/octet-stream"
+        as_attachment = True
+
+    response = FileResponse(
+        io.BytesIO(content_data["raw_data"]),  # not copied, as this is never modified
+        filename=filename,
+        content_type=content_type,
+        as_attachment=True,
+    )
+
+    if not as_attachment:
+        # django 2.2.24 used in production does not set Content-Disposition header
+        # if as_attachment is False so we use that workaround to preserve old behavior
+        # TODO: remove that block once we use upstream django in production
+        response["Content-Disposition"] = response["Content-Disposition"].replace(
+            "attachment; ", ""
         )
-        response["Content-disposition"] = "attachment; filename=%s" % filename
+
     return response
 
 

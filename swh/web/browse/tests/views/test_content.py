@@ -261,10 +261,8 @@ def test_content_raw_text(client, archive_data, content_text):
     content_data = archive_data.content_get_data(content_text["sha1"])["data"]
 
     assert resp["Content-Type"] == "text/plain"
-    assert resp["Content-disposition"] == (
-        "filename=%s_%s" % ("sha1", content_text["sha1"])
-    )
-    assert resp.content == content_data
+    assert resp["Content-disposition"] == (f'filename="sha1_{content_text["sha1"]}"')
+    assert b"".join(resp.streaming_content) == content_data
 
     filename = content_text["path"].split("/")[-1]
 
@@ -279,8 +277,8 @@ def test_content_raw_text(client, archive_data, content_text):
     )
 
     assert resp["Content-Type"] == "text/plain"
-    assert resp["Content-disposition"] == "filename=%s" % filename
-    assert resp.content == content_data
+    assert resp["Content-disposition"] == f'filename="{filename}"'
+    assert b"".join(resp.streaming_content) == content_data
 
 
 def test_content_raw_no_utf8_text(client, content_text_non_utf8):
@@ -291,7 +289,9 @@ def test_content_raw_no_utf8_text(client, content_text_non_utf8):
     resp = check_http_get_response(
         client, url, status_code=200, content_type="text/plain"
     )
-    _, encoding = get_mimetype_and_encoding_for_content(resp.content)
+    _, encoding = get_mimetype_and_encoding_for_content(
+        b"".join(resp.streaming_content)
+    )
     assert encoding == content_text_non_utf8["encoding"]
 
 
@@ -308,11 +308,11 @@ def test_content_raw_bin(client, archive_data, content_image_type):
     content_data = archive_data.content_get_data(content_image_type["sha1"])["data"]
 
     assert resp["Content-Type"] == "application/octet-stream"
-    assert resp["Content-disposition"] == "attachment; filename=%s_%s" % (
-        "sha1",
-        content_image_type["sha1"],
+    assert (
+        resp["Content-disposition"]
+        == f'attachment; filename="sha1_{content_image_type["sha1"]}"'
     )
-    assert resp.content == content_data
+    assert b"".join(resp.streaming_content) == content_data
 
     url = reverse(
         "browse-content-raw",
@@ -325,8 +325,8 @@ def test_content_raw_bin(client, archive_data, content_image_type):
     )
 
     assert resp["Content-Type"] == "application/octet-stream"
-    assert resp["Content-disposition"] == "attachment; filename=%s" % filename
-    assert resp.content == content_data
+    assert resp["Content-disposition"] == f'attachment; filename="{filename}"'
+    assert b"".join(resp.streaming_content) == content_data
 
 
 @pytest.mark.django_db

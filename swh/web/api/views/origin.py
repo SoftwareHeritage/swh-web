@@ -285,12 +285,19 @@ def api_origin_metadata_search(request: Request):
     """
     fulltext = request.query_params.get("fulltext", None)
     limit = min(int(request.query_params.get("limit", "70")), 100)
+    fields = request.query_params.get("fields")
     if not fulltext:
         content = '"fulltext" must be provided and non-empty.'
         raise BadInputExc(content)
 
+    return_metadata = not fields or "metadata" in fields
+
     results = api_lookup(
-        archive.search_origin_metadata, fulltext, limit, request=request
+        archive.search_origin_metadata,
+        fulltext,
+        limit,
+        return_metadata,
+        request=request,
     )
 
     return {
