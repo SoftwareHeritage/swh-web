@@ -1,3 +1,15 @@
+swh-web (0.2.4-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.2.4     - (tagged by Valentin Lorentz
+    <vlorentz@softwareheritage.org> on 2022-11-15 11:51:58 +0100)
+  * Upstream changes:     - v0.2.4     - * Fix crash when browsing non-
+    ASCII file contents     - * Include swh-search results not in swh-
+    indexer-storage's intrinsic     - metadata table     - * Avoid
+    unncessary call to swh-indexer-storage when searching origin     -
+    URLs using swh-search
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 15 Nov 2022 11:08:08 +0000
+
 swh-web (0.2.3-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.2.3     - (tagged by Antoine Lambert
