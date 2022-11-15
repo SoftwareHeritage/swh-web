@@ -728,6 +728,41 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         assert response == expected
 
 
+def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker):
+    """Tests the origin search for results present in swh-search but not
+    returned by ``origin_intrinsic_metadata_get`` (which happens when results
+    come from extrinsic metadata).
+    """
+
+    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
+    mock_idx_storage.origin_intrinsic_metadata_get.return_value = []
+    mock_idx_storage.origin_intrinsic_metadata_search_fulltext.side_effect = (
+        AssertionError("origin_intrinsic_metadata_search_fulltext was called")
+    )
+
+    mock_config = mocker.patch("swh.web.utils.archive.config")
+    mock_config.get_config.return_value = {
+        "search_config": {"metadata_backend": "swh-search"}
+    }
+
+    url = reverse(
+        "api-1-origin-metadata-search",
+        query_params={"fulltext": ORIGIN_METADATA_VALUE},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    rv.data = sorted(rv.data, key=lambda d: d["url"])
+
+    expected_data = sorted(
+        [
+            {"url": origin_url, "metadata": {}}
+            for origin_url in sorted(ORIGIN_MASTER_REVISION.keys())
+        ],
+        key=lambda d: d["url"],
+    )
+
+    assert expected_data == rv.data
+
+
 def test_api_origin_metadata_search_limit(api_client, mocker):
     mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
     oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext

@@ -357,18 +357,35 @@ def search_origin_metadata(
             metadata_pattern=fulltext,
             limit=limit,
         )
-        matches = idx_storage.origin_intrinsic_metadata_get(
-            [r["url"] for r in page_result.results]
-        )
-    else:
-        matches = idx_storage.origin_intrinsic_metadata_search_fulltext(
-            conjunction=[fulltext], limit=limit
-        )
+        origin_urls = [r["url"] for r in page_result.results]
+        metadata = {
+            r.id: r for r in idx_storage.origin_intrinsic_metadata_get(origin_urls)
+        }
 
-    matches = [match.to_dict() for match in matches]
+        # Results from swh-search are not guaranteed to be in
+        # idx_storage.origin_intrinsic_metadata (typically when they come from
+        # extrinsic metadata; or when the swh-indexer cache is cleared).
+        # When they are missing, we only return the origin url.
+        matches = [
+            metadata[url].to_dict() if url in metadata else {"id": url}
+            for url in origin_urls
+        ]
+    else:
+        matches = [
+            match.to_dict()
+            for match in idx_storage.origin_intrinsic_metadata_search_fulltext(
+                conjunction=[fulltext], limit=limit
+            )
+        ]
+
     origins = storage.origin_get([match["id"] for match in matches])
+
     for origin, match in zip(origins, matches):
         if not origin:
+            # filter out origins not present in the storage, as we do not have any
+            # meaningful content to display for that origin at the moment.
+            # This may occur when the storage database we use is lagging behind
+            # swh-search
             continue
         for field in ("from_directory", "from_revision"):
             # from_directory when using swh.indexer >= 2.0.0, from_revision otherwise
