@@ -336,13 +336,14 @@ def search_origin(
 
 
 def search_origin_metadata(
-    fulltext: str, limit: int = 50
+    fulltext: str, limit: int = 50, return_metadata: bool = True
 ) -> Iterable[OriginMetadataInfo]:
     """Search for origins whose metadata match a provided string pattern.
 
     Args:
         fulltext: the string pattern to search for in origin metadata
         limit: the maximum number of found origins to return
+        return_metadata: if false, will only return the origin URL
 
     Returns:
         Iterable of origin metadata information for existing origins
@@ -358,9 +359,14 @@ def search_origin_metadata(
             limit=limit,
         )
         origin_urls = [r["url"] for r in page_result.results]
-        metadata = {
-            r.id: r for r in idx_storage.origin_intrinsic_metadata_get(origin_urls)
-        }
+
+        if return_metadata:
+            metadata = {
+                r.id: r for r in idx_storage.origin_intrinsic_metadata_get(origin_urls)
+            }
+        else:
+            # Skip query to swh-indexer if we are not interested in the results
+            metadata = {}
 
         # Results from swh-search are not guaranteed to be in
         # idx_storage.origin_intrinsic_metadata (typically when they come from
@@ -392,6 +398,8 @@ def search_origin_metadata(
             if field in match:
                 match[field] = hashutil.hash_to_hex(match[field])
         del match["id"]
+        if not return_metadata:
+            match.pop("metadata", None)
         results.append(OriginMetadataInfo(url=origin.url, metadata=match))
 
     return results
