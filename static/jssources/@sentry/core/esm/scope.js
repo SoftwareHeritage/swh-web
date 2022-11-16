@@ -214,7 +214,7 @@ class Scope  {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete this._contexts[key];
     } else {
-      this._contexts = { ...this._contexts, [key]: context };
+      this._contexts[key] = context;
     }
 
     this._notifyScopeListeners();
