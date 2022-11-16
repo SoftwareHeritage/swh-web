@@ -17,7 +17,8 @@ See top-level LICENSE file for more information
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Name</th>
+          <th><i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>Branch name</th>
+          <th><i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Release name</th>
           <th>Target</th>
           <th>Message</th>
           <th>Date</th>
@@ -27,13 +28,19 @@ See top-level LICENSE file for more information
         {% if displayed_releases|length > 0 %}
           {% for release in displayed_releases %}
             <tr class="swh-release-entry swh-tr-hover-highlight">
-              <td class="swh-release-name">
+              <td class="swh-branch-name">
                 <a href="{{ release.release_url }}">
                   {% if release.alias %}
                     <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
                   {% else %}
-                    <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                    <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
                   {% endif %}
+                  {{ release.branch_name }}
+                </a>
+              </td>
+              <td class="swh-release-name">
+                <a href="{{ release.release_url }}">
+                  <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
                   {{ release.name }}
                 </a>
               </td>

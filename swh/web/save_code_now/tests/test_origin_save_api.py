@@ -20,6 +20,7 @@ from swh.web.save_code_now.models import (
     SAVE_TASK_FAILED,
     SAVE_TASK_NOT_CREATED,
     SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
     VISIT_STATUS_FAILED,
@@ -277,7 +278,9 @@ def test_save_request_failed(api_client, mocker, swh_scheduler):
     )
 
 
-def test_create_save_request_no_duplicate(api_client, mocker, swh_scheduler):
+def test_create_save_request_no_duplicate_if_already_scheduled(
+    api_client, mocker, swh_scheduler
+):
     origin_url = "https://github.com/webpack/webpack"
 
     check_created_save_request_status(
@@ -315,6 +318,49 @@ def test_create_save_request_no_duplicate(api_client, mocker, swh_scheduler):
         SaveOriginRequest.objects.filter(visit_type="git", origin_url=origin_url)
     )
     assert len(sors) == 1
+
+
+def test_create_save_request_if_previous_one_is_running(
+    api_client, mocker, swh_scheduler
+):
+    origin_url = "https://github.com/webpack/webpack"
+
+    check_created_save_request_status(
+        api_client,
+        mocker,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
+
+    check_save_request_status(
+        api_client,
+        mocker,
+        swh_scheduler,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_RUNNING,
+        scheduler_task_status="next_run_scheduled",
+        scheduler_task_run_status="started",
+    )
+
+    sors = list(
+        SaveOriginRequest.objects.filter(visit_type="git", origin_url=origin_url)
+    )
+    assert len(sors) == 1
+
+    check_created_save_request_status(
+        api_client,
+        mocker,
+        origin_url,
+        expected_request_status=SAVE_REQUEST_ACCEPTED,
+        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
+
+    sors = list(
+        SaveOriginRequest.objects.filter(visit_type="git", origin_url=origin_url)
+    )
+    assert len(sors) == 2
 
 
 def test_get_save_requests_unknown_origin(api_client, swh_scheduler):

@@ -390,8 +390,10 @@ def _origin_releases_test_helper(
             query_params=query_params,
         )
 
-        assert_contains(resp, '<a href="%s">' % escape(browse_release_url))
-        assert_contains(resp, '<a href="%s">' % escape(browse_revision_url))
+        assert_contains(resp, release["branch_name"])
+        assert_contains(resp, release["name"])
+        assert_contains(resp, f'<a href="{escape(browse_release_url)}">')
+        assert_contains(resp, f'<a href="{escape(browse_revision_url)}">')
 
     _check_origin_link(resp, origin_info["url"])
 

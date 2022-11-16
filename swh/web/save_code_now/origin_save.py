@@ -514,10 +514,11 @@ def create_save_origin_request(
                 save_request_info = _update_save_request_info(sor, task, task_run)
                 task_status = save_request_info["save_task_status"]
                 # create a new scheduler task only if the previous one has been
-                # already executed
-                if (
-                    task_status == SAVE_TASK_FAILED
-                    or task_status == SAVE_TASK_SUCCEEDED
+                # already or is currently executed
+                if task_status in (
+                    SAVE_TASK_FAILED,
+                    SAVE_TASK_SUCCEEDED,
+                    SAVE_TASK_RUNNING,
                 ):
                     can_create_task = True
                     sor = None

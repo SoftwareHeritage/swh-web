@@ -302,7 +302,7 @@ def process_snapshot_branches(
             branches[branch_alias]["name"] = branch_alias
 
     ret_branches = list(sorted(branches.values(), key=lambda b: b["name"]))
-    ret_releases = list(sorted(releases.values(), key=lambda b: b["name"]))
+    ret_releases = list(sorted(releases.values(), key=lambda b: b["branch_name"]))
 
     return ret_branches, ret_releases, resolved_aliases
 
