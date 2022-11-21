@@ -26,6 +26,9 @@ class GitHubOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
             and f"X-{self.FORGE_TYPE}-Event" in request.headers
         )
 
+    def is_ping_event(self, request: Request) -> bool:
+        return request.headers[f"X-{self.FORGE_TYPE}-Event"] == "ping"
+
     def is_push_event(self, request: Request) -> bool:
         return request.headers[f"X-{self.FORGE_TYPE}-Event"] == "push"
 

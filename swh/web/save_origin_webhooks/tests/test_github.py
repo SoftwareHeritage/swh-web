@@ -8,7 +8,11 @@ import os
 
 import pytest
 
+from swh.web.tests.helpers import check_api_post_responses
+from swh.web.utils import reverse
+
 from .utils import (
+    django_http_headers,
     origin_save_webhook_receiver_invalid_content_type_test,
     origin_save_webhook_receiver_invalid_event_test,
     origin_save_webhook_receiver_invalid_request_test,
@@ -86,3 +90,21 @@ def test_origin_save_github_webhook_receiver_no_repo_url(api_client, datadir):
             payload=payload,
             api_client=api_client,
         )
+
+
+def test_origin_save_github_webhook_receiver_ping_event(api_client):
+    url = reverse("api-1-origin-save-webhook-github")
+
+    resp = check_api_post_responses(
+        api_client,
+        url,
+        status_code=200,
+        **django_http_headers(
+            {
+                "User-Agent": "GitHub-Hookshot/ede37db",
+                "X-GitHub-Event": "ping",
+            }
+        ),
+    )
+
+    assert resp.data == {"message": "pong"}

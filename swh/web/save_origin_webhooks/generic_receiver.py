@@ -25,6 +25,9 @@ class OriginSaveWebhookReceiver(abc.ABC):
     def is_forge_request(self, request: Request) -> bool:
         ...
 
+    def is_ping_event(self, request: Request) -> bool:
+        return False
+
     @abc.abstractmethod
     def is_push_event(self, request: Request) -> bool:
         ...
@@ -80,6 +83,9 @@ class OriginSaveWebhookReceiver(abc.ABC):
                 f"POST request was not sent by a {self.FORGE_TYPE} webhook and "
                 "has not been processed."
             )
+
+        if self.is_ping_event(request):
+            return {"message": "pong"}
 
         if not self.is_push_event(request):
             raise BadInputExc(

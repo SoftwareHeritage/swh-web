@@ -9,7 +9,7 @@ from swh.web.tests.helpers import check_api_post_responses
 from swh.web.utils import reverse
 
 
-def _django_http_headers(http_headers: Dict[str, Any]):
+def django_http_headers(http_headers: Dict[str, Any]):
     return {f"HTTP_{k.upper().replace('-', '_')}": v for k, v in http_headers.items()}
 
 
@@ -29,7 +29,7 @@ def origin_save_webhook_receiver_test(
         url,
         status_code=200,
         data=payload,
-        **_django_http_headers(http_headers),
+        **django_http_headers(http_headers),
     )
 
     assert resp.data["origin_url"] == expected_origin_url
@@ -54,7 +54,7 @@ def origin_save_webhook_receiver_invalid_request_test(
         url,
         status_code=400,
         data=payload,
-        **_django_http_headers(http_headers),
+        **django_http_headers(http_headers),
     )
 
     assert resp.data == {
@@ -79,7 +79,7 @@ def origin_save_webhook_receiver_invalid_event_test(
         url,
         status_code=400,
         data=payload,
-        **_django_http_headers(http_headers),
+        **django_http_headers(http_headers),
     )
 
     assert resp.data == {
@@ -107,7 +107,7 @@ def origin_save_webhook_receiver_invalid_content_type_test(
         url,
         status_code=400,
         data=payload,
-        **_django_http_headers(http_headers),
+        **django_http_headers(http_headers),
     )
 
     assert resp.data == {
@@ -132,7 +132,7 @@ def origin_save_webhook_receiver_no_repo_url_test(
         url,
         status_code=400,
         data=payload,
-        **_django_http_headers(http_headers),
+        **django_http_headers(http_headers),
     )
 
     assert resp.data == {
