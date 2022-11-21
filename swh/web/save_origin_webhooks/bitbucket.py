@@ -28,7 +28,7 @@ class BitbucketOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
     def is_push_event(self, request: Request) -> bool:
         return request.headers["X-Event-Key"] == "repo:push"
 
-    def extract_repo_url_and_visit_type(self, request: Request) -> Tuple[str, str]:
+    def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
         repo_url = (
             request.data.get("repository", {})
             .get("links", {})
@@ -38,7 +38,9 @@ class BitbucketOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         if repo_url:
             repo_url += ".git"
 
-        return repo_url, "git"
+        private = request.data.get("repository", {}).get("is_private", False)
+
+        return repo_url, "git", private
 
 
 api_origin_save_webhook_bitbucket = BitbucketOriginSaveWebhookReceiver()

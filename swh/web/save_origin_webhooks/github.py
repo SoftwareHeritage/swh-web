@@ -32,8 +32,10 @@ class GitHubOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
     def is_push_event(self, request: Request) -> bool:
         return request.headers[f"X-{self.FORGE_TYPE}-Event"] == "push"
 
-    def extract_repo_url_and_visit_type(self, request: Request) -> Tuple[str, str]:
-        return request.data.get("repository", {}).get("html_url", ""), "git"
+    def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        repo_url = request.data.get("repository", {}).get("html_url", "")
+        private = request.data.get("repository", {}).get("private", False)
+        return repo_url, "git", private
 
 
 api_origin_save_webhook_github = GitHubOriginSaveWebhookReceiver()

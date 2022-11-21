@@ -141,3 +141,29 @@ def origin_save_webhook_receiver_no_repo_url_test(
             f"Repository URL could not be extracted from {forge_type} webhook payload."
         ),
     }
+
+
+def origin_save_webhook_receiver_private_repo_test(
+    forge_type: str,
+    http_headers: Dict[str, Any],
+    payload: Dict[str, Any],
+    api_client,
+    expected_origin_url: str,
+):
+    url = reverse(f"api-1-origin-save-webhook-{forge_type.lower()}")
+
+    resp = check_api_post_responses(
+        api_client,
+        url,
+        status_code=400,
+        data=payload,
+        **django_http_headers(http_headers),
+    )
+
+    assert resp.data == {
+        "exception": "BadInputExc",
+        "reason": (
+            f"Repository {expected_origin_url} is private and cannot be cloned "
+            "without authentication."
+        ),
+    }

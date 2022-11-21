@@ -13,6 +13,7 @@ from .utils import (
     origin_save_webhook_receiver_invalid_event_test,
     origin_save_webhook_receiver_invalid_request_test,
     origin_save_webhook_receiver_no_repo_url_test,
+    origin_save_webhook_receiver_private_repo_test,
     origin_save_webhook_receiver_test,
 )
 
@@ -84,5 +85,21 @@ def test_origin_save_bitbucket_webhook_receiver_no_repo_url(api_client, datadir)
                 "X-Event-Key": "repo:push",
             },
             payload=payload,
+            api_client=api_client,
+        )
+
+
+def test_origin_save_bitbucket_webhook_receiver_private_repo(api_client, datadir):
+    with open(os.path.join(datadir, "bitbucket_webhook_payload.json"), "rb") as payload:
+        payload = json.load(payload)
+        payload["repository"]["is_private"] = True
+        origin_save_webhook_receiver_private_repo_test(
+            forge_type="Bitbucket",
+            http_headers={
+                "User-Agent": "Bitbucket-Webhooks/2.0",
+                "X-Event-Key": "repo:push",
+            },
+            payload=payload,
+            expected_origin_url="https://bitbucket.org/johndoe/webhook-test.git",
             api_client=api_client,
         )

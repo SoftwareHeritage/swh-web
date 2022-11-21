@@ -34,9 +34,10 @@ class SourceforgeOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         # SourceForge only support webhooks for push events
         return True
 
-    def extract_repo_url_and_visit_type(self, request: Request) -> Tuple[str, str]:
+    def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
         repo_url = ""
         visit_type = ""
+        private = False
         project_full_name = request.data.get("repository", {}).get("full_name")
         if project_full_name:
             project_name = project_full_name.split("/")[2]
@@ -46,6 +47,7 @@ class SourceforgeOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
             response = requests.get(project_api_url)
             if response.ok:
                 project_data = response.json()
+                private = project_data.get("private", False)
                 for tool in project_data.get("tools", []):
                     if tool.get("mount_point") == "code" and tool.get(
                         "url", ""
@@ -55,7 +57,7 @@ class SourceforgeOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
                         )
                         visit_type = tool.get("name", "")
 
-        return repo_url, visit_type
+        return repo_url, visit_type, private
 
 
 api_origin_save_webhook_sourceforge = SourceforgeOriginSaveWebhookReceiver()
