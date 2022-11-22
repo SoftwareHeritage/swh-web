@@ -71,7 +71,7 @@ See top-level LICENSE file for more information
         <tbody>
           {% for url in urls %}
             <tr>
-              <td>{{ site_base_url|add:url.rule | docstring_display | safe }}</td>
+              <td class="d-inline-flex">{{ site_base_url }}{{url.rule | docstring_display | safe }}</td>
               <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
             </tr>
           {% endfor %}
