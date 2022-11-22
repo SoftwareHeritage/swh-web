@@ -109,7 +109,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.2",
     "cy2": "^3.2.0",
-    "cypress": "11.0.1",
+    "cypress": "10.11.0",
     "cypress-hmr-restarter": "^2.0.4",
     "cypress-multi-reporters": "^1.6.1",
     "ejs": "^3.1.8",
