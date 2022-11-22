@@ -47,6 +47,8 @@ class Scope  {
 
   /** Request Mode Session Status */
 
+  // NOTE: Any field which gets added here should get added not only to the constructor but also to the `clone` method.
+
    constructor() {
     this._notifyingListeners = false;
     this._scopeListeners = [];
@@ -80,6 +82,7 @@ class Scope  {
       newScope._eventProcessors = [...scope._eventProcessors];
       newScope._requestSession = scope._requestSession;
       newScope._attachments = [...scope._attachments];
+      newScope._sdkProcessingMetadata = { ...scope._sdkProcessingMetadata };
     }
     return newScope;
   }

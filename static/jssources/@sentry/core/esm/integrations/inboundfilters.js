@@ -1,4 +1,4 @@
-import { logger, getEventDescription, isMatchingPattern } from '@sentry/utils';
+import { logger, getEventDescription, stringMatchesSomePattern } from '@sentry/utils';
 
 // "Script error." is hard coded into browsers for errors that it can't read.
 // this is the result of a script being pulled in from an external domain and CORS.
@@ -100,9 +100,7 @@ function _isIgnoredError(event, ignoreErrors) {
     return false;
   }
 
-  return _getPossibleEventMessages(event).some(message =>
-    ignoreErrors.some(pattern => isMatchingPattern(message, pattern)),
-  );
+  return _getPossibleEventMessages(event).some(message => stringMatchesSomePattern(message, ignoreErrors));
 }
 
 function _isDeniedUrl(event, denyUrls) {
@@ -111,7 +109,7 @@ function _isDeniedUrl(event, denyUrls) {
     return false;
   }
   const url = _getEventFilterUrl(event);
-  return !url ? false : denyUrls.some(pattern => isMatchingPattern(url, pattern));
+  return !url ? false : stringMatchesSomePattern(url, denyUrls);
 }
 
 function _isAllowedUrl(event, allowUrls) {
@@ -120,7 +118,7 @@ function _isAllowedUrl(event, allowUrls) {
     return true;
   }
   const url = _getEventFilterUrl(event);
-  return !url ? true : allowUrls.some(pattern => isMatchingPattern(url, pattern));
+  return !url ? true : stringMatchesSomePattern(url, allowUrls);
 }
 
 function _getPossibleEventMessages(event) {
