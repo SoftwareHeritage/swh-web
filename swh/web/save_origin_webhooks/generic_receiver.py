@@ -25,12 +25,17 @@ class OriginSaveWebhookReceiver(abc.ABC):
     def is_forge_request(self, request: Request) -> bool:
         ...
 
+    def is_ping_event(self, request: Request) -> bool:
+        return False
+
     @abc.abstractmethod
     def is_push_event(self, request: Request) -> bool:
         ...
 
     @abc.abstractmethod
-    def extract_repo_url_and_visit_type(self, request: Request) -> Tuple[str, str]:
+    def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        """Extract and return a tuple (repository_url, visit_type, private) from
+        the forge webhook payload."""
         ...
 
     def __init__(self):
@@ -81,6 +86,9 @@ class OriginSaveWebhookReceiver(abc.ABC):
                 "has not been processed."
             )
 
+        if self.is_ping_event(request):
+            return {"message": "pong"}
+
         if not self.is_push_event(request):
             raise BadInputExc(
                 f"Event sent by {self.FORGE_TYPE} webhook is not a push one, request "
@@ -94,7 +102,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
                 f"{self.FORGE_TYPE} webhook, it should be 'application/json'."
             )
 
-        repo_url, visit_type = self.extract_repo_url_and_visit_type(request)
+        repo_url, visit_type, private = self.extract_repo_info(request)
         if not repo_url:
             raise BadInputExc(
                 f"Repository URL could not be extracted from {self.FORGE_TYPE} webhook "
@@ -103,6 +111,10 @@ class OriginSaveWebhookReceiver(abc.ABC):
         if not visit_type:
             raise BadInputExc(
                 f"Visit type could not be determined for repository {repo_url}."
+            )
+        if private:
+            raise BadInputExc(
+                f"Repository {repo_url} is private and cannot be cloned without authentication."
             )
 
         save_request = create_save_origin_request(

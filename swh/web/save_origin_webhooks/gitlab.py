@@ -27,8 +27,13 @@ class GitlabOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
     def is_push_event(self, request: Request) -> bool:
         return request.headers["X-Gitlab-Event"] == "Push Hook"
 
-    def extract_repo_url_and_visit_type(self, request: Request) -> Tuple[str, str]:
-        return request.data.get("repository", {}).get("git_http_url", ""), "git"
+    def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        repo_url = request.data.get("repository", {}).get("git_http_url", "")
+        # visibility_level values: 0 = private, 10 = internal, 20 = public
+        visibility_level = request.data.get("repository", {}).get(
+            "visibility_level", 20
+        )
+        return repo_url, "git", visibility_level != 20
 
 
 api_origin_save_webhook_gitlab = GitlabOriginSaveWebhookReceiver()

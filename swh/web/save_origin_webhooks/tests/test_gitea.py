@@ -15,6 +15,7 @@ from .utils import (
     origin_save_webhook_receiver_invalid_event_test,
     origin_save_webhook_receiver_invalid_request_test,
     origin_save_webhook_receiver_no_repo_url_test,
+    origin_save_webhook_receiver_private_repo_test,
     origin_save_webhook_receiver_test,
 )
 
@@ -84,4 +85,19 @@ def test_origin_save_gitea_webhook_receiver_no_repo_url(api_client, datadir):
             },
             payload=payload,
             api_client=api_client,
+        )
+
+
+def test_origin_save_gitea_webhook_receiver_private_repo(api_client, datadir):
+    with open(os.path.join(datadir, "gitea_webhook_payload.json"), "rb") as payload:
+        payload = json.load(payload)
+        payload["repository"]["private"] = True
+        origin_save_webhook_receiver_private_repo_test(
+            forge_type="Gitea",
+            http_headers={
+                "X-Gitea-Event": "push",
+            },
+            payload=payload,
+            api_client=api_client,
+            expected_origin_url="https://try.gitea.io/johndoe/webhook-test.git",
         )
