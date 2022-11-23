@@ -522,7 +522,7 @@ describe('Origin Save Tests', function() {
     cy.wait('@saveRequest');
 
     // user requests filter checkbox should be in the DOM
-    cy.get('#swh-origin-save-requests-list-tab').click();
+    loadSaveRequestsListPage();
     cy.get('#swh-save-requests-user-filter').should('exist');
 
     // check unfiltered user requests
