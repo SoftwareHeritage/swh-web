@@ -105,7 +105,9 @@ function java(hljs) {
     'requires',
     'exports',
     'do',
-    'sealed'
+    'sealed',
+    'yield',
+    'permits'
   ];
 
   const BUILT_INS = [

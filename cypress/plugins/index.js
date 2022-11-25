@@ -42,6 +42,7 @@ async function getMetadataForOrigin(originUrl, baseUrl) {
 function getDatabase() {
   const db = new sqlite3.Database(`./swh-web-test${buildId}.sqlite3`);
   // to prevent "database is locked" error when running tests
+  db.configure('busyTimeout', 20000);
   db.run('PRAGMA journal_mode = WAL;');
   return db;
 }
