@@ -405,6 +405,7 @@
         "sap-abap": "abap",
         "scad": "openscad",
         "sci": "scilab",
+        "scm": "scheme",
         "sh": "bash",
         "shellsession": "shell",
         "sol": "solidity",
