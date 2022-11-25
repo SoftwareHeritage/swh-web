@@ -35,7 +35,8 @@ export async function vaultRequest(objectType, swhid) {
   const data = await response.json();
 
   // object needs to be cooked
-  if (data.exception === 'NotFoundExc' || data.status === 'failed') {
+  const statusForCooking = ['failed', 'pending', 'new'];
+  if (data.exception === 'NotFoundExc' || statusForCooking.includes(data.status)) {
     // if last cooking has failed, remove previous task info from localStorage
     // in order to force the recooking of the object
     swh.vault.removeCookingTaskInfo([swhid]);
@@ -51,7 +52,7 @@ export async function vaultRequest(objectType, swhid) {
   } else {
     const cookingServiceDownAlert =
           $(htmlAlert('danger',
-                      'Archive cooking service is currently experiencing issues.<br/>' +
+                      'Something unexpected happened when requesting the archive cooking service.<br/>' +
                       'Please try again later.',
                       true));
     cookingServiceDownAlert.css(alertStyle);

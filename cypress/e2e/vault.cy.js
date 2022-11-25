@@ -118,6 +118,44 @@ describe('Vault Cooking User Interface Tests', function() {
 
   });
 
+  it('should report pending cooking task when already submitted', function() {
+    // Browse a directory
+    cy.visit(this.directoryUrl);
+
+    // Stub responses when requesting the vault API to simulate
+    // an internal server error
+    cy.intercept(this.vaultDirectoryUrl, {
+      body: this.genVaultDirCookingResponse('pending', 'Processing...')
+    }).as('checkVaultCookingTask');
+
+    cy.intercept('POST', this.vaultDirectoryUrl, {
+      body: this.genVaultDirCookingResponse('pending', 'Processing...')
+    }).as('createVaultCookingTask');
+
+    cy.contains('button', 'Download')
+      .click();
+
+    // Create a vault cooking task through the GUI
+    cy.get('.modal-dialog')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@createVaultCookingTask');
+
+    // Check success alert is displayed
+    cy.get('.alert-success')
+      .should('be.visible')
+      .should('contain', 'Archive cooking request successfully submitted.');
+
+    // Go to Downloads page
+    cy.visit(this.Urls.vault());
+
+    cy.wait('@checkVaultCookingTask').then(() => {
+      testStatus(this.directory, progressbarColors['pending'], 'Processing...', 'pending');
+    });
+
+  });
+
   it('should report an error when vault service is experiencing issues', function() {
     // Browse a directory
     cy.visit(this.directoryUrl);
@@ -135,7 +173,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Check error alert is displayed
     cy.get('.alert-danger')
     .should('be.visible')
-    .should('contain', 'Archive cooking service is currently experiencing issues.');
+    .should('contain', 'Something unexpected happened when requesting the archive cooking service.');
   });
 
   it('should report an error when a cooking task creation failed', function() {

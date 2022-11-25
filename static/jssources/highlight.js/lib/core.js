@@ -899,7 +899,7 @@ const DEFAULT_KEYWORD_SCOPE = "keyword";
  * @param {boolean} caseInsensitive
  */
 function compileKeywords(rawKeywords, caseInsensitive, scopeName = DEFAULT_KEYWORD_SCOPE) {
-  /** @type KeywordDict */
+  /** @type {import("highlight.js/private").KeywordDict} */
   const compiledKeywords = Object.create(null);
 
   // input can be a string of keywords, an array of keywords, or a object with
@@ -1558,7 +1558,7 @@ function expandOrCloneMode(mode) {
   return mode;
 }
 
-var version = "11.6.0";
+var version = "11.7.0";
 
 class HTMLInjectionError extends Error {
   constructor(reason, html) {
