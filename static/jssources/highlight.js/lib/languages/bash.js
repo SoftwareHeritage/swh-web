@@ -70,7 +70,7 @@ function bash(hljs) {
     end: /'/
   };
   const ARITHMETIC = {
-    begin: /\$\(\(/,
+    begin: /\$?\(\(/,
     end: /\)\)/,
     contains: [
       {

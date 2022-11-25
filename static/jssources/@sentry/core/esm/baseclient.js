@@ -86,8 +86,7 @@ class BaseClient {
       return;
     }
 
-    let eventId = hint && hint.event_id;
-
+    let eventId;
     this._process(
       this.eventFromException(exception, hint)
         .then(event => this._captureEvent(event, hint, scope))
@@ -109,7 +108,7 @@ class BaseClient {
     hint,
     scope,
   ) {
-    let eventId = hint && hint.event_id;
+    let eventId;
 
     const promisedEvent = isPrimitive(message)
       ? this.eventFromMessage(String(message), level, hint)
@@ -136,7 +135,7 @@ class BaseClient {
       return;
     }
 
-    let eventId = hint && hint.event_id;
+    let eventId;
 
     this._process(
       this._captureEvent(event, hint, scope).then(result => {
@@ -396,7 +395,12 @@ class BaseClient {
 
     // This should be the last thing called, since we want that
     // {@link Hub.addEventProcessor} gets the finished prepared event.
-    if (finalScope) {
+    //
+    // We need to check for the existence of `finalScope.getAttachments`
+    // because `getAttachments` can be undefined if users are using an older version
+    // of `@sentry/core` that does not have the `getAttachments` method.
+    // See: https://github.com/getsentry/sentry-javascript/issues/5229
+    if (finalScope && finalScope.getAttachments) {
       // Collect attachments from the hint and scope
       const attachments = [...(hint.attachments || []), ...finalScope.getAttachments()];
 
