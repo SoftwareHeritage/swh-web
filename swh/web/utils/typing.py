@@ -248,6 +248,10 @@ class SaveOriginRequestInfo(TypedDict, total=False):
     """Status of the scheduled task"""
     note: Optional[str]
     """Optional note associated to the request, for instance rejection reason"""
+    from_webhook: bool
+    """Indicates if request was created from a webhook receiver"""
+    webhook_origin: Optional[str]
+    """Indicates from which forge type a webhook was received"""
 
 
 class OriginExistenceCheckInfo(TypedDict):
