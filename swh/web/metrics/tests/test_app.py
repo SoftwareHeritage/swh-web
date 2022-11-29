@@ -11,7 +11,7 @@ from swh.web.metrics.urls import urlpatterns
 
 
 @pytest.mark.django_db
-def test_mailmap_deactivate(client, mailmap_admin, django_settings):
+def test_metrics_deactivate(django_settings):
     """Check metrics feature is deactivated when the swh.web.metrics django
     application is not in installed apps."""
 
