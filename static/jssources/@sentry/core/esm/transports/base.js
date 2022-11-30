@@ -24,7 +24,8 @@ function createTransport(
     forEachEnvelopeItem(envelope, (item, type) => {
       const envelopeItemDataCategory = envelopeItemTypeToDataCategory(type);
       if (isRateLimited(rateLimits, envelopeItemDataCategory)) {
-        options.recordDroppedEvent('ratelimit_backoff', envelopeItemDataCategory);
+        const event = getEventForEnvelopeItem(item, type);
+        options.recordDroppedEvent('ratelimit_backoff', envelopeItemDataCategory, event);
       } else {
         filteredEnvelopeItems.push(item);
       }
@@ -40,8 +41,9 @@ function createTransport(
 
     // Creates client report for each item in an envelope
     const recordEnvelopeLoss = (reason) => {
-      forEachEnvelopeItem(filteredEnvelope, (_, type) => {
-        options.recordDroppedEvent(reason, envelopeItemTypeToDataCategory(type));
+      forEachEnvelopeItem(filteredEnvelope, (item, type) => {
+        const event = getEventForEnvelopeItem(item, type);
+        options.recordDroppedEvent(reason, envelopeItemTypeToDataCategory(type), event);
       });
     };
 
@@ -79,6 +81,14 @@ function createTransport(
     send,
     flush,
   };
+}
+
+function getEventForEnvelopeItem(item, type) {
+  if (type !== 'event' && type !== 'transaction') {
+    return undefined;
+  }
+
+  return Array.isArray(item) ? (item )[1] : undefined;
 }
 
 export { DEFAULT_TRANSPORT_BUFFER_SIZE, createTransport };

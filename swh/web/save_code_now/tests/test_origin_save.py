@@ -338,6 +338,8 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         visit_date=_visit_date.isoformat() if _visit_date else None,
         loading_task_id=sor.loading_task_id,
         note=note,
+        from_webhook=False,
+        webhook_origin=None,
     )
 
 

@@ -103,6 +103,8 @@ class SaveOriginRequest(models.Model):
     # store ids of users that submitted the request as string list
     user_ids = models.TextField(null=True)
     note = models.TextField(null=True)
+    from_webhook = models.BooleanField(default=False)
+    webhook_origin = models.CharField(max_length=200, null=True)
 
     class Meta:
         app_label = "swh_web_save_code_now"
@@ -129,6 +131,8 @@ class SaveOriginRequest(models.Model):
             visit_date=visit_date.isoformat() if visit_date else None,
             loading_task_id=self.loading_task_id,
             note=self.note,
+            from_webhook=self.from_webhook,
+            webhook_origin=self.webhook_origin,
         )
 
     def __str__(self) -> str:
