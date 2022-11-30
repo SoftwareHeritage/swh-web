@@ -5,6 +5,7 @@
 
 from typing import Any, Dict
 
+from swh.web.save_code_now.models import SaveOriginRequest
 from swh.web.tests.helpers import check_api_post_responses
 from swh.web.utils import reverse
 
@@ -39,6 +40,11 @@ def origin_save_webhook_receiver_test(
     assert tasks
     task = dict(tasks[0].items())
     assert task["arguments"]["kwargs"]["url"] == expected_origin_url
+
+    request = SaveOriginRequest.objects.get(
+        origin_url=expected_origin_url, visit_type=expected_visit_type
+    )
+    assert request.from_webhook
 
 
 def origin_save_webhook_receiver_invalid_request_test(

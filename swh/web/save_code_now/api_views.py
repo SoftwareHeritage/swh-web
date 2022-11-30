@@ -6,6 +6,7 @@
 import os
 from typing import Optional, cast
 
+from django.conf import settings
 from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -33,6 +34,27 @@ def _savable_visit_types() -> str:
     return docstring
 
 
+def _webhook_info_doc() -> str:
+    docstring = ""
+    if "swh.web.save_origin_webhooks" in settings.SWH_DJANGO_APPS:
+        docstring = """
+        :>json boolean from_webhook: indicates if the save request was created
+            from a popular forge webhook receiver
+            (see :http:post:`/api/1/origin/save/webhook/github/` for instance)
+        :>json string webhook_origin: indicates which forge type sent the webhook,
+            currently the supported types are:"""
+
+        # instantiate webhook receivers
+        from swh.web.save_origin_webhooks import urls  # noqa
+        from swh.web.save_origin_webhooks.generic_receiver import SUPPORTED_FORGE_TYPES
+
+        webhook_forge_types = sorted(list(SUPPORTED_FORGE_TYPES))
+        for visit_type in webhook_forge_types[:-1]:
+            docstring += f"**{visit_type}**, "
+        docstring += f"and **{webhook_forge_types[-1]}**"
+    return docstring
+
+
 save_code_now_api_urls = APIUrls()
 
 
@@ -45,7 +67,9 @@ save_code_now_api_urls = APIUrls()
     api_urls=save_code_now_api_urls,
 )
 @api_doc("/origin/save/", category="Request archival")
-@format_docstring(visit_types=_savable_visit_types())
+@format_docstring(
+    visit_types=_savable_visit_types(), webhook_info_doc=_webhook_info_doc()
+)
 def api_save_origin(request: Request, visit_type: str, origin_url: str):
     """
     .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
@@ -102,6 +126,7 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             otherwise.
         :>json string note: optional note giving details about the save request,
             for instance why it has been rejected
+        {webhook_info_doc}
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
@@ -109,6 +134,13 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
         :statuscode 404: no save requests have been found for a given origin
 
     """
+
+    def _cleanup_sor_data(sor):
+        del sor["id"]
+        if "swh.web.save_origin_webhooks" not in settings.SWH_DJANGO_APPS:
+            del sor["from_webhook"]
+            del sor["webhook_origin"]
+        return sor
 
     data = request.data or {}
     if request.method == "POST":
@@ -122,10 +154,8 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             user_id=cast(Optional[int], request.user.id),
             **data,
         )
-        del sor["id"]
-        return sor
+        return _cleanup_sor_data(sor)
+
     else:
         sors = get_save_origin_requests(visit_type, origin_url)
-        for sor in sors:
-            del sor["id"]
-        return sors
+        return [_cleanup_sor_data(sor) for sor in sors]

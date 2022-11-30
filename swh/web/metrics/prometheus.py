@@ -21,6 +21,7 @@ from swh.web.save_code_now.models import (
     SaveOriginRequest,
 )
 from swh.web.save_code_now.origin_save import get_savable_visit_types
+from swh.web.save_origin_webhooks.generic_receiver import SUPPORTED_FORGE_TYPES
 
 SWH_WEB_METRICS_REGISTRY = CollectorRegistry(auto_describe=True)
 
@@ -30,6 +31,17 @@ _submitted_save_requests_gauge = Gauge(
     name=SUBMITTED_SAVE_REQUESTS_METRIC,
     documentation="Number of submitted origin save requests",
     labelnames=["status", "visit_type"],
+    registry=SWH_WEB_METRICS_REGISTRY,
+)
+
+SUBMITTED_SAVE_REQUESTS_FROM_WEBHOOKS_METRIC = (
+    "swh_web_submitted_save_requests_from_webhooks"
+)
+
+_submitted_save_requests_from_webhooks_gauge = Gauge(
+    name=SUBMITTED_SAVE_REQUESTS_FROM_WEBHOOKS_METRIC,
+    documentation="Number of submitted origin save requests through forge webhook receivers",
+    labelnames=["status", "webhook_origin"],
     registry=SWH_WEB_METRICS_REGISTRY,
 )
 
@@ -88,6 +100,11 @@ def compute_save_requests_metrics() -> None:
     for labels in labels_set:
         _submitted_save_requests_gauge.labels(*labels).set(0)
 
+    labels_set = product(request_statuses, SUPPORTED_FORGE_TYPES)
+
+    for labels in labels_set:
+        _submitted_save_requests_from_webhooks_gauge.labels(*labels).set(0)
+
     labels_set = product(load_task_statuses, visit_types)
 
     for labels in labels_set:
@@ -111,6 +128,12 @@ def compute_save_requests_metrics() -> None:
         _submitted_save_requests_gauge.labels(
             status=sor.status, visit_type=sor.visit_type
         ).inc()
+
+        if sor.from_webhook:
+            _submitted_save_requests_from_webhooks_gauge.labels(
+                status=sor.status,
+                webhook_origin=sor.webhook_origin,
+            ).inc()
 
         if (
             sor.loading_task_status in (SAVE_TASK_SUCCEEDED, SAVE_TASK_FAILED)

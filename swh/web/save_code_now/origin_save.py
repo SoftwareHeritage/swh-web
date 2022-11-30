@@ -404,6 +404,8 @@ def create_save_origin_request(
     origin_url: str,
     privileged_user: bool = False,
     user_id: Optional[int] = None,
+    from_webhook: bool = False,
+    webhook_origin: Optional[str] = None,
     **kwargs,
 ) -> SaveOriginRequestInfo:
     """Create a loading task to save a software origin into the archive.
@@ -426,6 +428,8 @@ def create_save_origin_request(
         privileged: Whether the user has some more privilege than other (bypass
           review, access to privileged other visit types)
         user_id: User identifier (provided when authenticated)
+        from_webhook: Indicates if the save request is created from a webhook receiver
+        webhook_origin: Indicates which forge type sent the webhook
         kwargs: Optional parameters (e.g. artifact_url, artifact_filename,
           artifact_version)
 
@@ -545,6 +549,8 @@ def create_save_origin_request(
                     status=save_request_status,
                     loading_task_id=task["id"],
                     user_ids=f'"{user_id}"' if user_id else None,
+                    from_webhook=from_webhook,
+                    webhook_origin=webhook_origin,
                 )
 
     # save request must be manually reviewed for acceptation
@@ -568,6 +574,8 @@ def create_save_origin_request(
                 origin_url=origin_url,
                 status=save_request_status,
                 user_ids=f'"{user_id}"' if user_id else None,
+                from_webhook=from_webhook,
+                webhook_origin=webhook_origin,
             )
     # origin can not be saved as its url is blacklisted,
     # log the request to the database anyway
@@ -577,6 +585,8 @@ def create_save_origin_request(
             origin_url=origin_url,
             status=save_request_status,
             user_ids=f'"{user_id}"' if user_id else None,
+            from_webhook=from_webhook,
+            webhook_origin=webhook_origin,
         )
 
     if save_request_status == SAVE_REQUEST_REJECTED:

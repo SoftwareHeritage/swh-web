@@ -95,6 +95,8 @@ def check_created_save_request_status(
         response = check_api_post_responses(api_client, url, data=None, status_code=200)
         assert response.data["save_request_status"] == expected_request_status
         assert response.data["save_task_status"] == expected_task_status
+        assert response.data["from_webhook"] is False
+        assert response.data["webhook_origin"] is None
     else:
         check_api_post_responses(api_client, url, data=None, status_code=403)
 
@@ -139,6 +141,8 @@ def check_save_request_status(
     assert save_request_data["save_request_status"] == expected_request_status
     assert save_request_data["save_task_status"] == expected_task_status
     assert save_request_data["visit_status"] == visit_status
+    assert save_request_data["from_webhook"] is False
+    assert save_request_data["webhook_origin"] is None
 
     if scheduler_task_run_status is not None:
         # Check that save task status is still available when

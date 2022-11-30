@@ -16,6 +16,9 @@ from swh.web.utils.exc import BadInputExc
 webhooks_api_urls = APIUrls()
 
 
+SUPPORTED_FORGE_TYPES = set()
+
+
 class OriginSaveWebhookReceiver(abc.ABC):
     FORGE_TYPE: str
     WEBHOOK_GUIDE_URL: str
@@ -64,6 +67,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
                 request or missing data in webhook payload
         """
         self.__name__ = "api_origin_save_webhook_{self.FORGE_TYPE.lower()}"
+        SUPPORTED_FORGE_TYPES.add(self.FORGE_TYPE.lower())
         api_doc(
             f"/origin/save/webhook/{self.FORGE_TYPE.lower()}/",
             category="Request archival",
@@ -118,7 +122,10 @@ class OriginSaveWebhookReceiver(abc.ABC):
             )
 
         save_request = create_save_origin_request(
-            visit_type=visit_type, origin_url=repo_url
+            visit_type=visit_type,
+            origin_url=repo_url,
+            from_webhook=True,
+            webhook_origin=self.FORGE_TYPE.lower(),
         )
 
         return {
