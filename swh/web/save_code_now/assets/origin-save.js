@@ -204,14 +204,19 @@ export function initOriginSave() {
           {
             name: 'info',
             render: (data, type, row) => {
+              let info = '';
               if (row.save_task_status === 'succeeded' || row.save_task_status === 'failed' ||
                   row.note != null) {
-                return `<i class="mdi mdi-information-outline swh-save-request-info"
+                info += `<i class="mdi mdi-information-outline swh-save-request-info"
                            aria-hidden="true" style="cursor: pointer"
                            onclick="swh.save_code_now.displaySaveRequestInfo(event, ${row.id})"></i>`;
-              } else {
-                return '';
               }
+              if (row.from_webhook) {
+                info += `<i class="mdi mdi-webhook" aria-hidden="true"
+                          title="save request created from webhook"></i>`;
+              }
+              return info;
+
             }
           },
           {

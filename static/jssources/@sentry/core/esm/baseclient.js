@@ -274,7 +274,9 @@ class BaseClient {
   /**
    * @inheritDoc
    */
-   recordDroppedEvent(reason, category) {
+   recordDroppedEvent(reason, category, _event) {
+    // Note: we use `event` in replay, where we overwrite this hook.
+
     if (this._options.sendClientReports) {
       // We want to track each category (error, transaction, session) separately
       // but still keep the distinction between different type of outcomes.
@@ -591,7 +593,7 @@ class BaseClient {
     // 0.0 === 0% events are sent
     // Sampling for transaction happens somewhere else
     if (!isTransaction && typeof sampleRate === 'number' && Math.random() > sampleRate) {
-      this.recordDroppedEvent('sample_rate', 'error');
+      this.recordDroppedEvent('sample_rate', 'error', event);
       return rejectedSyncPromise(
         new SentryError(
           `Discarding event because it's not included in the random sample (sampling rate = ${sampleRate})`,
@@ -603,7 +605,7 @@ class BaseClient {
     return this._prepareEvent(event, hint, scope)
       .then(prepared => {
         if (prepared === null) {
-          this.recordDroppedEvent('event_processor', event.type || 'error');
+          this.recordDroppedEvent('event_processor', event.type || 'error', event);
           throw new SentryError('An event processor returned `null`, will not send event.', 'log');
         }
 
@@ -617,7 +619,7 @@ class BaseClient {
       })
       .then(processedEvent => {
         if (processedEvent === null) {
-          this.recordDroppedEvent('before_send', event.type || 'error');
+          this.recordDroppedEvent('before_send', event.type || 'error', event);
           throw new SentryError(`\`${beforeSendProcessorName}\` returned \`null\`, will not send event.`, 'log');
         }
 

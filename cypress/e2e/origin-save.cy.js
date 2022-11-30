@@ -54,7 +54,8 @@ function stubSaveRequest({
   errorMessage = '',
   saveRequestDate = new Date(),
   visitDate = new Date(),
-  visitStatus = null
+  visitStatus = null,
+  fromWebhook = false
 } = {}) {
   let response;
   if (responseStatus !== 200 && errorMessage) {
@@ -68,7 +69,8 @@ function stubSaveRequest({
                                       saveRequestDate: saveRequestDate,
                                       saveTaskStatus: saveTaskStatus,
                                       visitDate: visitDate,
-                                      visitStatus: visitStatus
+                                      visitStatus: visitStatus,
+                                      fromWebhook: fromWebhook
     });
   }
   cy.intercept('POST', requestUrl, {body: response, statusCode: responseStatus})
@@ -84,7 +86,8 @@ function genOriginSaveResponse({
   saveRequestDate = new Date(),
   saveTaskStatus,
   visitDate = new Date(),
-  visitStatus
+  visitStatus,
+  fromWebhook = false
 } = {}) {
   return {
     'visit_type': visitType,
@@ -94,7 +97,8 @@ function genOriginSaveResponse({
     'save_request_date': saveRequestDate ? saveRequestDate.toISOString() : null,
     'save_task_status': saveTaskStatus,
     'visit_date': visitDate ? visitDate.toISOString() : null,
-    'visit_status': visitStatus
+    'visit_status': visitStatus,
+    'from_webhook': fromWebhook
   };
 };
 
@@ -314,6 +318,34 @@ describe('Origin Save Tests', function() {
         assert.equal($(cells[4]).text(), saveStatus);
         ++i;
       }
+    });
+  });
+
+  it('should display webhook icon when request was created from forge webhook receiver', function() {
+    const originUrl = 'https://git.example.org/example.git';
+    const saveRequestData = genOriginSaveResponse({
+      saveRequestStatus: 'accepted',
+      originUrl: originUrl,
+      saveTaskStatus: 'succeeded',
+      visitDate: null,
+      visitStatus: 'full',
+      fromWebhook: true
+    });
+    const saveRequestsListData = {
+      'recordsTotal': 1,
+      'draw': 2,
+      'recordsFiltered': 1,
+      'data': [saveRequestData]
+    };
+
+    cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
+      .as('saveRequestsList');
+
+    loadSaveRequestsListPage();
+
+    cy.get('tbody tr').then(rows => {
+      const firstRowCells = rows[0].cells;
+      expect($(firstRowCells[5]).html()).to.contain.string('mdi-webhook');
     });
   });
 
