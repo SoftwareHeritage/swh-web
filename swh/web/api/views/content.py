@@ -5,6 +5,7 @@
 
 import functools
 import io
+import os
 from typing import Optional
 
 from django.http import FileResponse
@@ -210,7 +211,7 @@ def api_content_raw(request: Request, q: str):
 
     return FileResponse(
         io.BytesIO(content_raw["data"]),  # not copied, as this is never modified
-        filename=filename,
+        filename=os.path.basename(filename),
         content_type="application/octet-stream",
         as_attachment=True,
     )

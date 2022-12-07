@@ -251,7 +251,8 @@ def test_content_view_text_with_path(client, archive_data, content_text):
     )
 
 
-def test_content_raw_text(client, archive_data, content_text):
+@pytest.mark.parametrize("filename_prefix", ["", "/home/"])
+def test_content_raw_text(client, archive_data, content_text, filename_prefix):
     url = reverse("browse-content-raw", url_args={"query_string": content_text["sha1"]})
 
     resp = check_http_get_response(
@@ -269,7 +270,7 @@ def test_content_raw_text(client, archive_data, content_text):
     url = reverse(
         "browse-content-raw",
         url_args={"query_string": content_text["sha1"]},
-        query_params={"filename": filename},
+        query_params={"filename": filename_prefix + filename},
     )
 
     resp = check_http_get_response(
