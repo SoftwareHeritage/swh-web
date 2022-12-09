@@ -6,6 +6,7 @@
 import difflib
 from distutils.util import strtobool
 import io
+import os
 from typing import Any, Dict, Optional
 
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
@@ -72,7 +73,7 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
 
     response = FileResponse(
         io.BytesIO(content_data["raw_data"]),  # not copied, as this is never modified
-        filename=filename,
+        filename=os.path.basename(filename),
         content_type=content_type,
         as_attachment=True,
     )
