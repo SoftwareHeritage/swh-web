@@ -222,6 +222,9 @@ def get_swhid(swhid: str) -> QualifiedSWHID:
         # ensure core part of SWHID is in lower case to avoid parsing error
         (core, sep, qualifiers) = swhid.partition(";")
         core = core.lower()
+        # quoted white spaces might have been automatically unquoted when a SWHID
+        # is passed as URL argument so ensure to quote them back
+        qualifiers = qualifiers.replace(" ", "%20")
         return QualifiedSWHID.from_string(core + sep + qualifiers)
     except ValidationError as ve:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
