@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2022  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -113,6 +113,17 @@ def test_get_swhid(content, directory, release, revision, snapshot):
 
     with pytest.raises(BadInputExc, match="Error when parsing identifier"):
         get_swhid("foo")
+
+
+def test_get_swhid_with_unquoted_white_spaces(content):
+    swhid = gen_swhid(
+        ObjectType.CONTENT, content["sha1_git"], metadata={"path": "/test/foo bar/baz"}
+    )
+
+    swhid_parsed = get_swhid(swhid)
+
+    assert swhid_parsed.path == b"/test/foo bar/baz"
+    assert "path=/test/foo%20bar/baz" in str(swhid_parsed)
 
 
 def test_group_swhids(content, directory, release, revision, snapshot):
