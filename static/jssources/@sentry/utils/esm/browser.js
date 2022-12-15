@@ -4,13 +4,18 @@ import { getGlobalObject } from './worldwide.js';
 // eslint-disable-next-line deprecation/deprecation
 const WINDOW = getGlobalObject();
 
+const DEFAULT_MAX_STRING_LENGTH = 80;
+
 /**
  * Given a child DOM element, returns a query-selector statement describing that
  * and its ancestors
  * e.g. [HTMLElement] => body > div > input#foo.btn[name=baz]
  * @returns generated DOM path
  */
-function htmlTreeAsString(elem, keyAttrs) {
+function htmlTreeAsString(
+  elem,
+  options = {},
+) {
 
   // try/catch both:
   // - accessing event.target (see getsentry/raven-js#838, #768)
@@ -19,22 +24,22 @@ function htmlTreeAsString(elem, keyAttrs) {
   try {
     let currentElem = elem ;
     const MAX_TRAVERSE_HEIGHT = 5;
-    const MAX_OUTPUT_LEN = 80;
     const out = [];
     let height = 0;
     let len = 0;
     const separator = ' > ';
     const sepLength = separator.length;
     let nextStr;
+    const keyAttrs = Array.isArray(options) ? options : options.keyAttrs;
+    const maxStringLength = (!Array.isArray(options) && options.maxStringLength) || DEFAULT_MAX_STRING_LENGTH;
 
-    // eslint-disable-next-line no-plusplus
     while (currentElem && height++ < MAX_TRAVERSE_HEIGHT) {
       nextStr = _htmlElementAsString(currentElem, keyAttrs);
       // bail out if
       // - nextStr is the 'html' element
-      // - the length of the string that would be created exceeds MAX_OUTPUT_LEN
+      // - the length of the string that would be created exceeds maxStringLength
       //   (ignore this limit if we are on the first iteration)
-      if (nextStr === 'html' || (height > 1 && len + out.length * sepLength + nextStr.length >= MAX_OUTPUT_LEN)) {
+      if (nextStr === 'html' || (height > 1 && len + out.length * sepLength + nextStr.length >= maxStringLength)) {
         break;
       }
 

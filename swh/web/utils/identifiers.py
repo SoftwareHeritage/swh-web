@@ -361,7 +361,8 @@ def get_swhids_info(
                 object_type, object_id, metadata=swhid_context
             )
             swhid_with_context_url = reverse(
-                "browse-swhid", url_args={"swhid": swhid_with_context}
+                "browse-swhid",
+                url_args={"swhid": quote(swhid_with_context, safe=":;=/")},
             )
 
         swhids_info.append(

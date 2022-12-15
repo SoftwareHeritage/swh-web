@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 import random
-from urllib.parse import quote
+from urllib.parse import quote, unquote, urlparse
 
 import pytest
 
@@ -458,21 +458,26 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, or
         extra_context={"path": path},
     )[0]
 
-    # check special characters in SWHID have been escaped
+    # check special characters in SWHID have been percent escaped
     assert (
         swhid_info["context"]["origin"] == "http://example.org/?project%3Dabc%3Bdef%25"
     )
     assert swhid_info["context"]["path"] == "/foo%3B/bar%25"
 
     # check special characters in SWHID URL have been escaped
-    parsed_url_swhid = QualifiedSWHID.from_string(
-        swhid_info["swhid_with_context_url"][1:]
-    )
+    parsed_swhid_url = urlparse(swhid_info["swhid_with_context_url"])
     assert (
-        parsed_url_swhid.qualifiers()["origin"]
-        == "http://example.org/%3Fproject%253Dabc%253Bdef%2525"
+        "origin=http://example.org/%253Fproject%25253Dabc%25253Bdef%252525;"
+        in parsed_swhid_url.path
     )
-    assert parsed_url_swhid.qualifiers()["path"] == "/foo%253B/bar%2525"
+    assert "path=/foo%25253B/bar%252525" in parsed_swhid_url.path
+
+    # check that by double unquoting SWHID URL path, we get back on the SWHID value
+    # first unquoting is done by HTTP server, second unquoting by the SWHID parser
+    # when processing origin and path qualifiers
+    assert (
+        unquote(unquote(parsed_swhid_url.path[1:])) == swhid_info["swhid_with_context"]
+    )
 
 
 def test_resolve_swhids_snapshot_context(

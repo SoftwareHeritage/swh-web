@@ -1,5 +1,6 @@
-import { BaseClient, SDK_VERSION, getCurrentHub, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
-import { getEventDescription, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { _optionalChain } from '@sentry/utils/esm/buildPolyfills';
+import { BaseClient, SDK_VERSION, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
+import { logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
 import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
@@ -70,26 +71,9 @@ class BrowserClient extends BaseClient {
     // This all sadly is a bit ugly, but we currently don't have a "pre-send" hook on the integrations so we do it this
     // way for now.
     const breadcrumbIntegration = this.getIntegrationById(BREADCRUMB_INTEGRATION_ID) ;
-    if (
-      breadcrumbIntegration &&
-      // We check for definedness of `options`, even though it is not strictly necessary, because that access to
-      // `.sentry` below does not throw, in case users provided their own integration with id "Breadcrumbs" that does
-      // not have an`options` field
-      breadcrumbIntegration.options &&
-      breadcrumbIntegration.options.sentry
-    ) {
-      getCurrentHub().addBreadcrumb(
-        {
-          category: `sentry.${event.type === 'transaction' ? 'transaction' : 'event'}`,
-          event_id: event.event_id,
-          level: event.level,
-          message: getEventDescription(event),
-        },
-        {
-          event,
-        },
-      );
-    }
+    // We check for definedness of `addSentryBreadcrumb` in case users provided their own integration with id
+    // "Breadcrumbs" that does not have this function.
+    _optionalChain([breadcrumbIntegration, 'optionalAccess', _ => _.addSentryBreadcrumb, 'optionalCall', _2 => _2(event)]);
 
     super.sendEvent(event, hint);
   }

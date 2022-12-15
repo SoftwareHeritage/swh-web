@@ -123,6 +123,7 @@ const ITEM_TYPE_TO_DATA_CATEGORY_MAP = {
   event: 'error',
   client_report: 'internal',
   user_report: 'default',
+  profile: 'profile',
 };
 
 /**
