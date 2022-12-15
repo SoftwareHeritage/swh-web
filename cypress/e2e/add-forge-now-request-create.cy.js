@@ -92,6 +92,8 @@ describe('Browse requests list tests', function() {
     cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
 
     cy.wait('@addForgeRequestsList');
+    // ensure datatable got rendered
+    cy.wait(100);
 
     // check unfiltered user requests
     cy.get('tbody tr').then(rows => {
@@ -102,6 +104,8 @@ describe('Browse requests list tests', function() {
       .uncheck({force: true});
 
     cy.wait('@addForgeRequestsList');
+    // ensure datatable got rendered
+    cy.wait(100);
 
     // Users now sees everything
     cy.get('tbody tr').then(rows => {

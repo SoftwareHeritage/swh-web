@@ -91,6 +91,7 @@ describe('Home Page Tests', function() {
   });
 
   it('should redirect to search page when submitting search form', function() {
+    cy.visit(url);
     const searchText = 'git';
     cy.get('#swh-origins-url-patterns')
       .type(searchText)

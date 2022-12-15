@@ -17,9 +17,9 @@ function shouldIgnoreOnError() {
  */
 function ignoreNextOnError() {
   // onerror should trigger before setTimeout
-  ignoreOnError += 1;
+  ignoreOnError++;
   setTimeout(() => {
-    ignoreOnError -= 1;
+    ignoreOnError--;
   });
 }
 

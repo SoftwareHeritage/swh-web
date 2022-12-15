@@ -366,6 +366,13 @@ class Scope  {
   /**
    * @inheritDoc
    */
+   getLastBreadcrumb() {
+    return this._breadcrumbs[this._breadcrumbs.length - 1];
+  }
+
+  /**
+   * @inheritDoc
+   */
    clearBreadcrumbs() {
     this._breadcrumbs = [];
     this._notifyScopeListeners();

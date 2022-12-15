@@ -476,7 +476,7 @@ function instrumentDOM() {
               originalAddEventListener.call(this, type, handler, options);
             }
 
-            handlerForType.refCount += 1;
+            handlerForType.refCount++;
           } catch (e) {
             // Accessing dom properties is always fragile.
             // Also allows us to skip `addEventListenrs` calls with no proper `this` context.
@@ -504,7 +504,7 @@ function instrumentDOM() {
               const handlerForType = handlers[type];
 
               if (handlerForType) {
-                handlerForType.refCount -= 1;
+                handlerForType.refCount--;
                 // If there are no longer any custom handlers of the current type on this element, we can remove ours, too.
                 if (handlerForType.refCount <= 0) {
                   originalRemoveEventListener.call(this, type, handlerForType.handler, options);
