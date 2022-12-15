@@ -128,7 +128,6 @@ function node(getModule) {
 
       let methodStart = functionName.lastIndexOf('.');
       if (functionName[methodStart - 1] === '.') {
-        // eslint-disable-next-line no-plusplus
         methodStart--;
       }
 

@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import quote
 
 from django.shortcuts import render
 from django.urls import re_path as url
@@ -281,7 +282,9 @@ def swhid_iframe(request, swhid: str):
                     )
                 )
 
-            archive_link = reverse("browse-swhid", url_args={"swhid": swhid})
+            archive_link = reverse(
+                "browse-swhid", url_args={"swhid": quote(swhid, safe=":;=/")}
+            )
             if (
                 parsed_swhid.origin is None
                 and parsed_swhid.visit is None
@@ -293,15 +296,17 @@ def swhid_iframe(request, swhid: str):
                 root_dir_swhid = CoreSWHID(
                     object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(root_dir)
                 )
-                archive_swhid = QualifiedSWHID(
-                    object_type=parsed_swhid.object_type,
-                    object_id=parsed_swhid.object_id,
-                    path=parsed_swhid.path,
-                    anchor=root_dir_swhid,
+                archive_swhid = str(
+                    QualifiedSWHID(
+                        object_type=parsed_swhid.object_type,
+                        object_id=parsed_swhid.object_id,
+                        path=parsed_swhid.path,
+                        anchor=root_dir_swhid,
+                    )
                 )
                 archive_link = reverse(
                     "browse-swhid",
-                    url_args={"swhid": f"{archive_swhid}"},
+                    url_args={"swhid": quote(archive_swhid, safe=":;=/")},
                 )
 
     except BadInputExc as e:

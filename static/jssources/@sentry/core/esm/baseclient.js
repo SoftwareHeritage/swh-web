@@ -86,7 +86,8 @@ class BaseClient {
       return;
     }
 
-    let eventId;
+    let eventId = hint && hint.event_id;
+
     this._process(
       this.eventFromException(exception, hint)
         .then(event => this._captureEvent(event, hint, scope))
@@ -108,7 +109,7 @@ class BaseClient {
     hint,
     scope,
   ) {
-    let eventId;
+    let eventId = hint && hint.event_id;
 
     const promisedEvent = isPrimitive(message)
       ? this.eventFromMessage(String(message), level, hint)
@@ -135,7 +136,7 @@ class BaseClient {
       return;
     }
 
-    let eventId;
+    let eventId = hint && hint.event_id;
 
     this._process(
       this._captureEvent(event, hint, scope).then(result => {
@@ -673,14 +674,14 @@ class BaseClient {
    * Occupies the client with processing and event
    */
    _process(promise) {
-    this._numProcessing += 1;
+    this._numProcessing++;
     void promise.then(
       value => {
-        this._numProcessing -= 1;
+        this._numProcessing--;
         return value;
       },
       reason => {
-        this._numProcessing -= 1;
+        this._numProcessing--;
         return reason;
       },
     );

@@ -187,6 +187,7 @@ describe('Test top-bar', function() {
 
 describe('Test navbar', function() {
   it('should redirect to search page when submitting search form in navbar', function() {
+    cy.visit(url);
     const keyword = 'python';
     cy.get('#swh-origins-search-top-input')
       .type(keyword);

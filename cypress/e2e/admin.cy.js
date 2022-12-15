@@ -56,6 +56,7 @@ describe('Test Admin Login/logout', function() {
   });
 
   it('should get info about a user logged in from javascript', function() {
+    cy.visit(this.url);
     cy.window().then(win => {
       expect(win.swh.webapp.isUserLoggedIn()).to.be.false;
     });

@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {random, checkLanguageHighlighting} from '../utils';
+import {checkLanguageHighlighting, random} from '../utils';
 
 const $ = Cypress.$;
 
@@ -40,7 +40,7 @@ describe('Test Content Language Select', function() {
   });
 
   context('When language is switched from dropdown', function() {
-    before(function() {
+    beforeEach(function() {
       cy.visit(contentWithLanguageInfo);
 
       cy.get('.chosen-container')

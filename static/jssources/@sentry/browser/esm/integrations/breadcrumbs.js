@@ -1,10 +1,13 @@
 import { getCurrentHub } from '@sentry/core';
-import { addInstrumentationHandler, htmlTreeAsString, severityLevelFromString, safeJoin, parseUrl } from '@sentry/utils';
+import { addInstrumentationHandler, getEventDescription, logger, htmlTreeAsString, severityLevelFromString, safeJoin, parseUrl } from '@sentry/utils';
 import { WINDOW } from '../helpers.js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 /** JSDoc */
+
+/** maxStringLength gets capped to prevent 100 breadcrumbs exceeding 1MB event payload size */
+const MAX_ALLOWED_STRING_LENGTH = 1024;
 
 const BREADCRUMB_INTEGRATION_ID = 'Breadcrumbs';
 
@@ -68,6 +71,25 @@ class Breadcrumbs  {
       addInstrumentationHandler('history', _historyBreadcrumb);
     }
   }
+
+  /**
+   * Adds a breadcrumb for Sentry events or transactions if this option is enabled.
+   */
+   addSentryBreadcrumb(event) {
+    if (this.options.sentry) {
+      getCurrentHub().addBreadcrumb(
+        {
+          category: `sentry.${event.type === 'transaction' ? 'transaction' : 'event'}`,
+          event_id: event.event_id,
+          level: event.level,
+          message: getEventDescription(event),
+        },
+        {
+          event,
+        },
+      );
+    }
+  }
 } Breadcrumbs.__initStatic();
 
 /**
@@ -81,6 +103,16 @@ function _domBreadcrumb(dom) {
     let target;
     let keyAttrs = typeof dom === 'object' ? dom.serializeAttribute : undefined;
 
+    let maxStringLength =
+      typeof dom === 'object' && typeof dom.maxStringLength === 'number' ? dom.maxStringLength : undefined;
+    if (maxStringLength && maxStringLength > MAX_ALLOWED_STRING_LENGTH) {
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+        logger.warn(
+          `\`dom.maxStringLength\` cannot exceed ${MAX_ALLOWED_STRING_LENGTH}, but a value of ${maxStringLength} was configured. Sentry will use ${MAX_ALLOWED_STRING_LENGTH} instead.`,
+        );
+      maxStringLength = MAX_ALLOWED_STRING_LENGTH;
+    }
+
     if (typeof keyAttrs === 'string') {
       keyAttrs = [keyAttrs];
     }
@@ -88,8 +120,8 @@ function _domBreadcrumb(dom) {
     // Accessing event.target can throw (see getsentry/raven-js#838, #768)
     try {
       target = handlerData.event.target
-        ? htmlTreeAsString(handlerData.event.target , keyAttrs)
-        : htmlTreeAsString(handlerData.event , keyAttrs);
+        ? htmlTreeAsString(handlerData.event.target , { keyAttrs, maxStringLength })
+        : htmlTreeAsString(handlerData.event , { keyAttrs, maxStringLength });
     } catch (e) {
       target = '<unknown>';
     }
