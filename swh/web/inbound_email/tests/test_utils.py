@@ -255,69 +255,78 @@ def test_get_pks_from_message_logging(caplog):
     (
         pytest.param(
             "plaintext.eml",
-            [b"Plain text email.\n\n-- \nTest User"],
+            ["Plain text email.\n\n-- \nTest User"],
             [],
             id="plaintext",
         ),
         pytest.param(
             "multipart_alternative.eml",
-            [b"*Multipart email.*\n\n-- \nTest User"],
+            ["*Multipart email.*\n\n-- \nTest User"],
             [],
             id="multipart_alternative",
         ),
         pytest.param(
             "multipart_alternative_html_only.eml",
-            [b"<html>", b"<b>Multipart email (a much longer html part).</b>"],
-            [b"<b>Multipart email (short html part)</b>"],
+            ["<html>", "<b>Multipart email (a much longer html part).</b>"],
+            ["<b>Multipart email (short html part)</b>"],
             id="multipart_alternative_html_only",
         ),
         pytest.param(
             "multipart_alternative_text_only.eml",
-            [b"*Multipart email, but a longer text part.*\n\n--\nTest User"],
+            ["*Multipart email, but a longer text part.*\n\n--\nTest User"],
             [],
             id="multipart_alternative_text_only",
         ),
         pytest.param(
+            "multipart_iso8859-1.eml",
+            [
+                "We are not aware of technical issues that could impede you to "
+                "archive our forge.\n\n--\nÉquipe Xxx\nUnité Yyy",
+            ],
+            [],
+            id="multipart_iso8859-1",
+        ),
+        pytest.param(
             "multipart_mixed.eml",
-            [b"This is plain text", b"and <b>this is HTML</b>"],
-            [b"This is a multi-part message in MIME format."],
+            ["This is plain text", "and <b>this is HTML</b>"],
+            ["This is a multi-part message in MIME format."],
             id="multipart_mixed",
         ),
         pytest.param(
             "multipart_mixed2.eml",
-            [b"This is plain text", b"and this is more text"],
-            [b"This is a multi-part message in MIME format."],
+            ["This is plain text", "and this is more text"],
+            ["This is a multi-part message in MIME format."],
             id="multipart_mixed2",
         ),
         pytest.param(
             "multipart_mixed_text_only.eml",
-            [b"My test email"],
+            ["My test email"],
             [
-                b"HTML attachment",
-                b"text attachment",
-                b"This is a multi-part message in MIME format.",
+                "HTML attachment",
+                "text attachment",
+                "This is a multi-part message in MIME format.",
             ],
             id="multipart_mixed_text_only",
         ),
         pytest.param(
             "multipart_alternative_recursive.eml",
-            [b"This is plain text", b"and more plain text"],
-            [b"this is HTML", b"This is a multi-part message in MIME format."],
+            ["This is plain text", "and more plain text"],
+            ["this is HTML", "This is a multi-part message in MIME format."],
             id="multipart_alternative_recursive",
         ),
         pytest.param(
             "multipart_related.eml",
             [
-                b"See the message below\n\n---------- Forwarded message ---------",
-                b"Hello everyone,\n\nSee my attachment",
+                "See the message below\n\n---------- Forwarded message ---------",
+                "Hello everyone,\n\nSee my attachment",
             ],
-            [b"this is HTML", b"This is a multi-part message in MIME format."],
+            ["this is HTML", "This is a multi-part message in MIME format."],
             id="multipart_alternative_recursive",
         ),
     ),
 )
 def test_get_message_plaintext(
-    filename: str, expected_parts: List[bytes], expected_absent: List[bytes]
+    filename: str, expected_parts: List[str], expected_absent: List[str]
 ):
     with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
         message = email.message_from_binary_file(f, policy=email.policy.default)
