@@ -17,6 +17,8 @@ from django.core.validators import URLValidator
 from django.db.models import Q, QuerySet
 from django.utils.html import escape
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web.config import get_config, scheduler
 from swh.web.save_code_now.models import (
@@ -29,7 +31,9 @@ from swh.web.save_code_now.models import (
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
     VISIT_STATUS_CREATED,
+    VISIT_STATUS_FULL,
     VISIT_STATUS_ONGOING,
+    VISIT_STATUS_PARTIAL,
     SaveAuthorizedOrigin,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
@@ -271,30 +275,26 @@ def _check_origin_exists(url: str) -> OriginExistenceCheckInfo:
 
 def _get_visit_info_for_save_request(
     save_request: SaveOriginRequest,
-) -> Tuple[Optional[datetime], Optional[str]]:
+) -> Tuple[Optional[datetime], Optional[str], Optional[str]]:
     """Retrieve visit information out of a save request
 
     Args:
         save_request: Input save origin request to retrieve information for.
 
     Returns:
-        Tuple of (visit date, optional visit status) for such save request origin
-
+        Tuple of (visit date, optional visit status, optional snapshot id)
+        for such save origin request
     """
     visit_date = None
     visit_status = None
-    time_now = datetime.now(tz=timezone.utc)
-    time_delta = time_now - save_request.request_date
-    # stop trying to find a visit date one month after save request submission
-    # as those requests to storage are expensive and associated loading task
-    # surely ended up with errors
-    if time_delta.days <= MAX_THRESHOLD_DAYS:
-        origin = save_request.origin_url
-        ovs = archive.origin_visit_find_by_date(origin, save_request.request_date)
-        if ovs:
-            visit_date = parse_iso8601_date_to_utc(ovs["date"])
-            visit_status = ovs["status"]
-    return visit_date, visit_status
+    snapshot_id = None
+    origin = save_request.origin_url
+    ovs = archive.origin_visit_find_by_date(origin, save_request.request_date)
+    if ovs:
+        visit_date = parse_iso8601_date_to_utc(ovs["date"])
+        visit_status = ovs["status"]
+        snapshot_id = ovs["snapshot"]
+    return visit_date, visit_status, snapshot_id
 
 
 def _check_visit_update_status(
@@ -310,7 +310,7 @@ def _check_visit_update_status(
         for such save request origin
 
     """
-    visit_date, visit_status = _get_visit_info_for_save_request(save_request)
+    visit_date, visit_status, _ = _get_visit_info_for_save_request(save_request)
     loading_task_status = None
     if visit_date and visit_status in ("full", "partial"):
         # visit has been performed, mark the saving task as succeeded
@@ -392,6 +392,26 @@ def _update_save_request_info(
         ):
             must_save = True
             save_request.loading_task_status = loading_task_status
+
+    # Try to get snapshot identifier associated to the save request
+    if (
+        save_request.visit_status in (VISIT_STATUS_PARTIAL, VISIT_STATUS_FULL)
+        and save_request.snapshot_swhid is None
+    ):
+        _, _, snapshot_id = _get_visit_info_for_save_request(save_request)
+
+        save_request.snapshot_swhid = (
+            str(
+                CoreSWHID(
+                    object_type=ObjectType.SNAPSHOT,
+                    object_id=hash_to_bytes(snapshot_id),
+                )
+            )
+            if snapshot_id
+            # snapshot not found, set its id to empty in database to avoid querying it again
+            else ""
+        )
+        must_save = True
 
     if must_save:
         save_request.save()

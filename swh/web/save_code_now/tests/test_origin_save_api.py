@@ -11,6 +11,8 @@ import pytest
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api.throttling import SwhWebUserRateThrottle
 from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION, SWH_AMBASSADOR_PERMISSION
 from swh.web.save_code_now.models import (
@@ -89,7 +91,7 @@ def check_created_save_request_status(
     mock_visit_date = mocker.patch(
         ("swh.web.save_code_now.origin_save._get_visit_info_for_save_request")
     )
-    mock_visit_date.return_value = (visit_date, None)
+    mock_visit_date.return_value = (visit_date, None, None)
 
     if expected_request_status != SAVE_REQUEST_REJECTED:
         response = check_api_post_responses(api_client, url, data=None, status_code=200)
@@ -112,6 +114,7 @@ def check_save_request_status(
     scheduler_task_run_status=None,
     visit_date=None,
     visit_status=None,
+    snapshot_id=None,
 ):
 
     if expected_task_status != SAVE_TASK_NOT_CREATED:
@@ -134,7 +137,7 @@ def check_save_request_status(
     mock_visit_date = mocker.patch(
         ("swh.web.save_code_now.origin_save._get_visit_info_for_save_request")
     )
-    mock_visit_date.return_value = (visit_date, visit_status)
+    mock_visit_date.return_value = (visit_date, visit_status, snapshot_id)
     response = check_api_get_responses(api_client, url, status_code=200)
     save_request_data = response.data[0]
 
@@ -143,6 +146,17 @@ def check_save_request_status(
     assert save_request_data["visit_status"] == visit_status
     assert save_request_data["from_webhook"] is False
     assert save_request_data["webhook_origin"] is None
+    if snapshot_id:
+        assert save_request_data["snapshot_swhid"] == str(
+            CoreSWHID(
+                object_type=ObjectType.SNAPSHOT, object_id=hash_to_bytes(snapshot_id)
+            )
+        )
+        assert save_request_data["snapshot_url"] == reverse(
+            "api-1-snapshot",
+            url_args={"snapshot_id": snapshot_id},
+            request=response.wsgi_request,
+        )
 
     if scheduler_task_run_status is not None:
         # Check that save task status is still available when
@@ -214,29 +228,7 @@ def test_save_request_scheduled(api_client, mocker, swh_scheduler):
     )
 
 
-def test_save_request_completed(api_client, mocker, swh_scheduler):
-    origin_url = "https://github.com/Kitware/CMake"
-    check_created_save_request_status(
-        api_client,
-        mocker,
-        origin_url,
-        expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
-    )
-    check_save_request_status(
-        api_client,
-        mocker,
-        swh_scheduler,
-        origin_url,
-        expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_SUCCEEDED,
-        scheduler_task_status="completed",
-        scheduler_task_run_status="eventful",
-        visit_date=None,
-    )
-
-
-def test_save_request_completed_visit_status(api_client, mocker, swh_scheduler):
+def test_save_request_completed(api_client, mocker, swh_scheduler, snapshot):
     origin_url = "https://github.com/Kitware/CMake"
     check_created_save_request_status(
         api_client,
@@ -257,6 +249,7 @@ def test_save_request_completed_visit_status(api_client, mocker, swh_scheduler):
         scheduler_task_run_status="eventful",
         visit_date=visit_date,
         visit_status=VISIT_STATUS_FULL,
+        snapshot_id=snapshot,
     )
 
 

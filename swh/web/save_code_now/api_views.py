@@ -9,6 +9,8 @@ from typing import Optional, cast
 from django.conf import settings
 from rest_framework.request import Request
 
+from swh.model.hashutil import hash_to_hex
+from swh.model.swhids import CoreSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.auth.utils import (
@@ -21,6 +23,7 @@ from swh.web.save_code_now.origin_save import (
     get_savable_visit_types,
     get_save_origin_requests,
 )
+from swh.web.utils import reverse
 
 
 def _savable_visit_types() -> str:
@@ -126,6 +129,9 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             otherwise.
         :>json string note: optional note giving details about the save request,
             for instance why it has been rejected
+        :>json string snapshot_swhid: SWHID of snapshot associated to the visit
+            (null if it is missing or unknown)
+        :>json string snapshot_url: Web API URL to retrieve snapshot data
         {webhook_info_doc}
 
         :statuscode 200: no error
@@ -135,11 +141,18 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
 
     """
 
-    def _cleanup_sor_data(sor):
+    def _cleanup_and_enrich_sor_data(sor):
         del sor["id"]
         if "swh.web.save_origin_webhooks" not in settings.SWH_DJANGO_APPS:
             del sor["from_webhook"]
             del sor["webhook_origin"]
+        if sor["snapshot_swhid"]:
+            snapshot_id = hash_to_hex(
+                CoreSWHID.from_string(sor["snapshot_swhid"]).object_id
+            )
+            sor["snapshot_url"] = reverse(
+                "api-1-snapshot", url_args={"snapshot_id": snapshot_id}, request=request
+            )
         return sor
 
     data = request.data or {}
@@ -154,8 +167,8 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             user_id=cast(Optional[int], request.user.id),
             **data,
         )
-        return _cleanup_sor_data(sor)
+        return _cleanup_and_enrich_sor_data(sor)
 
     else:
         sors = get_save_origin_requests(visit_type, origin_url)
-        return [_cleanup_sor_data(sor) for sor in sors]
+        return [_cleanup_and_enrich_sor_data(sor) for sor in sors]
