@@ -35,6 +35,12 @@ def origin_save_webhook_receiver_test(
 
     assert resp.data["origin_url"] == expected_origin_url
     assert resp.data["visit_type"] == expected_visit_type
+    assert "id" in resp.data
+    assert resp.data["request_url"] == reverse(
+        "api-1-save-origin",
+        url_args={"request_id": resp.data["id"]},
+        request=resp.wsgi_request,  # type: ignore
+    )
 
     tasks = swh_scheduler.search_tasks(task_type=f"load-{expected_visit_type}")
     assert tasks

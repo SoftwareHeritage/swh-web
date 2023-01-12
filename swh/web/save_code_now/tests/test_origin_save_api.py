@@ -99,6 +99,12 @@ def check_created_save_request_status(
         assert response.data["save_task_status"] == expected_task_status
         assert response.data["from_webhook"] is False
         assert response.data["webhook_origin"] is None
+        assert "id" in response.data
+        assert response.data["request_url"] == reverse(
+            "api-1-save-origin",
+            url_args={"request_id": response.data["id"]},
+            request=response.wsgi_request,
+        )
     else:
         check_api_post_responses(api_client, url, data=None, status_code=403)
 
@@ -146,6 +152,15 @@ def check_save_request_status(
     assert save_request_data["visit_status"] == visit_status
     assert save_request_data["from_webhook"] is False
     assert save_request_data["webhook_origin"] is None
+    assert "id" in save_request_data
+    assert save_request_data["request_url"] == reverse(
+        "api-1-save-origin",
+        url_args={"request_id": save_request_data["id"]},
+        request=response.wsgi_request,
+    )
+    check_api_get_responses(
+        api_client, save_request_data["request_url"], status_code=200
+    )
     if snapshot_id:
         assert save_request_data["snapshot_swhid"] == str(
             CoreSWHID(
@@ -698,3 +713,8 @@ def test_accept_origin_url_with_anonymous_credentials(
         },
     )
     check_api_post_responses(api_client, url, status_code=200)
+
+
+def test_get_save_request_not_found(api_client):
+    url = reverse("api-1-save-origin", url_args={"request_id": 1})
+    check_api_get_responses(api_client, url, status_code=404)

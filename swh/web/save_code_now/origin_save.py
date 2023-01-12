@@ -723,6 +723,28 @@ def get_save_origin_requests(
     return update_save_origin_requests_from_queryset(sors)
 
 
+def get_save_origin_request(request_id: int) -> SaveOriginRequestInfo:
+    """
+    Get save request with given identifier.
+
+    Args:
+        request_id: the save request identifier
+
+    Raises:
+        swh.web.utils.exc.NotFoundExc: no save request can be found for the
+            given identifier
+
+    Returns:
+        A save origin request dict as described in
+        :func:`swh.web.save_code_now.origin_save.create_save_origin_request`
+    """
+
+    sors = SaveOriginRequest.objects.filter(id=request_id)
+    if sors.count() == 0:
+        raise NotFoundExc(f"No save request found for id {request_id}.")
+    return update_save_origin_requests_from_queryset(sors)[0]
+
+
 def get_save_origin_task_info(
     save_request_id: int, full_info: bool = True
 ) -> Dict[str, Any]:
