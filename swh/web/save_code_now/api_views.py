@@ -9,6 +9,8 @@ from typing import Optional, cast
 from django.conf import settings
 from rest_framework.request import Request
 
+from swh.model.hashutil import hash_to_hex
+from swh.model.swhids import CoreSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.auth.utils import (
@@ -19,8 +21,10 @@ from swh.web.auth.utils import (
 from swh.web.save_code_now.origin_save import (
     create_save_origin_request,
     get_savable_visit_types,
+    get_save_origin_request,
     get_save_origin_requests,
 )
+from swh.web.utils import reverse
 
 
 def _savable_visit_types() -> str:
@@ -66,14 +70,28 @@ save_code_now_api_urls = APIUrls()
     never_cache=True,
     api_urls=save_code_now_api_urls,
 )
+@api_route(
+    r"/origin/save/(?P<request_id>[0-9]+)/",
+    "api-1-save-origin",
+    methods=["GET"],
+    throttle_scope="swh_save_origin",
+    never_cache=True,
+    api_urls=save_code_now_api_urls,
+)
 @api_doc("/origin/save/", category="Request archival")
 @format_docstring(
     visit_types=_savable_visit_types(), webhook_info_doc=_webhook_info_doc()
 )
-def api_save_origin(request: Request, visit_type: str, origin_url: str):
+def api_save_origin(
+    request: Request,
+    visit_type: Optional[str] = None,
+    origin_url: Optional[str] = None,
+    request_id: int = 0,
+):
     """
     .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
     .. http:post:: /api/1/origin/save/(visit_type)/url/(origin_url)/
+    .. http:get:: /api/1/origin/save/(request_id)/
 
         Request the saving of a software origin into the archive
         or check the status of previously created save requests.
@@ -104,12 +122,19 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
         request will return an array of objects (as multiple save requests
         might have been submitted for the same origin).
 
+        It is also possible to get info about a specific save request by
+        sending a GET request to the ``/api/1/origin/save/(request_id)/``
+        endpoint.
+
         :param string visit_type: the type of visit to perform
             (currently the supported types are {visit_types})
         :param string origin_url: the url of the origin to save
+        :param number request_id: a save request identifier
 
         {common_headers}
 
+        :>json number id: the save request identifier
+        :>json string request_url: Web API URL to follow up on that request
         :>json string origin_url: the url of the origin to save
         :>json string visit_type: the type of visit to perform
         :>json string save_request_date: the date (in iso format) the save
@@ -126,6 +151,9 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             otherwise.
         :>json string note: optional note giving details about the save request,
             for instance why it has been rejected
+        :>json string snapshot_swhid: SWHID of snapshot associated to the visit
+            (null if it is missing or unknown)
+        :>json string snapshot_url: Web API URL to retrieve snapshot data
         {webhook_info_doc}
 
         :statuscode 200: no error
@@ -135,15 +163,26 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
 
     """
 
-    def _cleanup_sor_data(sor):
-        del sor["id"]
+    def _cleanup_and_enrich_sor_data(sor):
         if "swh.web.save_origin_webhooks" not in settings.SWH_DJANGO_APPS:
             del sor["from_webhook"]
             del sor["webhook_origin"]
+        if sor["snapshot_swhid"]:
+            snapshot_id = hash_to_hex(
+                CoreSWHID.from_string(sor["snapshot_swhid"]).object_id
+            )
+            sor["snapshot_url"] = reverse(
+                "api-1-snapshot", url_args={"snapshot_id": snapshot_id}, request=request
+            )
+        sor["request_url"] = reverse(
+            "api-1-save-origin", url_args={"request_id": sor["id"]}, request=request
+        )
         return sor
 
     data = request.data or {}
     if request.method == "POST":
+        assert visit_type is not None
+        assert origin_url is not None
         sor = create_save_origin_request(
             visit_type,
             origin_url,
@@ -154,8 +193,11 @@ def api_save_origin(request: Request, visit_type: str, origin_url: str):
             user_id=cast(Optional[int], request.user.id),
             **data,
         )
-        return _cleanup_sor_data(sor)
+        return _cleanup_and_enrich_sor_data(sor)
 
     else:
-        sors = get_save_origin_requests(visit_type, origin_url)
-        return [_cleanup_sor_data(sor) for sor in sors]
+        if visit_type and origin_url:
+            sors = get_save_origin_requests(visit_type, origin_url)
+            return [_cleanup_and_enrich_sor_data(sor) for sor in sors]
+        else:
+            return _cleanup_and_enrich_sor_data(get_save_origin_request(request_id))

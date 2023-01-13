@@ -77,17 +77,22 @@ function setupIntegrations(integrations) {
   const integrationIndex = {};
 
   integrations.forEach(integration => {
-    integrationIndex[integration.name] = integration;
-
-    if (installedIntegrations.indexOf(integration.name) === -1) {
-      integration.setupOnce(addGlobalEventProcessor, getCurrentHub);
-      installedIntegrations.push(integration.name);
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
-    }
+    setupIntegration(integration, integrationIndex);
   });
 
   return integrationIndex;
 }
 
-export { getIntegrationsToSetup, installedIntegrations, setupIntegrations };
+/** Setup a single integration.  */
+function setupIntegration(integration, integrationIndex) {
+  integrationIndex[integration.name] = integration;
+
+  if (installedIntegrations.indexOf(integration.name) === -1) {
+    integration.setupOnce(addGlobalEventProcessor, getCurrentHub);
+    installedIntegrations.push(integration.name);
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
+  }
+}
+
+export { getIntegrationsToSetup, installedIntegrations, setupIntegration, setupIntegrations };
 //# sourceMappingURL=integration.js.map

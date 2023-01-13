@@ -105,6 +105,9 @@ class SaveOriginRequest(models.Model):
     note = models.TextField(null=True)
     from_webhook = models.BooleanField(default=False)
     webhook_origin = models.CharField(max_length=200, null=True)
+    # if None, no try to retrieve the snapshot has been performed
+    # if empty string, try to retrieve the snapshot has been performed but none was found
+    snapshot_swhid = models.CharField(max_length=200, null=True)
 
     class Meta:
         app_label = "swh_web_save_code_now"
@@ -133,6 +136,7 @@ class SaveOriginRequest(models.Model):
             note=self.note,
             from_webhook=self.from_webhook,
             webhook_origin=self.webhook_origin,
+            snapshot_swhid=self.snapshot_swhid or None,
         )
 
     def __str__(self) -> str:

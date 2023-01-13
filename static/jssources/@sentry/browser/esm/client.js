@@ -6,6 +6,11 @@ import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
 
 /**
+ * Configuration options for the Sentry Browser SDK.
+ * @see @sentry/types Options for more information.
+ */
+
+/**
  * The Sentry Browser SDK Client.
  *
  * @see BrowserOptions for documentation on configuration options.

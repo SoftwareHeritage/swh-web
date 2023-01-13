@@ -95,9 +95,7 @@ function urlEncode(object) {
  * @returns An Event or Error turned into an object - or the value argurment itself, when value is neither an Event nor
  *  an Error.
  */
-function convertToPlainObject(
-  value,
-)
+function convertToPlainObject(value)
 
  {
   if (isError(value)) {

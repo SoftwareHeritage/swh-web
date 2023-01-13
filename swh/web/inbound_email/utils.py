@@ -166,9 +166,7 @@ def get_pks_from_message(
     return ret
 
 
-def _get_message_text(
-    message: Union[Message, EmailMessage]
-) -> Tuple[bool, List[bytes]]:
+def _get_message_text(message: Union[Message, EmailMessage]) -> Tuple[bool, List[str]]:
     """Recursively parses a message, and returns ``(is_plain_text, parts)``."""
 
     # Ignore all attachments; only consider message body
@@ -180,7 +178,10 @@ def _get_message_text(
     subtype = message.get_content_subtype()
     if maintype == "text":
         # This is a simple message (message part)
-        current_part = message.get_payload(decode=True).rstrip(b"\n")
+        current_part_bytes = message.get_payload(decode=True).rstrip(b"\n")
+        charset = message.get_param("charset", "utf-8")
+        current_part = current_part_bytes.decode(charset, errors="replace")
+
         if subtype == "plain":
             if current_part:
                 return (True, [current_part])
@@ -190,17 +191,17 @@ def _get_message_text(
         return (True, [])
     elif maintype == "multipart":
         # This message (message part) contains sub-parts.
-        text_parts: List[bytes] = []
-        fallback_parts: List[bytes] = []
-        all_parts: List[bytes] = []
+        text_parts: List[str] = []
+        fallback_parts: List[str] = []
+        all_parts: List[str] = []
 
         # Parse each part independently:
         for part in message.get_payload():
             (is_plain_text, current_part) = _get_message_text(part)
             if is_plain_text:
-                text_parts.append(b"".join(current_part))
+                text_parts.append("".join(current_part))
             else:
-                fallback_parts.append(b"".join(current_part))
+                fallback_parts.append("".join(current_part))
             all_parts.extend(current_part)
 
         if subtype == "alternative":
@@ -219,7 +220,7 @@ def _get_message_text(
     return (False, [])
 
 
-def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
+def get_message_plaintext(message: EmailMessage) -> Optional[str]:
     """Get the plaintext body for a given message, if any such part exists. If only a html
     part exists, return that instead.
 
@@ -228,4 +229,4 @@ def get_message_plaintext(message: EmailMessage) -> Optional[bytes]:
 
     """
     (is_plain_text, parts) = _get_message_text(message)
-    return b"".join(parts) or None
+    return "".join(parts) or None

@@ -1,0 +1,50 @@
+From:Test User <test@example.com>
+To: test@example.com
+Subject: Multipart email with ISO 8859-1 body
+Date: Thu, 5 Jan 2023 11:06:17 +0000
+Message-ID: <1672916777468.22991@inrae.fr>
+Content-Type: multipart/alternative;
+	boundary="_000_167291677746822991inraefr_"
+MIME-Version: 1.0
+
+--_000_167291677746822991inraefr_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+We are not aware of technical issues that could impede you to archive our f=
+orge.
+
+--
+=C9quipe Xxx
+Unit=E9 Yyy
+
+
+--_000_167291677746822991inraefr_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<style type=3D"text/css" style=3D"display:none"><!--P{margin-top:0;margin-b=
+ottom:0;} --></style>
+</head>
+<body dir=3D"ltr" style=3D"font-size:12pt;color:#000000;background-color:#F=
+FFFFF;font-family:Calibri,Arial,Helvetica,sans-serif;">
+<p>We are not aware of technical issues that could impede you to archive ou=
+r forge.</p>
+<div id=3D"Signature">
+<div name=3D"divtagdefaultwrapper" style=3D"font-family:Calibri,Arial,Helve=
+tica,sans-serif; font-size:; margin:0">
+<pre class=3D"moz-signature" cols=3D"72"><font size=3D"2" face=3D"'Trebuche=
+t MS', sans-serif" color=3D"808080">--<br>=C9quipe <a tabindex=3D"0">Xxx</a>=
+<br><br>Unit=E9 Yyy<br><font></pr=
+e>
+</div>
+</div>
+</body>
+</html>
+
+--_000_167291677746822991inraefr_--
+

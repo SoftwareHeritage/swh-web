@@ -157,7 +157,6 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
   script.src = getReportDialogEndpoint(dsn, options);
 
   if (options.onLoad) {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     script.onload = options.onLoad;
   }
 
