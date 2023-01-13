@@ -11,6 +11,7 @@ from rest_framework.request import Request
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.save_code_now.origin_save import create_save_origin_request
+from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
 
 webhooks_api_urls = APIUrls()
@@ -54,6 +55,8 @@ class OriginSaveWebhookReceiver(abc.ABC):
 
             The expected content type for the webhook payload must be ``application/json``.
 
+            :>json number id: the save request identifier
+            :>json string request_url: Web API URL to follow up on that request
             :>json string origin_url: the url of the origin to save
             :>json string visit_type: the type of visit to perform
             :>json string save_request_date: the date (in iso format) the save
@@ -129,6 +132,12 @@ class OriginSaveWebhookReceiver(abc.ABC):
         )
 
         return {
+            "id": save_request["id"],
+            "request_url": reverse(
+                "api-1-save-origin",
+                url_args={"request_id": save_request["id"]},
+                request=request,
+            ),
             "origin_url": save_request["origin_url"],
             "visit_type": save_request["visit_type"],
             "save_request_date": save_request["save_request_date"],

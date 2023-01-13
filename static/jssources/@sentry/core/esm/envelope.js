@@ -1,13 +1,4 @@
-import { dsnToString, createEnvelope, dropUndefinedKeys } from '@sentry/utils';
-
-/** Extract sdk info from from the API metadata */
-function getSdkMetadataForEnvelopeHeader(metadata) {
-  if (!metadata || !metadata.sdk) {
-    return;
-  }
-  const { name, version } = metadata.sdk;
-  return { name, version };
-}
+import { getSdkMetadataForEnvelopeHeader, dsnToString, createEnvelope, createEventEnvelopeHeaders } from '@sentry/utils';
 
 /**
  * Apply SdkInfo (name, version, packages, integrations) to the corresponding event key.
@@ -55,7 +46,15 @@ function createEventEnvelope(
   tunnel,
 ) {
   const sdkInfo = getSdkMetadataForEnvelopeHeader(metadata);
-  const eventType = event.type || 'event';
+
+  /*
+    Note: Due to TS, event.type may be `replay_event`, theoretically.
+    In practice, we never call `createEventEnvelope` with `replay_event` type,
+    and we'd have to adjut a looot of types to make this work properly.
+    We want to avoid casting this around, as that could lead to bugs (e.g. when we add another type)
+    So the safe choice is to really guard against the replay_event type here.
+  */
+  const eventType = event.type && event.type !== 'replay_event' ? event.type : 'event';
 
   enhanceEventWithSdkInfo(event, metadata && metadata.sdk);
 
@@ -69,26 +68,6 @@ function createEventEnvelope(
 
   const eventItem = [{ type: eventType }, event];
   return createEnvelope(envelopeHeaders, [eventItem]);
-}
-
-function createEventEnvelopeHeaders(
-  event,
-  sdkInfo,
-  tunnel,
-  dsn,
-) {
-  const dynamicSamplingContext = event.sdkProcessingMetadata && event.sdkProcessingMetadata.dynamicSamplingContext;
-
-  return {
-    event_id: event.event_id ,
-    sent_at: new Date().toISOString(),
-    ...(sdkInfo && { sdk: sdkInfo }),
-    ...(!!tunnel && { dsn: dsnToString(dsn) }),
-    ...(event.type === 'transaction' &&
-      dynamicSamplingContext && {
-        trace: dropUndefinedKeys({ ...dynamicSamplingContext }),
-      }),
-  };
 }
 
 export { createEventEnvelope, createSessionEnvelope };

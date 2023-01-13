@@ -11,6 +11,7 @@ MIGRATION_0010 = "0010_saveoriginrequest_user_id"
 MIGRATION_0011 = "0011_saveoriginrequest_user_ids"
 MIGRATION_0012 = "0012_saveoriginrequest_note"
 MIGRATION_0013 = "0013_saveoriginrequest_webhook_info"
+MIGRATION_0014 = "0014_saveoriginrequest_snapshot_swhid"
 
 
 def test_migrations_09_add_visit_status_to_sor_model(migrator):
@@ -77,3 +78,19 @@ def test_migrations_13_add_webhook_info_to_sor_model(migrator):
 
     assert hasattr(new_model, "from_webhook") is True
     assert hasattr(new_model, "webhook_origin") is True
+
+
+def test_migrations_14_add_snapshot_info_to_sor_model(migrator):
+    """Ensures the migration adds the snapshot_swhid field to SaveOriginRequest table"""
+
+    old_state = migrator.apply_initial_migration(
+        (APP_NAME, MIGRATION_0013),
+    )
+    old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+
+    assert hasattr(old_model, "snapshot_swhid") is False
+
+    new_state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0014))
+    new_model = new_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+
+    assert hasattr(new_model, "snapshot_swhid") is True

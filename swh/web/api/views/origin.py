@@ -27,6 +27,10 @@ DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information
             about the visits for that origin
         :>json string url: the origin canonical url
+        :>json string metadata_authorities_url: link to
+            :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
+            to get the list of metadata authorities providing extrinsic metadata
+            on this origin (and, indirectly, to the origin's extrinsic metadata itself)
 """
 
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
@@ -44,10 +48,6 @@ DOC_RETURN_ORIGIN_VISIT = """
         :>json string status: status of the visit (either **full**,
             **partial** or **ongoing**)
         :>json number visit: the unique identifier of the visit
-        :>json string metadata_authorities_url: link to
-            :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
-            to get the list of metadata authorities providing extrinsic metadata
-            on this origin (and, indirectly, to the origin's extrinsic metadata itself)
 """
 
 DOC_RETURN_ORIGIN_VISIT_ARRAY = DOC_RETURN_ORIGIN_VISIT.replace(":>json", ":>jsonarr")

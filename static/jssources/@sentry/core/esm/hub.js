@@ -174,7 +174,7 @@ class Hub  {
    */
    captureEvent(event, hint) {
     const eventId = hint && hint.event_id ? hint.event_id : uuid4();
-    if (event.type !== 'transaction') {
+    if (!event.type) {
       this._lastEventId = eventId;
     }
 
@@ -199,7 +199,6 @@ class Hub  {
 
     if (!scope || !client) return;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const { beforeBreadcrumb = null, maxBreadcrumbs = DEFAULT_BREADCRUMBS } =
       (client.getOptions && client.getOptions()) || {};
 

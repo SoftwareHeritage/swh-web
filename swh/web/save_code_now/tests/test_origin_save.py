@@ -235,32 +235,7 @@ def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     assert len(sors) == 1
     assert sors[0]["save_task_status"] == SAVE_TASK_SUCCEEDED
     assert sors[0]["visit_date"] == visit_date
-    mock_archive.origin_visit_find_by_date.assert_called_once()
-
-    # check visit is not searched again when it has been found
-    get_save_origin_requests(_visit_type, _origin_url)
-    mock_archive.origin_visit_find_by_date.assert_called_once()
-
-    # check visit date are not searched for save requests older than
-    # one month
-    sor = SaveOriginRequest.objects.create(
-        visit_type=_visit_type,
-        origin_url=_origin_url,
-        status=SAVE_REQUEST_ACCEPTED,
-        loading_task_id=_task_id,
-        visit_date=None,
-    )
-    sor.request_date = datetime.now(tz=timezone.utc) - timedelta(days=31)
-    sor.save()
-
-    _fill_scheduler_db(swh_scheduler, task_status="disabled", task_run_status="failed")
-
-    sors = get_save_origin_requests(_visit_type, _origin_url)
-
-    assert len(sors) == 2
-    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
-    assert sors[0]["visit_date"] is None
-    mock_archive.origin_visit_find_by_date.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called()
 
 
 def _get_save_origin_requests(
@@ -303,18 +278,19 @@ def _get_save_origin_requests(
     mock_archive.origin_visit_find_by_date.return_value = visit_info
 
     sors = get_save_origin_requests(_visit_type, _origin_url)
-    mock_archive.origin_visit_find_by_date.assert_called_once()
+    mock_archive.origin_visit_find_by_date.assert_called()
 
     return sors
 
 
 @pytest.mark.parametrize("visit_date", [None, "some-date"])
-def test_from_save_origin_request_to_save_request_info_dict(visit_date):
+def test_from_save_origin_request_to_save_request_info_dict(visit_date, snapshot):
     """Ensure save request to json serializable dict is fine"""
     request_date = datetime.now(tz=timezone.utc)
     _visit_date = request_date + timedelta(minutes=5) if visit_date else None
     request_date = datetime.now(tz=timezone.utc)
     note = "request succeeded"
+    snapshot_swhid = f"swh:1:snp:{snapshot}"
     sor = SaveOriginRequest(
         request_date=request_date,
         visit_type=_visit_type,
@@ -325,6 +301,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         visit_date=_visit_date,
         loading_task_id=1,
         note=note,
+        snapshot_swhid=snapshot_swhid,
     )
 
     assert sor.to_dict() == SaveOriginRequestInfo(
@@ -340,6 +317,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date):
         note=note,
         from_webhook=False,
         webhook_origin=None,
+        snapshot_swhid=snapshot_swhid,
     )
 
 
@@ -676,7 +654,7 @@ def test_refresh_in_progress_save_request_statuses(
 
     assert (
         mock_archive.origin_visit_find_by_date.called
-        and mock_archive.origin_visit_find_by_date.call_count == 1 + 1
+        and mock_archive.origin_visit_find_by_date.call_count == 3
     )
 
     for sor in sors:
