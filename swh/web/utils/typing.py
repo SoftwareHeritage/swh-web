@@ -252,6 +252,8 @@ class SaveOriginRequestInfo(TypedDict, total=False):
     """Indicates if request was created from a webhook receiver"""
     webhook_origin: Optional[str]
     """Indicates from which forge type a webhook was received"""
+    snapshot_swhid: Optional[str]
+    """SWHID of snapshot associated to the visit"""
 
 
 class OriginExistenceCheckInfo(TypedDict):

@@ -1,3 +1,4 @@
+import { dsnToString } from './dsn.js';
 import { normalize } from './normalize.js';
 import { dropUndefinedKeys } from './object.js';
 
@@ -95,6 +96,47 @@ function concatBuffers(buffers) {
 }
 
 /**
+ * Parses an envelope
+ */
+function parseEnvelope(
+  env,
+  textEncoder,
+  textDecoder,
+) {
+  let buffer = typeof env === 'string' ? textEncoder.encode(env) : env;
+
+  function readBinary(length) {
+    const bin = buffer.subarray(0, length);
+    // Replace the buffer with the remaining data excluding trailing newline
+    buffer = buffer.subarray(length + 1);
+    return bin;
+  }
+
+  function readJson() {
+    let i = buffer.indexOf(0xa);
+    // If we couldn't find a newline, we must have found the end of the buffer
+    if (i < 0) {
+      i = buffer.length;
+    }
+
+    return JSON.parse(textDecoder.decode(readBinary(i))) ;
+  }
+
+  const envelopeHeader = readJson();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const items = [];
+
+  while (buffer.length) {
+    const itemHeader = readJson();
+    const binaryLength = typeof itemHeader.length === 'number' ? itemHeader.length : undefined;
+
+    items.push([itemHeader, binaryLength ? readBinary(binaryLength) : readJson()]);
+  }
+
+  return [envelopeHeader, items];
+}
+
+/**
  * Creates attachment envelope items
  */
 function createAttachmentEnvelopeItem(
@@ -124,6 +166,8 @@ const ITEM_TYPE_TO_DATA_CATEGORY_MAP = {
   client_report: 'internal',
   user_report: 'default',
   profile: 'profile',
+  replay_event: 'replay_event',
+  replay_recording: 'replay_recording',
 };
 
 /**
@@ -133,5 +177,38 @@ function envelopeItemTypeToDataCategory(type) {
   return ITEM_TYPE_TO_DATA_CATEGORY_MAP[type];
 }
 
-export { addItemToEnvelope, createAttachmentEnvelopeItem, createEnvelope, envelopeItemTypeToDataCategory, forEachEnvelopeItem, serializeEnvelope };
+/** Extracts the minimal SDK info from from the metadata or an events */
+function getSdkMetadataForEnvelopeHeader(metadataOrEvent) {
+  if (!metadataOrEvent || !metadataOrEvent.sdk) {
+    return;
+  }
+  const { name, version } = metadataOrEvent.sdk;
+  return { name, version };
+}
+
+/**
+ * Creates event envelope headers, based on event, sdk info and tunnel
+ * Note: This function was extracted from the core package to make it available in Replay
+ */
+function createEventEnvelopeHeaders(
+  event,
+  sdkInfo,
+  tunnel,
+  dsn,
+) {
+  const dynamicSamplingContext = event.sdkProcessingMetadata && event.sdkProcessingMetadata.dynamicSamplingContext;
+
+  return {
+    event_id: event.event_id ,
+    sent_at: new Date().toISOString(),
+    ...(sdkInfo && { sdk: sdkInfo }),
+    ...(!!tunnel && { dsn: dsnToString(dsn) }),
+    ...(event.type === 'transaction' &&
+      dynamicSamplingContext && {
+        trace: dropUndefinedKeys({ ...dynamicSamplingContext }),
+      }),
+  };
+}
+
+export { addItemToEnvelope, createAttachmentEnvelopeItem, createEnvelope, createEventEnvelopeHeaders, envelopeItemTypeToDataCategory, forEachEnvelopeItem, getSdkMetadataForEnvelopeHeader, parseEnvelope, serializeEnvelope };
 //# sourceMappingURL=envelope.js.map

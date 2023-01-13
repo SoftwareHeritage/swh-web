@@ -18,13 +18,12 @@ and mechanized (REST API) use
    uri-scheme-misc
 
 
+.. only:: standalone_package_doc
 
+   Indices and tables
+   ------------------
 
-Reference Documentation
------------------------
-
-.. toctree::
-   :maxdepth: 2
-
-
-* :ref:`routingtable`
+   * :ref:`genindex`
+   * :ref:`modindex`
+   * :ref:`routingtable`
+   * :ref:`search`

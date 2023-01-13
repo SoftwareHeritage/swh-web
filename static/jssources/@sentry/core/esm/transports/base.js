@@ -11,7 +11,9 @@ const DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
 function createTransport(
   options,
   makeRequest,
-  buffer = makePromiseBuffer(options.bufferSize || DEFAULT_TRANSPORT_BUFFER_SIZE),
+  buffer = makePromiseBuffer(
+    options.bufferSize || DEFAULT_TRANSPORT_BUFFER_SIZE,
+  ),
 ) {
   let rateLimits = {};
 
@@ -56,10 +58,11 @@ function createTransport(
           }
 
           rateLimits = updateRateLimits(rateLimits, response);
+          return response;
         },
         error => {
-          (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Failed while sending event:', error);
           recordEnvelopeLoss('network_error');
+          throw error;
         },
       );
 

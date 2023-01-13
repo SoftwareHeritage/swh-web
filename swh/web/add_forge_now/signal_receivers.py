@@ -47,7 +47,7 @@ def handle_inbound_message(sender: Type, **kwargs) -> EmailProcessingStatus:
 
         message_plaintext = get_message_plaintext(message)
         if message_plaintext:
-            history_text = message_plaintext.decode("utf-8", errors="replace")
+            history_text = message_plaintext
         else:
             history_text = (
                 "Could not parse the message contents, see the original message."
