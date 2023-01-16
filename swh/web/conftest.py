@@ -1083,7 +1083,7 @@ def swh_scheduler(swh_scheduler):
     config["scheduler"] = swh_scheduler
     # create load-git and load-hg task types
     for task_type in TASK_TYPES.values():
-        # see https://forge.softwareheritage.org/rDSCHc46ffadf7adf24c7eb3ffce062e8ade3818c79cc  # noqa
+        # see https://gitlab.softwareheritage.org/swh/devel/swh-scheduler/-/commit/c46ffadf7adf24c7eb3ffce062e8ade3818c79cc  # noqa
         task_type["type"] = task_type["type"].replace("load-test-", "load-", 1)
         swh_scheduler.create_task_type(task_type)
     # create load-svn task type
