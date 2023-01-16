@@ -1,13 +1,13 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.2.12
+Version: 0.2.13
 Summary: Software Heritage Web UI
-Home-page: https://forge.softwareheritage.org/diffusion/DWUI/
+Home-page: https://gitlab.softwareheritage.org/swh/devel/swh-web
 Author: Software Heritage developers
 Author-email: swh-devel@inria.fr
-Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
+Project-URL: Bug Reports, https://gitlab.softwareheritage.org/swh/devel/swh-web/-/issues
 Project-URL: Funding, https://www.softwareheritage.org/donate
-Project-URL: Source, https://forge.softwareheritage.org/source/swh-web
+Project-URL: Source, https://gitlab.softwareheritage.org/swh/devel/swh-web.git
 Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-web/
 Classifier: Programming Language :: Python :: 3
 Classifier: Intended Audience :: Developers
@@ -76,7 +76,7 @@ Those applications are powered by:
 
 First you will need [Python 3](https://www.python.org) and a complete [swh
 development
-environment](https://forge.softwareheritage.org/source/swh-environment/)
+environment](https://gitlab.softwareheritage.org/swh/devel/swh-environment)
 installed.
 
 To run the backend, you need to have the following [Python 3
