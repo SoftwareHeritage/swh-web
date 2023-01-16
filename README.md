@@ -53,7 +53,7 @@ Those applications are powered by:
 
 First you will need [Python 3](https://www.python.org) and a complete [swh
 development
-environment](https://forge.softwareheritage.org/source/swh-environment/)
+environment](https://gitlab.softwareheritage.org/swh/devel/swh-environment)
 installed.
 
 To run the backend, you need to have the following [Python 3

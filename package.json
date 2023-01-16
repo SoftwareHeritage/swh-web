@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://forge.softwareheritage.org/source/swh-web"
+    "url": "https://gitlab.softwareheritage.org/swh/devel/swh-web"
   },
   "author": "The Software Heritage developers",
   "license": "AGPL-3.0-or-later",
