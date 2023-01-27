@@ -314,12 +314,12 @@ static/js/showdown.b448e42a34c43d6a7de5.js.map
 static/js/vault.6874d5f0da1f189fc814.js
 static/js/vault.6874d5f0da1f189fc814.js.LICENSE.txt
 static/js/vault.6874d5f0da1f189fc814.js.map
-static/js/vendors.980d74311f73f0570b75.js
-static/js/vendors.980d74311f73f0570b75.js.LICENSE.txt
-static/js/vendors.980d74311f73f0570b75.js.map
-static/js/webapp.3dc9b81b00cb885df128.js
-static/js/webapp.3dc9b81b00cb885df128.js.LICENSE.txt
-static/js/webapp.3dc9b81b00cb885df128.js.map
+static/js/vendors.5007998138c17ca06d56.js
+static/js/vendors.5007998138c17ca06d56.js.LICENSE.txt
+static/js/vendors.5007998138c17ca06d56.js.map
+static/js/webapp.4506c1d960d0296e78cc.js
+static/js/webapp.4506c1d960d0296e78cc.js.LICENSE.txt
+static/js/webapp.4506c1d960d0296e78cc.js.map
 static/json/highlightjs-languages.json
 static/jssources/LICENSE.txt
 static/jssources/jslicenses.json
@@ -383,7 +383,6 @@ static/jssources/@sentry/utils/esm/syncpromise.js
 static/jssources/@sentry/utils/esm/time.js
 static/jssources/@sentry/utils/esm/url.js
 static/jssources/@sentry/utils/esm/worldwide.js
-static/jssources/@sentry/utils/esm/buildPolyfills/_optionalChain.js
 static/jssources/@sentry/webpack-plugin/LICENSE.txt
 static/jssources/@sentry/webpack-plugin/src/sentry-webpack.module.js
 static/jssources/admin-lte/LICENSE.txt
@@ -491,6 +490,7 @@ static/jssources/core-js/internals/engine-v8-version.js
 static/jssources/core-js/internals/engine-webkit-version.js
 static/jssources/core-js/internals/enum-bug-keys.js
 static/jssources/core-js/internals/error-stack-clear.js
+static/jssources/core-js/internals/error-stack-install.js
 static/jssources/core-js/internals/error-stack-installable.js
 static/jssources/core-js/internals/error-to-string.js
 static/jssources/core-js/internals/export.js

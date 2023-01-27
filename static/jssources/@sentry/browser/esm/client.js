@@ -1,4 +1,3 @@
-import { _optionalChain } from '@sentry/utils/esm/buildPolyfills';
 import { BaseClient, SDK_VERSION, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
 import { logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
@@ -78,7 +77,9 @@ class BrowserClient extends BaseClient {
     const breadcrumbIntegration = this.getIntegrationById(BREADCRUMB_INTEGRATION_ID) ;
     // We check for definedness of `addSentryBreadcrumb` in case users provided their own integration with id
     // "Breadcrumbs" that does not have this function.
-    _optionalChain([breadcrumbIntegration, 'optionalAccess', _ => _.addSentryBreadcrumb, 'optionalCall', _2 => _2(event)]);
+    if (breadcrumbIntegration && breadcrumbIntegration.addSentryBreadcrumb) {
+      breadcrumbIntegration.addSentryBreadcrumb(event);
+    }
 
     super.sendEvent(event, hint);
   }

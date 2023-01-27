@@ -40,7 +40,7 @@ class Hub  {
    * @param scope bound to the hub.
    * @param version number, higher number means higher priority.
    */
-   constructor(client, scope = new Scope(),   _version = API_VERSION) {;this._version = _version;Hub.prototype.__init.call(this);
+   constructor(client, scope = new Scope(),   _version = API_VERSION) {this._version = _version;Hub.prototype.__init.call(this);
     this.getStackTop().scope = scope;
     if (client) {
       this.bindClient(client);

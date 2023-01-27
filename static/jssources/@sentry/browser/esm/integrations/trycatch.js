@@ -50,7 +50,7 @@ class TryCatch  {
   /**
    * @inheritDoc
    */
-   constructor(options) {;TryCatch.prototype.__init.call(this);
+   constructor(options) {TryCatch.prototype.__init.call(this);
     this._options = {
       XMLHttpRequest: true,
       eventTarget: true,

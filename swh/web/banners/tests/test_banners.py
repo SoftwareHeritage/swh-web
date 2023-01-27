@@ -3,9 +3,20 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import pytest
+
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response
 from swh.web.utils import reverse
+
+
+@pytest.fixture(autouse=True)
+def banners_app_activation(django_settings):
+    banners_app = "swh.web.banners"
+    if banners_app not in django_settings.SWH_DJANGO_APPS:
+        django_settings.SWH_DJANGO_APPS = django_settings.SWH_DJANGO_APPS + [
+            banners_app
+        ]
 
 
 def test_fundraising_banner(client, requests_mock):

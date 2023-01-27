@@ -1,4 +1,4 @@
-import { forEachEnvelopeItem, envelopeItemTypeToDataCategory, isRateLimited, resolvedSyncPromise, createEnvelope, serializeEnvelope, logger, updateRateLimits, SentryError, makePromiseBuffer } from '@sentry/utils';
+import { makePromiseBuffer, forEachEnvelopeItem, envelopeItemTypeToDataCategory, isRateLimited, resolvedSyncPromise, createEnvelope, SentryError, logger, serializeEnvelope, updateRateLimits } from '@sentry/utils';
 
 const DEFAULT_TRANSPORT_BUFFER_SIZE = 30;
 

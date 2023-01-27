@@ -1,5 +1,3 @@
-import { _optionalChain } from './buildPolyfills';
-
 const STACKTRACE_LIMIT = 50;
 
 /**
@@ -140,12 +138,12 @@ function node(getModule) {
       }
 
       if (methodStart > 0) {
-        object = functionName.substr(0, methodStart);
-        method = functionName.substr(methodStart + 1);
+        object = functionName.slice(0, methodStart);
+        method = functionName.slice(methodStart + 1);
         const objectEnd = object.indexOf('.Module');
         if (objectEnd > 0) {
-          functionName = functionName.substr(objectEnd + 1);
-          object = object.substr(0, objectEnd);
+          functionName = functionName.slice(objectEnd + 1);
+          object = object.slice(0, objectEnd);
         }
       }
       typeName = undefined;
@@ -166,7 +164,7 @@ function node(getModule) {
       functionName = typeName ? `${typeName}.${methodName}` : methodName;
     }
 
-    const filename = _optionalChain([lineMatch, 'access', _ => _[2], 'optionalAccess', _2 => _2.startsWith, 'call', _3 => _3('file://')]) ? lineMatch[2].substr(7) : lineMatch[2];
+    const filename = lineMatch[2] && lineMatch[2].startsWith('file://') ? lineMatch[2].slice(7) : lineMatch[2];
     const isNative = lineMatch[5] === 'native';
     const isInternal =
       isNative || (filename && !filename.startsWith('/') && !filename.startsWith('.') && filename.indexOf(':\\') !== 1);
@@ -178,7 +176,7 @@ function node(getModule) {
 
     return {
       filename,
-      module: _optionalChain([getModule, 'optionalCall', _4 => _4(filename)]),
+      module: getModule ? getModule(filename) : undefined,
       function: functionName,
       lineno: parseInt(lineMatch[3], 10) || undefined,
       colno: parseInt(lineMatch[4], 10) || undefined,
