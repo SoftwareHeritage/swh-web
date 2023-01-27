@@ -18,6 +18,12 @@ def test_banners_deactivate(client, django_settings):
     """Check banners feature is deactivated when the swh.web.banners django
     application is not in installed apps."""
 
+    banners_app = "swh.web.banners"
+    if banners_app not in django_settings.SWH_DJANGO_APPS:
+        django_settings.SWH_DJANGO_APPS = django_settings.SWH_DJANGO_APPS + [
+            banners_app
+        ]
+
     url = reverse("swh-web-homepage")
 
     resp = check_html_get_response(client, url, status_code=200)
@@ -27,7 +33,7 @@ def test_banners_deactivate(client, django_settings):
     assert_contains(resp, "swh-corner-ribbon-banner")
 
     django_settings.SWH_DJANGO_APPS = [
-        app for app in django_settings.SWH_DJANGO_APPS if app != "swh.web.banners"
+        app for app in django_settings.SWH_DJANGO_APPS if app != banners_app
     ]
 
     url = reverse("swh-web-homepage")

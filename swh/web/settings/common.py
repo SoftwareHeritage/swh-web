@@ -96,7 +96,7 @@ ROOT_URLCONF = "swh.web.urls"
 
 SWH_APP_TEMPLATES = [os.path.join(PROJECT_DIR, "../templates")]
 # Add templates directory from each SWH Django application
-for app in SWH_DJANGO_APPS:
+for app in SWH_BASE_DJANGO_APPS + swh_web_config["swh_extra_django_apps"]:
     try:
         app_spec = find_spec(app)
         assert app_spec is not None, f"Django application {app} not found !"
