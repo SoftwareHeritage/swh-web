@@ -2,15 +2,13 @@ import { Integrations, getIntegrationsToSetup, initAndBind, getReportDialogEndpo
 import { stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
 import { BrowserClient } from './client.js';
 import { WINDOW, wrap as wrap$1 } from './helpers.js';
-import './integrations/index.js';
-import { defaultStackParser } from './stack-parsers.js';
-import './transports/index.js';
+import { GlobalHandlers } from './integrations/globalhandlers.js';
 import { TryCatch } from './integrations/trycatch.js';
 import { Breadcrumbs } from './integrations/breadcrumbs.js';
-import { GlobalHandlers } from './integrations/globalhandlers.js';
 import { LinkedErrors } from './integrations/linkederrors.js';
-import { Dedupe } from './integrations/dedupe.js';
 import { HttpContext } from './integrations/httpcontext.js';
+import { Dedupe } from './integrations/dedupe.js';
+import { defaultStackParser } from './stack-parsers.js';
 import { makeFetchTransport } from './transports/fetch.js';
 import { makeXHRTransport } from './transports/xhr.js';
 

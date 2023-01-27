@@ -1,4 +1,4 @@
-import { urlEncode, makeDsn, dsnToString } from '@sentry/utils';
+import { makeDsn, dsnToString, urlEncode } from '@sentry/utils';
 
 const SENTRY_API_VERSION = '7';
 

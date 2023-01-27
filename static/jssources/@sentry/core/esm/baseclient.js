@@ -60,7 +60,7 @@ class BaseClient {
    *
    * @param options Options for the client.
    */
-   constructor(options) {;BaseClient.prototype.__init.call(this);BaseClient.prototype.__init2.call(this);BaseClient.prototype.__init3.call(this);BaseClient.prototype.__init4.call(this);
+   constructor(options) {BaseClient.prototype.__init.call(this);BaseClient.prototype.__init2.call(this);BaseClient.prototype.__init3.call(this);BaseClient.prototype.__init4.call(this);
     this._options = options;
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
@@ -462,10 +462,12 @@ class BaseClient {
       );
     }
 
+    const dataCategory = eventType === 'replay_event' ? 'replay' : eventType;
+
     return this._prepareEvent(event, hint, scope)
       .then(prepared => {
         if (prepared === null) {
-          this.recordDroppedEvent('event_processor', eventType, event);
+          this.recordDroppedEvent('event_processor', dataCategory, event);
           throw new SentryError('An event processor returned `null`, will not send event.', 'log');
         }
 
@@ -479,7 +481,7 @@ class BaseClient {
       })
       .then(processedEvent => {
         if (processedEvent === null) {
-          this.recordDroppedEvent('before_send', event.type || 'error', event);
+          this.recordDroppedEvent('before_send', dataCategory, event);
           throw new SentryError(`${beforeSendLabel} returned \`null\`, will not send event.`, 'log');
         }
 

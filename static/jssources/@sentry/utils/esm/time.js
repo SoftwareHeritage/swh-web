@@ -1,4 +1,4 @@
-import { dynamicRequire, isNodeEnv } from './node.js';
+import { isNodeEnv, dynamicRequire } from './node.js';
 import { getGlobalObject } from './worldwide.js';
 
 // eslint-disable-next-line deprecation/deprecation

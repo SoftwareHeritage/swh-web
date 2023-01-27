@@ -29,7 +29,7 @@ class GlobalHandlers  {
   };}
 
   /** JSDoc */
-   constructor(options) {;GlobalHandlers.prototype.__init.call(this);GlobalHandlers.prototype.__init2.call(this);
+   constructor(options) {GlobalHandlers.prototype.__init.call(this);GlobalHandlers.prototype.__init2.call(this);
     this._options = {
       onerror: true,
       onunhandledrejection: true,

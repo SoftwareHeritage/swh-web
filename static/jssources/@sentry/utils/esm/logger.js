@@ -1,4 +1,4 @@
-import { GLOBAL_OBJ, getGlobalSingleton } from './worldwide.js';
+import { getGlobalSingleton, GLOBAL_OBJ } from './worldwide.js';
 
 /** Prefix for logging strings */
 const PREFIX = 'Sentry Logger ';

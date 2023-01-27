@@ -36,6 +36,9 @@ function forEachEnvelopeItem(
   });
 }
 
+/**
+ * Encode a string to UTF8.
+ */
 function encodeUTF8(input, textEncoder) {
   const utf8 = textEncoder || new TextEncoder();
   return utf8.encode(input);
@@ -166,8 +169,8 @@ const ITEM_TYPE_TO_DATA_CATEGORY_MAP = {
   client_report: 'internal',
   user_report: 'default',
   profile: 'profile',
-  replay_event: 'replay_event',
-  replay_recording: 'replay_recording',
+  replay_event: 'replay',
+  replay_recording: 'replay',
 };
 
 /**

@@ -1,5 +1,5 @@
 import { getCurrentHub } from '@sentry/core';
-import { addInstrumentationHandler, getEventDescription, logger, htmlTreeAsString, severityLevelFromString, safeJoin, parseUrl } from '@sentry/utils';
+import { addInstrumentationHandler, getEventDescription, severityLevelFromString, safeJoin, parseUrl, logger, htmlTreeAsString } from '@sentry/utils';
 import { WINDOW } from '../helpers.js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -34,7 +34,7 @@ class Breadcrumbs  {
   /**
    * @inheritDoc
    */
-   constructor(options) {;Breadcrumbs.prototype.__init.call(this);
+   constructor(options) {Breadcrumbs.prototype.__init.call(this);
     this.options = {
       console: true,
       dom: true,
