@@ -1,6 +1,6 @@
 import { createTransport } from '@sentry/core';
 import { rejectedSyncPromise } from '@sentry/utils';
-import { clearCachedFetchImplementation, getNativeFetchImplementation } from './utils.js';
+import { getNativeFetchImplementation, clearCachedFetchImplementation } from './utils.js';
 
 /**
  * Creates a Transport that uses the Fetch API to send events to Sentry.

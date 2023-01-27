@@ -1,5 +1,5 @@
 import { getCurrentHub } from '@sentry/core';
-import { isEvent, extractExceptionKeysForMessage, normalizeToSize, addExceptionMechanism, resolvedSyncPromise, isErrorEvent, isDOMError, isDOMException, addExceptionTypeValue, isError, isPlainObject } from '@sentry/utils';
+import { addExceptionMechanism, resolvedSyncPromise, isErrorEvent, isDOMError, isDOMException, addExceptionTypeValue, isError, isPlainObject, isEvent, extractExceptionKeysForMessage, normalizeToSize } from '@sentry/utils';
 
 /**
  * This function creates an exception from a JavaScript Error

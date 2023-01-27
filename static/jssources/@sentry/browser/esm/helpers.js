@@ -1,5 +1,5 @@
 import { withScope, captureException } from '@sentry/core';
-import { GLOBAL_OBJ, getOriginalFunction, addExceptionTypeValue, addExceptionMechanism, markFunctionWrapped, addNonEnumerableProperty } from '@sentry/utils';
+import { GLOBAL_OBJ, getOriginalFunction, markFunctionWrapped, addNonEnumerableProperty, addExceptionTypeValue, addExceptionMechanism } from '@sentry/utils';
 
 const WINDOW = GLOBAL_OBJ ;
 

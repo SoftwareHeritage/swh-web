@@ -756,35 +756,35 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.6874d5f0da1f189fc814.js.map",
       "publicPath": "/static/js/vault.6874d5f0da1f189fc814.js.map"
     },
-    "js/vendors.980d74311f73f0570b75.js": {
-      "name": "js/vendors.980d74311f73f0570b75.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.980d74311f73f0570b75.js",
-      "publicPath": "/static/js/vendors.980d74311f73f0570b75.js"
+    "js/vendors.5007998138c17ca06d56.js": {
+      "name": "js/vendors.5007998138c17ca06d56.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.5007998138c17ca06d56.js",
+      "publicPath": "/static/js/vendors.5007998138c17ca06d56.js"
     },
-    "js/vendors.980d74311f73f0570b75.js.LICENSE.txt": {
-      "name": "js/vendors.980d74311f73f0570b75.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.980d74311f73f0570b75.js.LICENSE.txt",
-      "publicPath": "/static/js/vendors.980d74311f73f0570b75.js.LICENSE.txt"
+    "js/vendors.5007998138c17ca06d56.js.LICENSE.txt": {
+      "name": "js/vendors.5007998138c17ca06d56.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.5007998138c17ca06d56.js.LICENSE.txt",
+      "publicPath": "/static/js/vendors.5007998138c17ca06d56.js.LICENSE.txt"
     },
-    "js/vendors.980d74311f73f0570b75.js.map": {
-      "name": "js/vendors.980d74311f73f0570b75.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.980d74311f73f0570b75.js.map",
-      "publicPath": "/static/js/vendors.980d74311f73f0570b75.js.map"
+    "js/vendors.5007998138c17ca06d56.js.map": {
+      "name": "js/vendors.5007998138c17ca06d56.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.5007998138c17ca06d56.js.map",
+      "publicPath": "/static/js/vendors.5007998138c17ca06d56.js.map"
     },
-    "js/webapp.3dc9b81b00cb885df128.js": {
-      "name": "js/webapp.3dc9b81b00cb885df128.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.3dc9b81b00cb885df128.js",
-      "publicPath": "/static/js/webapp.3dc9b81b00cb885df128.js"
+    "js/webapp.4506c1d960d0296e78cc.js": {
+      "name": "js/webapp.4506c1d960d0296e78cc.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.4506c1d960d0296e78cc.js",
+      "publicPath": "/static/js/webapp.4506c1d960d0296e78cc.js"
     },
-    "js/webapp.3dc9b81b00cb885df128.js.LICENSE.txt": {
-      "name": "js/webapp.3dc9b81b00cb885df128.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.3dc9b81b00cb885df128.js.LICENSE.txt",
-      "publicPath": "/static/js/webapp.3dc9b81b00cb885df128.js.LICENSE.txt"
+    "js/webapp.4506c1d960d0296e78cc.js.LICENSE.txt": {
+      "name": "js/webapp.4506c1d960d0296e78cc.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.4506c1d960d0296e78cc.js.LICENSE.txt",
+      "publicPath": "/static/js/webapp.4506c1d960d0296e78cc.js.LICENSE.txt"
     },
-    "js/webapp.3dc9b81b00cb885df128.js.map": {
-      "name": "js/webapp.3dc9b81b00cb885df128.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.3dc9b81b00cb885df128.js.map",
-      "publicPath": "/static/js/webapp.3dc9b81b00cb885df128.js.map"
+    "js/webapp.4506c1d960d0296e78cc.js.map": {
+      "name": "js/webapp.4506c1d960d0296e78cc.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.4506c1d960d0296e78cc.js.map",
+      "publicPath": "/static/js/webapp.4506c1d960d0296e78cc.js.map"
     },
     "robots.txt": {
       "name": "robots.txt",
@@ -836,11 +836,11 @@
     ],
     "vendors": [
       "css/vendors.bd33a340491dad00c15c.css",
-      "js/vendors.980d74311f73f0570b75.js"
+      "js/vendors.5007998138c17ca06d56.js"
     ],
     "webapp": [
       "css/webapp.a5ee322795df19e158b7.css",
-      "js/webapp.3dc9b81b00cb885df128.js"
+      "js/webapp.4506c1d960d0296e78cc.js"
     ]
   },
   "publicPath": "/static/"

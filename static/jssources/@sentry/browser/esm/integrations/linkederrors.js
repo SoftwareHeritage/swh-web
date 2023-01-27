@@ -28,7 +28,7 @@ class LinkedErrors  {
   /**
    * @inheritDoc
    */
-   constructor(options = {}) {;LinkedErrors.prototype.__init.call(this);
+   constructor(options = {}) {LinkedErrors.prototype.__init.call(this);
     this._key = options.key || DEFAULT_KEY;
     this._limit = options.limit || DEFAULT_LIMIT;
   }
