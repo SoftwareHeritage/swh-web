@@ -10,16 +10,17 @@ import './badges.css';
 export function showBadgeInfoModal(objectType, objectSWHID) {
   let badgeImageUrl;
   let badgeLinkUrl;
+  let objectCoreSWHID = objectSWHID;
   if (objectType === 'origin') {
     badgeImageUrl = Urls.swh_badge(objectType, objectSWHID);
     badgeLinkUrl = `${Urls.browse_origin()}?origin_url=${objectSWHID}`;
   } else {
     const pos = objectSWHID.indexOf(';');
     if (pos !== -1) {
-      const objectSWHIDNoContext = objectSWHID.slice(0, pos);
-      badgeImageUrl = Urls.swh_badge_swhid(objectSWHIDNoContext);
+      objectCoreSWHID = objectSWHID.slice(0, pos);
+      badgeImageUrl = Urls.swh_badge_swhid(objectCoreSWHID);
       $('.swhid').each((i, swhid) => {
-        if (swhid.id === objectSWHIDNoContext) {
+        if (swhid.id === objectCoreSWHID) {
           badgeLinkUrl = swhid.pathname;
         }
       });
@@ -32,12 +33,12 @@ export function showBadgeInfoModal(objectType, objectSWHID) {
   const absoluteBadgeLinkUrl = `${window.location.origin}${badgeLinkUrl}`;
   const html = `
   <a href="${absoluteBadgeLinkUrl}">
-    <img class="swh-badge" src="${absoluteBadgeImageUrl}">
+    <img class="swh-badge" src="${absoluteBadgeImageUrl}" alt="Archived | ${objectSWHID}"/>
   </a>
   <div>
     <label>HTML</label>
     <pre><code class="swh-badge-html html">&lt;a href="${absoluteBadgeLinkUrl}"&gt;
-    &lt;img src="${absoluteBadgeImageUrl}"&gt;
+    &lt;img src="${absoluteBadgeImageUrl}" alt="Archived | ${objectCoreSWHID}"/&gt;
 &lt;/a&gt;</code></pre>
   </div>
   <div>
