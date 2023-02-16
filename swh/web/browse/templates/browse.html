@@ -13,6 +13,7 @@ See top-level LICENSE file for more information
 {% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
 
 {% block header %}
+{% render_bundle 'badges' %}
 {% render_bundle 'browse' %}
 {% render_bundle 'vault' %}
 {% render_bundle 'save_code_now' %}
