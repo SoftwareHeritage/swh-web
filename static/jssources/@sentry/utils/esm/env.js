@@ -7,7 +7,7 @@
  *
  * Attention:
  * This file should not be used to define constants/flags that are intended to be used for tree-shaking conducted by
- * users. These fags should live in their respective packages, as we identified user tooling (specifically webpack)
+ * users. These flags should live in their respective packages, as we identified user tooling (specifically webpack)
  * having issues tree-shaking these constants across package boundaries.
  * An example for this is the __SENTRY_DEBUG__ constant. It is declared in each package individually because we want
  * users to be able to shake away expressions that it guards.
@@ -22,5 +22,13 @@ function isBrowserBundle() {
   return typeof __SENTRY_BROWSER_BUNDLE__ !== 'undefined' && !!__SENTRY_BROWSER_BUNDLE__;
 }
 
-export { isBrowserBundle };
+/**
+ * Get source of SDK.
+ */
+function getSDKSource() {
+  // @ts-ignore "npm" is injected by rollup during build process
+  return "npm";
+}
+
+export { getSDKSource, isBrowserBundle };
 //# sourceMappingURL=env.js.map

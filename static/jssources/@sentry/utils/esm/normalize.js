@@ -220,10 +220,16 @@ function stringifyValue(
     // them to strings means that instances of classes which haven't defined their `toStringTag` will just come out as
     // `"[object Object]"`. If we instead look at the constructor's name (which is the same as the name of the class),
     // we can make sure that only plain objects come out that way.
-    return `[object ${(Object.getPrototypeOf(value) ).constructor.name}]`;
+    return `[object ${getConstructorName(value)}]`;
   } catch (err) {
     return `**non-serializable** (${err})`;
   }
+}
+
+function getConstructorName(value) {
+  const prototype = Object.getPrototypeOf(value);
+
+  return prototype ? prototype.constructor.name : 'null prototype';
 }
 
 /** Calculates bytes size of input string */

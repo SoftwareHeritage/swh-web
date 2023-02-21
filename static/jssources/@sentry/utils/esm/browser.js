@@ -102,7 +102,7 @@ function _htmlElementAsString(el, keyAttrs) {
       }
     }
   }
-  const allowedAttrs = ['type', 'name', 'title', 'alt'];
+  const allowedAttrs = ['aria-label', 'type', 'name', 'title', 'alt'];
   for (i = 0; i < allowedAttrs.length; i++) {
     key = allowedAttrs[i];
     attr = elem.getAttribute(key);

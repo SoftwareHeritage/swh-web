@@ -9,7 +9,7 @@
  */
 
 // eslint-disable-next-line sonarjs/cognitive-complexity, no-shadow-restricted-names
-;(function (undefined) {
+; (function (undefined) {
   if (typeof window === 'undefined') return // don't run for server side render
 
   var autoResize = true,
@@ -57,8 +57,8 @@
     onMessage = function () {
       warn('onMessage function not defined')
     },
-    onReady = function () {},
-    onPageInfo = function () {},
+    onReady = function () { },
+    onPageInfo = function () { },
     customCalcMethods = {
       height: function () {
         warn('Custom height calculation function not defined')
@@ -72,14 +72,14 @@
     eventHandlersByName = {},
     passiveSupported = false
 
-  function noop() {}
+  function noop() { }
 
   try {
     var options = Object.create(
       {},
       {
         passive: {
-          get: function () {
+          get: function () { // eslint-disable-line getter-return
             passiveSupported = true
           }
         }
@@ -195,23 +195,23 @@
       return 'true' === str
     }
 
-    var data = initMsg.substr(msgIdLen).split(':')
+    var data = initMsg.slice(msgIdLen).split(':')
 
     myID = data[0]
-    bodyMargin = undefined !== data[1] ? Number(data[1]) : bodyMargin // For V1 compatibility
-    calculateWidth = undefined !== data[2] ? strBool(data[2]) : calculateWidth
-    logging = undefined !== data[3] ? strBool(data[3]) : logging
-    interval = undefined !== data[4] ? Number(data[4]) : interval
-    autoResize = undefined !== data[6] ? strBool(data[6]) : autoResize
+    bodyMargin = undefined === data[1] ? bodyMargin : Number(data[1]) // For V1 compatibility
+    calculateWidth = undefined === data[2] ? calculateWidth : strBool(data[2])
+    logging = undefined === data[3] ? logging : strBool(data[3])
+    interval = undefined === data[4] ? interval : Number(data[4])
+    autoResize = undefined === data[6] ? autoResize : strBool(data[6])
     bodyMarginStr = data[7]
-    heightCalcMode = undefined !== data[8] ? data[8] : heightCalcMode
+    heightCalcMode = undefined === data[8] ? heightCalcMode : data[8]
     bodyBackground = data[9]
     bodyPadding = data[10]
-    tolerance = undefined !== data[11] ? Number(data[11]) : tolerance
-    inPageLinks.enable = undefined !== data[12] ? strBool(data[12]) : false
-    resizeFrom = undefined !== data[13] ? data[13] : resizeFrom
-    widthCalcMode = undefined !== data[14] ? data[14] : widthCalcMode
-    mouseEvents = undefined !== data[15] ? Boolean(data[15]) : mouseEvents
+    tolerance = undefined === data[11] ? tolerance : Number(data[11])
+    inPageLinks.enable = undefined === data[12] ? false : strBool(data[12])
+    resizeFrom = undefined === data[13] ? resizeFrom : data[13]
+    widthCalcMode = undefined === data[14] ? widthCalcMode : data[14]
+    mouseEvents = undefined === data[15] ? mouseEvents : strBool(data[15])
   }
 
   function depricate(key) {
@@ -224,10 +224,10 @@
       delete this[key]
       warn(
         "Deprecated: '" +
-          key +
-          "' has been renamed '" +
-          name +
-          "'. The old method will be removed in the next major version."
+        key +
+        "' has been renamed '" +
+        name +
+        "'. The old method will be removed in the next major version."
       )
     }
   }
@@ -333,8 +333,8 @@
 
     log(
       capitalizeFirstLetter(options.method) +
-        ' event listener: ' +
-        options.eventType
+      ' event listener: ' +
+      options.eventType
     )
   }
 
@@ -377,7 +377,7 @@
     manageTriggerEvent({
       method: method,
       eventType: 'Print',
-      eventName: ['afterprint', 'beforeprint']
+      eventNames: ['afterprint', 'beforeprint']
     })
     manageTriggerEvent({
       method: method,
@@ -524,13 +524,13 @@
     function getPagePosition() {
       return {
         x:
-          window.pageXOffset !== undefined
-            ? window.pageXOffset
-            : document.documentElement.scrollLeft,
+          window.pageXOffset === undefined
+            ? document.documentElement.scrollLeft
+            : window.pageXOffset,
         y:
-          window.pageYOffset !== undefined
-            ? window.pageYOffset
-            : document.documentElement.scrollTop
+          window.pageYOffset === undefined
+            ? document.documentElement.scrollTop
+            : window.pageYOffset
       }
     }
 
@@ -550,11 +550,11 @@
 
         log(
           'Moving to in page link (#' +
-            hash +
-            ') at x: ' +
-            jumpPosition.x +
-            ' y: ' +
-            jumpPosition.y
+          hash +
+          ') at x: ' +
+          jumpPosition.x +
+          ' y: ' +
+          jumpPosition.y
         )
         sendMsg(jumpPosition.y, jumpPosition.x, 'scrollToOffset') // X&Y reversed at sendMsg uses height/width
       }
@@ -565,15 +565,15 @@
           document.getElementById(hashData) ||
           document.getElementsByName(hashData)[0]
 
-      if (undefined !== target) {
-        jumpToTarget(target)
-      } else {
+      if (undefined === target) {
         log(
           'In page link (#' +
-            hash +
-            ') not found in iFrame, so sending to parent'
+          hash +
+          ') not found in iFrame, so sending to parent'
         )
         sendMsg(0, 0, 'inPageLink', '#' + hash)
+      } else {
+        jumpToTarget(target)
       }
     }
 
@@ -686,7 +686,7 @@
           onPageInfo = callback
           sendMsg(0, 0, 'pageInfo')
         } else {
-          onPageInfo = function () {}
+          onPageInfo = function () { }
           sendMsg(0, 0, 'pageInfoStop')
         }
       },
@@ -870,7 +870,7 @@
     el = el || document.body // Not testable in phantonJS
 
     retVal = document.defaultView.getComputedStyle(el, null)
-    retVal = null !== retVal ? retVal[prop] : 0
+    retVal = null === retVal ? 0 : retVal[prop]
 
     return parseInt(retVal, base)
   }
@@ -936,57 +936,57 @@
   }
 
   var getHeight = {
-      bodyOffset: function getBodyOffsetHeight() {
-        return (
-          document.body.offsetHeight +
-          getComputedStyle('marginTop') +
-          getComputedStyle('marginBottom')
-        )
-      },
-
-      offset: function () {
-        return getHeight.bodyOffset() // Backwards compatability
-      },
-
-      bodyScroll: function getBodyScrollHeight() {
-        return document.body.scrollHeight
-      },
-
-      custom: function getCustomWidth() {
-        return customCalcMethods.height()
-      },
-
-      documentElementOffset: function getDEOffsetHeight() {
-        return document.documentElement.offsetHeight
-      },
-
-      documentElementScroll: function getDEScrollHeight() {
-        return document.documentElement.scrollHeight
-      },
-
-      max: function getMaxHeight() {
-        return Math.max.apply(null, getAllMeasurements(getHeight))
-      },
-
-      min: function getMinHeight() {
-        return Math.min.apply(null, getAllMeasurements(getHeight))
-      },
-
-      grow: function growHeight() {
-        return getHeight.max() // Run max without the forced downsizing
-      },
-
-      lowestElement: function getBestHeight() {
-        return Math.max(
-          getHeight.bodyOffset() || getHeight.documentElementOffset(),
-          getMaxElement('bottom', getAllElements())
-        )
-      },
-
-      taggedElement: function getTaggedElementsHeight() {
-        return getTaggedElements('bottom', 'data-iframe-height')
-      }
+    bodyOffset: function getBodyOffsetHeight() {
+      return (
+        document.body.offsetHeight +
+        getComputedStyle('marginTop') +
+        getComputedStyle('marginBottom')
+      )
     },
+
+    offset: function () {
+      return getHeight.bodyOffset() // Backwards compatibility
+    },
+
+    bodyScroll: function getBodyScrollHeight() {
+      return document.body.scrollHeight
+    },
+
+    custom: function getCustomWidth() {
+      return customCalcMethods.height()
+    },
+
+    documentElementOffset: function getDEOffsetHeight() {
+      return document.documentElement.offsetHeight
+    },
+
+    documentElementScroll: function getDEScrollHeight() {
+      return document.documentElement.scrollHeight
+    },
+
+    max: function getMaxHeight() {
+      return Math.max.apply(null, getAllMeasurements(getHeight))
+    },
+
+    min: function getMinHeight() {
+      return Math.min.apply(null, getAllMeasurements(getHeight))
+    },
+
+    grow: function growHeight() {
+      return getHeight.max() // Run max without the forced downsizing
+    },
+
+    lowestElement: function getBestHeight() {
+      return Math.max(
+        getHeight.bodyOffset() || getHeight.documentElementOffset(),
+        getMaxElement('bottom', getAllElements())
+      )
+    },
+
+    taggedElement: function getTaggedElementsHeight() {
+      return getTaggedElements('bottom', 'data-iframe-height')
+    }
+  },
     getWidth = {
       bodyScroll: function getBodyScrollWidth() {
         return document.body.scrollWidth
@@ -1049,9 +1049,9 @@
       }
 
       currentHeight =
-        undefined !== customHeight ? customHeight : getHeight[heightCalcMode]()
+        undefined === customHeight ? getHeight[heightCalcMode]() : customHeight
       currentWidth =
-        undefined !== customWidth ? customWidth : getWidth[widthCalcMode]()
+        undefined === customWidth ? getWidth[widthCalcMode]() : customWidth
 
       return (
         checkTolarance(height, currentHeight) ||
@@ -1105,7 +1105,9 @@
       return triggerLocked && triggerEvent in doubleEventList
     }
 
-    if (!isDoubleFiredEvent()) {
+    if (isDoubleFiredEvent()) {
+      log('Trigger event cancelled: ' + triggerEvent)
+    } else {
       recordTrigger()
       if (triggerEvent === 'init') {
         sizeIFrame(triggerEvent, triggerEventDesc, customHeight, customWidth)
@@ -1117,8 +1119,6 @@
           customWidth
         )
       }
-    } else {
-      log('Trigger event cancelled: ' + triggerEvent)
     }
   }
 
@@ -1170,7 +1170,7 @@
           size +
           ':' +
           triggerEvent +
-          (undefined !== msg ? ':' + msg : '')
+          (undefined === msg ? '' : ':' + msg)
 
       log('Sending message to host page (' + message + ')')
       target.postMessage(msgID + message, targetOrigin)
@@ -1196,11 +1196,11 @@
       },
 
       reset: function resetFromParent() {
-        if (!initLock) {
+        if (initLock) {
+          log('Page reset ignored by init')
+        } else {
           log('Page size reset by host page')
           triggerReset('resetPage')
-        } else {
-          log('Page reset ignored by init')
         }
       },
 
@@ -1213,7 +1213,7 @@
       },
       inPageLink: function inPageLinkF() {
         this.moveToAnchor()
-      }, // Backward compatability
+      }, // Backward compatibility
 
       pageInfo: function pageInfoFromParent() {
         var msgBody = getData()
@@ -1233,7 +1233,7 @@
     }
 
     function isMessageForUs() {
-      return msgID === ('' + event.data).substr(0, msgIdLen) // ''+ Protects against non-string messages
+      return msgID === ('' + event.data).slice(0, msgIdLen) // ''+ Protects against non-string messages
     }
 
     function getMessageType() {
@@ -1241,20 +1241,20 @@
     }
 
     function getData() {
-      return event.data.substr(event.data.indexOf(':') + 1)
+      return event.data.slice(event.data.indexOf(':') + 1)
     }
 
     function isMiddleTier() {
       return (
         (!(typeof module !== 'undefined' && module.exports) &&
           'iFrameResize' in window) ||
-        ('jQuery' in window && 'iFrameResize' in window.jQuery.prototype)
+        (window.jQuery !== undefined && 'iFrameResize' in window.jQuery.prototype)
       )
     }
 
     function isInitMsg() {
       // Test if this message is from a child below us. This is an ugly test, however, updating
-      // the message format would break backwards compatibity.
+      // the message format would break backwards compatibility.
       return event.data.split(':')[2] in { true: 1, false: 1 }
     }
 
@@ -1276,8 +1276,8 @@
       } else {
         log(
           'Ignored message of type "' +
-            getMessageType() +
-            '". Received before initialization.'
+          getMessageType() +
+          '". Received before initialization.'
         )
       }
     }

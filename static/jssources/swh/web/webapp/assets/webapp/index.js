@@ -13,7 +13,6 @@ import './breadcrumbs.css';
 import './webapp.css';
 
 // utility js modules
-export * from './badges';
 export * from './code-highlighting';
 export * from './history-counters';
 export * from './math-typesetting';

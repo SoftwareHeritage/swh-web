@@ -1,5 +1,5 @@
 import { BaseClient, SDK_VERSION, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
-import { logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { getSDKSource, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
 import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
@@ -22,12 +22,14 @@ class BrowserClient extends BaseClient {
    * @param options Configuration options for this SDK.
    */
    constructor(options) {
+    const sdkSource = WINDOW.SENTRY_SDK_SOURCE || getSDKSource();
+
     options._metadata = options._metadata || {};
     options._metadata.sdk = options._metadata.sdk || {
       name: 'sentry.javascript.browser',
       packages: [
         {
-          name: 'npm:@sentry/browser',
+          name: `${sdkSource}:@sentry/browser`,
           version: SDK_VERSION,
         },
       ],
