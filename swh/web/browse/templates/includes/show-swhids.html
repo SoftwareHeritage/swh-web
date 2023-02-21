@@ -68,13 +68,13 @@ See top-level LICENSE file for more information
                         {% if snapshot_context and snapshot_context.origin_info %}
                           <img class="swh-badge swh-badge-origin"
                               src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
-                              onclick="swh.webapp.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
+                              onclick="swh.badges.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
                               title="Click to display badge integration info">
                         {% endif %}
                         {% if swhid_info.object_id %}
                           <img class="swh-badge swh-badge-{{ swhid_info.object_type.name.lower }}"
                               src="{% url 'swh-badge' swhid_info.object_type.name.lower swhid_info.object_id %}"
-                              onclick="swh.webapp.showBadgeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())"
+                              onclick="swh.badges.showBadgeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())"
                               title="Click to display badge integration info">
                         {% endif %}
                       </div>

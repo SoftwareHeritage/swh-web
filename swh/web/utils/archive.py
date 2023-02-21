@@ -1183,7 +1183,7 @@ def lookup_snapshot(
 
 
 def lookup_latest_origin_snapshot(
-    origin: str, allowed_statuses: List[str] = None
+    origin: str, allowed_statuses: Optional[List[str]] = None
 ) -> Optional[Dict[str, Any]]:
     """Return information about the latest snapshot of an origin.
 

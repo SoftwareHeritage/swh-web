@@ -36,7 +36,6 @@ djangorestframework-stubs
 django-stubs
 django-test-migrations
 hypothesis
-mypy==0.942
 pytest>=7.0.0
 pytest-django
 pytest-mock

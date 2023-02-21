@@ -393,6 +393,10 @@ class BaseClient {
    */
    _prepareEvent(event, hint, scope) {
     const options = this.getOptions();
+    const integrations = Object.keys(this._integrations);
+    if (!hint.integrations && integrations.length > 0) {
+      hint.integrations = integrations;
+    }
     return prepareEvent(options, event, hint, scope);
   }
 
@@ -499,15 +503,6 @@ class BaseClient {
           processedEvent.transaction_info = {
             ...transactionInfo,
             source,
-            changes: [
-              ...transactionInfo.changes,
-              {
-                source,
-                // use the same timestamp as the processed event.
-                timestamp: processedEvent.timestamp ,
-                propagations: transactionInfo.propagations,
-              },
-            ],
           };
         }
 

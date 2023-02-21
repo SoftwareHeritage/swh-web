@@ -1,4 +1,8 @@
+import { GLOBAL_OBJ } from './worldwide.js';
+
 const STACKTRACE_LIMIT = 50;
+
+const debugIdParserCache = new Map();
 
 /**
  * Creates a stack parser with the supplied line parsers
@@ -12,6 +16,28 @@ function createStackParser(...parsers) {
 
   return (stack, skipFirst = 0) => {
     const frames = [];
+
+    for (const parser of sortedParsers) {
+      let debugIdCache = debugIdParserCache.get(parser);
+      if (!debugIdCache) {
+        debugIdCache = new Map();
+        debugIdParserCache.set(parser, debugIdCache);
+      }
+
+      const debugIdMap = GLOBAL_OBJ._sentryDebugIds;
+
+      if (debugIdMap) {
+        Object.keys(debugIdMap).forEach(debugIdStackTrace => {
+          debugIdStackTrace.split('\n').forEach(line => {
+            const frame = parser(line);
+            if (frame && frame.filename) {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              debugIdCache.set(frame.filename, debugIdMap[debugIdStackTrace]);
+            }
+          });
+        });
+      }
+    }
 
     for (const line of stack.split('\n').slice(skipFirst)) {
       // Ignore lines over 1kb as they are unlikely to be stack frames.
@@ -30,6 +56,14 @@ function createStackParser(...parsers) {
         const frame = parser(cleanedLine);
 
         if (frame) {
+          const debugIdCache = debugIdParserCache.get(parser);
+          if (debugIdCache && frame.filename) {
+            const cachedDebugId = debugIdCache.get(frame.filename);
+            if (cachedDebugId) {
+              frame.debug_id = cachedDebugId;
+            }
+          }
+
           frames.push(frame);
           break;
         }

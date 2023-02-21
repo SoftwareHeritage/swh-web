@@ -77,7 +77,10 @@ function setupIntegrations(integrations) {
   const integrationIndex = {};
 
   integrations.forEach(integration => {
-    setupIntegration(integration, integrationIndex);
+    // guard against empty provided integrations
+    if (integration) {
+      setupIntegration(integration, integrationIndex);
+    }
   });
 
   return integrationIndex;

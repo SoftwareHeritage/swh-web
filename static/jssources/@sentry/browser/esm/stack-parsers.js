@@ -12,9 +12,9 @@ const GECKO_PRIORITY = 50;
 function createFrame(filename, func, lineno, colno) {
   const frame = {
     filename,
+    abs_path: filename, // As opposed to filename, abs_path is immutable (I can't control your actions but don't touch it!)
     function: func,
-    // All browser frames are considered in_app
-    in_app: true,
+    in_app: true, // All browser frames are considered in_app
   };
 
   if (lineno !== undefined) {
@@ -30,7 +30,7 @@ function createFrame(filename, func, lineno, colno) {
 
 // Chromium based browsers: Chrome, Brave, new Opera, new Edge
 const chromeRegex =
-  /^\s*at (?:(.*\).*?|.*?) ?\((?:address at )?)?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+  /^\s*at (?:(.*\).*?|.*?) ?\((?:address at )?)?(?:async )?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 const chromeEvalRegex = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 
 const chrome = line => {
