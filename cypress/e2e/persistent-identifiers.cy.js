@@ -196,6 +196,9 @@ describe('Persistent Identifiers Tests', function() {
           .should('contain.text', `${urlPrefix}${originBadgeUrl}`);
       }
 
+      cy.get('.modal .swh-badge-html')
+        .should('contain.text', `alt="Archived | ${origin.url}"`);
+
       cy.get('.modal.show .close')
         .click()
         .wait(500);
@@ -209,6 +212,9 @@ describe('Persistent Identifiers Tests', function() {
           .should('contain.text', `${urlPrefix}${td.browseUrl}`)
           .should('contain.text', `${urlPrefix}${td.badgeSWHIDUrl}`);
       }
+
+      cy.get('.modal .swh-badge-html')
+        .should('contain.text', `alt="Archived | ${td.objectSWHIDs[1]}"`);
 
       cy.get('.modal.show .close')
         .click()

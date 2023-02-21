@@ -77,7 +77,6 @@ const cssLoaders = [
             'config': {
               'extends': 'stylelint-config-standard',
               'rules': {
-                'indentation': 4,
                 'font-family-no-missing-generic-family-keyword': null,
                 'no-descending-specificity': null,
                 'selector-class-pattern': null
