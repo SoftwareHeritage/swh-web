@@ -68,9 +68,11 @@ Content
 
     The behaviour of that view depends on the mime type of the requested content.
     If the mime type is from the text family, the view will return a response whose
-    content type is 'text/plain' that will be rendered by the browser. Otherwise,
-    the view will return a response whose content type is 'application/octet-stream'
-    and the browser will then offer to download the file.
+    content type is ``text/plain`` that will be rendered by the browser.
+    If the mime type corresponds to an image format supported by browsers, it will
+    be used as content type. Otherwise, the view will return a response whose content
+    type is ``application/octet-stream`` and the browser will then offer to download
+    the file.
 
     In the context of a navigation coming from a directory view, the filename query
     parameter will be used in order to provide the real name of the file when
@@ -83,6 +85,8 @@ Content
         to retrieve the associated content in the archive
     :query string filename: indicate the name of the file holding the requested
         content (used when one wants to save the content to a local file)
+    :query boolean re_encode: if ``true``, re-encode content to UTF-8
+        header for HTTP response to the content's mime type.
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
     :statuscode 404: requested content can not be found in the archive
