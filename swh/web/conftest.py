@@ -886,10 +886,11 @@ class _ArchiveData:
     def directory_get(self, dir_id):
         return {"id": dir_id, "content": self.directory_ls(dir_id)}
 
-    def directory_ls(self, dir_id):
+    def directory_ls(self, dir_id, recursive=False):
         cnt_id_bytes = hash_to_bytes(dir_id)
         dir_content = map(
-            converters.from_directory_entry, self.storage.directory_ls(cnt_id_bytes)
+            converters.from_directory_entry,
+            self.storage.directory_ls(cnt_id_bytes, recursive=recursive),
         )
         return list(dir_content)
 
