@@ -810,6 +810,7 @@ def browse_snapshot_directory(
             )
 
     sha1_git = root_directory
+    target_type = None
     error_info: Dict[str, Any] = {
         "status_code": 200,
         "description": None,
@@ -818,10 +819,19 @@ def browse_snapshot_directory(
         try:
             dir_info = archive.lookup_directory_with_path(root_directory, path)
             sha1_git = dir_info["target"]
+            target_type = dir_info["type"]
         except NotFoundExc as e:
             sha1_git = None
             error_info["status_code"] = 404
             error_info["description"] = f"NotFoundExc: {str(e)}"
+
+    if target_type == "file":
+        browse_content_url = reverse(
+            "browse-content",
+            url_args={"query_string": f"sha1_git:{sha1_git}"},
+            query_params=request.GET.dict(),
+        )
+        return redirect(browse_content_url)
 
     dirs = []
     files = []

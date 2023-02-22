@@ -28,15 +28,25 @@ def _directory_browse(
 ) -> HttpResponse:
     root_sha1_git = sha1_git
     dir_sha1_git: Optional[str] = sha1_git
+    target_type = None
     error_info: Dict[str, Any] = {"status_code": 200, "description": None}
     if path:
         try:
             dir_info = archive.lookup_directory_with_path(sha1_git, path)
             dir_sha1_git = dir_info["target"]
+            target_type = dir_info["type"]
         except NotFoundExc as e:
             error_info["status_code"] = 404
             error_info["description"] = f"NotFoundExc: {str(e)}"
             dir_sha1_git = None
+
+    if target_type == "file":
+        browse_content_url = reverse(
+            "browse-content",
+            url_args={"query_string": f"sha1_git:{dir_sha1_git}"},
+            query_params=request.GET.dict(),
+        )
+        return redirect(browse_content_url)
 
     dirs, files = [], []
     if dir_sha1_git is not None:

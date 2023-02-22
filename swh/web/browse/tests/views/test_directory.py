@@ -30,7 +30,7 @@ from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.tests.strategies import new_person, new_swh_date
 from swh.web.utils import gen_path_info, reverse
 from swh.web.utils.identifiers import gen_swhid
@@ -265,7 +265,7 @@ def test_directory_origin_snapshot_branch_browse(
     assert_contains(resp, snp_swhid)
 
 
-def test_drectory_origin_snapshot_release_browse(
+def test_directory_origin_snapshot_release_browse(
     client, archive_data, origin_with_multiple_visits
 ):
     origin_url = origin_with_multiple_visits["url"]
@@ -562,4 +562,31 @@ def test_browse_directory_snapshot_context_release_directory_target(
 
     check_html_get_response(
         client, browse_url, status_code=200, template_used="browse-directory.html"
+    )
+
+
+def test_browse_directory_with_path_targeting_file(
+    client, archive_data, directory_with_files
+):
+    dir_content = archive_data.directory_ls(directory_with_files)
+    file_entry = random.choice(
+        [entry for entry in dir_content if entry["type"] == "file"]
+    )
+
+    browse_url = reverse(
+        "browse-directory",
+        url_args={"sha1_git": directory_with_files},
+        query_params={
+            "path": file_entry["name"],
+        },
+    )
+
+    resp = check_http_get_response(client, browse_url, status_code=302)
+
+    assert resp["location"] == reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{file_entry['checksums']['sha1_git']}"},
+        query_params={
+            "path": file_entry["name"],
+        },
     )
