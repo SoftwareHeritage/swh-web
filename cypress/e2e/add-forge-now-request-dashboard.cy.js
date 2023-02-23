@@ -50,7 +50,6 @@ User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.8.0
 To: ${requestData.forge_contact_email}
 Cc: ${requestInboundEmailAddress}
-Reply-To: ${requestInboundEmailAddress}
 Subject: Software Heritage archival notification for test.example.com
 Content-Language: en-US
 From: Test Admin <admin@example.com>
@@ -63,7 +62,7 @@ The mission of Software Heritage is to collect, preserve and share all
 the publicly available source code (see
 https://www.softwareheritage.org for more information).
 
-We just received a request to add the forge hosted at <%= forgeUrl %>
+We just received a request to add the forge hosted at ${requestData.forge_url}
 to the list of software origins that are archived, and it is our
 understanding that you are the contact person for this forge.
 
