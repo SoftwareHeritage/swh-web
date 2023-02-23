@@ -5,9 +5,11 @@
 beautifulsoup4
 chardet
 cryptography
-django < 3
+django
 django-cors-headers
-django-js-reverse
+# upstream django-js-reverse is not compatible with django 4
+# https://github.com/ierror/django-js-reverse/issues/112
+django-js-reverse @ git+https://github.com/BITSOLVER/django-js-reverse@0.10.1-b1#egg=django-js-reverse
 djangorestframework
 django-webpack-loader
 docutils
@@ -23,4 +25,4 @@ pyyaml
 requests
 sentry-sdk
 typing-extensions
-psycopg2 < 2.9
+psycopg2
