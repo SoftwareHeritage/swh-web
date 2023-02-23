@@ -119,8 +119,6 @@ def test_add_forge_request_list_datatables(
     assert "last_moderator" in data["data"][0]
     assert "last_modified_date" in data["data"][0]
 
-    return data
-
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.parametrize("order_field", ["forge_url", "last_modified_date"])
