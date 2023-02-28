@@ -587,6 +587,8 @@ def test_browse_directory_with_path_targeting_file(
         "browse-content",
         url_args={"query_string": f"sha1_git:{file_entry['checksums']['sha1_git']}"},
         query_params={
-            "path": file_entry["name"],
+            "path": f'{directory_with_files}/{file_entry["name"]}',
         },
     )
+
+    check_http_get_response(client, resp["location"], status_code=200)

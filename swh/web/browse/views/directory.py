@@ -41,10 +41,15 @@ def _directory_browse(
             dir_sha1_git = None
 
     if target_type == "file":
+        params = request.GET.dict()
+        if "origin_url" not in params:
+            # no origin context, prepend root directory id to path for
+            # breadcrumbs navigation
+            params["path"] = f'{sha1_git}/{params["path"]}'
         browse_content_url = reverse(
             "browse-content",
             url_args={"query_string": f"sha1_git:{dir_sha1_git}"},
-            query_params=request.GET.dict(),
+            query_params=params,
         )
         return redirect(browse_content_url)
 
