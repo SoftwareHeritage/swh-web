@@ -9,7 +9,7 @@ django
 django-cors-headers
 # upstream django-js-reverse is not compatible with django 4
 # https://github.com/ierror/django-js-reverse/issues/112
-django-js-reverse @ git+https://github.com/BITSOLVER/django-js-reverse@0.10.1-b1#egg=django-js-reverse
+django-js-reverse-swh
 djangorestframework
 django-webpack-loader
 docutils
