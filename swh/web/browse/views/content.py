@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -24,6 +24,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.utils import (
     archive,
+    browsers_supported_image_mimes,
     gen_path_info,
     highlightjs,
     query,
@@ -61,15 +62,18 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
     if not filename:
         filename = "%s_%s" % (algo, checksum)
 
+    content_type = "application/octet-stream"
+    as_attachment = True
+
     if (
         content_data["mimetype"].startswith("text/")
         or content_data["mimetype"] == "inode/x-empty"
     ):
         content_type = "text/plain"
         as_attachment = False
-    else:
-        content_type = "application/octet-stream"
-        as_attachment = True
+    elif content_data["mimetype"] in browsers_supported_image_mimes:
+        content_type = content_data["mimetype"]
+        as_attachment = False
 
     response = FileResponse(
         io.BytesIO(content_data["raw_data"]),  # not copied, as this is never modified

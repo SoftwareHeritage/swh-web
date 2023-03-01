@@ -24,16 +24,32 @@ function addItemToEnvelope(envelope, newItem) {
 /**
  * Convenience function to loop through the items and item types of an envelope.
  * (This function was mostly created because working with envelope types is painful at the moment)
+ *
+ * If the callback returns true, the rest of the items will be skipped.
  */
 function forEachEnvelopeItem(
   envelope,
   callback,
 ) {
   const envelopeItems = envelope[1];
-  envelopeItems.forEach((envelopeItem) => {
+
+  for (const envelopeItem of envelopeItems) {
     const envelopeItemType = envelopeItem[0].type;
-    callback(envelopeItem, envelopeItemType);
-  });
+    const result = callback(envelopeItem, envelopeItemType);
+
+    if (result) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Returns true if the envelope contains any of the given envelope item types
+ */
+function envelopeContainsItemType(envelope, types) {
+  return forEachEnvelopeItem(envelope, (_, type) => types.includes(type));
 }
 
 /**
@@ -213,5 +229,5 @@ function createEventEnvelopeHeaders(
   };
 }
 
-export { addItemToEnvelope, createAttachmentEnvelopeItem, createEnvelope, createEventEnvelopeHeaders, envelopeItemTypeToDataCategory, forEachEnvelopeItem, getSdkMetadataForEnvelopeHeader, parseEnvelope, serializeEnvelope };
+export { addItemToEnvelope, createAttachmentEnvelopeItem, createEnvelope, createEventEnvelopeHeaders, envelopeContainsItemType, envelopeItemTypeToDataCategory, forEachEnvelopeItem, getSdkMetadataForEnvelopeHeader, parseEnvelope, serializeEnvelope };
 //# sourceMappingURL=envelope.js.map

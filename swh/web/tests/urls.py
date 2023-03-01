@@ -1,7 +1,9 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+import os
 
 from django.urls import re_path as url
 
@@ -46,3 +48,14 @@ if get_config()["e2e_tests_mode"]:
             name="tests-content-code-filenames",
         ),
     ]
+
+if os.environ.get("DJANGO_SETTINGS_MODULE") == "swh.web.settings.tests":
+    from swh.web.tests.views import add_origin_with_contents
+
+    urlpatterns.append(
+        url(
+            r"^tests/add/origin/with/contents/$",
+            add_origin_with_contents,
+            name="tests-add-origin-with-contents",
+        ),
+    )

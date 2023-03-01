@@ -76,5 +76,5 @@ def downtime_banner(request):
     return render(
         request,
         "banner-iframe.html",
-        {"lang": lang if lang else "en", "banner_template": "./downtime-banner.html"},
+        {"lang": lang if lang else "en", "banner_template": "downtime-banner.html"},
     )
