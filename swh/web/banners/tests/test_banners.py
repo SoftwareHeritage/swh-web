@@ -67,6 +67,6 @@ def test_fundraising_banner_give_api_error(client, requests_mock):
 def test_downtime_banner(client):
     url = reverse("swh-downtime-banner")
     resp = check_html_get_response(
-        client, url, status_code=200, template_used="./downtime-banner.html"
+        client, url, status_code=200, template_used="downtime-banner.html"
     )
     assert_contains(resp, "Downtime expected for SWH services")

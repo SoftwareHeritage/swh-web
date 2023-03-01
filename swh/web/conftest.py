@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -403,6 +403,22 @@ def _content_image_type():
 def content_image_type():
     """Fixture returning a random image content ingested into the test archive."""
     return random.choice(_content_image_type())
+
+
+@functools.lru_cache(maxsize=None)
+def _content_binary_type():
+    return list(
+        filter(
+            lambda c: c["mimetype"] == "application/octet-stream",
+            _known_swh_objects(get_tests_data(), "contents"),
+        )
+    )
+
+
+@pytest.fixture(scope="function")
+def content_binary_type():
+    """Fixture returning a random image content ingested into the test archive."""
+    return random.choice(_content_binary_type())
 
 
 @functools.lru_cache(maxsize=None)
@@ -870,10 +886,11 @@ class _ArchiveData:
     def directory_get(self, dir_id):
         return {"id": dir_id, "content": self.directory_ls(dir_id)}
 
-    def directory_ls(self, dir_id):
+    def directory_ls(self, dir_id, recursive=False):
         cnt_id_bytes = hash_to_bytes(dir_id)
         dir_content = map(
-            converters.from_directory_entry, self.storage.directory_ls(cnt_id_bytes)
+            converters.from_directory_entry,
+            self.storage.directory_ls(cnt_id_bytes, recursive=recursive),
         )
         return list(dir_content)
 

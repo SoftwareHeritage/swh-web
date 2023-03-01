@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,7 +6,9 @@
 # Implement some special endpoints used to provide input tests data
 # when executing end to end tests with cypress
 
+import json
 import os
+import tempfile
 from typing import Dict
 
 from rest_framework.decorators import api_view
@@ -15,7 +17,20 @@ from rest_framework.response import Response
 from swh.model import from_disk
 from swh.model.from_disk import DiskBackedContent
 from swh.model.hashutil import hash_to_hex
-from swh.model.model import Content
+from swh.model.model import (
+    Content,
+    Origin,
+    OriginVisit,
+    OriginVisitStatus,
+    Person,
+    Revision,
+    RevisionType,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+    TimestampWithTimezone,
+)
+from swh.storage.utils import now
 from swh.web.tests.data import get_tests_data
 from swh.web.utils.highlightjs import get_hljs_language_from_filename
 
@@ -169,3 +184,77 @@ def get_content_code_data_by_filename(request, filename):
         data = _content_code_data_filenames[filename]
         status = 200
     return Response(data, status=status, content_type="application/json")
+
+
+@api_view(["POST"])
+def add_origin_with_contents(request):
+    """Endpoint to dynamically add a new origin with some directories and contents
+    into the test archive.
+
+    This is useful in cypress tests to add some contents and check their rendering.
+
+    The origin URL must be provided in the ``origin_url`` query parameter and such
+    following POST data must be provided to add contents:
+
+    .. code-block:: json
+
+    [
+        {'path': 'bar', 'data': 'bar'},
+        {'path': 'files/foo', 'data': 'foo'}
+    ]
+    """
+    origin_url = request.GET.get("origin_url")
+    storage = get_tests_data()["storage"]
+    contents = json.loads(request.body)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for content in contents:
+            path = os.path.join(tmpdir, content["path"])
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as f:
+                f.write(content["data"])
+        directory = from_disk.Directory.from_disk(path=tmpdir.encode())
+        contents, _, directories = from_disk.iter_directory(directory)
+        storage.content_add(contents)
+        storage.directory_add(directories)
+
+    origin = Origin(url=origin_url)
+    storage.origin_add([origin])
+    date = now()
+    visit_type = "git"
+    visit = OriginVisit(origin=origin_url, date=date, type=visit_type)
+    visit = storage.origin_visit_add([visit])[0]
+    author = Person(
+        email=b"author@example.org",
+        fullname=b"author <author@example.org>",
+        name=b"author",
+    )
+    revision = Revision(
+        directory=directory.hash,
+        author=author,
+        committer=author,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    storage.revision_add([revision])
+    snapshot = Snapshot(
+        branches={
+            b"main": SnapshotBranch(
+                target=revision.id, target_type=TargetType.REVISION
+            ),
+        },
+    )
+    storage.snapshot_add([snapshot])
+    visit_status = OriginVisitStatus(
+        origin=origin_url,
+        visit=visit.visit,
+        date=date,
+        type=visit.type,
+        status="full",
+        snapshot=snapshot.id,
+    )
+    storage.origin_visit_status_add([visit_status])
+    return Response({}, status=200, content_type="application/json")

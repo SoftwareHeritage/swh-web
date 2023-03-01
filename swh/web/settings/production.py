@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,8 @@
 """
 Django production settings for swh-web.
 """
+
+import django
 
 from .common import (
     CACHES,
@@ -22,10 +24,13 @@ MIDDLEWARE += [
 ]
 
 if swh_web_config.get("throttling", {}).get("cache_uri"):
+    cache_backend = "django.core.cache.backends.memcached.MemcachedCache"
+    if django.VERSION[:2] >= (3, 2):
+        cache_backend = "django.core.cache.backends.memcached.PyMemcacheCache"
     CACHES.update(
         {
             "default": {
-                "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+                "BACKEND": cache_backend,
                 "LOCATION": swh_web_config["throttling"]["cache_uri"],
             }
         }

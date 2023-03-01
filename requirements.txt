@@ -5,9 +5,11 @@
 beautifulsoup4
 chardet
 cryptography
-django < 3
+django
 django-cors-headers
-django-js-reverse
+# upstream django-js-reverse is not compatible with django 4
+# https://github.com/ierror/django-js-reverse/issues/112
+django-js-reverse-swh
 djangorestframework
 django-webpack-loader
 docutils
@@ -17,10 +19,12 @@ lxml
 prometheus-client
 pybadges >= 2.2.1
 pygments
+pymemcache
 python-magic >= 0.4.0
+# TODO: remove python-memcached requirement once we use django >= 3.2 in production
 python-memcached
 pyyaml
 requests
 sentry-sdk
 typing-extensions
-psycopg2 < 2.9
+psycopg2

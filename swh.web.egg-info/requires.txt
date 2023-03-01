@@ -1,9 +1,9 @@
 beautifulsoup4
 chardet
 cryptography
-django<3
+django
 django-cors-headers
-django-js-reverse
+django-js-reverse-swh
 djangorestframework
 django-webpack-loader
 docutils
@@ -13,13 +13,14 @@ lxml
 prometheus-client
 pybadges>=2.2.1
 pygments
+pymemcache
 python-magic>=0.4.0
 python-memcached
 pyyaml
 requests
 sentry-sdk
 typing-extensions
-psycopg2<2.9
+psycopg2
 swh.auth[django]>=0.6.7
 swh.core>=0.0.95
 swh.counters>=0.5.1
