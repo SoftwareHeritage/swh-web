@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -296,28 +296,28 @@ def test_content_raw_no_utf8_text(client, content_text_non_utf8):
     assert encoding == content_text_non_utf8["encoding"]
 
 
-def test_content_raw_bin(client, archive_data, content_image_type):
+def test_content_raw_bin(client, archive_data, content_binary_type):
     url = reverse(
-        "browse-content-raw", url_args={"query_string": content_image_type["sha1"]}
+        "browse-content-raw", url_args={"query_string": content_binary_type["sha1"]}
     )
 
     resp = check_http_get_response(
         client, url, status_code=200, content_type="application/octet-stream"
     )
 
-    filename = content_image_type["path"].split("/")[-1]
-    content_data = archive_data.content_get_data(content_image_type["sha1"])["data"]
+    filename = content_binary_type["path"].split("/")[-1]
+    content_data = archive_data.content_get_data(content_binary_type["sha1"])["data"]
 
     assert resp["Content-Type"] == "application/octet-stream"
     assert (
         resp["Content-disposition"]
-        == f'attachment; filename="sha1_{content_image_type["sha1"]}"'
+        == f'attachment; filename="sha1_{content_binary_type["sha1"]}"'
     )
     assert b"".join(resp.streaming_content) == content_data
 
     url = reverse(
         "browse-content-raw",
-        url_args={"query_string": content_image_type["sha1"]},
+        url_args={"query_string": content_binary_type["sha1"]},
         query_params={"filename": filename},
     )
 
@@ -328,6 +328,22 @@ def test_content_raw_bin(client, archive_data, content_image_type):
     assert resp["Content-Type"] == "application/octet-stream"
     assert resp["Content-disposition"] == f'attachment; filename="{filename}"'
     assert b"".join(resp.streaming_content) == content_data
+
+
+def test_content_raw_image_with_content_type(client, archive_data, content_image_type):
+
+    url_raw = reverse(
+        "browse-content-raw",
+        url_args={"query_string": content_image_type["sha1"]},
+    )
+
+    content_display = _process_content_for_display(archive_data, content_image_type)
+
+    assert content_display["mimetype"].startswith("image/")
+
+    check_http_get_response(
+        client, url_raw, status_code=200, content_type=content_display["mimetype"]
+    )
 
 
 @pytest.mark.django_db
