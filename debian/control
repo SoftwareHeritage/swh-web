@@ -60,6 +60,7 @@ Depends: python3-swh.auth.django (>= 0.6.7~),
          python3-swh.vault (>= 1.2.0~),
          python3-swh.scheduler (>= 0.18.2~),
          python3-swh.search (>= 0.11.6~),
+         python3-django-js-reverse,
          ${misc:Depends},
          ${python3:Depends},
          python3-magic (>= 0.3.0~)
