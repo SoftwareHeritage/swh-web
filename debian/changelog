@@ -1,3 +1,9 @@
+swh-web (0.2.19-2~swh1~bpo10+1) buster-swh; urgency=medium
+
+  * Fix missing python3-django-js-reverse dependency in control file
+
+ -- Antoine Lambert <anlambert@softwareheritage.org>  Thu, 02 Mar 2023 22:27:39 +0100
+
 swh-web (0.2.19-1~swh1~bpo10+1) buster-swh; urgency=medium
 
   * Rebuild for buster-swh
