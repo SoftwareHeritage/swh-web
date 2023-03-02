@@ -13,7 +13,7 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.utils import archive
 from swh.web.utils.exc import LargePayloadExc
-from swh.web.utils.identifiers import get_swhid, group_swhids, resolve_swhid
+from swh.web.utils.identifiers import group_swhids, parse_core_swhid, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")
@@ -107,7 +107,7 @@ def api_swhid_known(request: Request):
             "The maximum number of SWHIDs this endpoint can receive is %s" % limit
         )
 
-    swhids = [get_swhid(swhid) for swhid in request.data]
+    swhids = [parse_core_swhid(swhid) for swhid in request.data]
 
     response = {str(swhid): {"known": False} for swhid in swhids}
 

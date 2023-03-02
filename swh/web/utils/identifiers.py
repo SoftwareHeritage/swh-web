@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.swhids import ObjectType, QualifiedSWHID
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.utils import archive, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.typing import SnapshotContext, SWHIDContext, SWHIDInfo, SWHObjectInfo
@@ -95,7 +95,7 @@ def resolve_swhid(
             * **swhid_parsed**: the parsed identifier
             * **browse_url**: the url for browsing the targeted object
     """
-    swhid_parsed = get_swhid(swhid)
+    swhid_parsed = get_qualified_swhid(swhid)
     object_type = swhid_parsed.object_type
     object_id = swhid_parsed.object_id
     browse_url = None
@@ -206,8 +206,9 @@ def resolve_swhid(
     return ResolvedSWHID(swhid_parsed=swhid_parsed, browse_url=browse_url)
 
 
-def get_swhid(swhid: str) -> QualifiedSWHID:
-    """Check if a SWHID is valid and return it parsed.
+def get_qualified_swhid(swhid: str) -> QualifiedSWHID:
+    """Leniently check if a qualified SWHID is valid and return it parsed.
+    This allows a superset of core SWHIDs, which are badly capitalized or quoted.
 
     Args:
         swhid: a SoftWare Heritage persistent IDentifier.
@@ -230,8 +231,28 @@ def get_swhid(swhid: str) -> QualifiedSWHID:
         raise BadInputExc("Error when parsing identifier: %s" % " ".join(ve.messages))
 
 
+def parse_core_swhid(swhid: str) -> CoreSWHID:
+    """Check if a core SWHID is valid and return it parsed.
+
+    Args:
+        swhid: a SoftWare Heritage persistent IDentifier.
+
+    Raises:
+        BadInputExc: if the provided SWHID can not be parsed.
+
+    Return:
+        A parsed SWHID.
+    """
+    try:
+        return CoreSWHID.from_string(swhid)
+    except ValidationError as ve:
+        raise BadInputExc(f"Error when parsing identifier: {' '.join(ve.messages)}")
+    except ValueError as e:
+        raise BadInputExc(f"Error when parsing identifier: {e}")
+
+
 def group_swhids(
-    swhids: Iterable[QualifiedSWHID],
+    swhids: Iterable[CoreSWHID],
 ) -> Dict[ObjectType, List[bytes]]:
     """
     Groups many SoftWare Heritage persistent IDentifiers into a
