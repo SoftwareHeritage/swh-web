@@ -73,6 +73,8 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
         as_attachment = False
     elif content_data["mimetype"] in browsers_supported_image_mimes:
         content_type = content_data["mimetype"]
+        if content_type.startswith("image/svg"):
+            content_type = "image/svg+xml"
         as_attachment = False
 
     response = FileResponse(
