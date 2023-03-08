@@ -17,7 +17,7 @@ from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.identifiers import (
     gen_swhid,
-    get_swhid,
+    get_qualified_swhid,
     get_swhids_info,
     group_swhids,
     parse_object_type,
@@ -97,7 +97,7 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
         resolve_swhid(f"swh:1:ori:{random_sha1()}")
 
 
-def test_get_swhid(content, directory, release, revision, snapshot):
+def test_get_qualified_swhid(content, directory, release, revision, snapshot):
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
         (ObjectType.DIRECTORY, directory),
@@ -107,12 +107,12 @@ def test_get_swhid(content, directory, release, revision, snapshot):
     ):
         swhid = gen_swhid(obj_type, obj_id)
         for swhid_ in (swhid, swhid.upper()):
-            swh_parsed_swhid = get_swhid(swhid_)
+            swh_parsed_swhid = get_qualified_swhid(swhid_)
             assert isinstance(swh_parsed_swhid, QualifiedSWHID)
             assert str(swh_parsed_swhid) == swhid.lower()
 
     with pytest.raises(BadInputExc, match="Error when parsing identifier"):
-        get_swhid("foo")
+        get_qualified_swhid("foo")
 
 
 def test_get_swhid_with_unquoted_white_spaces(content):
@@ -120,7 +120,7 @@ def test_get_swhid_with_unquoted_white_spaces(content):
         ObjectType.CONTENT, content["sha1_git"], metadata={"path": "/test/foo bar/baz"}
     )
 
-    swhid_parsed = get_swhid(swhid)
+    swhid_parsed = get_qualified_swhid(swhid)
 
     assert swhid_parsed.path == b"/test/foo bar/baz"
     assert "path=/test/foo%20bar/baz" in str(swhid_parsed)
@@ -137,7 +137,7 @@ def test_group_swhids(content, directory, release, revision, snapshot):
         (ObjectType.SNAPSHOT, snapshot),
     ):
         swhid = gen_swhid(obj_type, obj_id)
-        swhid = get_swhid(swhid)
+        swhid = get_qualified_swhid(swhid)
         swhids.append(swhid)
         expected[obj_type] = [hash_to_bytes(obj_id)]
 
@@ -206,7 +206,7 @@ def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs)
     swhid_upper = swhid_lower.replace(swhids[0]["swhid"], swhids[0]["swhid"].upper())
 
     for swhid in (swhid_lower, swhid_upper):
-        swhid_dir_parsed = get_swhid(swhid)
+        swhid_dir_parsed = get_qualified_swhid(swhid)
 
         anchor = gen_swhid(ObjectType.DIRECTORY, directory_with_subdirs)
 
@@ -216,7 +216,7 @@ def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs)
         }
 
     if dir_subdir_files:
-        swhid_cnt_parsed = get_swhid(swhids[1]["swhid_with_context"])
+        swhid_cnt_parsed = get_qualified_swhid(swhids[1]["swhid_with_context"])
 
         assert swhid_cnt_parsed.qualifiers() == {
             "anchor": anchor,
@@ -257,7 +257,7 @@ def test_get_swhids_info_revision_context(archive_data, revision):
     swhid_upper = swhid_lower.replace(swhids[1]["swhid"], swhids[1]["swhid"].upper())
 
     for swhid in (swhid_lower, swhid_upper):
-        swhid_dir_parsed = get_swhid(swhid)
+        swhid_dir_parsed = get_qualified_swhid(swhid)
 
         anchor = gen_swhid(ObjectType.REVISION, revision)
 
@@ -266,7 +266,7 @@ def test_get_swhids_info_revision_context(archive_data, revision):
         }
 
     if dir_entry["type"] == "file":
-        swhid_cnt_parsed = get_swhid(swhids[2]["swhid_with_context"])
+        swhid_cnt_parsed = get_qualified_swhid(swhids[2]["swhid_with_context"])
         assert swhid_cnt_parsed.qualifiers() == {
             "anchor": anchor,
             "path": f'/{dir_entry["name"]}',
@@ -396,17 +396,17 @@ def test_get_swhids_info_origin_snapshot_context(
                 extra_context={"path": "/", "filename": dir_file["name"]},
             )
 
-            swhid_cnt_parsed = get_swhid(swhids[0]["swhid_with_context"])
-            swhid_dir_parsed = get_swhid(swhids[1]["swhid_with_context"])
-            swhid_rev_parsed = get_swhid(swhids[2]["swhid_with_context"])
+            swhid_cnt_parsed = get_qualified_swhid(swhids[0]["swhid_with_context"])
+            swhid_dir_parsed = get_qualified_swhid(swhids[1]["swhid_with_context"])
+            swhid_rev_parsed = get_qualified_swhid(swhids[2]["swhid_with_context"])
 
-            swhid_snp_parsed = get_swhid(
+            swhid_snp_parsed = get_qualified_swhid(
                 swhids[3]["swhid_with_context"] or swhids[3]["swhid"]
             )
 
             swhid_rel_parsed = None
             if "release_name" in snp_ctx_params:
-                swhid_rel_parsed = get_swhid(swhids[4]["swhid_with_context"])
+                swhid_rel_parsed = get_qualified_swhid(swhids[4]["swhid_with_context"])
 
             anchor = gen_swhid(
                 object_type=anchor_info["anchor_type"],
