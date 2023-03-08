@@ -73,6 +73,8 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
         as_attachment = False
     elif content_data["mimetype"] in browsers_supported_image_mimes:
         content_type = content_data["mimetype"]
+        if content_type.startswith("image/svg"):
+            content_type = "image/svg+xml"
         as_attachment = False
 
     response = FileResponse(
@@ -360,6 +362,10 @@ def content_display(
                 )
                 breadcrumbs.append({"name": pi["name"], "url": dir_url})
         breadcrumbs.append({"name": filename, "url": ""})
+
+        if filename.endswith(".ipynb"):
+            # disable language select dropdown when a notebook is rendered
+            available_languages = None
 
     if path and root_dir is not None and root_dir != path:
         dir_info = archive.lookup_directory_with_path(root_dir, path)

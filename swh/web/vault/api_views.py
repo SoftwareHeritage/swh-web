@@ -16,6 +16,7 @@ from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import SWHID_RE, archive, query, reverse
 from swh.web.utils.exc import BadInputExc
+from swh.web.utils.identifiers import parse_core_swhid
 
 ######################################################
 # Common
@@ -118,7 +119,7 @@ def api_vault_cook_flat(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    parsed_swhid = CoreSWHID.from_string(swhid)
+    parsed_swhid = parse_core_swhid(swhid)
     if parsed_swhid.object_type == ObjectType.DIRECTORY:
         res = _dispatch_cook_progress(request, "flat", parsed_swhid)
         res["fetch_url"] = reverse(
@@ -164,7 +165,7 @@ def api_vault_cook_directory(request: Request, dir_id: str):
     )
 
     swhid = f"swh:1:dir:{obj_id.hex()}"
-    res = _dispatch_cook_progress(request, "flat", CoreSWHID.from_string(swhid))
+    res = _dispatch_cook_progress(request, "flat", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
         "api-1-vault-fetch-flat",
         url_args={"swhid": swhid},
@@ -200,7 +201,7 @@ def api_vault_fetch_flat(request: Request, swhid: str):
     res = api_lookup(
         archive.vault_fetch,
         "flat",
-        CoreSWHID.from_string(swhid),
+        parse_core_swhid(swhid),
         notfound_msg=f"Cooked archive for {swhid} not found.",
         request=request,
     )
@@ -292,7 +293,7 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    parsed_swhid = CoreSWHID.from_string(swhid)
+    parsed_swhid = parse_core_swhid(swhid)
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "gitfast", parsed_swhid)
         res["fetch_url"] = reverse(
@@ -337,7 +338,7 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
     )
 
     swhid = f"swh:1:rev:{obj_id.hex()}"
-    res = _dispatch_cook_progress(request, "gitfast", CoreSWHID.from_string(swhid))
+    res = _dispatch_cook_progress(request, "gitfast", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
         "api-1-vault-fetch-gitfast",
         url_args={"swhid": swhid},
@@ -373,7 +374,7 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
     res = api_lookup(
         archive.vault_fetch,
         "gitfast",
-        CoreSWHID.from_string(swhid),
+        parse_core_swhid(swhid),
         notfound_msg="Cooked archive for {} not found.".format(swhid),
         request=request,
     )
@@ -468,7 +469,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    parsed_swhid = CoreSWHID.from_string(swhid)
+    parsed_swhid = parse_core_swhid(swhid)
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "git_bare", parsed_swhid)
         res["fetch_url"] = reverse(
@@ -518,7 +519,7 @@ def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
     res = api_lookup(
         archive.vault_fetch,
         "git_bare",
-        CoreSWHID.from_string(swhid),
+        parse_core_swhid(swhid),
         notfound_msg="Cooked archive for {} not found.".format(swhid),
         request=request,
     )

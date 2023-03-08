@@ -64,9 +64,9 @@ def test_iframe_object_not_found(client, unknown_directory):
 
 
 def test_swhid_iframe_unknown_error(client, mocker, content_swhid):
-    mocker.patch("swh.web.browse.views.iframe.get_swhid").side_effect = Exception(
-        "Error"
-    )
+    mocker.patch(
+        "swh.web.browse.views.iframe.get_qualified_swhid"
+    ).side_effect = Exception("Error")
     url = reverse("browse-swhid-iframe", url_args={"swhid": str(content_swhid)})
     check_html_get_response(
         client, url, status_code=500, template_used="browse-iframe.html"

@@ -16,7 +16,7 @@ from swh.model.git_objects import (
     snapshot_git_object,
 )
 from swh.model.hashutil import hash_to_hex
-from swh.model.swhids import CoreSWHID, ObjectType
+from swh.model.swhids import ObjectType
 from swh.storage.algos.directory import directory_get
 from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -24,6 +24,7 @@ from swh.web.api.apiurls import api_route
 from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION
 from swh.web.utils import SWHID_RE, archive
 from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.identifiers import parse_core_swhid
 
 
 @api_route(
@@ -64,7 +65,7 @@ def api_raw_object(request: Request, swhid: str):
     if not (request.user.is_staff or request.user.has_perm(API_RAW_OBJECT_PERMISSION)):
         raise PermissionDenied()
 
-    parsed_swhid = CoreSWHID.from_string(swhid)
+    parsed_swhid = parse_core_swhid(swhid)
     object_id = parsed_swhid.object_id
     object_type = parsed_swhid.object_type
 
