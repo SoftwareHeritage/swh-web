@@ -22,7 +22,7 @@ from swh.web.browse.utils import (
 )
 from swh.web.utils import archive, gen_path_info, reverse
 from swh.web.utils.exc import BadInputExc, NotFoundExc, http_status_code_message
-from swh.web.utils.identifiers import get_swhid, get_swhids_info
+from swh.web.utils.identifiers import get_qualified_swhid, get_swhids_info
 from swh.web.utils.typing import SnapshotContext, SWHObjectInfo
 
 
@@ -202,8 +202,8 @@ def swhid_iframe(request, swhid: str):
     swhids_info_extra_context = {}
     archive_link = None
     try:
-        parsed_swhid = get_swhid(swhid)
-        parsed_focus_swhid = get_swhid(focus_swhid)
+        parsed_swhid = get_qualified_swhid(swhid)
+        parsed_focus_swhid = get_qualified_swhid(focus_swhid)
         path = parsed_swhid.path.decode("utf-8") if parsed_swhid.path else ""
 
         snapshot_context = None
