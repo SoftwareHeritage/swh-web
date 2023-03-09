@@ -517,10 +517,9 @@ def _add_empty_snapshot_origin(new_origin, archive_data):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("object_type", ["directory"])
 @given(new_origin())
-def test_browse_origin_content_directory_empty_snapshot(
-    client, staff_user, archive_data, object_type, new_origin
+def test_browse_origin_directory_empty_snapshot(
+    client, staff_user, archive_data, new_origin
 ):
 
     _add_empty_snapshot_origin(new_origin, archive_data)
@@ -529,14 +528,15 @@ def test_browse_origin_content_directory_empty_snapshot(
     client.force_login(staff_user)
 
     url = reverse(
-        f"browse-origin-{object_type}",
+        "browse-origin-directory",
         query_params={"origin_url": new_origin.url, "path": "baz"},
     )
 
     resp = check_html_get_response(
-        client, url, status_code=200, template_used=f"browse-{object_type}.html"
+        client, url, status_code=200, template_used="browse-directory.html"
     )
-    assert re.search("snapshot.*is empty", resp.content.decode("utf-8"))
+
+    assert_contains(resp, "is empty !")
 
 
 def test_browse_directory_snapshot_not_found(client, mocker, origin):
@@ -565,9 +565,9 @@ def test_origin_empty_snapshot(client, archive_data, new_origin):
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse-directory.html"
     )
-    resp_content = resp.content.decode("utf-8")
-    assert re.search("snapshot.*is empty", resp_content)
-    assert not re.search("swh-tr-link", resp_content)
+
+    assert_contains(resp, "is empty !")
+    assert_not_contains(resp, "swh-tr-link")
 
 
 @given(new_origin())
@@ -609,9 +609,8 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
     resp = check_html_get_response(
         client, url, status_code=200, template_used="browse-directory.html"
     )
-    resp_content = resp.content.decode("utf-8")
-    assert re.search("snapshot.*is empty", resp_content)
-    assert not re.search("swh-tr-link", resp_content)
+    assert_contains(resp, "is empty !")
+    assert_not_contains(resp, "swh-tr-link")
 
 
 def test_origin_release_browse(client, archive_data, origin_with_releases):
@@ -970,8 +969,8 @@ def _origin_directory_view_test_helper(
     )
     extrinsic_metadata_snippets = [
         "Extrinsic metadata",
-        f'<a href="{origin_metadata_api_url}" class="dropdown-item" role="button">',
-        f'<a href="{directory_metadata_api_url}" class="dropdown-item" role="button">',
+        f'<a href="{origin_metadata_api_url}"',
+        f'<a href="{directory_metadata_api_url}"',
     ]
 
     client.logout()

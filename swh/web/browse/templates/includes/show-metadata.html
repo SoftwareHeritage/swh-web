@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2021  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -8,51 +8,53 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if 'metadata' in swh_object_metadata and swh_object_metadata.metadata != '{}' %}
-
-<button id="swh-metadata-toggler" class="btn btn-default btn-sm swh-popover-toggler"
-        data-toggle="popover" data-popover-content="#swh-metadata-popover">
-  <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
-  {% if user.is_staff %}
-    Legacy extrinsic metadata
-  {% else %}
-    Show metadata
-  {% endif %}
-</button>
-
-<div id="swh-metadata-popover" style="display:none;">
-  <div class="popover-heading">{{ swh_object_name }} metadata</div>
-  <div class="popover-body">
-    <pre class="bg-white">{{ swh_object_metadata.metadata | escape }}</pre>
+  <button id="swh-metadata-toggler"
+          class="btn btn-default btn-sm swh-popover-toggler"
+          data-toggle="popover"
+          data-popover-content="#swh-metadata-popover">
+    <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
+    {% if user.is_staff %}
+      Legacy extrinsic metadata
+    {% else %}
+      Show metadata
+    {% endif %}
+  </button>
+  <div id="swh-metadata-popover" style="display:none;">
+    <div class="popover-heading">{{ swh_object_name }} metadata</div>
+    <div class="popover-body">
+      <pre class="bg-white">{{ swh_object_metadata.metadata | escape }}</pre>
+    </div>
   </div>
-</div>
-
 {% endif %}
-
 {% if user.is_staff %}
   {% if swhids_info %}
     <div class="btn-group">
-      <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+      <button class="btn btn-default btn-sm dropdown-toggle"
+              type="button"
+              data-toggle="dropdown">
         <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
         Extrinsic metadata
       </button>
       <div class="dropdown-menu swh-extrinsic-metadata-menu">
         {% if snapshot_context.origin_info %}
-          <a href="{% url 'api-1-raw-extrinsic-metadata-origin-authorities' snapshot_context.origin_info.url %}" class="dropdown-item" role="button">
+          <a href="{% url 'api-1-raw-extrinsic-metadata-origin-authorities' snapshot_context.origin_info.url %}"
+             class="dropdown-item"
+             role="button">
             <i class="{{ swh_object_icons.origin }} mdi-fw" aria-hidden="true"></i>
             Origin
           </a>
         {% endif %}
         {% for swhid_info in swhids_info %}
-          <a href="{% url 'api-1-raw-extrinsic-metadata-swhid-authorities' swhid_info.swhid  %}" class="dropdown-item" role="button">
-            <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw" aria-hidden="true"></i>
-            {{swhid_info.object_type.name.lower}}
+          <a href="{% url 'api-1-raw-extrinsic-metadata-swhid-authorities' swhid_info.swhid %}"
+             class="dropdown-item"
+             role="button">
+            <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw"
+               aria-hidden="true"></i>
+            {{ swhid_info.object_type.name.lower }}
           </a>
         {% endfor %}
       </div>
     </div>
   {% endif %}
 {% endif %}
-
-<script>
-  swh.webapp.setBrowsedSwhObjectMetadata({{ swh_object_metadata|jsonify }})
-</script>
+<script>swh.webapp.setBrowsedSwhObjectMetadata({{ swh_object_metadata|jsonify }})</script>

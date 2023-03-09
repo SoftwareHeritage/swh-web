@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018  The Software Heritage developers
+Copyright (C) 2018-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -9,30 +9,32 @@ See top-level LICENSE file for more information
 
 {% load static %}
 
-{% block title %}Logged out &ndash; Software Heritage archive {% endblock %}
+{% block title %}
+  Logged out &ndash; Software Heritage archive
+{% endblock title %}
 
 {% block navbar-content %}
-<h4>Logged out</h4>
-{% endblock %}
+  <h4>Logged out</h4>
+{% endblock navbar-content %}
 
 {% block content %}
-{% if 'next' in request.GET %}
-<p>Your authenticated session expired so you have been automatically logged out.</p>
-{% else %}
-<p>You have been successfully logged out.</p>
-{% endif %}
-<p>
-{% if 'next' in request.GET %}
-<a href="{% url login_url %}?next={{ request.GET.next }}">
-{% else %}
-<a href="{% url login_url %}">
-{% endif %}
-Log in</a> again ?</p>
-{% if 'next' in request.GET %}
-<p>
-Or go back to
-<a href="{{ request.GET.next }}">
-previous page</a>.
-</p>
-{% endif %}
-{% endblock %}
+  {% if 'next' in request.GET %}
+    <p>Your authenticated session expired so you have been automatically logged out.</p>
+  {% else %}
+    <p>You have been successfully logged out.</p>
+  {% endif %}
+  <p>
+    {% if 'next' in request.GET %}
+      <a href="{% url login_url %}?next={{ request.GET.next }}">Log in</a>
+    {% else %}
+      <a href="{% url login_url %}">Log in</a>
+    {% endif %}
+    again ?
+  </p>
+  {% if 'next' in request.GET %}
+    <p>
+      Or go back to
+      <a href="{{ request.GET.next }}">previous page</a>.
+    </p>
+  {% endif %}
+{% endblock content %}

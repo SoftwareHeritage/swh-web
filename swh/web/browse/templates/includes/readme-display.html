@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2019  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -8,31 +8,19 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if readme_name %}
-
   <div id="readme-panel" class="card">
     <div class="card-header bg-gray-light">
       <h4>{{ readme_name }}</h4>
     </div>
-    <div class="swh-readme card-body">
-    </div>
+    <div class="swh-readme card-body"></div>
   </div>
-
   {% if readme_html %}
-    <script>
-      $('.swh-readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));
-    </script>
+    <script>$('.swh-readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));</script>
   {% elif readme_name.lower == 'readme' or readme_name.lower == 'readme.txt' %}
-    <script>
-      swh.webapp.renderTxt('.swh-readme', '{{ readme_url }}');
-    </script>
+    <script>swh.webapp.renderTxt('.swh-readme', '{{ readme_url }}');</script>
   {% elif readme_name.lower == 'readme.org' %}
-    <script>
-      swh.webapp.renderOrg('.swh-readme', '{{ readme_url }}');
-    </script>
+    <script>swh.webapp.renderOrg('.swh-readme', '{{ readme_url }}');</script>
   {% else %}
-    <script>
-      swh.webapp.renderMarkdown('.swh-readme', '{{ readme_url }}');
-    </script>
+    <script>swh.webapp.renderMarkdown('.swh-readme', '{{ readme_url }}');</script>
   {% endif %}
-
 {% endif %}

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2022  The Software Heritage developers
+Copyright (C) 2018-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,24 +11,25 @@ See top-level LICENSE file for more information
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-{{ block.super }}
-{% render_bundle 'deposit' %}
-{% endblock %}
+  {{ block.super }}
+  {% render_bundle 'deposit' %}
+{% endblock header %}
 
-{% block title %} Deposit administration {% endblock %}
+{% block title %}
+  Deposit administration
+{% endblock title %}
 
 {% block navbar-content %}
-<h4>Deposit administration</h4>
-{% endblock %}
+  <h4>Deposit administration</h4>
+{% endblock navbar-content %}
 
 {% block content %}
   <p>
     The table below displays the list of software artifacts deposited to
     Software Heritage.
   </p>
-
   <div>
-	  Toggle column:
+    Toggle column:
     <a class="toggle-col" href="#" data-column="0">id</a> -
     <a class="toggle-col" href="#" data-column="1">type</a> -
     <a class="toggle-col" href="#" data-column="2">uri</a> -
@@ -40,7 +41,9 @@ See top-level LICENSE file for more information
     <a class="toggle-col col-hidden" href="#" data-column="8">directory with context</a>
   </div>
   <br/>
-  <table id="swh-admin-deposit-list" class="table swh-table swh-table-striped" width="100%">
+  <table id="swh-admin-deposit-list"
+         class="table swh-table swh-table-striped"
+         width="100%">
     <thead>
       <tr>
         <th>id</th>

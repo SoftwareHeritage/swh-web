@@ -1,68 +1,92 @@
 {% comment %}
-Copyright (C) 2020-2021  The Software Heritage developers
+Copyright (C) 2020-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<form class="form-horizontal needs-validation" id="swh-search-origins" novalidate>
+<form class="form-horizontal needs-validation"
+      id="swh-search-origins"
+      novalidate>
   <div class="input-group">
     <input class="form-control"
            placeholder="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
-           type="text" id="swh-origins-url-patterns"
-           oninput="swh.webapp.validateSWHIDInput(this)" autofocus>
+           type="text"
+           id="swh-origins-url-patterns"
+           oninput="swh.webapp.validateSWHIDInput(this)"
+           autofocus/>
     <div class="input-group-append">
-      <button class="btn btn-primary" type="submit"><i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i></button>
+      <button class="btn btn-primary" type="submit">
+        <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+      </button>
     </div>
     <div class="invalid-feedback"></div>
   </div>
-  <div class="row mt-1 mb-1 float-right position-relative" style="z-index: 1000">
+  <div class="row mt-1 mb-1 float-right position-relative"
+       style="z-index: 1000">
     <div class="form-group form-inline">
       <label class="control-label mr-1" style="font-weight: inherit">visit type:</label>
-      <select id="swh-search-visit-type" class="custom-select form-control custom-select-sm">
-        <option selected value="any">any</option>
+      <select id="swh-search-visit-type"
+              class="custom-select form-control custom-select-sm">
+        <option selected value="any">
+          any
+        </option>
         {% for visit_type in visit_types %}
-          <option value="{{ visit_type }}">{{ visit_type }}</option>
+          <option value="{{ visit_type }}">
+            {{ visit_type }}
+          </option>
         {% endfor %}
       </select>
     </div>
   </div>
   <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input" value="option-origins-with-visit" type="checkbox"
-          id="swh-search-origins-with-visit" checked>
-    <label class="custom-control-label font-weight-normal" for="swh-search-origins-with-visit">
+    <input class="custom-control-input"
+           value="option-origins-with-visit"
+           type="checkbox"
+           id="swh-search-origins-with-visit"
+           checked/>
+    <label class="custom-control-label font-weight-normal"
+           for="swh-search-origins-with-visit">
       only show origins visited at least once
     </label>
   </div>
   <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input" value="option-filter-empty-visits" type="checkbox"
-          id="swh-filter-empty-visits" checked>
-    <label class="custom-control-label font-weight-normal" for="swh-filter-empty-visits">
+    <input class="custom-control-input"
+           value="option-filter-empty-visits"
+           type="checkbox"
+           id="swh-filter-empty-visits"
+           checked/>
+    <label class="custom-control-label font-weight-normal"
+           for="swh-filter-empty-visits">
       filter out origins with no archived content
     </label>
   </div>
   <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input" value="option-filter-empty-visits" type="checkbox"
-          id="swh-search-origin-metadata">
-    <label class="custom-control-label font-weight-normal" for="swh-search-origin-metadata">
+    <input class="custom-control-input"
+           value="option-filter-empty-visits"
+           type="checkbox"
+           id="swh-search-origin-metadata"/>
+    <label class="custom-control-label font-weight-normal"
+           for="swh-search-origin-metadata">
       search in metadata (instead of URL)
     </label>
   </div>
   {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
     <div class="custom-control custom-checkbox swhid-option">
-      <input class="custom-control-input" value="option-use-ql" type="checkbox"
-            id="swh-search-use-ql">
-      <label class="custom-control-label font-weight-normal" for="swh-search-use-ql">
+      <input class="custom-control-input"
+             value="option-use-ql"
+             type="checkbox"
+             id="swh-search-use-ql"/>
+      <label class="custom-control-label font-weight-normal"
+             for="swh-search-use-ql">
         search using the
-        <a target="_blank" rel="noopener noreferrer"
-            href="https://docs.softwareheritage.org/devel/swh-search/query-language.html">
+        <a target="_blank"
+           rel="noopener noreferrer"
+           href="https://docs.softwareheritage.org/devel/swh-search/query-language.html">
           advanced search query language
         </a>
       </label>
     </div>
   {% endif %}
 </form>
-
-<script>
-  swh.browse.initOriginSearch();
-</script>
+<script>swh.browse.initOriginSearch();</script>

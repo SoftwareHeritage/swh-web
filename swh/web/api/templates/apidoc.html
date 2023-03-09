@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2015-2022 The Software Heritage developers
+Copyright (C) 2015-2023 The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -9,213 +9,248 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
-{% block title %}{{ heading }} &ndash; Software Heritage API {% endblock %}
+{% block title %}
+  {{ heading }} &ndash; Software Heritage API
+{% endblock title %}
 
 {% block navbar-content %}
-<nav class="bread-crumbs">
-  <ul>
-    <li><a href="/api/"><h4>Web API</h4></a></li>
-    <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
-    <li class="bc-no-root"><a href="/api/1/">endpoints</a></li>
-    {% for endpoint in endpoint_path %}
-      <li class="bc-no-root"><i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i></li>
-      {% if endpoint.path %}
-        <li class="bc-no-root"><a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a></li>
-      {% else %}
-        <li class="bc-no-root"><span>{{ endpoint.name }}</span></li>
-      {% endif %}
-    {% endfor %}
-  </ul>
-</nav>
-{% endblock %}
+  <nav class="bread-crumbs">
+    <ul>
+      <li>
+        <a href="{% url 'api-1-homepage' %}">
+          <h4>Web API</h4>
+        </a>
+      </li>
+      <li class="bc-no-root">
+        <i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i>
+      </li>
+      <li class="bc-no-root">
+        <a href="{% url 'api-1-endpoints' %}">endpoints</a>
+      </li>
+      {% for endpoint in endpoint_path %}
+        <li class="bc-no-root">
+          <i class="mdi mdi-menu-right mdi-fw" aria-hidden="true"></i>
+        </li>
+        {% if endpoint.path %}
+          <li class="bc-no-root">
+            <a href="{{ '/api/1/'|add:endpoint.path }}">{{ endpoint.name }}</a>
+          </li>
+        {% else %}
+          <li class="bc-no-root">
+            <span>{{ endpoint.name }}</span>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </nav>
+{% endblock navbar-content %}
 
 {% block content %}
-
-<div class='swh-apidoc'>
-  {% if description %}
-    <div>
-      <h4> Description </h4>
-      {{ description | docstring_display | safe }}
-    </div>
-  {% endif %}
-  {% if response_data is not None %}
-    <div>
-      <h4>Request</h4>
-      <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
-      <hr />
-      <h4>Response</h4>
-      {% if status_code != 200 %}
-        <h5>Status Code</h5>
-        <pre>{{ status_code }}</pre>
-      {% endif %}
-      {% if headers_data %}
-        <h5>Headers</h5>
-        {% for header_name, header_value in headers_data.items %}
-          <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
-        {% endfor %}
-      {% endif %}
-      <h5>Body</h5>
-      <pre><code class="json">{{ response_data | urlize_links_and_mails | safe }}</code></pre>
-    </div>
-  {% endif %}
-  <hr />
-  {% if urls and urls|length > 0 %}
-    <div>
-      <table class="m-x-auto table">
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th>Allowed Methods</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for url in urls %}
-            <tr>
-              <td class="d-inline-flex">{{ site_base_url }}{{url.rule | docstring_display | safe }}</td>
-              <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
-            </tr>
+  <div class="swh-apidoc">
+    {% if description %}
+      <div>
+        <h4>Description</h4>
+        {{ description | docstring_display | safe }}
+      </div>
+    {% endif %}
+    {% if response_data is not None %}
+      <div>
+        <h4>Request</h4>
+        <pre><strong>{{ request.method }}</strong> {{ request.build_absolute_uri }}</pre>
+        <hr />
+        <h4>Response</h4>
+        {% if status_code != 200 %}
+          <h5>Status Code</h5>
+          <pre>{{ status_code }}</pre>
+        {% endif %}
+        {% if headers_data %}
+          <h5>Headers</h5>
+          {% for header_name, header_value in headers_data.items %}
+            <pre><strong>{{ header_name }}</strong> {{ header_value | urlize_header_links | safe }}</pre>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% endif %}
+        <h5>Body</h5>
+        <pre><code class="json">{{ response_data | urlize_links_and_mails | safe }}</code></pre>
+      </div>
+    {% endif %}
     <hr />
-  {% endif %}
-  {% if args and args|length > 0 %}
-    <div>
-      <h4> Arguments </h4>
-      {% for arg in args %}
+    {% if urls and urls|length > 0 %}
+      <div>
+        <table class="m-x-auto table">
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Allowed Methods</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for url in urls %}
+              <tr>
+                <td class="d-inline-flex">{{ site_base_url }}{{ url.rule | docstring_display | safe }}</td>
+                <td>{{ url.methods | dictsort:0 | join:', ' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr />
+    {% endif %}
+    {% if args and args|length > 0 %}
+      <div>
+        <h4>Arguments</h4>
+        {% for arg in args %}
+          <dl class="row">
+            <dt class="col col-md-2 text-right">
+              {{ arg.name }} ({{ arg.type }})
+            </dt>
+            <dd class="col col-md-9">
+              {{ arg.doc | docstring_display | safe }}
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if params and params|length > 0 %}
+      <div>
+        <h4>Query parameters</h4>
+        {% for param in params %}
+          <dl class="row">
+            <dt class="col col-md-2 text-right">
+              {{ param.name }} ({{ param.type }})
+            </dt>
+            <dd class="col col-md-9">
+              {{ param.doc | docstring_display | safe }}
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if reqheaders and reqheaders|length > 0 %}
+      <div>
+        <h4>Request headers</h4>
+        {% for header in reqheaders %}
+          <dl class="row">
+            <dt class="col col-md-2 text-right">
+              {{ header.name }}
+            </dt>
+            <dd class="col col-md-9">
+              {{ header.doc | docstring_display | safe }}
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if input_type %}
+      <div>
+        <h4>Request data</h4>
         <dl class="row">
-          <dt class="col col-md-2 text-right"> {{ arg.name }} ({{ arg.type }}) </dt>
-          <dd class="col col-md-9"> {{ arg.doc | docstring_display | safe }} </dd>
-        </dl>
-      {% endfor %}
-    </div>
-    <hr />
-  {% endif %}
-  {% if params and params|length > 0 %}
-    <div>
-      <h4> Query parameters </h4>
-      {% for param in params %}
-        <dl class="row">
-          <dt class="col col-md-2 text-right"> {{ param.name }} ({{ param.type }}) </dt>
-          <dd class="col col-md-9"> {{ param.doc | docstring_display | safe }} </dd>
-        </dl>
-      {% endfor %}
-    </div>
-    <hr />
-  {% endif %}
-  {% if reqheaders and reqheaders|length > 0 %}
-    <div>
-      <h4> Request headers </h4>
-      {% for header in reqheaders %}
-        <dl class="row">
-          <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-          <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
-        </dl>
-      {% endfor %}
-    </div>
-    <hr />
-  {% endif %}
-  {% if input_type %}
-    <div>
-      <h4> Request data </h4>
-      <dl class="row">
-        <dt class="col col-md-2 text-right"> {{ input_type }} </dt>
-        <dd class="col col-md-9">
-          <p>
-            {% if input_type == 'array' and inputs_list == '' %}
-              {{ inputs.0.doc | safe }}
-            {% elif input_type == 'array' and inputs_list != '' %}
-              an array of objects containing the following keys:
-            {% elif input_type == 'octet stream' %}
-              raw data as an octet stream
-            {% elif input_type == 'object' %}
-              an object containing the following keys:
-            {% endif %}
-            {% if inputs_list != '' %}
-              {{ inputs_list | docstring_display | safe }}
-            {% endif %}
-          </p>
-        </dd>
-      </dl>
-    </div>
-    <hr />
-  {% endif %}
-  {% if resheaders and resheaders|length > 0 %}
-    <div>
-      <h4> Response headers </h4>
-      {% for header in resheaders %}
-        <dl class="row">
-          <dt class="col col-md-2 text-right"> {{ header.name }} </dt>
-          <dd class="col col-md-9"> {{ header.doc | docstring_display | safe }} </dd>
-        </dl>
-      {% endfor %}
-    </div>
-    <hr />
-  {% endif %}
-  {% if return_type %}
-    <div>
-      <h4> Returns </h4>
-      <dl class="row">
-        <dt class="col col-md-2 text-right"> {{ return_type }} </dt>
-        <dd class="col col-md-9">
-          <p>
-            {% if return_type == 'array' and returns_list == '' %}
-              {{ returns.0.doc | safe }}
-            {% elif return_type == 'array' and returns_list != '' %}
-              an array of objects containing the following keys:
-            {% elif return_type == 'octet stream' %}
-              raw data as an octet stream
-            {% elif return_type == 'object' %}
-              an object containing the following keys:
-            {% endif %}
-            {% if returns_list != '' %}
-              {{ returns_list | docstring_display | safe }}
-            {% endif %}
-          </p>
-        </dd>
-      </dl>
-    </div>
-    <hr />
-  {% endif %}
-  {% if status_codes and status_codes|length > 0 %}
-    <div>
-      <h4> HTTP status codes </h4>
-      {% for status in status_codes %}
-        <dl class="row">
-          <dt class="col col-md-2 text-right"> {{ status.code }} </dt>
-          <dd class="col col-md-9"> {{ status.doc | docstring_display | safe }} </dd>
-        </dl>
-      {% endfor %}
-    </div>
-    <hr />
-  {% endif %}
-  {% if examples and examples|length > 0 %}
-    <div>
-      <h4> Examples </h4>
-      {% for example in examples %}
-        <dl class="row">
-          <dt class="col col-md-2"></dt>
+          <dt class="col col-md-2 text-right">
+            {{ input_type }}
+          </dt>
           <dd class="col col-md-9">
-            <a href="{{ example }}">{{ example }}</a>
+            <p>
+              {% if input_type == 'array' and inputs_list == '' %}
+                {{ inputs.0.doc | safe }}
+              {% elif input_type == 'array' and inputs_list != '' %}
+                an array of objects containing the following keys:
+              {% elif input_type == 'octet stream' %}
+                raw data as an octet stream
+              {% elif input_type == 'object' %}
+                an object containing the following keys:
+              {% endif %}
+              {% if inputs_list != '' %}{{ inputs_list | docstring_display | safe }}{% endif %}
+            </p>
           </dd>
         </dl>
-      {% endfor %}
-    </div>
-  {% endif %}
-</div>
-
-<script>
-  swh.webapp.initPage('api');
-  swh.webapp.highlightCode(false);
-  // restore Web API links removed by code highlighting
-  setTimeout(function() {
-    $('.hljs-string').each(function(idx, element) {
-      var text = $(element).text();
-      if (text.match(/^"http.*:\/\/.*/)) {
-        $(element).html('<a class="hljs-string" href=' + text + '>' + text + '</a>')
-      }
-    });
-  }, 500);
-</script>
-{% endblock %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if resheaders and resheaders|length > 0 %}
+      <div>
+        <h4>Response headers</h4>
+        {% for header in resheaders %}
+          <dl class="row">
+            <dt class="col col-md-2 text-right">
+              {{ header.name }}
+            </dt>
+            <dd class="col col-md-9">
+              {{ header.doc | docstring_display | safe }}
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if return_type %}
+      <div>
+        <h4>Returns</h4>
+        <dl class="row">
+          <dt class="col col-md-2 text-right">
+            {{ return_type }}
+          </dt>
+          <dd class="col col-md-9">
+            <p>
+              {% if return_type == 'array' and returns_list == '' %}
+                {{ returns.0.doc | safe }}
+              {% elif return_type == 'array' and returns_list != '' %}
+                an array of objects containing the following keys:
+              {% elif return_type == 'octet stream' %}
+                raw data as an octet stream
+              {% elif return_type == 'object' %}
+                an object containing the following keys:
+              {% endif %}
+              {% if returns_list != '' %}{{ returns_list | docstring_display | safe }}{% endif %}
+            </p>
+          </dd>
+        </dl>
+      </div>
+      <hr />
+    {% endif %}
+    {% if status_codes and status_codes|length > 0 %}
+      <div>
+        <h4>HTTP status codes</h4>
+        {% for status in status_codes %}
+          <dl class="row">
+            <dt class="col col-md-2 text-right">
+              {{ status.code }}
+            </dt>
+            <dd class="col col-md-9">
+              {{ status.doc | docstring_display | safe }}
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+      <hr />
+    {% endif %}
+    {% if examples and examples|length > 0 %}
+      <div>
+        <h4>Examples</h4>
+        {% for example in examples %}
+          <dl class="row">
+            <dt class="col col-md-2">
+            </dt>
+            <dd class="col col-md-9">
+              <a href="{{ example }}">{{ example }}</a>
+            </dd>
+          </dl>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  <script>
+    swh.webapp.initPage('api');
+    swh.webapp.highlightCode(false);
+    // restore Web API links removed by code highlighting
+    setTimeout(function() {
+      $('.hljs-string').each(function(idx, element) {
+        var text = $(element).text();
+        if (text.match(/^"http.*:\/\/.*/)) {
+          $(element).html('<a class="hljs-string" href=' + text + '>' + text + '</a>')
+        }
+      });
+    }, 500);
+  </script>
+{% endblock content %}
