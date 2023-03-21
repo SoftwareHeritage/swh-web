@@ -13,11 +13,18 @@ from swh.web.utils.swh_templatetags import (
 )
 
 
-def test_urlize_http_link():
-    link = "https://example.com/api/1/abc/"
-    expected_content = f'<a href="{link}">{link}</a>'
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://example.com/api/1/abc/",
+        "https://anonymous@example.com/api/1/abc/",
+        "http://anonymous:anonymous@example.com/api/1/abc/",
+    ],
+)
+def test_urlize_http_link(url):
+    expected_content = f'<a href="{url}">{url}</a>'
 
-    assert urlize_links_and_mails(link) == expected_content
+    assert urlize_links_and_mails(url) == expected_content
 
 
 def test_urlize_email():

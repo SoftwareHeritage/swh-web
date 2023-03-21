@@ -40,7 +40,9 @@ def urlize_links_and_mails(text):
     """
     if 'href="' not in text:
         text = re.sub(r"(http.*)", r'<a href="\1">\1</a>', text)
-        return re.sub(r'([^ <>"]+@[^ <>"]+)', r'<a href="mailto:\1">\1</a>', text)
+        for mail in re.findall(r'([^ <>"]+@[^ <>"]+)', text):
+            if not mail.startswith(("http://", "https://")):
+                text = text.replace(mail, f'<a href="mailto:{mail}">{mail}</a>')
 
     return text
 
