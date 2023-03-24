@@ -6,35 +6,28 @@ See top-level LICENSE file for more information
 {% endcomment %}
 
 {% with status_url="https://status.softwareheritage.org/pages/maintenance/578e5eddcdc0cc7951000520/63c52cd323b01e05870da503" %}
-<div class="content">
-  <div class="container-fluid">
-    <div class="row align-items-center justify-content-end">
-      <div class="col-12 text-center align-middle pr-3">
-        {% if lang == "en" %}
-          <a target="_blank" rel="noopener noreferrer"
-              href="{{ status_url }}">
-              Downtime expected for SWH services</a>
-          <div class="d-none d-md-inline-block">
-            from Tuesday 2023-01-25 09:00 to Wednesday 2023-01-26 18:00 UTC+0100
-          </div>
-        {% elif lang == "fr" %}
-          <a target="_blank" rel="noopener noreferrer"
-              href="{{ status_url }}">
-              Interruption des services SWH</a>
-          <div class="d-none d-md-inline-block">
-            du mardi 25/01/2023 09:00 au mercredi 26/01/2023 18:00 UTC+0100
-          </div>
-        {% elif lang == "es" %}
-          <a target="_blank" rel="noopener noreferrer"
-              href="{{ status_url }}">
-              Interrupción de servicios SWH</a>
-          <div class="d-none d-md-inline-block">
-            martes 25/01/2023 09:00 a miércoles 26/01/2023 18:00 UTC+0100
-          </div>
-        {% endif %}
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row align-items-center justify-content-end">
+        <div class="col-12 text-center align-middle pr-3">
+          {% if lang == "en" %}
+            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Downtime expected for SWH services</a>
+            <div class="d-none d-md-inline-block">
+              from Tuesday 2023-01-25 09:00 to Wednesday 2023-01-26 18:00 UTC+0100
+            </div>
+          {% elif lang == "fr" %}
+            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Interruption des services SWH</a>
+            <div class="d-none d-md-inline-block">
+              du mardi 25/01/2023 09:00 au mercredi 26/01/2023 18:00 UTC+0100
+            </div>
+          {% elif lang == "es" %}
+            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Interrupción de servicios SWH</a>
+            <div class="d-none d-md-inline-block">
+              martes 25/01/2023 09:00 a miércoles 26/01/2023 18:00 UTC+0100
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
-</div>
 {% endwith %}
-

@@ -193,10 +193,8 @@ function instrumentXHR() {
 
   fill(xhrproto, 'open', function (originalOpen) {
     return function ( ...args) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const xhr = this;
       const url = args[1];
-      const xhrInfo = (xhr.__sentry_xhr__ = {
+      const xhrInfo = (this.__sentry_xhr__ = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         method: isString(args[0]) ? args[0].toUpperCase() : args[0],
         url: args[1],
@@ -205,40 +203,47 @@ function instrumentXHR() {
       // if Sentry key appears in URL, don't capture it as a request
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (isString(url) && xhrInfo.method === 'POST' && url.match(/sentry_key/)) {
-        xhr.__sentry_own_request__ = true;
+        this.__sentry_own_request__ = true;
       }
 
-      const onreadystatechangeHandler = function () {
-        if (xhr.readyState === 4) {
+      const onreadystatechangeHandler = () => {
+        // For whatever reason, this is not the same instance here as from the outer method
+        const xhrInfo = this.__sentry_xhr__;
+
+        if (!xhrInfo) {
+          return;
+        }
+
+        if (this.readyState === 4) {
           try {
             // touching statusCode in some platforms throws
             // an exception
-            xhrInfo.status_code = xhr.status;
+            xhrInfo.status_code = this.status;
           } catch (e) {
             /* do nothing */
           }
 
           triggerHandlers('xhr', {
-            args,
+            args: args ,
             endTimestamp: Date.now(),
             startTimestamp: Date.now(),
-            xhr,
-          });
+            xhr: this,
+          } );
         }
       };
 
-      if ('onreadystatechange' in xhr && typeof xhr.onreadystatechange === 'function') {
-        fill(xhr, 'onreadystatechange', function (original) {
-          return function (...readyStateArgs) {
+      if ('onreadystatechange' in this && typeof this.onreadystatechange === 'function') {
+        fill(this, 'onreadystatechange', function (original) {
+          return function ( ...readyStateArgs) {
             onreadystatechangeHandler();
-            return original.apply(xhr, readyStateArgs);
+            return original.apply(this, readyStateArgs);
           };
         });
       } else {
-        xhr.addEventListener('readystatechange', onreadystatechangeHandler);
+        this.addEventListener('readystatechange', onreadystatechangeHandler);
       }
 
-      return originalOpen.apply(xhr, args);
+      return originalOpen.apply(this, args);
     };
   });
 

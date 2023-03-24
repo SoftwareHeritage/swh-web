@@ -37,7 +37,8 @@ def test_layout_with_staging_ribbon(client):
         server_name=random.choice(SWH_WEB_STAGING_SERVER_NAMES),
     )
     assert_contains(resp, "swh-corner-ribbon")
-    assert_contains(resp, f"Staging<br/>v{swh_web_version}")
+    assert_contains(resp, "Staging")
+    assert_contains(resp, f"v{swh_web_version}")
 
 
 def test_layout_with_development_ribbon(client):
@@ -49,7 +50,8 @@ def test_layout_with_development_ribbon(client):
         server_name="localhost",
     )
     assert_contains(resp, "swh-corner-ribbon")
-    assert_contains(resp, f"Development<br/>v{swh_web_version.split('+')[0]}")
+    assert_contains(resp, "Development")
+    assert_contains(resp, f"v{swh_web_version.split('+')[0]}")
 
 
 def test_layout_with_oidc_auth_enabled(client):

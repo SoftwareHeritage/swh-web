@@ -375,3 +375,7 @@ export async function validateSWHIDInput(swhidInputElt) {
 export function isUserLoggedIn() {
   return JSON.parse($('#swh_user_logged_in').text());
 }
+
+export function isStaffUser() {
+  return JSON.parse($('#swh_user_is_staff').text());
+}

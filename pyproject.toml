@@ -12,3 +12,10 @@ line_length = 88
 force_sort_within_sections = true
 known_django = 'django,rest_framework'
 sections = 'FUTURE,STDLIB,THIRDPARTY,DJANGO,FIRSTPARTY,LOCALFOLDER'
+
+[tool.djlint]
+# https://www.djlint.com/docs/linter/#rules
+ignore = "H006,H020,H021,H023,H029,H030,H031"
+indent = 2
+blank_line_after_tag = "endcomment,extends,load,endblock"
+max_line_length = 100

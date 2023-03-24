@@ -4,8 +4,6 @@ import { WINDOW } from '../helpers.js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-/** JSDoc */
-
 /** maxStringLength gets capped to prevent 100 breadcrumbs exceeding 1MB event payload size */
 const MAX_ALLOWED_STRING_LENGTH = 1024;
 
@@ -96,9 +94,7 @@ class Breadcrumbs  {
  * A HOC that creaes a function that creates breadcrumbs from DOM API calls.
  * This is a HOC so that we get access to dom options in the closure.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _domBreadcrumb(dom) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function _innerDomBreadcrumb(handlerData) {
     let target;
     let keyAttrs = typeof dom === 'object' ? dom.serializeAttribute : undefined;
@@ -119,9 +115,10 @@ function _domBreadcrumb(dom) {
 
     // Accessing event.target can throw (see getsentry/raven-js#838, #768)
     try {
-      target = handlerData.event.target
-        ? htmlTreeAsString(handlerData.event.target , { keyAttrs, maxStringLength })
-        : htmlTreeAsString(handlerData.event , { keyAttrs, maxStringLength });
+      const event = handlerData.event ;
+      target = _isEvent(event)
+        ? htmlTreeAsString(event.target, { keyAttrs, maxStringLength })
+        : htmlTreeAsString(event, { keyAttrs, maxStringLength });
     } catch (e) {
       target = '<unknown>';
     }
@@ -149,7 +146,6 @@ function _domBreadcrumb(dom) {
 /**
  * Creates breadcrumbs from console API calls
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _consoleBreadcrumb(handlerData) {
   // This is a hack to fix a Vue3-specific bug that causes an infinite loop of
   // console warnings. This happens when a Vue template is rendered with
@@ -192,43 +188,47 @@ function _consoleBreadcrumb(handlerData) {
 /**
  * Creates breadcrumbs from XHR API calls
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _xhrBreadcrumb(handlerData) {
-  if (handlerData.endTimestamp) {
-    // We only capture complete, non-sentry requests
-    if (handlerData.xhr.__sentry_own_request__) {
-      return;
-    }
+  const { startTimestamp, endTimestamp } = handlerData;
 
-    const { method, url, status_code, body } = handlerData.xhr.__sentry_xhr__ || {};
-
-    getCurrentHub().addBreadcrumb(
-      {
-        category: 'xhr',
-        data: {
-          method,
-          url,
-          status_code,
-        },
-        type: 'http',
-      },
-      {
-        xhr: handlerData.xhr,
-        input: body,
-      },
-    );
-
+  // We only capture complete, non-sentry requests
+  if (!startTimestamp || !endTimestamp || !handlerData.xhr.__sentry_xhr__) {
     return;
   }
+
+  const { method, url, status_code, body } = handlerData.xhr.__sentry_xhr__;
+
+  const data = {
+    method,
+    url,
+    status_code,
+  };
+
+  const hint = {
+    xhr: handlerData.xhr,
+    input: body,
+    startTimestamp,
+    endTimestamp,
+  };
+
+  getCurrentHub().addBreadcrumb(
+    {
+      category: 'xhr',
+      data,
+      type: 'http',
+    },
+    hint,
+  );
 }
 
 /**
  * Creates breadcrumbs from fetch API calls
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _fetchBreadcrumb(handlerData) {
+  const { startTimestamp, endTimestamp } = handlerData;
+
   // We only capture complete fetch requests
-  if (!handlerData.endTimestamp) {
+  if (!endTimestamp) {
     return;
   }
 
@@ -238,32 +238,41 @@ function _fetchBreadcrumb(handlerData) {
   }
 
   if (handlerData.error) {
+    const data = handlerData.fetchData;
+    const hint = {
+      data: handlerData.error,
+      input: handlerData.args,
+      startTimestamp,
+      endTimestamp,
+    };
+
     getCurrentHub().addBreadcrumb(
       {
         category: 'fetch',
-        data: handlerData.fetchData,
+        data,
         level: 'error',
         type: 'http',
       },
-      {
-        data: handlerData.error,
-        input: handlerData.args,
-      },
+      hint,
     );
   } else {
+    const data = {
+      ...handlerData.fetchData,
+      status_code: handlerData.response && handlerData.response.status,
+    };
+    const hint = {
+      input: handlerData.args,
+      response: handlerData.response,
+      startTimestamp,
+      endTimestamp,
+    };
     getCurrentHub().addBreadcrumb(
       {
         category: 'fetch',
-        data: {
-          ...handlerData.fetchData,
-          status_code: handlerData.response.status,
-        },
+        data,
         type: 'http',
       },
-      {
-        input: handlerData.args,
-        response: handlerData.response,
-      },
+      hint,
     );
   }
 }
@@ -271,7 +280,6 @@ function _fetchBreadcrumb(handlerData) {
 /**
  * Creates breadcrumbs from history API calls
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _historyBreadcrumb(handlerData) {
   let from = handlerData.from;
   let to = handlerData.to;
@@ -300,6 +308,10 @@ function _historyBreadcrumb(handlerData) {
       to,
     },
   });
+}
+
+function _isEvent(event) {
+  return event && !!(event ).target;
 }
 
 export { BREADCRUMB_INTEGRATION_ID, Breadcrumbs };

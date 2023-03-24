@@ -1,7 +1,7 @@
 {% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2022  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -12,86 +12,83 @@ See top-level LICENSE file for more information
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-{{ block.super }}
-{% render_bundle 'origin_visits' %}
-{% render_bundle 'save_code_now' %}
-{% endblock %}
+  {{ block.super }}
+  {% render_bundle 'origin_visits' %}
+  {% render_bundle 'save_code_now' %}
+{% endblock header %}
 
 {% block swh-browse-content %}
-
-<div class="p-3">
-
-  <h4>Overview</h4>
-
-  <div class="float-right">
-    {% include "includes/take-new-snapshot.html" %}
+  <div class="p-3">
+    <h4>Overview</h4>
+    <div class="float-right">{% include "includes/take-new-snapshot.html" %}</div>
+    <ul>
+      <li class="d-inline-block">
+        <b>Total number of visits: </b>{{ origin_visits|length }}
+        <i class="mdi mdi-fw" aria-hidden="true"></i>
+      </li>
+      <li class="d-inline-block">
+        <b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span>
+        <i class="mdi mdi-fw" aria-hidden="true"></i>
+      </li>
+      <li class="d-inline-block">
+        <b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span>
+        <i class="mdi mdi-fw" aria-hidden="true"></i>
+      </li>
+      <li class="d-inline-block">
+        <b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span>
+        <i class="mdi mdi-fw" aria-hidden="true"></i>
+      </li>
+    </ul>
+    <h4>History</h4>
+    <form class="text-center">
+      <div class="custom-control custom-radio custom-control-inline">
+        <input class="custom-control-input"
+               type="radio"
+               id="swh-all-visits"
+               name="swh-visits"
+               value="option3"
+               checked/>
+        <label class="custom-control-label font-weight-normal"
+               for="swh-all-visits"
+               onclick="swh.origin_visits.showAllVisits(event)">
+          Show all visits
+        </label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input class="custom-control-input"
+               type="radio"
+               id="swh-full-visits-different-snapshots"
+               name="swh-visits"
+               value="option1"/>
+        <label class="custom-control-label font-weight-normal"
+               for="swh-full-visits-different-snapshots"
+               onclick="swh.origin_visits.showFullVisitsDifferentSnapshots(event)">
+          Show full visits with different snapshots
+        </label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input class="custom-control-input"
+               type="radio"
+               id="swh-full-visits"
+               name="swh-visits"
+               value="option2"/>
+        <label class="custom-control-label font-weight-normal"
+               for="swh-full-visits"
+               onclick="swh.origin_visits.showFullVisits(event)">
+          Show all full visits
+        </label>
+      </div>
+    </form>
+    <h5>Timeline</h5>
+    <div id="swh-visits-timeline" class="d3-wrapper"></div>
+    <h5>Calendar</h5>
+    <div id="swh-visits-calendar"></div>
+    <h5>List</h5>
+    <div id="swh-visits-list"></div>
   </div>
-
-  <ul>
-    <li class="d-inline-block">
-      <b>Total number of visits: </b>{{ origin_visits|length }}
-      <i class="mdi mdi-fw" aria-hidden="true"></i>
-    </li>
-    <li class="d-inline-block">
-      <b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span>
-      <i class="mdi mdi-fw" aria-hidden="true"></i>
-    </li>
-    <li class="d-inline-block">
-      <b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span>
-      <i class="mdi mdi-fw" aria-hidden="true"></i>
-    </li>
-    <li class="d-inline-block">
-      <b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span>
-      <i class="mdi mdi-fw" aria-hidden="true"></i>
-    </li>
-  </ul>
-
-  <h4>History</h4>
-
-  <form class="text-center">
-    <div class="custom-control custom-radio custom-control-inline">
-      <input class="custom-control-input" type="radio" id="swh-all-visits" name="swh-visits"
-             value="option3" checked>
-      <label class="custom-control-label font-weight-normal" for="swh-all-visits"
-             onclick="swh.origin_visits.showAllVisits(event)">
-        Show all visits
-      </label>
-    </div>
-    <div class="custom-control custom-radio custom-control-inline">
-      <input class="custom-control-input" type="radio" id="swh-full-visits-different-snapshots"
-             name="swh-visits" value="option1">
-      <label class="custom-control-label font-weight-normal" for="swh-full-visits-different-snapshots"
-             onclick="swh.origin_visits.showFullVisitsDifferentSnapshots(event)">
-        Show full visits with different snapshots
-      </label>
-    </div>
-    <div class="custom-control custom-radio custom-control-inline">
-      <input class="custom-control-input" type="radio" id="swh-full-visits" name="swh-visits"
-             value="option2">
-      <label class="custom-control-label font-weight-normal" for="swh-full-visits"
-             onclick="swh.origin_visits.showFullVisits(event)">
-        Show all full visits
-      </label>
-    </div>
-  </form>
-
-  <h5>Timeline</h5>
-
-  <div id="swh-visits-timeline" class="d3-wrapper"></div>
-
-  <h5>Calendar</h5>
-
-  <div id="swh-visits-calendar"></div>
-
-  <h5>List</h5>
-
-  <div id="swh-visits-list"></div>
-
-</div>
-
-<script>
-  // all origin visits
-  var visits = {{ origin_visits|jsonify }};
-  swh.origin_visits.initVisitsReporting(visits);
-</script>
-{% endblock %}
+  <script>
+    // all origin visits
+    var visits = {{ origin_visits|jsonify }};
+    swh.origin_visits.initVisitsReporting(visits);
+  </script>
+{% endblock swh-browse-content %}

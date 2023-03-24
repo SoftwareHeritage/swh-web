@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2017-2022  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -10,39 +10,35 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 {% load render_bundle from webpack_loader %}
 
-{% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
+{% block title %}
+  {{ heading }} &ndash; Software Heritage archive
+{% endblock title %}
 
 {% block header %}
-{% render_bundle 'badges' %}
-{% render_bundle 'browse' %}
-{% render_bundle 'vault' %}
-{% render_bundle 'save_code_now' %}
-{% endblock %}
+  {% render_bundle 'badges' %}
+  {% render_bundle 'browse' %}
+  {% render_bundle 'vault' %}
+  {% render_bundle 'save_code_now' %}
+{% endblock header %}
 
 {% block navbar-content %}
-
-<h4>
-  Browse the archive
-</h4>
-
-{% endblock %}
+  <h4>Browse the archive</h4>
+{% endblock navbar-content %}
 
 {% block content %}
-{% block browse-content %}
+  {% block browse-content %}
+    {% block swh-browse-before-content %}
+      {% if snapshot_context %}
+        {% include "./includes/snapshot-context.html" %}
+      {% endif %}
+    {% endblock swh-browse-before-content %}
 
-{% block swh-browse-before-content %}
-{% if snapshot_context %}
-  {% include "./includes/snapshot-context.html" %}
-{% endif %}
-{% endblock %}
+    {% block swh-browse-content %}
+    {% endblock swh-browse-content %}
 
-{% block swh-browse-content %}{% endblock %}
+    {% block swh-browse-after-content %}
+    {% endblock swh-browse-after-content %}
 
-{% block swh-browse-after-content %}{% endblock %}
-
-<script>
-  swh.webapp.initPage('browse');
-</script>
-
-{% endblock %}
-{% endblock %}
+    <script>swh.webapp.initPage('browse');</script>
+  {% endblock browse-content %}
+{% endblock content %}

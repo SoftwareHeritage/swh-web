@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2022  The Software Heritage developers
+Copyright (C) 2022-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,15 +11,17 @@ See top-level LICENSE file for more information
 {% load render_bundle from webpack_loader %}
 
 {% block header %}
-{{ block.super }}
-{% render_bundle 'mailmap' %}
-{% endblock %}
+  {{ block.super }}
+  {% render_bundle 'mailmap' %}
+{% endblock header %}
 
-{% block title %} Mailmap administration &ndash; Software Heritage archive {% endblock %}
+{% block title %}
+  Mailmap administration &ndash; Software Heritage archive
+{% endblock title %}
 
 {% block navbar-content %}
-<h4>Mailmap administration</h4>
-{% endblock %}
+  <h4>Mailmap administration</h4>
+{% endblock navbar-content %}
 
 {% block content %}
   <p class="mt-3">
@@ -27,12 +29,16 @@ See top-level LICENSE file for more information
     on their emails.
   </p>
   <div class="float-right">
-    <button class="btn btn-default" id="swh-add-new-mailmap" onclick="swh.mailmap.addNewMailmap()">
+    <button class="btn btn-default"
+            id="swh-add-new-mailmap"
+            onclick="swh.mailmap.addNewMailmap()">
       Add new mailmap
     </button>
   </div>
   <div style="padding-top: 3rem;">
-    <table id="swh-mailmaps-table" class="table swh-table swh-table-striped" width="100%">
+    <table id="swh-mailmaps-table"
+           class="table swh-table swh-table-striped"
+           width="100%">
       <thead>
         <tr>
           <th title="Email identifying author in the archive">Email</th>

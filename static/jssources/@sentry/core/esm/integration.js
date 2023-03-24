@@ -29,7 +29,7 @@ function filterDuplicates(integrations) {
     integrationsByName[name] = currentInstance;
   });
 
-  return Object.values(integrationsByName);
+  return Object.keys(integrationsByName).map(k => integrationsByName[k]);
 }
 
 /** Gets integrations to install */
@@ -58,7 +58,7 @@ function getIntegrationsToSetup(options) {
   // `beforeSendTransaction`. It therefore has to run after all other integrations, so that the changes of all event
   // processors will be reflected in the printed values. For lack of a more elegant way to guarantee that, we therefore
   // locate it and, assuming it exists, pop it out of its current spot and shove it onto the end of the array.
-  const debugIndex = finalIntegrations.findIndex(integration => integration.name === 'Debug');
+  const debugIndex = findIndex(finalIntegrations, integration => integration.name === 'Debug');
   if (debugIndex !== -1) {
     const [debugInstance] = finalIntegrations.splice(debugIndex, 1);
     finalIntegrations.push(debugInstance);
@@ -95,6 +95,17 @@ function setupIntegration(integration, integrationIndex) {
     installedIntegrations.push(integration.name);
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
   }
+}
+
+// Polyfill for Array.findIndex(), which is not supported in ES5
+function findIndex(arr, callback) {
+  for (let i = 0; i < arr.length; i++) {
+    if (callback(arr[i]) === true) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
 export { getIntegrationsToSetup, installedIntegrations, setupIntegration, setupIntegrations };

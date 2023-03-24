@@ -16,6 +16,7 @@ from swh.web.save_code_now.admin_views import (
     admin_origin_save_request_reject,
     admin_origin_save_request_remove,
     admin_origin_save_requests,
+    admin_origin_save_requests_csv_dump,
     admin_origin_save_unauthorized_urls_list,
 )
 
@@ -45,6 +46,11 @@ urlpatterns = [
         r"^admin/origin/save/requests/$",
         admin_origin_save_requests,
         name="admin-origin-save-requests",
+    ),
+    url(
+        r"^admin/origin/save/requests/csv/$",
+        admin_origin_save_requests_csv_dump,
+        name="admin-origin-save-requests-csv",
     ),
     url(
         r"^admin/origin/save/filters/$",
