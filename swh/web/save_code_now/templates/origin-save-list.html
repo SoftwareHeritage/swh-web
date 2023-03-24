@@ -1,7 +1,7 @@
 {% extends "./origin-save.html" %}
 
 {% comment %}
-Copyright (C) 2018-2021  The Software Heritage developers
+Copyright (C) 2018-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -9,7 +9,9 @@ See top-level LICENSE file for more information
 
 {% block tab_content %}
   <div class="tab-pane active mt-3">
-    <table id="swh-origin-save-requests" class="table swh-table swh-table-striped" width="100%">
+    <table id="swh-origin-save-requests"
+           class="table swh-table swh-table-striped"
+           width="100%">
       <thead>
         <tr>
           <th data-priority="3">Date</th>
@@ -24,4 +26,4 @@ See top-level LICENSE file for more information
     </table>
     <p id="swh-origin-save-request-list-error"></p>
   </div>
-{% endblock %}
+{% endblock tab_content %}

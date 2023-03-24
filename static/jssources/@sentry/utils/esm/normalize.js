@@ -90,8 +90,17 @@ function visit(
     return value ;
   }
 
+  // Do not normalize objects that we know have already been normalized. As a general rule, the
+  // "__sentry_skip_normalization__" property should only be used sparingly and only should only be set on objects that
+  // have already been normalized.
+  let overriddenDepth = depth;
+
+  if (typeof (value )['__sentry_override_normalization_depth__'] === 'number') {
+    overriddenDepth = (value )['__sentry_override_normalization_depth__'] ;
+  }
+
   // We're also done if we've reached the max depth
-  if (depth === 0) {
+  if (overriddenDepth === 0) {
     // At this point we know `serialized` is a string of the form `"[object XXXX]"`. Clean it up so it's just `"[XXXX]"`.
     return stringified.replace('object ', '');
   }
@@ -107,7 +116,7 @@ function visit(
     try {
       const jsonValue = valueWithToJSON.toJSON();
       // We need to normalize the return value of `.toJSON()` in case it has circular references
-      return visit('', jsonValue, depth - 1, maxProperties, memo);
+      return visit('', jsonValue, overriddenDepth - 1, maxProperties, memo);
     } catch (err) {
       // pass (The built-in `toJSON` failed, but we can still try to do it ourselves)
     }
@@ -136,7 +145,7 @@ function visit(
 
     // Recursively visit all the child nodes
     const visitValue = visitable[visitKey];
-    normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memo);
+    normalized[visitKey] = visit(visitKey, visitValue, overriddenDepth - 1, maxProperties, memo);
 
     numAdded++;
   }

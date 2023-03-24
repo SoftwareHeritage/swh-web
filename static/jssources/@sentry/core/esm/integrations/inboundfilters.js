@@ -96,7 +96,8 @@ function _shouldDropEvent(event, options) {
 }
 
 function _isIgnoredError(event, ignoreErrors) {
-  if (!ignoreErrors || !ignoreErrors.length) {
+  // If event.type, this is not an error
+  if (event.type || !ignoreErrors || !ignoreErrors.length) {
     return false;
   }
 

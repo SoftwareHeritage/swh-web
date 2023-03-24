@@ -1,189 +1,174 @@
-{% extends "./layout.html" %}
+{% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
 {% block navbar-content %}
-<h4>How to browse the archive ?</h4>
-{% endblock %}
+  <h4>How to browse the archive ?</h4>
+{% endblock navbar-content %}
 
 {% block browse-content %}
-<ul class="list-inline">
-  <li class="list-inline-item">
-    <a href="#overview">Overview</a>
-  </li>
-  <li class="list-inline-item">
-    <a href="#uri-scheme">URI scheme</a>
-  </li>
-  <li class="list-inline-item">
-    <a href="#search-origins">Search software origins to browse</a>
-  </li>
-</ul>
-
-<h4 id="overview">Overview</h4>
-
-<p>
-  This web application aims to provide HTML views to easily navigate in the Software Heritage archive. This is an ongoing development
-  and new features and improvements will be progressively added over time.
-</p>
-
-<h4 id="uri-scheme">URI scheme</h4>
-
-<p>
-  The current URI scheme of that web application is described below and depends on the type of Software Heritage object to
-  browse. Its exhaustive documentation can be consulted from the official
-  <a href="https://docs.softwareheritage.org/devel/swh-web/uri-scheme-browse.html">
-    Software Heritage development documentation
-  </a>
-</p>
-
-<h5>Context-independent browsing</h5>
-
-<p>
-  Context-independent URLs provide information about objects (e.g., revisions, directories, contents, persons, …), independently
-  of the contexts where they have been found (e.g., specific software origins, branches, commits, …).
-</p>
-
-<p>
-  Below are some examples of endpoints used to just render the corresponding information for user consumption:
-</p>
-
-<ul>
-  <li>
-    Display a
-    <b>content</b> from its checksum:
-    <a href="{% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}">
-      {% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}
+  <ul class="list-inline">
+    <li class="list-inline-item">
+      <a href="#overview">Overview</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#uri-scheme">URI scheme</a>
+    </li>
+    <li class="list-inline-item">
+      <a href="#search-origins">Search software origins to browse</a>
+    </li>
+  </ul>
+  <h4 id="overview">Overview</h4>
+  <p>
+    This web application aims to provide HTML views to easily navigate in the Software Heritage archive.
+    This is an ongoing developmentand new features and improvements will be progressively added over time.
+  </p>
+  <h4 id="uri-scheme">URI scheme</h4>
+  <p>
+    The current URI scheme of that web application is described below and depends on the type of Software
+    Heritage object to browse. Its exhaustive documentation can be consulted from the official
+    <a href="https://docs.softwareheritage.org/devel/swh-web/uri-scheme-browse.html">
+      Software Heritage development documentation
     </a>
-  </li>
-  <li>
-    Display a
-    <b>directory</b> from its
-    <i>sha1_git</i> identifier:
-
-    <a href="{% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}">
-      {% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}
-    </a>
-    <br/> (see the
-    <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.directory_git_object">documentation</a> to get more details about how it is computed)
-  </li>
-  <li>
-    Display information about a
-    <b>revision</b> from its
-    <i>sha1_git</i> identifier:
-
-    <a href="{% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}">
-      {% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}
-    </a>
-    <br/> (see the
-    <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.revision_git_object">documentation</a> to get more details about how it is computed)
-  </li>
-  <li>
-    Display information about a
-    <b>snapshot</b> from its
-    <i>sha1</i> identifier:
-
-    <a href="{% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}">
-      {% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}
-    </a>
-    <br/> (see the
-    <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.snapshot_git_object">documentation</a> to get more details about how it is computed)
-  </li>
-</ul>
-
-<p>
-  Where hyperlinks are created when browsing these kind of endpoints, they always point to other context-independent browsing
-  URLs.
-</p>
-
-<h5>Context-dependent browsing</h5>
-
-<p>
-  Context-dependent URLs provide information about objects, limited to specific contexts where the objects have been found.
-</p>
-
-<p>
-  Currently, browsing the Software Heritage objects in the context of an
-  <b>origin</b> is available. Below are some examples of such endpoints:
-</p>
-
-<ul>
-  <li>
-    Display information about the visits of a software
-    <b>origin</b>:
-    <ul>
-
-      <li>
-        <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux">
-          {% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux
-        </a>
-      </li>
-
-      <li>
-        <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython">
-          {% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython
-        </a>
-      </li>
-    </ul>
-  </li>
-  <li>
-    Display the latest archived
-    <b>snapshot</b> for a software
-    <b>origin</b>:
-    <ul>
-
-      <li>
-        <a href="{% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux">
-          {% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux
-        </a>
-      </li>
-
-      <li>
-        <a href="{% url 'browse-origin' %}?origin_url=https://github.com/python/cpython">
-          {% url 'browse-origin' %}?origin_url=https://github.com/python/cpython
-        </a>
-      </li>
-    </ul>
-  </li>
-  <li>
-    Display a
-    <b>content</b> from an
-    <b>origin</b>:
-    <a href="{% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&path=git.c">
-      {% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&amp;path=git.c
-    </a>
-  </li>
-  <li>
-    Display a
-    <b>directory</b> from an
-    <b>origin</b>:
-
-    <a href="{% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&path=net/ethernet">
-      {% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&amp;path=net/ethernet
-    </a>
-  </li>
-  <li>
-    Display the
-    <b>revision history</b> (aka the commit log) from an
-    <b>origin</b>:
-
-    <a href="{% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake">
-      {% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake
-    </a>
-  </li>
-</ul>
-
-<h4 id="search-origins">Search software origins to browse</h4>
-
-In order to facilitate the browsing of the archive and generate relevant entry points to it, a
-<a href="{% url 'browse-search' %}">search interface</a> is available. Currently, it enables to search software origins from the URLs they were retrieved
-from. More search criteria will be added in the future.
-
-<script>
-  swh.webapp.initPage('help');
-</script>
-{% endblock %}
+  </p>
+  <h5>Context-independent browsing</h5>
+  <p>
+    Context-independent URLs provide information about objects (e.g., revisions, directories, contents,
+    persons, …), independently of the contexts where they have been found (e.g., specific software origins,
+    branches, commits, …).
+  </p>
+  <p>
+    Below are some examples of endpoints used to just render the corresponding information for user consumption:
+  </p>
+  <ul>
+    <li>
+      Display a
+      <b>content</b> from its checksum:
+      <a href="{% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}">
+        {% url 'browse-content' 'sha1:4dfc4478b1d5f7388b298fdfc06802485bdeae0c' %}
+      </a>
+    </li>
+    <li>
+      Display a
+      <b>directory</b> from its
+      <i>sha1_git</i> identifier:
+      <a href="{% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}">
+        {% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}
+      </a>
+      <br/>
+      (see the
+      <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.directory_git_object">
+        documentation
+      </a> to get more details about how it is computed)
+    </li>
+    <li>
+      Display information about a
+      <b>revision</b> from its
+      <i>sha1_git</i> identifier:
+      <a href="{% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}">
+        {% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}
+      </a>
+      <br/>
+      (see the
+      <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.revision_git_object">
+        documentation
+      </a> to get more details about how it is computed)
+    </li>
+    <li>
+      Display information about a
+      <b>snapshot</b> from its
+      <i>sha1</i> identifier:
+      <a href="{% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}">
+        {% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}
+      </a>
+      <br/>
+      (see the
+      <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.snapshot_git_object">
+        documentation
+      </a>to get more details about how it is computed)
+    </li>
+  </ul>
+  <p>
+    Where hyperlinks are created when browsing these kind of endpoints, they always point to other context-independent browsing
+    URLs.
+  </p>
+  <h5>Context-dependent browsing</h5>
+  <p>
+    Context-dependent URLs provide information about objects, limited to specific contexts where the objects have been found.
+  </p>
+  <p>
+    Currently, browsing the Software Heritage objects in the context of an
+    <b>origin</b> is available. Below are some examples of such endpoints:
+  </p>
+  <ul>
+    <li>
+      Display information about the visits of a software
+      <b>origin</b>:
+      <ul>
+        <li>
+          <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux">
+            {% url 'browse-origin-visits' %}?origin_url=https://github.com/torvalds/linux
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython">
+            {% url 'browse-origin-visits' %}?origin_url=https://github.com/python/cpython
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Display the latest archived
+      <b>snapshot</b> for a software
+      <b>origin</b>:
+      <ul>
+        <li>
+          <a href="{% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux">
+            {% url 'browse-origin' %}?origin_url=https://github.com/torvalds/linux
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'browse-origin' %}?origin_url=https://github.com/python/cpython">
+            {% url 'browse-origin' %}?origin_url=https://github.com/python/cpython
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Display a
+      <b>content</b> from an
+      <b>origin</b>:
+      <a href="{% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&path=git.c">
+        {% url 'browse-origin-content' %}?origin_url=https://github.com/git/git&amp;path=git.c
+      </a>
+    </li>
+    <li>
+      Display a
+      <b>directory</b> from an
+      <b>origin</b>:
+      <a href="{% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&path=net/ethernet">
+        {% url 'browse-origin-directory' %}?origin_url=https://github.com/torvalds/linux&amp;path=net/ethernet
+      </a>
+    </li>
+    <li>
+      Display the
+      <b>revision history</b> (aka the commit log) from an
+      <b>origin</b>:
+      <a href="{% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake">
+        {% url 'browse-origin-log' %}?origin_url=https://github.com/Kitware/CMake
+      </a>
+    </li>
+  </ul>
+  <h4 id="search-origins">Search software origins to browse</h4>
+  In order to facilitate the browsing of the archive and generate relevant entry points to it, a
+  <a href="{% url 'browse-search' %}">search interface</a> is available. Currently, it enables to search software
+  origins from the URLs they were retrieved from. More search criteria will be added in the future.
+  <script>
+    swh.webapp.initPage('help');
+  </script>
+{% endblock browse-content %}

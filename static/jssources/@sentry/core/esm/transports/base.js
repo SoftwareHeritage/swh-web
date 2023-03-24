@@ -16,7 +16,6 @@ function createTransport(
   ),
 ) {
   let rateLimits = {};
-
   const flush = (timeout) => buffer.drain(timeout);
 
   function send(envelope) {
@@ -79,6 +78,10 @@ function createTransport(
       },
     );
   }
+
+  // We use this to identifify if the transport is the base transport
+  // TODO (v8): Remove this again as we'll no longer need it
+  send.__sentry__baseTransport__ = true;
 
   return {
     send,

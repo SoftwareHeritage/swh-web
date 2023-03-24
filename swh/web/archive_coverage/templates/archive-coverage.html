@@ -1,21 +1,21 @@
 {% comment %}
-Copyright (C) 2015-2022  The Software Heritage developers
+Copyright (C) 2015-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<!DOCTYPE html>
-
 {% load js_reverse %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
 
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     {% include "includes/favicon.html" %}
     <title>Software Heritage archive coverage</title>
     {% render_bundle 'vendors' %}
@@ -25,7 +25,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2015-2022  The Software Heritage developers
+Copyright (C) 2015-2023  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -44,9 +44,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
     </script>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
-    <base target="_parent">
+    <base target="_parent"/>
   </head>
-
   <body style="padding-bottom: 0;">
     <div class="wrapper" style="margin-left: 0;" data-iframe-height>
       <div class="content">
@@ -55,8 +54,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             A significant amount of source code has already been ingested in the Software Heritage
             archive, see the
             <a href="https://docs.softwareheritage.org/devel/archive-changelog.html"
-               target="_blank" rel="noopener noreferrer">Archive Changelog</a> for notable changes to
-            the archive over time.<br/>
+               target="_blank"
+               rel="noopener noreferrer">Archive Changelog</a> for notable changes to
+            the archive over time.
+            <br/>
             It currently includes the following software origins.
           </p>
           {% for origins_type, origins_data in origins.items %}
@@ -66,17 +67,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               {% for origins in origins_data.origins %}
                 <div class="col-md-4 swh-coverage-col">
                   <div class="card swh-coverage {% if focus and origins.type in focus %}swh-coverage-focus{% endif %}"
-                       id="{{ origins.type }}" title="{{ origins.info }}">
-                    <a href="{{ origins.info_url }}" target="_blank" rel="noopener noreferrer">
-                      {% with 'img/logos/'|add:origins.type.lower|add:'.png' as png_logo %}
-                        <img class="card-img-top swh-coverage-logo" src="{% static png_logo %}"
-                             alt="{{ origins.type }}">
+                       id="{{ origins.type }}"
+                       title="{{ origins.info }}">
+                    <a href="{{ origins.info_url }}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                      {% with "img/logos/"|add:origins.type.lower|add:".png" as png_logo %}
+                        <img class="card-img-top swh-coverage-logo"
+                             src="{% static png_logo %}"
+                             alt="{{ origins.type }}"/>
                       {% endwith %}
                     </a>
                     <div class="card-header swh-coverage-header">
-                      <a class="{% if not focus %}collapsed{% endif %} d-block" data-toggle="collapse"
+                      <a class="{% if not focus %}collapsed{% endif %} d-block"
+                         data-toggle="collapse"
                          href="#swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
-                         aria-expanded="true" aria-controls="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         aria-expanded="true"
+                         aria-controls="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
                          id="heading-collapsed"
                          title="click to expand or collapse detailed information about software origins">
                         <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
@@ -93,61 +100,63 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                          class="collapse {% if focus %}show{% endif %}"
                          aria-labelledby="heading-collapsed">
                       <div class="card-body text-center swh-coverage-info-body"
-                        {% if focus is not None %}style="max-height: none;"{% endif %}>
+                           {% if focus is not None %}style="max-height: none;"{% endif %}>
                         <table style="width: 100%">
-                        {% if "instances" in origins %}
-                          <thead>
-                            <tr>
-                              <th>instance</th>
-                              <th>type</th>
-                              <th>count</th>
-                              <th>search</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for instance, visit_types in origins.instances.items %}
-                              {% for visit_type, data in visit_types.items %}
-                                {% if data.count %}
-                                  <tr id="{{ origins.type }}-{{ visit_type }}">
-                                    <td>{{ instance }}</td>
-                                    <td>{{ visit_type }}</td>
-                                    <td>{{ data.count }}</td>
-                                    <td>
-                                      {% if data.search_url %}
-                                        <a href="{{ data.search_url }}" target="_blank" rel="noopener noreferrer">
-                                          <i class="mdi mdi-magnify"></i>
-                                        </a>
-                                      {% endif %}
-                                    </td>
-                                  </tr>
-                                {% endif %}
+                          {% if "instances" in origins %}
+                            <thead>
+                              <tr>
+                                <th>instance</th>
+                                <th>type</th>
+                                <th>count</th>
+                                <th>search</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for instance, visit_types in origins.instances.items %}
+                                {% for visit_type, data in visit_types.items %}
+                                  {% if data.count %}
+                                    <tr id="{{ origins.type }}-{{ visit_type }}">
+                                      <td>{{ instance }}</td>
+                                      <td>{{ visit_type }}</td>
+                                      <td>{{ data.count }}</td>
+                                      <td>
+                                        {% if data.search_url %}
+                                          <a href="{{ data.search_url }}"
+                                             target="_blank"
+                                             rel="noopener noreferrer">
+                                            <i class="mdi mdi-magnify"></i>
+                                          </a>
+                                        {% endif %}
+                                      </td>
+                                    </tr>
+                                  {% endif %}
+                                {% endfor %}
                               {% endfor %}
-                            {% endfor %}
-                          </tbody>
-                        {% else %}
-                          <thead>
-                            <tr>
-                              <th>instance</th>
-                              <th>type</th>
-                              <th>search</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          {% for visit_type, search_url in origins.search_urls.items %}
-                            <tr id="{{ origins.type }}-{{ visit_type }}">
-                              <td>{{ origins.type }}</td>
-                              <td>{{ visit_type }}</td>
-                              <td>
-                                {% if search_url %}
-                                  <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">
-                                    <i class="mdi mdi-magnify"></i>
-                                  </a>
-                                {% endif %}
-                              </td>
-                            </tr>
-                          {% endfor %}
-                          </tbody>
-                        {% endif %}
+                            </tbody>
+                          {% else %}
+                            <thead>
+                              <tr>
+                                <th>instance</th>
+                                <th>type</th>
+                                <th>search</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {% for visit_type, search_url in origins.search_urls.items %}
+                                <tr id="{{ origins.type }}-{{ visit_type }}">
+                                  <td>{{ origins.type }}</td>
+                                  <td>{{ visit_type }}</td>
+                                  <td>
+                                    {% if search_url %}
+                                      <a href="{{ search_url }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="mdi mdi-magnify"></i>
+                                      </a>
+                                    {% endif %}
+                                  </td>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                          {% endif %}
                         </table>
                       </div>
                     </div>

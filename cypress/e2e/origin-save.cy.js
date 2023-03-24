@@ -911,4 +911,20 @@ describe('Origin Save Tests', function() {
 
   });
 
+  it('should display csv export button above requests list for staff users', function() {
+    cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
+      .as('saveRequestsList');
+
+    loadSaveRequestsListPage();
+    cy.get('.requests-csv-export a')
+      .should('not.exist');
+
+    cy.adminLogin();
+    cy.visit(url);
+    loadSaveRequestsListPage();
+    cy.get('.requests-csv-export a')
+      .should('exist')
+      .should('have.attr', 'href', this.Urls.admin_origin_save_requests_csv());
+  });
+
 });

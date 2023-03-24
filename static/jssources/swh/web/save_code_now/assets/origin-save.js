@@ -112,6 +112,15 @@ const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
   'checked': false // no filtering by default on that view
 });
 
+const csvExportButton = `
+<a href="${Urls.admin_origin_save_requests_csv()}"
+   class="btn btn-default btn-sm swh-tr-link"
+   role="button">
+  <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
+  CSV export
+</a>
+`;
+
 export function initOriginSave() {
 
   $(document).ready(() => {
@@ -144,12 +153,16 @@ export function initOriginSave() {
         // see https://datatables.net/examples/advanced_init/dom_toolbar.html and the comments section
         // this option customizes datatables UI components by adding an extra checkbox above the table
         // while keeping bootstrap layout
-        dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
+        dom: '<"row"<"col-sm-3"l><"col-sm-3 text-left user-requests-filter">' +
+             '<"col-sm-3 requests-csv-export"><"col-sm-3"f>>' +
              '<"row"<"col-sm-12"tr>>' +
              '<"row"<"col-sm-5"i><"col-sm-7"p>>',
         fnInitComplete: function() {
           if (swh.webapp.isUserLoggedIn()) {
             $('div.user-requests-filter').html(userRequestsFilterCheckbox);
+            if (swh.webapp.isStaffUser()) {
+              $('div.requests-csv-export').html(csvExportButton);
+            }
             $(`#${saveRequestCheckboxId}`).on('change', () => {
               saveRequestsTable.draw();
             });

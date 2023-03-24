@@ -55,12 +55,15 @@ class BaseClient {
   /** Holds flushable  */
    __init4() {this._outcomes = {};}
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+   __init5() {this._hooks = {};}
+
   /**
    * Initializes this client instance.
    *
    * @param options Options for the client.
    */
-   constructor(options) {BaseClient.prototype.__init.call(this);BaseClient.prototype.__init2.call(this);BaseClient.prototype.__init3.call(this);BaseClient.prototype.__init4.call(this);
+   constructor(options) {BaseClient.prototype.__init.call(this);BaseClient.prototype.__init2.call(this);BaseClient.prototype.__init3.call(this);BaseClient.prototype.__init4.call(this);BaseClient.prototype.__init5.call(this);
     this._options = options;
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
@@ -274,7 +277,10 @@ class BaseClient {
         );
       }
 
-      this._sendEnvelope(env);
+      const promise = this._sendEnvelope(env);
+      if (promise) {
+        promise.then(sendResponse => this.emit('afterSendEvent', event, sendResponse), null);
+      }
     }
   }
 
@@ -284,7 +290,7 @@ class BaseClient {
    sendSession(session) {
     if (this._dsn) {
       const env = createSessionEnvelope(session, this._dsn, this._options._metadata, this._options.tunnel);
-      this._sendEnvelope(env);
+      void this._sendEnvelope(env);
     }
   }
 
@@ -306,6 +312,30 @@ class BaseClient {
 
       // The following works because undefined + 1 === NaN and NaN is falsy
       this._outcomes[key] = this._outcomes[key] + 1 || 1;
+    }
+  }
+
+  // Keep on() & emit() signatures in sync with types' client.ts interface
+
+  /** @inheritdoc */
+
+  /** @inheritdoc */
+   on(hook, callback) {
+    if (!this._hooks[hook]) {
+      this._hooks[hook] = [];
+    }
+
+    // @ts-ignore We assue the types are correct
+    this._hooks[hook].push(callback);
+  }
+
+  /** @inheritdoc */
+
+  /** @inheritdoc */
+   emit(hook, ...rest) {
+    if (this._hooks[hook]) {
+      // @ts-ignore we cannot enforce the callback to match the hook
+      this._hooks[hook].forEach(callback => callback(...rest));
     }
   }
 
@@ -518,7 +548,7 @@ class BaseClient {
           data: {
             __sentry__: true,
           },
-          originalException: reason ,
+          originalException: reason,
         });
         throw new SentryError(
           `Event processing pipeline threw an error, original event will not be sent. Details have been sent as a new event.\nReason: ${reason}`,
@@ -548,7 +578,9 @@ class BaseClient {
    */
    _sendEnvelope(envelope) {
     if (this._transport && this._dsn) {
-      this._transport.send(envelope).then(null, reason => {
+      this.emit('beforeEnvelope', envelope);
+
+      return this._transport.send(envelope).then(null, reason => {
         (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Error while sending event:', reason);
       });
     } else {

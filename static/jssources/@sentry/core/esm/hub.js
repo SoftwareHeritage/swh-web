@@ -1,4 +1,5 @@
 import { uuid4, dateTimestampInSeconds, consoleSandbox, logger, GLOBAL_OBJ, isNodeEnv, getGlobalSingleton } from '@sentry/utils';
+import { DEFAULT_ENVIRONMENT } from './constants.js';
 import { Scope } from './scope.js';
 import { closeSession, makeSession, updateSession } from './session.js';
 
@@ -28,7 +29,6 @@ const DEFAULT_BREADCRUMBS = 100;
  */
 class Hub  {
   /** Is a {@link Layer}[] containing the client and scope */
-    __init() {this._stack = [{}];}
 
   /** Contains the last event id of a captured event.  */
 
@@ -40,8 +40,8 @@ class Hub  {
    * @param scope bound to the hub.
    * @param version number, higher number means higher priority.
    */
-   constructor(client, scope = new Scope(),   _version = API_VERSION) {this._version = _version;Hub.prototype.__init.call(this);
-    this.getStackTop().scope = scope;
+   constructor(client, scope = new Scope(),   _version = API_VERSION) {this._version = _version;
+    this._stack = [{ scope }];
     if (client) {
       this.bindClient(client);
     }
@@ -123,7 +123,6 @@ class Hub  {
   /**
    * @inheritDoc
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
    captureException(exception, hint) {
     const eventId = (this._lastEventId = hint && hint.event_id ? hint.event_id : uuid4());
     const syntheticException = new Error('Sentry syntheticException');
@@ -197,7 +196,7 @@ class Hub  {
    addBreadcrumb(breadcrumb, hint) {
     const { scope, client } = this.getStackTop();
 
-    if (!scope || !client) return;
+    if (!client) return;
 
     const { beforeBreadcrumb = null, maxBreadcrumbs = DEFAULT_BREADCRUMBS } =
       (client.getOptions && client.getOptions()) || {};
@@ -212,6 +211,10 @@ class Hub  {
 
     if (finalBreadcrumb === null) return;
 
+    if (client.emit) {
+      client.emit('beforeAddBreadcrumb', finalBreadcrumb, hint);
+    }
+
     scope.addBreadcrumb(finalBreadcrumb, maxBreadcrumbs);
   }
 
@@ -219,40 +222,35 @@ class Hub  {
    * @inheritDoc
    */
    setUser(user) {
-    const scope = this.getScope();
-    if (scope) scope.setUser(user);
+    this.getScope().setUser(user);
   }
 
   /**
    * @inheritDoc
    */
    setTags(tags) {
-    const scope = this.getScope();
-    if (scope) scope.setTags(tags);
+    this.getScope().setTags(tags);
   }
 
   /**
    * @inheritDoc
    */
    setExtras(extras) {
-    const scope = this.getScope();
-    if (scope) scope.setExtras(extras);
+    this.getScope().setExtras(extras);
   }
 
   /**
    * @inheritDoc
    */
    setTag(key, value) {
-    const scope = this.getScope();
-    if (scope) scope.setTag(key, value);
+    this.getScope().setTag(key, value);
   }
 
   /**
    * @inheritDoc
    */
    setExtra(key, extra) {
-    const scope = this.getScope();
-    if (scope) scope.setExtra(key, extra);
+    this.getScope().setExtra(key, extra);
   }
 
   /**
@@ -260,8 +258,7 @@ class Hub  {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
    setContext(name, context) {
-    const scope = this.getScope();
-    if (scope) scope.setContext(name, context);
+    this.getScope().setContext(name, context);
   }
 
   /**
@@ -269,7 +266,7 @@ class Hub  {
    */
    configureScope(callback) {
     const { scope, client } = this.getStackTop();
-    if (scope && client) {
+    if (client) {
       callback(scope);
     }
   }
@@ -332,17 +329,15 @@ class Hub  {
    */
    endSession() {
     const layer = this.getStackTop();
-    const scope = layer && layer.scope;
-    const session = scope && scope.getSession();
+    const scope = layer.scope;
+    const session = scope.getSession();
     if (session) {
       closeSession(session);
     }
     this._sendSessionUpdate();
 
     // the session is over; take it off of the scope
-    if (scope) {
-      scope.setSession();
-    }
+    scope.setSession();
   }
 
   /**
@@ -350,7 +345,7 @@ class Hub  {
    */
    startSession(context) {
     const { scope, client } = this.getStackTop();
-    const { release, environment } = (client && client.getOptions()) || {};
+    const { release, environment = DEFAULT_ENVIRONMENT } = (client && client.getOptions()) || {};
 
     // Will fetch userAgent if called from browser sdk
     const { userAgent } = GLOBAL_OBJ.navigator || {};
@@ -358,22 +353,20 @@ class Hub  {
     const session = makeSession({
       release,
       environment,
-      ...(scope && { user: scope.getUser() }),
+      user: scope.getUser(),
       ...(userAgent && { userAgent }),
       ...context,
     });
 
-    if (scope) {
-      // End existing session if there's one
-      const currentSession = scope.getSession && scope.getSession();
-      if (currentSession && currentSession.status === 'ok') {
-        updateSession(currentSession, { status: 'exited' });
-      }
-      this.endSession();
-
-      // Afterwards we set the new session on the scope
-      scope.setSession(session);
+    // End existing session if there's one
+    const currentSession = scope.getSession && scope.getSession();
+    if (currentSession && currentSession.status === 'ok') {
+      updateSession(currentSession, { status: 'exited' });
     }
+    this.endSession();
+
+    // Afterwards we set the new session on the scope
+    scope.setSession(session);
 
     return session;
   }

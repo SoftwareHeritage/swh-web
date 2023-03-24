@@ -1,7 +1,7 @@
 {% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2022 The Software Heritage developers
+Copyright (C) 2017-2023 The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,14 +11,16 @@ See top-level LICENSE file for more information
 
 {% block swh-browse-content %}
   <div class="table-responsive mt-3 mb-3">
-    <div class="form-group row float-right">
-      {% include "./includes/branch-search.html" %}
-    </div>
+    <div class="form-group row float-right">{% include "./includes/branch-search.html" %}</div>
     <table class="table swh-table swh-table-striped">
       <thead>
         <tr>
-          <th><i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>Branch name</th>
-          <th><i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Release name</th>
+          <th>
+            <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>Branch name
+          </th>
+          <th>
+            <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>Release name
+          </th>
           <th>Target</th>
           <th>Message</th>
           <th>Date</th>
@@ -46,22 +48,23 @@ See top-level LICENSE file for more information
               </td>
               <td class="swh-release-target">
                 <a href="{{ release.target_url }}">
-                  <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw" aria-hidden="true" title="{{ release.tooltip }}"></i>{{ release.target|slice:":7" }}
+                  <i class="{{ swh_object_icons|key_value:release.target_type }} mdi-fw"
+                     aria-hidden="true"
+                     title="{{ release.tooltip }}"></i>{{ release.target|slice:":7" }}
                 </a>
               </td>
-              <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow" title="{{ release.message }}">
+              <td class="swh-log-entry-message swh-release-message swh-table-cell-text-overflow"
+                  title="{{ release.message }}">
                 {{ release.message }}
               </td>
-              <td class="swh-release-date">
-                {{ release.date }}
-              </td>
+              <td class="swh-release-date">{{ release.date }}</td>
             </tr>
           {% endfor %}
         {% else %}
           <tr>
             <td>
               {% if search_string %}
-                No release names containing {{search_string}} have been found!
+                No release names containing {{ search_string }} have been found!
               {% else %}
                 The list of releases is empty!
               {% endif %}
@@ -71,22 +74,29 @@ See top-level LICENSE file for more information
       </tbody>
     </table>
   </div>
-{% endblock %}
+{% endblock swh-browse-content %}
 
 {% block swh-browse-after-content %}
   {% if prev_releases_url or next_releases_url %}
     <ul class="pagination justify-content-center">
       {% if prev_releases_url %}
-        <li class="page-item"><a class="page-link" href="{{ prev_releases_url }}">Previous</a></li>
+        <li class="page-item">
+          <a class="page-link" href="{{ prev_releases_url }}">Previous</a>
+        </li>
       {% else %}
-        <li class="page-item disabled"><a class="page-link">Previous</a></li>
+        <li class="page-item disabled">
+          <a class="page-link">Previous</a>
+        </li>
       {% endif %}
-
       {% if next_releases_url %}
-        <li class="page-item"><a class="page-link" href="{{ next_releases_url }}">Next</a></li>
+        <li class="page-item">
+          <a class="page-link" href="{{ next_releases_url }}">Next</a>
+        </li>
       {% else %}
-        <li class="page-item disabled"><a class="page-link">Next</a></li>
+        <li class="page-item disabled">
+          <a class="page-link">Next</a>
+        </li>
       {% endif %}
     </ul>
   {% endif %}
-{% endblock %}
+{% endblock swh-browse-after-content %}

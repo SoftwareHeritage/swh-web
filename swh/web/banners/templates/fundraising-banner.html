@@ -1,27 +1,27 @@
 {% comment %}
-Copyright (C) 2021  The Software Heritage developers
+Copyright (C) 2021-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
 <!DOCTYPE html>
-
 {% load static %}
 {% load render_bundle from webpack_loader %}
 
 <html class="swh-fundraising-banner" lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <title>Software Heritage fundraising banner</title>
     {% render_bundle 'vendors' %}
     <script>
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2021  The Software Heritage developers
+Copyright (C) 2021-2023  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -41,14 +41,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </script>
     <style>
       .swh-fundraising-banner {
-          overflow: hidden;
+        overflow: hidden;
       }
 
       .swh-fundraising-banner .row {
-          height: 60px;
-          background-color: #fecd1b;
-          color: #e20026;
-          font-size: larger;
+        height: 60px;
+        background-color: #fecd1b;
+        color: #e20026;
+        font-size: larger;
       }
 
       .swh-fundraising-banner img {
@@ -59,42 +59,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       }
 
       .swh-fundraising-banner .d-xl-none {
-          font-size: medium;
+        font-size: medium;
       }
 
       .swh-fundraising-banner p {
-          margin-bottom: 0;
+        margin-bottom: 0;
       }
 
       .swh-fundraising-banner .progress {
-          height: 30px;
+        height: 30px;
       }
 
       .swh-fundraising-banner .btn {
-          color: #fecd1b;
-          font-weight: bold;
+        color: #fecd1b;
+        font-weight: bold;
       }
 
       .swh-fundraising-banner .d-xl-none .btn {
-          font-size: medium;
+        font-size: medium;
       }
 
       .swh-fundraising-banner .progress small {
-          color: black;
-          padding-top: 15px;
-          font-size: large;
+        color: black;
+        padding-top: 15px;
+        font-size: large;
       }
     </style>
   </head>
   <body>
     <div class="content">
       <div class="container-fluid">
-
         {% comment %} large screen layout {% endcomment %}
+
         <div class="row align-items-center justify-content-end d-none d-xl-flex">
-          <img id="swh-fundraising-img" src="{% static 'img/swh-donor.png' %}">
+          <img id="swh-fundraising-img"
+               src="{% static 'img/swh-donor.png' %}"
+               alt="Software Heritage fundraising"/>
           <div class="col-8 text-right align-middle pr-3">
-            <a target="_blank" rel="noopener noreferrer" id="swh-fundraising-text" href="{{ donation_form_url }}">
+            <a target="_blank"
+               rel="noopener noreferrer"
+               id="swh-fundraising-text"
+               href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Help Preserve Software Source Code for Future Generations
               {% elif lang == "fr" %}
@@ -106,15 +111,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </div>
           <div class="col-2 text-right">
             {% if nb_donations != -1 %}
-              {% if lang == "en" %}
-                <div class="progress position-relative" title="{{ goal_percent }}% complete">
-              {% elif lang == "fr" %}
-                <div class="progress position-relative" title="{{ goal_percent }}% complété">
-              {% elif lang == "es" %}
-                <div class="progress position-relative" title="{{ goal_percent }}% terminado">
-              {% endif %}
-                <div class="progress-bar" role="progressbar" style="width: {{ goal_percent }}%;"
-                     aria-valuenow="{{ nb_donations }}" aria-valuemin="0" aria-valuemax="{{ donations_goal }}">
+              <div class="progress position-relative" title="{{ goal_percent }}%">
+                <div class="progress-bar"
+                     role="progressbar"
+                     style="width: {{ goal_percent }}%"
+                     aria-valuenow="{{ nb_donations }}"
+                     aria-valuemin="0"
+                     aria-valuemax="{{ donations_goal }}">
                 </div>
                 <small class="justify-content-center d-flex position-absolute w-100">
                   {% if lang == "en" %}
@@ -129,8 +132,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% endif %}
           </div>
           <div class="col-2 text-left pl-3">
-            <a target="_blank" rel="noopener noreferrer" id="swh-fundraising-text" class="btn btn-lg btn-primary" role="button"
-              href="{{ donation_form_url }}">
+            <a target="_blank"
+               rel="noopener noreferrer"
+               id="swh-fundraising-text"
+               class="btn btn-lg btn-primary"
+               role="button"
+               href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Become a donor
               {% elif lang == "fr" %}
@@ -141,11 +148,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </a>
           </div>
         </div>
-
         {% comment %} small screen layout {% endcomment %}
+
         <div class="row align-items-center d-xl-none">
           <div class="col-6 text-right align-middle">
-            <a target="_blank" rel="noopener noreferrer" href="{{ donation_form_url }}">
+            <a target="_blank"
+               rel="noopener noreferrer"
+               href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Help Preserve Software Source Code for Future Generations
               {% elif lang == "fr" %}
@@ -156,8 +165,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </a>
           </div>
           <div class="col-6 text-center">
-            <a target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-primary" role="button"
-              href="{{ donation_form_url }}">
+            <a target="_blank"
+               rel="noopener noreferrer"
+               class="btn btn-lg btn-primary"
+               role="button"
+               href="{{ donation_form_url }}">
               {% if lang == "en" %}
                 Become a donor
               {% elif lang == "fr" %}
