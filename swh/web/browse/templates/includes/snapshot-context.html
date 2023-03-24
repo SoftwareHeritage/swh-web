@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2020  The Software Heritage developers
+Copyright (C) 2017-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -8,65 +8,88 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 <h5>
-{% if snapshot_context.origin_info %}
-  <a id="swh-origin-url" class="swh-heading-color" href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
-    <i class="{{ swh_object_icons.origin }} mdi-fw" aria-hidden="true" title="Origin"></i>
-    {{ snapshot_context.origin_info.url }}
-  </a>
-  {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
-    <a id="swh-go-to-origin" href="{{ snapshot_context.origin_info.url }}"
-      target="_blank" rel="noopener noreferrer" title="Go to origin">
-      <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
+  {% if snapshot_context.origin_info %}
+    <a id="swh-origin-url"
+       class="swh-heading-color"
+       href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
+      <i class="{{ swh_object_icons.origin }} mdi-fw"
+         aria-hidden="true"
+         title="Origin"></i>
+      {{ snapshot_context.origin_info.url }}
+    </a>
+    {% if snapshot_context.origin_info.url|slice:"0:4" == "http" %}
+      <a id="swh-go-to-origin"
+         href="{{ snapshot_context.origin_info.url }}"
+         target="_blank"
+         rel="noopener noreferrer"
+         title="Go to origin">
+        <i class="mdi mdi-open-in-new" aria-hidden="true"></i>
+      </a>
+    {% endif %}
+  {% else %}
+    <a class="swh-heading-color"
+       href="{% url 'browse-swhid' snapshot_context.snapshot_swhid %}">
+      <i class="{{ swh_object_icons.snapshot }} mdi-fw"
+         aria-hidden="true"
+         title="Snapshot"></i>
+      {{ snapshot_context.snapshot_swhid }}
     </a>
   {% endif %}
-{% else %}
-  <a class="swh-heading-color" href="{% url 'browse-swhid' snapshot_context.snapshot_swhid %}">
-    <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot"></i>
-    {{ snapshot_context.snapshot_swhid }}
-  </a>
-{% endif %}
 </h5>
 {% if snapshot_context.visit_info %}
   <div class="mb-1 pl-1">
     <a id="swh-origin-visit" href="{{ snapshot_context.visit_info.url }}">
-      <i class="{{ swh_object_icons.snapshot }} mdi-fw" aria-hidden="true" title="Snapshot date"></i>
+      <i class="{{ swh_object_icons.snapshot }} mdi-fw"
+         aria-hidden="true"
+         title="Snapshot date"></i>
       {{ snapshot_context.visit_info.formatted_date }}
     </a>
   </div>
 {% endif %}
-
-<ul class="nav nav-tabs" id="swh-snapshot-context-nav" style="padding-left: 5px;">
+<ul class="nav nav-tabs"
+    id="swh-snapshot-context-nav"
+    style="padding-left: 5px">
   <li class="nav-item">
-    <a class="nav-link" id="swh-browse-code-nav-link" href="{{ snapshot_context.browse_url }}">
+    <a class="nav-link"
+       id="swh-browse-code-nav-link"
+       href="{{ snapshot_context.browse_url }}">
       <i class="mdi mdi-code-tags mdi-fw" aria-hidden="true"></i>
       Code
     </a>
   </li>
   {% if not snapshot_context.snapshot_sizes.branch %}
     <li class="nav-item">
-      <a class="nav-link disabled" id="swh-browse-snapshot-branches-nav-link" href="#">
+      <a class="nav-link disabled"
+         id="swh-browse-snapshot-branches-nav-link"
+         href="#">
         <i class="{{ swh_object_icons.branches }} mdi-fw" aria-hidden="true"></i>
         Branches (0)
       </a>
     </li>
   {% else %}
     <li class="nav-item">
-      <a class="nav-link" id="swh-browse-snapshot-branches-nav-link" href="{{ snapshot_context.branches_url }}">
+      <a class="nav-link"
+         id="swh-browse-snapshot-branches-nav-link"
+         href="{{ snapshot_context.branches_url }}">
         <i class="{{ swh_object_icons.branches }} mdi-fw" aria-hidden="true"></i>
-        Branches ({{ snapshot_context.snapshot_sizes.branch}})
+        Branches ({{ snapshot_context.snapshot_sizes.branch }})
       </a>
     </li>
   {% endif %}
   {% if not snapshot_context.snapshot_sizes.release %}
     <li class="nav-item">
-      <a class="nav-link disabled" id="swh-browse-snapshot-releases-nav-link" href="#">
+      <a class="nav-link disabled"
+         id="swh-browse-snapshot-releases-nav-link"
+         href="#">
         <i class="{{ swh_object_icons.releases }} mdi-fw" aria-hidden="true"></i>
         Releases (0)
       </a>
     </li>
   {% else %}
     <li class="nav-item">
-      <a class="nav-link" id="swh-browse-snapshot-releases-nav-link" href="{{ snapshot_context.releases_url }}">
+      <a class="nav-link"
+         id="swh-browse-snapshot-releases-nav-link"
+         href="{{ snapshot_context.releases_url }}">
         <i class="{{ swh_object_icons.releases }} mdi-fw" aria-hidden="true"></i>
         Releases ({{ snapshot_context.snapshot_sizes.release }})
       </a>
@@ -74,14 +97,13 @@ See top-level LICENSE file for more information
   {% endif %}
   {% if snapshot_context.origin_info %}
     <li class="nav-item">
-      <a class="nav-link" id="swh-browse-origin-visits-nav-link" href="{{ snapshot_context.origin_visits_url }}">
+      <a class="nav-link"
+         id="swh-browse-origin-visits-nav-link"
+         href="{{ snapshot_context.origin_visits_url }}">
         <i class="{{ swh_object_icons.visits }} mdi-fw"></i>
         Visits
       </a>
     </li>
   {% endif %}
 </ul>
-
-<script>
-  swh.browse.initBrowseNavbar();
-</script>
+<script>swh.browse.initBrowseNavbar();</script>

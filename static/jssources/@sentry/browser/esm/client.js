@@ -1,5 +1,5 @@
-import { BaseClient, SDK_VERSION, getEnvelopeEndpointWithUrlEncodedAuth } from '@sentry/core';
-import { getSDKSource, logger, createClientReportEnvelope, dsnToString, serializeEnvelope } from '@sentry/utils';
+import { BaseClient, SDK_VERSION } from '@sentry/core';
+import { getSDKSource, logger, createClientReportEnvelope, dsnToString } from '@sentry/utils';
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
 import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
@@ -112,25 +112,8 @@ class BrowserClient extends BaseClient {
 
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log('Sending outcomes:', outcomes);
 
-    const url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, this._options);
     const envelope = createClientReportEnvelope(outcomes, this._options.tunnel && dsnToString(this._dsn));
-
-    try {
-      const isRealNavigator = Object.prototype.toString.call(WINDOW && WINDOW.navigator) === '[object Navigator]';
-      const hasSendBeacon = isRealNavigator && typeof WINDOW.navigator.sendBeacon === 'function';
-      // Make sure beacon is not used if user configures custom transport options
-      if (hasSendBeacon && !this._options.transportOptions) {
-        // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-        const sendBeacon = WINDOW.navigator.sendBeacon.bind(WINDOW.navigator);
-        sendBeacon(url, serializeEnvelope(envelope));
-      } else {
-        // If beacon is not supported or if they are using the tunnel option
-        // use our regular transport to send client reports to Sentry.
-        this._sendEnvelope(envelope);
-      }
-    } catch (e) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(e);
-    }
+    void this._sendEnvelope(envelope);
   }
 }
 

@@ -25,9 +25,7 @@ function initAndBind(
   }
   const hub = getCurrentHub();
   const scope = hub.getScope();
-  if (scope) {
-    scope.update(options.initialScope);
-  }
+  scope.update(options.initialScope);
 
   const client = new clientClass(options);
   hub.bindClient(client);

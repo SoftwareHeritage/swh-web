@@ -132,7 +132,9 @@ def test_content_view_image(client, archive_data, content_image_type):
     content_display = _process_content_for_display(archive_data, content_image_type)
     mimetype = content_display["mimetype"]
     content_data = content_display["content_data"]
-    assert_contains(resp, '<img src="data:%s;base64,%s"/>' % (mimetype, content_data))
+    assert_contains(
+        resp, f'<img src="data:{mimetype};base64,{content_data}" alt="image"/>'
+    )
     assert_contains(resp, url_raw)
 
 

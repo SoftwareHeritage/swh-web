@@ -75,13 +75,11 @@ def test_revision_log_browse(client, archive_data, revision):
         client, url, status_code=200, template_used="browse-revision-log.html"
     )
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
-    assert_contains(resp, '<a class="page-link">Newer</a>')
+    assert_contains(resp, "Newer")
 
     if len(revision_log_sorted) > per_page:
-        assert_contains(
-            resp,
-            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
-        )
+        assert_contains(resp, f'<a class="page-link" href="{escape(next_page_url)}">')
+        assert_contains(resp, "Older")
 
     for log in revision_log_sorted[:per_page]:
         revision_url = reverse("browse-revision", url_args={"sha1_git": log["id"]})
@@ -116,15 +114,12 @@ def test_revision_log_browse(client, archive_data, revision):
 
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
 
-    assert_contains(
-        resp, '<a class="page-link" href="%s">Newer</a>' % escape(prev_page_url)
-    )
+    assert_contains(resp, f'<a class="page-link" href="{escape(prev_page_url)}">')
+    assert_contains(resp, "Newer")
 
     if len(revision_log_sorted) > 2 * per_page:
-        assert_contains(
-            resp,
-            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
-        )
+        assert_contains(resp, f'<a class="page-link" href="{escape(next_page_url)}">')
+        assert_contains(resp, "Older")
 
     if len(revision_log_sorted) <= 2 * per_page:
         return
@@ -149,15 +144,12 @@ def test_revision_log_browse(client, archive_data, revision):
         nb_log_entries = per_page
 
     assert_contains(resp, '<tr class="swh-revision-log-entry', count=nb_log_entries)
-    assert_contains(
-        resp, '<a class="page-link" href="%s">Newer</a>' % escape(prev_page_url)
-    )
+    assert_contains(resp, f'<a class="page-link" href="{escape(prev_page_url)}">')
+    assert_contains(resp, "Newer")
 
     if len(revision_log_sorted) > 3 * per_page:
-        assert_contains(
-            resp,
-            '<a class="page-link" href="%s">Older</a>' % escape(next_page_url),
-        )
+        assert_contains(resp, f'<a class="page-link" href="{escape(next_page_url)}">')
+        assert_contains(resp, "Older")
 
 
 def test_revision_log_browse_snapshot_context(client, archive_data, origin):

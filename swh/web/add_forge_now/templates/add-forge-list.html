@@ -1,15 +1,18 @@
 {% extends "./add-forge-common.html" %}
 
 {% comment %}
-Copyright (C) 2022  The Software Heritage developers
+Copyright (C) 2022-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
 {% block tab_content %}
-  <div id="swh-add-forge-requests-list" class="tab-pane active mt-3" style="width: 100%;">
-    <table id="add-forge-request-browse" class="table swh-table swh-table-striped">
+  <div id="swh-add-forge-requests-list"
+       class="tab-pane active mt-3"
+       style="width: 100%">
+    <table id="add-forge-request-browse"
+           class="table swh-table swh-table-striped">
       <thead>
         <tr>
           <th>Submission date</th>
@@ -22,4 +25,4 @@ See top-level LICENSE file for more information
     </table>
     <div id="add-forge-browse-request-error"></div>
   </div>
-{% endblock %}
+{% endblock tab_content %}

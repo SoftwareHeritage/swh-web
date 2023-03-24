@@ -151,3 +151,17 @@ def test_save_origin_requests_list_user_filter(client, mocker, keycloak_oidc):
     assert sors["recordsFiltered"] == 1
     assert sors["recordsTotal"] == 2
     assert sors["data"][0] == sor.to_dict()
+
+
+def test_admin_origin_save_requests_csv_dump_anonymous(client):
+    url = reverse("admin-origin-save-requests-csv")
+    login_url = reverse("oidc-login", query_params={"next": url})
+    resp = check_http_get_response(client, url, status_code=302)
+    assert resp["location"] == login_url
+
+
+@pytest.mark.django_db
+def test_admin_origin_save_requests_csv_dump_staff(client, staff_user):
+    client.force_login(staff_user)
+    url = reverse("admin-origin-save-requests-csv")
+    check_http_get_response(client, url, status_code=200)

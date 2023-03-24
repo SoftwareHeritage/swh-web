@@ -1,4 +1,5 @@
 import { uuid4, dateTimestampInSeconds, resolvedSyncPromise, truncate, GLOBAL_OBJ, normalize } from '@sentry/utils';
+import { DEFAULT_ENVIRONMENT } from '../constants.js';
 import { Scope } from '../scope.js';
 
 /**
@@ -85,7 +86,7 @@ function applyClientOptions(event, options) {
   const { environment, release, dist, maxValueLength = 250 } = options;
 
   if (!('environment' in event)) {
-    event.environment = 'environment' in options ? environment : 'production';
+    event.environment = 'environment' in options ? environment : DEFAULT_ENVIRONMENT;
   }
 
   if (event.release === undefined && release !== undefined) {

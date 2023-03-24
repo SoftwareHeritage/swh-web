@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2022  The Software Heritage developers
+Copyright (C) 2022-2023  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,39 +11,40 @@ See top-level LICENSE file for more information
 {% load static %}
 
 {% block header %}
-{% render_bundle 'add_forge_now' %}
-{% endblock %}
+  {% render_bundle 'add_forge_now' %}
+{% endblock header %}
 
-{% block title %}{{ heading }} &ndash; Software Heritage archive{% endblock %}
+{% block title %}
+  {{ heading }} &ndash; Software Heritage archive
+{% endblock title %}
 
 {% block navbar-content %}
-<h4>Add forge now moderation</h4>
-{% endblock %}
+  <h4>Add forge now moderation</h4>
+{% endblock navbar-content %}
 
 {% block content %}
-<div class="row">
-  <div id="swh-add-forge-requests-list" style="width: 100%;">
-    <table id="swh-add-forge-now-moderation-list" class="table swh-table swh-table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Submission date</th>
-          <th>Forge type</th>
-          <th>Forge URL</th>
-          <th>Moderator Name</th>
-          <th>Last Modified Date</th>
-          <th>Status</th>
-          <th></th>
-        </tr>
-      </thead>
-    </table>
-    <p id="swh-add-forge-now-moderation-list-error"></p>
+  <div class="row">
+    <div id="swh-add-forge-requests-list" style="width: 100%;">
+      <table id="swh-add-forge-now-moderation-list"
+             class="table swh-table swh-table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Submission date</th>
+            <th>Forge type</th>
+            <th>Forge URL</th>
+            <th>Moderator Name</th>
+            <th>Last Modified Date</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+      </table>
+      <p id="swh-add-forge-now-moderation-list-error"></p>
+    </div>
   </div>
-</div>
-
-<script>
-  swh.webapp.initPage('add-forge-now-moderation');
-  swh.add_forge_now.onModerationPageLoad();
-</script>
-
-{% endblock %}
+  <script>
+    swh.webapp.initPage('add-forge-now-moderation');
+    swh.add_forge_now.onModerationPageLoad();
+  </script>
+{% endblock content %}

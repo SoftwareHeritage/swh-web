@@ -4,7 +4,9 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta, timezone
+import hashlib
 from io import StringIO
+import os
 
 import pytest
 
@@ -20,6 +22,7 @@ from swh.web.save_code_now.models import (
     VISIT_STATUS_FAILED,
     VISIT_STATUS_FULL,
     VISIT_STATUS_PARTIAL,
+    SaveOriginRequest,
 )
 from swh.web.utils.typing import SaveOriginRequestInfo
 
@@ -172,3 +175,56 @@ def test_command_refresh__with_recurrent_tasks_scheduling(
 
     assert mock_scheduler.called
     assert mock_refresh.called
+
+
+DUMP_SCN_DATA_COMMAND_NAME = "dump_savecodenow_data"
+
+
+@pytest.mark.django_db
+def test_dump_savecodenow_data_command(tmp_path):
+    SaveOriginRequest.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type="git",
+        origin_url="https://git.example.com/user/project",
+        status=SAVE_REQUEST_ACCEPTED,
+        visit_status=VISIT_STATUS_FULL,
+    )
+    SaveOriginRequest.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type="git",
+        origin_url="https://git.example.com/user/project",
+        status=SAVE_REQUEST_ACCEPTED,
+        visit_status=VISIT_STATUS_FULL,
+        user_ids="16787568",
+    )
+
+    output_path = os.path.join(tmp_path, "output.csv")
+
+    call_command(DUMP_SCN_DATA_COMMAND_NAME, output_file=output_path)
+
+    with open(output_path, "r") as csv_file:
+        csv = csv_file.read()
+
+    expected_content = (
+        "request_date,visit_type,origin_url,request_status,"
+        "visit_status,from_webhook,user_id\n"
+    )
+    for scn_request in SaveOriginRequest.objects.all():
+        expected_content += (
+            ",".join(
+                [
+                    str(scn_request.request_date),
+                    scn_request.visit_type,
+                    scn_request.origin_url,
+                    scn_request.status,
+                    scn_request.visit_status,
+                    str(scn_request.from_webhook).lower(),
+                    hashlib.sha1(scn_request.user_ids.encode()).hexdigest()[:7]
+                    if scn_request.user_ids
+                    else "",
+                ]
+            )
+            + "\n"
+        )
+
+    assert csv == expected_content
