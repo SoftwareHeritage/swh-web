@@ -3,13 +3,15 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import io
 import json
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management import call_command
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
@@ -179,3 +181,15 @@ def admin_origin_save_request_remove(request, sor_id):
         entry.delete()
         status_code = 200
     return HttpResponse(status=status_code)
+
+
+@staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
+def admin_origin_save_requests_csv_dump(request):
+    output = io.StringIO()
+    call_command("dump_savecodenow_data", stdout=output)
+    return FileResponse(
+        io.BytesIO(output.getvalue().encode()),
+        filename="save_code_now_requests.csv",
+        content_type="application/csv",
+        as_attachment=True,
+    )

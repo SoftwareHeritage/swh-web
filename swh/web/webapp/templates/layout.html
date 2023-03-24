@@ -54,6 +54,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
     <script>swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});</script>
     {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
+    {{ request.user.is_staff|json_script:"swh_user_is_staff" }}
     {% include "includes/favicon.html" %}
     {% block header %}
     {% endblock header %}
