@@ -10,6 +10,7 @@ Django common settings for swh-web.
 
 from importlib.util import find_spec
 import os
+import site
 import sys
 from typing import Any, Dict
 
@@ -173,6 +174,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 # static folder location when swh-web has been installed with pip
 STATIC_DIR = os.path.join(sys.prefix, "share/swh/web/static")
+if not os.path.exists(STATIC_DIR):
+    # static folder location when swh-web has been installed with "pip --user"
+    STATIC_DIR = os.path.join(site.getuserbase(), "share/swh/web/static")
 if not os.path.exists(STATIC_DIR):
     # static folder location when developping swh-web
     STATIC_DIR = os.path.join(PROJECT_DIR, "../../../static")
