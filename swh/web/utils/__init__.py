@@ -361,8 +361,8 @@ class _NoHeaderHTMLTranslator(HTMLTranslator):
 
     def __init__(self, document):
         super().__init__(document)
-        self.body_prefix = []
-        self.body_suffix = []
+        self.body_prefix = [""]
+        self.body_suffix = [""]
 
 
 _HTML_WRITER = Writer()

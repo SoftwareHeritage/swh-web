@@ -9,6 +9,7 @@ import math
 import sys
 from urllib.parse import quote
 
+import docutils
 import pytest
 
 from django.test.utils import override_settings
@@ -136,22 +137,140 @@ def test_rst_to_html():
         "#. It has two items too.\n"
     )
 
+    if docutils.__version_info__ >= (0, 17):
+        expected_html = (
+            '<div class="swh-rst"><main id="section">\n'
+            '<h1 class="title">Section</h1>\n'
+            "<p><strong>Some strong text</strong></p>\n"
+            '<ul class="simple">\n'
+            "<li><p>This is a bulleted list.</p></li>\n"
+            "<li><p>It has two items, the second\n"
+            "item uses two lines.</p></li>\n"
+            "</ul>\n"
+            '<ol class="arabic simple">\n'
+            "<li><p>This is a numbered list.</p></li>\n"
+            "<li><p>It has two items too.</p></li>\n"
+            "<li><p>This is a numbered list.</p></li>\n"
+            "<li><p>It has two items too.</p></li>\n"
+            "</ol>\n"
+            "</main>\n"
+            "</div>"
+        )
+    else:
+        expected_html = (
+            '<div class="swh-rst"><div class="document" id="section">\n'
+            '<h1 class="title">Section</h1>\n'
+            "<p><strong>Some strong text</strong></p>\n"
+            '<ul class="simple">\n'
+            "<li><p>This is a bulleted list.</p></li>\n"
+            "<li><p>It has two items, the second\n"
+            "item uses two lines.</p></li>\n"
+            "</ul>\n"
+            '<ol class="arabic simple">\n'
+            "<li><p>This is a numbered list.</p></li>\n"
+            "<li><p>It has two items too.</p></li>\n"
+            "<li><p>This is a numbered list.</p></li>\n"
+            "<li><p>It has two items too.</p></li>\n"
+            "</ol>\n"
+            "</div>\n"
+            "</div>"
+        )
+
+    assert rst_to_html(rst) == expected_html
+
+
+def test_rst_to_html_topic_processing():
+    rst = (
+        ".. contents::\n\n"
+        "Section\n"
+        "=======\n\n"
+        "Sub-section\n"
+        "-----------\n\n"
+        "* This is a bulleted list.\n"
+    )
+
     expected_html = (
-        '<div class="swh-rst"><h1 class="title">Section</h1>\n'
-        "<p><strong>Some strong text</strong></p>\n"
+        '<div class="swh-rst"><div class="document">\n'
+        '<div class="contents topic" id="contents">\n'
+        '<p class="topic-title first">Contents</p>\n'
+        '<ul class="simple">\n'
+        '<li><p><a class="reference internal" href="#section" id="id1">Section</a></p>\n'
+        "<ul>\n"
+        '<li><p><a class="reference internal" href="#sub-section" id="id2">'
+        "Sub-section</a></p></li>\n"
+        "</ul>\n"
+        "</li>\n"
+        "</ul>\n"
+        "</div>\n"
+        '<div class="section" id="section">\n'
+        '<h2><a class="toc-backref" href="#id1">Section</a></h2>\n'
+        '<div class="section" id="sub-section">\n'
+        '<h3><a class="toc-backref" href="#id2">Sub-section</a></h3>\n'
         '<ul class="simple">\n'
         "<li><p>This is a bulleted list.</p></li>\n"
-        "<li><p>It has two items, the second\n"
-        "item uses two lines.</p></li>\n"
         "</ul>\n"
-        '<ol class="arabic simple">\n'
-        "<li><p>This is a numbered list.</p></li>\n"
-        "<li><p>It has two items too.</p></li>\n"
-        "<li><p>This is a numbered list.</p></li>\n"
-        "<li><p>It has two items too.</p></li>\n"
-        "</ol>\n"
+        "</div>\n"
+        "</div>\n"
+        "</div>\n"
         "</div>"
     )
+
+    if docutils.__version_info__ >= (0, 17):
+        expected_html = (
+            '<div class="swh-rst"><main>\n'
+            '<div class="contents topic" id="contents">\n'
+            '<p class="topic-title">Contents</p>\n'
+            '<ul class="simple">\n'
+            '<li><p><a class="reference internal" href="#section" id="id1">Section</a></p>\n'
+            "<ul>\n"
+            '<li><p><a class="reference internal" href="#sub-section" id="id2">'
+            "Sub-section</a></p></li>\n"
+            "</ul>\n"
+            "</li>\n"
+            "</ul>\n"
+            "</div>\n"
+            '<section id="section">\n'
+            '<h2><a class="toc-backref" href="#id1">Section</a></h2>\n'
+            '<section id="sub-section">\n'
+            '<h3><a class="toc-backref" href="#id2">Sub-section</a></h3>\n'
+            '<ul class="simple">\n'
+            "<li><p>This is a bulleted list.</p></li>\n"
+            "</ul>\n"
+            "</section>\n"
+            "</section>\n"
+            "</main>\n"
+            "</div>"
+        )
+
+    if docutils.__version_info__ >= (0, 18):
+        expected_html = (
+            '<div class="swh-rst"><main>\n'
+            '<nav class="contents" id="contents" role="doc-toc">\n'
+            '<p class="topic-title">Contents</p>\n'
+            '<ul class="simple">\n'
+            '<li><p><a class="reference internal" href="#section" id="toc-entry-1">'
+            "Section</a></p>\n"
+            "<ul>\n"
+            '<li><p><a class="reference internal" href="#sub-section" id="toc-entry-2">'
+            "Sub-section</a></p></li>\n"
+            "</ul>\n"
+            "</li>\n"
+            "</ul>\n"
+            "</nav>\n"
+            '<section id="section">\n'
+            '<h2><a class="toc-backref" href="#toc-entry-1" role="doc-backlink">'
+            "Section</a></h2>\n"
+            '<section id="sub-section">\n'
+            '<h3><a class="toc-backref" href="#toc-entry-2" role="doc-backlink">'
+            "Sub-section</a></h3>\n"
+            '<ul class="simple">\n'
+            "<li><p>This is a bulleted list.</p></li>\n"
+            "</ul>\n"
+            "</section>\n"
+            "</section>\n"
+            "</main>\n"
+            "</div>"
+        )
 
     assert rst_to_html(rst) == expected_html
 
