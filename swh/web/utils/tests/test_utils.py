@@ -156,6 +156,20 @@ def test_rst_to_html():
     assert rst_to_html(rst) == expected_html
 
 
+def test_rst_to_html_error():
+    rst = (
+        "==========\n"
+        "Section\n"
+        "====\n\n"
+        "**Some strong text**\n\n"
+        "* This is a bulleted list.\n"
+    )
+
+    expected_html = f'<div class="swh-readme-txt"><pre>{rst}</pre></div>'
+
+    assert rst_to_html(rst) == expected_html
+
+
 def sample_test_view(request, string, number):
     pass
 
