@@ -10,7 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 import rest_framework
 from rest_framework.throttling import ScopedRateThrottle
 
-from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION, API_SAVE_ORIGIN_PERMISSION
+from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION
 from swh.web.config import get_config
 from swh.web.utils.exc import sentry_capture_exception
 
@@ -188,11 +188,6 @@ class SwhWebUserRateThrottle(SwhWebRateThrottle):
             API_SAVE_ORIGIN_PERMISSION
         ):
             # no throttling on save origin endpoint for users with adequate permission
-            return True
-        if scope == "swh_raw_object" and request.user.has_perm(
-            API_RAW_OBJECT_PERMISSION
-        ):
-            # no throttling on raw object endpoint for users with adequate permission
             return True
         return super().allow_request(request, view)
 
