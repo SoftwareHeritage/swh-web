@@ -5,6 +5,7 @@
 
 import textwrap
 
+import docutils
 import pytest
 
 from rest_framework.response import Response
@@ -394,48 +395,96 @@ def test_apidoc_input_output_doc(client):
         " " * 7,
     )
 
-    output_html_doc = textwrap.indent(
-        (
-            '<dl class="row">\n'
-            ' <dt class="col col-md-2 text-right">\n'
-            "  object\n"
-            " </dt>\n"
-            ' <dd class="col col-md-9">\n'
-            "  <p>\n"
-            "   an object containing the following keys:\n"
-            "  </p>\n"
-            '  <div class="swh-rst">\n'
-            "   <blockquote>\n"
-            "    <ul>\n"
-            "     <li>\n"
-            "      <p>\n"
-            "       <strong>\n"
-            "        &lt;swhid&gt; (object)\n"
-            "       </strong>\n"
-            "       :           an object whose keys are input SWHIDs"
-            " and values objects with the following keys:\n"
-            "      </p>\n"
-            "      <blockquote>\n"
-            '       <ul class="simple">\n'
-            "        <li>\n"
-            "         <p>\n"
-            "          <strong>\n"
-            "           known (bool)\n"
-            "          </strong>\n"
-            "          : whether the object was found\n"
-            "         </p>\n"
-            "        </li>\n"
-            "       </ul>\n"
-            "      </blockquote>\n"
-            "     </li>\n"
-            "    </ul>\n"
-            "   </blockquote>\n"
-            "  </div>\n"
-            " </dd>\n"
-            "</dl>\n"
-        ),
-        " " * 7,
-    )
+    if docutils.__version_info__ >= (0, 17):
+        output_html_doc = textwrap.indent(
+            (
+                '<dl class="row">\n'
+                ' <dt class="col col-md-2 text-right">\n'
+                "  object\n"
+                " </dt>\n"
+                ' <dd class="col col-md-9">\n'
+                "  <p>\n"
+                "   an object containing the following keys:\n"
+                "  </p>\n"
+                '  <div class="swh-rst">\n'
+                "   <main>\n"
+                "    <blockquote>\n"
+                "     <ul>\n"
+                "      <li>\n"
+                "       <p>\n"
+                "        <strong>\n"
+                "         &lt;swhid&gt; (object)\n"
+                "        </strong>\n"
+                "        :           an object whose keys are input SWHIDs"
+                " and values objects with the following keys:\n"
+                "       </p>\n"
+                "       <blockquote>\n"
+                '        <ul class="simple">\n'
+                "         <li>\n"
+                "          <p>\n"
+                "           <strong>\n"
+                "            known (bool)\n"
+                "           </strong>\n"
+                "           : whether the object was found\n"
+                "          </p>\n"
+                "         </li>\n"
+                "        </ul>\n"
+                "       </blockquote>\n"
+                "      </li>\n"
+                "     </ul>\n"
+                "    </blockquote>\n"
+                "   </main>\n"
+                "  </div>\n"
+                " </dd>\n"
+                "</dl>\n"
+            ),
+            " " * 7,
+        )
+    else:
+        output_html_doc = textwrap.indent(
+            (
+                '<dl class="row">\n'
+                ' <dt class="col col-md-2 text-right">\n'
+                "  object\n"
+                " </dt>\n"
+                ' <dd class="col col-md-9">\n'
+                "  <p>\n"
+                "   an object containing the following keys:\n"
+                "  </p>\n"
+                '  <div class="swh-rst">\n'
+                '   <div class="document">\n'
+                "    <blockquote>\n"
+                "     <ul>\n"
+                "      <li>\n"
+                "       <p>\n"
+                "        <strong>\n"
+                "         &lt;swhid&gt; (object)\n"
+                "        </strong>\n"
+                "        :           an object whose keys are input SWHIDs"
+                " and values objects with the following keys:\n"
+                "       </p>\n"
+                "       <blockquote>\n"
+                '        <ul class="simple">\n'
+                "         <li>\n"
+                "          <p>\n"
+                "           <strong>\n"
+                "            known (bool)\n"
+                "           </strong>\n"
+                "           : whether the object was found\n"
+                "          </p>\n"
+                "         </li>\n"
+                "        </ul>\n"
+                "       </blockquote>\n"
+                "      </li>\n"
+                "     </ul>\n"
+                "    </blockquote>\n"
+                "   </div>\n"
+                "  </div>\n"
+                " </dd>\n"
+                "</dl>"
+            ),
+            " " * 7,
+        )
 
     html = prettify_html(rv.content)
 
@@ -471,7 +520,7 @@ def test_apidoc_with_links(client):
             " /api/1/content/\n"
             "</a>"
         ),
-        " " * 9,
+        " " * 10,
     )
 
     second_link = textwrap.indent(
@@ -480,7 +529,7 @@ def test_apidoc_with_links(client):
             " /api/1/directory/\n"
             "</a>"
         ),
-        " " * 9,
+        " " * 10,
     )
 
     third_link = textwrap.indent(
@@ -490,7 +539,7 @@ def test_apidoc_with_links(client):
             " archive\n"
             "</a>"
         ),
-        " " * 9,
+        " " * 10,
     )
 
     assert first_link in html

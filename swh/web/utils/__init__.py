@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from docutils.core import publish_parts
 import docutils.parsers.rst
 import docutils.utils
+from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 from pkg_resources import get_distribution
@@ -360,8 +361,8 @@ class _NoHeaderHTMLTranslator(HTMLTranslator):
 
     def __init__(self, document):
         super().__init__(document)
-        self.body_prefix = []
-        self.body_suffix = []
+        self.body_prefix = [""]
+        self.body_suffix = [""]
 
 
 _HTML_WRITER = Writer()
@@ -386,8 +387,11 @@ def rst_to_html(rst: str) -> str:
         "file_insertion_enabled": False,
         "raw_enabled": False,
     }
-    pp = publish_parts(rst, writer=_HTML_WRITER, settings_overrides=settings)
-    return f'<div class="swh-rst">{pp["html_body"]}</div>'
+    try:
+        pp = publish_parts(rst, writer=_HTML_WRITER, settings_overrides=settings)
+        return f'<div class="swh-rst">{pp["html_body"]}</div>'
+    except SystemMessage:
+        return f'<div class="swh-readme-txt"><pre>{rst}</pre></div>'
 
 
 def prettify_html(html: str) -> str:

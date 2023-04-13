@@ -523,6 +523,7 @@ hr.swh-faded-line {
 .swh-readme-txt pre {
     background: none;
     border: none;
+    white-space: pre-wrap;
 }
 
 .swh-coverage {
