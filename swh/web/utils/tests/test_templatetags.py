@@ -43,7 +43,6 @@ def test_urlize_email():
     ],
 )
 def test_urlize_header_links(next_link, prev_link):
-
     link_header = f'<{next_link}>; rel="next",<{prev_link}>; rel="previous"'
 
     assert (
@@ -72,7 +71,7 @@ def test_docstring_display():
     )
 
     expected_docstring = (
-        '<div class="swh-rst">'
+        '<div class="swh-rst"><div class="document">\n'
         "<p>This is my list header:</p>\n"
         "<blockquote>\n"
         '<ul class="simple">\n'
@@ -82,6 +81,7 @@ def test_docstring_display():
         "</ul>\n"
         "<p>Here is something that is not part of the list</p>\n"
         "</blockquote>\n"
+        "</div>\n"
         "</div>"
     )
 
