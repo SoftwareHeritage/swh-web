@@ -56,6 +56,7 @@ function _mergeOptions(
       ...(clientOptions.ignoreErrors || []),
       ...DEFAULT_IGNORE_ERRORS,
     ],
+    ignoreTransactions: [...(internalOptions.ignoreTransactions || []), ...(clientOptions.ignoreTransactions || [])],
     ignoreInternal: internalOptions.ignoreInternal !== undefined ? internalOptions.ignoreInternal : true,
   };
 }
@@ -71,6 +72,13 @@ function _shouldDropEvent(event, options) {
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
       logger.warn(
         `Event dropped due to being matched by \`ignoreErrors\` option.\nEvent: ${getEventDescription(event)}`,
+      );
+    return true;
+  }
+  if (_isIgnoredTransaction(event, options.ignoreTransactions)) {
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+      logger.warn(
+        `Event dropped due to being matched by \`ignoreTransactions\` option.\nEvent: ${getEventDescription(event)}`,
       );
     return true;
   }
@@ -102,6 +110,15 @@ function _isIgnoredError(event, ignoreErrors) {
   }
 
   return _getPossibleEventMessages(event).some(message => stringMatchesSomePattern(message, ignoreErrors));
+}
+
+function _isIgnoredTransaction(event, ignoreTransactions) {
+  if (event.type !== 'transaction' || !ignoreTransactions || !ignoreTransactions.length) {
+    return false;
+  }
+
+  const name = event.transaction;
+  return name ? stringMatchesSomePattern(name, ignoreTransactions) : false;
 }
 
 function _isDeniedUrl(event, denyUrls) {

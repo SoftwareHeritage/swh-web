@@ -79,7 +79,8 @@ const cssLoaders = [
               'rules': {
                 'font-family-no-missing-generic-family-keyword': null,
                 'no-descending-specificity': null,
-                'selector-class-pattern': null
+                'selector-class-pattern': null,
+                'media-feature-range-notation': 'prefix'
               },
               'ignoreFiles': ['node_modules/**/*.css',
                               'assets/src/thirdparty/**/*.css']

@@ -128,22 +128,5 @@ function stringMatchesSomePattern(
   return patterns.some(pattern => isMatchingPattern(testString, pattern, requireExactStringMatch));
 }
 
-/**
- * Given a string, escape characters which have meaning in the regex grammar, such that the result is safe to feed to
- * `new RegExp()`.
- *
- * Based on https://github.com/sindresorhus/escape-string-regexp. Vendored to a) reduce the size by skipping the runtime
- * type-checking, and b) ensure it gets down-compiled for old versions of Node (the published package only supports Node
- * 12+).
- *
- * @param regexString The string to escape
- * @returns An version of the string with all special regex characters escaped
- */
-function escapeStringForRegex(regexString) {
-  // escape the hyphen separately so we can also replace it with a unicode literal hyphen, to avoid the problems
-  // discussed in https://github.com/sindresorhus/escape-string-regexp/issues/20.
-  return regexString.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
-}
-
-export { escapeStringForRegex, isMatchingPattern, safeJoin, snipLine, stringMatchesSomePattern, truncate };
+export { isMatchingPattern, safeJoin, snipLine, stringMatchesSomePattern, truncate };
 //# sourceMappingURL=string.js.map
