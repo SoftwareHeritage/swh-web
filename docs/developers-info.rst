@@ -15,7 +15,7 @@ The following introduces a default configuration file:
             url: http://localhost:5002
     debug: false
     throttling:
-        cache_uri: None
+        cache_uri: null
         scopes:
             swh_api:
                 limiter_rate:

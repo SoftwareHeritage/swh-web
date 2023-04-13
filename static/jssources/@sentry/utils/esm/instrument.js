@@ -2,8 +2,9 @@ import { isInstanceOf, isString } from './is.js';
 import { logger, CONSOLE_LEVELS } from './logger.js';
 import { fill } from './object.js';
 import { getFunctionName } from './stacktrace.js';
-import { supportsNativeFetch, supportsHistory } from './supports.js';
+import { supportsNativeFetch } from './supports.js';
 import { getGlobalObject } from './worldwide.js';
+import { supportsHistory } from './vendor/supportsHistory.js';
 
 // eslint-disable-next-line deprecation/deprecation
 const WINDOW = getGlobalObject();

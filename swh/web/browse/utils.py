@@ -767,7 +767,7 @@ def get_readme_to_display(
         )
         def _rst_readme_to_html(readme_sha1):
             rst_doc = request_content(readme_sha1)
-            return rst_to_html(rst_doc["raw_data"])
+            return rst_to_html(rst_doc["raw_data"].decode("utf-8", errors="replace"))
 
         readme_html = _rst_readme_to_html(readme_sha1)
 

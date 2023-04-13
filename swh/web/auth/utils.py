@@ -20,7 +20,6 @@ ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
 MAILMAP_PERMISSION = "swh.web.mailmap"
 ADD_FORGE_MODERATOR_PERMISSION = "swh.web.add_forge_now.moderator"
 MAILMAP_ADMIN_PERMISSION = "swh.web.admin.mailmap"
-API_RAW_OBJECT_PERMISSION = "swh.web.api.raw_object"
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:

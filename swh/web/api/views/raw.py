@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 from django.http import HttpResponse
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from swh.model import model
@@ -21,7 +20,6 @@ from swh.storage.algos.directory import directory_get
 from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.auth.utils import API_RAW_OBJECT_PERMISSION
 from swh.web.utils import SWHID_RE, archive
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import parse_core_swhid
@@ -45,10 +43,6 @@ def api_raw_object(request: Request, swhid: str):
         so can be used to fetch a binary blob which hashes to the same
         identifier.
 
-        .. warning::
-            That endpoint is not publicly available and requires authentication and
-            special user permission in order to be able to request it.
-
         :param string swhid: the object's SWHID
 
         :resheader Content-Type: application/octet-stream
@@ -62,9 +56,6 @@ def api_raw_object(request: Request, swhid: str):
 
             :swh_web_api:`raw/swh:1:snp:6a3a2cf0b2b90ce7ae1cf0a221ed68035b686f5a`
     """
-    if not (request.user.is_staff or request.user.has_perm(API_RAW_OBJECT_PERMISSION)):
-        raise PermissionDenied()
-
     parsed_swhid = parse_core_swhid(swhid)
     object_id = parsed_swhid.object_id
     object_type = parsed_swhid.object_type
@@ -92,13 +83,13 @@ def api_raw_object(request: Request, swhid: str):
         result = directory_git_object(dir_)
 
     elif object_type == ObjectType.REVISION:
-        rev = archive.storage.revision_get([object_id], ignore_displayname=True)[0]
+        rev = archive.storage.revision_get([object_id])[0]
         if rev is None:
             raise not_found()
         result = revision_git_object(rev)
 
     elif object_type == ObjectType.RELEASE:
-        rel = archive.storage.release_get([object_id], ignore_displayname=True)[0]
+        rel = archive.storage.release_get([object_id])[0]
         if rel is None:
             raise not_found()
         result = release_git_object(rel)

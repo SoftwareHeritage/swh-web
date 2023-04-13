@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import docutils
 import pytest
 
 from swh.web.api.apiresponse import compute_link_header
@@ -83,5 +84,21 @@ def test_docstring_display():
         "</blockquote>\n"
         "</div>"
     )
+
+    if docutils.__version_info__ >= (0, 17):
+        expected_docstring = (
+            '<div class="swh-rst"><main>\n'
+            "<p>This is my list header:</p>\n"
+            "<blockquote>\n"
+            '<ul class="simple">\n'
+            "<li><p>Here is item 1, with a continuation\n"
+            "line right here</p></li>\n"
+            "<li><p>Here is item 2</p></li>\n"
+            "</ul>\n"
+            "<p>Here is something that is not part of the list</p>\n"
+            "</blockquote>\n"
+            "</main>\n"
+            "</div>"
+        )
 
     assert docstring_display(docstring) == expected_docstring
