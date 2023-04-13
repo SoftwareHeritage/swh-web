@@ -117,11 +117,8 @@ def api_graph(request: Request) -> None:
 
             :swh_web_api:`graph/leaves/swh:1:dir:432d1b21c1256f7408a07c577b6974bbdbcc1323/`
             :swh_web_api:`graph/neighbors/swh:1:rev:f39d7d78b70e0f39facb1e4fab77ad3df5c52a35/`
-            :swh_web_api:`graph/randomwalk/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2/ori?direction=backward`
-            :swh_web_api:`graph/randomwalk/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2/ori?direction=backward&limit=-2`
             :swh_web_api:`graph/visit/nodes/swh:1:snp:40f9f177b8ab0b7b3d70ee14bbc8b214e2b2dcfc?direction=backward&resolve_origins=true`
             :swh_web_api:`graph/visit/edges/swh:1:snp:40f9f177b8ab0b7b3d70ee14bbc8b214e2b2dcfc?direction=backward&resolve_origins=true`
-            :swh_web_api:`graph/visit/paths/swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb?direction=backward&resolve_origins=true`
 
     """
     return None
