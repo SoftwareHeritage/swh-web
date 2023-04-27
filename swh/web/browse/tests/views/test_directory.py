@@ -577,7 +577,8 @@ def test_browse_directory_with_path_targeting_file(
     if legacy_url:
         browse_url = reverse(
             "browse-directory-legacy",
-            url_args={"sha1_git": directory_with_files,
+            url_args={
+                "sha1_git": directory_with_files,
                 "path": file_entry["name"],
             },
         )
