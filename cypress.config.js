@@ -28,7 +28,7 @@ module.exports = defineConfig({
   retries: {
     runMode: 4
   },
-  hmrUrl: 'ws://localhost:3000/ws',
+  hmrUrl: 'ws://127.0.0.1:3000/ws',
   hmrRestartDelay: 5000,
   e2e: {
     // We've imported your old cypress plugins here.
@@ -36,7 +36,7 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       return require('./cypress/plugins/index.js')(on, config);
     },
-    baseUrl: 'http://localhost:5004',
+    baseUrl: 'http://127.0.0.1:5004',
     supportFile: 'cypress/support/e2e.js'
   }
 });
