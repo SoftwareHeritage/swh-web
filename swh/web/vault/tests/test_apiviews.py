@@ -66,7 +66,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
 
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == content_type
-        assert rv.content == stub_fetch
+        assert b"".join(rv.streaming_content) == stub_fetch
         mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 
@@ -230,7 +230,7 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
 
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == "application/gzip"
-        assert rv.content == stub_fetch
+        assert b"".join(rv.streaming_content) == stub_fetch
         mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
 
 

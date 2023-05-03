@@ -1,5 +1,5 @@
 import { getCurrentHub } from '@sentry/core';
-import { addInstrumentationHandler, getEventDescription, severityLevelFromString, safeJoin, parseUrl, logger, htmlTreeAsString } from '@sentry/utils';
+import { addInstrumentationHandler, getEventDescription, severityLevelFromString, safeJoin, SENTRY_XHR_DATA_KEY, parseUrl, logger, htmlTreeAsString } from '@sentry/utils';
 import { WINDOW } from '../helpers.js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -191,12 +191,14 @@ function _consoleBreadcrumb(handlerData) {
 function _xhrBreadcrumb(handlerData) {
   const { startTimestamp, endTimestamp } = handlerData;
 
+  const sentryXhrData = handlerData.xhr[SENTRY_XHR_DATA_KEY];
+
   // We only capture complete, non-sentry requests
-  if (!startTimestamp || !endTimestamp || !handlerData.xhr.__sentry_xhr__) {
+  if (!startTimestamp || !endTimestamp || !sentryXhrData) {
     return;
   }
 
-  const { method, url, status_code, body } = handlerData.xhr.__sentry_xhr__;
+  const { method, url, status_code, body } = sentryXhrData;
 
   const data = {
     method,

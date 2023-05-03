@@ -1,4 +1,4 @@
-import { isInstanceOf, isString } from './is.js';
+import { isString } from './is.js';
 import { logger, CONSOLE_LEVELS } from './logger.js';
 import { fill } from './object.js';
 import { getFunctionName } from './stacktrace.js';
@@ -8,6 +8,8 @@ import { supportsHistory } from './vendor/supportsHistory.js';
 
 // eslint-disable-next-line deprecation/deprecation
 const WINDOW = getGlobalObject();
+
+const SENTRY_XHR_DATA_KEY = '__sentry_xhr_v2__';
 
 /**
  * Instrument native APIs to call handlers that can be used to create breadcrumbs, APM spans etc.
@@ -121,11 +123,13 @@ function instrumentFetch() {
 
   fill(WINDOW, 'fetch', function (originalFetch) {
     return function (...args) {
+      const { method, url } = parseFetchArgs(args);
+
       const handlerData = {
         args,
         fetchData: {
-          method: getFetchMethod(args),
-          url: getFetchUrl(args),
+          method,
+          url,
         },
         startTimestamp: Date.now(),
       };
@@ -160,29 +164,53 @@ function instrumentFetch() {
   });
 }
 
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/** Extract `method` from fetch call arguments */
-function getFetchMethod(fetchArgs = []) {
-  if ('Request' in WINDOW && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
-    return String(fetchArgs[0].method).toUpperCase();
-  }
-  if (fetchArgs[1] && fetchArgs[1].method) {
-    return String(fetchArgs[1].method).toUpperCase();
-  }
-  return 'GET';
+function hasProp(obj, prop) {
+  return !!obj && typeof obj === 'object' && !!(obj )[prop];
 }
 
-/** Extract `url` from fetch call arguments */
-function getFetchUrl(fetchArgs = []) {
-  if (typeof fetchArgs[0] === 'string') {
-    return fetchArgs[0];
+function getUrlFromResource(resource) {
+  if (typeof resource === 'string') {
+    return resource;
   }
-  if ('Request' in WINDOW && isInstanceOf(fetchArgs[0], Request)) {
-    return fetchArgs[0].url;
+
+  if (!resource) {
+    return '';
   }
-  return String(fetchArgs[0]);
+
+  if (hasProp(resource, 'url')) {
+    return resource.url;
+  }
+
+  if (resource.toString) {
+    return resource.toString();
+  }
+
+  return '';
 }
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
+
+/**
+ * Parses the fetch arguments to find the used Http method and the url of the request
+ */
+function parseFetchArgs(fetchArgs) {
+  if (fetchArgs.length === 0) {
+    return { method: 'GET', url: '' };
+  }
+
+  if (fetchArgs.length === 2) {
+    const [url, options] = fetchArgs ;
+
+    return {
+      url: getUrlFromResource(url),
+      method: hasProp(options, 'method') ? String(options.method).toUpperCase() : 'GET',
+    };
+  }
+
+  const arg = fetchArgs[0];
+  return {
+    url: getUrlFromResource(arg ),
+    method: hasProp(arg, 'method') ? String(arg.method).toUpperCase() : 'GET',
+  };
+}
 
 /** JSDoc */
 function instrumentXHR() {
@@ -195,10 +223,11 @@ function instrumentXHR() {
   fill(xhrproto, 'open', function (originalOpen) {
     return function ( ...args) {
       const url = args[1];
-      const xhrInfo = (this.__sentry_xhr__ = {
+      const xhrInfo = (this[SENTRY_XHR_DATA_KEY] = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         method: isString(args[0]) ? args[0].toUpperCase() : args[0],
         url: args[1],
+        request_headers: {},
       });
 
       // if Sentry key appears in URL, don't capture it as a request
@@ -209,7 +238,7 @@ function instrumentXHR() {
 
       const onreadystatechangeHandler = () => {
         // For whatever reason, this is not the same instance here as from the outer method
-        const xhrInfo = this.__sentry_xhr__;
+        const xhrInfo = this[SENTRY_XHR_DATA_KEY];
 
         if (!xhrInfo) {
           return;
@@ -244,14 +273,32 @@ function instrumentXHR() {
         this.addEventListener('readystatechange', onreadystatechangeHandler);
       }
 
+      // Intercepting `setRequestHeader` to access the request headers of XHR instance.
+      // This will only work for user/library defined headers, not for the default/browser-assigned headers.
+      // Request cookies are also unavailable for XHR, as `Cookie` header can't be defined by `setRequestHeader`.
+      fill(this, 'setRequestHeader', function (original) {
+        return function ( ...setRequestHeaderArgs) {
+          const [header, value] = setRequestHeaderArgs ;
+
+          const xhrInfo = this[SENTRY_XHR_DATA_KEY];
+
+          if (xhrInfo) {
+            xhrInfo.request_headers[header.toLowerCase()] = value;
+          }
+
+          return original.apply(this, setRequestHeaderArgs);
+        };
+      });
+
       return originalOpen.apply(this, args);
     };
   });
 
   fill(xhrproto, 'send', function (originalSend) {
     return function ( ...args) {
-      if (this.__sentry_xhr__ && args[0] !== undefined) {
-        this.__sentry_xhr__.body = args[0];
+      const sentryXhrData = this[SENTRY_XHR_DATA_KEY];
+      if (sentryXhrData && args[0] !== undefined) {
+        sentryXhrData.body = args[0];
       }
 
       triggerHandlers('xhr', {
@@ -550,13 +597,15 @@ function instrumentError() {
       url,
     });
 
-    if (_oldOnErrorHandler) {
+    if (_oldOnErrorHandler && !_oldOnErrorHandler.__SENTRY_LOADER__) {
       // eslint-disable-next-line prefer-rest-params
       return _oldOnErrorHandler.apply(this, arguments);
     }
 
     return false;
   };
+
+  WINDOW.onerror.__SENTRY_INSTRUMENTED__ = true;
 }
 
 let _oldOnUnhandledRejectionHandler = null;
@@ -567,14 +616,16 @@ function instrumentUnhandledRejection() {
   WINDOW.onunhandledrejection = function (e) {
     triggerHandlers('unhandledrejection', e);
 
-    if (_oldOnUnhandledRejectionHandler) {
+    if (_oldOnUnhandledRejectionHandler && !_oldOnUnhandledRejectionHandler.__SENTRY_LOADER__) {
       // eslint-disable-next-line prefer-rest-params
       return _oldOnUnhandledRejectionHandler.apply(this, arguments);
     }
 
     return true;
   };
+
+  WINDOW.onunhandledrejection.__SENTRY_INSTRUMENTED__ = true;
 }
 
-export { addInstrumentationHandler };
+export { SENTRY_XHR_DATA_KEY, addInstrumentationHandler, parseFetchArgs };
 //# sourceMappingURL=instrument.js.map
