@@ -3,6 +3,7 @@ import { getSDKSource, logger, createClientReportEnvelope, dsnToString } from '@
 import { eventFromException, eventFromMessage } from './eventbuilder.js';
 import { WINDOW } from './helpers.js';
 import { BREADCRUMB_INTEGRATION_ID } from './integrations/breadcrumbs.js';
+import { createUserFeedbackEnvelope } from './userfeedback.js';
 
 /**
  * Configuration options for the Sentry Browser SDK.
@@ -84,6 +85,23 @@ class BrowserClient extends BaseClient {
     }
 
     super.sendEvent(event, hint);
+  }
+
+  /**
+   * Sends user feedback to Sentry.
+   */
+   captureUserFeedback(feedback) {
+    if (!this._isEnabled()) {
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('SDK not enabled, will not capture user feedback.');
+      return;
+    }
+
+    const envelope = createUserFeedbackEnvelope(feedback, {
+      metadata: this.getSdkMetadata(),
+      dsn: this.getDsn(),
+      tunnel: this.getOptions().tunnel,
+    });
+    void this._sendEnvelope(envelope);
   }
 
   /**

@@ -23,7 +23,7 @@ import { getFunctionName } from './stacktrace.js';
  * @returns A normalized version of the object, or `"**non-serializable**"` if any errors are thrown during normalization.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalize(input, depth = +Infinity, maxProperties = +Infinity) {
+function normalize(input, depth = 100, maxProperties = +Infinity) {
   try {
     // since we're at the outermost level, we don't provide a key
     return visit('', input, depth, maxProperties);
@@ -90,17 +90,16 @@ function visit(
     return value ;
   }
 
-  // Do not normalize objects that we know have already been normalized. As a general rule, the
-  // "__sentry_skip_normalization__" property should only be used sparingly and only should only be set on objects that
-  // have already been normalized.
-  let overriddenDepth = depth;
-
-  if (typeof (value )['__sentry_override_normalization_depth__'] === 'number') {
-    overriddenDepth = (value )['__sentry_override_normalization_depth__'] ;
-  }
+  // We can set `__sentry_override_normalization_depth__` on an object to ensure that from there
+  // We keep a certain amount of depth.
+  // This should be used sparingly, e.g. we use it for the redux integration to ensure we get a certain amount of state.
+  const remainingDepth =
+    typeof (value )['__sentry_override_normalization_depth__'] === 'number'
+      ? ((value )['__sentry_override_normalization_depth__'] )
+      : depth;
 
   // We're also done if we've reached the max depth
-  if (overriddenDepth === 0) {
+  if (remainingDepth === 0) {
     // At this point we know `serialized` is a string of the form `"[object XXXX]"`. Clean it up so it's just `"[XXXX]"`.
     return stringified.replace('object ', '');
   }
@@ -116,7 +115,7 @@ function visit(
     try {
       const jsonValue = valueWithToJSON.toJSON();
       // We need to normalize the return value of `.toJSON()` in case it has circular references
-      return visit('', jsonValue, overriddenDepth - 1, maxProperties, memo);
+      return visit('', jsonValue, remainingDepth - 1, maxProperties, memo);
     } catch (err) {
       // pass (The built-in `toJSON` failed, but we can still try to do it ourselves)
     }
@@ -145,7 +144,7 @@ function visit(
 
     // Recursively visit all the child nodes
     const visitValue = visitable[visitKey];
-    normalized[visitKey] = visit(visitKey, visitValue, overriddenDepth - 1, maxProperties, memo);
+    normalized[visitKey] = visit(visitKey, visitValue, remainingDepth - 1, maxProperties, memo);
 
     numAdded++;
   }
@@ -157,6 +156,7 @@ function visit(
   return normalized;
 }
 
+/* eslint-disable complexity */
 /**
  * Stringify the given value. Handles various known special values and types.
  *
@@ -229,11 +229,19 @@ function stringifyValue(
     // them to strings means that instances of classes which haven't defined their `toStringTag` will just come out as
     // `"[object Object]"`. If we instead look at the constructor's name (which is the same as the name of the class),
     // we can make sure that only plain objects come out that way.
-    return `[object ${getConstructorName(value)}]`;
+    const objName = getConstructorName(value);
+
+    // Handle HTML Elements
+    if (/^HTML(\w*)Element$/.test(objName)) {
+      return `[HTMLElement: ${objName}]`;
+    }
+
+    return `[object ${objName}]`;
   } catch (err) {
     return `**non-serializable** (${err})`;
   }
 }
+/* eslint-enable complexity */
 
 function getConstructorName(value) {
   const prototype = Object.getPrototypeOf(value);

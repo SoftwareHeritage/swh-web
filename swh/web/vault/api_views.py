@@ -1,11 +1,12 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import io
 from typing import Any, Dict
 
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import redirect
 from rest_framework.request import Request
 
@@ -198,19 +199,20 @@ def api_vault_fetch_flat(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    res = api_lookup(
+    archive_bytes = api_lookup(
         archive.vault_fetch,
         "flat",
         parse_core_swhid(swhid),
         notfound_msg=f"Cooked archive for {swhid} not found.",
         request=request,
     )
-    fname = "{}.tar.gz".format(swhid)
-    response = HttpResponse(res, content_type="application/gzip")
-    response["Content-disposition"] = "attachment; filename={}".format(
-        fname.replace(":", "_")
+    fname = "{}.tar.gz".format(swhid).replace(":", "_")
+    return FileResponse(
+        io.BytesIO(archive_bytes),
+        content_type="application/gzip",
+        filename=fname,
+        as_attachment=True,
     )
-    return response
 
 
 @api_route(
@@ -371,19 +373,20 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    res = api_lookup(
+    archive_bytes = api_lookup(
         archive.vault_fetch,
         "gitfast",
         parse_core_swhid(swhid),
         notfound_msg="Cooked archive for {} not found.".format(swhid),
         request=request,
     )
-    fname = "{}.gitfast.gz".format(swhid)
-    response = HttpResponse(res, content_type="application/gzip")
-    response["Content-disposition"] = "attachment; filename={}".format(
-        fname.replace(":", "_")
+    fname = "{}.gitfast.gz".format(swhid).replace(":", "_")
+    return FileResponse(
+        io.BytesIO(archive_bytes),
+        content_type="application/gzip",
+        filename=fname,
+        as_attachment=True,
     )
-    return response
 
 
 @api_route(
@@ -516,16 +519,17 @@ def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    res = api_lookup(
+    archive_bytes = api_lookup(
         archive.vault_fetch,
         "git_bare",
         parse_core_swhid(swhid),
         notfound_msg="Cooked archive for {} not found.".format(swhid),
         request=request,
     )
-    fname = "{}.git.tar".format(swhid)
-    response = HttpResponse(res, content_type="application/x-tar")
-    response["Content-disposition"] = "attachment; filename={}".format(
-        fname.replace(":", "_")
+    fname = "{}.git.tar".format(swhid).replace(":", "_")
+    return FileResponse(
+        io.BytesIO(archive_bytes),
+        content_type="application/x-tar",
+        filename=fname,
+        as_attachment=True,
     )
-    return response

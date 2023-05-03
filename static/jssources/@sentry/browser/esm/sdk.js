@@ -279,5 +279,15 @@ function startSessionTracking() {
   });
 }
 
-export { close, defaultIntegrations, flush, forceLoad, init, lastEventId, onLoad, showReportDialog, wrap };
+/**
+ * Captures user feedback and sends it to Sentry.
+ */
+function captureUserFeedback(feedback) {
+  const client = getCurrentHub().getClient();
+  if (client) {
+    client.captureUserFeedback(feedback);
+  }
+}
+
+export { captureUserFeedback, close, defaultIntegrations, flush, forceLoad, init, lastEventId, onLoad, showReportDialog, wrap };
 //# sourceMappingURL=sdk.js.map
