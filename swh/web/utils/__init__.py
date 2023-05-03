@@ -457,9 +457,9 @@ def django_cache(
 
 
 def _deposits_list_url(
-    deposits_list_base_url: str, page_size: int, username: Optional[str]
+    deposits_list_base_url: str, page_size: int, page: int, username: Optional[str]
 ) -> str:
-    params = {"page_size": str(page_size)}
+    params = {"page_size": str(page_size), "page": page}
     if username is not None:
         params["username"] = username
     return f"{deposits_list_base_url}?{urllib.parse.urlencode(params)}"
@@ -474,28 +474,31 @@ def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
         config["private_api_user"], config["private_api_password"]
     )
 
-    deposits_list_url = _deposits_list_url(
-        deposits_list_base_url, page_size=1, username=username
-    )
+    page = 1
+    page_size = 1000
+    deposits = []
 
-    nb_deposits = requests.get(
-        deposits_list_url, auth=deposits_list_auth, timeout=30
-    ).json()["count"]
-
-    @django_cache(invalidate_cache_pred=lambda data: data["count"] != nb_deposits)
-    def _get_deposits_data():
+    while True:
         deposits_list_url = _deposits_list_url(
-            deposits_list_base_url, page_size=nb_deposits, username=username
+            deposits_list_base_url, page_size=page_size, page=page, username=username
         )
-        return requests.get(
-            deposits_list_url,
-            auth=deposits_list_auth,
-            timeout=30,
-        ).json()
+        deposits_data = (
+            requests.get(
+                deposits_list_url,
+                auth=deposits_list_auth,
+                timeout=30,
+            )
+            .json()
+            .get("results", [])
+        )
 
-    deposits_data = _get_deposits_data()
+        deposits += deposits_data
+        page += 1
 
-    return deposits_data["results"]
+        if len(deposits_data) < page_size:
+            break
+
+    return deposits
 
 
 _origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours

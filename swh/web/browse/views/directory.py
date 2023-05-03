@@ -45,7 +45,7 @@ def _directory_browse(
         if "origin_url" not in params:
             # no origin context, prepend root directory id to path for
             # breadcrumbs navigation
-            params["path"] = f'{sha1_git}/{params["path"]}'
+            params["path"] = f"{sha1_git}/{path}"
         browse_content_url = reverse(
             "browse-content",
             url_args={"query_string": f"sha1_git:{dir_sha1_git}"},

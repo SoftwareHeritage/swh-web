@@ -565,21 +565,31 @@ def test_browse_directory_snapshot_context_release_directory_target(
     )
 
 
+@pytest.mark.parametrize("legacy_url", [True, False])
 def test_browse_directory_with_path_targeting_file(
-    client, archive_data, directory_with_files
+    client, archive_data, directory_with_files, legacy_url
 ):
     dir_content = archive_data.directory_ls(directory_with_files)
     file_entry = random.choice(
         [entry for entry in dir_content if entry["type"] == "file"]
     )
 
-    browse_url = reverse(
-        "browse-directory",
-        url_args={"sha1_git": directory_with_files},
-        query_params={
-            "path": file_entry["name"],
-        },
-    )
+    if legacy_url:
+        browse_url = reverse(
+            "browse-directory-legacy",
+            url_args={
+                "sha1_git": directory_with_files,
+                "path": file_entry["name"],
+            },
+        )
+    else:
+        browse_url = reverse(
+            "browse-directory",
+            url_args={"sha1_git": directory_with_files},
+            query_params={
+                "path": file_entry["name"],
+            },
+        )
 
     resp = check_http_get_response(client, browse_url, status_code=302)
 
