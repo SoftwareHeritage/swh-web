@@ -514,6 +514,10 @@ def test_apidoc_with_links(client):
 
     html = prettify_html(rv.content)
 
+    endpoint_full_url = textwrap.indent(
+        "<p>\n http://testserver/api/1/post/endpoint/\n</p>", " " * 13
+    )
+
     first_link = textwrap.indent(
         (
             '<a class="reference external" href="/api/1/content/doc/">\n'
@@ -542,6 +546,7 @@ def test_apidoc_with_links(client):
         " " * 10,
     )
 
+    assert endpoint_full_url in html
     assert first_link in html
     assert second_link in html
     assert third_link in html
