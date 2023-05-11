@@ -10,10 +10,7 @@ import pytest
 from swh.model.hashutil import hash_to_bytes
 from swh.web.api.throttling import SwhWebUserRateThrottle
 from swh.web.settings.tests import api_raw_object_rate
-from swh.web.tests.helpers import (
-    check_api_get_responses,
-    check_http_get_response,
-)
+from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
 from swh.web.utils import reverse
 
 
@@ -73,9 +70,7 @@ def test_api_raw_snapshot(api_client, archive_data, snapshot, regular_user):
 
 
 @pytest.mark.django_db
-def test_api_raw_rate_limit(
-    api_client, revision, regular_user
-):
+def test_api_raw_rate_limit(api_client, revision, regular_user):
 
     api_client.force_login(regular_user)
 
