@@ -144,8 +144,9 @@ function _getPossibleEventMessages(event) {
     return [event.message];
   }
   if (event.exception) {
+    const { values } = event.exception;
     try {
-      const { type = '', value = '' } = (event.exception.values && event.exception.values[0]) || {};
+      const { type = '', value = '' } = (values && values[values.length - 1]) || {};
       return [`${value}`, `${type}: ${value}`];
     } catch (oO) {
       (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(`Cannot extract message for event ${getEventDescription(event)}`);

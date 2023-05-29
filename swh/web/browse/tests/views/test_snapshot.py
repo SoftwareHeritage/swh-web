@@ -259,7 +259,7 @@ def test_snapshot_branches_pagination_with_alias(
     in the branches / releases view should be displayed.
     """
     revisions = revisions_list(size=10)
-    mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) / 2)
+    mocker.patch("swh.web.browse.snapshot_context.PER_PAGE", len(revisions) // 2)
     snp_dict = {"branches": {}, "id": hash_to_bytes(random_sha1())}
     for i in range(len(revisions)):
         branch = "".join(random.choices(string.ascii_lowercase, k=8))

@@ -1,3 +1,4 @@
+import { logger, uuid4 } from '@sentry/utils';
 import { getCurrentHub } from './hub.js';
 
 // Note: All functions in this file are typed with a return value of `ReturnType<Hub[HUB_FUNCTION]>`,
@@ -168,5 +169,25 @@ function startTransaction(
   return getCurrentHub().startTransaction({ ...context }, customSamplingContext);
 }
 
-export { addBreadcrumb, captureEvent, captureException, captureMessage, configureScope, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withScope };
+/**
+ * Create a cron monitor check in and send it to Sentry.
+ *
+ * @param checkIn An object that describes a check in.
+ * @param upsertMonitorConfig An optional object that describes a monitor config. Use this if you want
+ * to create a monitor automatically when sending a check in.
+ */
+function captureCheckIn(checkIn, upsertMonitorConfig) {
+  const client = getCurrentHub().getClient();
+  if (!client) {
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot capture check-in. No client defined.');
+  } else if (!client.captureCheckIn) {
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot capture check-in. Client does not support sending check-ins.');
+  } else {
+    return client.captureCheckIn(checkIn, upsertMonitorConfig);
+  }
+
+  return uuid4();
+}
+
+export { addBreadcrumb, captureCheckIn, captureEvent, captureException, captureMessage, configureScope, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withScope };
 //# sourceMappingURL=exports.js.map
