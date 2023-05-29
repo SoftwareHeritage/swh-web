@@ -10,7 +10,7 @@
 // import required webpack plugins
 const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const SentryCliPlugin = require('@sentry/webpack-plugin');
+const sentryWebpackPlugin = require('@sentry/webpack-plugin').sentryWebpackPlugin;
 const shelljs = require('shelljs');
 
 // import webpack development configuration
@@ -40,15 +40,18 @@ webpackProdConfig.optimization.minimizer = [
 ];
 
 // upload js source maps to Sentry for better debugging
-webpackProdConfig.plugins.push(new SentryCliPlugin({
-  include: 'static/js',
-  urlPrefix: '~/static/js',
+webpackProdConfig.plugins.push(sentryWebpackPlugin({
   org: 'swh',
   project: 'swh-webapp',
   url: 'https://sentry.softwareheritage.org/',
   dryRun: process.env.SENTRY_AUTH_TOKEN === undefined,
-  release: shelljs.exec('git describe --abbrev=0', {silent: true}).stdout.slice(1, -1),
-  sourceMapReference: false
+  sourcemaps: {
+    assets: ['static/js/**']
+  },
+  release: {
+    name: shelljs.exec('git describe --abbrev=0', {silent: true}).stdout.slice(1, -1)
+  },
+  telemetry: false
 }));
 
 // prevent modules concatenation for generating weblabels
