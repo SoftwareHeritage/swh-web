@@ -25,7 +25,7 @@ class GitlabOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         )
 
     def is_push_event(self, request: Request) -> bool:
-        return request.headers["X-Gitlab-Event"] == "Push Hook"
+        return "Push Hook" in request.headers["X-Gitlab-Event"]
 
     def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
         repo_url = request.data.get("repository", {}).get("git_http_url", "")

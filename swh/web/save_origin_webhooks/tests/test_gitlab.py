@@ -19,13 +19,14 @@ from .utils import (
 
 
 @pytest.mark.django_db
-def test_origin_save_gitlab_webhook_receiver(api_client, swh_scheduler, datadir):
+@pytest.mark.parametrize("event", ["Push Hook", "Tag Push Hook"])
+def test_origin_save_gitlab_webhook_receiver(api_client, swh_scheduler, datadir, event):
     with open(os.path.join(datadir, "gitlab_webhook_payload.json"), "rb") as payload:
         origin_save_webhook_receiver_test(
             forge_type="GitLab",
             http_headers={
                 "User-Agent": "GitLab/15.6.0-pre",
-                "X-Gitlab-Event": "Push Hook",
+                "X-Gitlab-Event": event,
             },
             payload=json.load(payload),
             expected_origin_url="https://gitlab.com/johndoe/test.git",

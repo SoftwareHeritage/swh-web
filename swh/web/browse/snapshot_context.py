@@ -1211,7 +1211,7 @@ def browse_snapshot_branches(
     snapshot = archive.lookup_snapshot(
         snapshot_context["snapshot_id"],
         branches_from,
-        PER_PAGE + 1,
+        PER_PAGE,
         target_types=["content", "directory", "revision", "alias"],
         branch_name_include_substring=branch_name_include,
     )
@@ -1271,8 +1271,7 @@ def browse_snapshot_branches(
 
     if snapshot and snapshot["next_branch"] is not None:
         query_params_next = dict(query_params)
-        next_branch = displayed_branches[-1]["name"]
-        del displayed_branches[-1]
+        next_branch = snapshot["next_branch"]
         branches_bc.append(next_branch)
         query_params_next["branches_breadcrumbs"] = ",".join(branches_bc)
         next_branches_url = reverse(
@@ -1334,10 +1333,11 @@ def browse_snapshot_releases(
     snapshot = archive.lookup_snapshot(
         snapshot_context["snapshot_id"],
         rel_from,
-        PER_PAGE + 1,
+        PER_PAGE,
         target_types=["release", "alias"],
         branch_name_include_substring=release_name_include,
     )
+
     displayed_releases: List[Dict[str, Any]] = []
     if snapshot:
         _, releases, _ = process_snapshot_branches(snapshot)
@@ -1414,8 +1414,7 @@ def browse_snapshot_releases(
 
     if snapshot and snapshot["next_branch"] is not None:
         query_params_next = dict(query_params)
-        next_rel = displayed_releases[-1]["branch_name"]
-        del displayed_releases[-1]
+        next_rel = snapshot["next_branch"]
         rel_bc.append(next_rel)
         query_params_next["releases_breadcrumbs"] = ",".join(rel_bc)
         next_releases_url = reverse(

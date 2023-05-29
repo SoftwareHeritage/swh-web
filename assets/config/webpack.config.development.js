@@ -346,7 +346,8 @@ module.exports = {
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
-      filename: './static/webpack-stats.json'
+      path: './static/',
+      filename: 'webpack-stats.json'
     }),
     // for generating the robots.txt file
     new RobotstxtPlugin({
