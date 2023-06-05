@@ -172,6 +172,7 @@ DEFAULT_CONFIG = {
             "swh.web.vault",
         ],
     ),
+    "mirror_config": ("dict", {}),
 }
 
 swhweb_config: Dict[str, Any] = {}

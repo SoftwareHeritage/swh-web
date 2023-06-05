@@ -59,6 +59,9 @@ SWH_EXTRA_DJANGO_APPS = [
 
 SWH_DJANGO_APPS = SWH_BASE_DJANGO_APPS + SWH_EXTRA_DJANGO_APPS
 
+SWH_MIRROR_CONFIG = swh_web_config.get("mirror_config", {})
+if SWH_MIRROR_CONFIG:
+    assert "partner_name" in SWH_MIRROR_CONFIG
 
 INSTALLED_APPS = [
     "django.contrib.admin",

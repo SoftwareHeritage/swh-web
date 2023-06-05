@@ -22,7 +22,12 @@ See top-level LICENSE file for more information
         {% block page_title %}
         {% endblock page_title %}
 
-        &ndash; Software Heritage archive
+        &ndash;
+        {% if not SWH_MIRROR_CONFIG %}
+          Software Heritage archive
+        {% else %}
+          {{ SWH_MIRROR_CONFIG.partner_name }} Mirror of the Software Heritage archive
+        {% endif %}
       {% endblock title %}
 
     </title>
