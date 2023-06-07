@@ -790,3 +790,9 @@ div.d3-tooltip {
 .docutils.literal {
     font-family: monospace;
 }
+
+.swh-text-under-logo {
+    position: absolute;
+    left: 16px;
+    top: 45px;
+}

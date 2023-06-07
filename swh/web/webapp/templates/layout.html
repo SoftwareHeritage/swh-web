@@ -181,9 +181,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
     <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} main-sidebar-banner{% endif %} sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
-        <img class="brand-image"
-             src="{% static 'img/swh-logo.png' %}"
-             alt="swh logo"/>
+        {% if not SWH_MIRROR_CONFIG %}
+          <img class="brand-image"
+               src="{% static 'img/swh-logo.png' %}"
+               alt="swh logo"/>
+        {% else %}
+          <img class="brand-image"
+               src="{% static 'img/swh-mirror.png' %}"
+               alt="swh logo"/>
+        {% endif %}
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
           <span class="first-word">Software</span> <span class="second-word">Heritage</span>
         </div>
@@ -193,7 +199,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <span class="first-word">Software</span>
           <span class="second-word">Heritage</span>
         </div>
-        <span>Archive</span>
+        <span class="swh-text-under-logo">
+          {% if not SWH_MIRROR_CONFIG %}
+            Archive
+          {% else %}
+            Mirror
+          {% endif %}
+        </span>
       </a>
       <div class="sidebar">
         <nav class="mt-2">
@@ -241,9 +253,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                  class="nav-link swh-help-link"
                  onclick="swh.guided_tour.guidedTourButtonClick(event)">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
-                <p>
-                  Help
-                </p>
+                <p>Help</p>
               </a>
             </li>
             {% if user.is_authenticated %}

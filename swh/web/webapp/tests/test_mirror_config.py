@@ -27,3 +27,10 @@ def test_page_titles_contain_mirror_partner_name(client):
     response = client.get(url)
     # mirror info in page title only
     assert_contains(response, mirror_info, count=1)
+
+
+@override_settings(SWH_MIRROR_CONFIG=mirror_config)
+def test_pages_contain_mirror_logo(client):
+    url = reverse("swh-web-homepage")
+    response = client.get(url)
+    assert_contains(response, "img/swh-mirror.png")
