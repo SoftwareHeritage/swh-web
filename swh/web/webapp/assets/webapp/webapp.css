@@ -796,3 +796,22 @@ div.d3-tooltip {
     left: 16px;
     top: 45px;
 }
+
+.swh-mirror-partner-logo {
+    position: absolute;
+    top: 0;
+    right: 47rem;
+    z-index: 50000;
+}
+
+.sidebar-collapse .swh-mirror-partner-logo {
+    right: 36rem;
+}
+
+.swh-mirror-partner-logo-no-search {
+    right: 15rem;
+}
+
+.sidebar-collapse .swh-mirror-partner-logo-no-search {
+    right: 5rem;
+}

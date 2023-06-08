@@ -3,16 +3,42 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.test.utils import override_settings
+from importlib import reload
+import os
+import shutil
+import tempfile
 
+import pytest
+
+from django.conf import settings
+from django.contrib.staticfiles import finders
+
+from swh.web.config import get_config
+from swh.web.settings import common as common_settings
+from swh.web.settings import tests as tests_settings
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.utils import reverse
 
 partner_name = "Example"
-mirror_config = {"partner_name": partner_name}
+mirror_config = {
+    "partner_name": partner_name,
+    "static_path": tempfile.mkdtemp(),
+    "partner_logo_static_path": "mirror-partner-logo.png",
+}
 
 
-@override_settings(SWH_MIRROR_CONFIG=mirror_config)
+@pytest.fixture(autouse=True)
+def mirror_config_setter(mocker):
+    """Plug mirror config in django settings and reload the latters"""
+    config = get_config()
+    config["mirror_config"] = mirror_config
+    mocker.patch("swh.web.settings.common.get_config").return_value = config
+    reload(common_settings)
+    reload(tests_settings)
+    settings._setup()
+    finders.get_finder.cache_clear()
+
+
 def test_page_titles_contain_mirror_partner_name(client):
     url = reverse("swh-web-homepage")
     response = client.get(url)
@@ -29,8 +55,21 @@ def test_page_titles_contain_mirror_partner_name(client):
     assert_contains(response, mirror_info, count=1)
 
 
-@override_settings(SWH_MIRROR_CONFIG=mirror_config)
 def test_pages_contain_mirror_logo(client):
     url = reverse("swh-web-homepage")
     response = client.get(url)
     assert_contains(response, "img/swh-mirror.png")
+
+
+def test_pages_contain_mirror_partner_logo(client):
+    swh_logo_path = finders.find("img/swh-logo.png")
+    swh_partner_logo_path = os.path.join(
+        mirror_config["static_path"], mirror_config["partner_logo_static_path"]
+    )
+    shutil.copyfile(swh_logo_path, swh_partner_logo_path)
+
+    assert finders.find(mirror_config["partner_logo_static_path"]) is not None
+
+    url = reverse("swh-web-homepage")
+    response = client.get(url)
+    assert_contains(response, mirror_config["partner_logo_static_path"])
