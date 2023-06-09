@@ -51,6 +51,7 @@ See top-level LICENSE file for more information
                class="form-control"
                id="swh-input-origin-url"
                oninput="swh.save_code_now.validateSaveOriginUrl(this)"
+               value="{{ origin_url }}"
                required/>
         <div class="invalid-feedback">
           The origin url is not valid or does not reference a code repository
