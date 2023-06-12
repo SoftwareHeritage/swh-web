@@ -815,3 +815,9 @@ div.d3-tooltip {
 .sidebar-collapse .swh-mirror-partner-logo-no-search {
     right: 5rem;
 }
+
+.sidebar-collapse .swh-origin-save-link .mdi-open-in-new {
+    position: absolute;
+    left: 35px;
+    top: 5px;
+}

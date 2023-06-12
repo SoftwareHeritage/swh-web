@@ -73,3 +73,14 @@ def test_pages_contain_mirror_partner_logo(client):
     url = reverse("swh-web-homepage")
     response = client.get(url)
     assert_contains(response, mirror_config["partner_logo_static_path"])
+
+
+def test_pages_contain_save_code_now_external_link(client, origin):
+    save_code_now_link = "https://archive.softwareheritage.org/save"
+    url = reverse("swh-web-homepage")
+    response = client.get(url)
+    assert_contains(response, save_code_now_link)
+
+    url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
+    response = client.get(url)
+    assert_contains(response, save_code_now_link + f"?origin_url={origin['url']}")
