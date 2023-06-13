@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,6 +9,7 @@ import os
 import pytest
 
 from .utils import (
+    origin_save_webhook_receiver_cooldown_requests_test,
     origin_save_webhook_receiver_invalid_content_type_test,
     origin_save_webhook_receiver_invalid_event_test,
     origin_save_webhook_receiver_invalid_request_test,
@@ -102,4 +103,21 @@ def test_origin_save_bitbucket_webhook_receiver_private_repo(api_client, datadir
             payload=payload,
             expected_origin_url="https://bitbucket.org/johndoe/webhook-test.git",
             api_client=api_client,
+        )
+
+
+@pytest.mark.django_db
+def test_origin_save_bitbucket_webhook_cooldown_requests(
+    api_client, datadir, swh_scheduler
+):
+    with open(os.path.join(datadir, "bitbucket_webhook_payload.json"), "rb") as payload:
+        origin_save_webhook_receiver_cooldown_requests_test(
+            forge_type="Bitbucket",
+            http_headers={
+                "User-Agent": "Bitbucket-Webhooks/2.0",
+                "X-Event-Key": "repo:push",
+            },
+            payload=json.load(payload),
+            api_client=api_client,
+            swh_scheduler=swh_scheduler,
         )
