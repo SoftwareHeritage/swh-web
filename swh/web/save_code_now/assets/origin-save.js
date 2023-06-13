@@ -291,6 +291,8 @@ export function initOriginSave() {
       true
     );
 
+    updateVisitType();
+
     $('#swh-save-origin-form').submit(async event => {
       event.preventDefault();
       event.stopPropagation();
@@ -342,16 +344,7 @@ export function initOriginSave() {
     });
 
     $('#swh-input-origin-url').on('input', function(event) {
-      const originUrl = $(this).val().trim();
-      $(this).val(originUrl);
-      $('#swh-input-visit-type option').each(function() {
-        const val = $(this).val();
-        if (val && originUrl.includes(val)) {
-          $(this).prop('selected', true);
-          // origin URL input need to be validated once new visit type set
-          validateSaveOriginUrl($('#swh-input-origin-url')[0]);
-        }
-      });
+      updateVisitType();
     });
 
     if (window.location.hash === '#requests') {
@@ -368,6 +361,19 @@ export function initOriginSave() {
 
   });
 
+}
+
+function updateVisitType() {
+  const originUrl = $('#swh-input-origin-url').val().trim();
+  $(this).val(originUrl);
+  $('#swh-input-visit-type option').each(function() {
+    const val = $(this).val();
+    if (val && originUrl.includes(val)) {
+      $(this).prop('selected', true);
+      // origin URL input need to be validated once new visit type set
+      validateSaveOriginUrl($('#swh-input-origin-url')[0]);
+    }
+  });
 }
 
 export function validateSaveOriginUrl(input) {

@@ -142,7 +142,7 @@ def check_api_post_response(
     content_type: str = "*/*",
     data: Optional[Dict[str, Any]] = None,
     **headers,
-) -> HttpResponseBase:
+) -> Response:
     """Helper function to check Web API response for a POST request
     for all accepted content types.
 
@@ -154,16 +154,19 @@ def check_api_post_response(
     Returns:
         The HTTP response
     """
-    return _assert_http_response(
-        response=api_client.post(
-            url,
-            data=data,
-            format="json",
-            HTTP_ACCEPT=content_type,
-            **headers,
+    return cast(
+        Response,
+        _assert_http_response(
+            response=api_client.post(
+                url,
+                data=data,
+                format="json",
+                HTTP_ACCEPT=content_type,
+                **headers,
+            ),
+            status_code=status_code,
+            content_type=content_type,
         ),
-        status_code=status_code,
-        content_type=content_type,
     )
 
 

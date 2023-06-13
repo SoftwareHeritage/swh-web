@@ -15,11 +15,21 @@ See top-level LICENSE file for more information
 {% endblock header %}
 
 {% block title %}
-  Welcome to the Software Heritage archive
+  {% if not SWH_MIRROR_CONFIG %}
+    Welcome to the Software Heritage archive
+  {% else %}
+    Welcome to the {{ SWH_MIRROR_CONFIG.partner_name }} Mirror of the Software Heritage archive
+  {% endif %}
 {% endblock title %}
 
 {% block navbar-content %}
-  <h4>Welcome to the Software Heritage archive</h4>
+  <h4>
+    {% if not SWH_MIRROR_CONFIG %}
+      Welcome to the Software Heritage archive
+    {% else %}
+      Welcome to the {{ SWH_MIRROR_CONFIG.partner_name }} Mirror of the Software Heritage archive
+    {% endif %}
+  </h4>
 {% endblock navbar-content %}
 
 {% block content %}

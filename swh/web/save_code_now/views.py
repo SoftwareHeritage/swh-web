@@ -26,6 +26,7 @@ def origin_save_help_view(request):
             "visit_types": get_savable_visit_types(
                 privileged_user(request, permissions=[SWH_AMBASSADOR_PERMISSION])
             ),
+            "origin_url": request.GET.get("origin_url", ""),
         },
     )
 
@@ -39,6 +40,7 @@ def origin_save_list_view(request):
             "visit_types": get_savable_visit_types(
                 privileged_user(request, permissions=[SWH_AMBASSADOR_PERMISSION])
             ),
+            "origin_url": request.GET.get("origin_url", ""),
         },
     )
 

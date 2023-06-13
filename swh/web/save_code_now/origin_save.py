@@ -58,6 +58,11 @@ NON_TERMINAL_STATUSES = [
     VISIT_STATUS_ONGOING,
 ]
 
+# minimum interval in minutes between two webhook save requests for a same origin
+WEBHOOK_REQUEST_COOLDOWN_INTERVAL = get_config().get(
+    "webhook_request_cooldown_interval", 60
+)
+
 
 def get_origin_save_authorized_urls() -> List[str]:
     """
@@ -416,7 +421,11 @@ def _update_save_request_info(
     if must_save:
         save_request.save()
 
-    return save_request.to_dict()
+    sr_dict = save_request.to_dict()
+    if task:
+        sr_dict["next_run"] = task["next_run"]
+
+    return sr_dict
 
 
 def create_save_origin_request(
@@ -513,7 +522,7 @@ def create_save_origin_request(
         # get list of previously submitted save requests (most recent first)
         current_sors = list(
             SaveOriginRequest.objects.filter(
-                visit_type=visit_type, origin_url=origin_url
+                visit_type=visit_type, origin_url=origin_url, from_webhook=from_webhook
             ).order_by("-request_date")
         )
 
@@ -545,20 +554,37 @@ def create_save_origin_request(
                     SAVE_TASK_RUNNING,
                 ):
                     can_create_task = True
-                    sor = None
                 else:
                     can_create_task = False
 
+                if from_webhook and task:
+                    # a scheduler task whose execution is in the future has already been
+                    # created for that webhook save request, no need to recreate a new one
+                    if task["next_run"] > datetime.now(tz=timezone.utc):
+                        can_create_task = False
+
         if can_create_task:
+            next_run = None
+            if from_webhook and sor:
+                date_diff = datetime.now(tz=timezone.utc) - sor.request_date
+                date_diff_seconds = int(date_diff.total_seconds())
+                if date_diff_seconds // 60 < WEBHOOK_REQUEST_COOLDOWN_INTERVAL:
+                    # if previous webhook save request has been submitted recently,
+                    # set execution of the new one in the future to avoid creating
+                    # too many scheduler tasks
+                    next_run = sor.request_date + timedelta(
+                        minutes=WEBHOOK_REQUEST_COOLDOWN_INTERVAL
+                    )
+
             # effectively create the scheduler task
             task_dict = create_oneshot_task_dict(
-                visit_type_tasks[visit_type], **task_kwargs
+                visit_type_tasks[visit_type], next_run=next_run, **task_kwargs
             )
 
             task = scheduler().create_tasks([task_dict])[0]
 
             # pending save request has been accepted
-            if sor:
+            if sor and sor.status != SAVE_REQUEST_ACCEPTED:
                 sor.status = SAVE_REQUEST_ACCEPTED
                 sor.loading_task_id = task["id"]
                 sor.save()
