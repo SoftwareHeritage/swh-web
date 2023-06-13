@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -55,6 +55,10 @@ class OriginSaveWebhookReceiver(abc.ABC):
 
             The expected content type for the webhook payload must be ``application/json``.
 
+            Please not that to avoid abusing the archival service offered by Software Heritage
+            at most **one request per hour is created** so the effective loading of the
+            repository into the archive might be delayed.
+
             :>json number id: the save request identifier
             :>json string request_url: Web API URL to follow up on that request
             :>json string origin_url: the url of the origin to save
@@ -63,6 +67,11 @@ class OriginSaveWebhookReceiver(abc.ABC):
                 request was issued
             :>json string save_request_status: the status of the save request,
                 either **accepted**, **rejected** or **pending**
+            :>json string save_task_status: the status of the origin saving task,
+                either **not created**, **not yet scheduled**, **scheduled**,
+                **succeeded** or **failed**
+            :>json string save_task_next_run: the date and time from which the
+                request is executed
 
             :statuscode 200: save request for repository has been successfully created
                 from the webhook payload.
@@ -131,6 +140,8 @@ class OriginSaveWebhookReceiver(abc.ABC):
             webhook_origin=self.FORGE_TYPE.lower(),
         )
 
+        assert save_request["next_run"] is not None
+
         return {
             "id": save_request["id"],
             "request_url": reverse(
@@ -142,4 +153,6 @@ class OriginSaveWebhookReceiver(abc.ABC):
             "visit_type": save_request["visit_type"],
             "save_request_date": save_request["save_request_date"],
             "save_request_status": save_request["save_request_status"],
+            "save_task_status": save_request["save_task_status"],
+            "save_task_next_run": save_request["next_run"].isoformat(),
         }

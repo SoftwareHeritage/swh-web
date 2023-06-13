@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,7 @@ import pytest
 import requests
 
 from .utils import (
+    origin_save_webhook_receiver_cooldown_requests_test,
     origin_save_webhook_receiver_invalid_content_type_test,
     origin_save_webhook_receiver_invalid_request_test,
     origin_save_webhook_receiver_no_repo_url_test,
@@ -146,4 +147,32 @@ def test_origin_save_sourceforge_webhook_receiver_private_repo(
             payload=json.load(payload),
             expected_origin_url=origin_url,
             api_client=api_client,
+        )
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "payload_file",
+    [
+        "sourceforge_webhook_payload_hg.json",
+        "sourceforge_webhook_payload_git.json",
+        "sourceforge_webhook_payload_svn.json",
+    ],
+)
+def test_origin_save_sourceforge_webhook_receiver_cooldown_requests(
+    api_client,
+    datadir,
+    requests_mock_datadir,
+    swh_scheduler,
+    payload_file,
+):
+    with open(os.path.join(datadir, payload_file), "rb") as payload:
+        origin_save_webhook_receiver_cooldown_requests_test(
+            forge_type="SourceForge",
+            http_headers={
+                "User-Agent": "Allura Webhook (https://allura.apache.org/)",
+            },
+            payload=json.load(payload),
+            api_client=api_client,
+            swh_scheduler=swh_scheduler,
         )

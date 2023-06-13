@@ -927,4 +927,15 @@ describe('Origin Save Tests', function() {
       .should('have.attr', 'href', this.Urls.admin_origin_save_requests_csv());
   });
 
+  it('should autofill form when providing origin URL as query parameter', function() {
+    const svnUrl = 'svn://example.org/project';
+    cy.visit(`${url}?origin_url=${svnUrl}`);
+
+    cy.get('#swh-input-origin-url')
+      .should('have.attr', 'value', svnUrl);
+
+    cy.get('#swh-input-visit-type option:selected')
+      .should('have.value', 'svn');
+  });
+
 });

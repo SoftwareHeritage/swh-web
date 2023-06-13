@@ -19,6 +19,15 @@ See top-level LICENSE file for more information
           content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <title>
       {% block title %}
+        {% block page_title %}
+        {% endblock page_title %}
+
+        &ndash;
+        {% if not SWH_MIRROR_CONFIG %}
+          Software Heritage archive
+        {% else %}
+          {{ SWH_MIRROR_CONFIG.partner_name }} Mirror of the Software Heritage archive
+        {% endif %}
       {% endblock title %}
 
     </title>
@@ -150,6 +159,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% block navbar-content %}
             {% endblock navbar-content %}
 
+            {% if "partner_logo_static_path" in SWH_MIRROR_CONFIG %}
+              {% with SWH_MIRROR_CONFIG.partner_logo_static_path as mirror_partner_logo %}
+                {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+                  <img class="swh-mirror-partner-logo"
+                       src="{% static mirror_partner_logo %}"
+                       alt="swh mirror partner logo"/>
+                {% else %}
+                  <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
+                       src="{% static mirror_partner_logo %}"
+                       alt="swh mirror partner logo"/>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
             {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
               <form class="form-horizontal d-none d-md-flex input-group swh-search-navbar needs-validation"
                     id="swh-origins-search-top">
@@ -172,9 +194,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
     <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} main-sidebar-banner{% endif %} sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
-        <img class="brand-image"
-             src="{% static 'img/swh-logo.png' %}"
-             alt="swh logo"/>
+        {% if not SWH_MIRROR_CONFIG %}
+          <img class="brand-image"
+               src="{% static 'img/swh-logo.png' %}"
+               alt="swh logo"/>
+        {% else %}
+          <img class="brand-image"
+               src="{% static 'img/swh-mirror.png' %}"
+               alt="swh logo"/>
+        {% endif %}
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
           <span class="first-word">Software</span> <span class="second-word">Heritage</span>
         </div>
@@ -184,7 +212,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <span class="first-word">Software</span>
           <span class="second-word">Heritage</span>
         </div>
-        <span>Archive</span>
+        <span class="swh-text-under-logo">
+          {% if not SWH_MIRROR_CONFIG %}
+            Archive
+          {% else %}
+            Mirror
+          {% endif %}
+        </span>
       </a>
       <div class="sidebar">
         <nav class="mt-2">
@@ -208,13 +242,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 </a>
               </li>
             {% endif %}
-            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
               <li class="nav-item swh-origin-save-item"
                   title="Request the saving of a software origin into the archive">
-                <a href="{% url 'origin-save' %}" class="nav-link swh-origin-save-link">
-                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
-                  <p>Save code now</p>
-                </a>
+                {% if not SWH_MIRROR_CONFIG %}
+                  <a class="nav-link swh-origin-save-link" href="{% url 'origin-save' %}">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
+                    <p>Save code now</p>
+                  </a>
+                {% elif "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+                  <a class="nav-link swh-origin-save-link"
+                     href="https://archive.softwareheritage.org/save/"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
+                    <p>Save code now</p>
+                    <i class="nav-icon mdi mdi-open-in-new"></i>
+                  </a>
+                {% endif %}
               </li>
             {% endif %}
             {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
