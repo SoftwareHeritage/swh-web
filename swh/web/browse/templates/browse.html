@@ -10,9 +10,9 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 {% load render_bundle from webpack_loader %}
 
-{% block title %}
-  {{ heading }} &ndash; Software Heritage archive
-{% endblock title %}
+{% block page_title %}
+  {{ heading }}
+{% endblock page_title %}
 
 {% block header %}
   {% render_bundle 'badges' %}

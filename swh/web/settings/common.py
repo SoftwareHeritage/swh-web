@@ -59,6 +59,11 @@ SWH_EXTRA_DJANGO_APPS = [
 
 SWH_DJANGO_APPS = SWH_BASE_DJANGO_APPS + SWH_EXTRA_DJANGO_APPS
 
+SWH_MIRROR_CONFIG = swh_web_config.get("mirror_config", {})
+if SWH_MIRROR_CONFIG:
+    assert "partner_name" in SWH_MIRROR_CONFIG
+    assert "static_path" in SWH_MIRROR_CONFIG
+    assert "partner_logo_static_path" in SWH_MIRROR_CONFIG
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -181,6 +186,10 @@ if not os.path.exists(STATIC_DIR):
     # static folder location when developping swh-web
     STATIC_DIR = os.path.join(PROJECT_DIR, "../../../static")
 STATICFILES_DIRS = [STATIC_DIR]
+
+if "static_path" in SWH_MIRROR_CONFIG:
+    STATICFILES_DIRS.append(SWH_MIRROR_CONFIG["static_path"])
+
 
 INTERNAL_IPS = ["127.0.0.1"]
 

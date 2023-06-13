@@ -65,16 +65,20 @@ class BaseClient {
    */
    constructor(options) {BaseClient.prototype.__init.call(this);BaseClient.prototype.__init2.call(this);BaseClient.prototype.__init3.call(this);BaseClient.prototype.__init4.call(this);BaseClient.prototype.__init5.call(this);
     this._options = options;
+
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
+    } else {
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not do anything.');
+    }
+
+    if (this._dsn) {
       const url = getEnvelopeEndpointWithUrlEncodedAuth(this._dsn, options);
       this._transport = options.transport({
         recordDroppedEvent: this.recordDroppedEvent.bind(this),
         ...options.transportOptions,
         url,
       });
-    } else {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not do anything.');
     }
   }
 

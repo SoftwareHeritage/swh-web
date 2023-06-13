@@ -10,9 +10,9 @@ See top-level LICENSE file for more information
 {% load render_bundle from webpack_loader %}
 {% load swh_templatetags %}
 
-{% block title %}
-  User profile &ndash; Software Heritage
-{% endblock title %}
+{% block page_title %}
+  User profile
+{% endblock page_title %}
 
 {% block header %}
   {% render_bundle 'auth' %}

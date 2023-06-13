@@ -11,6 +11,7 @@ import pytest
 from swh.auth.django.utils import oidc_user_from_profile
 from swh.web.save_code_now.models import SaveOriginRequest
 from swh.web.save_code_now.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDED
+from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import check_http_get_response
 from swh.web.utils import reverse
 
@@ -24,6 +25,13 @@ def test_old_save_url_redirection(client):
 
     resp = check_http_get_response(client, url, status_code=302)
     assert resp["location"] == redirect_url
+
+
+def test_origin_save_form_autofill(client):
+    origin_url = "https://git.example.org/project"
+    url = reverse("origin-save", query_params={"origin_url": origin_url})
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, origin_url)
 
 
 @pytest.mark.django_db

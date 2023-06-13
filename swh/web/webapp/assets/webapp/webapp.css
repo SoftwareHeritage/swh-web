@@ -790,3 +790,34 @@ div.d3-tooltip {
 .docutils.literal {
     font-family: monospace;
 }
+
+.swh-text-under-logo {
+    position: absolute;
+    left: 16px;
+    top: 45px;
+}
+
+.swh-mirror-partner-logo {
+    position: absolute;
+    top: 0;
+    right: 47rem;
+    z-index: 50000;
+}
+
+.sidebar-collapse .swh-mirror-partner-logo {
+    right: 36rem;
+}
+
+.swh-mirror-partner-logo-no-search {
+    right: 15rem;
+}
+
+.sidebar-collapse .swh-mirror-partner-logo-no-search {
+    right: 5rem;
+}
+
+.sidebar-collapse .swh-origin-save-link .mdi-open-in-new {
+    position: absolute;
+    left: 35px;
+    top: 5px;
+}

@@ -13,6 +13,7 @@ from swh.web.utils import reverse
 
 from .utils import (
     django_http_headers,
+    origin_save_webhook_receiver_cooldown_requests_test,
     origin_save_webhook_receiver_invalid_content_type_test,
     origin_save_webhook_receiver_invalid_event_test,
     origin_save_webhook_receiver_invalid_request_test,
@@ -124,4 +125,21 @@ def test_origin_save_github_webhook_receiver_private_repo(api_client, datadir):
             payload=payload,
             api_client=api_client,
             expected_origin_url="https://github.com/johndoe/webhook-test",
+        )
+
+
+@pytest.mark.django_db
+def test_origin_save_github_webhook_cooldown_requests(
+    api_client, datadir, swh_scheduler
+):
+    with open(os.path.join(datadir, "github_webhook_payload.json"), "rb") as payload:
+        origin_save_webhook_receiver_cooldown_requests_test(
+            forge_type="GitHub",
+            http_headers={
+                "User-Agent": "GitHub-Hookshot/ede37db",
+                "X-GitHub-Event": "push",
+            },
+            payload=json.load(payload),
+            api_client=api_client,
+            swh_scheduler=swh_scheduler,
         )

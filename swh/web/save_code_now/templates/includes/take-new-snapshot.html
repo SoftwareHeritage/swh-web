@@ -65,24 +65,35 @@ See top-level LICENSE file for more information
             <div class="form-row">
               <div class="col-md-4"></div>
               <div class="col-md-4 form-group">
-                <label for="swh-take-new-snapshot-submit">&#8203;</label>
-                <button type="submit"
-                        id="swh-take-new-snapshot-save-submit"
-                        class="btn btn-default btn-block">
-                  Submit
-                </button>
+                {% if not SWH_MIRROR_CONFIG %}
+                  <label for="swh-take-new-snapshot-submit">&#8203;</label>
+                  <button type="submit"
+                          id="swh-take-new-snapshot-save-submit"
+                          class="btn btn-default btn-block">
+                    Submit
+                  </button>
+                {% else %}
+                  <a class="btn btn-default btn-block"
+                     href="https://archive.softwareheritage.org/save?origin_url={{ snapshot_context.origin_info.url }}"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    Submit <i class="nav-icon mdi mdi-open-in-new"></i>
+                  </a>
+                {% endif %}
               </div>
               <div class="col-md-4"></div>
             </div>
           </form>
-          <div class="swh-processing-save-request text-center" style="display: none">
-            <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner"/>
-            <p>Processing "take a new snapshot" request ...</p>
-          </div>
-          <div id="swh-take-new-snapshot-request-status"></div>
+          {% if not SWH_MIRROR_CONFIG %}
+            <div class="swh-processing-save-request text-center" style="display: none">
+              <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner"/>
+              <p>Processing "take a new snapshot" request ...</p>
+            </div>
+            <div id="swh-take-new-snapshot-request-status"></div>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
-  <script>swh.save_code_now.initTakeNewSnapshot();</script>
+  {% if not SWH_MIRROR_CONFIG %}<script>swh.save_code_now.initTakeNewSnapshot();</script>{% endif %}
 {% endif %}
