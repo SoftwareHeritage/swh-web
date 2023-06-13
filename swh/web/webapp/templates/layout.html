@@ -87,61 +87,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %} sidebar-collapse{% endif %}">
     <a id="top"></a>
     <div class="wrapper">
-      <div class="swh-top-bar">
-        <ul>
-          <li class="swh-position-left">
-            <div id="swh-full-width-switch-container"
-                 class="custom-control custom-switch d-none d-lg-block d-xl-block">
-              <input type="checkbox"
-                     class="custom-control-input"
-                     id="swh-full-width-switch"
-                     onclick="swh.webapp.fullWidthToggled(event)"/>
-              <label class="custom-control-label font-weight-normal"
-                     for="swh-full-width-switch">
-                Full width
-              </label>
-            </div>
-          </li>
-          <li>
-            <a href="https://www.softwareheritage.org">Home</a>
-          </li>
-          <li>
-            <a href="https://gitlab.softwareheritage.org">Development</a>
-          </li>
-          <li>
-            <a href="https://docs.softwareheritage.org">Documentation</a>
-          </li>
-          <li>
-            <a class="swh-donate-link"
-               href="https://www.softwareheritage.org/donate">Donate</a>
-          </li>
-          <li class="swh-position-right">
-            <a href="{{ status.server_url }}"
-               target="_blank"
-               class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
-              <span id="swh-current-status-description">Operational</span>
-              <i class="swh-current-status-indicator green"></i>
-            </a>
-            {% if user.is_authenticated %}
-              Logged in as
-              {% if 'OIDC' in user.backend %}
-                <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
-                <a href="{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
-              {% else %}
-                <strong id="swh-login">{{ user.username }}</strong>,
-                <a href="{% url logout_url %}">logout</a>
-              {% endif %}
-            {% else %}
-              {% if request.resolver_match.url_name != logout_url %}
-                <a id="swh-login"
-                   href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
-              {% else %}
-                <a id="swh-login" href="{% url login_url %}">login</a>
-              {% endif %}
-            {% endif %}
-          </li>
-        </ul>
-      </div>
+      {% include "./includes/top-bar.html" %}
       {% if "swh.web.banners" in SWH_DJANGO_APPS %}
         <div class="swh-banner">{% include "downtime-banner.html" %}</div>
       {% endif %}
@@ -277,24 +223,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                  class="nav-link swh-help-link"
                  onclick="swh.guided_tour.guidedTourButtonClick(event)">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
-                <p>
-                  Help
-                </p>
+                <p>Help</p>
               </a>
             </li>
             {% if user.is_authenticated %}
-              <li class="nav-header">
-                Administration
-              </li>
+              <li class="nav-header">Administration</li>
               {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
                 <li class="nav-item swh-origin-save-admin-item"
                     title="Save code now administration">
                   <a href="{% url 'admin-origin-save-requests' %}"
                      class="nav-link swh-origin-save-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-camera"></i>
-                    <p>
-                      Save code now
-                    </p>
+                    <p>Save code now</p>
                   </a>
                 </li>
               {% endif %}
@@ -305,9 +245,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <a href="{% url 'add-forge-now-requests-moderation' %}"
                        class="nav-link swh-add-forge-now-moderation-link">
                       <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
-                      <p>
-                        Add forge now
-                      </p>
+                      <p>Add forge now</p>
                     </a>
                   </li>
                 {% endif %}
@@ -320,9 +258,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                        class="nav-link swh-deposit-admin-link">
                       <i style="color: #fecd1b"
                          class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
-                      <p>
-                        Deposit
-                      </p>
+                      <p>Deposit</p>
                     </a>
                   </li>
                 {% endif %}
@@ -333,9 +269,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   <a href="{% url 'admin-mailmap' %}"
                      class="nav-link swh-mailmap-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-email"></i>
-                    <p>
-                      Mailmap
-                    </p>
+                    <p>Mailmap</p>
                   </a>
                 </li>
               {% endif %}
@@ -382,7 +316,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         The source code files <em>archived</em> by Software
         Heritage are available under their own copyright and licenses.
         <br/>
-        <span class="link-color">Terms of use: </span>
+        <span class="link-color">Terms of use:</span>
         <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
         <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
         <a href="https://www.softwareheritage.org/contact/">Contact</a>-

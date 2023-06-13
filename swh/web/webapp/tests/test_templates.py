@@ -1,4 +1,4 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,6 +18,16 @@ from swh.web.tests.helpers import check_http_get_response, create_django_permiss
 from swh.web.utils import reverse
 
 swh_web_version = get_distribution("swh.web").version
+
+
+@pytest.fixture
+def config_updater(mocker):
+    def update_config(new_config):
+        config = dict(get_config())
+        config.update(new_config)
+        mocker.patch("swh.web.utils.get_config").return_value = config
+
+    return update_config
 
 
 def test_layout_without_ribbon(client):
@@ -123,3 +133,48 @@ def test_layout_piwik_in_production(client):
         client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
     )
     assert_contains(resp, "https://piwik.inria.fr")
+
+
+def test_top_bar_no_links(client, config_updater):
+    config_updater({"top_bar": {}, "status": {}})
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "swh-topbar-home-link")
+    assert_not_contains(resp, "swh-topbar-dev-link")
+    assert_not_contains(resp, "swh-topbar-doc-link")
+    assert_not_contains(resp, "swh-topbar-donate-link")
+    assert_not_contains(resp, "swh-current-status")
+
+
+def test_top_bar_custom_links(client, config_updater):
+    home_link = "https://example.org/"
+    dev_link = "https://example.org/dev"
+    doc_link = "https://example.org/doc"
+    donate_link = "https://example.org/donate"
+    status_link = "https://example.org/status"
+
+    config_updater(
+        {
+            "top_bar": {
+                "home_link": home_link,
+                "dev_link": dev_link,
+                "doc_link": doc_link,
+                "donate_link": donate_link,
+            },
+            "status": {"server_url": status_link},
+        }
+    )
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert_contains(resp, "swh-topbar-home-link")
+    assert_contains(resp, "swh-topbar-dev-link")
+    assert_contains(resp, "swh-topbar-doc-link")
+    assert_contains(resp, "swh-topbar-donate-link")
+    assert_contains(resp, "swh-current-status")
+
+    assert_contains(resp, home_link)
+    assert_contains(resp, dev_link)
+    assert_contains(resp, doc_link)
+    assert_contains(resp, donate_link)
+    assert_contains(resp, status_link)
