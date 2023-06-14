@@ -20,16 +20,6 @@ from swh.web.utils import reverse
 swh_web_version = get_distribution("swh.web").version
 
 
-@pytest.fixture
-def config_updater(mocker):
-    def update_config(new_config):
-        config = dict(get_config())
-        config.update(new_config)
-        mocker.patch("swh.web.utils.get_config").return_value = config
-
-    return update_config
-
-
 def test_layout_without_ribbon(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(
@@ -121,18 +111,20 @@ def test_layout_deposit_admin_for_user_with_permission(client, regular_user):
     assert_contains(resp, "swh-deposit-admin-link")
 
 
-def test_layout_no_piwik_by_default(client):
+def test_layout_no_matomo_by_default(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_not_contains(resp, "https://piwik.inria.fr")
 
 
-def test_layout_piwik_in_production(client):
+def test_layout_matomo_activated(client, config_updater):
+    matomo_url = "https://piwik.inria.fr"
+    site_id = 59
+    config_updater({"matomo": {"url": matomo_url, "site_id": site_id}})
     url = reverse("swh-web-homepage")
-    resp = check_http_get_response(
-        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
-    )
-    assert_contains(resp, "https://piwik.inria.fr")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, matomo_url)
+    assert_contains(resp, f"['setSiteId', '{site_id}']")
 
 
 def test_top_bar_no_links(client, config_updater):

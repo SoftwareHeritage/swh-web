@@ -324,6 +324,7 @@ def context_processor(request):
         "logout_url": settings.LOGOUT_URL,
         "SWH_MIRROR_CONFIG": settings.SWH_MIRROR_CONFIG,
         "top_bar": config.get("top_bar", {}),
+        "matomo": config.get("matomo", {}),
     }
 
 

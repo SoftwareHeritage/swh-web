@@ -68,15 +68,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% block header %}
     {% endblock header %}
 
-    {% if swh_web_prod %}
+    {% if "url" in matomo and "site_id" in matomo %}
       <!-- Matomo -->
       <script type="text/javascript">
         var _paq = window._paq = window._paq || [];
         _paq.push(['trackPageView']);
         (function() {
-          var u="https://piwik.inria.fr/";
+          var u='{{ matomo.url }}';
           _paq.push(['setTrackerUrl', u+'matomo.php']);
-          _paq.push(['setSiteId', '59']);
+          _paq.push(['setSiteId', '{{ matomo.site_id }}']);
           var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
           g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
         })();

@@ -182,6 +182,7 @@ DEFAULT_CONFIG = {
             "donate_link": "https://www.softwareheritage.org/donate",
         },
     ),
+    "matomo": ("dict", {}),
 }
 
 swhweb_config: Dict[str, Any] = {}
