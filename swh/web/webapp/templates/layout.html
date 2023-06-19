@@ -197,12 +197,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% if "swh.web.save_code_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
               <li class="nav-item swh-origin-save-item"
                   title="Request the saving of a software origin into the archive">
-                {% if not SWH_MIRROR_CONFIG %}
+                {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
                   <a class="nav-link swh-origin-save-link" href="{% url 'origin-save' %}">
                     <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
                     <p>Save code now</p>
                   </a>
-                {% elif "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+                {% elif SWH_MIRROR_CONFIG %}
                   <a class="nav-link swh-origin-save-link"
                      href="https://archive.softwareheritage.org/save/"
                      target="_blank"
@@ -214,14 +214,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
               </li>
             {% endif %}
-            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
               <li class="nav-item swh-add-forge-now-item"
                   title="Request adding a new forge listing">
-                <a href="{% url 'forge-add-create' %}"
-                   class="nav-link swh-add-forge-now-link">
-                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
-                  <p>Add forge now</p>
-                </a>
+                {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+                  <a href="{% url 'forge-add-create' %}"
+                     class="nav-link swh-add-forge-now-link">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                  </a>
+                {% elif SWH_MIRROR_CONFIG %}
+                  <a href="https://archive.softwareheritage.org/add-forge/request/create/"
+                     class="nav-link swh-add-forge-now-link"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                    <i class="nav-icon mdi mdi-open-in-new"></i>
+                  </a>
+                {% endif %}
               </li>
             {% endif %}
             <li class="nav-item swh-help-item" title="How to browse the archive ?">

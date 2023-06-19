@@ -20,6 +20,11 @@ from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.utils import reverse
 
 partner_name = "Example"
+swh_extra_django_apps = [
+    "swh.web.badges",
+    "swh.web.jslicenses",
+    "swh.web.vault",
+]
 mirror_config = {
     "partner_name": partner_name,
     "partner_url": "https://example.org",
@@ -41,6 +46,7 @@ def mirror_config_setter(mocker):
     original_config = config.get_config()
     patched_config = dict(original_config)
     patched_config["mirror_config"] = mirror_config
+    patched_config["swh_extra_django_apps"] = swh_extra_django_apps
     mocker.patch.object(config, "swhweb_config", patched_config)
     _reload_django_settings()
     yield
@@ -101,3 +107,12 @@ def test_admin_menu_is_not_available(client, admin_user):
     url = reverse("swh-web-homepage")
     response = client.get(url)
     assert_not_contains(response, '<li class="nav-header">Administration</li>')
+
+
+def test_pages_contain_add_forge_now_external_link(client, origin):
+    add_forge_now_link = (
+        "https://archive.softwareheritage.org/add-forge/request/create/"
+    )
+    url = reverse("swh-web-homepage")
+    response = client.get(url)
+    assert_contains(response, add_forge_now_link)
