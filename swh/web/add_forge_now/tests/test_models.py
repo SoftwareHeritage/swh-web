@@ -19,7 +19,16 @@ from swh.web.add_forge_now.models import Request, RequestStatus
                 RequestStatus.SUSPENDED,
             ],
         ),
-        (RequestStatus.WAITING_FOR_FEEDBACK, [RequestStatus.FEEDBACK_TO_HANDLE]),
+        (
+            RequestStatus.WAITING_FOR_FEEDBACK,
+            [
+                RequestStatus.FEEDBACK_TO_HANDLE,
+                RequestStatus.ACCEPTED,
+                RequestStatus.REJECTED,
+                RequestStatus.SUSPENDED,
+                RequestStatus.UNSUCCESSFUL,
+            ],
+        ),
         (
             RequestStatus.FEEDBACK_TO_HANDLE,
             [

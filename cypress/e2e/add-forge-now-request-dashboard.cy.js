@@ -258,7 +258,7 @@ describe('Test add forge now request update', function() {
 
     cy.get('#decisionOptions')
       .children()
-      .should('have.length', 2);
+      .should('have.length', 6);
   });
 
   it('should update the dashboard after receiving email', function() {
