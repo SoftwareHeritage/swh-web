@@ -226,7 +226,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 <p>Help</p>
               </a>
             </li>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and not SWH_MIRROR_CONFIG %}
               <li class="nav-header">Administration</li>
               {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
                 <li class="nav-item swh-origin-save-admin-item"
