@@ -320,27 +320,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% include "includes/global-modals.html" %}
     <footer class="footer">
       <div class="container text-center">
-        <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
-        Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
-        License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
-        AGPLv3+</a>.
-        <br/>
-        The source code of Software Heritage <em>itself</em>
-        is available on
-        our <a href="https://gitlab.softwareheritage.org">development
-        forge</a>.
-        <br/>
-        The source code files <em>archived</em> by Software
-        Heritage are available under their own copyright and licenses.
-        <br/>
-        <span class="link-color">Terms of use:</span>
-        <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
-        <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
-        <a href="https://www.softwareheritage.org/contact/">Contact</a>-
-        {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
-          <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+        {% if not SWH_MIRROR_CONFIG %}
+          {% include "./includes/footer.html" %}
+        {% else %}
+          {% include "mirror-footer.html" %}
         {% endif %}
-        <a href="{% url 'api-1-homepage' %}">Web API</a>
         <br/>
         {% if "production" not in DJANGO_SETTINGS_MODULE %}swh-web v{{ swh_web_version }}{% endif %}
       </div>

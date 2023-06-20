@@ -62,6 +62,7 @@ See top-level LICENSE file for more information
       <iframe class="swh-coverage-iframe" src="{% url 'swh-coverage' %}"></iframe>
     </div>
   {% endif %}
+  {% if not SWH_MIRROR_CONFIG %}
   <div class="p-3">
     <h4>Size</h4>
     <p>
@@ -106,5 +107,8 @@ See top-level LICENSE file for more information
       </p>
     </p>
   </div>
+  {% else %}
+    {% include "mirror-homepage.html" %}
+  {% endif %}
   <script>swh.webapp.initHomePage();</script>
 {% endblock content %}
