@@ -107,15 +107,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             {% if "partner_logo_static_path" in SWH_MIRROR_CONFIG %}
               {% with SWH_MIRROR_CONFIG.partner_logo_static_path as mirror_partner_logo %}
-                {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
-                  <img class="swh-mirror-partner-logo"
-                       src="{% static mirror_partner_logo %}"
-                       alt="swh mirror partner logo"/>
-                {% else %}
-                  <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
-                       src="{% static mirror_partner_logo %}"
-                       alt="swh mirror partner logo"/>
-                {% endif %}
+                {% if "partner_url" in SWH_MIRROR_CONFIG %}
+                  <a href="{{ SWH_MIRROR_CONFIG.partner_url }}"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                  {% endif %}
+                  {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+                    <img class="swh-mirror-partner-logo"
+                         src="{% static mirror_partner_logo %}"
+                         alt="swh mirror partner logo"/>
+                  {% else %}
+                    <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
+                         src="{% static mirror_partner_logo %}"
+                         alt="swh mirror partner logo"/>
+                  {% endif %}
+                  {% if "partner_url" in SWH_MIRROR_CONFIG %}</a>{% endif %}
               {% endwith %}
             {% endif %}
             {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}

@@ -22,6 +22,7 @@ from swh.web.utils import reverse
 partner_name = "Example"
 mirror_config = {
     "partner_name": partner_name,
+    "partner_url": "https://example.org",
     "static_path": tempfile.mkdtemp(),
     "partner_logo_static_path": "mirror-partner-logo.png",
 }
@@ -81,6 +82,7 @@ def test_pages_contain_mirror_partner_logo(client):
     url = reverse("swh-web-homepage")
     response = client.get(url)
     assert_contains(response, mirror_config["partner_logo_static_path"])
+    assert_contains(response, mirror_config["partner_url"])
 
 
 def test_pages_contain_save_code_now_external_link(client, origin):
