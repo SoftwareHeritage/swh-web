@@ -20,21 +20,11 @@ See top-level LICENSE file for more information
         </label>
       </div>
     </li>
-    {% if "home_link" in top_bar %}
-      <li class="swh-topbar-home-link">
-        <a href="{{ top_bar.home_link }}">Home</a>
+    {% for text, url in top_bar.links.items %}
+      <li class="swh-topbar-link">
+        <a href="{{ url }}">{{ text }}</a>
       </li>
-    {% endif %}
-    {% if "dev_link" in top_bar %}
-      <li class="swh-topbar-dev-link">
-        <a href="{{ top_bar.dev_link }}">Development</a>
-      </li>
-    {% endif %}
-    {% if "doc_link" in top_bar %}
-      <li class="swh-topbar-doc-link">
-        <a href="{{ top_bar.doc_link }}">Documentation</a>
-      </li>
-    {% endif %}
+    {% endfor %}
     {% if "donate_link" in top_bar %}
       <li class="swh-topbar-donate-link">
         <a class="swh-donate-link" href="{{ top_bar.donate_link }}">Donate</a>

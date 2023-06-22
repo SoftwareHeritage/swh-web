@@ -176,9 +176,11 @@ DEFAULT_CONFIG = {
     "top_bar": (
         "dict",
         {
-            "home_link": "https://www.softwareheritage.org",
-            "dev_link": "https://gitlab.softwareheritage.org",
-            "doc_link": "https://docs.softwareheritage.org",
+            "links": {
+                "Home": "https://www.softwareheritage.org",
+                "Development": "https://gitlab.softwareheritage.org",
+                "Documentation": "https://docs.softwareheritage.org",
+            },
             "donate_link": "https://www.softwareheritage.org/donate",
         },
     ),

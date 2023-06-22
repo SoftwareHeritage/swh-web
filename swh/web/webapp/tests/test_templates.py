@@ -131,9 +131,7 @@ def test_top_bar_no_links(client, config_updater):
     config_updater({"top_bar": {}, "status": {}})
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
-    assert_not_contains(resp, "swh-topbar-home-link")
-    assert_not_contains(resp, "swh-topbar-dev-link")
-    assert_not_contains(resp, "swh-topbar-doc-link")
+    assert_not_contains(resp, "swh-topbar-link")
     assert_not_contains(resp, "swh-topbar-donate-link")
     assert_not_contains(resp, "swh-current-status")
 
@@ -148,9 +146,11 @@ def test_top_bar_custom_links(client, config_updater):
     config_updater(
         {
             "top_bar": {
-                "home_link": home_link,
-                "dev_link": dev_link,
-                "doc_link": doc_link,
+                "links": {
+                    "Home": home_link,
+                    "Development": dev_link,
+                    "Documentation": doc_link,
+                },
                 "donate_link": donate_link,
             },
             "status": {"server_url": status_link},
@@ -159,9 +159,7 @@ def test_top_bar_custom_links(client, config_updater):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
 
-    assert_contains(resp, "swh-topbar-home-link")
-    assert_contains(resp, "swh-topbar-dev-link")
-    assert_contains(resp, "swh-topbar-doc-link")
+    assert_contains(resp, "swh-topbar-link", 3)
     assert_contains(resp, "swh-topbar-donate-link")
     assert_contains(resp, "swh-current-status")
 
