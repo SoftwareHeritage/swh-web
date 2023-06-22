@@ -817,7 +817,7 @@ div.d3-tooltip {
 }
 
 .sidebar-collapse .swh-origin-save-link .mdi-open-in-new,
-.sidebar-collapse .swh-add-forge-link .mdi-open-in-new {
+.sidebar-collapse .swh-add-forge-now-link .mdi-open-in-new {
     position: absolute;
     left: 35px;
     top: 5px;
