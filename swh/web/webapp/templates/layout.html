@@ -339,9 +339,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
     <script>
       swh.webapp.setContainerFullWidth();
-      var statusServerURL = {{ status.server_url|jsonify }};
-      var statusJsonPath = {{ status.json_path|jsonify }};
-      swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
+      {% if "server_url" in status and "json_path" in status %}
+        var statusServerURL = {{ status.server_url|jsonify }};
+        var statusJsonPath = {{ status.json_path|jsonify }};
+        swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
+      {% endif %}
     </script>
   </body>
 </html>
