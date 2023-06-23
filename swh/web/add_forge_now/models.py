@@ -42,7 +42,13 @@ class RequestStatus(enum.Enum):
     def next_statuses(cls) -> Dict[RequestStatus, List[RequestStatus]]:
         return {
             cls.PENDING: [cls.WAITING_FOR_FEEDBACK, cls.REJECTED, cls.SUSPENDED],
-            cls.WAITING_FOR_FEEDBACK: [cls.FEEDBACK_TO_HANDLE],
+            cls.WAITING_FOR_FEEDBACK: [
+                cls.FEEDBACK_TO_HANDLE,
+                cls.ACCEPTED,
+                cls.REJECTED,
+                cls.SUSPENDED,
+                cls.UNSUCCESSFUL,
+            ],
             cls.FEEDBACK_TO_HANDLE: [
                 cls.WAITING_FOR_FEEDBACK,
                 cls.ACCEPTED,

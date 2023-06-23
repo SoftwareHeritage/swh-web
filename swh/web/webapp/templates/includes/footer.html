@@ -1,0 +1,28 @@
+{% comment %}
+Copyright (C) 2023  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
+Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
+License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
+AGPLv3+</a>.
+<br/>
+The source code of Software Heritage <em>itself</em>
+is available on
+our <a href="https://gitlab.softwareheritage.org">development
+forge</a>.
+<br/>
+The source code files <em>archived</em> by Software
+Heritage are available under their own copyright and licenses.
+<br/>
+<span class="link-color">Terms of use:</span>
+<a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
+<a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
+<a href="https://www.softwareheritage.org/contact/">Contact</a>-
+{% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
+  <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+{% endif %}
+<a href="{% url 'api-1-homepage' %}">Web API</a>

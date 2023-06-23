@@ -5,16 +5,22 @@ export {default as pie} from "./pie.js";
 export {default as areaRadial, default as radialArea} from "./areaRadial.js"; // Note: radialArea is deprecated!
 export {default as lineRadial, default as radialLine} from "./lineRadial.js"; // Note: radialLine is deprecated!
 export {default as pointRadial} from "./pointRadial.js";
-export {linkHorizontal, linkVertical, linkRadial} from "./link/index.js";
+export {link, linkHorizontal, linkVertical, linkRadial} from "./link.js";
 
-export {default as symbol, symbols} from "./symbol.js";
+export {default as symbol, symbolsStroke, symbolsFill, symbolsFill as symbols} from "./symbol.js";
+export {default as symbolAsterisk} from "./symbol/asterisk.js";
 export {default as symbolCircle} from "./symbol/circle.js";
 export {default as symbolCross} from "./symbol/cross.js";
 export {default as symbolDiamond} from "./symbol/diamond.js";
+export {default as symbolDiamond2} from "./symbol/diamond2.js";
+export {default as symbolPlus} from "./symbol/plus.js";
 export {default as symbolSquare} from "./symbol/square.js";
+export {default as symbolSquare2} from "./symbol/square2.js";
 export {default as symbolStar} from "./symbol/star.js";
 export {default as symbolTriangle} from "./symbol/triangle.js";
+export {default as symbolTriangle2} from "./symbol/triangle2.js";
 export {default as symbolWye} from "./symbol/wye.js";
+export {default as symbolTimes, default as symbolX} from "./symbol/times.js";
 
 export {default as curveBasisClosed} from "./curve/basisClosed.js";
 export {default as curveBasisOpen} from "./curve/basisOpen.js";

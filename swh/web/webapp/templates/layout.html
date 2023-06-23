@@ -68,15 +68,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% block header %}
     {% endblock header %}
 
-    {% if swh_web_prod %}
+    {% if "url" in matomo and "site_id" in matomo %}
       <!-- Matomo -->
       <script type="text/javascript">
         var _paq = window._paq = window._paq || [];
         _paq.push(['trackPageView']);
         (function() {
-          var u="https://piwik.inria.fr/";
+          var u='{{ matomo.url }}';
           _paq.push(['setTrackerUrl', u+'matomo.php']);
-          _paq.push(['setSiteId', '59']);
+          _paq.push(['setSiteId', '{{ matomo.site_id }}']);
           var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
           g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
         })();
@@ -87,61 +87,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %} sidebar-collapse{% endif %}">
     <a id="top"></a>
     <div class="wrapper">
-      <div class="swh-top-bar">
-        <ul>
-          <li class="swh-position-left">
-            <div id="swh-full-width-switch-container"
-                 class="custom-control custom-switch d-none d-lg-block d-xl-block">
-              <input type="checkbox"
-                     class="custom-control-input"
-                     id="swh-full-width-switch"
-                     onclick="swh.webapp.fullWidthToggled(event)"/>
-              <label class="custom-control-label font-weight-normal"
-                     for="swh-full-width-switch">
-                Full width
-              </label>
-            </div>
-          </li>
-          <li>
-            <a href="https://www.softwareheritage.org">Home</a>
-          </li>
-          <li>
-            <a href="https://gitlab.softwareheritage.org">Development</a>
-          </li>
-          <li>
-            <a href="https://docs.softwareheritage.org">Documentation</a>
-          </li>
-          <li>
-            <a class="swh-donate-link"
-               href="https://www.softwareheritage.org/donate">Donate</a>
-          </li>
-          <li class="swh-position-right">
-            <a href="{{ status.server_url }}"
-               target="_blank"
-               class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
-              <span id="swh-current-status-description">Operational</span>
-              <i class="swh-current-status-indicator green"></i>
-            </a>
-            {% if user.is_authenticated %}
-              Logged in as
-              {% if 'OIDC' in user.backend %}
-                <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
-                <a href="{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
-              {% else %}
-                <strong id="swh-login">{{ user.username }}</strong>,
-                <a href="{% url logout_url %}">logout</a>
-              {% endif %}
-            {% else %}
-              {% if request.resolver_match.url_name != logout_url %}
-                <a id="swh-login"
-                   href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
-              {% else %}
-                <a id="swh-login" href="{% url login_url %}">login</a>
-              {% endif %}
-            {% endif %}
-          </li>
-        </ul>
-      </div>
+      {% include "./includes/top-bar.html" %}
       {% if "swh.web.banners" in SWH_DJANGO_APPS %}
         <div class="swh-banner">{% include "downtime-banner.html" %}</div>
       {% endif %}
@@ -161,15 +107,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
             {% if "partner_logo_static_path" in SWH_MIRROR_CONFIG %}
               {% with SWH_MIRROR_CONFIG.partner_logo_static_path as mirror_partner_logo %}
-                {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
-                  <img class="swh-mirror-partner-logo"
-                       src="{% static mirror_partner_logo %}"
-                       alt="swh mirror partner logo"/>
-                {% else %}
-                  <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
-                       src="{% static mirror_partner_logo %}"
-                       alt="swh mirror partner logo"/>
-                {% endif %}
+                {% if "partner_url" in SWH_MIRROR_CONFIG %}
+                  <a href="{{ SWH_MIRROR_CONFIG.partner_url }}"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                  {% endif %}
+                  {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+                    <img class="swh-mirror-partner-logo"
+                         src="{% static mirror_partner_logo %}"
+                         alt="swh mirror partner logo"/>
+                  {% else %}
+                    <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
+                         src="{% static mirror_partner_logo %}"
+                         alt="swh mirror partner logo"/>
+                  {% endif %}
+                  {% if "partner_url" in SWH_MIRROR_CONFIG %}</a>{% endif %}
               {% endwith %}
             {% endif %}
             {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
@@ -245,12 +197,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             {% if "swh.web.save_code_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
               <li class="nav-item swh-origin-save-item"
                   title="Request the saving of a software origin into the archive">
-                {% if not SWH_MIRROR_CONFIG %}
+                {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
                   <a class="nav-link swh-origin-save-link" href="{% url 'origin-save' %}">
                     <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-camera"></i>
                     <p>Save code now</p>
                   </a>
-                {% elif "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+                {% elif SWH_MIRROR_CONFIG %}
                   <a class="nav-link swh-origin-save-link"
                      href="https://archive.softwareheritage.org/save/"
                      target="_blank"
@@ -262,14 +214,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% endif %}
               </li>
             {% endif %}
-            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
               <li class="nav-item swh-add-forge-now-item"
                   title="Request adding a new forge listing">
-                <a href="{% url 'forge-add-create' %}"
-                   class="nav-link swh-add-forge-now-link">
-                  <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
-                  <p>Add forge now</p>
-                </a>
+                {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+                  <a href="{% url 'forge-add-create' %}"
+                     class="nav-link swh-add-forge-now-link">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                  </a>
+                {% elif SWH_MIRROR_CONFIG %}
+                  <a href="https://archive.softwareheritage.org/add-forge/request/create/"
+                     class="nav-link swh-add-forge-now-link"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                    <i class="nav-icon mdi mdi-open-in-new"></i>
+                  </a>
+                {% endif %}
               </li>
             {% endif %}
             <li class="nav-item swh-help-item" title="How to browse the archive ?">
@@ -277,24 +240,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                  class="nav-link swh-help-link"
                  onclick="swh.guided_tour.guidedTourButtonClick(event)">
                 <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-help-circle"></i>
-                <p>
-                  Help
-                </p>
+                <p>Help</p>
               </a>
             </li>
-            {% if user.is_authenticated %}
-              <li class="nav-header">
-                Administration
-              </li>
+            {% if user.is_authenticated and not SWH_MIRROR_CONFIG %}
+              <li class="nav-header">Administration</li>
               {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
                 <li class="nav-item swh-origin-save-admin-item"
                     title="Save code now administration">
                   <a href="{% url 'admin-origin-save-requests' %}"
                      class="nav-link swh-origin-save-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-camera"></i>
-                    <p>
-                      Save code now
-                    </p>
+                    <p>Save code now</p>
                   </a>
                 </li>
               {% endif %}
@@ -305,9 +262,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <a href="{% url 'add-forge-now-requests-moderation' %}"
                        class="nav-link swh-add-forge-now-moderation-link">
                       <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-anvil"></i>
-                      <p>
-                        Add forge now
-                      </p>
+                      <p>Add forge now</p>
                     </a>
                   </li>
                 {% endif %}
@@ -320,9 +275,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                        class="nav-link swh-deposit-admin-link">
                       <i style="color: #fecd1b"
                          class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
-                      <p>
-                        Deposit
-                      </p>
+                      <p>Deposit</p>
                     </a>
                   </li>
                 {% endif %}
@@ -333,9 +286,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   <a href="{% url 'admin-mailmap' %}"
                      class="nav-link swh-mailmap-admin-link">
                     <i style="color: #fecd1b;" class="nav-icon mdi mdi-24px mdi-email"></i>
-                    <p>
-                      Mailmap
-                    </p>
+                    <p>Mailmap</p>
                   </a>
                 </li>
               {% endif %}
@@ -369,27 +320,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     {% include "includes/global-modals.html" %}
     <footer class="footer">
       <div class="container text-center">
-        <a href="https://www.softwareheritage.org">Software Heritage</a> &mdash;
-        Copyright (C) 2015&ndash;{% now "Y" %}, The Software Heritage developers.
-        License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
-        AGPLv3+</a>.
-        <br/>
-        The source code of Software Heritage <em>itself</em>
-        is available on
-        our <a href="https://gitlab.softwareheritage.org">development
-        forge</a>.
-        <br/>
-        The source code files <em>archived</em> by Software
-        Heritage are available under their own copyright and licenses.
-        <br/>
-        <span class="link-color">Terms of use: </span>
-        <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
-        <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>-
-        <a href="https://www.softwareheritage.org/contact/">Contact</a>-
-        {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
-          <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+        {% if not SWH_MIRROR_CONFIG %}
+          {% include "./includes/footer.html" %}
+        {% else %}
+          {% include "mirror-footer.html" %}
         {% endif %}
-        <a href="{% url 'api-1-homepage' %}">Web API</a>
         <br/>
         {% if "production" not in DJANGO_SETTINGS_MODULE %}swh-web v{{ swh_web_version }}{% endif %}
       </div>
