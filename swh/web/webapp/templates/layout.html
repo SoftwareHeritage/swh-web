@@ -111,7 +111,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% if "partner_url" in SWH_MIRROR_CONFIG %}
                   <a href="{{ SWH_MIRROR_CONFIG.partner_url }}"
                      target="_blank"
-                     rel="noopener noreferrer">
+                     rel="noopener noreferrer"
+                     class="d-none d-lg-block">
                   {% endif %}
                   {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
                     <img class="swh-mirror-partner-logo"
