@@ -3,23 +3,14 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from importlib import reload
 import os
 from pathlib import Path
 import shutil
 
 import pytest
 
-from django.conf import settings
 from django.contrib.staticfiles import finders
-from django.template import engines
-from django.template.autoreload import reset_loaders  # type: ignore[import]
-from django.template.utils import get_app_template_dirs
 
-from swh.web import config
-from swh.web.conftest import reload_urlconf
-from swh.web.settings import common as common_settings
-from swh.web.settings import tests as tests_settings
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response
 from swh.web.utils import reverse
@@ -50,32 +41,12 @@ def mirror_config(tmp_path):
     }
 
 
-def _reload_django_settings():
-    reload(common_settings)
-    reload(tests_settings)
-    settings._setup()
-    finders.get_finder.cache_clear()
-    get_app_template_dirs.cache_clear()
-    reload_urlconf()
-    # ensure to reload templates config
-    reset_loaders()
-    engines._templates = None
-    engines._engines = {}
-    del engines.templates
-
-
 @pytest.fixture(autouse=True)
-def mirror_config_setter(mocker, mirror_config):
+def mirror_config_setter(mirror_config, config_updater):
     """Plug mirror config in django settings and reload the latters"""
-    original_config = config.get_config()
-    patched_config = dict(original_config)
-    patched_config["mirror_config"] = mirror_config
-    patched_config["swh_extra_django_apps"] = swh_extra_django_apps
-    mocker.patch.object(config, "swhweb_config", patched_config)
-    _reload_django_settings()
-    yield
-    mocker.patch.object(config, "swhweb_config", original_config)
-    _reload_django_settings()
+    config_updater(
+        {"mirror_config": mirror_config, "swh_extra_django_apps": swh_extra_django_apps}
+    )
 
 
 def test_page_titles_contain_mirror_partner_name(client):

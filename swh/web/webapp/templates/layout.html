@@ -64,6 +64,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <script>swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});</script>
     {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
     {{ request.user.is_staff|json_script:"swh_user_is_staff" }}
+    {{ SWH_MIRROR_CONFIG|json_script:"swh_mirror_config" }}
     {% include "includes/favicon.html" %}
     {% block header %}
     {% endblock header %}
@@ -110,7 +111,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                 {% if "partner_url" in SWH_MIRROR_CONFIG %}
                   <a href="{{ SWH_MIRROR_CONFIG.partner_url }}"
                      target="_blank"
-                     rel="noopener noreferrer">
+                     rel="noopener noreferrer"
+                     class="d-none d-lg-block">
                   {% endif %}
                   {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
                     <img class="swh-mirror-partner-logo"
@@ -298,18 +300,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="content-wrapper">
       <section class="content">
         <div class="container" id="swh-web-content">
-          {% if swh_web_staging %}
-            <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
-              Staging
-              <br/>
-              v{{ swh_web_version }}
-            </div>
-          {% elif swh_web_dev %}
-            <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
-              Development
-              <br/>
-              v{{ swh_web_version|split:"+"|first }}
-            </div>
+          {% if show_corner_ribbon %}
+            {% if swh_web_staging %}
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+                Staging
+                <br/>
+                v{{ swh_web_version }}
+              </div>
+            {% elif swh_web_dev %}
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+                Development
+                <br/>
+                v{{ swh_web_version|split:"+"|first }}
+              </div>
+            {% endif %}
           {% endif %}
           {% block content %}
           {% endblock content %}
@@ -336,9 +340,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </div>
     <script>
       swh.webapp.setContainerFullWidth();
-      var statusServerURL = {{ status.server_url|jsonify }};
-      var statusJsonPath = {{ status.json_path|jsonify }};
-      swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
+      {% if "server_url" in status and "json_path" in status %}
+        var statusServerURL = {{ status.server_url|jsonify }};
+        var statusJsonPath = {{ status.json_path|jsonify }};
+        swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
+      {% endif %}
     </script>
   </body>
 </html>

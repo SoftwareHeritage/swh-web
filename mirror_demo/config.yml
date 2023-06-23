@@ -24,6 +24,8 @@ swh_extra_django_apps:
   - swh.web.jslicenses
   - swh.web.vault
 
+show_corner_ribbon: false
+
 # mirror partner specific configuration
 mirror_config:
   partner_name: "[mirror partner]"
