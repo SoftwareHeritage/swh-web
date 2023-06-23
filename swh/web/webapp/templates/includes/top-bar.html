@@ -1,0 +1,61 @@
+{% comment %}
+Copyright (C) 2023  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+<div class="swh-top-bar">
+  <ul>
+    <li class="swh-position-left">
+      <div id="swh-full-width-switch-container"
+           class="custom-control custom-switch d-none d-lg-block d-xl-block">
+        <input type="checkbox"
+               class="custom-control-input"
+               id="swh-full-width-switch"
+               onclick="swh.webapp.fullWidthToggled(event)"/>
+        <label class="custom-control-label font-weight-normal"
+               for="swh-full-width-switch">
+          Full width
+        </label>
+      </div>
+    </li>
+    {% for text, url in top_bar.links.items %}
+      <li class="swh-topbar-link">
+        <a href="{{ url }}">{{ text }}</a>
+      </li>
+    {% endfor %}
+    {% if "donate_link" in top_bar %}
+      <li class="swh-topbar-donate-link">
+        <a class="swh-donate-link" href="{{ top_bar.donate_link }}">Donate</a>
+      </li>
+    {% endif %}
+    <li class="swh-position-right">
+      {% if "server_url" in status %}
+        <a href="{{ status.server_url }}"
+           target="_blank"
+           class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
+          <span id="swh-current-status-description">Operational</span>
+          <i class="swh-current-status-indicator green"></i>
+        </a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        Logged in as
+        {% if 'OIDC' in user.backend %}
+          <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
+          <a href="{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
+        {% else %}
+          <strong id="swh-login">{{ user.username }}</strong>,
+          <a href="{% url logout_url %}">logout</a>
+        {% endif %}
+      {% else %}
+        {% if request.resolver_match.url_name != logout_url %}
+          <a id="swh-login"
+             href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
+        {% else %}
+          <a id="swh-login" href="{% url login_url %}">login</a>
+        {% endif %}
+      {% endif %}
+    </li>
+  </ul>
+</div>

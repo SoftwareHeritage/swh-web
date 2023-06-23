@@ -64,6 +64,7 @@ if SWH_MIRROR_CONFIG:
     assert "partner_name" in SWH_MIRROR_CONFIG
     assert "static_path" in SWH_MIRROR_CONFIG
     assert "partner_logo_static_path" in SWH_MIRROR_CONFIG
+    assert "templates_path" in SWH_MIRROR_CONFIG
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -112,6 +113,21 @@ for app in SWH_BASE_DJANGO_APPS + swh_web_config["swh_extra_django_apps"]:
         )
     except ModuleNotFoundError:
         assert False, f"Django application {app} not found !"
+
+# for mirror version of swh-web, we need access to the Save Code Now templates
+# even if the django application is not enabled
+if SWH_MIRROR_CONFIG and "swh.web.save_code_now" not in SWH_DJANGO_APPS:
+    app_spec = find_spec("swh.web.save_code_now")
+    assert app_spec is not None and app_spec.origin is not None
+    SWH_APP_TEMPLATES.append(
+        os.path.join(os.path.dirname(app_spec.origin), "templates")
+    )
+
+if SWH_MIRROR_CONFIG:
+    mirror_templates_path = SWH_MIRROR_CONFIG["templates_path"]
+    assert os.path.exists(os.path.join(mirror_templates_path, "mirror-homepage.html"))
+    assert os.path.exists(os.path.join(mirror_templates_path, "mirror-footer.html"))
+    SWH_APP_TEMPLATES.append(SWH_MIRROR_CONFIG["templates_path"])
 
 TEMPLATES = [
     {

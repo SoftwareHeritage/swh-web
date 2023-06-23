@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -308,7 +308,7 @@ def context_processor(request):
         "keycloak": config["keycloak"],
         "site_base_url": request.build_absolute_uri("/")[:-1],
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
-        "status": config["status"],
+        "status": config.get("status", {}),
         "swh_web_dev": is_swh_web_development(request),
         "swh_web_staging": is_swh_web_staging(request),
         "swh_web_prod": is_swh_web_production(request),
@@ -323,6 +323,8 @@ def context_processor(request):
         "login_url": settings.LOGIN_URL,
         "logout_url": settings.LOGOUT_URL,
         "SWH_MIRROR_CONFIG": settings.SWH_MIRROR_CONFIG,
+        "top_bar": config.get("top_bar", {}),
+        "matomo": config.get("matomo", {}),
     }
 
 

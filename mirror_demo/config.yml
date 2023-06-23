@@ -1,0 +1,33 @@
+# example of extra configuration for a mirror version of swh-web
+
+# top bar can have custom links and donate link
+top_bar:
+  links:
+    Home: https://example.org
+  # donate_link:
+
+# to display the status.io widget in the top bar
+status:
+  {}
+  # server_url: https://status.example.org/
+  # json_path: 1.0/status/<id>
+
+# matomo can optionally be used
+matomo:
+  {}
+  # url:
+  # site_id:
+
+# most of django apps must be disabled when running a mirror
+swh_extra_django_apps:
+  - swh.web.badges
+  - swh.web.jslicenses
+  - swh.web.vault
+
+# mirror partner specific configuration
+mirror_config:
+  partner_name: "[mirror partner]"
+  partner_url: https://example.org
+  static_path: mirror_demo/static
+  partner_logo_static_path: partner_logo.png
+  templates_path: mirror_demo/templates

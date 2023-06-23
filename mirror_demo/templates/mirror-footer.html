@@ -1,0 +1,9 @@
+<a href="https://example.org">[mirror partner]</a> &mdash;
+Copyright (C), [mirror partner].
+License: <a href="https://www.gnu.org/licenses/agpl.html">GNU
+AGPLv3+</a>.
+<br/>
+{% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
+  <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>-
+{% endif %}
+<a href="{% url 'api-1-homepage' %}">Web API</a>

@@ -7,7 +7,8 @@
 
 import {csrfPost, getHumanReadableDate, handleFetchError} from 'utils/functions';
 import requestHistoryItem from './add-request-history-item.ejs';
-import emailTempate from './forge-admin-email.ejs';
+import initialEmailTempate from './forge-admin-email.ejs';
+import successEmailTempate from './forge-success-email.ejs';
 
 let forgeRequest;
 
@@ -111,7 +112,14 @@ function contactForgeAdmin(event) {
   const mailTo = encodeURIComponent($('#contactForgeAdmin').attr('emailTo'));
   const mailCc = encodeURIComponent($('#contactForgeAdmin').attr('emailCc'));
   const subject = encodeURIComponent($('#contactForgeAdmin').attr('emailSubject'));
-  const emailText = encodeURIComponent(emailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '\r\n'));
+  // select email template according to the status:
+  let emailText = '';
+  if (forgeRequest.status === 'PENDING') {
+    emailText = encodeURIComponent(initialEmailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '\r\n'));
+  }
+  if (forgeRequest.status === 'FIRST_ORIGIN_LOADED') {
+    emailText = encodeURIComponent(successEmailTempate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));
+  }
   const w = window.open('', '_blank', '', true);
   w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailCc}&Subject=${subject}&body=${emailText}`;
   w.focus();

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -173,6 +173,18 @@ DEFAULT_CONFIG = {
         ],
     ),
     "mirror_config": ("dict", {}),
+    "top_bar": (
+        "dict",
+        {
+            "links": {
+                "Home": "https://www.softwareheritage.org",
+                "Development": "https://gitlab.softwareheritage.org",
+                "Documentation": "https://docs.softwareheritage.org",
+            },
+            "donate_link": "https://www.softwareheritage.org/donate",
+        },
+    ),
+    "matomo": ("dict", {}),
 }
 
 swhweb_config: Dict[str, Any] = {}
