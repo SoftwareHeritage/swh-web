@@ -348,7 +348,7 @@ def test_add_forge_request_update_status_concurrent(
     check_api_post_response(
         api_client,
         url,
-        data={"new_status": "REJECTED", "text": "request accepted"},
+        data={"new_status": "PENDING", "text": "request accepted"},
         status_code=400,
     )
     thread.join()

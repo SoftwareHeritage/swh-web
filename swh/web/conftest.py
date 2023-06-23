@@ -1269,3 +1269,13 @@ def django_settings():
     settings = SwhSettingsWrapper()
     yield settings
     settings.finalize()
+
+
+@pytest.fixture
+def config_updater(mocker):
+    def update_config(new_config):
+        config = dict(get_config())
+        config.update(new_config)
+        mocker.patch("swh.web.utils.get_config").return_value = config
+
+    return update_config

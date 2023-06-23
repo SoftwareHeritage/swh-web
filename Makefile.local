@@ -84,6 +84,10 @@ run-gunicorn-server: add-users-prod clear-memcached
 run-django-webpack-memory-storages: build-webpack-dev add-users-test
 	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST)
 
+run-mirror-demo: build-webpack-dev add-users-test
+	SWH_CONFIG_FILENAME=$$PWD/mirror_demo/config.yml python3 swh/web/manage.py runserver \
+	--nostatic --settings=$(SETTINGS_TEST)
+
 test-full:
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 

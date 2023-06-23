@@ -1,4 +1,4 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -111,15 +111,60 @@ def test_layout_deposit_admin_for_user_with_permission(client, regular_user):
     assert_contains(resp, "swh-deposit-admin-link")
 
 
-def test_layout_no_piwik_by_default(client):
+def test_layout_no_matomo_by_default(client):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(client, url, status_code=200)
     assert_not_contains(resp, "https://piwik.inria.fr")
 
 
-def test_layout_piwik_in_production(client):
+def test_layout_matomo_activated(client, config_updater):
+    matomo_url = "https://piwik.inria.fr"
+    site_id = 59
+    config_updater({"matomo": {"url": matomo_url, "site_id": site_id}})
     url = reverse("swh-web-homepage")
-    resp = check_http_get_response(
-        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, matomo_url)
+    assert_contains(resp, f"['setSiteId', '{site_id}']")
+
+
+def test_top_bar_no_links(client, config_updater):
+    config_updater({"top_bar": {}, "status": {}})
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "swh-topbar-link")
+    assert_not_contains(resp, "swh-topbar-donate-link")
+    assert_not_contains(resp, "swh-current-status")
+
+
+def test_top_bar_custom_links(client, config_updater):
+    home_link = "https://example.org/"
+    dev_link = "https://example.org/dev"
+    doc_link = "https://example.org/doc"
+    donate_link = "https://example.org/donate"
+    status_link = "https://example.org/status"
+
+    config_updater(
+        {
+            "top_bar": {
+                "links": {
+                    "Home": home_link,
+                    "Development": dev_link,
+                    "Documentation": doc_link,
+                },
+                "donate_link": donate_link,
+            },
+            "status": {"server_url": status_link},
+        }
     )
-    assert_contains(resp, "https://piwik.inria.fr")
+    url = reverse("swh-web-homepage")
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert_contains(resp, "swh-topbar-link", 3)
+    assert_contains(resp, "swh-topbar-donate-link")
+    assert_contains(resp, "swh-current-status")
+
+    assert_contains(resp, home_link)
+    assert_contains(resp, dev_link)
+    assert_contains(resp, doc_link)
+    assert_contains(resp, donate_link)
+    assert_contains(resp, status_link)

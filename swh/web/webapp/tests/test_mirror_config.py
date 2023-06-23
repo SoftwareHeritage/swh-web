@@ -5,38 +5,77 @@
 
 from importlib import reload
 import os
+from pathlib import Path
 import shutil
-import tempfile
 
 import pytest
 
 from django.conf import settings
 from django.contrib.staticfiles import finders
+from django.template import engines
+from django.template.autoreload import reset_loaders  # type: ignore[import]
+from django.template.utils import get_app_template_dirs
 
-from swh.web.config import get_config
+from swh.web import config
+from swh.web.conftest import reload_urlconf
 from swh.web.settings import common as common_settings
 from swh.web.settings import tests as tests_settings
-from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.django_asserts import assert_contains, assert_not_contains
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.utils import reverse
 
 partner_name = "Example"
-mirror_config = {
-    "partner_name": partner_name,
-    "static_path": tempfile.mkdtemp(),
-    "partner_logo_static_path": "mirror-partner-logo.png",
-}
+swh_extra_django_apps = [
+    "swh.web.badges",
+    "swh.web.jslicenses",
+    "swh.web.vault",
+]
 
 
-@pytest.fixture(autouse=True)
-def mirror_config_setter(mocker):
-    """Plug mirror config in django settings and reload the latters"""
-    config = get_config()
-    config["mirror_config"] = mirror_config
-    mocker.patch("swh.web.settings.common.get_config").return_value = config
+@pytest.fixture
+def mirror_config(tmp_path):
+    static_path = os.path.join(tmp_path, "static")
+    templates_path = os.path.join(tmp_path, "templates")
+    os.makedirs(static_path)
+    os.makedirs(templates_path)
+    Path(os.path.join(templates_path, "mirror-homepage.html")).touch()
+    Path(os.path.join(templates_path, "mirror-footer.html")).touch()
+
+    return {
+        "partner_name": partner_name,
+        "partner_url": "https://example.org",
+        "static_path": static_path,
+        "partner_logo_static_path": "mirror-partner-logo.png",
+        "templates_path": templates_path,
+    }
+
+
+def _reload_django_settings():
     reload(common_settings)
     reload(tests_settings)
     settings._setup()
     finders.get_finder.cache_clear()
+    get_app_template_dirs.cache_clear()
+    reload_urlconf()
+    # ensure to reload templates config
+    reset_loaders()
+    engines._templates = None
+    engines._engines = {}
+    del engines.templates
+
+
+@pytest.fixture(autouse=True)
+def mirror_config_setter(mocker, mirror_config):
+    """Plug mirror config in django settings and reload the latters"""
+    original_config = config.get_config()
+    patched_config = dict(original_config)
+    patched_config["mirror_config"] = mirror_config
+    patched_config["swh_extra_django_apps"] = swh_extra_django_apps
+    mocker.patch.object(config, "swhweb_config", patched_config)
+    _reload_django_settings()
+    yield
+    mocker.patch.object(config, "swhweb_config", original_config)
+    _reload_django_settings()
 
 
 def test_page_titles_contain_mirror_partner_name(client):
@@ -50,18 +89,18 @@ def test_page_titles_contain_mirror_partner_name(client):
     assert_contains(response, page_title, count=2)
 
     url = reverse("browse-search")
-    response = client.get(url)
+    response = check_html_get_response(client, url, status_code=200)
     # mirror info in page title only
     assert_contains(response, mirror_info, count=1)
 
 
 def test_pages_contain_mirror_logo(client):
     url = reverse("swh-web-homepage")
-    response = client.get(url)
+    response = check_html_get_response(client, url, status_code=200)
     assert_contains(response, "img/swh-mirror.png")
 
 
-def test_pages_contain_mirror_partner_logo(client):
+def test_pages_contain_mirror_partner_logo(client, mirror_config):
     swh_logo_path = finders.find("img/swh-logo.png")
     swh_partner_logo_path = os.path.join(
         mirror_config["static_path"], mirror_config["partner_logo_static_path"]
@@ -71,16 +110,50 @@ def test_pages_contain_mirror_partner_logo(client):
     assert finders.find(mirror_config["partner_logo_static_path"]) is not None
 
     url = reverse("swh-web-homepage")
-    response = client.get(url)
+    response = check_html_get_response(client, url, status_code=200)
     assert_contains(response, mirror_config["partner_logo_static_path"])
+    assert_contains(response, mirror_config["partner_url"])
 
 
 def test_pages_contain_save_code_now_external_link(client, origin):
     save_code_now_link = "https://archive.softwareheritage.org/save"
     url = reverse("swh-web-homepage")
-    response = client.get(url)
+    response = check_html_get_response(client, url, status_code=200)
     assert_contains(response, save_code_now_link)
 
     url = reverse("browse-origin-directory", query_params={"origin_url": origin["url"]})
-    response = client.get(url)
+    response = check_html_get_response(client, url, status_code=200)
     assert_contains(response, save_code_now_link + f"?origin_url={origin['url']}")
+
+
+def test_admin_menu_is_not_available(client, admin_user):
+    client.force_login(admin_user)
+    url = reverse("swh-web-homepage")
+    response = check_html_get_response(client, url, status_code=200)
+    assert_not_contains(response, '<li class="nav-header">Administration</li>')
+
+
+def test_pages_contain_add_forge_now_external_link(client):
+    add_forge_now_link = (
+        "https://archive.softwareheritage.org/add-forge/request/create/"
+    )
+    url = reverse("swh-web-homepage")
+    response = check_html_get_response(client, url, status_code=200)
+    assert_contains(response, add_forge_now_link)
+
+
+def test_mirror_custom_homepage_and_footer(client, mirror_config):
+    mirror_homepage_html = "<h4>Mirror section</h4>\n"
+    mirror_footer_html = "<span>Mirror footer</span>\n"
+    templates_path = mirror_config["templates_path"]
+    with open(
+        os.path.join(templates_path, "mirror-homepage.html"), "w"
+    ) as mirror_homepage:
+        mirror_homepage.write(mirror_homepage_html)
+
+    with open(os.path.join(templates_path, "mirror-footer.html"), "w") as mirror_footer:
+        mirror_footer.write(mirror_footer_html)
+    url = reverse("swh-web-homepage")
+    response = check_html_get_response(client, url, status_code=200)
+    assert_contains(response, mirror_homepage_html)
+    assert_contains(response, mirror_footer_html)
