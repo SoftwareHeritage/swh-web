@@ -20,10 +20,16 @@ from swh.web.utils import reverse
 swh_web_version = get_distribution("swh.web").version
 
 
-def test_layout_without_ribbon(client):
+def test_layout_without_ribbon(client, config_updater):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(
         client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+    )
+    assert_not_contains(resp, "swh-corner-ribbon")
+
+    config_updater({"show_corner_ribbon": False})
+    resp = check_http_get_response(
+        client, url, status_code=200, server_name="localhost"
     )
     assert_not_contains(resp, "swh-corner-ribbon")
 

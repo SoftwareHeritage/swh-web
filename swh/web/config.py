@@ -185,6 +185,7 @@ DEFAULT_CONFIG = {
         },
     ),
     "matomo": ("dict", {}),
+    "show_corner_ribbon": ("bool", True),
 }
 
 swhweb_config: Dict[str, Any] = {}

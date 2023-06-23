@@ -22,7 +22,11 @@ from pytest_django.fixtures import SettingsWrapper
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.staticfiles import finders
 from django.core.cache import cache
+from django.template import engines
+from django.template.autoreload import reset_loaders  # type: ignore[import]
+from django.template.utils import get_app_template_dirs
 from django.test.utils import setup_databases
 from django.urls import clear_url_caches
 from rest_framework.test import APIClient, APIRequestFactory
@@ -39,6 +43,7 @@ from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
+from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
@@ -46,6 +51,8 @@ from swh.web.auth.utils import (
 )
 from swh.web.config import get_config
 from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
+from swh.web.settings import common as common_settings
+from swh.web.settings import tests as tests_settings
 from swh.web.tests.data import (
     get_tests_data,
     override_storages,
@@ -1271,11 +1278,32 @@ def django_settings():
     settings.finalize()
 
 
+def _reload_django_settings():
+    reload(common_settings)
+    reload(tests_settings)
+    settings._setup()
+    finders.get_finder.cache_clear()
+    get_app_template_dirs.cache_clear()
+    reload_urlconf()
+    # ensure to reload templates config
+    reset_loaders()
+    engines._templates = None
+    engines._engines = {}
+    del engines.templates
+
+
 @pytest.fixture
 def config_updater(mocker):
-    def update_config(new_config):
-        config = dict(get_config())
-        config.update(new_config)
-        mocker.patch("swh.web.utils.get_config").return_value = config
+    """Temporarily modify swh-web configuration and reload django settings."""
+    original_config = swhweb_config.get_config()
 
-    return update_config
+    def update_config(new_config):
+        patched_config = dict(original_config)
+        patched_config.update(new_config)
+        mocker.patch.object(swhweb_config, "swhweb_config", patched_config)
+        _reload_django_settings()
+
+    yield update_config
+
+    mocker.patch.object(swhweb_config, "swhweb_config", original_config)
+    _reload_django_settings()

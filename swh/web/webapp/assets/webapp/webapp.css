@@ -802,6 +802,7 @@ div.d3-tooltip {
     top: 0;
     right: 47rem;
     z-index: 50000;
+    height: 100%;
 }
 
 .sidebar-collapse .swh-mirror-partner-logo {
