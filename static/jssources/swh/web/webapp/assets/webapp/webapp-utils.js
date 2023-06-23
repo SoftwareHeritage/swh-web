@@ -176,34 +176,38 @@ export function initPage(page) {
 
 export function initHomePage() {
   $(document).ready(async() => {
-    $('.swh-coverage-iframe').iFrameResize({heightCalculationMethod: 'taggedElement'});
-    const response = await fetch(Urls.stat_counters());
-    const data = await response.json();
+    // mirror version of swh-web does not have coverage widget and counters
+    // in the homepage
+    if (Object.keys(swh.webapp.mirrorConfig()).length === 0) {
+      $('.swh-coverage-iframe').iFrameResize({heightCalculationMethod: 'taggedElement'});
+      const response = await fetch(Urls.stat_counters());
+      const data = await response.json();
 
-    if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
-      for (const objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
-        const count = data.stat_counters[objectType];
-        if (count !== undefined) {
-          $(`#swh-${objectType}-count`).html(count.toLocaleString());
-        } else {
-          $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
+      if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
+        for (const objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
+          const count = data.stat_counters[objectType];
+          if (count !== undefined) {
+            $(`#swh-${objectType}-count`).html(count.toLocaleString());
+          } else {
+            $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
+          }
         }
+      } else {
+        $('.swh-counter').html('0');
       }
-    } else {
-      $('.swh-counter').html('0');
-    }
-    if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
-      for (const objectType of ['content', 'revision', 'origin']) {
-        const history = data.stat_counters_history[objectType];
-        if (history) {
-          swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
-        } else {
-          $(`#swh-${objectType}-count-history`).hide();
-        }
+      if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
+        for (const objectType of ['content', 'revision', 'origin']) {
+          const history = data.stat_counters_history[objectType];
+          if (history) {
+            swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
+          } else {
+            $(`#swh-${objectType}-count-history`).hide();
+          }
 
+        }
+      } else {
+        $('.swh-counter-history').hide();
       }
-    } else {
-      $('.swh-counter-history').hide();
     }
   });
   initPage('home');
@@ -378,4 +382,8 @@ export function isUserLoggedIn() {
 
 export function isStaffUser() {
   return JSON.parse($('#swh_user_is_staff').text());
+}
+
+export function mirrorConfig() {
+  return JSON.parse($('#swh_mirror_config').text());
 }
