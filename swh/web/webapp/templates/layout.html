@@ -299,18 +299,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <div class="content-wrapper">
       <section class="content">
         <div class="container" id="swh-web-content">
-          {% if swh_web_staging %}
-            <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
-              Staging
-              <br/>
-              v{{ swh_web_version }}
-            </div>
-          {% elif swh_web_dev %}
-            <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
-              Development
-              <br/>
-              v{{ swh_web_version|split:"+"|first }}
-            </div>
+          {% if show_corner_ribbon %}
+            {% if swh_web_staging %}
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+                Staging
+                <br/>
+                v{{ swh_web_version }}
+              </div>
+            {% elif swh_web_dev %}
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+                Development
+                <br/>
+                v{{ swh_web_version|split:"+"|first }}
+              </div>
+            {% endif %}
           {% endif %}
           {% block content %}
           {% endblock content %}
