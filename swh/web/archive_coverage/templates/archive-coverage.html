@@ -100,7 +100,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                          class="collapse {% if focus %}show{% endif %}"
                          aria-labelledby="heading-collapsed">
                       <div class="card-body text-center swh-coverage-info-body"
-                           {% if focus is not None %}style="max-height: none;"{% endif %}>
+                           {% if focus %}style="max-height: none;"{% endif %}>
                         <table style="width: 100%">
                           {% if "instances" in origins %}
                             <thead>
