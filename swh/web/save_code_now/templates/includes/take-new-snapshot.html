@@ -56,7 +56,7 @@ See top-level LICENSE file for more information
                 <input id="swh-input-visit-type"
                        class="form-control"
                        value="{{ snapshot_context.visit_info.type }}"
-                       disabled/>
+                       disabled />
               </div>
               <div class="form-group col-md-9">
                 <label for="swh-input-origin-url">Origin url</label>
@@ -64,7 +64,7 @@ See top-level LICENSE file for more information
                        class="form-control"
                        id="swh-input-origin-url"
                        value="{{ snapshot_context.origin_info.url }}"
-                       disabled/>
+                       disabled />
               </div>
             </div>
             <div class="form-row">
@@ -74,9 +74,7 @@ See top-level LICENSE file for more information
                   <label for="swh-take-new-snapshot-submit">&#8203;</label>
                   <button type="submit"
                           id="swh-take-new-snapshot-save-submit"
-                          class="btn btn-default btn-block">
-                    Submit
-                  </button>
+                          class="btn btn-default btn-block">Submit</button>
                 {% elif SWH_MIRROR_CONFIG %}
                   <a class="btn btn-default btn-block"
                      href="https://archive.softwareheritage.org/save?origin_url={{ snapshot_context.origin_info.url }}"
@@ -91,7 +89,7 @@ See top-level LICENSE file for more information
           </form>
           {% if not SWH_MIRROR_CONFIG %}
             <div class="swh-processing-save-request text-center" style="display: none">
-              <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner"/>
+              <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner" />
               <p>Processing "take a new snapshot" request ...</p>
             </div>
             <div id="swh-take-new-snapshot-request-status"></div>

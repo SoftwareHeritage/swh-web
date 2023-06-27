@@ -12,10 +12,10 @@ See top-level LICENSE file for more information
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     {% include "includes/favicon.html" %}
     <title>Software Heritage archive coverage</title>
     {% render_bundle 'vendors' %}
@@ -38,13 +38,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses />.
 
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
     </script>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
-    <base target="_parent"/>
+    <base target="_parent" />
   </head>
   <body style="padding-bottom: 0;">
     <div class="wrapper" style="margin-left: 0;" data-iframe-height>
@@ -57,7 +57,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                target="_blank"
                rel="noopener noreferrer">Archive Changelog</a> for notable changes to
             the archive over time.
-            <br/>
+            <br />
             It currently includes the following software origins.
           </p>
           {% for origins_type, origins_data in origins.items %}
@@ -75,7 +75,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                       {% with "img/logos/"|add:origins.type.lower|add:".png" as png_logo %}
                         <img class="card-img-top swh-coverage-logo"
                              src="{% static png_logo %}"
-                             alt="{{ origins.type }}"/>
+                             alt="{{ origins.type }}" />
                       {% endwith %}
                     </a>
                     <div class="card-header swh-coverage-header">
@@ -91,7 +91,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                           {% if "count" in origins and origins.count %}
                             {{ origins.count }} origins
                           {% else %}
-                            <br/>
+                            <br />
                           {% endif %}
                         </div>
                       </a>

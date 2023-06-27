@@ -123,13 +123,8 @@ See top-level LICENSE file for more information
     {% if available_languages %}
       <select data-placeholder="Select Language"
               class="language-select chosen-select">
-        <option value="">
-        </option>
-        {% for lang in available_languages %}
-          <option value="{{ lang }}">
-            {{ lang }}
-          </option>
-        {% endfor %}
+        <option value=""></option>
+        {% for lang in available_languages %}<option value="{{ lang }}">{{ lang }}</option>{% endfor %}
       </select>
     {% endif %}
     {% if show_actions %}

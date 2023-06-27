@@ -14,7 +14,7 @@ See top-level LICENSE file for more information
            type="text"
            id="swh-origins-url-patterns"
            oninput="swh.webapp.validateSWHIDInput(this)"
-           autofocus/>
+           autofocus />
     <div class="input-group-append">
       <button class="btn btn-primary" type="submit">
         <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
@@ -28,13 +28,9 @@ See top-level LICENSE file for more information
       <label class="control-label mr-1" style="font-weight: inherit">visit type:</label>
       <select id="swh-search-visit-type"
               class="custom-select form-control custom-select-sm">
-        <option selected value="any">
-          any
-        </option>
+        <option selected value="any">any</option>
         {% for visit_type in visit_types %}
-          <option value="{{ visit_type }}">
-            {{ visit_type }}
-          </option>
+          <option value="{{ visit_type }}">{{ visit_type }}</option>
         {% endfor %}
       </select>
     </div>
@@ -44,39 +40,33 @@ See top-level LICENSE file for more information
            value="option-origins-with-visit"
            type="checkbox"
            id="swh-search-origins-with-visit"
-           checked/>
+           checked />
     <label class="custom-control-label font-weight-normal"
-           for="swh-search-origins-with-visit">
-      only show origins visited at least once
-    </label>
+           for="swh-search-origins-with-visit">only show origins visited at least once</label>
   </div>
   <div class="custom-control custom-checkbox swhid-option">
     <input class="custom-control-input"
            value="option-filter-empty-visits"
            type="checkbox"
            id="swh-filter-empty-visits"
-           checked/>
+           checked />
     <label class="custom-control-label font-weight-normal"
-           for="swh-filter-empty-visits">
-      filter out origins with no archived content
-    </label>
+           for="swh-filter-empty-visits">filter out origins with no archived content</label>
   </div>
   <div class="custom-control custom-checkbox swhid-option">
     <input class="custom-control-input"
            value="option-filter-empty-visits"
            type="checkbox"
-           id="swh-search-origin-metadata"/>
+           id="swh-search-origin-metadata" />
     <label class="custom-control-label font-weight-normal"
-           for="swh-search-origin-metadata">
-      search in metadata (instead of URL)
-    </label>
+           for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
   </div>
   {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
     <div class="custom-control custom-checkbox swhid-option">
       <input class="custom-control-input"
              value="option-use-ql"
              type="checkbox"
-             id="swh-search-use-ql"/>
+             id="swh-search-use-ql" />
       <label class="custom-control-label font-weight-normal"
              for="swh-search-use-ql">
         search using the

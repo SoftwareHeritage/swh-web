@@ -15,7 +15,7 @@ See top-level LICENSE file for more information
 
 {% block browse-content %}
   {% include "./includes/origin-search-form.html" %}
-  <hr/>
+  <hr />
   <div id="swh-origin-search-results" class="mb-3" style="display: none;">
     <div class="table-responsive">
       <table class="table swh-table swh-table-striped" id="origin-search-results">
@@ -32,11 +32,11 @@ See top-level LICENSE file for more information
     </div>
   </div>
   <div class="swh-loading">
-    <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner"/>
+    <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner" />
     <p>Searching origins ...</p>
   </div>
   <p id="swh-no-result" style="display: none; white-space: pre;">
-    <br/>
+    <br />
     No origins matching the search criteria were found.
   </p>
   <ul class="pagination justify-content-center swh-search-pagination">

@@ -46,10 +46,10 @@ See top-level LICENSE file for more information
       </tbody>
     </table>
   </div>
-  {% if not iframe_mode %}<hr class="mt-0 mb-2"/>{% endif %}
+  {% if not iframe_mode %}<hr class="mt-0 mb-2" />{% endif %}
 {% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
   <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
-  <br/>
+  <br />
   <i>Its associated directory can not be displayed.</i>
 {% elif error_code != 200 %}
   {% include "includes/http-error.html" %}

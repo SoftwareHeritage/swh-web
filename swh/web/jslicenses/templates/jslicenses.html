@@ -48,11 +48,11 @@ See top-level LICENSE file for more information
               {% for js_license in js_src.licenses %}
                 <a href="{{ js_license.url }}">{{ js_license.name }}</a>
                 {% if js_license.copy_url %}(<a href="{{ js_license.copy_url }}">view</a>){% endif %}
-                {% if not forloop.last %}<br/>{% endif %}
+                {% if not forloop.last %}<br />{% endif %}
               {% endfor %}
               {% if not forloop.last %}
-                <br/>
-                <hr style="margin: 0.25rem"/>
+                <br />
+                <hr style="margin: 0.25rem" />
               {% endif %}
             {% endfor %}
           </td>
@@ -60,11 +60,11 @@ See top-level LICENSE file for more information
             {% for js_src in bundled_js_srcs %}
               <a href="{{ js_src.src_url }}">{{ js_src.id }}</a>
               {% for js_license in js_src.licenses %}
-                {% if not forloop.last %}<br/>{% endif %}
+                {% if not forloop.last %}<br />{% endif %}
               {% endfor %}
               {% if not forloop.last %}
-                <br/>
-                <hr style="margin: 0.25rem"/>
+                <br />
+                <hr style="margin: 0.25rem" />
               {% endif %}
             {% endfor %}
           </td>

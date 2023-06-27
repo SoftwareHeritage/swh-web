@@ -23,7 +23,7 @@ See top-level LICENSE file for more information
       {% elif "inode/x-empty" == mimetype %}
         <i>File is empty</i>
       {% elif mimetype in browsers_supported_image_mimes and content %}
-        <img src="data:{{ mimetype }};base64,{{ content }}" alt="image"/>
+        <img src="data:{{ mimetype }};base64,{{ content }}" alt="image" />
       {% elif "application/pdf" == mimetype %}
         <div class="text-center">
           <div class="py-2">
@@ -46,8 +46,8 @@ See top-level LICENSE file for more information
       {% endif %}
     </div>
     {% if not iframe_mode %}</div>{% endif %}
-    {% if content %}
-      <script>
+  {% if content %}
+    <script>
       {% if "application/pdf" == mimetype %}
         swh.webapp.renderPdf({{ top_right_link.url|jsonify }});
       {% elif filename and filename|default:""|slice:"-5:" == "ipynb" %}
@@ -73,6 +73,6 @@ See top-level LICENSE file for more information
         }
 
       {% endif %}
-      </script>
-    {% endif %}
+    </script>
   {% endif %}
+{% endif %}
