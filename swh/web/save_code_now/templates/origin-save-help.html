@@ -38,16 +38,16 @@ See top-level LICENSE file for more information
       </li>
       <li>
         <b>Origin url:</b> the url of the remote repository for the software origin.
-        <br/>
+        <br />
         In order to avoid saving errors from Software Heritage, you should provide the clone/checkout url
         as given by the provider hosting the software origin.
-        <br/>
+        <br />
         It can easily be found in the
         web interface used to browse the software origin.
-        <br/>
+        <br />
         For instance, if you want to save a <code>git</code>
         origin into the archive, you should check that the command <code>$ git clone &lt;origin_url&gt;</code>
-        <br/>
+        <br />
         does not return an error before submitting a request.
       </li>
     </ul>
@@ -69,7 +69,7 @@ See top-level LICENSE file for more information
       Once a save request has been accepted, you can follow its current status in the
       <a id="swh-show-origin-save-requests-list"
          href="{% url 'origin-save-list' %}">submitted save requests list</a>.
-      <br/>
+      <br />
       If you submitted requests while <a href="{% url login_url %}">authenticated</a>, you will be able
       to only display your own requests.
     </p>

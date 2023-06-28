@@ -22,7 +22,7 @@ See top-level LICENSE file for more information
   {% if snapshot_context and snapshot_context.is_empty %}
     {% include "./includes/empty-snapshot.html" %}
   {% else %}
-    <hr class="mt-0 mb-0"/>
+    <hr class="mt-0 mb-0" />
     <form class="text-center">
       sort by:
       <div class="custom-control custom-radio custom-control-inline"
@@ -33,11 +33,9 @@ See top-level LICENSE file for more information
                id="revs-ordering-date"
                value=""
                onclick="swh.revision.revsOrderingTypeClicked(event)"
-               checked/>
+               checked />
         <label class="custom-control-label font-weight-normal"
-               for="revs-ordering-date">
-          revision date
-        </label>
+               for="revs-ordering-date">revision date</label>
       </div>
       <div class="custom-control custom-radio custom-control-inline"
            title="pre-order, depth-first visit on the revision graph">
@@ -46,7 +44,7 @@ See top-level LICENSE file for more information
                name="revs-ordering"
                id="revs-ordering-dfs"
                value="dfs"
-               onclick="swh.revision.revsOrderingTypeClicked(event)"/>
+               onclick="swh.revision.revsOrderingTypeClicked(event)" />
         <label class="custom-control-label font-weight-normal"
                for="revs-ordering-dfs">DFS</label>
       </div>
@@ -57,11 +55,9 @@ See top-level LICENSE file for more information
                name="revs-ordering"
                id="revs-ordering-dfs-post"
                value="dfs_post"
-               onclick="swh.revision.revsOrderingTypeClicked(event)"/>
+               onclick="swh.revision.revsOrderingTypeClicked(event)" />
         <label class="custom-control-label font-weight-normal"
-               for="revs-ordering-dfs-post">
-          DFS post-ordering
-        </label>
+               for="revs-ordering-dfs-post">DFS post-ordering</label>
       </div>
       <div class="custom-control custom-radio custom-control-inline"
            title="breadth-first visit on the revision graph">
@@ -70,7 +66,7 @@ See top-level LICENSE file for more information
                name="revs-ordering"
                id="revs-ordering-bfs"
                value="bfs"
-               onclick="swh.revision.revsOrderingTypeClicked(event)"/>
+               onclick="swh.revision.revsOrderingTypeClicked(event)" />
         <label class="custom-control-label font-weight-normal"
                for="revs-ordering-bfs">BFS</label>
       </div>

@@ -25,7 +25,6 @@ from django.contrib.auth.models import User
 from django.contrib.staticfiles import finders
 from django.core.cache import cache
 from django.template import engines
-from django.template.autoreload import reset_loaders  # type: ignore[import]
 from django.template.utils import get_app_template_dirs
 from django.test.utils import setup_databases
 from django.urls import clear_url_caches
@@ -1286,10 +1285,10 @@ def _reload_django_settings():
     get_app_template_dirs.cache_clear()
     reload_urlconf()
     # ensure to reload templates config
-    reset_loaders()
     engines._templates = None
     engines._engines = {}
-    del engines.templates
+    if hasattr(engines, "templates"):
+        del engines.templates
 
 
 @pytest.fixture

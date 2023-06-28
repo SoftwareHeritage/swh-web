@@ -101,16 +101,14 @@ See top-level LICENSE file for more information
                         onclick="swh.revision.computeAllDiffs(event)"
                         id="swh-compute-all-diffs"
                         title="By default, diffs will be computed as the view is scrolled. Pushing that button will request the immediate computation of all diffs."
-                        style="visibility: hidden">
-                  Compute all diffs
-                </button>
+                        style="visibility: hidden">Compute all diffs</button>
               </div>
               <div class="clearfix"></div>
             </a>
           </div>
           <div id="swh-revision-changes-list" class="collapse show">
             <div id="swh-revision-changes-loading" class="text-center">
-              <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner"/>
+              <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner" />
               <p>Computing file changes ...</p>
             </div>
             <pre style="background: none; border: none; display: none;"></pre>
