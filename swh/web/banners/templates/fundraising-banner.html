@@ -11,10 +11,10 @@ See top-level LICENSE file for more information
 
 <html class="swh-fundraising-banner" lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Software Heritage fundraising banner</title>
     {% render_bundle 'vendors' %}
     <script>
@@ -34,7 +34,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses />.
 
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
@@ -94,7 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="row align-items-center justify-content-end d-none d-xl-flex">
           <img id="swh-fundraising-img"
                src="{% static 'img/swh-donor.png' %}"
-               alt="Software Heritage fundraising"/>
+               alt="Software Heritage fundraising" />
           <div class="col-8 text-right align-middle pr-3">
             <a target="_blank"
                rel="noopener noreferrer"
@@ -117,8 +117,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                      style="width: {{ goal_percent }}%"
                      aria-valuenow="{{ nb_donations }}"
                      aria-valuemin="0"
-                     aria-valuemax="{{ donations_goal }}">
-                </div>
+                     aria-valuemax="{{ donations_goal }}"></div>
                 <small class="justify-content-center d-flex position-absolute w-100">
                   {% if lang == "en" %}
                     Goal: {{ donations_goal }} donations

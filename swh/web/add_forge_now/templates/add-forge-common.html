@@ -41,23 +41,17 @@ See top-level LICENSE file for more information
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-create' %}active{% endif %}"
          href="{% url 'forge-add-create' %}"
-         id="swh-add-forge-tab">
-        Submit a Request
-      </a>
+         id="swh-add-forge-tab">Submit a Request</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-list' %}active{% endif %}"
          href="{% url 'forge-add-list' %}"
-         id="swh-add-forge-requests-list-tab">
-        Browse Requests
-      </a>
+         id="swh-add-forge-requests-list-tab">Browse Requests</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.view_name == 'forge-add-help' %}active{% endif %}"
          href="{% url 'forge-add-help' %}"
-         id="swh-add-forge-requests-help-tab">
-        Help
-      </a>
+         id="swh-add-forge-requests-help-tab">Help</a>
     </li>
   </ul>
   <div class="tab-content">

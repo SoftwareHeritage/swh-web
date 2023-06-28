@@ -100,9 +100,7 @@ See top-level LICENSE file for more information
         <h4>Arguments</h4>
         {% for arg in args %}
           <dl class="row">
-            <dt class="col col-md-2 text-right">
-              {{ arg.name }} ({{ arg.type }})
-            </dt>
+            <dt class="col col-md-2 text-right">{{ arg.name }} ({{ arg.type }})</dt>
             <dd class="col col-md-9">
               {{ arg.doc | docstring_display | safe }}
             </dd>
@@ -116,9 +114,7 @@ See top-level LICENSE file for more information
         <h4>Query parameters</h4>
         {% for param in params %}
           <dl class="row">
-            <dt class="col col-md-2 text-right">
-              {{ param.name }} ({{ param.type }})
-            </dt>
+            <dt class="col col-md-2 text-right">{{ param.name }} ({{ param.type }})</dt>
             <dd class="col col-md-9">
               {{ param.doc | docstring_display | safe }}
             </dd>
@@ -132,9 +128,7 @@ See top-level LICENSE file for more information
         <h4>Request headers</h4>
         {% for header in reqheaders %}
           <dl class="row">
-            <dt class="col col-md-2 text-right">
-              {{ header.name }}
-            </dt>
+            <dt class="col col-md-2 text-right">{{ header.name }}</dt>
             <dd class="col col-md-9">
               {{ header.doc | docstring_display | safe }}
             </dd>
@@ -147,9 +141,7 @@ See top-level LICENSE file for more information
       <div>
         <h4>Request data</h4>
         <dl class="row">
-          <dt class="col col-md-2 text-right">
-            {{ input_type }}
-          </dt>
+          <dt class="col col-md-2 text-right">{{ input_type }}</dt>
           <dd class="col col-md-9">
             <p>
               {% if input_type == 'array' and inputs_list == '' %}
@@ -173,9 +165,7 @@ See top-level LICENSE file for more information
         <h4>Response headers</h4>
         {% for header in resheaders %}
           <dl class="row">
-            <dt class="col col-md-2 text-right">
-              {{ header.name }}
-            </dt>
+            <dt class="col col-md-2 text-right">{{ header.name }}</dt>
             <dd class="col col-md-9">
               {{ header.doc | docstring_display | safe }}
             </dd>
@@ -188,9 +178,7 @@ See top-level LICENSE file for more information
       <div>
         <h4>Returns</h4>
         <dl class="row">
-          <dt class="col col-md-2 text-right">
-            {{ return_type }}
-          </dt>
+          <dt class="col col-md-2 text-right">{{ return_type }}</dt>
           <dd class="col col-md-9">
             <p>
               {% if return_type == 'array' and returns_list == '' %}
@@ -214,9 +202,7 @@ See top-level LICENSE file for more information
         <h4>HTTP status codes</h4>
         {% for status in status_codes %}
           <dl class="row">
-            <dt class="col col-md-2 text-right">
-              {{ status.code }}
-            </dt>
+            <dt class="col col-md-2 text-right">{{ status.code }}</dt>
             <dd class="col col-md-9">
               {{ status.doc | docstring_display | safe }}
             </dd>
@@ -230,8 +216,7 @@ See top-level LICENSE file for more information
         <h4>Examples</h4>
         {% for example in examples %}
           <dl class="row">
-            <dt class="col col-md-2">
-            </dt>
+            <dt class="col col-md-2"></dt>
             <dd class="col col-md-9">
               <a href="{{ example }}">{{ example }}</a>
             </dd>

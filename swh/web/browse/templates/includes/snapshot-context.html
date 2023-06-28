@@ -9,9 +9,7 @@ See top-level LICENSE file for more information
 
 <h5>
   {% if snapshot_context.origin_info %}
-    <a id="swh-origin-url"
-       class="swh-heading-color"
-       href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
+    <a id="swh-origin-url" class="swh-heading-color" href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">
       <i class="{{ swh_object_icons.origin }} mdi-fw"
          aria-hidden="true"
          title="Origin"></i>

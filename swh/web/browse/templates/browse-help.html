@@ -60,7 +60,7 @@ See top-level LICENSE file for more information
       <a href="{% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}">
         {% url 'browse-directory' '977fc4b98c0e85816348cebd3b12026407c368b6' %}
       </a>
-      <br/>
+      <br />
       (see the
       <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.directory_git_object">
         documentation
@@ -73,7 +73,7 @@ See top-level LICENSE file for more information
       <a href="{% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}">
         {% url 'browse-revision' 'f1b94134a4b879bc55c3dacdb496690c8ebdc03f' %}
       </a>
-      <br/>
+      <br />
       (see the
       <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.revision_git_object">
         documentation
@@ -86,7 +86,7 @@ See top-level LICENSE file for more information
       <a href="{% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}">
         {% url 'browse-snapshot' 'baebc2109e4a2ec22a1129a3859647e191d04df4' %}
       </a>
-      <br/>
+      <br />
       (see the
       <a href="https://docs.softwareheritage.org/devel/apidoc/swh.model.git_objects.html#swh.model.git_objects.snapshot_git_object">
         documentation
@@ -168,7 +168,5 @@ See top-level LICENSE file for more information
   In order to facilitate the browsing of the archive and generate relevant entry points to it, a
   <a href="{% url 'browse-search' %}">search interface</a> is available. Currently, it enables to search software
   origins from the URLs they were retrieved from. More search criteria will be added in the future.
-  <script>
-    swh.webapp.initPage('help');
-  </script>
+  <script>swh.webapp.initPage('help');</script>
 {% endblock browse-content %}
