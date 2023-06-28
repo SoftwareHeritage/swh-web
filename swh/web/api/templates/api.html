@@ -127,55 +127,37 @@ See top-level LICENSE file for more information
       <strong>Warning:</strong> this version of the API is not to be considered stable yet.
       Non-backward compatible changes might happen even without changing the API version number.
     </p>
-    <h4 id="schema">
-      Schema
-    </h4>
-    <p>
-      API access is over HTTPS.
-    </p>
+    <h4 id="schema">Schema</h4>
+    <p>API access is over HTTPS.</p>
     <p>
       All API endpoints are rooted at
       <a href="https://archive.softwareheritage.org/api/1/" class="uri">https://archive.softwareheritage.org/api/1/</a>.
     </p>
-    <p>
-      Data is sent and received as JSON by default.
-    </p>
-    <p>
-      Example:
-    </p>
+    <p>Data is sent and received as JSON by default.</p>
+    <p>Example:</p>
     <ul>
       <li>
-        <p>
-          from the command line:
-        </p>
+        <p>from the command line:</p>
         <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/stat/counters/</code></pre>
       </li>
     </ul>
-    <h4 id="response-format-override">
-      Response format override
-    </h4>
+    <h4 id="response-format-override">Response format override</h4>
     <p>
       The response format can be overridden using the <code>Accept</code> request header. In
       particular, <code>Accept: text/html</code> (that web browsers send by default) requests HTML
       pretty-printing, whereas <code>Accept: application/yaml</code> requests YAML-encoded responses.
     </p>
-    <p>
-      Example:
-    </p>
+    <p>Example:</p>
     <ul>
       <li>
         <a href="{% url 'api-1-stat-counters' %}" class="uri">/api/1/stat/counters/</a>
       </li>
       <li>
-        <p>
-          from the command line:
-        </p>
+        <p>from the command line:</p>
         <pre><code class="shell">curl -i -H &#39;Accept: application/yaml&#39; https://archive.softwareheritage.org/api/1/stat/counters/</code></pre>
       </li>
     </ul>
-    <h4 id="parameters">
-      Parameters
-    </h4>
+    <h4 id="parameters">Parameters</h4>
     <p>
       Some API endpoints can be tweaked by passing optional parameters. For GET requests, optional
       parameters can be passed as an HTTP query string.
@@ -185,24 +167,18 @@ See top-level LICENSE file for more information
       and can be used to restrict the list of fields returned by the API, in case you are not
       interested in all of them. By default, all available fields are returned.
     </p>
-    <p>
-      Example:
-    </p>
+    <p>Example:</p>
     <ul>
       <li>
         <a href="{% url 'api-1-stat-counters' %}?fields=content,directory,revision"
            class="uri">{% url 'api-1-stat-counters' %}?fields=content,directory,revision</a>
       </li>
       <li>
-        <p>
-          from the command line:
-        </p>
+        <p>from the command line:</p>
         <pre><code class="shell">curl https://archive.softwareheritage.org/api/1/stat/counters/?fields=content,directory,revision</code></pre>
       </li>
     </ul>
-    <h4 id="errors">
-      Errors
-    </h4>
+    <h4 id="errors">Errors</h4>
     <p>
       While API endpoints will return different kinds of errors depending on their own semantics, some
       error patterns are common across all endpoints.
@@ -217,9 +193,7 @@ See top-level LICENSE file for more information
         Invalid hash deadbeef for algorithm sha1)
       </li>
       <li>
-        <p>
-          from the command line:
-        </p>
+        <p>from the command line:</p>
         <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/content/sha1:deadbeef/</code></pre>
       </li>
     </ul>
@@ -234,9 +208,7 @@ See top-level LICENSE file for more information
         (error: Content with sha1 checksum equals to 0123456789abcdef0123456789abcdef01234567 not found!)
       </li>
       <li>
-        <p>
-          from the command line:
-        </p>
+        <p>from the command line:</p>
         <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/content/04740277a81c5be6c16f6c9da488ca073b770d7f/</code></pre>
       </li>
     </ul>
@@ -244,9 +216,7 @@ See top-level LICENSE file for more information
       Unavailability of the underlying storage backend will result in a <code>503 Service
       Unavailable</code> HTTP response.
     </p>
-    <h4 id="utf8-decoding-errors">
-      UTF-8 decoding errors
-    </h4>
+    <h4 id="utf8-decoding-errors">UTF-8 decoding errors</h4>
     <p>
       While attempting to decode UTF-8 strings from raw bytes stored in the archive, some errors might
       happen when generating an API response. In that case, an extra field
@@ -257,12 +227,8 @@ See top-level LICENSE file for more information
       A string that could not be decoded will have the bytes of its invalid UTF-8 sequences escaped as
       <code>\\x&lt;hex value&gt;</code>.
     </p>
-    <h4 id="pagination">
-      Pagination
-    </h4>
-    <p>
-      Requests that might potentially return many items will be paginated.
-    </p>
+    <h4 id="pagination">Pagination</h4>
+    <p>Requests that might potentially return many items will be paginated.</p>
     <p>
       Page size is set to a default (usually: 10 items), but might be overridden with the
       <code>per_page</code> query parameter up to a maximum (usually: 50 items). Example:
@@ -274,15 +240,13 @@ See top-level LICENSE file for more information
     </p>
     <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/origin/1/visits/?per_page=2 | grep ^Link:
 Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</code></pre>
-    <h4 id="rate-limiting">
-      Rate limiting
-    </h4>
+    <h4 id="rate-limiting">Rate limiting</h4>
     <p>
       Due to limited resource availability on the back end side, API usage is currently rate limited.
       API users can be either anonymous or authenticated. For rate-limiting purposes, anonymous users
       are identified by their origin IP address; authenticated users identify themselves via user-specific
       credentials, like <a href="#authentication">authentication tokens</a>.
-      <br/>
+      <br />
       A higher rate-limit quota is available by default for authenticated users.
     </p>
     <p>
@@ -304,24 +268,20 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
         rate limiting will expire, resetting to a fresh <code>X-RateLimit-Limit</code>
       </li>
     </ul>
-    <p>
-      Example:
-    </p>
+    <p>Example:</p>
     <pre><code class="shell">curl -i https://archive.softwareheritage.org/api/1/stat/counters/ | grep ^X-RateLimit
 X-RateLimit-Limit: 120
 X-RateLimit-Remaining: 119
 X-RateLimit-Reset: 1620639052</code></pre>
     {% if oidc_enabled %}
-      <h4 id="authentication">
-        Authentication
-      </h4>
+      <h4 id="authentication">Authentication</h4>
       <p>
         It is possible to perform authenticated requests to the Web API through the use of a bearer token
         sent in HTTP Authorization headers.
-        <br/>
+        <br />
         To obtain such a token, an account to the
         <a href="{% url 'oidc-login' %}">Software Heritage Authentication service</a> must be created.
-        <br/>
+        <br />
         To generate and manage bearer tokens, a dedicated interface is available on the
         <a href="{% url 'oidc-profile' %}#tokens">user profile page</a> once logged in.
       </p>
@@ -338,7 +298,5 @@ curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}/api/...</pre>
       </p>
     {% endif %}
   </div>
-  <script>
-    swh.webapp.initPage('api');
-  </script>
+  <script>swh.webapp.initPage('api');</script>
 {% endblock content %}

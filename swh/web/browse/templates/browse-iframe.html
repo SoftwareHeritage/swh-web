@@ -12,10 +12,10 @@ See top-level LICENSE file for more information
 
 <html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Software Heritage archived object</title>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
     {% render_bundle 'vendors' %}
@@ -38,7 +38,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses />.
 
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
@@ -121,14 +121,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   <div class="brand-text sitename">
                     <img src="{% static 'img/swh-logo.svg' %}"
                          style="height: 40px"
-                         alt="swh logo"/>
+                         alt="swh logo" />
                     <span class="first-word pl-1">Software</span>
                     <span class="second-word">Heritage</span>
                   </div>
                 </a>
                 <div class="d-none d-md-block">
                   Navigating in
-                  <img src="{% url 'swh-badge-swhid' swhid %}" alt="{{ swhid }}"/>
+                  <img src="{% url 'swh-badge-swhid' swhid %}" alt="{{ swhid }}" />
                 </div>
                 <div class="ml-auto d-flex align-items-center">
                   {% if swhid != focus_swhid %}

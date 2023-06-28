@@ -13,10 +13,10 @@ See top-level LICENSE file for more information
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+          content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>
       {% block title %}
         {% block page_title %}
@@ -51,7 +51,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses />.
 
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
@@ -85,14 +85,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <!-- End Matomo Code -->
     {% endif %}
   </head>
-  <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %} sidebar-collapse{% endif %}">
+  <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %}sidebar-collapse{% endif %}">
     <a id="top"></a>
     <div class="wrapper">
       {% include "./includes/top-bar.html" %}
       {% if "swh.web.banners" in SWH_DJANGO_APPS %}
         <div class="swh-banner">{% include "downtime-banner.html" %}</div>
       {% endif %}
-      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-navbar-banner{% endif %}">
+      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-navbar-banner{% endif %}">
         <div class="navbar-header">
           <a class="nav-link swh-push-menu"
              data-widget="pushmenu"
@@ -117,11 +117,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
                     <img class="swh-mirror-partner-logo"
                          src="{% static mirror_partner_logo %}"
-                         alt="swh mirror partner logo"/>
+                         alt="swh mirror partner logo" />
                   {% else %}
                     <img class="swh-mirror-partner-logo swh-mirror-partner-logo-no-search"
                          src="{% static mirror_partner_logo %}"
-                         alt="swh mirror partner logo"/>
+                         alt="swh mirror partner logo" />
                   {% endif %}
                   {% if "partner_url" in SWH_MIRROR_CONFIG %}</a>{% endif %}
               {% endwith %}
@@ -134,7 +134,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                        type="text"
                        id="swh-origins-search-top-input"
                        oninput="swh.webapp.validateSWHIDInput(this)"
-                       required/>
+                       required />
                 <div class="input-group-append">
                   <button class="btn btn-primary" type="submit">
                     <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
@@ -146,16 +146,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         </div>
       </nav>
     </div>
-    <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %} main-sidebar-banner{% endif %} sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
+    <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}main-sidebar-banner{% endif %} sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}">
       <a href="{% url 'swh-web-homepage' %}" class="brand-link">
         {% if not SWH_MIRROR_CONFIG %}
           <img class="brand-image"
                src="{% static 'img/swh-logo.png' %}"
-               alt="swh logo"/>
+               alt="swh logo" />
         {% else %}
           <img class="brand-image"
                src="{% static 'img/swh-mirror.png' %}"
-               alt="swh logo"/>
+               alt="swh logo" />
         {% endif %}
         <div class="brand-text sitename" href="{% url 'swh-web-homepage' %}">
           <span class="first-word">Software</span> <span class="second-word">Heritage</span>
@@ -302,15 +302,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <div class="container" id="swh-web-content">
           {% if show_corner_ribbon %}
             {% if swh_web_staging %}
-              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-corner-ribbon-banner{% endif %}">
                 Staging
-                <br/>
+                <br />
                 v{{ swh_web_version }}
               </div>
             {% elif swh_web_dev %}
-              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %} swh-corner-ribbon-banner{% endif %}">
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-corner-ribbon-banner{% endif %}">
                 Development
-                <br/>
+                <br />
                 v{{ swh_web_version|split:"+"|first }}
               </div>
             {% endif %}
@@ -329,7 +329,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         {% else %}
           {% include "mirror-footer.html" %}
         {% endif %}
-        <br/>
+        <br />
         {% if "production" not in DJANGO_SETTINGS_MODULE %}swh-web v{{ swh_web_version }}{% endif %}
       </div>
     </footer>

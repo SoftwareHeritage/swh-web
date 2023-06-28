@@ -1,6 +1,6 @@
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
-django-stubs
+django-stubs != 4.2.2
 django-test-migrations
 hypothesis
 pytest >= 7.0.0 # older versions work too, but assertion failures cause https://github.com/untitaker/pytest-subtesthack/issues/4

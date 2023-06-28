@@ -259,6 +259,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "pagure",
+            "info_url": "https://pagure.io/pagure",
+            "info": "public repositories from multiple Pagure instances",
+            "search_pattern": {
+                "default": "",
+            },
+        },
+        {
             "type": "phabricator",
             "info_url": "https://www.phacility.com/phabricator",
             "info": "public repositories from multiple Phabricator instances",

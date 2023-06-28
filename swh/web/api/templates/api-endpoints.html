@@ -54,14 +54,14 @@ See top-level LICENSE file for more information
   {% for category, routes in doc_routes %}
     <h2 id="{{ category | slugify }}">{{ category }}</h2>
     <table class="table table-striped search-res swh-table" width="100%">
-      <col width="320"/>
+      <col width="320" />
       <thead class="thead-default">
         <th>Endpoint</th>
         <th class="d-none d-sm-table-cell">Description</th>
       </thead>
       <tbody>
         {% for doc in routes %}
-          <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %} swh-api-1-doc-route-{{ tag }}{% endfor %}">
+          <tr class="swh-api-1-doc-route swh-tr-hover-highlight {% for tag in doc.tags %}swh-api-1-doc-route-{{ tag }}{% endfor %}">
             {% if "upcoming" in doc.tags %}
               <td id="{{ doc.route_view_name }}">{% url doc.route_view_name %}</td>
             {% else %}
