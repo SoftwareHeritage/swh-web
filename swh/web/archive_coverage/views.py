@@ -523,9 +523,9 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 for _, metrics in listers_metrics[origins_type]
             ]
         )
-        count = count_total - count_never_visited
+        count_visited = count_total - count_never_visited
 
-        origins["count"] = f"{count:,}"
+        origins["count"] = f"{count_visited:,}"
         origins["instances"] = defaultdict(dict)
         for instance, metrics in listers_metrics[origins_type]:
             instance_count = metrics.origins_enabled - metrics.origins_never_visited
@@ -545,7 +545,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
             origins["instances"]["cran"]["cran"] = {"count": origins["count"]}
 
         # defaultdict cannot be iterated in django template
-        origins["instances"] = dict(origins["instances"])
+        origins["instances"] = dict(sorted(origins["instances"].items()))
 
     for origins in listed_origins["origins"]:
         instances = origins["instances"]

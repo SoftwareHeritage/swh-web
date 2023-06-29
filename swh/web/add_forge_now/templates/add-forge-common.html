@@ -29,6 +29,16 @@ See top-level LICENSE file for more information
       complete forge in the Software Heritage archive by requesting the addition
       of the forge URL into the list of regularly visited forges.
     </p>
+    <p>
+      If you submit an Add Forge Now request, please avoid submitting the forge
+      repositories at the same time in <a href="{% url 'origin-save' %}">Save Code
+      Now</a>, which is designed for the punctual archival of single repositories.
+      We process regularly the Add Forge Now requests, ensuring they will be
+      processed rapidly.
+      If there is a strong deadline due to a risk of source code loss (forge to be
+      closed soon for example), please mention it explicitly in your submission
+      message, so that we will prioritize your request.
+    </p>
     {% if not user.is_authenticated %}
       <p>
         You can submit an “Add forge now” request only when you are authenticated,

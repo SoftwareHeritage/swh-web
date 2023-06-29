@@ -361,7 +361,7 @@ describe('Vault Cooking User Interface Tests', function() {
       const browseRevisionUrl = swhIdsContext.revision.swhid_url;
 
       // Create a vault cooking task through the GUI
-      cy.get('.modal.show')
+      cy.get('.modal.show #swh-vault-revision-email')
         .type('{enter}');
 
       cy.wait('@createVaultCookingTask');

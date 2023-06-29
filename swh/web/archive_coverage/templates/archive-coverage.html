@@ -81,9 +81,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                     <div class="card-header swh-coverage-header">
                       <a class="{% if not focus %}collapsed{% endif %} d-block"
                          data-toggle="collapse"
-                         href="#swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         href="#swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          aria-expanded="true"
-                         aria-controls="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                         aria-controls="swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          id="heading-collapsed"
                          title="click to expand or collapse detailed information about software origins">
                         <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
@@ -96,7 +96,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                         </div>
                       </a>
                     </div>
-                    <div id="swh-coverage-info-{{ origins_type.lower|cut:' ' }}"
+                    <div id="swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          class="collapse {% if focus %}show{% endif %}"
                          aria-labelledby="heading-collapsed">
                       <div class="card-body text-center swh-coverage-info-body"

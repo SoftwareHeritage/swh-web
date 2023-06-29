@@ -49,7 +49,10 @@ async function populateRequestDetails(requestId, nextStatusesFor) {
 
     $('#requestStatus').text(swh.add_forge_now.formatRequestStatusName(forgeRequest.status));
     $('#requestType').text(forgeRequest.forge_type);
-    $('#requestURL').text(forgeRequest.forge_url);
+    const htmlForgeURL =
+      `<a href="${encodeURI(forgeRequest.forge_url)}" target="_blank" rel="noopener noreferrer">` +
+      `${swh.webapp.filterXSS(forgeRequest.forge_url)}</a>`;
+    $('#requestURL').html(htmlForgeURL);
     $('#requestContactName').text(forgeRequest.forge_contact_name);
     $('#requestContactConsent').text(forgeRequest.submitter_forward_username);
     $('#requestContactEmail').text(forgeRequest.forge_contact_email);
