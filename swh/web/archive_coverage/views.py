@@ -154,6 +154,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "gitweb",
+            "info_url": "https://git-scm.com/book/en/v2/Git-on-the-Server-GitWeb",
+            "info": "public repositories from GitWeb instances",
+            "search_pattern": {
+                "default": "gitweb",
+            },
+        },
+        {
             "type": "gogs",
             "info_url": "https://gogs.io/",
             "info": "public repositories from multiple Gogs instances",
