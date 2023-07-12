@@ -83,6 +83,7 @@ FORGE_TYPES: List[str] = [
     "cgit",
     "gitlab",
     "gitea",
+    "gitweb",
     "heptapod",
 ]
 
