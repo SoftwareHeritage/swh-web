@@ -25,6 +25,7 @@ from swh.web.config import SWH_WEB_SERVER_NAME
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
+from swh.web.utils.swh_templatetags import static_path_exists
 
 
 def test_coverage_view_no_metrics(client, swh_scheduler):
@@ -121,8 +122,10 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
         legacy_origins["origins"],
         deposited_origins["origins"],
     ):
-        logo_url = f'{settings.STATIC_URL}img/logos/{origins["type"].lower()}.png'
-        assert_contains(resp, f'src="{logo_url}"')
+        origin_type = origins["type"].lower()
+        if static_path_exists(f"img/logos/{origin_type}.png"):
+            logo_url = f'{settings.STATIC_URL}img/logos/{origin_type}.png'
+            assert_contains(resp, f'src="{logo_url}"')
 
         origin_visit_types = set()
 
@@ -297,7 +300,7 @@ def test_coverage_view_no_logo_for_origin_type(client, mocker, swh_scheduler):
         deposited_origins["origins"],
     ):
         origin_type = origins["type"].lower()
-        if origin_type != no_logo_origin_type:
+        if static_path_exists(f"img/logos/{origin_type}.png"):
             logo_url = f"{settings.STATIC_URL}img/logos/{origin_type}.png"
             assert_contains(resp, f'src="{logo_url}"')
         else:
