@@ -332,6 +332,14 @@ listed_origins: Dict[str, Any] = {
                 "cvs": "cvs.sourceforge.net",
             },
         },
+        {
+            "type": "stagit",
+            "info_url": "https://codemadness.org/stagit.html",
+            "info": "public repositories from Stagit instances",
+            "search_pattern": {
+                "default": "stagit",
+            },
+        },
     ],
 }
 
