@@ -146,6 +146,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "gitiles",
+            "info_url": "https://github.com/google/gitiles",
+            "info": "public repositories from Gitiles instances",
+            "search_pattern": {
+                "default": "gitiles",
+            },
+        },
+        {
             "type": "gitlab",
             "info_url": "https://gitlab.com",
             "info": "public repositories from multiple GitLab instances",
