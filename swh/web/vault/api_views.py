@@ -107,7 +107,7 @@ vault_api_urls = APIUrls()
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/
@@ -121,11 +121,15 @@ def api_vault_cook_flat(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting archive can
         be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/flat/(swhid)/raw/`.
+        :http:get:`/api/1/vault/flat/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/flat/swh:1:dir:*/raw/
 
         Then to extract the cooked directory in the current one, use::
 
             $ tar xvf path/to/swh_1_*.tar.gz
+
+        (replace ``swh:1:dir:*`` with the SWHID of the requested directory).
 
         :param string swhid: the object's SWHID
 
@@ -275,7 +279,7 @@ def api_vault_fetch_directory(request: Request, dir_id: str):
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/
@@ -290,13 +294,17 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting gitfast archive
         can be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/gitfast/(swhid)/raw/`.
+        :http:get:`/api/1/vault/gitfast/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/gitfast/swh:1:rev:*/raw/
 
         Then to import the revision in the current directory, use::
 
             $ git init
             $ zcat path/to/swh_1_rev_*.gitfast.gz | git fast-import
             $ git checkout HEAD
+
+        (replace ``swh:1:rev:*`` with the SWHID of the requested revision).
 
         :param string swhid: the revision's permanent identifiers
 
@@ -442,7 +450,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/
@@ -457,14 +465,16 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting git-bare archive
         can be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/git-bare/(swhid)/raw/`.
+        :http:get:`/api/1/vault/git-bare/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/git-bare/swh:1:rev:*/raw/
 
         Then to import the revision in the current directory, use::
 
             $ tar -xf path/to/swh_1_rev_*.git.tar
             $ git clone swh:1:rev:*.git new_repository
 
-        (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
+        (replace ``swh:1:rev:*`` with the SWHID of the requested revision).
 
         This will create a directory called ``new_repository``, which is a git
         repository containing the requested objects.
