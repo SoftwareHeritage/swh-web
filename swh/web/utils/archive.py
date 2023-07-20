@@ -1323,6 +1323,18 @@ def vault_fetch(bundle_type: str, swhid: CoreSWHID):
     return _vault_request(vault.fetch, bundle_type, swhid)
 
 
+def vault_download_url(
+    bundle_type: str, swhid: CoreSWHID, filename: str
+) -> Optional[str]:
+    """Get optional direct download URL for a cooked vault bundle."""
+    try:
+        return vault.download_url(
+            bundle_type, swhid, content_disposition=f'attachment; filename="{filename}"'
+        )
+    except VaultNotFoundExc:
+        raise NotFoundExc(f"Cooked archive for {swhid} not found.")
+
+
 def vault_progress(bundle_type: str, swhid: CoreSWHID):
     """Get the current progress of a vault bundle."""
     return _vault_request(vault.progress, bundle_type, swhid)

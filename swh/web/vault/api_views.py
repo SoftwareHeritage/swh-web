@@ -63,6 +63,35 @@ def _vault_response(
     return d
 
 
+def _vault_fetch(
+    request: Request, swhid: str, bundle_type: str, filename: str, content_type: str
+):
+    bundle_download_url = archive.vault_download_url(
+        bundle_type,
+        parse_core_swhid(swhid),
+        filename,
+    )
+    if bundle_download_url is not None:
+        # vault cache offers direct download link, redirect to it
+        return redirect(bundle_download_url)
+    else:
+        # fallback fetching bundle and sending it to client otherwise
+        bundle_bytes = api_lookup(
+            archive.vault_fetch,
+            bundle_type,
+            parse_core_swhid(swhid),
+            notfound_msg=f"Cooked archive for {swhid} not found.",
+            request=request,
+        )
+
+        return FileResponse(
+            io.BytesIO(bundle_bytes),
+            content_type=content_type,
+            filename=filename,
+            as_attachment=True,
+        )
+
+
 vault_api_urls = APIUrls()
 
 ######################################################
@@ -199,19 +228,13 @@ def api_vault_fetch_flat(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "flat",
-        parse_core_swhid(swhid),
-        notfound_msg=f"Cooked archive for {swhid} not found.",
-        request=request,
-    )
     fname = "{}.tar.gz".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/gzip",
+    return _vault_fetch(
+        request,
+        swhid,
+        bundle_type="flat",
         filename=fname,
-        as_attachment=True,
+        content_type="application/gzip",
     )
 
 
@@ -373,19 +396,13 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "gitfast",
-        parse_core_swhid(swhid),
-        notfound_msg="Cooked archive for {} not found.".format(swhid),
-        request=request,
-    )
     fname = "{}.gitfast.gz".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/gzip",
+    return _vault_fetch(
+        request,
+        swhid,
+        bundle_type="gitfast",
         filename=fname,
-        as_attachment=True,
+        content_type="application/gzip",
     )
 
 
@@ -519,17 +536,11 @@ def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "git_bare",
-        parse_core_swhid(swhid),
-        notfound_msg="Cooked archive for {} not found.".format(swhid),
-        request=request,
-    )
     fname = "{}.git.tar".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/x-tar",
+    return _vault_fetch(
+        request,
+        swhid,
+        bundle_type="git_bare",
         filename=fname,
-        as_attachment=True,
+        content_type="application/x-tar",
     )
