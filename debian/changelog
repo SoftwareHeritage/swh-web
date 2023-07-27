@@ -1,3 +1,15 @@
+swh-web (0.2.34-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.2.34     - (tagged by Antoine R. Dumont
+    (@ardumont) <ardumont@softwareheritage.org> on 2023-07-27 11:49:08
+    +0200)
+  * Upstream changes:     - v0.2.34     - archive-coverage: Add stagit,
+    gitiles, gitweb to the list of origin types     - add-forge-now:
+    Reference the forge type gitiles, gitweb, gogs, stagit     - archive-
+    coverage: Handle edge case where an origin type has no logo
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 27 Jul 2023 10:07:03 +0000
+
 swh-web (0.2.33-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.2.33     - (tagged by Antoine Lambert
