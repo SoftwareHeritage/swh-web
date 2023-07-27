@@ -8,6 +8,7 @@ See top-level LICENSE file for more information
 {% load js_reverse %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
+{% load swh_templatetags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -73,9 +74,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                        target="_blank"
                        rel="noopener noreferrer">
                       {% with "img/logos/"|add:origins.type.lower|add:".png" as png_logo %}
-                        <img class="card-img-top swh-coverage-logo"
-                             src="{% static png_logo %}"
-                             alt="{{ origins.type }}" />
+                        {% if png_logo|static_path_exists %}
+                          <img class="card-img-top swh-coverage-logo"
+                               src="{% static png_logo %}"
+                               alt="{{ origins.type }}" />
+                        {% else %}
+                          <svg class="swh-coverage-logo"
+                               transform="scale(1.7)"
+                               role="img"
+                               aria-label="{{ origins.type }}">
+                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">{{ origins.type }}</text>
+                          </svg>
+                        {% endif %}
                       {% endwith %}
                     </a>
                     <div class="card-header swh-coverage-header">
