@@ -25,6 +25,7 @@ from swh.web.config import SWH_WEB_SERVER_NAME
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
+from swh.web.utils.swh_templatetags import static_path_exists
 
 
 def test_coverage_view_no_metrics(client, swh_scheduler):
@@ -41,8 +42,7 @@ def test_coverage_view_no_metrics(client, swh_scheduler):
 visit_types = ["git", "hg", "svn", "bzr", "cvs"]
 
 
-@pytest.fixture
-def archive_coverage_data(mocker, swh_scheduler):
+def generate_archive_coverage_data(mocker, swh_scheduler):
     """Generate some sample scheduler metrics and some sample deposits
     that will be consumed by the archive coverage view.
     """
@@ -106,7 +106,9 @@ def archive_coverage_data(mocker, swh_scheduler):
     get_deposits_list.return_value = deposits
 
 
-def test_coverage_view_with_metrics(client, archive_coverage_data):
+def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
+
+    generate_archive_coverage_data(mocker, swh_scheduler)
 
     # check view gets rendered without errors
     url = reverse("swh-coverage")
@@ -120,8 +122,10 @@ def test_coverage_view_with_metrics(client, archive_coverage_data):
         legacy_origins["origins"],
         deposited_origins["origins"],
     ):
-        logo_url = f'{settings.STATIC_URL}img/logos/{origins["type"].lower()}.png'
-        assert_contains(resp, f'src="{logo_url}"')
+        origin_type = origins["type"].lower()
+        if static_path_exists(f"img/logos/{origin_type}.png"):
+            logo_url = f'{settings.STATIC_URL}img/logos/{origin_type}.png'
+            assert_contains(resp, f'src="{logo_url}"')
 
         origin_visit_types = set()
 
@@ -144,7 +148,9 @@ def test_coverage_view_with_metrics(client, archive_coverage_data):
     )
 
 
-def test_coverage_view_with_focus(client, archive_coverage_data):
+def test_coverage_view_with_focus(client, mocker, swh_scheduler):
+
+    generate_archive_coverage_data(mocker, swh_scheduler)
 
     origins = (
         listed_origins["origins"]
@@ -263,3 +269,45 @@ def test_coverage_view_filter_out_non_visited_origins(
                 else:
                     # counter for visit type with odd index should not be displayed
                     assert_contains(resp, f'id="{origins["type"]}-{visit_type}"')
+
+
+def test_coverage_view_no_logo_for_origin_type(client, mocker, swh_scheduler):
+
+    no_logo_origin_type = "forge_nologo"
+
+    listed_origins["origins"].append(
+        {
+            "type": no_logo_origin_type,
+            "info_url": "",
+            "info": "",
+            "search_pattern": {
+                "default": "",
+            },
+        }
+    )
+
+    generate_archive_coverage_data(mocker, swh_scheduler)
+
+    url = reverse("swh-coverage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="archive-coverage.html"
+    )
+
+    # check logos or placeholders are present in the rendered page
+    for origins in chain(
+        listed_origins["origins"],
+        legacy_origins["origins"],
+        deposited_origins["origins"],
+    ):
+        origin_type = origins["type"].lower()
+        if static_path_exists(f"img/logos/{origin_type}.png"):
+            logo_url = f"{settings.STATIC_URL}img/logos/{origin_type}.png"
+            assert_contains(resp, f'src="{logo_url}"')
+        else:
+            assert_contains(
+                resp,
+                (
+                    '<text x="50%" y="50%" dominant-baseline="middle" '
+                    f'text-anchor="middle">{origin_type}</text>'
+                ),
+            )
