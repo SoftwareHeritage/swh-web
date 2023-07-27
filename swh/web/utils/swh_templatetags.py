@@ -7,6 +7,7 @@ import json
 import re
 
 from django import template
+from django.contrib.staticfiles.finders import find
 from django.utils.safestring import mark_safe
 
 from swh.web.save_code_now.origin_save import get_savable_visit_types
@@ -152,3 +153,16 @@ def split(value, arg):
         list: the split string parts
     """
     return value.split(arg)
+
+
+@register.filter
+def static_path_exists(path: str) -> bool:
+    """Django template filter to check a static path exists.
+
+    Args:
+        path: static path to check existence.
+
+    Returns:
+        Whether the path exists.
+    """
+    return bool(find(path))
