@@ -26,7 +26,7 @@ See top-level LICENSE file for more information
     </div>
   </div>
 {% endif %}
-{% if user.is_staff %}
+{% if user.is_staff or "swh.web.ui.metadata.display" in user.get_all_permissions %}
   {% if swhids_info %}
     <div class="btn-group">
       <button class="btn btn-default btn-sm dropdown-toggle"
