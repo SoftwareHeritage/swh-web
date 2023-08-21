@@ -11,6 +11,8 @@ from corsheaders.middleware import (
     ACCESS_CONTROL_ALLOW_ORIGIN,
 )
 
+from django.test.utils import override_settings
+
 from swh.model.swhids import ObjectType
 from swh.web.api.apiresponse import (
     compute_link_header,
@@ -185,3 +187,36 @@ def test_api_endpoints_have_cors_headers(client, content, directory, revision):
         client, url, data=swhids, status_code=200, http_origin="https://example.org"
     )
     assert ACCESS_CONTROL_ALLOW_ORIGIN in resp
+
+
+@override_settings(DEBUG=False)
+def test_api_response_invalid_url(client):
+
+    json_reponse = (
+        b'{"error":"Resource not found",'
+        b'"reason":"The resource /api/1/foo/bar/ could not be found on the server."}'
+    )
+    yaml_reponse = (
+        b"error: Resource not found\n"
+        b"reason: The resource /api/1/foo/bar/ could not be found on the server.\n"
+    )
+
+    response = client.get("/api/1/foo/bar/", HTTP_ACCEPT="*/*")
+    assert response.status_code == 404
+    assert response["content-type"] == "application/json"
+    assert response.content == json_reponse
+
+    response = client.get("/api/1/foo/bar/", HTTP_ACCEPT="application/json")
+    assert response.status_code == 404
+    assert response["content-type"] == "application/json"
+    assert response.content == json_reponse
+
+    response = client.get("/api/1/foo/bar/", HTTP_ACCEPT="application/yaml")
+    assert response.status_code == 404
+    assert response["content-type"] == "application/yaml"
+    assert response.content == yaml_reponse
+
+    response = client.get("/api/1/foo/bar/", HTTP_ACCEPT="text/html")
+    assert response.status_code == 404
+    assert response["content-type"].startswith("text/html")
+    assert b"<!DOCTYPE html>" in response.content
