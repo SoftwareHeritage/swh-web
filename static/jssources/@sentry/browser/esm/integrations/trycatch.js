@@ -43,14 +43,14 @@ class TryCatch  {
   /**
    * @inheritDoc
    */
-   __init() {this.name = TryCatch.id;}
 
   /** JSDoc */
 
   /**
    * @inheritDoc
    */
-   constructor(options) {TryCatch.prototype.__init.call(this);
+   constructor(options) {
+    this.name = TryCatch.id;
     this._options = {
       XMLHttpRequest: true,
       eventTarget: true,

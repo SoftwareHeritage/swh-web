@@ -6,7 +6,7 @@
  */
 
 import 'script-loader!notebookjs';
-import AnsiUp from 'ansi_up';
+import {AnsiUp} from 'ansi_up';
 import './notebook.css';
 
 const ansiup = new AnsiUp();

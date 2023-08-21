@@ -3,7 +3,7 @@ import { getOriginalFunction } from '@sentry/utils';
 let originalFunctionToString;
 
 /** Patch toString calls to return proper name for wrapped functions */
-class FunctionToString  {constructor() { FunctionToString.prototype.__init.call(this); }
+class FunctionToString  {
   /**
    * @inheritDoc
    */
@@ -12,7 +12,10 @@ class FunctionToString  {constructor() { FunctionToString.prototype.__init.call(
   /**
    * @inheritDoc
    */
-   __init() {this.name = FunctionToString.id;}
+
+   constructor() {
+    this.name = FunctionToString.id;
+  }
 
   /**
    * @inheritDoc

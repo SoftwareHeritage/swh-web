@@ -124,7 +124,7 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
     ):
         origin_type = origins["type"].lower()
         if static_path_exists(f"img/logos/{origin_type}.png"):
-            logo_url = f'{settings.STATIC_URL}img/logos/{origin_type}.png'
+            logo_url = f"{settings.STATIC_URL}img/logos/{origin_type}.png"
             assert_contains(resp, f'src="{logo_url}"')
 
         origin_visit_types = set()

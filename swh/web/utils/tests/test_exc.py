@@ -24,7 +24,7 @@ def test_handle_view_exception_escape_remote_exception_text(request_factory, moc
     mock_get_config = mocker.patch("swh.web.utils.exc.get_config")
     mock_get_config.return_value = config
 
-    request = request_factory.get("/some/buggy/url")
+    request = request_factory.get("/some/buggy/url", HTTP_ACCEPT="text/html")
     response = Response()
     response.status_code = 500
     remote_exception = RemoteException(
