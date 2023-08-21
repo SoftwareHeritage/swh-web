@@ -611,16 +611,14 @@ def lookup_revision_message(rev_sha1_git) -> Dict[str, bytes]:
 
 def _lookup_revision_id_by(origin, branch_name, timestamp):
     def _get_snapshot_branch(snapshot, branch_name):
-        snapshot = lookup_snapshot(
-            visit["snapshot"],
-            branches_from=branch_name,
-            branches_count=10,
-            branch_name_exclude_prefix=None,
+        branch_response = storage.snapshot_branch_get_by_name(
+            snapshot_id=_to_sha1_bin(snapshot),
+            branch_name=branch_name.encode(),
+            follow_alias_chain=True,
         )
-        branch = None
-        if branch_name in snapshot["branches"]:
-            branch = snapshot["branches"][branch_name]
-        return branch
+        if branch_response is not None:
+            return branch_response.target
+        return None
 
     if isinstance(origin, int):
         origin = {"id": origin}
@@ -634,20 +632,15 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
     visit = get_origin_visit(origin, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit["snapshot"], branch_name)
     rev_id = None
-    if branch and branch["target_type"] == "revision":
-        rev_id = branch["target"]
-    elif branch and branch["target_type"] == "alias":
-        branch = _get_snapshot_branch(visit["snapshot"], branch["target"])
-        if branch and branch["target_type"] == "revision":
-            rev_id = branch["target"]
+    if branch and branch.target_type.value == "revision":
+        rev_id = branch.target
 
     if not rev_id:
         raise NotFoundExc(
             "Revision for origin %s and branch %s not found."
             % (origin.get("url"), branch_name)
         )
-
-    return rev_id
+    return rev_id.hex()
 
 
 def lookup_revision_by(origin, branch_name="HEAD", timestamp=None):

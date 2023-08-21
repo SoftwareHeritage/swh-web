@@ -1,5 +1,5 @@
 import { Integrations, getIntegrationsToSetup, initAndBind, getReportDialogEndpoint, getCurrentHub } from '@sentry/core';
-import { stackParserFromStackParserOptions, supportsFetch, logger, resolvedSyncPromise, addInstrumentationHandler } from '@sentry/utils';
+import { stackParserFromStackParserOptions, supportsFetch, logger, addInstrumentationHandler } from '@sentry/utils';
 import { BrowserClient } from './client.js';
 import { WINDOW, wrap as wrap$1 } from './helpers.js';
 import { GlobalHandlers } from './integrations/globalhandlers.js';
@@ -152,6 +152,7 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
 
   const script = WINDOW.document.createElement('script');
   script.async = true;
+  script.crossOrigin = 'anonymous';
   script.src = getReportDialogEndpoint(dsn, options);
 
   if (options.onLoad) {
@@ -164,15 +165,6 @@ function showReportDialog(options = {}, hub = getCurrentHub()) {
   } else {
     (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Not injecting report dialog. No injection point found in HTML');
   }
-}
-
-/**
- * This is the getter for lastEventId.
- *
- * @returns The last event id of a captured event.
- */
-function lastEventId() {
-  return getCurrentHub().lastEventId();
 }
 
 /**
@@ -189,40 +181,6 @@ function forceLoad() {
  */
 function onLoad(callback) {
   callback();
-}
-
-/**
- * Call `flush()` on the current client, if there is one. See {@link Client.flush}.
- *
- * @param timeout Maximum time in ms the client should wait to flush its event queue. Omitting this parameter will cause
- * the client to wait until all events are sent before resolving the promise.
- * @returns A promise which resolves to `true` if the queue successfully drains before the timeout, or `false` if it
- * doesn't (or if there's no client defined).
- */
-function flush(timeout) {
-  const client = getCurrentHub().getClient();
-  if (client) {
-    return client.flush(timeout);
-  }
-  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events. No client defined.');
-  return resolvedSyncPromise(false);
-}
-
-/**
- * Call `close()` on the current client, if there is one. See {@link Client.close}.
- *
- * @param timeout Maximum time in ms the client should wait to flush its event queue before shutting down. Omitting this
- * parameter will cause the client to wait until all events are sent before disabling itself.
- * @returns A promise which resolves to `true` if the queue successfully drains before the timeout, or `false` if it
- * doesn't (or if there's no client defined).
- */
-function close(timeout) {
-  const client = getCurrentHub().getClient();
-  if (client) {
-    return client.close(timeout);
-  }
-  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events and disable SDK. No client defined.');
-  return resolvedSyncPromise(false);
 }
 
 /**
@@ -289,5 +247,5 @@ function captureUserFeedback(feedback) {
   }
 }
 
-export { captureUserFeedback, close, defaultIntegrations, flush, forceLoad, init, lastEventId, onLoad, showReportDialog, wrap };
+export { captureUserFeedback, defaultIntegrations, forceLoad, init, onLoad, showReportDialog, wrap };
 //# sourceMappingURL=sdk.js.map

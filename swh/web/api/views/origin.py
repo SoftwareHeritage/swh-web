@@ -281,7 +281,7 @@ def api_origin_metadata_search(request: Request):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/metadata-search/?limit=2&fulltext=Jane%20Doe`
+            :swh_web_api:`origin/metadata-search/?limit=2&fulltext=node-red-nodegen`
     """
     fulltext = request.query_params.get("fulltext", None)
     limit = min(int(request.query_params.get("limit", "70")), 100)
@@ -505,7 +505,7 @@ def api_origin_intrinsic_metadata(request: Request, origin_url: str):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/https://github.com/python/cpython/intrinsic-metadata`
+            :swh_web_api:`origin/https://github.com/node-red/node-red-nodegen/intrinsic-metadata`
     """
     return api_lookup(
         archive.lookup_origin_intrinsic_metadata,

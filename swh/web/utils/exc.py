@@ -15,7 +15,9 @@ from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from rest_framework.exceptions import APIException
+from rest_framework.renderers import JSONRenderer
 
+from swh.web.api.renderers import YAMLRenderer
 from swh.web.config import get_config
 
 logger = logging.getLogger("django")
@@ -79,16 +81,38 @@ http_status_code_message = {
 def _generate_error_page(
     request: HttpRequest, error_code: int, error_description: str
 ) -> HttpResponse:
-    return render(
-        request,
-        "error.html",
-        {
-            "error_code": error_code,
-            "error_message": http_status_code_message[error_code],
-            "error_description": mark_safe(error_description),
-        },
-        status=error_code,
-    )
+
+    error_data = {
+        "error": http_status_code_message[error_code],
+        "reason": error_description,
+    }
+
+    accepted_media_type = request.headers.get("Accept", "application/json")
+
+    # ensure django error is returned using same content type as Accept request header
+    if accepted_media_type in ("application/json", "*/*"):
+        return HttpResponse(
+            JSONRenderer().render(error_data),
+            content_type="application/json",
+            status=error_code,
+        )
+    elif accepted_media_type == "application/yaml":
+        return HttpResponse(
+            YAMLRenderer().render(error_data),
+            content_type="application/yaml",
+            status=error_code,
+        )
+    else:
+        return render(
+            request,
+            "error.html",
+            {
+                "error_code": error_code,
+                "error_message": http_status_code_message[error_code],
+                "error_description": mark_safe(error_description),
+            },
+            status=error_code,
+        )
 
 
 def swh_handle400(

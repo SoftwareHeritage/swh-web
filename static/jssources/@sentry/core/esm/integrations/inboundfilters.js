@@ -26,9 +26,11 @@ class InboundFilters  {
   /**
    * @inheritDoc
    */
-   __init() {this.name = InboundFilters.id;}
 
-   constructor(  _options = {}) {this._options = _options;InboundFilters.prototype.__init.call(this);}
+   constructor(options = {}) {
+    this.name = InboundFilters.id;
+    this._options = options;
+  }
 
   /**
    * @inheritDoc
