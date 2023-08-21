@@ -22,7 +22,6 @@ class Breadcrumbs  {
   /**
    * @inheritDoc
    */
-   __init() {this.name = Breadcrumbs.id;}
 
   /**
    * Options of the breadcrumbs integration.
@@ -32,7 +31,8 @@ class Breadcrumbs  {
   /**
    * @inheritDoc
    */
-   constructor(options) {Breadcrumbs.prototype.__init.call(this);
+   constructor(options) {
+    this.name = Breadcrumbs.id;
     this.options = {
       console: true,
       dom: true,
@@ -313,7 +313,7 @@ function _historyBreadcrumb(handlerData) {
 }
 
 function _isEvent(event) {
-  return event && !!(event ).target;
+  return !!event && !!(event ).target;
 }
 
 export { BREADCRUMB_INTEGRATION_ID, Breadcrumbs };

@@ -1,4 +1,4 @@
-const SDK_VERSION = '7.56.0';
+const SDK_VERSION = '7.64.0';
 
 export { SDK_VERSION };
 //# sourceMappingURL=version.js.map

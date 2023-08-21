@@ -11,15 +11,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/add_forge_now.4f93c9769bc36a247915.css.map",
       "publicPath": "/static/css/add_forge_now.4f93c9769bc36a247915.css.map"
     },
-    "css/archive_coverage.8bceb4f6ba428bd57acd.css": {
-      "name": "css/archive_coverage.8bceb4f6ba428bd57acd.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/archive_coverage.8bceb4f6ba428bd57acd.css",
-      "publicPath": "/static/css/archive_coverage.8bceb4f6ba428bd57acd.css"
+    "css/archive_coverage.6573148e19d3c98015b4.css": {
+      "name": "css/archive_coverage.6573148e19d3c98015b4.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/archive_coverage.6573148e19d3c98015b4.css",
+      "publicPath": "/static/css/archive_coverage.6573148e19d3c98015b4.css"
     },
-    "css/archive_coverage.8bceb4f6ba428bd57acd.css.map": {
-      "name": "css/archive_coverage.8bceb4f6ba428bd57acd.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/archive_coverage.8bceb4f6ba428bd57acd.css.map",
-      "publicPath": "/static/css/archive_coverage.8bceb4f6ba428bd57acd.css.map"
+    "css/archive_coverage.6573148e19d3c98015b4.css.map": {
+      "name": "css/archive_coverage.6573148e19d3c98015b4.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/archive_coverage.6573148e19d3c98015b4.css.map",
+      "publicPath": "/static/css/archive_coverage.6573148e19d3c98015b4.css.map"
     },
     "css/auth.0336a94c2c02b4b2a4f4.css": {
       "name": "css/auth.0336a94c2c02b4b2a4f4.css",
@@ -41,25 +41,25 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/badges.03c8b295a163a9306210.css.map",
       "publicPath": "/static/css/badges.03c8b295a163a9306210.css.map"
     },
-    "css/browse.f0d22b08b4e5bbabbeca.css": {
-      "name": "css/browse.f0d22b08b4e5bbabbeca.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.f0d22b08b4e5bbabbeca.css",
-      "publicPath": "/static/css/browse.f0d22b08b4e5bbabbeca.css"
+    "css/browse.f5afe9b68b860a92d393.css": {
+      "name": "css/browse.f5afe9b68b860a92d393.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.f5afe9b68b860a92d393.css",
+      "publicPath": "/static/css/browse.f5afe9b68b860a92d393.css"
     },
-    "css/browse.f0d22b08b4e5bbabbeca.css.map": {
-      "name": "css/browse.f0d22b08b4e5bbabbeca.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.f0d22b08b4e5bbabbeca.css.map",
-      "publicPath": "/static/css/browse.f0d22b08b4e5bbabbeca.css.map"
+    "css/browse.f5afe9b68b860a92d393.css.map": {
+      "name": "css/browse.f5afe9b68b860a92d393.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/browse.f5afe9b68b860a92d393.css.map",
+      "publicPath": "/static/css/browse.f5afe9b68b860a92d393.css.map"
     },
-    "css/guided_tour.c390407da4724ba72774.css": {
-      "name": "css/guided_tour.c390407da4724ba72774.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.c390407da4724ba72774.css",
-      "publicPath": "/static/css/guided_tour.c390407da4724ba72774.css"
+    "css/guided_tour.1bfa315c78e66451b0b2.css": {
+      "name": "css/guided_tour.1bfa315c78e66451b0b2.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.1bfa315c78e66451b0b2.css",
+      "publicPath": "/static/css/guided_tour.1bfa315c78e66451b0b2.css"
     },
-    "css/guided_tour.c390407da4724ba72774.css.map": {
-      "name": "css/guided_tour.c390407da4724ba72774.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.c390407da4724ba72774.css.map",
-      "publicPath": "/static/css/guided_tour.c390407da4724ba72774.css.map"
+    "css/guided_tour.1bfa315c78e66451b0b2.css.map": {
+      "name": "css/guided_tour.1bfa315c78e66451b0b2.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/guided_tour.1bfa315c78e66451b0b2.css.map",
+      "publicPath": "/static/css/guided_tour.1bfa315c78e66451b0b2.css.map"
     },
     "css/highlightjs.647c2546fa20fb2773b1.css": {
       "name": "css/highlightjs.647c2546fa20fb2773b1.css",
@@ -81,15 +81,15 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/org.fdb2f5350b5554094ca4.css.map",
       "publicPath": "/static/css/org.fdb2f5350b5554094ca4.css.map"
     },
-    "css/origin_visits.96c13d373674912545e3.css": {
-      "name": "css/origin_visits.96c13d373674912545e3.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin_visits.96c13d373674912545e3.css",
-      "publicPath": "/static/css/origin_visits.96c13d373674912545e3.css"
+    "css/origin_visits.405bdab2e61c346d77f1.css": {
+      "name": "css/origin_visits.405bdab2e61c346d77f1.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin_visits.405bdab2e61c346d77f1.css",
+      "publicPath": "/static/css/origin_visits.405bdab2e61c346d77f1.css"
     },
-    "css/origin_visits.96c13d373674912545e3.css.map": {
-      "name": "css/origin_visits.96c13d373674912545e3.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin_visits.96c13d373674912545e3.css.map",
-      "publicPath": "/static/css/origin_visits.96c13d373674912545e3.css.map"
+    "css/origin_visits.405bdab2e61c346d77f1.css.map": {
+      "name": "css/origin_visits.405bdab2e61c346d77f1.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/origin_visits.405bdab2e61c346d77f1.css.map",
+      "publicPath": "/static/css/origin_visits.405bdab2e61c346d77f1.css.map"
     },
     "css/revision.4f3cb8316771ce5cd8b1.css": {
       "name": "css/revision.4f3cb8316771ce5cd8b1.css",
@@ -121,25 +121,25 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vault.25fc5883f848b48ffa5b.css.map",
       "publicPath": "/static/css/vault.25fc5883f848b48ffa5b.css.map"
     },
-    "css/vendors.ecc94f4cf9d7cbd52717.css": {
-      "name": "css/vendors.ecc94f4cf9d7cbd52717.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vendors.ecc94f4cf9d7cbd52717.css",
-      "publicPath": "/static/css/vendors.ecc94f4cf9d7cbd52717.css"
+    "css/vendors.a146964477785320ffc4.css": {
+      "name": "css/vendors.a146964477785320ffc4.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vendors.a146964477785320ffc4.css",
+      "publicPath": "/static/css/vendors.a146964477785320ffc4.css"
     },
-    "css/vendors.ecc94f4cf9d7cbd52717.css.map": {
-      "name": "css/vendors.ecc94f4cf9d7cbd52717.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vendors.ecc94f4cf9d7cbd52717.css.map",
-      "publicPath": "/static/css/vendors.ecc94f4cf9d7cbd52717.css.map"
+    "css/vendors.a146964477785320ffc4.css.map": {
+      "name": "css/vendors.a146964477785320ffc4.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/vendors.a146964477785320ffc4.css.map",
+      "publicPath": "/static/css/vendors.a146964477785320ffc4.css.map"
     },
-    "css/webapp.b0ecfc3ecfd1eb92c059.css": {
-      "name": "css/webapp.b0ecfc3ecfd1eb92c059.css",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.b0ecfc3ecfd1eb92c059.css",
-      "publicPath": "/static/css/webapp.b0ecfc3ecfd1eb92c059.css"
+    "css/webapp.0041e30b97d702aceb6a.css": {
+      "name": "css/webapp.0041e30b97d702aceb6a.css",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.0041e30b97d702aceb6a.css",
+      "publicPath": "/static/css/webapp.0041e30b97d702aceb6a.css"
     },
-    "css/webapp.b0ecfc3ecfd1eb92c059.css.map": {
-      "name": "css/webapp.b0ecfc3ecfd1eb92c059.css.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.b0ecfc3ecfd1eb92c059.css.map",
-      "publicPath": "/static/css/webapp.b0ecfc3ecfd1eb92c059.css.map"
+    "css/webapp.0041e30b97d702aceb6a.css.map": {
+      "name": "css/webapp.0041e30b97d702aceb6a.css.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/css/webapp.0041e30b97d702aceb6a.css.map",
+      "publicPath": "/static/css/webapp.0041e30b97d702aceb6a.css.map"
     },
     "fonts/alegreya-latin-400.woff": {
       "name": "fonts/alegreya-latin-400.woff",
@@ -531,175 +531,175 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/img/thirdParty/chosen-sprite@2x.png",
       "publicPath": "/static/img/thirdParty/chosen-sprite@2x.png"
     },
-    "js/add_forge_now.803ac3aaa6a37be69084.js": {
-      "name": "js/add_forge_now.803ac3aaa6a37be69084.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.803ac3aaa6a37be69084.js",
-      "publicPath": "/static/js/add_forge_now.803ac3aaa6a37be69084.js"
+    "js/add_forge_now.9d9e9cf897df094ee4aa.js": {
+      "name": "js/add_forge_now.9d9e9cf897df094ee4aa.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.9d9e9cf897df094ee4aa.js",
+      "publicPath": "/static/js/add_forge_now.9d9e9cf897df094ee4aa.js"
     },
-    "js/add_forge_now.803ac3aaa6a37be69084.js.LICENSE.txt": {
-      "name": "js/add_forge_now.803ac3aaa6a37be69084.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.803ac3aaa6a37be69084.js.LICENSE.txt",
-      "publicPath": "/static/js/add_forge_now.803ac3aaa6a37be69084.js.LICENSE.txt"
+    "js/add_forge_now.9d9e9cf897df094ee4aa.js.LICENSE.txt": {
+      "name": "js/add_forge_now.9d9e9cf897df094ee4aa.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.9d9e9cf897df094ee4aa.js.LICENSE.txt",
+      "publicPath": "/static/js/add_forge_now.9d9e9cf897df094ee4aa.js.LICENSE.txt"
     },
-    "js/add_forge_now.803ac3aaa6a37be69084.js.map": {
-      "name": "js/add_forge_now.803ac3aaa6a37be69084.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.803ac3aaa6a37be69084.js.map",
-      "publicPath": "/static/js/add_forge_now.803ac3aaa6a37be69084.js.map"
+    "js/add_forge_now.9d9e9cf897df094ee4aa.js.map": {
+      "name": "js/add_forge_now.9d9e9cf897df094ee4aa.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/add_forge_now.9d9e9cf897df094ee4aa.js.map",
+      "publicPath": "/static/js/add_forge_now.9d9e9cf897df094ee4aa.js.map"
     },
-    "js/archive_coverage.cb8cdad9b91ec8b9b658.js": {
-      "name": "js/archive_coverage.cb8cdad9b91ec8b9b658.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/archive_coverage.cb8cdad9b91ec8b9b658.js",
-      "publicPath": "/static/js/archive_coverage.cb8cdad9b91ec8b9b658.js"
+    "js/archive_coverage.86392730a84f2f920cd8.js": {
+      "name": "js/archive_coverage.86392730a84f2f920cd8.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/archive_coverage.86392730a84f2f920cd8.js",
+      "publicPath": "/static/js/archive_coverage.86392730a84f2f920cd8.js"
     },
-    "js/archive_coverage.cb8cdad9b91ec8b9b658.js.map": {
-      "name": "js/archive_coverage.cb8cdad9b91ec8b9b658.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/archive_coverage.cb8cdad9b91ec8b9b658.js.map",
-      "publicPath": "/static/js/archive_coverage.cb8cdad9b91ec8b9b658.js.map"
+    "js/archive_coverage.86392730a84f2f920cd8.js.map": {
+      "name": "js/archive_coverage.86392730a84f2f920cd8.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/archive_coverage.86392730a84f2f920cd8.js.map",
+      "publicPath": "/static/js/archive_coverage.86392730a84f2f920cd8.js.map"
     },
-    "js/auth.c13b16f212b2c6238038.js": {
-      "name": "js/auth.c13b16f212b2c6238038.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.c13b16f212b2c6238038.js",
-      "publicPath": "/static/js/auth.c13b16f212b2c6238038.js"
+    "js/auth.f9ebfb0cc4d4018f0073.js": {
+      "name": "js/auth.f9ebfb0cc4d4018f0073.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.f9ebfb0cc4d4018f0073.js",
+      "publicPath": "/static/js/auth.f9ebfb0cc4d4018f0073.js"
     },
-    "js/auth.c13b16f212b2c6238038.js.LICENSE.txt": {
-      "name": "js/auth.c13b16f212b2c6238038.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.c13b16f212b2c6238038.js.LICENSE.txt",
-      "publicPath": "/static/js/auth.c13b16f212b2c6238038.js.LICENSE.txt"
+    "js/auth.f9ebfb0cc4d4018f0073.js.LICENSE.txt": {
+      "name": "js/auth.f9ebfb0cc4d4018f0073.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.f9ebfb0cc4d4018f0073.js.LICENSE.txt",
+      "publicPath": "/static/js/auth.f9ebfb0cc4d4018f0073.js.LICENSE.txt"
     },
-    "js/auth.c13b16f212b2c6238038.js.map": {
-      "name": "js/auth.c13b16f212b2c6238038.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.c13b16f212b2c6238038.js.map",
-      "publicPath": "/static/js/auth.c13b16f212b2c6238038.js.map"
+    "js/auth.f9ebfb0cc4d4018f0073.js.map": {
+      "name": "js/auth.f9ebfb0cc4d4018f0073.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/auth.f9ebfb0cc4d4018f0073.js.map",
+      "publicPath": "/static/js/auth.f9ebfb0cc4d4018f0073.js.map"
     },
-    "js/badges.f9fe4201461448fbda9b.js": {
-      "name": "js/badges.f9fe4201461448fbda9b.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/badges.f9fe4201461448fbda9b.js",
-      "publicPath": "/static/js/badges.f9fe4201461448fbda9b.js"
+    "js/badges.c5029ea6dcb2bd99d96e.js": {
+      "name": "js/badges.c5029ea6dcb2bd99d96e.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/badges.c5029ea6dcb2bd99d96e.js",
+      "publicPath": "/static/js/badges.c5029ea6dcb2bd99d96e.js"
     },
-    "js/badges.f9fe4201461448fbda9b.js.map": {
-      "name": "js/badges.f9fe4201461448fbda9b.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/badges.f9fe4201461448fbda9b.js.map",
-      "publicPath": "/static/js/badges.f9fe4201461448fbda9b.js.map"
+    "js/badges.c5029ea6dcb2bd99d96e.js.map": {
+      "name": "js/badges.c5029ea6dcb2bd99d96e.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/badges.c5029ea6dcb2bd99d96e.js.map",
+      "publicPath": "/static/js/badges.c5029ea6dcb2bd99d96e.js.map"
     },
-    "js/browse.3c61496da3f31fe8bd7e.js": {
-      "name": "js/browse.3c61496da3f31fe8bd7e.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.3c61496da3f31fe8bd7e.js",
-      "publicPath": "/static/js/browse.3c61496da3f31fe8bd7e.js"
+    "js/browse.e9e64bfb0cee360d277e.js": {
+      "name": "js/browse.e9e64bfb0cee360d277e.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.e9e64bfb0cee360d277e.js",
+      "publicPath": "/static/js/browse.e9e64bfb0cee360d277e.js"
     },
-    "js/browse.3c61496da3f31fe8bd7e.js.LICENSE.txt": {
-      "name": "js/browse.3c61496da3f31fe8bd7e.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.3c61496da3f31fe8bd7e.js.LICENSE.txt",
-      "publicPath": "/static/js/browse.3c61496da3f31fe8bd7e.js.LICENSE.txt"
+    "js/browse.e9e64bfb0cee360d277e.js.LICENSE.txt": {
+      "name": "js/browse.e9e64bfb0cee360d277e.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.e9e64bfb0cee360d277e.js.LICENSE.txt",
+      "publicPath": "/static/js/browse.e9e64bfb0cee360d277e.js.LICENSE.txt"
     },
-    "js/browse.3c61496da3f31fe8bd7e.js.map": {
-      "name": "js/browse.3c61496da3f31fe8bd7e.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.3c61496da3f31fe8bd7e.js.map",
-      "publicPath": "/static/js/browse.3c61496da3f31fe8bd7e.js.map"
+    "js/browse.e9e64bfb0cee360d277e.js.map": {
+      "name": "js/browse.e9e64bfb0cee360d277e.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/browse.e9e64bfb0cee360d277e.js.map",
+      "publicPath": "/static/js/browse.e9e64bfb0cee360d277e.js.map"
     },
-    "js/d3.a8a7d3eb830aae823992.js": {
-      "name": "js/d3.a8a7d3eb830aae823992.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/d3.a8a7d3eb830aae823992.js",
-      "publicPath": "/static/js/d3.a8a7d3eb830aae823992.js"
+    "js/d3.b13f78a4484f85451ffa.js": {
+      "name": "js/d3.b13f78a4484f85451ffa.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/d3.b13f78a4484f85451ffa.js",
+      "publicPath": "/static/js/d3.b13f78a4484f85451ffa.js"
     },
-    "js/d3.a8a7d3eb830aae823992.js.map": {
-      "name": "js/d3.a8a7d3eb830aae823992.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/d3.a8a7d3eb830aae823992.js.map",
-      "publicPath": "/static/js/d3.a8a7d3eb830aae823992.js.map"
+    "js/d3.b13f78a4484f85451ffa.js.map": {
+      "name": "js/d3.b13f78a4484f85451ffa.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/d3.b13f78a4484f85451ffa.js.map",
+      "publicPath": "/static/js/d3.b13f78a4484f85451ffa.js.map"
     },
-    "js/deposit.f33a40affd1268fe19d1.js": {
-      "name": "js/deposit.f33a40affd1268fe19d1.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.f33a40affd1268fe19d1.js",
-      "publicPath": "/static/js/deposit.f33a40affd1268fe19d1.js"
+    "js/deposit.16126e549ad9f62e7401.js": {
+      "name": "js/deposit.16126e549ad9f62e7401.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.16126e549ad9f62e7401.js",
+      "publicPath": "/static/js/deposit.16126e549ad9f62e7401.js"
     },
-    "js/deposit.f33a40affd1268fe19d1.js.LICENSE.txt": {
-      "name": "js/deposit.f33a40affd1268fe19d1.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.f33a40affd1268fe19d1.js.LICENSE.txt",
-      "publicPath": "/static/js/deposit.f33a40affd1268fe19d1.js.LICENSE.txt"
+    "js/deposit.16126e549ad9f62e7401.js.LICENSE.txt": {
+      "name": "js/deposit.16126e549ad9f62e7401.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.16126e549ad9f62e7401.js.LICENSE.txt",
+      "publicPath": "/static/js/deposit.16126e549ad9f62e7401.js.LICENSE.txt"
     },
-    "js/deposit.f33a40affd1268fe19d1.js.map": {
-      "name": "js/deposit.f33a40affd1268fe19d1.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.f33a40affd1268fe19d1.js.map",
-      "publicPath": "/static/js/deposit.f33a40affd1268fe19d1.js.map"
+    "js/deposit.16126e549ad9f62e7401.js.map": {
+      "name": "js/deposit.16126e549ad9f62e7401.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/deposit.16126e549ad9f62e7401.js.map",
+      "publicPath": "/static/js/deposit.16126e549ad9f62e7401.js.map"
     },
-    "js/guided_tour.66bce17b7e9fa73b49f7.js": {
-      "name": "js/guided_tour.66bce17b7e9fa73b49f7.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.66bce17b7e9fa73b49f7.js",
-      "publicPath": "/static/js/guided_tour.66bce17b7e9fa73b49f7.js"
+    "js/guided_tour.89fa35195f7ed7abc057.js": {
+      "name": "js/guided_tour.89fa35195f7ed7abc057.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.89fa35195f7ed7abc057.js",
+      "publicPath": "/static/js/guided_tour.89fa35195f7ed7abc057.js"
     },
-    "js/guided_tour.66bce17b7e9fa73b49f7.js.LICENSE.txt": {
-      "name": "js/guided_tour.66bce17b7e9fa73b49f7.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.66bce17b7e9fa73b49f7.js.LICENSE.txt",
-      "publicPath": "/static/js/guided_tour.66bce17b7e9fa73b49f7.js.LICENSE.txt"
+    "js/guided_tour.89fa35195f7ed7abc057.js.LICENSE.txt": {
+      "name": "js/guided_tour.89fa35195f7ed7abc057.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.89fa35195f7ed7abc057.js.LICENSE.txt",
+      "publicPath": "/static/js/guided_tour.89fa35195f7ed7abc057.js.LICENSE.txt"
     },
-    "js/guided_tour.66bce17b7e9fa73b49f7.js.map": {
-      "name": "js/guided_tour.66bce17b7e9fa73b49f7.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.66bce17b7e9fa73b49f7.js.map",
-      "publicPath": "/static/js/guided_tour.66bce17b7e9fa73b49f7.js.map"
+    "js/guided_tour.89fa35195f7ed7abc057.js.map": {
+      "name": "js/guided_tour.89fa35195f7ed7abc057.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/guided_tour.89fa35195f7ed7abc057.js.map",
+      "publicPath": "/static/js/guided_tour.89fa35195f7ed7abc057.js.map"
     },
-    "js/highlightjs.3b3a8d124829bea10f34.js": {
-      "name": "js/highlightjs.3b3a8d124829bea10f34.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.3b3a8d124829bea10f34.js",
-      "publicPath": "/static/js/highlightjs.3b3a8d124829bea10f34.js"
+    "js/highlightjs.c590e9b87283a355ff35.js": {
+      "name": "js/highlightjs.c590e9b87283a355ff35.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.c590e9b87283a355ff35.js",
+      "publicPath": "/static/js/highlightjs.c590e9b87283a355ff35.js"
     },
-    "js/highlightjs.3b3a8d124829bea10f34.js.LICENSE.txt": {
-      "name": "js/highlightjs.3b3a8d124829bea10f34.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.3b3a8d124829bea10f34.js.LICENSE.txt",
-      "publicPath": "/static/js/highlightjs.3b3a8d124829bea10f34.js.LICENSE.txt"
+    "js/highlightjs.c590e9b87283a355ff35.js.LICENSE.txt": {
+      "name": "js/highlightjs.c590e9b87283a355ff35.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.c590e9b87283a355ff35.js.LICENSE.txt",
+      "publicPath": "/static/js/highlightjs.c590e9b87283a355ff35.js.LICENSE.txt"
     },
-    "js/highlightjs.3b3a8d124829bea10f34.js.map": {
-      "name": "js/highlightjs.3b3a8d124829bea10f34.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.3b3a8d124829bea10f34.js.map",
-      "publicPath": "/static/js/highlightjs.3b3a8d124829bea10f34.js.map"
+    "js/highlightjs.c590e9b87283a355ff35.js.map": {
+      "name": "js/highlightjs.c590e9b87283a355ff35.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/highlightjs.c590e9b87283a355ff35.js.map",
+      "publicPath": "/static/js/highlightjs.c590e9b87283a355ff35.js.map"
     },
-    "js/mailmap.209566ffacdef66e6da4.js": {
-      "name": "js/mailmap.209566ffacdef66e6da4.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.209566ffacdef66e6da4.js",
-      "publicPath": "/static/js/mailmap.209566ffacdef66e6da4.js"
+    "js/mailmap.27a21ca98d53887b544b.js": {
+      "name": "js/mailmap.27a21ca98d53887b544b.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.27a21ca98d53887b544b.js",
+      "publicPath": "/static/js/mailmap.27a21ca98d53887b544b.js"
     },
-    "js/mailmap.209566ffacdef66e6da4.js.LICENSE.txt": {
-      "name": "js/mailmap.209566ffacdef66e6da4.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.209566ffacdef66e6da4.js.LICENSE.txt",
-      "publicPath": "/static/js/mailmap.209566ffacdef66e6da4.js.LICENSE.txt"
+    "js/mailmap.27a21ca98d53887b544b.js.LICENSE.txt": {
+      "name": "js/mailmap.27a21ca98d53887b544b.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.27a21ca98d53887b544b.js.LICENSE.txt",
+      "publicPath": "/static/js/mailmap.27a21ca98d53887b544b.js.LICENSE.txt"
     },
-    "js/mailmap.209566ffacdef66e6da4.js.map": {
-      "name": "js/mailmap.209566ffacdef66e6da4.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.209566ffacdef66e6da4.js.map",
-      "publicPath": "/static/js/mailmap.209566ffacdef66e6da4.js.map"
+    "js/mailmap.27a21ca98d53887b544b.js.map": {
+      "name": "js/mailmap.27a21ca98d53887b544b.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mailmap.27a21ca98d53887b544b.js.map",
+      "publicPath": "/static/js/mailmap.27a21ca98d53887b544b.js.map"
     },
-    "js/mathjax.44bf19bedf2846353bf3.js": {
-      "name": "js/mathjax.44bf19bedf2846353bf3.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.44bf19bedf2846353bf3.js",
-      "publicPath": "/static/js/mathjax.44bf19bedf2846353bf3.js"
+    "js/mathjax.c40ddfb6c9f6e70149aa.js": {
+      "name": "js/mathjax.c40ddfb6c9f6e70149aa.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.c40ddfb6c9f6e70149aa.js",
+      "publicPath": "/static/js/mathjax.c40ddfb6c9f6e70149aa.js"
     },
-    "js/mathjax.44bf19bedf2846353bf3.js.map": {
-      "name": "js/mathjax.44bf19bedf2846353bf3.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.44bf19bedf2846353bf3.js.map",
-      "publicPath": "/static/js/mathjax.44bf19bedf2846353bf3.js.map"
+    "js/mathjax.c40ddfb6c9f6e70149aa.js.map": {
+      "name": "js/mathjax.c40ddfb6c9f6e70149aa.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/mathjax.c40ddfb6c9f6e70149aa.js.map",
+      "publicPath": "/static/js/mathjax.c40ddfb6c9f6e70149aa.js.map"
     },
-    "js/org.140b62d94ea218dce702.js": {
-      "name": "js/org.140b62d94ea218dce702.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/org.140b62d94ea218dce702.js",
-      "publicPath": "/static/js/org.140b62d94ea218dce702.js"
+    "js/org.64c54626dd26157dad0f.js": {
+      "name": "js/org.64c54626dd26157dad0f.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/org.64c54626dd26157dad0f.js",
+      "publicPath": "/static/js/org.64c54626dd26157dad0f.js"
     },
-    "js/org.140b62d94ea218dce702.js.map": {
-      "name": "js/org.140b62d94ea218dce702.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/org.140b62d94ea218dce702.js.map",
-      "publicPath": "/static/js/org.140b62d94ea218dce702.js.map"
+    "js/org.64c54626dd26157dad0f.js.map": {
+      "name": "js/org.64c54626dd26157dad0f.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/org.64c54626dd26157dad0f.js.map",
+      "publicPath": "/static/js/org.64c54626dd26157dad0f.js.map"
     },
-    "js/origin_visits.bbf18d4d81e52f9c0fef.js": {
-      "name": "js/origin_visits.bbf18d4d81e52f9c0fef.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.bbf18d4d81e52f9c0fef.js",
-      "publicPath": "/static/js/origin_visits.bbf18d4d81e52f9c0fef.js"
+    "js/origin_visits.25c812093066f279bb15.js": {
+      "name": "js/origin_visits.25c812093066f279bb15.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.25c812093066f279bb15.js",
+      "publicPath": "/static/js/origin_visits.25c812093066f279bb15.js"
     },
-    "js/origin_visits.bbf18d4d81e52f9c0fef.js.LICENSE.txt": {
-      "name": "js/origin_visits.bbf18d4d81e52f9c0fef.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.bbf18d4d81e52f9c0fef.js.LICENSE.txt",
-      "publicPath": "/static/js/origin_visits.bbf18d4d81e52f9c0fef.js.LICENSE.txt"
+    "js/origin_visits.25c812093066f279bb15.js.LICENSE.txt": {
+      "name": "js/origin_visits.25c812093066f279bb15.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.25c812093066f279bb15.js.LICENSE.txt",
+      "publicPath": "/static/js/origin_visits.25c812093066f279bb15.js.LICENSE.txt"
     },
-    "js/origin_visits.bbf18d4d81e52f9c0fef.js.map": {
-      "name": "js/origin_visits.bbf18d4d81e52f9c0fef.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.bbf18d4d81e52f9c0fef.js.map",
-      "publicPath": "/static/js/origin_visits.bbf18d4d81e52f9c0fef.js.map"
+    "js/origin_visits.25c812093066f279bb15.js.map": {
+      "name": "js/origin_visits.25c812093066f279bb15.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/origin_visits.25c812093066f279bb15.js.map",
+      "publicPath": "/static/js/origin_visits.25c812093066f279bb15.js.map"
     },
     "js/pdf.worker.min.js": {
       "name": "js/pdf.worker.min.js",
@@ -711,105 +711,105 @@
       "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdf.worker.min.js.LICENSE.txt",
       "publicPath": "/static/js/pdf.worker.min.js.LICENSE.txt"
     },
-    "js/pdfjs.8f4c461c9565a54dd6a0.js": {
-      "name": "js/pdfjs.8f4c461c9565a54dd6a0.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdfjs.8f4c461c9565a54dd6a0.js",
-      "publicPath": "/static/js/pdfjs.8f4c461c9565a54dd6a0.js"
+    "js/pdfjs.d0bf97218a6889873d33.js": {
+      "name": "js/pdfjs.d0bf97218a6889873d33.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdfjs.d0bf97218a6889873d33.js",
+      "publicPath": "/static/js/pdfjs.d0bf97218a6889873d33.js"
     },
-    "js/pdfjs.8f4c461c9565a54dd6a0.js.map": {
-      "name": "js/pdfjs.8f4c461c9565a54dd6a0.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdfjs.8f4c461c9565a54dd6a0.js.map",
-      "publicPath": "/static/js/pdfjs.8f4c461c9565a54dd6a0.js.map"
+    "js/pdfjs.d0bf97218a6889873d33.js.map": {
+      "name": "js/pdfjs.d0bf97218a6889873d33.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/pdfjs.d0bf97218a6889873d33.js.map",
+      "publicPath": "/static/js/pdfjs.d0bf97218a6889873d33.js.map"
     },
-    "js/revision.f71df0a170194c40a079.js": {
-      "name": "js/revision.f71df0a170194c40a079.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.f71df0a170194c40a079.js",
-      "publicPath": "/static/js/revision.f71df0a170194c40a079.js"
+    "js/revision.38459ad89b5462fd1d1c.js": {
+      "name": "js/revision.38459ad89b5462fd1d1c.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.38459ad89b5462fd1d1c.js",
+      "publicPath": "/static/js/revision.38459ad89b5462fd1d1c.js"
     },
-    "js/revision.f71df0a170194c40a079.js.LICENSE.txt": {
-      "name": "js/revision.f71df0a170194c40a079.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.f71df0a170194c40a079.js.LICENSE.txt",
-      "publicPath": "/static/js/revision.f71df0a170194c40a079.js.LICENSE.txt"
+    "js/revision.38459ad89b5462fd1d1c.js.LICENSE.txt": {
+      "name": "js/revision.38459ad89b5462fd1d1c.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.38459ad89b5462fd1d1c.js.LICENSE.txt",
+      "publicPath": "/static/js/revision.38459ad89b5462fd1d1c.js.LICENSE.txt"
     },
-    "js/revision.f71df0a170194c40a079.js.map": {
-      "name": "js/revision.f71df0a170194c40a079.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.f71df0a170194c40a079.js.map",
-      "publicPath": "/static/js/revision.f71df0a170194c40a079.js.map"
+    "js/revision.38459ad89b5462fd1d1c.js.map": {
+      "name": "js/revision.38459ad89b5462fd1d1c.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/revision.38459ad89b5462fd1d1c.js.map",
+      "publicPath": "/static/js/revision.38459ad89b5462fd1d1c.js.map"
     },
-    "js/save_code_now.1e6dcb08b43dcd7f0abf.js": {
-      "name": "js/save_code_now.1e6dcb08b43dcd7f0abf.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js",
-      "publicPath": "/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js"
+    "js/save_code_now.0f733a7468ea52e96437.js": {
+      "name": "js/save_code_now.0f733a7468ea52e96437.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.0f733a7468ea52e96437.js",
+      "publicPath": "/static/js/save_code_now.0f733a7468ea52e96437.js"
     },
-    "js/save_code_now.1e6dcb08b43dcd7f0abf.js.LICENSE.txt": {
-      "name": "js/save_code_now.1e6dcb08b43dcd7f0abf.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js.LICENSE.txt",
-      "publicPath": "/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js.LICENSE.txt"
+    "js/save_code_now.0f733a7468ea52e96437.js.LICENSE.txt": {
+      "name": "js/save_code_now.0f733a7468ea52e96437.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.0f733a7468ea52e96437.js.LICENSE.txt",
+      "publicPath": "/static/js/save_code_now.0f733a7468ea52e96437.js.LICENSE.txt"
     },
-    "js/save_code_now.1e6dcb08b43dcd7f0abf.js.map": {
-      "name": "js/save_code_now.1e6dcb08b43dcd7f0abf.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js.map",
-      "publicPath": "/static/js/save_code_now.1e6dcb08b43dcd7f0abf.js.map"
+    "js/save_code_now.0f733a7468ea52e96437.js.map": {
+      "name": "js/save_code_now.0f733a7468ea52e96437.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/save_code_now.0f733a7468ea52e96437.js.map",
+      "publicPath": "/static/js/save_code_now.0f733a7468ea52e96437.js.map"
     },
-    "js/showdown.f1475dd924235f74a546.js": {
-      "name": "js/showdown.f1475dd924235f74a546.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.f1475dd924235f74a546.js",
-      "publicPath": "/static/js/showdown.f1475dd924235f74a546.js"
+    "js/showdown.749efbe3df6205daab3d.js": {
+      "name": "js/showdown.749efbe3df6205daab3d.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.749efbe3df6205daab3d.js",
+      "publicPath": "/static/js/showdown.749efbe3df6205daab3d.js"
     },
-    "js/showdown.f1475dd924235f74a546.js.LICENSE.txt": {
-      "name": "js/showdown.f1475dd924235f74a546.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.f1475dd924235f74a546.js.LICENSE.txt",
-      "publicPath": "/static/js/showdown.f1475dd924235f74a546.js.LICENSE.txt"
+    "js/showdown.749efbe3df6205daab3d.js.LICENSE.txt": {
+      "name": "js/showdown.749efbe3df6205daab3d.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.749efbe3df6205daab3d.js.LICENSE.txt",
+      "publicPath": "/static/js/showdown.749efbe3df6205daab3d.js.LICENSE.txt"
     },
-    "js/showdown.f1475dd924235f74a546.js.map": {
-      "name": "js/showdown.f1475dd924235f74a546.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.f1475dd924235f74a546.js.map",
-      "publicPath": "/static/js/showdown.f1475dd924235f74a546.js.map"
+    "js/showdown.749efbe3df6205daab3d.js.map": {
+      "name": "js/showdown.749efbe3df6205daab3d.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/showdown.749efbe3df6205daab3d.js.map",
+      "publicPath": "/static/js/showdown.749efbe3df6205daab3d.js.map"
     },
-    "js/vault.aeda47e37ba3491059e2.js": {
-      "name": "js/vault.aeda47e37ba3491059e2.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.aeda47e37ba3491059e2.js",
-      "publicPath": "/static/js/vault.aeda47e37ba3491059e2.js"
+    "js/vault.07d816ddb0cba04b1e3a.js": {
+      "name": "js/vault.07d816ddb0cba04b1e3a.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.07d816ddb0cba04b1e3a.js",
+      "publicPath": "/static/js/vault.07d816ddb0cba04b1e3a.js"
     },
-    "js/vault.aeda47e37ba3491059e2.js.LICENSE.txt": {
-      "name": "js/vault.aeda47e37ba3491059e2.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.aeda47e37ba3491059e2.js.LICENSE.txt",
-      "publicPath": "/static/js/vault.aeda47e37ba3491059e2.js.LICENSE.txt"
+    "js/vault.07d816ddb0cba04b1e3a.js.LICENSE.txt": {
+      "name": "js/vault.07d816ddb0cba04b1e3a.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.07d816ddb0cba04b1e3a.js.LICENSE.txt",
+      "publicPath": "/static/js/vault.07d816ddb0cba04b1e3a.js.LICENSE.txt"
     },
-    "js/vault.aeda47e37ba3491059e2.js.map": {
-      "name": "js/vault.aeda47e37ba3491059e2.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.aeda47e37ba3491059e2.js.map",
-      "publicPath": "/static/js/vault.aeda47e37ba3491059e2.js.map"
+    "js/vault.07d816ddb0cba04b1e3a.js.map": {
+      "name": "js/vault.07d816ddb0cba04b1e3a.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vault.07d816ddb0cba04b1e3a.js.map",
+      "publicPath": "/static/js/vault.07d816ddb0cba04b1e3a.js.map"
     },
-    "js/vendors.8cd706fafc1db1c17c68.js": {
-      "name": "js/vendors.8cd706fafc1db1c17c68.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.8cd706fafc1db1c17c68.js",
-      "publicPath": "/static/js/vendors.8cd706fafc1db1c17c68.js"
+    "js/vendors.e3d187f20fb90a8dae53.js": {
+      "name": "js/vendors.e3d187f20fb90a8dae53.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.e3d187f20fb90a8dae53.js",
+      "publicPath": "/static/js/vendors.e3d187f20fb90a8dae53.js"
     },
-    "js/vendors.8cd706fafc1db1c17c68.js.LICENSE.txt": {
-      "name": "js/vendors.8cd706fafc1db1c17c68.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.8cd706fafc1db1c17c68.js.LICENSE.txt",
-      "publicPath": "/static/js/vendors.8cd706fafc1db1c17c68.js.LICENSE.txt"
+    "js/vendors.e3d187f20fb90a8dae53.js.LICENSE.txt": {
+      "name": "js/vendors.e3d187f20fb90a8dae53.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.e3d187f20fb90a8dae53.js.LICENSE.txt",
+      "publicPath": "/static/js/vendors.e3d187f20fb90a8dae53.js.LICENSE.txt"
     },
-    "js/vendors.8cd706fafc1db1c17c68.js.map": {
-      "name": "js/vendors.8cd706fafc1db1c17c68.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.8cd706fafc1db1c17c68.js.map",
-      "publicPath": "/static/js/vendors.8cd706fafc1db1c17c68.js.map"
+    "js/vendors.e3d187f20fb90a8dae53.js.map": {
+      "name": "js/vendors.e3d187f20fb90a8dae53.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/vendors.e3d187f20fb90a8dae53.js.map",
+      "publicPath": "/static/js/vendors.e3d187f20fb90a8dae53.js.map"
     },
-    "js/webapp.013de53df9a317a1380d.js": {
-      "name": "js/webapp.013de53df9a317a1380d.js",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.013de53df9a317a1380d.js",
-      "publicPath": "/static/js/webapp.013de53df9a317a1380d.js"
+    "js/webapp.9b632a4281a99cc1723b.js": {
+      "name": "js/webapp.9b632a4281a99cc1723b.js",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.9b632a4281a99cc1723b.js",
+      "publicPath": "/static/js/webapp.9b632a4281a99cc1723b.js"
     },
-    "js/webapp.013de53df9a317a1380d.js.LICENSE.txt": {
-      "name": "js/webapp.013de53df9a317a1380d.js.LICENSE.txt",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.013de53df9a317a1380d.js.LICENSE.txt",
-      "publicPath": "/static/js/webapp.013de53df9a317a1380d.js.LICENSE.txt"
+    "js/webapp.9b632a4281a99cc1723b.js.LICENSE.txt": {
+      "name": "js/webapp.9b632a4281a99cc1723b.js.LICENSE.txt",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.9b632a4281a99cc1723b.js.LICENSE.txt",
+      "publicPath": "/static/js/webapp.9b632a4281a99cc1723b.js.LICENSE.txt"
     },
-    "js/webapp.013de53df9a317a1380d.js.map": {
-      "name": "js/webapp.013de53df9a317a1380d.js.map",
-      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.013de53df9a317a1380d.js.map",
-      "publicPath": "/static/js/webapp.013de53df9a317a1380d.js.map"
+    "js/webapp.9b632a4281a99cc1723b.js.map": {
+      "name": "js/webapp.9b632a4281a99cc1723b.js.map",
+      "path": "/var/lib/jenkins/workspace/DWAPPS/pypi-upload/static/js/webapp.9b632a4281a99cc1723b.js.map",
+      "publicPath": "/static/js/webapp.9b632a4281a99cc1723b.js.map"
     },
     "robots.txt": {
       "name": "robots.txt",
@@ -820,56 +820,56 @@
   "chunks": {
     "add_forge_now": [
       "css/add_forge_now.4f93c9769bc36a247915.css",
-      "js/add_forge_now.803ac3aaa6a37be69084.js"
+      "js/add_forge_now.9d9e9cf897df094ee4aa.js"
     ],
     "archive_coverage": [
-      "css/archive_coverage.8bceb4f6ba428bd57acd.css",
-      "js/archive_coverage.cb8cdad9b91ec8b9b658.js"
+      "css/archive_coverage.6573148e19d3c98015b4.css",
+      "js/archive_coverage.86392730a84f2f920cd8.js"
     ],
     "auth": [
       "css/auth.0336a94c2c02b4b2a4f4.css",
-      "js/auth.c13b16f212b2c6238038.js"
+      "js/auth.f9ebfb0cc4d4018f0073.js"
     ],
     "badges": [
       "css/badges.03c8b295a163a9306210.css",
-      "js/badges.f9fe4201461448fbda9b.js"
+      "js/badges.c5029ea6dcb2bd99d96e.js"
     ],
     "browse": [
-      "css/browse.f0d22b08b4e5bbabbeca.css",
-      "js/browse.3c61496da3f31fe8bd7e.js"
+      "css/browse.f5afe9b68b860a92d393.css",
+      "js/browse.e9e64bfb0cee360d277e.js"
     ],
     "deposit": [
-      "js/deposit.f33a40affd1268fe19d1.js"
+      "js/deposit.16126e549ad9f62e7401.js"
     ],
     "guided_tour": [
-      "css/guided_tour.c390407da4724ba72774.css",
-      "js/guided_tour.66bce17b7e9fa73b49f7.js"
+      "css/guided_tour.1bfa315c78e66451b0b2.css",
+      "js/guided_tour.89fa35195f7ed7abc057.js"
     ],
     "mailmap": [
-      "js/mailmap.209566ffacdef66e6da4.js"
+      "js/mailmap.27a21ca98d53887b544b.js"
     ],
     "origin_visits": [
-      "css/origin_visits.96c13d373674912545e3.css",
-      "js/origin_visits.bbf18d4d81e52f9c0fef.js"
+      "css/origin_visits.405bdab2e61c346d77f1.css",
+      "js/origin_visits.25c812093066f279bb15.js"
     ],
     "revision": [
       "css/revision.4f3cb8316771ce5cd8b1.css",
-      "js/revision.f71df0a170194c40a079.js"
+      "js/revision.38459ad89b5462fd1d1c.js"
     ],
     "save_code_now": [
-      "js/save_code_now.1e6dcb08b43dcd7f0abf.js"
+      "js/save_code_now.0f733a7468ea52e96437.js"
     ],
     "vault": [
       "css/vault.25fc5883f848b48ffa5b.css",
-      "js/vault.aeda47e37ba3491059e2.js"
+      "js/vault.07d816ddb0cba04b1e3a.js"
     ],
     "vendors": [
-      "css/vendors.ecc94f4cf9d7cbd52717.css",
-      "js/vendors.8cd706fafc1db1c17c68.js"
+      "css/vendors.a146964477785320ffc4.css",
+      "js/vendors.e3d187f20fb90a8dae53.js"
     ],
     "webapp": [
-      "css/webapp.b0ecfc3ecfd1eb92c059.css",
-      "js/webapp.013de53df9a317a1380d.js"
+      "css/webapp.0041e30b97d702aceb6a.css",
+      "js/webapp.9b632a4281a99cc1723b.js"
     ]
   },
   "publicPath": "/static/"
