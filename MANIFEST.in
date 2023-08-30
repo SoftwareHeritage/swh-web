@@ -10,6 +10,7 @@ recursive-include swh/web/*/templates *
 recursive-include swh/web/*/tests/assets *
 recursive-include swh/web/*/tests/data *
 recursive-include swh/web/*/tests/resources *
+recursive-include swh/web/tests/resources *
 
 include package.json
 include yarn.lock
