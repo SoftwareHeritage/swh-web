@@ -24,8 +24,10 @@ See top-level LICENSE file for more information
         {% for d in dirs %}
           <tr class="swh-directory-entry swh-tr-hover-highlight">
             <td class="swh-directory">
-              <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
-              <a href="{{ d.url | safe }}">{{ d.name }}</a>
+              <a href="{{ d.url | safe }}">
+                <i class="{{ swh_object_icons.directory }} mdi-fw" aria-hidden="true"></i>
+                {{ d.name }}
+              </a>
             </td>
             <td class="d-none d-md-table-cell"></td>
             <td class="d-none d-sm-table-cell"></td>
@@ -34,8 +36,10 @@ See top-level LICENSE file for more information
         {% for f in files %}
           <tr class="swh-directory-entry swh-tr-hover-highlight">
             <td class="swh-content">
-              <i class="{{ swh_object_icons.content }} mdi-fw" aria-hidden="true"></i>
-              <a href="{{ f.url | safe }}">{{ f.name }}</a>
+              <a href="{{ f.url | safe }}">
+                <i class="{{ swh_object_icons.content }} mdi-fw" aria-hidden="true"></i>
+                {{ f.name }}
+              </a>
             </td>
             <td class="d-none d-md-table-cell">{{ f.perms }}</td>
             <td class="d-none d-sm-table-cell">

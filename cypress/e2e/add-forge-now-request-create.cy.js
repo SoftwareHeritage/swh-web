@@ -52,7 +52,7 @@ describe('Browse requests list tests', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     cy.get('#swh-add-forge-requests-list-tab').click();
-    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+    cy.get('#swh-add-forge-user-filter').should('exist').should('not.be.checked');
   });
 
   it('should only display user requests when filter is activated', function() {
@@ -68,7 +68,9 @@ describe('Browse requests list tests', function() {
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
-    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+    cy.get('#swh-add-forge-user-filter').should('exist');
+    cy.get('#swh-add-forge-user-filter').check({force: true});
+    cy.get('#swh-add-forge-user-filter').should('be.checked');
 
     // check unfiltered user requests
     cy.get('tbody tr').then(rows => {
@@ -89,7 +91,9 @@ describe('Browse requests list tests', function() {
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
-    cy.get('#swh-add-forge-user-filter').should('exist').should('be.checked');
+    cy.get('#swh-add-forge-user-filter').should('exist');
+    cy.get('#swh-add-forge-user-filter').check({force: true});
+    cy.get('#swh-add-forge-user-filter').should('be.checked');
 
     cy.wait('@addForgeRequestsList');
     // ensure datatable got rendered

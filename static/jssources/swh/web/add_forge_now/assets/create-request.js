@@ -17,7 +17,7 @@ let requestBrowseTable;
 const addForgeCheckboxId = 'swh-add-forge-user-filter';
 const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
   'inputId': addForgeCheckboxId,
-  'checked': true // by default, display only user requests
+  'checked': false
 });
 
 export function onCreateRequestPageLoad() {
