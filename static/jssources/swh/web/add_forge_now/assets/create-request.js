@@ -92,6 +92,7 @@ export function populateRequestBrowseList() {
           $(`#${addForgeCheckboxId}`).on('change', () => {
             requestBrowseTable.draw();
           });
+          requestBrowseTable.draw();
         }
       },
       columns: [
