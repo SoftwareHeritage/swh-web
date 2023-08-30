@@ -92,6 +92,17 @@ describe('Browse requests list tests', function() {
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
     cy.get('#swh-add-forge-user-filter').should('exist');
+
+    cy.wait('@addForgeRequestsList');
+    // ensure datatable got rendered
+    cy.wait(100);
+
+    // check unfiltered user requests
+    cy.get('tbody tr').then(rows => {
+      expect(rows.length).to.eq(3);
+    });
+
+    // activate filter
     cy.get('#swh-add-forge-user-filter').check({force: true});
     cy.get('#swh-add-forge-user-filter').should('be.checked');
 
@@ -99,7 +110,7 @@ describe('Browse requests list tests', function() {
     // ensure datatable got rendered
     cy.wait(100);
 
-    // check unfiltered user requests
+    // check filtered user requests
     cy.get('tbody tr').then(rows => {
       expect(rows.length).to.eq(2);
     });
