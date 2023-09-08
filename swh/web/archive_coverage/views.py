@@ -315,6 +315,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "rpm",
+            "info_url": "https://www.redhat.com",
+            "info": "source packages from Red Hat based distributions",
+            "search_pattern": {
+                "default": "rpm",
+            },
+        },
+        {
             "type": "rubygems",
             "info_url": "https://rubygems.org",
             "info": "source packages from the Ruby community's gem hosting service",
