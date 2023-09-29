@@ -443,6 +443,23 @@ def _check_directory_exists(sha1_git, sha1_git_bin):
         raise NotFoundExc("Directory with sha1_git %s not found" % sha1_git)
 
 
+def directory_exists(sha1_git: str) -> bool:
+    """Checks if a directory can be found in the archive.
+
+    Args:
+        sha1_git:  directory identifier
+
+    Returns:
+        whether the directory exists in the archive.
+    """
+    try:
+        _check_directory_exists(sha1_git, _to_sha1_bin(sha1_git))
+    except NotFoundExc:
+        return False
+    else:
+        return True
+
+
 def lookup_directory(sha1_git):
     """Return information about the directory with id sha1_git.
 

@@ -66,6 +66,7 @@ class BaseClient {
     this._numProcessing = 0;
     this._outcomes = {};
     this._hooks = {};
+    this._eventProcessors = [];
 
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
@@ -227,12 +228,22 @@ class BaseClient {
     });
   }
 
+  /** Get all installed event processors. */
+   getEventProcessors() {
+    return this._eventProcessors;
+  }
+
+  /** @inheritDoc */
+   addEventProcessor(eventProcessor) {
+    this._eventProcessors.push(eventProcessor);
+  }
+
   /**
    * Sets up the integrations
    */
    setupIntegrations() {
     if (this._isEnabled() && !this._integrationsInitialized) {
-      this._integrations = setupIntegrations(this._options.integrations);
+      this._integrations = setupIntegrations(this, this._options.integrations);
       this._integrationsInitialized = true;
     }
   }
@@ -262,13 +273,15 @@ class BaseClient {
    * @inheritDoc
    */
    addIntegration(integration) {
-    setupIntegration(integration, this._integrations);
+    setupIntegration(this, integration, this._integrations);
   }
 
   /**
    * @inheritDoc
    */
    sendEvent(event, hint = {}) {
+    this.emit('beforeSendEvent', event, hint);
+
     if (this._dsn) {
       let env = createEventEnvelope(event, this._dsn, this._options._metadata, this._options.tunnel);
 
@@ -321,6 +334,7 @@ class BaseClient {
   }
 
   // Keep on() & emit() signatures in sync with types' client.ts interface
+  /* eslint-disable @typescript-eslint/unified-signatures */
 
   /** @inheritdoc */
 
@@ -330,7 +344,7 @@ class BaseClient {
       this._hooks[hook] = [];
     }
 
-    // @ts-ignore We assue the types are correct
+    // @ts-expect-error We assue the types are correct
     this._hooks[hook].push(callback);
   }
 
@@ -339,10 +353,11 @@ class BaseClient {
   /** @inheritdoc */
    emit(hook, ...rest) {
     if (this._hooks[hook]) {
-      // @ts-ignore we cannot enforce the callback to match the hook
       this._hooks[hook].forEach(callback => callback(...rest));
     }
   }
+
+  /* eslint-enable @typescript-eslint/unified-signatures */
 
   /** Updates existing session based on the provided event */
    _updateSessionFromEvent(session, event) {
@@ -432,7 +447,10 @@ class BaseClient {
     if (!hint.integrations && integrations.length > 0) {
       hint.integrations = integrations;
     }
-    return prepareEvent(options, event, hint, scope).then(evt => {
+
+    this.emit('preprocessEvent', event, hint);
+
+    return prepareEvent(options, event, hint, scope, this).then(evt => {
       if (evt === null) {
         return evt;
       }
