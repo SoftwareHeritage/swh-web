@@ -130,6 +130,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "dlang",
+            "info_url": "https://dlang.org/",
+            "info": "public repositories of packages for the D programming language",
+            "search_pattern": {
+                "default": "",
+            },
+        },
+        {
             "type": "debian",
             "info_url": "https://www.debian.org",
             "info": "source packages from Debian and Debian-based distributions",
