@@ -60,6 +60,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "bioconductor",
+            "info_url": "https://bioconductor.org/",
+            "info": "source packages from the Bioconductor project",
+            "search_pattern": {
+                "default": "https://bioconductor.org/",
+            },
+        },
+        {
             "type": "bitbucket",
             "info_url": "https://bitbucket.org",
             "info": "public repositories from Bitbucket",
@@ -106,7 +114,7 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
-            "type": "CRAN",
+            "type": "cran",
             "info_url": "https://cran.r-project.org",
             "info": "source packages from The Comprehensive R Archive Network",
             "search_pattern": {
@@ -119,6 +127,14 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from The Rust community's crate registry",
             "search_pattern": {
                 "default": "https://crates.io/crates/",
+            },
+        },
+        {
+            "type": "dlang",
+            "info_url": "https://dlang.org/",
+            "info": "public repositories of packages for the D programming language",
+            "search_pattern": {
+                "default": "",
             },
         },
         {
@@ -312,6 +328,14 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from the Python Package Index",
             "search_pattern": {
                 "default": "https://pypi.org",
+            },
+        },
+        {
+            "type": "rpm",
+            "info_url": "https://www.redhat.com",
+            "info": "source packages from Red Hat based distributions",
+            "search_pattern": {
+                "default": "rpm",
             },
         },
         {
@@ -564,9 +588,6 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 set(origins["instances"][instance].keys())
                 | set(origins.get("visit_types", []))
             )
-
-        if origins_type == "CRAN":
-            origins["instances"]["cran"]["cran"] = {"count": origins["count"]}
 
         # defaultdict cannot be iterated in django template
         origins["instances"] = dict(sorted(origins["instances"].items()))

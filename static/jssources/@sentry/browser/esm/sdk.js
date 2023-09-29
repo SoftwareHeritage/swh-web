@@ -186,10 +186,15 @@ function onLoad(callback) {
 /**
  * Wrap code within a try/catch block so the SDK is able to capture errors.
  *
+ * @deprecated This function will be removed in v8.
+ * It is not part of Sentry's official API and it's easily replaceable by using a try/catch block
+ * and calling Sentry.captureException.
+ *
  * @param fn A function to wrap.
  *
  * @returns The result of wrapped function call.
  */
+// TODO(v8): Remove this function
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function wrap(fn) {
   return wrap$1(fn)();

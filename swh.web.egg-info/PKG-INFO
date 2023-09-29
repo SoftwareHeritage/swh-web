@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.2.37
+Version: 0.2.38
 Summary: Software Heritage Web UI
 Home-page: https://gitlab.softwareheritage.org/swh/devel/swh-web
 Author: Software Heritage developers
@@ -17,9 +17,61 @@ Classifier: Development Status :: 5 - Production/Stable
 Classifier: Framework :: Django
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
-Provides-Extra: testing
 License-File: LICENSE
 License-File: AUTHORS
+Requires-Dist: beautifulsoup4
+Requires-Dist: chardet
+Requires-Dist: cryptography
+Requires-Dist: django
+Requires-Dist: django-cors-headers
+Requires-Dist: django-js-reverse-swh
+Requires-Dist: djangorestframework
+Requires-Dist: django-webpack-loader
+Requires-Dist: docutils
+Requires-Dist: htmlmin
+Requires-Dist: iso8601
+Requires-Dist: lxml
+Requires-Dist: prometheus-client
+Requires-Dist: pybadges>=2.2.1
+Requires-Dist: pygments
+Requires-Dist: pymemcache
+Requires-Dist: python-magic>=0.4.0
+Requires-Dist: python-memcached
+Requires-Dist: pyyaml
+Requires-Dist: requests
+Requires-Dist: sentry-sdk
+Requires-Dist: typing-extensions
+Requires-Dist: psycopg2
+Requires-Dist: swh.auth[django]>=0.6.7
+Requires-Dist: swh.core>=0.0.95
+Requires-Dist: swh.counters>=0.5.1
+Requires-Dist: swh.indexer>=2.0.0
+Requires-Dist: swh.model>=6.3.0
+Requires-Dist: swh.scheduler>=1.9.1
+Requires-Dist: swh.search>=0.16.0
+Requires-Dist: swh.storage>=1.4.0
+Requires-Dist: swh.vault>=1.0.0
+Provides-Extra: testing
+Requires-Dist: decorator; extra == "testing"
+Requires-Dist: djangorestframework-stubs; extra == "testing"
+Requires-Dist: django-stubs!=4.2.2; extra == "testing"
+Requires-Dist: django-test-migrations; extra == "testing"
+Requires-Dist: hypothesis; extra == "testing"
+Requires-Dist: pytest>=7.0.0; extra == "testing"
+Requires-Dist: pytest-django; extra == "testing"
+Requires-Dist: pytest-mock; extra == "testing"
+Requires-Dist: pytest-postgresql<4.0.0; extra == "testing"
+Requires-Dist: requests-mock!=1.9.0,!=1.9.1; extra == "testing"
+Requires-Dist: swh.core[http]>=0.0.95; extra == "testing"
+Requires-Dist: swh.loader.git>=0.8.0; extra == "testing"
+Requires-Dist: swh-scheduler[testing]>=0.5.0; extra == "testing"
+Requires-Dist: swh.storage>=0.1.1; extra == "testing"
+Requires-Dist: types-chardet; extra == "testing"
+Requires-Dist: types-cryptography; extra == "testing"
+Requires-Dist: types-docutils; extra == "testing"
+Requires-Dist: types-psycopg2; extra == "testing"
+Requires-Dist: types-pyyaml; extra == "testing"
+Requires-Dist: types-requests; extra == "testing"
 
 # swh-web
 
