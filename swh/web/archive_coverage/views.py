@@ -60,6 +60,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "bioconductor",
+            "info_url": "https://bioconductor.org/",
+            "info": "source packages from the Bioconductor project",
+            "search_pattern": {
+                "default": "https://bioconductor.org/",
+            },
+        },
+        {
             "type": "bitbucket",
             "info_url": "https://bitbucket.org",
             "info": "public repositories from Bitbucket",
