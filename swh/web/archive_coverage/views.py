@@ -114,7 +114,7 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
-            "type": "CRAN",
+            "type": "cran",
             "info_url": "https://cran.r-project.org",
             "info": "source packages from The Comprehensive R Archive Network",
             "search_pattern": {
@@ -588,9 +588,6 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 set(origins["instances"][instance].keys())
                 | set(origins.get("visit_types", []))
             )
-
-        if origins_type == "CRAN":
-            origins["instances"]["cran"]["cran"] = {"count": origins["count"]}
 
         # defaultdict cannot be iterated in django template
         origins["instances"] = dict(sorted(origins["instances"].items()))
