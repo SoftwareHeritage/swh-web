@@ -238,8 +238,13 @@ def archive_coverage_data_with_non_visited_origins(mocker, swh_scheduler):
 
 
 def test_coverage_view_filter_out_non_visited_origins(
-    client, archive_coverage_data_with_non_visited_origins
+    client, archive_coverage_data_with_non_visited_origins, mocker
 ):
+    # remove display of legacy origins containing a bitbucket origin
+    # type that can make this test flaky
+    from swh.web.archive_coverage import views
+
+    mocker.patch.object(views, "legacy_origins", {"origins": []})
 
     origins = copy.copy(listed_origins)
 

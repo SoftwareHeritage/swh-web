@@ -3,17 +3,29 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
 import random
 import re
 
+from hypothesis import given
 import pytest
 
 from django.utils.html import escape
 
+from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes
+from swh.model.model import (
+    OriginVisit,
+    OriginVisitStatus,
+    Release,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+)
+from swh.model.model import Directory, DirectoryEntry
 from swh.model.model import ObjectType as ModelObjectType
-from swh.model.model import Release, Snapshot, SnapshotBranch, TargetType
 from swh.model.swhids import ObjectType
+from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.browse.utils import (
     get_mimetype_and_encoding_for_content,
@@ -23,6 +35,7 @@ from swh.web.browse.utils import (
 from swh.web.tests.data import get_content
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
+from swh.web.tests.strategies import new_origin
 from swh.web.utils import (
     format_utc_iso_date,
     gen_path_info,
@@ -1131,4 +1144,104 @@ def test_browse_content_snapshot_context_release_directory_target(
 
     check_html_get_response(
         client, browse_url, status_code=200, template_used="browse-content.html"
+    )
+
+
+@given(new_origin())
+def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
+    archive_data, client, content_text, content_image_type, new_origin
+):
+
+    # create a new origin with a snapshot including two releases targeting directories
+    # containing a single file and a HEAD branch targeting the first release
+
+    first_release_dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"text_file",
+                type="file",
+                target=hash_to_bytes(content_text["sha1_git"]),
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    second_release_dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"image_file",
+                type="file",
+                target=hash_to_bytes(content_image_type["sha1_git"]),
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    archive_data.directory_add([first_release_dir, second_release_dir])
+
+    first_release_name = "v1.0.0"
+    first_release = Release(
+        name=first_release_name.encode(),
+        message=f"release {first_release_name}".encode(),
+        target=first_release_dir.id,
+        target_type=ModelObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    second_release_name = "v2.0.0"
+    second_release = Release(
+        name=second_release_name.encode(),
+        message=f"release {second_release_name}".encode(),
+        target=first_release_dir.id,
+        target_type=ModelObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([first_release, second_release])
+
+    snapshot = Snapshot(
+        branches={
+            first_release_name.encode(): SnapshotBranch(
+                target=first_release.id, target_type=TargetType.RELEASE
+            ),
+            second_release_name.encode(): SnapshotBranch(
+                target=second_release.id, target_type=TargetType.RELEASE
+            ),
+            b"HEAD": SnapshotBranch(
+                target=first_release_name.encode(), target_type=TargetType.ALIAS
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    archive_data.origin_add([new_origin])
+    visit_date = now()
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_date,
+                type="git",
+            )
+        ]
+    )[0]
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit.visit,
+        date=visit_date + timedelta(minutes=5),
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    # browse content in the second release with origin context,
+    # the id of the directory containing the file is prepended to the
+    # path query parameter in order for breadcrumbs to be displayed
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{content_image_type['sha1_git']}"},
+        query_params={
+            "path": f"{second_release_dir.id.hex()}/image_file",
+            "origin_url": new_origin.url,
+        },
+    )
+
+    check_html_get_response(
+        client, url, status_code=200, template_used="browse-content.html"
     )

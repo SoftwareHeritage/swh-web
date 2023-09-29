@@ -7,6 +7,7 @@ import difflib
 from distutils.util import strtobool
 import io
 import os
+import re
 from typing import Any, Dict, Optional
 
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
@@ -330,7 +331,7 @@ def content_display(
     path_info = None
     directory_id = None
 
-    root_dir = None
+    root_dir: Optional[str] = ""
     if snapshot_context:
         root_dir = snapshot_context.get("root_directory")
 
@@ -340,9 +341,11 @@ def content_display(
 
     if path:
         split_path = path.split("/")
-        root_dir = root_dir or split_path[0]
+        first_path_is_sha = re.findall(r"\b[0-9a-f]{40}\b", split_path[0])
+        if first_path_is_sha and archive.directory_exists(split_path[0]):
+            root_dir = split_path[0]
         filename = split_path[-1]
-        if root_dir != path:
+        if root_dir and root_dir != path:
             path = path.replace(root_dir + "/", "")
             path = path[: -len(filename)]
             path_info = gen_path_info(path)
@@ -367,7 +370,7 @@ def content_display(
             # disable language select dropdown when a notebook is rendered
             available_languages = None
 
-    if path and root_dir is not None and root_dir != path:
+    if path and root_dir and root_dir != path:
         dir_info = archive.lookup_directory_with_path(root_dir, path)
         directory_id = dir_info["target"]
     elif root_dir != path:
