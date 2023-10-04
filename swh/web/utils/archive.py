@@ -1107,6 +1107,8 @@ def origin_visit_find_by_date(
     if not visit:
         return None
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)
+    if not visit_status:
+        return None
     return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
