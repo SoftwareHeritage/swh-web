@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -406,8 +406,8 @@ def _check_origin_snapshot_related_html(
     assert_contains(resp, f'href="{escape(origin_releases_url)}"')
     assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
-    assert_contains(resp, '<li class="swh-branch">', count=len(branches))
-    assert_contains(resp, '<li class="swh-release">', count=len(releases))
+    assert_contains(resp, '<li class="swh-branch"', count=len(branches))
+    assert_contains(resp, '<li class="swh-release"', count=len(releases))
 
 
 def _directory_view_checks(
