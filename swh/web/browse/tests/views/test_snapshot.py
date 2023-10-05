@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Software Heritage developers
+# Copyright (C) 2022-2023 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -701,3 +701,73 @@ def test_browse_snapshot_single_branch_targeting_directory(
         )
 
     assert_not_contains(resp, log_url)
+
+
+def test_browse_snapshot_with_branches_targetting_same_release(
+    client, archive_data, directory
+):
+    first_release_name = b"v1.0.0"
+    firs_release_branch_name = b"/release/" + first_release_name
+    first_release = Release(
+        name=first_release_name,
+        message=b"release " + first_release_name,
+        target=hash_to_bytes(directory),
+        target_type=ObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([first_release])
+
+    second_release_name = b"v2.0.0"
+    second_release_branch_name = b"/release/" + second_release_name
+    second_release = Release(
+        name=second_release_name,
+        message=b"release " + second_release_name,
+        target=hash_to_bytes(directory),
+        target_type=ObjectType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([second_release])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=second_release_branch_name, target_type=TargetType.ALIAS
+            ),
+            second_release_branch_name: SnapshotBranch(
+                target=second_release.id, target_type=TargetType.RELEASE
+            ),
+            b"v2": SnapshotBranch(
+                target=second_release.id, target_type=TargetType.RELEASE
+            ),
+            firs_release_branch_name: SnapshotBranch(
+                target=first_release.id, target_type=TargetType.RELEASE
+            ),
+            b"v1": SnapshotBranch(
+                target=first_release.id, target_type=TargetType.RELEASE
+            ),
+        },
+    )
+    archive_data.snapshot_add([snapshot])
+
+    url = reverse(
+        "browse-snapshot-directory", url_args={"snapshot_id": snapshot.id.hex()}
+    )
+
+    resp = check_html_get_response(
+        client,
+        url,
+        status_code=200,
+    )
+
+    # releases dropdown should contain 3 elements: first release,
+    # second release and alias to second release
+    assert_contains(resp, 'class="swh-release"', count=3)
+
+    # release dropdown should contain a single link to first release
+    assert_contains(resp, f'id="swh-release-{first_release_name.decode()}"', count=1)
+    # release dropdown should contain two links to second release:
+    # one for the real release and another for the alias to it
+    assert_contains(resp, f'id="swh-release-{second_release_name.decode()}"', count=1)
+    assert_contains(
+        resp, f'id="swh-release-{second_release_name.decode()}-alias"', count=1
+    )

@@ -663,8 +663,8 @@ def _check_origin_snapshot_related_html(
     assert_contains(resp, f'href="{escape(origin_releases_url)}"')
     assert_contains(resp, f"Releases ({snapshot_sizes['release']})")
 
-    assert_contains(resp, '<li class="swh-branch">', count=len(branches))
-    assert_contains(resp, '<li class="swh-release">', count=len(releases))
+    assert_contains(resp, '<li class="swh-branch"', count=len(branches))
+    assert_contains(resp, '<li class="swh-release"', count=len(releases))
 
 
 def _process_content_for_display(archive_data, content):
@@ -1045,7 +1045,7 @@ def _origin_content_view_test_helper(
 
         assert_contains(resp, '<a href="%s">' % root_dir_branch_url)
 
-    assert_contains(resp, '<li class="swh-release">', count=len(origin_releases))
+    assert_contains(resp, '<li class="swh-release"', count=len(origin_releases))
 
     query_params["branch"] = None
     for release in origin_releases:

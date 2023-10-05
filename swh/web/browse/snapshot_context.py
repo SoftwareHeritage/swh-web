@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -302,7 +302,7 @@ def process_snapshot_branches(
             branches[branch_alias]["name"] = branch_alias
 
     ret_branches = list(sorted(branches.values(), key=lambda b: b["name"]))
-    ret_releases = list(sorted(releases.values(), key=lambda b: b["branch_name"]))
+    ret_releases = list(reversed(sorted(releases.values(), key=lambda b: b["name"])))
 
     return ret_branches, ret_releases, resolved_aliases
 
@@ -496,8 +496,6 @@ def get_snapshot_context(
 
         releases_url = reverse("browse-snapshot-releases", url_args=url_args)
 
-    releases = list(reversed(releases))
-
     @django_cache()
     def _get_snapshot_sizes(snapshot_id):
         return archive.lookup_snapshot_sizes(snapshot_id)
@@ -636,8 +634,9 @@ def get_snapshot_context(
             elif branch["target_type"] == "directory":
                 root_directory = branch["target"]
         elif releases:
-            # fallback to browse last release otherwise
-            release = releases[-1]
+            # fallback to browse latest release otherwise
+            # (releases are sorted by descending order of their names)
+            release = releases[0]
             if release["target_type"] == "revision":
                 revision = archive.lookup_revision(release["target"])
                 root_directory = revision["directory"]
