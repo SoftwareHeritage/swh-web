@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -85,6 +85,8 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
             origin_with_multiple_visits, visit_id=visit["visit"]
         )
 
+        releases = list(reversed(sorted(releases, key=lambda r: r["name"])))
+
         assert origin_visit_branches == (branches, releases, aliases)
 
 
@@ -104,7 +106,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
 
         branches, releases, _ = get_snapshot_content(snapshot)
-        releases = list(reversed(releases))
+
         revision_id = None
         root_directory = None
         for branch in branches:
@@ -209,7 +211,6 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
         query_params = dict(kwargs)
 
         branches, releases, _ = get_snapshot_content(snapshot)
-        releases = list(reversed(releases))
         revision_id = None
         root_directory = None
         for branch in branches:
