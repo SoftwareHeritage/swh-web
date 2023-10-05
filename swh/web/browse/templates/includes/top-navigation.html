@@ -73,23 +73,26 @@ See top-level LICENSE file for more information
             <div class="tab-pane" id="swh-tab-releases">
               {% if snapshot_context.releases %}
                 {% for r in snapshot_context.releases %}
-                  {% if r.target_type == 'revision' or r.target_type == 'directory' %}
-                    <li class="swh-release">
-                      <a href="{{ r.url | safe }}">
-                        {% if r.alias %}
-                          <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
-                        {% else %}
-                          <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
-                        {% endif %}
-                        {% if r.name == snapshot_context.release %}
-                          <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
-                        {% else %}
-                          <i class="mdi mdi-fw" aria-hidden="true"></i>
-                        {% endif %}
-                        {{ r.name }}
-                      </a>
-                    </li>
-                  {% endif %}
+                  {% ifchanged r.name r.alias %}
+                    {% if r.target_type == 'revision' or r.target_type == 'directory' %}
+                      <li class="swh-release"
+                          {% if r.alias %}id="swh-release-{{ r.name }}-alias"{% else %}id="swh-release-{{ r.name }}"{% endif %}>
+                        <a href="{{ r.url | safe }}">
+                          {% if r.alias %}
+                            <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                          {% else %}
+                            <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                          {% endif %}
+                          {% if r.name == snapshot_context.release %}
+                            <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
+                          {% else %}
+                            <i class="mdi mdi-fw" aria-hidden="true"></i>
+                          {% endif %}
+                          {{ r.name }}
+                        </a>
+                      </li>
+                    {% endif %}
+                  {% endifchanged %}
                 {% endfor %}
                 {% if snapshot_context.releases|length < snapshot_context.snapshot_sizes.release %}
                   <li>
