@@ -35,23 +35,15 @@ class InboundFilters  {
   /**
    * @inheritDoc
    */
-   setupOnce(addGlobalEventProcessor, getCurrentHub) {
-    const eventProcess = (event) => {
-      const hub = getCurrentHub();
-      if (hub) {
-        const self = hub.getIntegration(InboundFilters);
-        if (self) {
-          const client = hub.getClient();
-          const clientOptions = client ? client.getOptions() : {};
-          const options = _mergeOptions(self._options, clientOptions);
-          return _shouldDropEvent(event, options) ? null : event;
-        }
-      }
-      return event;
-    };
+   setupOnce(_addGlobaleventProcessor, _getCurrentHub) {
+    // noop
+  }
 
-    eventProcess.id = this.name;
-    addGlobalEventProcessor(eventProcess);
+  /** @inheritDoc */
+   processEvent(event, _eventHint, client) {
+    const clientOptions = client.getOptions();
+    const options = _mergeOptions(this._options, clientOptions);
+    return _shouldDropEvent(event, options) ? null : event;
   }
 } InboundFilters.__initStatic();
 

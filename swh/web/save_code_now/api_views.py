@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -24,7 +24,7 @@ from swh.web.save_code_now.origin_save import (
     get_save_origin_request,
     get_save_origin_requests,
 )
-from swh.web.utils import reverse
+from swh.web.utils import demangle_url, reverse
 
 
 def _savable_visit_types() -> str:
@@ -178,6 +178,11 @@ def api_save_origin(
             "api-1-save-origin", url_args={"request_id": sor["id"]}, request=request
         )
         return sor
+
+    # handle case where the "://" character sequence was mangled into ":/"
+    # by HTTP clients
+    if origin_url is not None:
+        origin_url = demangle_url(origin_url)
 
     data = request.data or {}
     if request.method == "POST":

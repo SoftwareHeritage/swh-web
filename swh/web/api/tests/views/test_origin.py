@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -933,3 +933,23 @@ def test_api_origin_by_url_with_extra_trailing_slash(
         "exception": "NotFoundExc",
         "reason": f"Origin with url {origin_url} not found!",
     }
+
+
+@pytest.mark.parametrize(
+    "view_name, extra_args",
+    [
+        ("api-1-origin", {}),
+        ("api-1-origin-visits", {}),
+        ("api-1-origin-visit", {"visit_id": 1}),
+        ("api-1-origin-visit-latest", {}),
+        ("api-origin-intrinsic-metadata", {}),
+    ],
+)
+def test_api_origin_by_url_with_double_slashes_mangled(
+    api_client, origin, view_name, extra_args
+):
+    origin_url = origin["url"]
+    assert "://" in origin_url
+    origin_url = origin_url.replace("://", ":/")
+    url = reverse(view_name, url_args={"origin_url": origin_url, **extra_args})
+    check_api_get_responses(api_client, url, status_code=200)

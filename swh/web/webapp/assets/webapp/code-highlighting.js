@@ -81,6 +81,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code',
   $(document).ready(() => {
     // highlight code and add line numbers
     $(selector).each((i, elt) => {
+      $(elt).removeAttr('data-highlighted');
       hljs.highlightElement(elt);
       if (showLineNumbers) {
         hljs.lineNumbersElement(elt, {singleLine: true});
