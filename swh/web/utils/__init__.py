@@ -540,3 +540,21 @@ def redirect_to_new_route(request, new_route, permanent=True):
         reverse(new_route, query_params=args),
         permanent=permanent,
     )
+
+
+def demangle_url(url: str) -> str:
+    """Fix URL where the ``://`` character sequence was mangled into ``:/``
+    by HTTP clients"""
+    try:
+        parsed_url = urllib.parse.urlparse(url)
+        if (
+            parsed_url.scheme
+            and not parsed_url.netloc
+            and url.startswith(f"{parsed_url.scheme}:/")
+            and not url.startswith(f"{parsed_url.scheme}://")
+        ):
+            url = url.replace(f"{parsed_url.scheme}:/", f"{parsed_url.scheme}://", 1)
+    except Exception:
+        pass
+    finally:
+        return url

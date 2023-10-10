@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,7 +9,6 @@ import itertools
 import os
 import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
-from urllib.parse import urlparse
 
 from swh.model import hashutil
 from swh.model.model import Revision
@@ -20,7 +19,7 @@ from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_ali
 from swh.storage.interface import OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
-from swh.web.utils import converters, query
+from swh.web.utils import converters, demangle_url, query
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.typing import (
     OriginInfo,
@@ -206,27 +205,19 @@ def lookup_origin(origin: OriginInfo, lookup_similar_urls: bool = True) -> Origi
         # slash while the url in storage have it (e.g. Debian source package)
         else:
             origin_urls.append(f"{origin['url']}/")
-        try:
-            # handle case where the "://" character sequence was mangled into ":/"
-            parsed_url = urlparse(origin["url"])
-            if (
-                parsed_url.scheme
-                and not parsed_url.netloc
-                and origin["url"].startswith(f"{parsed_url.scheme}:/")
-                and not origin["url"].startswith(f"{parsed_url.scheme}://")
-            ):
-                origin_urls.append(
-                    origin["url"].replace(
-                        f"{parsed_url.scheme}:/", f"{parsed_url.scheme}://"
-                    )
-                )
-        except Exception:
-            pass
-    origins = [o for o in storage.origin_get(origin_urls) if o is not None]
-    if not origins:
-        msg = "Origin with url %s not found!" % origin["url"]
-        raise NotFoundExc(msg)
-    return converters.from_origin(origins[0].to_dict())
+
+    # handle case where the "://" character sequence was mangled into ":/"
+    # by HTTP clients
+    demangled_url = demangle_url(origin["url"])
+    if origin["url"] != demangled_url:
+        origin_urls.append(demangled_url)
+
+    for url in origin_urls:
+        origins = storage.origin_get([url])
+        if origins and origins[0]:
+            return converters.from_origin(origins[0].to_dict())
+    else:
+        raise NotFoundExc(f"Origin with url {origin['url']} not found!")
 
 
 def lookup_origins(
@@ -405,12 +396,16 @@ def search_origin_metadata(
     return results
 
 
-def lookup_origin_intrinsic_metadata(origin_url: str) -> Dict[str, Any]:
+def lookup_origin_intrinsic_metadata(
+    origin_url: str, lookup_similar_urls: bool = True
+) -> Dict[str, Any]:
     """Return intrinsic metadata for origin whose origin matches given
     origin.
 
     Args:
         origin_url: origin url
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
 
     Raises:
         NotFoundExc when the origin is not found
@@ -419,7 +414,11 @@ def lookup_origin_intrinsic_metadata(origin_url: str) -> Dict[str, Any]:
         origin metadata.
 
     """
-    origins = [origin_url]
+    origins = [
+        lookup_origin(
+            OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
+        )["url"]
+    ]
     origin_info = storage.origin_get(origins)[0]
     if not origin_info:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
