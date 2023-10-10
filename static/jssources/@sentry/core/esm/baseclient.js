@@ -71,7 +71,7 @@ class BaseClient {
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
     } else {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not do anything.');
+      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not send events.');
     }
 
     if (this._dsn) {
@@ -160,11 +160,6 @@ class BaseClient {
    * @inheritDoc
    */
    captureSession(session) {
-    if (!this._isEnabled()) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('SDK not enabled, will not capture session.');
-      return;
-    }
-
     if (!(typeof session.release === 'string')) {
       (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Discarded session because of missing or non-string release');
     } else {
@@ -241,8 +236,8 @@ class BaseClient {
   /**
    * Sets up the integrations
    */
-   setupIntegrations() {
-    if (this._isEnabled() && !this._integrationsInitialized) {
+   setupIntegrations(forceInitialize) {
+    if ((forceInitialize && !this._integrationsInitialized) || (this._isEnabled() && !this._integrationsInitialized)) {
       this._integrations = setupIntegrations(this, this._options.integrations);
       this._integrationsInitialized = true;
     }
@@ -282,23 +277,21 @@ class BaseClient {
    sendEvent(event, hint = {}) {
     this.emit('beforeSendEvent', event, hint);
 
-    if (this._dsn) {
-      let env = createEventEnvelope(event, this._dsn, this._options._metadata, this._options.tunnel);
+    let env = createEventEnvelope(event, this._dsn, this._options._metadata, this._options.tunnel);
 
-      for (const attachment of hint.attachments || []) {
-        env = addItemToEnvelope(
-          env,
-          createAttachmentEnvelopeItem(
-            attachment,
-            this._options.transportOptions && this._options.transportOptions.textEncoder,
-          ),
-        );
-      }
+    for (const attachment of hint.attachments || []) {
+      env = addItemToEnvelope(
+        env,
+        createAttachmentEnvelopeItem(
+          attachment,
+          this._options.transportOptions && this._options.transportOptions.textEncoder,
+        ),
+      );
+    }
 
-      const promise = this._sendEnvelope(env);
-      if (promise) {
-        promise.then(sendResponse => this.emit('afterSendEvent', event, sendResponse), null);
-      }
+    const promise = this._sendEnvelope(env);
+    if (promise) {
+      promise.then(sendResponse => this.emit('afterSendEvent', event, sendResponse), null);
     }
   }
 
@@ -306,10 +299,8 @@ class BaseClient {
    * @inheritDoc
    */
    sendSession(session) {
-    if (this._dsn) {
-      const env = createSessionEnvelope(session, this._dsn, this._options._metadata, this._options.tunnel);
-      void this._sendEnvelope(env);
-    }
+    const env = createSessionEnvelope(session, this._dsn, this._options._metadata, this._options.tunnel);
+    void this._sendEnvelope(env);
   }
 
   /**
@@ -422,9 +413,9 @@ class BaseClient {
     });
   }
 
-  /** Determines whether this SDK is enabled and a valid Dsn is present. */
+  /** Determines whether this SDK is enabled and a transport is present. */
    _isEnabled() {
-    return this.getOptions().enabled !== false && this._dsn !== undefined;
+    return this.getOptions().enabled !== false && this._transport !== undefined;
   }
 
   /**
@@ -526,10 +517,6 @@ class BaseClient {
     const options = this.getOptions();
     const { sampleRate } = options;
 
-    if (!this._isEnabled()) {
-      return rejectedSyncPromise(new SentryError('SDK not enabled, will not capture event.', 'log'));
-    }
-
     const isTransaction = isTransactionEvent(event);
     const isError = isErrorEvent(event);
     const eventType = event.type || 'error';
@@ -629,9 +616,9 @@ class BaseClient {
    * @inheritdoc
    */
    _sendEnvelope(envelope) {
-    if (this._transport && this._dsn) {
-      this.emit('beforeEnvelope', envelope);
+    this.emit('beforeEnvelope', envelope);
 
+    if (this._isEnabled() && this._transport) {
       return this._transport.send(envelope).then(null, reason => {
         (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Error while sending event:', reason);
       });
