@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -138,7 +138,7 @@ _TEST_ORIGINS = [
     },
     {
         "type": "git",
-        "url": "repo_with_submodules",
+        "url": "https://git.example.org/repo_with_submodules",
         "archives": ["repo_with_submodules.tgz"],
         "metadata": {
             "@context": "https://doi.org/10.5063/schema/codemeta-2.0",

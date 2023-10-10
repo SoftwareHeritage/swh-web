@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -718,3 +718,17 @@ def test_accept_origin_url_with_anonymous_credentials(
 def test_get_save_request_not_found(api_client):
     url = reverse("api-1-save-origin", url_args={"request_id": 1})
     check_api_get_responses(api_client, url, status_code=404)
+
+
+def test_create_save_request_mangled_origin_url(api_client, swh_scheduler):
+    origin_url = "https://some.git.hosters/user/repo"
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url.replace("://", ":/")},
+    )
+
+    check_api_post_responses(api_client, url, status_code=200)
+
+    sor = SaveOriginRequest.objects.get(origin_url=origin_url)
+
+    assert sor.user_ids is None

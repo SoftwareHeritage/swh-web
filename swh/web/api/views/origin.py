@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -510,6 +510,7 @@ def api_origin_intrinsic_metadata(request: Request, origin_url: str):
     return api_lookup(
         archive.lookup_origin_intrinsic_metadata,
         origin_url,
+        lookup_similar_urls=False,
         notfound_msg=f"Origin with url {origin_url} not found",
         enrich_fn=enrich_origin,
         request=request,

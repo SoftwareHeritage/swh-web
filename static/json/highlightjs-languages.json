@@ -445,6 +445,7 @@
         "xlsx": "excel",
         "xpath": "xquery",
         "xq": "xquery",
+        "xqm": "xquery",
         "xsd": "xml",
         "xsl": "xml",
         "xtlang": "extempore",
