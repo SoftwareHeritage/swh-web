@@ -181,7 +181,8 @@ module.exports = (on, config) => {
       } catch (_) {
         return false;
       }
-    }
+    },
+    accessibilityChecker: require('cypress-accessibility-checker/plugin')
   });
   return config;
 };
