@@ -1318,7 +1318,7 @@ def vault_cook(bundle_type: str, swhid: CoreSWHID, email=None):
     return _vault_request(vault.cook, bundle_type, swhid, email=email)
 
 
-def vault_fetch(bundle_type: str, swhid: CoreSWHID):
+def vault_download(bundle_type: str, swhid: CoreSWHID):
     """Fetch a vault bundle."""
     return _vault_request(vault.fetch, bundle_type, swhid)
 

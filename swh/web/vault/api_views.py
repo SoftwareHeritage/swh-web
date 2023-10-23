@@ -63,7 +63,7 @@ def _vault_response(
     return d
 
 
-def _vault_fetch(
+def _vault_download(
     request: Request, swhid: str, bundle_type: str, filename: str, content_type: str
 ):
     bundle_download_url = archive.vault_download_url(
@@ -77,7 +77,7 @@ def _vault_fetch(
     else:
         # fallback fetching bundle and sending it to client otherwise
         bundle_bytes = api_lookup(
-            archive.vault_fetch,
+            archive.vault_download,
             bundle_type,
             parse_core_swhid(swhid),
             notfound_msg=f"Cooked archive for {swhid} not found.",
@@ -157,7 +157,7 @@ def api_vault_cook_flat(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.DIRECTORY:
         res = _dispatch_cook_progress(request, "flat", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-flat",
+            "api-1-vault-download-flat",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -201,7 +201,7 @@ def api_vault_cook_directory(request: Request, dir_id: str):
     swhid = f"swh:1:dir:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "flat", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-flat",
+        "api-1-vault-download-flat",
         url_args={"swhid": swhid},
         request=request,
     )
@@ -210,11 +210,11 @@ def api_vault_cook_directory(request: Request, dir_id: str):
 
 @api_route(
     f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-flat",
+    "api-1-vault-download-flat",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/raw/", category="Batch download")
-def api_vault_fetch_flat(request: Request, swhid: str):
+def api_vault_download_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/raw/
 
@@ -233,7 +233,7 @@ def api_vault_fetch_flat(request: Request, swhid: str):
             (in case of POST)
     """
     fname = "{}.tar.gz".format(swhid).replace(":", "_")
-    return _vault_fetch(
+    return _vault_download(
         request,
         swhid,
         bundle_type="flat",
@@ -244,14 +244,14 @@ def api_vault_fetch_flat(request: Request, swhid: str):
 
 @api_route(
     r"/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/",
-    "api-1-vault-fetch-directory",
+    "api-1-vault-download-directory",
     checksum_args=["dir_id"],
     api_urls=vault_api_urls,
 )
 @api_doc(
     "/vault/directory/raw/", category="Batch download", tags=["hidden", "deprecated"]
 )
-def api_vault_fetch_directory(request: Request, dir_id: str):
+def api_vault_download_directory(request: Request, dir_id: str):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
 
@@ -261,7 +261,7 @@ def api_vault_fetch_directory(request: Request, dir_id: str):
         dir_id, ["sha1"], "Only sha1_git is supported."
     )
     rev_flat_raw_url = reverse(
-        "api-1-vault-fetch-flat", url_args={"swhid": f"swh:1:dir:{dir_id}"}
+        "api-1-vault-download-flat", url_args={"swhid": f"swh:1:dir:{dir_id}"}
     )
     return redirect(rev_flat_raw_url)
 
@@ -330,7 +330,7 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "gitfast", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-gitfast",
+            "api-1-vault-download-gitfast",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -373,7 +373,7 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
     swhid = f"swh:1:rev:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "gitfast", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-gitfast",
+        "api-1-vault-download-gitfast",
         url_args={"swhid": swhid},
         request=request,
     )
@@ -382,11 +382,11 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
 
 @api_route(
     f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-gitfast",
+    "api-1-vault-download-gitfast",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/raw/", category="Batch download")
-def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
+def api_vault_download_revision_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/raw/
 
@@ -405,7 +405,7 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
             (in case of POST)
     """
     fname = "{}.gitfast.gz".format(swhid).replace(":", "_")
-    return _vault_fetch(
+    return _vault_download(
         request,
         swhid,
         bundle_type="gitfast",
@@ -416,7 +416,7 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
 
 @api_route(
     r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/",
-    "api-1-vault-fetch-revision_gitfast",
+    "api-1-vault-download-revision_gitfast",
     checksum_args=["rev_id"],
     api_urls=vault_api_urls,
 )
@@ -432,7 +432,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
         This endpoint was replaced by :http:get:`/api/1/vault/gitfast/(swhid)/raw/`
     """
     rev_gitfast_raw_url = reverse(
-        "api-1-vault-fetch-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
+        "api-1-vault-download-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
     )
     return redirect(rev_gitfast_raw_url)
 
@@ -503,7 +503,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "git_bare", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-git-bare",
+            "api-1-vault-download-git-bare",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -524,11 +524,11 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
 @api_route(
     f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-git-bare",
+    "api-1-vault-download-git-bare",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/raw/", category="Batch download")
-def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
+def api_vault_download_revision_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/raw/
 
@@ -547,7 +547,7 @@ def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
             (in case of POST)
     """
     fname = "{}.git.tar".format(swhid).replace(":", "_")
-    return _vault_fetch(
+    return _vault_download(
         request,
         swhid,
         bundle_type="git_bare",
