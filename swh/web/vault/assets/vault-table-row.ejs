@@ -9,12 +9,12 @@
   <tr id="vault-task-<%= cookingTask.swhid %>"
       title="Once downloaded, the directory can be extracted with the following command:
 
-$ tar xvzf <%= cookingTask.swhid %>.tar.gz">
+$ tar xvzf <%= cookingTask.swhid.replaceAll(':', '_') %>.tar.gz">
 <% } else { %>
   <tr id="vault-task-<%= cookingTask.swhid %>"
       title="Once downloaded, the git repository can be imported to a 'new_repository' directory with the following commands:
 
-$ tar xvf <%= cookingTask.swhid %>.git.tar
+$ tar xvf <%= cookingTask.swhid.replaceAll(':', '_') %>.git.tar
 $ git clone <%= cookingTask.swhid %>.git new_repository
 $ cd new_repository/">
 <% } %>

@@ -38,7 +38,7 @@ export async function vaultRequest(objectType, swhid) {
     // object has been cooked and should be in the vault cache,
     // it will be asked to cook it again if it is not
   } else if (data.status === 'done') {
-    const vaultModalId = `#vault-fetch-${objectType}-modal`;
+    const vaultModalId = `#vault-download-${objectType}-modal`;
     $(vaultModalId).modal('show');
   } else {
     const cookingServiceDownAlert =
@@ -125,7 +125,7 @@ export function cookDirectoryArchive(event, swhid) {
 }
 
 export async function fetchDirectoryArchive(directorySwhid) {
-  $('#vault-fetch-directory-modal').modal('hide');
+  $('#vault-download-directory-modal').modal('hide');
   const vaultUrl = Urls.api_1_vault_cook_flat(directorySwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
@@ -149,7 +149,7 @@ export function cookRevisionArchive(event, revisionId) {
 }
 
 export async function fetchRevisionArchive(revisionSwhid) {
-  $('#vault-fetch-revision-modal').modal('hide');
+  $('#vault-download-revision-modal').modal('hide');
   const vaultUrl = Urls.api_1_vault_cook_git_bare(revisionSwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();

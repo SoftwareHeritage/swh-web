@@ -63,6 +63,35 @@ def _vault_response(
     return d
 
 
+def _vault_download(
+    request: Request, swhid: str, bundle_type: str, filename: str, content_type: str
+):
+    bundle_download_url = archive.vault_download_url(
+        bundle_type,
+        parse_core_swhid(swhid),
+        filename,
+    )
+    if bundle_download_url is not None:
+        # vault cache offers direct download link, redirect to it
+        return redirect(bundle_download_url)
+    else:
+        # fallback fetching bundle and sending it to client otherwise
+        bundle_bytes = api_lookup(
+            archive.vault_download,
+            bundle_type,
+            parse_core_swhid(swhid),
+            notfound_msg=f"Cooked archive for {swhid} not found.",
+            request=request,
+        )
+
+        return FileResponse(
+            io.BytesIO(bundle_bytes),
+            content_type=content_type,
+            filename=filename,
+            as_attachment=True,
+        )
+
+
 vault_api_urls = APIUrls()
 
 ######################################################
@@ -78,7 +107,7 @@ vault_api_urls = APIUrls()
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/
@@ -92,11 +121,15 @@ def api_vault_cook_flat(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting archive can
         be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/flat/(swhid)/raw/`.
+        :http:get:`/api/1/vault/flat/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/flat/swh:1:dir:*/raw/
 
         Then to extract the cooked directory in the current one, use::
 
             $ tar xvf path/to/swh_1_*.tar.gz
+
+        (replace ``swh:1:dir:*`` with the SWHID of the requested directory).
 
         :param string swhid: the object's SWHID
 
@@ -124,7 +157,7 @@ def api_vault_cook_flat(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.DIRECTORY:
         res = _dispatch_cook_progress(request, "flat", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-flat",
+            "api-1-vault-download-flat",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -168,7 +201,7 @@ def api_vault_cook_directory(request: Request, dir_id: str):
     swhid = f"swh:1:dir:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "flat", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-flat",
+        "api-1-vault-download-flat",
         url_args={"swhid": swhid},
         request=request,
     )
@@ -177,11 +210,11 @@ def api_vault_cook_directory(request: Request, dir_id: str):
 
 @api_route(
     f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-flat",
+    "api-1-vault-download-flat",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/flat/raw/", category="Batch download")
-def api_vault_fetch_flat(request: Request, swhid: str):
+def api_vault_download_flat(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/flat/(swhid)/raw/
 
@@ -199,32 +232,26 @@ def api_vault_fetch_flat(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "flat",
-        parse_core_swhid(swhid),
-        notfound_msg=f"Cooked archive for {swhid} not found.",
-        request=request,
-    )
     fname = "{}.tar.gz".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/gzip",
+    return _vault_download(
+        request,
+        swhid,
+        bundle_type="flat",
         filename=fname,
-        as_attachment=True,
+        content_type="application/gzip",
     )
 
 
 @api_route(
     r"/vault/directory/(?P<dir_id>[0-9a-f]+)/raw/",
-    "api-1-vault-fetch-directory",
+    "api-1-vault-download-directory",
     checksum_args=["dir_id"],
     api_urls=vault_api_urls,
 )
 @api_doc(
     "/vault/directory/raw/", category="Batch download", tags=["hidden", "deprecated"]
 )
-def api_vault_fetch_directory(request: Request, dir_id: str):
+def api_vault_download_directory(request: Request, dir_id: str):
     """
     .. http:get:: /api/1/vault/directory/(dir_id)/raw/
 
@@ -234,7 +261,7 @@ def api_vault_fetch_directory(request: Request, dir_id: str):
         dir_id, ["sha1"], "Only sha1_git is supported."
     )
     rev_flat_raw_url = reverse(
-        "api-1-vault-fetch-flat", url_args={"swhid": f"swh:1:dir:{dir_id}"}
+        "api-1-vault-download-flat", url_args={"swhid": f"swh:1:dir:{dir_id}"}
     )
     return redirect(rev_flat_raw_url)
 
@@ -252,7 +279,7 @@ def api_vault_fetch_directory(request: Request, dir_id: str):
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/
@@ -267,13 +294,17 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting gitfast archive
         can be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/gitfast/(swhid)/raw/`.
+        :http:get:`/api/1/vault/gitfast/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/gitfast/swh:1:rev:*/raw/
 
         Then to import the revision in the current directory, use::
 
             $ git init
             $ zcat path/to/swh_1_rev_*.gitfast.gz | git fast-import
             $ git checkout HEAD
+
+        (replace ``swh:1:rev:*`` with the SWHID of the requested revision).
 
         :param string swhid: the revision's permanent identifiers
 
@@ -299,7 +330,7 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "gitfast", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-gitfast",
+            "api-1-vault-download-gitfast",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -342,7 +373,7 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
     swhid = f"swh:1:rev:{obj_id.hex()}"
     res = _dispatch_cook_progress(request, "gitfast", parse_core_swhid(swhid))
     res["fetch_url"] = reverse(
-        "api-1-vault-fetch-gitfast",
+        "api-1-vault-download-gitfast",
         url_args={"swhid": swhid},
         request=request,
     )
@@ -351,11 +382,11 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
 
 @api_route(
     f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-gitfast",
+    "api-1-vault-download-gitfast",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/gitfast/raw/", category="Batch download")
-def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
+def api_vault_download_revision_gitfast(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/gitfast/(swhid)/raw/
 
@@ -373,25 +404,19 @@ def api_vault_fetch_revision_gitfast(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "gitfast",
-        parse_core_swhid(swhid),
-        notfound_msg="Cooked archive for {} not found.".format(swhid),
-        request=request,
-    )
     fname = "{}.gitfast.gz".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/gzip",
+    return _vault_download(
+        request,
+        swhid,
+        bundle_type="gitfast",
         filename=fname,
-        as_attachment=True,
+        content_type="application/gzip",
     )
 
 
 @api_route(
     r"/vault/revision/(?P<rev_id>[0-9a-f]+)/gitfast/raw/",
-    "api-1-vault-fetch-revision_gitfast",
+    "api-1-vault-download-revision_gitfast",
     checksum_args=["rev_id"],
     api_urls=vault_api_urls,
 )
@@ -407,7 +432,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
         This endpoint was replaced by :http:get:`/api/1/vault/gitfast/(swhid)/raw/`
     """
     rev_gitfast_raw_url = reverse(
-        "api-1-vault-fetch-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
+        "api-1-vault-download-gitfast", url_args={"swhid": f"swh:1:rev:{rev_id}"}
     )
     return redirect(rev_gitfast_raw_url)
 
@@ -425,7 +450,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/", category="Batch download")
-@format_docstring()
+@format_docstring(base_url="https://archive.softwareheritage.org")
 def api_vault_cook_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/
@@ -440,14 +465,16 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
         Once the cooking task has been executed, the resulting git-bare archive
         can be downloaded using the dedicated endpoint
-        :http:get:`/api/1/vault/git-bare/(swhid)/raw/`.
+        :http:get:`/api/1/vault/git-bare/(swhid)/raw/`::
+
+            $ curl -LOJ {base_url}/api/1/vault/git-bare/swh:1:rev:*/raw/
 
         Then to import the revision in the current directory, use::
 
             $ tar -xf path/to/swh_1_rev_*.git.tar
             $ git clone swh:1:rev:*.git new_repository
 
-        (replace ``swh:1:rev:*`` with the SWHID of the requested revision)
+        (replace ``swh:1:rev:*`` with the SWHID of the requested revision).
 
         This will create a directory called ``new_repository``, which is a git
         repository containing the requested objects.
@@ -476,7 +503,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
     if parsed_swhid.object_type == ObjectType.REVISION:
         res = _dispatch_cook_progress(request, "git_bare", parsed_swhid)
         res["fetch_url"] = reverse(
-            "api-1-vault-fetch-git-bare",
+            "api-1-vault-download-git-bare",
             url_args={"swhid": swhid},
             request=request,
         )
@@ -497,11 +524,11 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
 @api_route(
     f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/",
-    "api-1-vault-fetch-git-bare",
+    "api-1-vault-download-git-bare",
     api_urls=vault_api_urls,
 )
 @api_doc("/vault/git-bare/raw/", category="Batch download")
-def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
+def api_vault_download_revision_git_bare(request: Request, swhid: str):
     """
     .. http:get:: /api/1/vault/git-bare/(swhid)/raw/
 
@@ -519,17 +546,11 @@ def api_vault_fetch_revision_git_bare(request: Request, swhid: str):
             request yet (in case of GET) or can not be found in the archive
             (in case of POST)
     """
-    archive_bytes = api_lookup(
-        archive.vault_fetch,
-        "git_bare",
-        parse_core_swhid(swhid),
-        notfound_msg="Cooked archive for {} not found.".format(swhid),
-        request=request,
-    )
     fname = "{}.git.tar".format(swhid).replace(":", "_")
-    return FileResponse(
-        io.BytesIO(archive_bytes),
-        content_type="application/x-tar",
+    return _vault_download(
+        request,
+        swhid,
+        bundle_type="git_bare",
         filename=fname,
-        as_attachment=True,
+        content_type="application/x-tar",
     )
