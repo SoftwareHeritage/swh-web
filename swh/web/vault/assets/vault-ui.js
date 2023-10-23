@@ -54,7 +54,7 @@ export async function fetchCookedObject(fetchUrl) {
 
   // link is still alive, proceed to download
   if (response.ok) {
-    $('#vault-fetch-iframe').attr('src', fetchUrl);
+    $('#vault-download-iframe').attr('src', fetchUrl);
     // link is dead
   } else {
     // get the associated cooking task
@@ -133,11 +133,11 @@ async function checkVaultCookingTasks() {
       if (cookingTask.object_type === 'directory') {
         cookingTask.swhid = `swh:1:dir:${cookingTask.object_id}`;
         cookingTask.bundle_type = 'flat';
-        cookingTask.fetch_url = Urls.api_1_vault_fetch_flat(cookingTask.swhid);
+        cookingTask.fetch_url = Urls.api_1_vault_download_flat(cookingTask.swhid);
       } else if (cookingTask.object_type === 'revision') {
         cookingTask.swhid = `swh:1:rev:${cookingTask.object_id}`;
         cookingTask.bundle_type = 'git_bare';
-        cookingTask.fetch_url = Urls.api_1_vault_fetch_git_bare(cookingTask.swhid);
+        cookingTask.fetch_url = Urls.api_1_vault_download_git_bare(cookingTask.swhid);
       } else {
         // Log to the console + Sentry
         console.error(`Unexpected cookingTask.object_type: ${cookingTask.object_type}`);
