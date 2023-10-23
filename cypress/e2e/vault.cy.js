@@ -69,13 +69,13 @@ describe('Vault Cooking User Interface Tests', function() {
     this.directoryUrl = this.Urls.browse_origin_directory() +
       `?origin_url=${this.origin[0].url}&path=${dirInfo.path}`;
     this.vaultDirectoryUrl = this.Urls.api_1_vault_cook_flat(this.directory);
-    this.vaultFetchDirectoryUrl = this.Urls.api_1_vault_fetch_flat(this.directory);
+    this.vaultDownloadDirectoryUrl = this.Urls.api_1_vault_download_flat(this.directory);
 
     this.revisionId = this.origin[1].revisions[0];
     this.revision = `swh:1:rev:${this.revisionId}`;
     this.revisionUrl = this.Urls.browse_revision(this.revisionId);
     this.vaultRevisionUrl = this.Urls.api_1_vault_cook_git_bare(this.revision);
-    this.vaultFetchRevisionUrl = this.Urls.api_1_vault_fetch_git_bare(this.revision);
+    this.vaultDownloadRevisionUrl = this.Urls.api_1_vault_download_git_bare(this.revision);
 
     const release = this.origin[1].release;
     this.releaseUrl = this.Urls.browse_release(release.id) + `?origin_url=${this.origin[1].url}`;
@@ -108,12 +108,12 @@ describe('Vault Cooking User Interface Tests', function() {
 
     this.genVaultDirCookingResponse = (status, message = null) => {
       return genVaultCookingResponse('flat', this.directory, status,
-                                     message, this.vaultFetchDirectoryUrl);
+                                     message, this.vaultDownloadDirectoryUrl);
     };
 
     this.genVaultRevCookingResponse = (status, message = null) => {
       return genVaultCookingResponse('git_bare', this.revision, status,
-                                     message, this.vaultFetchRevisionUrl);
+                                     message, this.vaultDownloadRevisionUrl);
     };
 
   });
@@ -237,7 +237,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.directoryUrl);
 
     // Stub response to the vault API to simulate archive download
-    cy.intercept('GET', this.vaultFetchDirectoryUrl, {
+    cy.intercept('GET', this.vaultDownloadDirectoryUrl, {
       fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
@@ -326,7 +326,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.revisionUrl);
 
     // Stub response to the vault API indicating to simulate archive download
-    cy.intercept({url: this.vaultFetchRevisionUrl}, {
+    cy.intercept({url: this.vaultDownloadRevisionUrl}, {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
@@ -481,7 +481,7 @@ describe('Vault Cooking User Interface Tests', function() {
     updateVaultItemList(this.vaultItems);
 
     // Send 404 when fetching vault item
-    cy.intercept({url: this.vaultFetchRevisionUrl}, {
+    cy.intercept({url: this.vaultDownloadRevisionUrl}, {
       statusCode: 404,
       body: {
         'exception': 'NotFoundExc',
@@ -538,7 +538,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.directoryUrl);
 
     // Stub response to the vault API to simulate archive download
-    cy.intercept({url: this.vaultFetchDirectoryUrl}, {
+    cy.intercept({url: this.vaultDownloadDirectoryUrl}, {
       fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
@@ -571,7 +571,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.revisionUrl);
 
     // Stub response to the vault API to simulate archive download
-    cy.intercept({url: this.vaultFetchRevisionUrl}, {
+    cy.intercept({url: this.vaultDownloadRevisionUrl}, {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,

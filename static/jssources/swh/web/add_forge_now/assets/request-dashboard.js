@@ -118,7 +118,7 @@ function contactForgeAdmin(event) {
   // select email template according to the status:
   let emailText = '';
   if (forgeRequest.status === 'PENDING') {
-    emailText = encodeURIComponent(initialEmailTempate({'forgeUrl': forgeRequest.forge_url}).trim().replace(/\n/g, '\r\n'));
+    emailText = encodeURIComponent(initialEmailTempate({'forgeUrl': forgeRequest.forge_url, 'forgeAdmin': forgeRequest.forge_contact_name}).trim().replace(/\n/g, '\r\n'));
   }
   if (forgeRequest.status === 'FIRST_ORIGIN_LOADED') {
     emailText = encodeURIComponent(successEmailTempate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));

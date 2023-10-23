@@ -21,7 +21,10 @@ from swh.web.utils import reverse
 # Current API:
 
 
-def test_api_vault_cook(api_client, mocker, directory, revision):
+@pytest.mark.parametrize("fetch_redirect", [False, True])
+def test_api_vault_cook_and_fetch(
+    api_client, mocker, directory, revision, fetch_redirect
+):
     mock_archive = mocker.patch("swh.web.vault.api_views.archive")
 
     for bundle_type, swhid, content_type, in (
@@ -32,7 +35,7 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         swhid = CoreSWHID.from_string(swhid)
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
+            f"api-1-vault-download-{bundle_type.replace('_', '-')}",
             url_args={"swhid": str(swhid)},
         )
         stub_cook = {
@@ -45,7 +48,12 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         stub_fetch = b"content"
 
         mock_archive.vault_cook.return_value = stub_cook
-        mock_archive.vault_fetch.return_value = stub_fetch
+        mock_archive.vault_download.return_value = stub_fetch
+        if fetch_redirect:
+            redirect_url = f"http://example.org/vault/{bundle_type}/{swhid}"
+            mock_archive.vault_download_url.return_value = redirect_url
+        else:
+            mock_archive.vault_download_url.return_value = None
 
         email = "test@test.mail"
         url = reverse(
@@ -64,19 +72,35 @@ def test_api_vault_cook(api_client, mocker, directory, revision):
         }
         mock_archive.vault_cook.assert_called_with(bundle_type, swhid, email)
 
-        rv = check_http_get_response(api_client, fetch_url, status_code=200)
-        assert rv["Content-Type"] == content_type
-        assert b"".join(rv.streaming_content) == stub_fetch
-        mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
+        if fetch_redirect:
+            rv = check_http_get_response(api_client, fetch_url, status_code=302)
+            assert rv["Location"] == redirect_url
+            mock_archive.vault_download_url.assert_called()
+        else:
+            rv = check_http_get_response(api_client, fetch_url, status_code=200)
+            assert rv["Content-Type"] == content_type
+            assert b"".join(rv.streaming_content) == stub_fetch
+            mock_archive.vault_download.assert_called_with(bundle_type, swhid)
 
 
+@pytest.mark.parametrize("fetch_redirect", [False, True])
 def test_api_vault_cook_notfound(
-    api_client, mocker, directory, revision, unknown_directory, unknown_revision
+    api_client,
+    mocker,
+    directory,
+    revision,
+    unknown_directory,
+    unknown_revision,
+    fetch_redirect,
 ):
     mock_vault = mocker.patch("swh.web.utils.archive.vault")
     mock_vault.cook.side_effect = NotFoundExc("object not found")
     mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
     mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
+    if fetch_redirect:
+        mock_vault.download_url.side_effect = NotFoundExc("cooking request not found")
+    else:
+        mock_vault.download_url.return_value = None
 
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{directory}"),
@@ -113,14 +137,17 @@ def test_api_vault_cook_notfound(
         mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type.replace('_', '-')}",
+            f"api-1-vault-download-{bundle_type.replace('_', '-')}",
             url_args={"swhid": str(swhid)},
         )
 
         rv = check_api_get_responses(api_client, fetch_url, status_code=404)
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooked archive for {swhid} not found."
-        mock_vault.fetch.assert_called_with(bundle_type, swhid)
+        if fetch_redirect:
+            mock_vault.download_url.assert_called()
+        else:
+            mock_vault.fetch.assert_called_with(bundle_type, swhid)
 
 
 @pytest.mark.parametrize("bundle_type", ["flat", "gitfast", "git_bare"])
@@ -192,7 +219,7 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         swhid = CoreSWHID.from_string(f"swh:1:{obj_type[:3]}:{obj_id}")
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}",
+            f"api-1-vault-download-{bundle_type}",
             url_args={"swhid": str(swhid)},
         )
         stub_cook = {
@@ -207,7 +234,8 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         stub_fetch = b"content"
 
         mock_archive.vault_cook.return_value = stub_cook
-        mock_archive.vault_fetch.return_value = stub_fetch
+        mock_archive.vault_download.return_value = stub_fetch
+        mock_archive.vault_download_url.return_value = None
 
         email = "test@test.mail"
         url = reverse(
@@ -231,7 +259,7 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
         rv = check_http_get_response(api_client, fetch_url, status_code=200)
         assert rv["Content-Type"] == "application/gzip"
         assert b"".join(rv.streaming_content) == stub_fetch
-        mock_archive.vault_fetch.assert_called_with(bundle_type, swhid)
+        mock_archive.vault_download.assert_called_with(bundle_type, swhid)
 
 
 def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
@@ -256,14 +284,14 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
         assert rv["location"] == redirect_url
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{obj_type}-uppercase-checksum",
+            f"api-1-vault-download-{obj_type}-uppercase-checksum",
             url_args={f"{obj_type[:3]}_id": obj_id.upper()},
         )
 
         rv = check_http_get_response(api_client, fetch_url, status_code=302)
 
         redirect_url = reverse(
-            f"api-1-vault-fetch-{obj_type}",
+            f"api-1-vault-download-{obj_type}",
             url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
@@ -277,6 +305,7 @@ def test_api_vault_cook_notfound_legacy(
     mock_vault.cook.side_effect = NotFoundExc("object not found")
     mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
     mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
+    mock_vault.download_url.return_value = None
 
     for obj_type, bundle_type, obj_id in (
         ("directory", "flat", directory),
@@ -312,14 +341,14 @@ def test_api_vault_cook_notfound_legacy(
         mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
-            f"api-1-vault-fetch-{obj_type}",
+            f"api-1-vault-download-{obj_type}",
             url_args={f"{obj_type[:3]}_id": obj_id},
         )
 
         # Redirected to the current 'fetch' url
         rv = check_http_get_response(api_client, fetch_url, status_code=302)
         redirect_url = reverse(
-            f"api-1-vault-fetch-{bundle_type}",
+            f"api-1-vault-download-{bundle_type}",
             url_args={"swhid": str(swhid)},
         )
         assert rv["location"] == redirect_url
