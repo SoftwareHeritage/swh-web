@@ -23,7 +23,7 @@ from swh.web.utils import reverse
 
 @pytest.mark.parametrize("fetch_redirect", [False, True])
 def test_api_vault_cook_and_fetch(
-    api_client, mocker, directory, revision, fetch_redirect
+    api_client, mocker, directory, revision, release, snapshot, fetch_redirect
 ):
     mock_archive = mocker.patch("swh.web.vault.api_views.archive")
 
@@ -31,6 +31,9 @@ def test_api_vault_cook_and_fetch(
         ("flat", f"swh:1:dir:{directory}", "application/gzip"),
         ("gitfast", f"swh:1:rev:{revision}", "application/gzip"),
         ("git_bare", f"swh:1:rev:{revision}", "application/x-tar"),
+        ("git_bare", f"swh:1:dir:{directory}", "application/x-tar"),
+        ("git_bare", f"swh:1:rel:{release}", "application/x-tar"),
+        ("git_bare", f"swh:1:snp:{snapshot}", "application/x-tar"),
     ):
         swhid = CoreSWHID.from_string(swhid)
 
@@ -89,6 +92,8 @@ def test_api_vault_cook_notfound(
     mocker,
     directory,
     revision,
+    release,
+    snapshot,
     unknown_directory,
     unknown_revision,
     fetch_redirect,
@@ -106,6 +111,9 @@ def test_api_vault_cook_notfound(
         ("flat", f"swh:1:dir:{directory}"),
         ("gitfast", f"swh:1:rev:{revision}"),
         ("git_bare", f"swh:1:rev:{revision}"),
+        ("git_bare", f"swh:1:dir:{directory}"),
+        ("git_bare", f"swh:1:rel:{release}"),
+        ("git_bare", f"swh:1:snp:{snapshot}"),
     ):
         swhid = CoreSWHID.from_string(swhid)
 
@@ -162,13 +170,19 @@ def test_api_vault_cook_error_content(api_client, mocker, bundle_type):
     )
 
     rv = check_api_post_responses(api_client, url, data=None, status_code=400)
-    assert rv.data == {
-        "exception": "BadInputExc",
-        "reason": (
-            "Content objects do not need to be cooked, "
-            "use `/api/1/content/raw/` instead."
-        ),
-    }
+    if bundle_type != "git_bare":
+        assert rv.data == {
+            "exception": "BadInputExc",
+            "reason": (
+                "Content objects do not need to be cooked, "
+                "use `/api/1/content/raw/` instead."
+            ),
+        }
+    else:
+        assert rv.data == {
+            "exception": "BadInputExc",
+            "reason": "Object type CONTENT cannot be cooked as 'git-bare' bundle.",
+        }
 
 
 @pytest.mark.parametrize(
@@ -180,9 +194,7 @@ def test_api_vault_cook_error_content(api_client, mocker, bundle_type):
         ("gitfast", "dir", True),
         ("gitfast", "rel", False),
         ("gitfast", "snp", False),
-        ("git_bare", "dir", True),
-        ("git_bare", "rel", False),
-        ("git_bare", "snp", False),
+        ("git_bare", "cnt", False),
     ],
 )
 def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint):
@@ -202,7 +214,13 @@ def test_api_vault_cook_error(api_client, mocker, bundle_type, swhid_type, hint)
             r"Only .* can be cooked as .* bundles\. Use .*", rv.data["reason"]
         )
     else:
-        assert re.match(r"Only .* can be cooked as .* bundles\.", rv.data["reason"])
+        if bundle_type != "git_bare":
+            assert re.match(r"Only .* can be cooked as .* bundles\.", rv.data["reason"])
+        else:
+            assert re.match(
+                r"Object type .* cannot be cooked as 'git-bare' bundle\.",
+                rv.data["reason"],
+            )
 
 
 #####################

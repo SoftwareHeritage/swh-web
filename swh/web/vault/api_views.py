@@ -12,6 +12,7 @@ from rest_framework.request import Request
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType
+from swh.vault.cookers.git_bare import RootObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.api.views.utils import api_lookup
@@ -456,30 +457,42 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
     .. http:get:: /api/1/vault/git-bare/(swhid)/
     .. http:post:: /api/1/vault/git-bare/(swhid)/
 
-        Request the cooking of a git-bare archive for a revision or check
-        its cooking status.
+        Request the cooking of a git-bare archive or check its cooking status.
 
-        That endpoint enables to create a vault cooking task for a revision
-        through a POST request or check the status of a previously created one
-        through a GET request.
+        That endpoint enables to create a git-bare archive cooking task for a:
+
+        - **revision**: produced repository only includes a single branch
+          heading to the revision
+
+        - **release**: produced repository only includes a single branch
+          heading to the release
+
+        - **snapshot**: produced repository includes all branches and releases
+          contained in the snapshot
+
+        - **directory**: produced repository only includes a single branch
+          with a single commit targeting the directory
+
+        A cooking task must be created through a POST request while checking
+        the status of a previously created one can be done through a GET request.
 
         Once the cooking task has been executed, the resulting git-bare archive
         can be downloaded using the dedicated endpoint
         :http:get:`/api/1/vault/git-bare/(swhid)/raw/`::
 
-            $ curl -LOJ {base_url}/api/1/vault/git-bare/swh:1:rev:*/raw/
+            $ curl -LOJ {base_url}/api/1/vault/git-bare/swh:1:*/raw/
 
-        Then to import the revision in the current directory, use::
+        Then to import the repository in the current directory, use::
 
-            $ tar -xf path/to/swh_1_rev_*.git.tar
-            $ git clone swh:1:rev:*.git new_repository
+            $ tar -xf path/to/swh_1_*.git.tar
+            $ git clone swh:1:*.git new_repository
 
-        (replace ``swh:1:rev:*`` with the SWHID of the requested revision).
+        (replace ``swh:1:*`` with the SWHID of the requested revision or snapshot).
 
         This will create a directory called ``new_repository``, which is a git
         repository containing the requested objects.
 
-        :param string swhid: the revision's permanent identifier
+        :param string swhid: the revision's or snapshot's permanent identifier
 
         :query string email: e-mail to notify when the git-bare archive is ready
 
@@ -500,7 +513,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
             (in case of POST)
     """
     parsed_swhid = parse_core_swhid(swhid)
-    if parsed_swhid.object_type == ObjectType.REVISION:
+    if parsed_swhid.object_type.name in (v.name for v in RootObjectType):
         res = _dispatch_cook_progress(request, "git_bare", parsed_swhid)
         res["fetch_url"] = reverse(
             "api-1-vault-download-git-bare",
@@ -508,18 +521,11 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
             request=request,
         )
         return _vault_response(res, add_legacy_items=False)
-    elif parsed_swhid.object_type == ObjectType.CONTENT:
-        raise BadInputExc(
-            "Content objects do not need to be cooked, "
-            "use `/api/1/content/raw/` instead."
-        )
-    elif parsed_swhid.object_type == ObjectType.DIRECTORY:
-        raise BadInputExc(
-            "Only revisions can be cooked as 'git-bare' bundles. "
-            "Use `/api/1/vault/flat/` to cook directories, as flat bundles."
-        )
     else:
-        raise BadInputExc("Only revisions can be cooked as 'git-bare' bundles.")
+        raise BadInputExc(
+            f"Object type {parsed_swhid.object_type.name} "
+            "cannot be cooked as 'git-bare' bundle."
+        )
 
 
 @api_route(
