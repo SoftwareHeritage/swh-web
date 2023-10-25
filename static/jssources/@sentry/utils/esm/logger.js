@@ -54,6 +54,7 @@ function makeLogger() {
     disable: () => {
       enabled = false;
     },
+    isEnabled: () => enabled,
   };
 
   if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {

@@ -5,11 +5,11 @@ import { logger, getEventDescription, stringMatchesSomePattern } from '@sentry/u
 const DEFAULT_IGNORE_ERRORS = [/^Script error\.?$/, /^Javascript error: Script error\.? on line 0$/];
 
 const DEFAULT_IGNORE_TRANSACTIONS = [
-  /^.*healthcheck.*$/,
-  /^.*healthy.*$/,
-  /^.*live.*$/,
-  /^.*ready.*$/,
-  /^.*heartbeat.*$/,
+  /^.*\/healthcheck$/,
+  /^.*\/healthy$/,
+  /^.*\/live$/,
+  /^.*\/ready$/,
+  /^.*\/heartbeat$/,
   /^.*\/health$/,
   /^.*\/healthz$/,
 ];
