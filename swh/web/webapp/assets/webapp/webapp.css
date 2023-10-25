@@ -579,8 +579,7 @@ hr.swh-faded-line {
 
 .swh-coverage-info-body {
     max-height: 150px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: auto hidden;
     scrollbar-width: thin; /* Firefox only */
     padding: 0;
 }
@@ -642,8 +641,7 @@ a.toggle-col.col-hidden {
 
 .swh-popover {
     max-height: 50vh;
-    overflow-y: auto;
-    overflow-x: auto;
+    overflow: auto auto;
     padding: 0;
 }
 

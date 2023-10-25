@@ -1,6 +1,6 @@
 import { isString } from './is.js';
 import { logger, CONSOLE_LEVELS, originalConsoleMethods } from './logger.js';
-import { fill } from './object.js';
+import { fill, addNonEnumerableProperty } from './object.js';
 import { getFunctionName } from './stacktrace.js';
 import { supportsNativeFetch } from './supports.js';
 import { getGlobalObject, GLOBAL_OBJ } from './worldwide.js';
@@ -233,6 +233,8 @@ function instrumentXHR() {
 
   fill(xhrproto, 'open', function (originalOpen) {
     return function ( ...args) {
+      const startTimestamp = Date.now();
+
       const url = args[1];
       const xhrInfo = (this[SENTRY_XHR_DATA_KEY] = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -267,7 +269,7 @@ function instrumentXHR() {
           triggerHandlers('xhr', {
             args: args ,
             endTimestamp: Date.now(),
-            startTimestamp: Date.now(),
+            startTimestamp,
             xhr: this,
           } );
         }
@@ -376,31 +378,24 @@ function instrumentHistory() {
   fill(WINDOW.history, 'replaceState', historyReplacementFunction);
 }
 
-const debounceDuration = 1000;
+const DEBOUNCE_DURATION = 1000;
 let debounceTimerID;
 let lastCapturedEvent;
 
 /**
- * Decide whether the current event should finish the debounce of previously captured one.
- * @param previous previously captured event
- * @param current event to be captured
+ * Check whether two DOM events are similar to eachother. For example, two click events on the same button.
  */
-function shouldShortcircuitPreviousDebounce(previous, current) {
-  // If there was no previous event, it should always be swapped for the new one.
-  if (!previous) {
-    return true;
-  }
-
+function areSimilarDomEvents(a, b) {
   // If both events have different type, then user definitely performed two separate actions. e.g. click + keypress.
-  if (previous.type !== current.type) {
-    return true;
+  if (a.type !== b.type) {
+    return false;
   }
 
   try {
     // If both events have the same type, it's still possible that actions were performed on different targets.
     // e.g. 2 clicks on different buttons.
-    if (previous.target !== current.target) {
-      return true;
+    if (a.target !== b.target) {
+      return false;
     }
   } catch (e) {
     // just accessing `target` property can throw an exception in some rare circumstances
@@ -410,7 +405,7 @@ function shouldShortcircuitPreviousDebounce(previous, current) {
   // If both events have the same type _and_ same `target` (an element which triggered an event, _not necessarily_
   // to which an event listener was attached), we treat them as the same action, as we want to capture
   // only one breadcrumb. e.g. multiple clicks on the same button, or typing inside a user input box.
-  return false;
+  return true;
 }
 
 /**
@@ -455,7 +450,7 @@ function makeDOMEventHandler(handler, globalListener = false) {
     // It's possible this handler might trigger multiple times for the same
     // event (e.g. event propagation through node ancestors).
     // Ignore if we've already captured that event.
-    if (!event || lastCapturedEvent === event) {
+    if (!event || event['_sentryCaptured']) {
       return;
     }
 
@@ -464,20 +459,15 @@ function makeDOMEventHandler(handler, globalListener = false) {
       return;
     }
 
+    // Mark event as "seen"
+    addNonEnumerableProperty(event, '_sentryCaptured', true);
+
     const name = event.type === 'keypress' ? 'input' : event.type;
 
-    // If there is no debounce timer, it means that we can safely capture the new event and store it for future comparisons.
-    if (debounceTimerID === undefined) {
-      handler({
-        event: event,
-        name,
-        global: globalListener,
-      });
-      lastCapturedEvent = event;
-    }
-    // If there is a debounce awaiting, see if the new event is different enough to treat it as a unique one.
+    // If there is no last captured event, it means that we can safely capture the new event and store it for future comparisons.
+    // If there is a last captured event, see if the new event is different enough to treat it as a unique one.
     // If that's the case, emit the previous event and store locally the newly-captured DOM event.
-    else if (shouldShortcircuitPreviousDebounce(lastCapturedEvent, event)) {
+    if (lastCapturedEvent === undefined || !areSimilarDomEvents(lastCapturedEvent, event)) {
       handler({
         event: event,
         name,
@@ -489,8 +479,8 @@ function makeDOMEventHandler(handler, globalListener = false) {
     // Start a new debounce timer that will prevent us from capturing multiple events that should be grouped together.
     clearTimeout(debounceTimerID);
     debounceTimerID = WINDOW.setTimeout(() => {
-      debounceTimerID = undefined;
-    }, debounceDuration);
+      lastCapturedEvent = undefined;
+    }, DEBOUNCE_DURATION);
   };
 }
 

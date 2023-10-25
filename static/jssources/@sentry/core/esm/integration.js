@@ -113,6 +113,18 @@ function setupIntegration(client, integration, integrationIndex) {
   (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
 }
 
+/** Add an integration to the current hub's client. */
+function addIntegration(integration) {
+  const client = getCurrentHub().getClient();
+
+  if (!client || !client.addIntegration) {
+    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot add integration "${integration.name}" because no SDK Client is available.`);
+    return;
+  }
+
+  client.addIntegration(integration);
+}
+
 // Polyfill for Array.findIndex(), which is not supported in ES5
 function findIndex(arr, callback) {
   for (let i = 0; i < arr.length; i++) {
@@ -124,5 +136,5 @@ function findIndex(arr, callback) {
   return -1;
 }
 
-export { getIntegrationsToSetup, installedIntegrations, setupIntegration, setupIntegrations };
+export { addIntegration, getIntegrationsToSetup, installedIntegrations, setupIntegration, setupIntegrations };
 //# sourceMappingURL=integration.js.map
