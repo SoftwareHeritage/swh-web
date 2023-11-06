@@ -186,6 +186,7 @@ DEFAULT_CONFIG = {
     ),
     "matomo": ("dict", {}),
     "show_corner_ribbon": ("bool", True),
+    "save_code_now_webhook_secret": ("str", ""),
 }
 
 swhweb_config: Dict[str, Any] = {}

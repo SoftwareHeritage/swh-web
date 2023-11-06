@@ -30,6 +30,7 @@ swh.scheduler>=1.9.1
 swh.search>=0.16.0
 swh.storage>=1.4.0
 swh.vault>=1.0.0
+swh.webhooks>=0.1.1
 
 [testing]
 decorator

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -78,6 +78,7 @@ def check_http_post_response(
     request_content_type="application/json",
     data: Optional[Dict[str, Any]] = None,
     http_origin: Optional[str] = None,
+    **headers,
 ) -> HttpResponseBase:
     """Helper function to check HTTP response for a POST request.
 
@@ -99,6 +100,7 @@ def check_http_post_response(
             content_type=request_content_type,
             HTTP_ACCEPT=content_type,
             HTTP_ORIGIN=http_origin,
+            **headers,
         ),
         status_code=status_code,
         content_type=content_type,
