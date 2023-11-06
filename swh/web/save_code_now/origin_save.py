@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
 import requests
@@ -19,6 +19,7 @@ from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
+from swh.scheduler.model import ListedOrigin
 from swh.scheduler.utils import create_oneshot_task_dict
 from swh.web.config import get_config, scheduler
 from swh.web.save_code_now.models import (
@@ -686,17 +687,18 @@ def update_save_origin_requests_from_queryset(
     return save_requests
 
 
-def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
-    """Refresh non-terminal save origin requests (SOR) in the backend.
+def get_save_origin_requests_to_update(origin_url: Optional[str] = None) -> QuerySet:
+    """Get the set of recent save origin requests that have non terminal statuses
+    and require update.
 
-    Non-terminal SOR are requests whose status is **accepted** and their task status are
+    Non-terminal requests are those whose status is **accepted** and their task status are
     either **created**, **not yet scheduled**, **scheduled** or **running**.
 
-    This shall compute this list of SOR, checks their status in the scheduler and
-    optionally elasticsearch for their current status. Then update those in db.
+    Args:
+        origin_url: If provided, only return requests to update for the given origin URL
 
-    Finally, this returns the refreshed information on those SOR.
-
+    Returns:
+        Django queryset of requests to update
     """
     pivot_date = datetime.now(tz=timezone.utc) - timedelta(days=MAX_THRESHOLD_DAYS)
     save_requests = SaveOriginRequest.objects.filter(
@@ -709,6 +711,23 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
         # limit results to recent ones (that is roughly 30 days old at best)
         Q(request_date__gte=pivot_date),
     )
+    if origin_url:
+        save_requests = save_requests.filter(origin_url__exact=origin_url)
+    return save_requests
+
+
+def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
+    """Refresh non-terminal save origin requests (SOR) in the backend.
+
+    Non-terminal SOR are requests whose status is **accepted** and their task status are
+    either **created**, **not yet scheduled**, **scheduled** or **running**.
+
+    This shall compute this list of SOR, checks their status in the scheduler and
+    optionally elasticsearch for their current status. Then update those in db.
+
+    Finally, this returns the refreshed information on those SOR.
+    """
+    save_requests = get_save_origin_requests_to_update()
 
     return (
         update_save_origin_requests_from_queryset(save_requests)
@@ -915,3 +934,47 @@ def get_save_origin_task_info(
             task_info["message"] = message
 
     return task_info
+
+
+def schedule_origins_recurrent_visits(
+    save_requests: List[SaveOriginRequestInfo],
+) -> int:
+    """Schedule recurrent visits of origin URLs submitted to Save Code Now.
+
+    Args:
+        save_requests: List of save origin requests from which to schedule
+            recurrent visits
+
+    Returns:
+        The number of origins that were scheduled for recurrent visits
+    """
+    lister = scheduler().get_or_create_lister(
+        name="save-code-now", instance_name=get_config()["instance_name"]
+    )
+
+    origins: Set[Tuple[str, str]] = set()
+    listed_origins = []
+    for save_request in save_requests:
+        visit_type = save_request["visit_type"]
+        # only deal with git, svn, hg visit types
+        if visit_type == "archives":
+            continue
+        # only keep satisfying visit statuses
+        if save_request["visit_status"] not in (
+            VISIT_STATUS_PARTIAL,
+            VISIT_STATUS_FULL,
+        ):
+            continue
+        origin = save_request["origin_url"]
+        # drop duplicates within the same batch
+        if (visit_type, origin) in origins:
+            continue
+        origins.add((visit_type, origin))
+        listed_origins.append(
+            ListedOrigin(lister_id=lister.id, visit_type=visit_type, url=origin)
+        )
+
+    if listed_origins:
+        listed_origins = scheduler().record_listed_origins(listed_origins)
+
+    return len(listed_origins)
