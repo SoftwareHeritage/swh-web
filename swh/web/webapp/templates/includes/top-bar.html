@@ -5,11 +5,13 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-<div class="swh-top-bar">
+<header class="swh-top-bar">
   <ul>
     <li class="swh-position-left">
       <div id="swh-full-width-switch-container"
-           class="custom-control custom-switch d-none d-lg-block d-xl-block">
+           class="custom-control custom-switch d-none d-lg-block d-xl-block"
+           role="group"
+           aria-label="Display options">
         <input type="checkbox"
                class="custom-control-input"
                id="swh-full-width-switch"
@@ -56,4 +58,4 @@ See top-level LICENSE file for more information
       {% endif %}
     </li>
   </ul>
-</div>
+</header>

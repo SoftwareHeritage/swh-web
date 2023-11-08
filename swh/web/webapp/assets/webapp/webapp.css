@@ -55,13 +55,6 @@ footer a:hover {
     color: #fecd1b;
 }
 
-footer a:hover {
-    text-decoration: underline;
-}
-
-.link-color {
-    color: #fecd1b;
-}
 
 pre {
     background-color: #f5f5f5;
@@ -105,15 +98,6 @@ pre {
 
 .swh-table-striped tbody tr:nth-child(odd) {
     background-color: #fff;
-}
-
-.swh-web-app-link a {
-    text-decoration: none;
-    border: none;
-}
-
-.swh-web-app-link:hover {
-    background-color: #efeff2;
 }
 
 .table > thead > tr > th {
@@ -344,7 +328,7 @@ a.dropdown-left::before {
 }
 
 .swh-background-gray {
-    background: #efeff2;
+    background: #f6f5f4;
 }
 
 .swh-donate-link {
@@ -403,13 +387,23 @@ ul.nav-sidebar a {
     color: #323232;
 }
 
-.swh-sidebar .nav-link.active {
-    color: #323232 !important;
-    background-color: #e7e7e7 !important;
-}
+.nav-sidebar .nav-icon
 
 .nav-tabs .nav-link.active {
     border-top: 3px solid #e20026;
+}
+
+.swh-menu-item .nav-icon {
+    color: #e20026 !important;
+}
+
+.swh-admin-menu-item .nav-icon {
+    color: #fecd1b ! important;
+}
+
+.swh-sidebar .nav-link.active {
+    color: #323232 !important;
+    background-color: #e7e7e7 !important;
 }
 
 .swh-image-error {
@@ -752,7 +746,7 @@ div.d3-tooltip {
 
 .swh-corner-ribbon {
     width: 200px;
-    background: #fecd1b;
+    background: #f6f5f4;
     color: #e20026;
     position: absolute;
     text-align: center;
@@ -820,4 +814,12 @@ div.d3-tooltip {
     position: absolute;
     left: 35px;
     top: 5px;
+}
+
+#swh-web-api-link {
+    color: #e20026;
+}
+
+p a {
+    text-decoration: underline;
 }
