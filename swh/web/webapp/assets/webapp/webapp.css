@@ -823,3 +823,24 @@ div.d3-tooltip {
 p a {
     text-decoration: underline;
 }
+
+.skipnav {
+    text-align: left;
+}
+
+.skipnav a {
+    position: absolute;
+    left: -10000px;
+    top: 5px;
+    width: auto;
+    height: auto;
+    text-decoration: underline;
+    background: black;
+    color: white;
+    z-index: 100000;
+}
+
+.skipnav a:focus,
+.skipnav a:active {
+    left: 5px;
+}

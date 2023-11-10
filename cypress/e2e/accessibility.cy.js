@@ -46,4 +46,17 @@ describe('Accessibility compliance tests', function() {
 
   });
 
+  it('should materialize skip navigation link when getting focused', function() {
+    // homepage set focus on search input by default so we use another page for this test
+    cy.visit('/save');
+    // skip link not visible by default
+    cy.get('.skipnav a').should('have.css', 'left', '-10000px');
+    // skip link should be visible when it gains keyboard focus
+    cy.get('.skipnav a').focus();
+    cy.get('.skipnav a').should('have.css', 'left', '5px');
+    // skip link should be no longer visible when it loses keyboard focus
+    cy.get('.skipnav a').blur();
+    cy.get('.skipnav a').should('have.css', 'left', '-10000px');
+  });
+
 });
