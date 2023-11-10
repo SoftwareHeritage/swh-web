@@ -45,12 +45,16 @@ $(document).ready(() => {
       mainSideBar.addClass('swh-sidebar-collapsed');
       $('.swh-words-logo-swh').css('visibility', 'visible');
       Cookies.set('sidebar-state', 'collapsed');
+      $('.swh-push-menu').attr('aria-expanded', 'false');
+      $('.swh-push-menu').attr('aria-label', 'Expand sidebar');
     } else if (!body.hasClass('sidebar-collapse') &&
                !mainSideBar.hasClass('swh-sidebar-expanded')) {
       mainSideBar.removeClass('swh-sidebar-collapsed');
       mainSideBar.addClass('swh-sidebar-expanded');
       $('.swh-words-logo-swh').css('visibility', 'hidden');
       Cookies.set('sidebar-state', 'expanded');
+      $('.swh-push-menu').attr('aria-expanded', 'true');
+      $('.swh-push-menu').attr('aria-label', 'Collapse sidebar');
     }
     // ensure correct sidebar state when loading a page
     if (body.hasClass('hold-transition')) {
