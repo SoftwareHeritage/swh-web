@@ -1,4 +1,4 @@
-import { logger, uuid4 } from '@sentry/utils';
+import { logger, uuid4, timestampInSeconds, isThenable } from '@sentry/utils';
 import { getCurrentHub } from './hub.js';
 
 // Note: All functions in this file are typed with a return value of `ReturnType<Hub[HUB_FUNCTION]>`,
@@ -192,6 +192,49 @@ function captureCheckIn(checkIn, upsertMonitorConfig) {
 }
 
 /**
+ * Wraps a callback with a cron monitor check in. The check in will be sent to Sentry when the callback finishes.
+ *
+ * @param monitorSlug The distinct slug of the monitor.
+ * @param upsertMonitorConfig An optional object that describes a monitor config. Use this if you want
+ * to create a monitor automatically when sending a check in.
+ */
+function withMonitor(
+  monitorSlug,
+  callback,
+  upsertMonitorConfig,
+) {
+  const checkInId = captureCheckIn({ monitorSlug, status: 'in_progress' }, upsertMonitorConfig);
+  const now = timestampInSeconds();
+
+  function finishCheckIn(status) {
+    captureCheckIn({ monitorSlug, status, checkInId, duration: timestampInSeconds() - now });
+  }
+
+  let maybePromiseResult;
+  try {
+    maybePromiseResult = callback();
+  } catch (e) {
+    finishCheckIn('error');
+    throw e;
+  }
+
+  if (isThenable(maybePromiseResult)) {
+    Promise.resolve(maybePromiseResult).then(
+      () => {
+        finishCheckIn('ok');
+      },
+      () => {
+        finishCheckIn('error');
+      },
+    );
+  } else {
+    finishCheckIn('ok');
+  }
+
+  return maybePromiseResult;
+}
+
+/**
  * Call `flush()` on the current client, if there is one. See {@link Client.flush}.
  *
  * @param timeout Maximum time in ms the client should wait to flush its event queue. Omitting this parameter will cause
@@ -234,5 +277,5 @@ function lastEventId() {
   return getCurrentHub().lastEventId();
 }
 
-export { addBreadcrumb, captureCheckIn, captureEvent, captureException, captureMessage, close, configureScope, flush, lastEventId, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withScope };
+export { addBreadcrumb, captureCheckIn, captureEvent, captureException, captureMessage, close, configureScope, flush, lastEventId, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withMonitor, withScope };
 //# sourceMappingURL=exports.js.map

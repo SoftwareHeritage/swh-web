@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.2.42
+Version: 0.2.44
 Summary: Software Heritage Web UI
 Home-page: https://gitlab.softwareheritage.org/swh/devel/swh-web
 Author: Software Heritage developers
@@ -47,10 +47,11 @@ Requires-Dist: swh.core>=0.0.95
 Requires-Dist: swh.counters>=0.5.1
 Requires-Dist: swh.indexer>=2.0.0
 Requires-Dist: swh.model>=6.3.0
-Requires-Dist: swh.scheduler>=1.9.1
+Requires-Dist: swh.scheduler>=1.12.0
 Requires-Dist: swh.search>=0.16.0
 Requires-Dist: swh.storage>=1.4.0
 Requires-Dist: swh.vault>=1.0.0
+Requires-Dist: swh.webhooks>=0.1.1
 Provides-Extra: testing
 Requires-Dist: decorator; extra == "testing"
 Requires-Dist: djangorestframework-stubs; extra == "testing"

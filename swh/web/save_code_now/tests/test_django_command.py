@@ -1,4 +1,4 @@
-# Copyright (C) 2021  The Software Heritage developers
+# Copyright (C) 2021-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -41,14 +41,14 @@ def mock_refresh(mocker):
 
 @pytest.fixture
 def mock_scheduler(mocker, swh_scheduler):
-    mock_scheduler = mocker.patch(f"{MODULE_FQDN}.{COMMAND_NAME}.get_scheduler")
+    mock_scheduler = mocker.patch("swh.web.save_code_now.origin_save.scheduler")
     mock_scheduler.return_value = swh_scheduler
 
     return mock_scheduler
 
 
 @pytest.mark.parametrize("nb_results", [0, 10, 20])
-def test_command_refresh__with_statuses_refreshed(
+def test_command_refresh_with_statuses_refreshed(
     mock_scheduler, mock_refresh, nb_results
 ):
     """Refresh status command reports non-terminal statuses updates."""
@@ -131,7 +131,7 @@ def fake_refreshed_data():
     ]
 
 
-def test_command_refresh__with_recurrent_tasks_scheduling(
+def test_command_refresh_with_recurrent_tasks_scheduling(
     mock_scheduler, mock_refresh, fake_refreshed_data, swh_scheduler
 ):
     """Refresh status command report updates of statuses. The successful ones without the
@@ -165,6 +165,7 @@ def test_command_refresh__with_recurrent_tasks_scheduling(
 
     actual_output = out.getvalue()
     assert f"Successfully updated {len(fake_refreshed_data)}" in actual_output
+    assert f"{expected_nb_scheduled} origins were also scheduled for recurrent visits"
 
     lister = swh_scheduler.get_or_create_lister(
         name="save-code-now", instance_name=get_config()["instance_name"]

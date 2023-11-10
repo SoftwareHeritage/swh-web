@@ -103,20 +103,21 @@ DATABASES = {
     }
 }
 
-# when running cypress tests, make the webapp fetch data from memory storages
+# special configuration for cypress tests
 if not _pytest:
     swh_web_config.update(
         {
             "debug": True,
             "e2e_tests_mode": True,
-            # ensure scheduler not available to avoid side effects in cypress tests
-            "scheduler": {"cls": "remote", "url": ""},
+            # use temporary postgresql scheduler backend
+            "scheduler": {"cls": "temporary"},
         }
     )
     from django.conf import settings
 
     from swh.web.tests.data import get_tests_data, override_storages
 
+    # make the webapp fetch data from memory storages
     test_data = get_tests_data()
     override_storages(
         test_data["storage"],
@@ -125,7 +126,7 @@ if not _pytest:
         test_data["counters"],
     )
 
-    # using sqlite3 for frontend tests
+    # use sqlite3 backend for django database
     build_id = os.environ.get("CYPRESS_PARALLEL_BUILD_ID", "")
     settings.DATABASES["default"].update(
         {

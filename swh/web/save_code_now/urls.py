@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -22,6 +22,10 @@ from swh.web.save_code_now.admin_views import (
 
 # register Web API endpoints
 from swh.web.save_code_now.api_views import save_code_now_api_urls
+from swh.web.save_code_now.origin_visit_webhook import (
+    save_origin_visit_webhook,
+    webhooks_available,
+)
 from swh.web.save_code_now.views import (
     origin_save_help_view,
     origin_save_list_view,
@@ -104,3 +108,12 @@ urlpatterns = [
     ),
     *save_code_now_api_urls.get_url_patterns(),
 ]
+
+if webhooks_available:
+    urlpatterns.append(
+        url(
+            r"^save/origin/visit/webhook/$",
+            save_origin_visit_webhook,
+            name="origin-save-visit-webhook",
+        ),
+    )

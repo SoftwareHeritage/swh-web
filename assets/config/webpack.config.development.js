@@ -161,10 +161,6 @@ module.exports = {
   },
   // module resolving configuration
   resolve: {
-    // alias pdfjs to its minified version
-    alias: {
-      'pdfjs-dist': 'pdfjs-dist/build/pdf.min.js'
-    },
     // configure base paths for resolving modules with webpack
     modules: [
       'node_modules',
@@ -333,8 +329,7 @@ module.exports = {
       }
     ],
     // tell webpack to not parse already minified files to speedup build process
-    noParse: [path.resolve(nodeModules, 'pdfjs-dist/build/pdf.min.js'),
-              path.resolve(nodeModules, 'mathjax/es5/tex-mml-chtml.js')]
+    noParse: [path.resolve(nodeModules, 'mathjax/es5/tex-mml-chtml.js')]
   },
   // webpack plugins
   plugins: [
@@ -387,7 +382,7 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.js'),
+          from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.mjs'),
           to: path.resolve(__dirname, '../../static/js/')
         },
         {
@@ -401,8 +396,6 @@ module.exports = {
       exclude: ['mini-css-extract-plugin',
                 'bootstrap-loader'],
       srcReplace: {
-        './node_modules/pdfjs-dist/build/pdf.min.js':
-        './node_modules/pdfjs-dist/build/pdf.js',
         './node_modules/admin-lte/dist/js/adminlte.min.js':
         './node_modules/admin-lte/dist/js/adminlte.js'
       },
@@ -426,10 +419,10 @@ module.exports = {
       },
       additionalScripts: Object.assign(
         {
-          'js/pdf.worker.min.js': [
+          'js/pdf.worker.min.mjs': [
             {
-              'id': 'pdfjs-dist/build/pdf.worker.js',
-              'path': './node_modules/pdfjs-dist/build/pdf.worker.js',
+              'id': 'pdfjs-dist/build/pdf.worker.mjs',
+              'path': './node_modules/pdfjs-dist/build/pdf.worker.mjs',
               'spdxLicenseExpression': 'Apache-2.0',
               'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
 
