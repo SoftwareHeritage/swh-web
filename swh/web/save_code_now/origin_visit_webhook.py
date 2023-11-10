@@ -14,7 +14,13 @@ from swh.web.save_code_now.origin_save import (
     update_save_origin_requests_from_queryset,
 )
 from swh.web.utils.exc import BadInputExc
-from swh.webhooks.utils import get_verified_webhook_payload
+
+try:
+    from swh.webhooks.utils import get_verified_webhook_payload
+
+    webhooks_available = True
+except ImportError:
+    webhooks_available = False
 
 
 @require_POST

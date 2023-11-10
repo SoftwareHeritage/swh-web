@@ -12,12 +12,15 @@ from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
 from swh.web.save_code_now.models import SaveAuthorizedOrigin, SaveOriginRequest
+from swh.web.save_code_now.origin_visit_webhook import webhooks_available
 from swh.web.tests.helpers import check_api_post_responses, check_http_post_response
 from swh.web.utils import reverse
 from swh.web.utils.typing import OriginExistenceCheckInfo
-from swh.webhooks.utils import sign_webhook_payload
 
-pytestmark = pytest.mark.django_db
+pytestmark = [
+    pytest.mark.django_db,
+    pytest.mark.skipif(not webhooks_available, reason="swh-webhooks is not available"),
+]
 
 
 @pytest.fixture(autouse=True)
@@ -33,6 +36,8 @@ def _send_origin_visit_webhook(
     invalid_signature=False,
     status_code=200,
 ):
+    from swh.webhooks.utils import sign_webhook_payload
+
     webhook_url = reverse("origin-save-visit-webhook")
     webhook_timestamp = now()
     webhook_secret = "whsec_" + "c" * 32

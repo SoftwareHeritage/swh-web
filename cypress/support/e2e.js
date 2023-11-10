@@ -7,7 +7,6 @@
 
 import '@cypress/code-coverage/support';
 import 'cypress-hmr-restarter';
-import 'cypress-cloud/support';
 
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false
