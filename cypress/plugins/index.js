@@ -9,7 +9,7 @@ const axios = require('axios');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
-const {cloudPlugin} = require('cypress-cloud/plugin');
+const cypressSplit = require('cypress-split');
 
 let buildId = process.env.CYPRESS_PARALLEL_BUILD_ID;
 if (buildId === undefined) {
@@ -50,7 +50,7 @@ function getDatabase() {
 
 module.exports = (on, config) => {
   require('@cypress/code-coverage/task')(on, config);
-  cloudPlugin(on, config);
+  cypressSplit(on, config);
   // produce JSON files prior launching browser in order to dynamically generate tests
   on('before:browser:launch', function(browser, launchOptions) {
     return new Promise((resolve) => {

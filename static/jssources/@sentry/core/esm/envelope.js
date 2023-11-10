@@ -1,4 +1,4 @@
-import { getSdkMetadataForEnvelopeHeader, dsnToString, createEnvelope, createEventEnvelopeHeaders } from '@sentry/utils';
+import { getSdkMetadataForEnvelopeHeader, createEventEnvelopeHeaders, createEnvelope, dsnToString } from '@sentry/utils';
 
 /**
  * Apply SdkInfo (name, version, packages, integrations) to the corresponding event key.
