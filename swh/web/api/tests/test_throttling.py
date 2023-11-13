@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
+
 import pytest
 
 from django.test.utils import override_settings
@@ -77,7 +79,7 @@ urlpatterns += [
 ]
 
 
-def check_response(response, status_code, limit=None, remaining=None):
+def check_response(response, status_code, limit=None, remaining=None, reset=None):
     assert response.status_code == status_code
     if limit is not None:
         assert response["X-RateLimit-Limit"] == str(limit)
@@ -87,6 +89,10 @@ def check_response(response, status_code, limit=None, remaining=None):
         assert response["X-RateLimit-Remaining"] == str(remaining)
     else:
         assert "X-RateLimit-Remaining" not in response
+    if reset is not None:
+        assert reset - 10 <= int(response["X-RateLimit-Reset"]) <= reset + 10
+    else:
+        assert "X-RateLimit-Reset" not in response
 
 
 @override_settings(ROOT_URLCONF=__name__)
@@ -94,21 +100,48 @@ def test_scope1_requests_are_throttled(api_client):
     """
     Ensure request rate is limited in scope1
     """
+
+    expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
     for i in range(scope1_limiter_rate):
         response = api_client.get("/scope1_class/")
-        check_response(response, 200, scope1_limiter_rate, scope1_limiter_rate - i - 1)
+        check_response(
+            response,
+            200,
+            scope1_limiter_rate,
+            scope1_limiter_rate - i - 1,
+            expected_reset,
+        )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope1_class/")
-    check_response(response, 429, scope1_limiter_rate, 0)
+    check_response(response, 429, scope1_limiter_rate, 0, expected_reset)
+    resets.add(response.headers["X-RateLimit-Reset"])
 
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
+
+    expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
     for i in range(scope1_limiter_rate_post):
         response = api_client.post("/scope1_class/")
         check_response(
-            response, 200, scope1_limiter_rate_post, scope1_limiter_rate_post - i - 1
+            response,
+            200,
+            scope1_limiter_rate_post,
+            scope1_limiter_rate_post - i - 1,
+            expected_reset,
         )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.post("/scope1_class/")
-    check_response(response, 429, scope1_limiter_rate_post, 0)
+    check_response(response, 429, scope1_limiter_rate_post, 0, expected_reset)
+    resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
 
 @override_settings(ROOT_URLCONF=__name__)
@@ -116,21 +149,47 @@ def test_scope2_requests_are_throttled(api_client):
     """
     Ensure request rate is limited in scope2
     """
+    expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
     for i in range(scope2_limiter_rate):
         response = api_client.get("/scope2_func/")
-        check_response(response, 200, scope2_limiter_rate, scope2_limiter_rate - i - 1)
+        check_response(
+            response,
+            200,
+            scope2_limiter_rate,
+            scope2_limiter_rate - i - 1,
+            expected_reset,
+        )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope2_func/")
-    check_response(response, 429, scope2_limiter_rate, 0)
+    check_response(response, 429, scope2_limiter_rate, 0, expected_reset)
+    resets.add(response.headers["X-RateLimit-Reset"])
 
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
+
+    expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
     for i in range(scope2_limiter_rate_post):
         response = api_client.post("/scope2_func/")
         check_response(
-            response, 200, scope2_limiter_rate_post, scope2_limiter_rate_post - i - 1
+            response,
+            200,
+            scope2_limiter_rate_post,
+            scope2_limiter_rate_post - i - 1,
+            expected_reset,
         )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.post("/scope2_func/")
-    check_response(response, 429, scope2_limiter_rate_post, 0)
+    check_response(response, 429, scope2_limiter_rate_post, 0, expected_reset)
+    resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
 
 @override_settings(ROOT_URLCONF=__name__)
@@ -159,7 +218,6 @@ def test_scope3_requests_are_throttled_exempted(api_client):
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
 def test_staff_users_are_not_rate_limited(api_client, staff_user):
-
     api_client.force_login(staff_user)
 
     for _ in range(scope2_limiter_rate + 1):
@@ -174,25 +232,38 @@ def test_staff_users_are_not_rate_limited(api_client, staff_user):
 @override_settings(ROOT_URLCONF=__name__)
 @pytest.mark.django_db
 def test_non_staff_users_are_rate_limited(api_client, regular_user):
-
     api_client.force_login(regular_user)
 
     scope2_limiter_rate_user = (
         scope2_limiter_rate * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR
     )
+    scope2_expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
 
     for i in range(scope2_limiter_rate_user):
         response = api_client.get("/scope2_func/")
         check_response(
-            response, 200, scope2_limiter_rate_user, scope2_limiter_rate_user - i - 1
+            response,
+            200,
+            scope2_limiter_rate_user,
+            scope2_limiter_rate_user - i - 1,
+            scope2_expected_reset,
         )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope2_func/")
-    check_response(response, 429, scope2_limiter_rate_user, 0)
+    check_response(response, 429, scope2_limiter_rate_user, 0, scope2_expected_reset)
+    resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
     scope2_limiter_rate_post_user = (
         scope2_limiter_rate_post * SwhWebUserRateThrottle.NUM_REQUESTS_FACTOR
     )
+    scope2_post_expected_reset = datetime.datetime.now().timestamp() + 60
+    resets = set()
 
     for i in range(scope2_limiter_rate_post_user):
         response = api_client.post("/scope2_func/")
@@ -201,10 +272,19 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
             200,
             scope2_limiter_rate_post_user,
             scope2_limiter_rate_post_user - i - 1,
+            scope2_post_expected_reset,
         )
+        resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.post("/scope2_func/")
-    check_response(response, 429, scope2_limiter_rate_post_user, 0)
+    check_response(
+        response, 429, scope2_limiter_rate_post_user, 0, scope2_post_expected_reset
+    )
+    resets.add(response.headers["X-RateLimit-Reset"])
+
+    assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
 
 @override_settings(ROOT_URLCONF=__name__)
@@ -212,7 +292,6 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
 def test_users_with_throttling_exempted_perm_are_not_rate_limited(
     api_client, regular_user
 ):
-
     regular_user.user_permissions.add(
         create_django_permission(API_THROTTLING_EXEMPTED_PERM)
     )
