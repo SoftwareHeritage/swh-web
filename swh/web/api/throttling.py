@@ -95,7 +95,6 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def allow_request(self, request: Request, view: APIView) -> bool:
         # class based view case
         if not self.scope:
-
             default_scope = getattr(view, self.scope_attr, None)
             request_allowed = None
             if default_scope is not None:
@@ -150,9 +149,14 @@ class SwhWebRateThrottle(ScopedRateThrottle):
             hit_count = len(self.history)
             request.META["RateLimit-Limit"] = self.num_requests
             request.META["RateLimit-Remaining"] = self.num_requests - hit_count
-            wait = self.wait()
-            if wait is not None:
-                request.META["RateLimit-Reset"] = int(self.now + wait)
+            if self.history:
+                # We've already done some requests in this bucket, use the first
+                # request date as starting point in the `duration` interval
+                request.META["RateLimit-Reset"] = int(self.history[-1] + self.duration)
+            else:
+                # This is the first request in the bucket, the ratelimit will
+                # reset after `duration`
+                request.META["RateLimit-Reset"] = int(self.now + self.duration)
 
         return request_allowed
 
