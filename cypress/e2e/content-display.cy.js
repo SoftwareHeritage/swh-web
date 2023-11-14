@@ -22,7 +22,7 @@ describe('Test File Rendering', function() {
     cy.get('.swh-content-filename')
       .should('be.visible')
       .and('contain', origin.content[0].name)
-      .and('have.css', 'background-color', 'rgb(242, 244, 245)');
+      .and('have.css', 'background-color', 'rgb(246, 245, 244)');
   });
 
   it('should display all lines', function() {

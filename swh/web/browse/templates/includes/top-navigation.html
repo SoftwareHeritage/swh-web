@@ -153,6 +153,9 @@ See top-level LICENSE file for more information
   {% endif %}
   {% if available_languages %}
     $(".chosen-select").val("{{ language }}");
+    setTimeout(function() {
+      $(".chosen-search-input").attr("aria-label", "Search language to highlight");
+    });
     $(".chosen-select").chosen().change(function(event, params) {
       updateLanguage(params.selected);
     });

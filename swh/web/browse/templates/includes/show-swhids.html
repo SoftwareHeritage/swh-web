@@ -89,6 +89,7 @@ See top-level LICENSE file for more information
                     {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
                       <a class="ml-auto float-right"
                          style="cursor: pointer"
+                         role="button"
                          onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
                         Iframe embedding
                       </a>
@@ -100,7 +101,8 @@ See top-level LICENSE file for more information
                 {% endif %}
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
-                    <form id="swhid-options">
+                    <form id="swhid-options-{{ swhid_info.object_type.name.lower }}"
+                          aria-label="Options for {{ swhid_info.object_type.name.lower }} SWHID">
                       <div class="custom-control custom-checkbox swhid-option">
                         <input class="custom-control-input swhid-context-option"
                                value="option-origin"

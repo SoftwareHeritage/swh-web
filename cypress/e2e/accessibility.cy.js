@@ -7,7 +7,9 @@
 
 const pagesToCheck = [
   {name: 'homepage', path: '/'},
-  {name: 'coverage', path: '/coverage/'}
+  {name: 'coverage', path: '/coverage/'},
+  {name: 'browse origin directory', path: '/browse/origin/directory/?origin_url=https://github.com/memononen/libtess2'},
+  {name: 'browse origin content', path: '/browse/content/sha1_git:32a56bf4060402c477271380880ef01ba36ea5b1/?origin_url=https://github.com/memononen/libtess2&path=Source/sweep.c'}
 ];
 
 describe('Accessibility compliance tests', function() {
