@@ -56,11 +56,12 @@ development
 environment](https://gitlab.softwareheritage.org/swh/devel/swh-environment)
 installed.
 
-To run the backend, you need to have the following [Python 3
-modules](requirements.txt) installed.
+To run the backend, you need to have the following [Python 3 modules](https://gitlab.softwareheritage.org/swh/devel/swh-web/-/blob/master/requirements.txt)
+installed.
 
 To run the backend tests, the following [Python 3
-modules](requirements-test.txt) are also required to be installed.
+modules](https://gitlab.softwareheritage.org/swh/devel/swh-web/-/blob/master/requirements-test.txt)
+are also required to be installed.
 
 One easy way to install them is to use the `pip` tool:
 ```
