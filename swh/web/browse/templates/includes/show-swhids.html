@@ -9,18 +9,20 @@ See top-level LICENSE file for more information
 
 {% if swhids_info %}
   <div id="swh-identifiers" style="display: none;">
-    {% if swhids_info|length > 1 %}
-      <a id="swhids-handle"
-         class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded">
-        <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks
-      </a>
-    {% else %}
-      <a id="swhids-handle"
-         class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded">
-        <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink
-      </a>
-    {% endif %}
-    <div id="swh-identifiers-content">
+    <a id="swhids-handle"
+       class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
+       href="#"
+       role="button"
+       aria-expanded="false"
+       aria-label="Expand permalinks tab">
+      <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>
+      {% if swhids_info|length > 1 %}
+        Permalinks
+      {% else %}
+        Permalink
+      {% endif %}
+    </a>
+    <div id="swh-identifiers-content" style="display: none;">
       <p>
         To
         <a target="_blank"
