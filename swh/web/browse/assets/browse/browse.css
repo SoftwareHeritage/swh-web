@@ -91,3 +91,8 @@ td.swh-branch-message {
 td.swh-branch-date {
     min-width: 250px;
 }
+
+.chosen-container-active {
+    box-shadow: 0 0 0 0.2rem rgba(226 0 38 / 25%);
+    z-index: 10;
+}
