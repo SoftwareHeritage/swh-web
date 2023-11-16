@@ -44,64 +44,68 @@ See top-level LICENSE file for more information
           </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="swh-tab-branches">
-              {% for b in snapshot_context.branches %}
-                <li class="swh-branch">
-                  <a href="{{ b.url | safe }}">
-                    {% if b.alias %}
-                      <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
-                    {% else %}
-                      <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
-                    {% endif %}
-                    {% if b.name == snapshot_context.branch %}
-                      <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
-                    {% else %}
-                      <i class="mdi mdi-fw" aria-hidden="true"></i>
-                    {% endif %}
-                    {{ b.name }}
-                  </a>
-                </li>
-              {% endfor %}
-              {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.branch %}
-                <li>
-                  <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
-                  Branches list truncated to {{ snapshot_context.branches|length }} entries,
-                  {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.branch }}
-                  were omitted.
-                </li>
-              {% endif %}
-            </div>
-            <div class="tab-pane" id="swh-tab-releases">
-              {% if snapshot_context.releases %}
-                {% for r in snapshot_context.releases %}
-                  {% ifchanged r.name r.alias %}
-                    {% if r.target_type == 'revision' or r.target_type == 'directory' %}
-                      <li class="swh-release"
-                          {% if r.alias %}id="swh-release-{{ r.name }}-alias"{% else %}id="swh-release-{{ r.name }}"{% endif %}>
-                        <a href="{{ r.url | safe }}">
-                          {% if r.alias %}
-                            <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
-                          {% else %}
-                            <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
-                          {% endif %}
-                          {% if r.name == snapshot_context.release %}
-                            <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
-                          {% else %}
-                            <i class="mdi mdi-fw" aria-hidden="true"></i>
-                          {% endif %}
-                          {{ r.name }}
-                        </a>
-                      </li>
-                    {% endif %}
-                  {% endifchanged %}
+              <ul>
+                {% for b in snapshot_context.branches %}
+                  <li class="swh-branch">
+                    <a href="{{ b.url | safe }}">
+                      {% if b.alias %}
+                        <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                      {% else %}
+                        <i class="{{ swh_object_icons.branch }} mdi-fw" aria-hidden="true"></i>
+                      {% endif %}
+                      {% if b.name == snapshot_context.branch %}
+                        <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
+                      {% else %}
+                        <i class="mdi mdi-fw" aria-hidden="true"></i>
+                      {% endif %}
+                      {{ b.name }}
+                    </a>
+                  </li>
                 {% endfor %}
-                {% if snapshot_context.releases|length < snapshot_context.snapshot_sizes.release %}
+                {% if snapshot_context.branches|length < snapshot_context.snapshot_sizes.branch %}
                   <li>
                     <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
-                    Releases list truncated to {{ snapshot_context.releases|length }} entries,
-                    {{ snapshot_context.releases|length|mul:-1|add:snapshot_context.snapshot_sizes.release }}
+                    Branches list truncated to {{ snapshot_context.branches|length }} entries,
+                    {{ snapshot_context.branches|length|mul:-1|add:snapshot_context.snapshot_sizes.branch }}
                     were omitted.
                   </li>
                 {% endif %}
+              </ul>
+            </div>
+            <div class="tab-pane" id="swh-tab-releases">
+              {% if snapshot_context.releases %}
+                <ul>
+                  {% for r in snapshot_context.releases %}
+                    {% ifchanged r.name r.alias %}
+                      {% if r.target_type == 'revision' or r.target_type == 'directory' %}
+                        <li class="swh-release"
+                            {% if r.alias %}id="swh-release-{{ r.name }}-alias"{% else %}id="swh-release-{{ r.name }}"{% endif %}>
+                          <a href="{{ r.url | safe }}">
+                            {% if r.alias %}
+                              <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
+                            {% else %}
+                              <i class="{{ swh_object_icons.release }} mdi-fw" aria-hidden="true"></i>
+                            {% endif %}
+                            {% if r.name == snapshot_context.release %}
+                              <i class="mdi mdi-check-bold mdi-fw" aria-hidden="true"></i>
+                            {% else %}
+                              <i class="mdi mdi-fw" aria-hidden="true"></i>
+                            {% endif %}
+                            {{ r.name }}
+                          </a>
+                        </li>
+                      {% endif %}
+                    {% endifchanged %}
+                  {% endfor %}
+                  {% if snapshot_context.releases|length < snapshot_context.snapshot_sizes.release %}
+                    <li>
+                      <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>
+                      Releases list truncated to {{ snapshot_context.releases|length }} entries,
+                      {{ snapshot_context.releases|length|mul:-1|add:snapshot_context.snapshot_sizes.release }}
+                      were omitted.
+                    </li>
+                  {% endif %}
+                </ul>
               {% else %}
                 <span>No releases to show</span>
               {% endif %}

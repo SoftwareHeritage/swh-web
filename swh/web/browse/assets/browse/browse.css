@@ -96,3 +96,9 @@ td.swh-branch-date {
     box-shadow: 0 0 0 0.2rem rgba(226 0 38 / 25%);
     z-index: 10;
 }
+
+#swh-tab-branches ul,
+#swh-tab-releases ul {
+    list-style-type: none;
+    padding-left: 0;
+}
