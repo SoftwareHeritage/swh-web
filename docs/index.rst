@@ -1,11 +1,6 @@
 .. _swh-web:
 
-Software Heritage - Web applications
-====================================
-
-Web application(s) to browse the archive, for both interactive (HTML UI)
-and mechanized (REST API) use
-
+.. include:: README.rst
 
 .. toctree::
    :maxdepth: 2
