@@ -379,6 +379,12 @@ a.dropdown-left::before {
     border-bottom: 5px solid #e20026 !important;
 }
 
+.brand-link:hover,
+.brand-link:focus {
+    color: #323232 !important;
+    background-color: #e7e7e7 !important;
+}
+
 .navbar-header a,
 ul.dropdown-menu a,
 ul.navbar-nav a,
@@ -401,7 +407,8 @@ ul.nav-sidebar a {
     color: #fecd1b ! important;
 }
 
-.swh-sidebar .nav-link.active {
+.swh-sidebar .nav-link.active,
+.swh-sidebar .nav-link:focus {
     color: #323232 !important;
     background-color: #e7e7e7 !important;
 }
@@ -477,6 +484,7 @@ ul.nav-sidebar a {
     text-align: center;
     font-size: 10pt;
     color: rgb(0 0 0 / 75%);
+    pointer-events: none;
 }
 
 .swh-words-logo:hover {
