@@ -10,16 +10,6 @@ import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
 import Cookies from 'js-cookie';
 
-$(document).on('collapsed.lte.pushmenu', event => {
-  if ($('body').width() >= BREAKPOINT_MD) {
-    $('.swh-words-logo-swh').css('visibility', 'visible');
-  }
-});
-
-$(document).on('shown.lte.pushmenu', event => {
-  $('.swh-words-logo-swh').css('visibility', 'hidden');
-});
-
 function ensureNoFooterOverflow() {
   $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
 }
@@ -63,6 +53,26 @@ $(document).ready(() => {
       });
     }
   }
+
+  $('body').on('collapsed.lte.pushmenu', event => {
+    if ($('body').width() >= BREAKPOINT_MD) {
+      $('.swh-words-logo-swh').css('visibility', 'visible');
+    }
+  });
+
+  $('body').on('collapsed-done.lte.pushmenu', event => {
+    if ($('body').attr('class').indexOf('sidebar-closed') !== -1) {
+      // do not display sidebar when closed but no longer visible,
+      // typically when browser zoom level is >= 200%,
+      // in order to make it non keyboard focusable
+      mainSideBar.css('display', 'none');
+    }
+  });
+
+  $('body').on('shown.lte.pushmenu', event => {
+    $('.swh-words-logo-swh').css('visibility', 'hidden');
+    mainSideBar.css('display', 'block');
+  });
 
   // set sidebar state after collapse / expand animation
   mainSideBar.on('transitionend', evt => {
