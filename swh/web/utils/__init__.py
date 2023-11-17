@@ -472,6 +472,8 @@ def _deposits_list_url(
 def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
     """Return the list of software deposits using swh-deposit API"""
     config = get_config()["deposit"]
+    if "private_api_url" not in config:
+        return []
     private_api_url = config["private_api_url"].rstrip("/") + "/"
     deposits_list_base_url = private_api_url + "deposits"
     deposits_list_auth = HTTPBasicAuth(
