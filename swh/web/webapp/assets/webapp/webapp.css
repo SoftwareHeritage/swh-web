@@ -364,6 +364,12 @@ a.dropdown-left::before {
     height: calc(100% - 7rem);
 }
 
+.sidebar .nav-header {
+    padding-left: 10px;
+    padding-top: 10px;
+    font-weight: 400;
+}
+
 .content-wrapper {
     background: none;
 }

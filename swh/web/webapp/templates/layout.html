@@ -182,12 +182,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
         </span>
       </div>
       <div class="sidebar">
-        <nav class="mt-2" aria-label="Sidebar menu">
+        <h6 class="nav-header">Features</h6>
+        <nav class="mt-2" aria-label="Features">
           <ul class="nav nav-pills nav-sidebar flex-column"
               data-widget="treeview"
               role="menu"
               data-accordion="false">
-            <li class="nav-header" role="menuitem" tabindex="-1">Features</li>
             <li class="nav-item swh-menu-item swh-search-item"
                 title="Search archived software"
                 role="menuitem"
@@ -260,8 +260,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                 <p>Help</p>
               </a>
             </li>
-            {% if user.is_authenticated and not SWH_MIRROR_CONFIG %}
-              <li class="nav-header" role="menuitem" tabindex="-1">Administration</li>
+          </ul>
+        </nav>
+        {% if user.is_authenticated and not SWH_MIRROR_CONFIG %}
+          <h6 class="nav-header">Administration</h6>
+          <nav class="mt-2" aria-label="Administration">
+            <ul class="nav nav-pills nav-sidebar flex-column"
+                data-widget="treeview"
+                role="menu"
+                data-accordion="false">
               {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
                 <li class="nav-item swh-admin-menu-item swh-origin-save-admin-item"
                     title="Save code now administration"
@@ -310,9 +317,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                   </a>
                 </li>
               {% endif %}
-            {% endif %}
-          </ul>
-        </nav>
+            </ul>
+          </nav>
+        {% endif %}
       </div>
     </aside>
     <div class="content-wrapper">
