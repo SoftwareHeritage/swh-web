@@ -760,11 +760,11 @@ div.d3-tooltip {
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 55px;
+    top: 128px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
-    z-index: 2000;
+    z-index: 1000;
 }
 
 .swh-corner-ribbon-banner {

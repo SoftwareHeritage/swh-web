@@ -88,12 +88,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
   <body class="hold-transition layout-fixed sidebar-mini {% if sidebar_state == 'collapsed' %}sidebar-collapse{% endif %}">
     <a id="top"></a>
     <div class="wrapper">
-      {% include "./includes/top-bar.html" %}
-      {% if "swh.web.banners" in SWH_DJANGO_APPS %}
-        <div class="swh-banner">{% include "downtime-banner.html" %}</div>
-      {% endif %}
-      <nav class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-navbar-banner{% endif %}"
-           aria-label="Top bar">
+      <header class="main-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-navbar-banner{% endif %}"
+              aria-label="Top bar">
+        {% include "./includes/top-bar.html" %}
+        {% if "swh.web.banners" in SWH_DJANGO_APPS %}
+          <div class="swh-banner">{% include "downtime-banner.html" %}</div>
+        {% endif %}
         <div class="navbar-header">
           <a class="nav-link swh-push-menu"
              data-widget="pushmenu"
@@ -150,7 +150,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
             {% endif %}
           </div>
         </div>
-      </nav>
+      </header>
     </div>
     <aside class="swh-sidebar main-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}main-sidebar-banner{% endif %} sidebar-no-expand sidebar-light-primary elevation-4 swh-sidebar-{{ sidebar_state }}"
            aria-label="Sidebar">
