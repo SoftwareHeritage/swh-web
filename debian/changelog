@@ -1,3 +1,13 @@
+swh-web (0.2.45-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.2.45     - (tagged by David Douard
+    <david.douard@sdfa3.org> on 2023-11-20 15:04:05 +0100)
+  * Upstream changes:     - v0.2.45     - fix throttling     - fix CSS
+    issues in the archve coverage page     - bump js dependencies     -
+    normalize the README file
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 20 Nov 2023 14:25:12 +0000
+
 swh-web (0.2.44-1~swh1) unstable-swh; urgency=medium
 
   * New upstream release 0.2.44     - (tagged by Antoine Lambert
