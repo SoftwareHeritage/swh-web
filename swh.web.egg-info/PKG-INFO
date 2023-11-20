@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.2.44
+Version: 0.2.45
 Summary: Software Heritage Web UI
 Home-page: https://gitlab.softwareheritage.org/swh/devel/swh-web
 Author: Software Heritage developers
@@ -16,7 +16,7 @@ Classifier: Operating System :: OS Independent
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Framework :: Django
 Requires-Python: >=3.7
-Description-Content-Type: text/markdown
+Description-Content-Type: text/x-rst
 License-File: LICENSE
 License-File: AUTHORS
 Requires-Dist: beautifulsoup4
@@ -74,7 +74,8 @@ Requires-Dist: types-psycopg2; extra == "testing"
 Requires-Dist: types-pyyaml; extra == "testing"
 Requires-Dist: types-requests; extra == "testing"
 
-# swh-web
+Software Heritage - Web applications
+====================================
 
 This repository holds the development of Software Heritage web applications:
 
@@ -94,32 +95,32 @@ https://docs.softwareheritage.org/devel/swh-web/index.html.
 
 Those applications are powered by:
 
-  * [Django Web Framework](https://www.djangoproject.com/) on the backend side
+  * `Django Web Framework <https://www.djangoproject.com/>`_ on the backend side
     with the following extensions enabled:
 
-    * [django-rest-framework](http://www.django-rest-framework.org/)
+    * `django-rest-framework <http://www.django-rest-framework.org/>`_
 
-    * [django-webpack-loader](https://github.com/owais/django-webpack-loader)
+    * `django-webpack-loader <https://github.com/owais/django-webpack-loader>`_
 
-    * [django-js-reverse](http://django-js-reverse.readthedocs.io/en/latest/)
+    * `django-js-reverse <http://django-js-reverse.readthedocs.io/en/latest/>`_
 
-  * [webpack](https://webpack.js.org/) on the frontend side for better static
+  * `webpack <https://webpack.js.org/>`_ on the frontend side for better static
     assets management, including:
 
     * assets dependencies management and retrieval through
-      [yarn](https://yarnpkg.com/en/)
+      `yarn <https://yarnpkg.com>`_
 
-    * linting of custom javascript code (through [eslint](https://eslint.org/))
-      and stylesheets (through [stylelint](https://stylelint.io/))
+    * linting of custom javascript code (through `eslint <https://eslint.org/)>`_
+      and stylesheets (through `stylelint <https://stylelint.io/)>`_
 
-    * use of [es6](http://es6-features.org) syntax and advanced javascript
-      feature like [async/await](https://javascript.info/async-await) or
-      [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-      thanks to [babel](https://babeljs.io/) (es6 to es5 transpiler and
+    * use of `es6 <http://es6-features.org>`_ syntax and advanced javascript
+      feature like `async/await <https://javascript.info/async-await>`_ or
+      `fetch <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API>`_
+      thanks to `babel <https://babeljs.io/>`_ (es6 to es5 transpiler and
       polyfills provider)
 
-    * assets minification (using [terser](https://github.com/terser-js/terser)
-      and [cssnano](http://cssnano.co/)) but also dead code elimination for
+    * assets minification (using `terser <https://github.com/terser-js/terser>`_
+      and `cssnano <http://cssnano.co/)>`_ but also dead code elimination for
       production use
 
 
@@ -127,35 +128,37 @@ Those applications are powered by:
 
 ### Backend requirements
 
-First you will need [Python 3](https://www.python.org) and a complete [swh
-development
-environment](https://gitlab.softwareheritage.org/swh/devel/swh-environment)
+First you will need `Python 3 <https://www.python.org>`_ and a complete `swh
+development environment
+<https://gitlab.softwareheritage.org/swh/devel/swh-environment>`_ installed.
+
+To run the backend, you need to have the following `Python 3 modules
+<https://gitlab.softwareheritage.org/swh/devel/swh-web/-/blob/master/requirements.txt>`_
 installed.
 
-To run the backend, you need to have the following [Python 3
-modules](requirements.txt) installed.
-
-To run the backend tests, the following [Python 3
-modules](requirements-test.txt) are also required to be installed.
+To run the backend tests, the following `Python 3 extra modules
+<https://gitlab.softwareheritage.org/swh/devel/swh-web/-/blob/master/requirements-test.txt>`_
+are also required to be installed.
 
 One easy way to install them is to use the `pip` tool:
-```
-$ pip install -r requirements.txt -r requirements-test.txt
-```
+
+.. code-block:: shell
+
+   $ pip install -r requirements.txt -r requirements-test.txt
+
 
 ### Frontend requirements
 
-To compile the frontend assets, you need to have
-[nodejs](https://nodejs.org/en/) >= 14.0.0 and [yarn](https://yarnpkg.com/en/)
-installed. If you are on Debian, you can easily install an up to date nodejs
-from the
-[nodesource](https://github.com/nodesource/distributions/blob/master/README.md)
+To compile the frontend assets, you need to have `nodejs <https://nodejs.org>`_
+>= 14.0.0 and `yarn`_ installed. If you are on Debian,
+you can easily install an up to date nodejs from the `nodesource
+<https://github.com/nodesource/distributions/blob/master/README.md>`_
 repository.
 
-Packages for yarn can be installed by following [these
-instructions](https://yarnpkg.com/en/docs/install#debian-stable).
-Alternatively, you can install yarn with `npm install yarn`, and add
-`YARN=node_modules/yarn/bin/yarn` as argument whenever you run `make`.
+Packages for yarn can be installed by following `these instructions
+<https://yarnpkg.com/en/docs/install#debian-stable>`_. Alternatively, you can
+install yarn with ``npm install yarn``, and add
+``YARN=node_modules/yarn/bin/yarn`` as argument whenever you run ``make``.
 
 Please note that the static assets bundles generated by webpack are not stored
 in the git repository. Follow the instructions below in order to generate them
@@ -169,11 +172,11 @@ under various configurations:
 
 * **run-django-webpack-devserver**: Compile and serve not optimized (without
   mignification and dead code elimination) frontend static assets using
-  [webpack-dev-server](https://github.com/webpack/webpack-dev-server) and run
+  `webpack-dev-server <https://github.com/webpack/webpack-dev-server>`_ and run
   django server with development settings. This is the recommended target to
-  use when developing swh-web as it enables automatic reloading of backend and
-  frontend part of the applications when modifying source files (*.py, *.js,
-  *.css, *.html).
+  use when developing ``swh-web`` as it enables automatic reloading of backend
+  and frontend part of the applications when modifying source files (``*.py``,
+  ``*.js``, ``*.css``, ``*.html``).
 
 * **run-django-webpack-dev**: Compile not optimized (no minification, no dead
   code elimination) frontend static assets using webpack and run django server
@@ -185,7 +188,7 @@ under various configurations:
   with production settings. This is useful to test the applications in
   production mode (with the difference that static assets are served by
   django). Production settings notably enable advanced django caching and you
-  will need to have [memcached](https://memcached.org/) installed for that
+  will need to have `memcached <https://memcached.org/>`_ installed for that
   feature to work.
 
 * **run-django-server-dev**: Run the django server with development settings
@@ -195,11 +198,11 @@ under various configurations:
   but without compiling frontend static assets through webpack.
 
 * **run-gunicorn-server**: Run the web applications with production settings in
-  a [gunicorn](http://gunicorn.org/) worker as they will be in real production
+  a `gunicorn <http://gunicorn.org/>`_ worker as they will be in real production
   environment.
 
 Once one of these targets executed, the web applications can be executed by
-pointing your browser to http://localhost:5004.
+pointing your browser to ``http://localhost:5004``.
 
 ### Make targets to test the applications
 
@@ -207,9 +210,9 @@ Some make targets are also available to easily execute the backend and frontend
 tests of the Software Heritage web applications.
 
 The backend tests are powered by the
-[pytest](https://docs.pytest.org/en/latest/) and
-[hypothesis](https://hypothesis.readthedocs.io/en/latest/) frameworks while the
-frontend ones rely on the use of the [cypress](https://www.cypress.io/) tool.
+`pytest <https://docs.pytest.org/en/latest/>`_ and
+`hypothesis <https://hypothesis.readthedocs.io/en/latest/>`_ frameworks while the
+frontend ones rely on the use of the `cypress <https://www.cypress.io/>`_ tool.
 
 Below is the exhaustive list of those targets:
 
@@ -250,6 +253,6 @@ production environment.
 
 To execute these targets, issue the following command:
 
-```
-$ yarn <target_name>
-```
+.. code-block:: shell
+
+   $ yarn <target_name>

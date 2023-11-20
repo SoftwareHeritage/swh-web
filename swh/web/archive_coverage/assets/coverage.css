@@ -58,7 +58,7 @@
 
 .swh-coverage-info-body {
     max-height: 400px;
-    overflow: auto hidden;
+    overflow: auto;
     scrollbar-width: thin; /* Firefox only */
     padding: 0;
 }
