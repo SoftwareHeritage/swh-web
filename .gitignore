@@ -40,3 +40,4 @@ cypress/fixtures/source*.json
 cypress/junit/
 cypress/downloads/
 .eslintcache
+docs/README.rst
