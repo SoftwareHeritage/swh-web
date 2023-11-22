@@ -1099,6 +1099,20 @@ def subtest(request):
     return inner
 
 
+if "PYTEST_XDIST_WORKER" in os.environ:
+    # there is concurrency issues when running tests in parallel and using swh_scheduler
+    # fixture based on pytest-postgresql, so use a temporary scheduler backend in that case
+    # as a workaround
+
+    @pytest.fixture
+    def swh_scheduler_class():
+        return "temporary"
+
+    @pytest.fixture
+    def swh_scheduler_config():
+        return {}
+
+
 @pytest.fixture
 def swh_scheduler(swh_scheduler):
     config = get_config()
