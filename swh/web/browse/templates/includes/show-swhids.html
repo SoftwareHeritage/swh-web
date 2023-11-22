@@ -9,18 +9,20 @@ See top-level LICENSE file for more information
 
 {% if swhids_info %}
   <div id="swh-identifiers" style="display: none;">
-    {% if swhids_info|length > 1 %}
-      <a id="swhids-handle"
-         class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded">
-        <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalinks
-      </a>
-    {% else %}
-      <a id="swhids-handle"
-         class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded">
-        <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>Permalink
-      </a>
-    {% endif %}
-    <div id="swh-identifiers-content">
+    <a id="swhids-handle"
+       class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
+       href="#"
+       role="button"
+       aria-expanded="false"
+       aria-label="Expand permalinks tab">
+      <i class="mdi mdi-link-variant mdi-fw" aria-hidden="true"></i>
+      {% if swhids_info|length > 1 %}
+        Permalinks
+      {% else %}
+        Permalink
+      {% endif %}
+    </a>
+    <div id="swh-identifiers-content" style="display: none;">
       <p>
         To
         <a target="_blank"
@@ -89,6 +91,7 @@ See top-level LICENSE file for more information
                     {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
                       <a class="ml-auto float-right"
                          style="cursor: pointer"
+                         role="button"
                          onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
                         Iframe embedding
                       </a>
@@ -100,7 +103,8 @@ See top-level LICENSE file for more information
                 {% endif %}
                 {% if swhid_info.swhid_with_context is not None %}
                   <div class="float-left">
-                    <form id="swhid-options">
+                    <form id="swhid-options-{{ swhid_info.object_type.name.lower }}"
+                          aria-label="Options for {{ swhid_info.object_type.name.lower }} SWHID">
                       <div class="custom-control custom-checkbox swhid-option">
                         <input class="custom-control-input swhid-context-option"
                                value="option-origin"

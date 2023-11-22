@@ -14,7 +14,9 @@ See top-level LICENSE file for more information
   {% if not iframe_mode %}
     <div class="card">
       {% if filename %}
-        <div class="swh-content-filename card-header bg-gray-light swh-heading-color">{{ filename }}</div>
+        <div class="swh-content-filename card-header swh-background-gray swh-heading-color">
+          {{ filename }}
+        </div>
       {% endif %}
     {% endif %}
     <div class="swh-content">

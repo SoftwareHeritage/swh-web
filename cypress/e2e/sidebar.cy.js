@@ -18,18 +18,21 @@ describe('Sidebar tests On Large Screen', function() {
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
+      .should('have.attr', 'aria-expanded', 'true')
       .click();
     cy.get('body')
       .should('have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('not.be.visible');
-
     cy.get('.swh-push-menu')
+      .should('have.attr', 'aria-expanded', 'false')
       .click();
     cy.get('body')
       .should('not.have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('be.visible');
+    cy.get('.swh-push-menu')
+      .should('have.attr', 'aria-expanded', 'true');
   });
 
   it('should have less width when collapsed compared to open', function() {

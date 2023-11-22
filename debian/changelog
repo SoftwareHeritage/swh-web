@@ -1,8 +1,10 @@
-swh-web (0.2.45-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.2.46-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.2.46     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2023-11-22 15:27:47 +0100)
+  * Upstream changes:     - version 0.2.46
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Mon, 20 Nov 2023 14:31:55 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Wed, 22 Nov 2023 14:57:36 +0000
 
 swh-web (0.2.45-1~swh1) unstable-swh; urgency=medium
 

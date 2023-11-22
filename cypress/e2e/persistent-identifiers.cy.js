@@ -93,18 +93,24 @@ describe('Persistent Identifiers Tests', function() {
   it('should open and close identifiers tab when clicking on handle', function() {
     cy.get('#swh-identifiers')
       .should('have.class', 'ui-slideouttab-ready');
+    cy.get('#swh-identifiers-content')
+      .should('have.css', 'display', 'none');
 
     cy.get('.ui-slideouttab-handle')
       .click();
 
     cy.get('#swh-identifiers')
       .should('have.class', 'ui-slideouttab-open');
+    cy.get('#swh-identifiers-content')
+      .should('have.css', 'display', 'block');
 
     cy.get('.ui-slideouttab-handle')
       .click();
 
     cy.get('#swh-identifiers')
       .should('not.have.class', 'ui-slideouttab-open');
+    cy.get('#swh-identifiers-content')
+      .should('have.css', 'display', 'none');
 
   });
 

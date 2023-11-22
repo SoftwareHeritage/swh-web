@@ -34,15 +34,13 @@ See top-level LICENSE file for more information
 
 {% block content %}
   <div class="p-3 swh-search-box swh-background-gray">
-    <h4>Search</h4>
+    <h4 id="swh-search-box">Search</h4>
     {% include "includes/origin-search-form.html" %}
   </div>
   <p class="text-right">
     ... or check our
-    <a id="swh-web-api-link"
-       style="color: #e20026"
-       href="{% url 'api-1-homepage' %}">
-      <i style="color: #e20026;" class="nav-icon mdi mdi-24px mdi-cogs"></i>Web API
+    <a id="swh-web-api-link" href="{% url 'api-1-homepage' %}">
+      <i class="nav-icon mdi mdi-24px mdi-cogs"></i>Web API
     </a>
   </p>
   <div class="p-3">
@@ -59,7 +57,9 @@ See top-level LICENSE file for more information
   {% if "swh.web.archive_coverage" in SWH_DJANGO_APPS %}
     <div class="p-3">
       <h4>Content</h4>
-      <iframe class="swh-coverage-iframe" src="{% url 'swh-coverage' %}"></iframe>
+      <iframe class="swh-coverage-iframe"
+              src="{% url 'swh-coverage' %}"
+              title="Archive coverage"></iframe>
     </div>
   {% endif %}
   {% if not SWH_MIRROR_CONFIG %}
@@ -101,7 +101,7 @@ See top-level LICENSE file for more information
           </div>
         </div>
         <p class="mt-3" style="font-size: 13px">
-          Note: the counters and graphs above are based on heuristics that might not reflect the exact
+          Note: the counters and graphs are based on heuristics that might not reflect the exact
           size of the archive. While the long-term trends shown and ballpark figures are reliable,
           individual point-in-time values might not be.
         </p>

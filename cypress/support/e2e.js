@@ -7,6 +7,8 @@
 
 import '@cypress/code-coverage/support';
 import 'cypress-hmr-restarter';
+import 'cypress-accessibility-checker';
+import 'cypress-axe';
 
 Cypress.Screenshot.defaults({
   screenshotOnRunFailure: false

@@ -101,6 +101,22 @@ $(document).ready(() => {
       } else {
         return '200px';
       }
+    },
+    onBeforeOpen: function() {
+      $('#swh-identifiers-content').css('display', 'block');
+      return true;
+    },
+    onOpen: function() {
+      $('#swhids-handle').attr('aria-expanded', 'true');
+      $('#swhids-handle').attr('aria-label', 'Collapse permalinks tab');
+    },
+    onClose: function() {
+      $('#swhids-handle').attr('aria-expanded', 'false');
+      $('#swhids-handle').attr('aria-label', 'Expand permalinks tab');
+      setTimeout(() => {
+        // ensure elements in closed SWHIDs tab are not keyboard focusable
+        $('#swh-identifiers-content').css('display', 'none');
+      }, 500);
     }
   };
   // ensure tab scrolling on small screens

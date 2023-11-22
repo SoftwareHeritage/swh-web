@@ -34,8 +34,10 @@ package-lock.json
 yarn-error.log
 cypress/mochawesome/
 .nyc_output*/
+cypress/accessibility/
 cypress/coverage*/
 cypress/fixtures/source*.json
 cypress/junit/
 cypress/downloads/
 .eslintcache
+docs/README.rst
