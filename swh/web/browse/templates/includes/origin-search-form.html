@@ -14,9 +14,12 @@ See top-level LICENSE file for more information
            type="text"
            id="swh-origins-url-patterns"
            oninput="swh.webapp.validateSWHIDInput(this)"
+           aria-label="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
            autofocus />
     <div class="input-group-append">
-      <button class="btn btn-primary" type="submit">
+      <button class="btn btn-primary"
+              type="submit"
+              aria-label="Search software origins">
         <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
       </button>
     </div>
@@ -25,7 +28,9 @@ See top-level LICENSE file for more information
   <div class="row mt-1 mb-1 float-right position-relative"
        style="z-index: 1000">
     <div class="form-group form-inline">
-      <label class="control-label mr-1" style="font-weight: inherit">visit type:</label>
+      <label for="swh-search-visit-type"
+             class="control-label mr-1"
+             style="font-weight: inherit">visit type:</label>
       <select id="swh-search-visit-type"
               class="custom-select form-control custom-select-sm">
         <option selected value="any">any</option>
@@ -35,48 +40,50 @@ See top-level LICENSE file for more information
       </select>
     </div>
   </div>
-  <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input"
-           value="option-origins-with-visit"
-           type="checkbox"
-           id="swh-search-origins-with-visit"
-           checked />
-    <label class="custom-control-label font-weight-normal"
-           for="swh-search-origins-with-visit">only show origins visited at least once</label>
-  </div>
-  <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input"
-           value="option-filter-empty-visits"
-           type="checkbox"
-           id="swh-filter-empty-visits"
-           checked />
-    <label class="custom-control-label font-weight-normal"
-           for="swh-filter-empty-visits">filter out origins with no archived content</label>
-  </div>
-  <div class="custom-control custom-checkbox swhid-option">
-    <input class="custom-control-input"
-           value="option-filter-empty-visits"
-           type="checkbox"
-           id="swh-search-origin-metadata" />
-    <label class="custom-control-label font-weight-normal"
-           for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
-  </div>
-  {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
+  <div role="group" aria-label="Search options">
     <div class="custom-control custom-checkbox swhid-option">
       <input class="custom-control-input"
-             value="option-use-ql"
+             value="option-origins-with-visit"
              type="checkbox"
-             id="swh-search-use-ql" />
+             id="swh-search-origins-with-visit"
+             checked />
       <label class="custom-control-label font-weight-normal"
-             for="swh-search-use-ql">
-        search using the
-        <a target="_blank"
-           rel="noopener noreferrer"
-           href="https://docs.softwareheritage.org/devel/swh-search/query-language.html">
-          advanced search query language
-        </a>
-      </label>
+             for="swh-search-origins-with-visit">only show origins visited at least once</label>
     </div>
-  {% endif %}
+    <div class="custom-control custom-checkbox swhid-option">
+      <input class="custom-control-input"
+             value="option-filter-empty-visits"
+             type="checkbox"
+             id="swh-filter-empty-visits"
+             checked />
+      <label class="custom-control-label font-weight-normal"
+             for="swh-filter-empty-visits">filter out origins with no archived content</label>
+    </div>
+    <div class="custom-control custom-checkbox swhid-option">
+      <input class="custom-control-input"
+             value="option-filter-empty-visits"
+             type="checkbox"
+             id="swh-search-origin-metadata" />
+      <label class="custom-control-label font-weight-normal"
+             for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
+    </div>
+    {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
+      <div class="custom-control custom-checkbox swhid-option">
+        <input class="custom-control-input"
+               value="option-use-ql"
+               type="checkbox"
+               id="swh-search-use-ql" />
+        <label class="custom-control-label font-weight-normal"
+               for="swh-search-use-ql">
+          search using the
+          <a target="_blank"
+             rel="noopener noreferrer"
+             href="https://docs.softwareheritage.org/devel/swh-search/query-language.html">
+            advanced search query language
+          </a>
+        </label>
+      </div>
+    {% endif %}
+  </div>
 </form>
 <script>swh.browse.initOriginSearch();</script>

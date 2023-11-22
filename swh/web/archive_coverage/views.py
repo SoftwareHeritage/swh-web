@@ -395,9 +395,9 @@ legacy_origins: Dict[str, Any] = {
             "count": "790,026",
         },
         {
-            "type": "bitbucket",
+            "type": "bitbucket-hg",
             "info_url": "https://bitbucket.org",
-            "info": "public repositories from Bitbucket",
+            "info": "public mercurial repositories from Bitbucket",
             "search_pattern": "https://bitbucket.org/",
             "visit_types": ["hg"],
             "count": "336,795",

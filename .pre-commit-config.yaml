@@ -41,6 +41,7 @@ repos:
       - id: eslint
         name: eslint
         entry: node_modules/.bin/eslint -c assets/config/.eslintrc
+          --ignore-path assets/config/.eslintignore
         language: system
         types: [javascript]
 

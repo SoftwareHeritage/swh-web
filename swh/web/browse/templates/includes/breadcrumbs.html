@@ -7,7 +7,7 @@ See top-level LICENSE file for more information
 
 {% if breadcrumbs %}
   {% if iframe_mode or breadcrumbs|length > 1 or breadcrumbs.0.url %}
-    <nav class="bread-crumbs swh-browse-bread-crumbs">
+    <nav class="bread-crumbs swh-browse-bread-crumbs" aria-label="Breadcrumbs">
       <ul>
         {% for bc in breadcrumbs %}
           {% if bc.url %}

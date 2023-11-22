@@ -112,13 +112,13 @@ def test_scope1_requests_are_throttled(api_client):
             scope1_limiter_rate - i - 1,
             expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope1_class/")
     check_response(response, 429, scope1_limiter_rate, 0, expected_reset)
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
@@ -133,13 +133,13 @@ def test_scope1_requests_are_throttled(api_client):
             scope1_limiter_rate_post - i - 1,
             expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.post("/scope1_class/")
     check_response(response, 429, scope1_limiter_rate_post, 0, expected_reset)
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
@@ -160,13 +160,13 @@ def test_scope2_requests_are_throttled(api_client):
             scope2_limiter_rate - i - 1,
             expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate, 0, expected_reset)
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
@@ -181,13 +181,13 @@ def test_scope2_requests_are_throttled(api_client):
             scope2_limiter_rate_post - i - 1,
             expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.post("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate_post, 0, expected_reset)
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
@@ -249,13 +249,13 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
             scope2_limiter_rate_user - i - 1,
             scope2_expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
     response = api_client.get("/scope2_func/")
     check_response(response, 429, scope2_limiter_rate_user, 0, scope2_expected_reset)
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 
@@ -274,7 +274,7 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
             scope2_limiter_rate_post_user - i - 1,
             scope2_post_expected_reset,
         )
-        resets.add(response.headers["X-RateLimit-Reset"])
+        resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed during our requests"
 
@@ -282,7 +282,7 @@ def test_non_staff_users_are_rate_limited(api_client, regular_user):
     check_response(
         response, 429, scope2_limiter_rate_post_user, 0, scope2_post_expected_reset
     )
-    resets.add(response.headers["X-RateLimit-Reset"])
+    resets.add(response["X-RateLimit-Reset"])
 
     assert len(resets) == 1, "X-RateLimit-Reset has changed when the ratelimit was hit"
 

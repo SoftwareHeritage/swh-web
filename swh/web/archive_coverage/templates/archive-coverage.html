@@ -49,7 +49,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
   </head>
   <body style="padding-bottom: 0;">
     <div class="wrapper" style="margin-left: 0;" data-iframe-height>
-      <div class="content">
+      <main class="content">
         <div id="swh-coverage-content" class="container-fluid">
           <p>
             A significant amount of source code has already been ingested in the Software Heritage
@@ -94,7 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                          href="#swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          aria-expanded="true"
                          aria-controls="swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
-                         id="heading-collapsed"
+                         id="heading-collapsed-{{ origins.type.lower|cut:' ' }}"
                          title="click to expand or collapse detailed information about software origins">
                         <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
                         <div class="text-center" style="font-size: 120%">
@@ -108,7 +108,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                     </div>
                     <div id="swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          class="collapse {% if focus %}show{% endif %}"
-                         aria-labelledby="heading-collapsed">
+                         aria-labelledby="heading-collapsed-{{ origins.type.lower|cut:' ' }}">
                       <div class="card-body text-center swh-coverage-info-body"
                            {% if focus %}style="max-height: none;"{% endif %}>
                         <table style="width: 100%">
@@ -176,7 +176,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
             </div>
           {% endfor %}
         </div>
-      </div>
+      </main>
     </div>
     {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
       <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>

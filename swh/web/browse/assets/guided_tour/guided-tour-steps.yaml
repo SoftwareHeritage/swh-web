@@ -237,7 +237,7 @@ browseOrigin:
       You can find the SWHID of the selected object.
     position: left
 
-  - element: "#swhid-options"
+  - element: "#swhid-options-directory"
     title: Add / remove qualifiers to SWHID
     intro: |
       Toggle the adding of qualifiers to the SWHID which adds extra information regarding

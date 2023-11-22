@@ -85,6 +85,9 @@ export async function highlightCode(showLineNumbers = true, selector = 'code',
       hljs.highlightElement(elt);
       if (showLineNumbers) {
         hljs.lineNumbersElement(elt, {singleLine: true});
+        setTimeout(() => {
+          $('.hljs-ln').attr('role', 'presentation');
+        });
       }
     });
 

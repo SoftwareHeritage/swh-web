@@ -111,6 +111,7 @@ if not _pytest:
             "e2e_tests_mode": True,
             # use temporary postgresql scheduler backend
             "scheduler": {"cls": "temporary"},
+            "deposit": {},
         }
     )
     from django.conf import settings
