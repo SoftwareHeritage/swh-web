@@ -64,6 +64,7 @@ hljs.lineNumbersElement = hljs.lineNumbersBlock;
 // define a synchronous version of hljs.lineNumbersElement
 hljs.lineNumbersElementSync = function(elt) {
   elt.innerHTML = hljs.lineNumbersValue(elt.innerHTML);
+  $('.hljs-ln').attr('role', 'presentation');
 };
 
 hljs.registerLanguage('lean', hljsDefineLean);

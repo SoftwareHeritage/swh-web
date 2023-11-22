@@ -21,6 +21,7 @@ from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.add_forge_now.models import RequestActorRole as AddForgeNowRequestActorRole
 from swh.web.add_forge_now.models import RequestHistory as AddForgeNowRequestHistory
 from swh.web.add_forge_now.models import RequestStatus as AddForgeNowRequestStatus
+from swh.web.add_forge_now.utils import trigger_request_processing_pipeline
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.auth.utils import is_add_forge_now_moderator
@@ -269,6 +270,17 @@ def api_add_forge_request_update(
         request_history.new_status = None
 
     request_history.save()
+
+    request_id = request_history.request.id
+    forge_type = add_forge_request.forge_type
+    forge_url = add_forge_request.forge_url
+    former_status = ("PENDING", "WAITING_FOR_FEEDBACK", "FEEDBACK_TO_HANDLE")
+
+    if (
+        request_history.new_status == "ACCEPTED"
+        and add_forge_request.status in former_status
+    ):
+        trigger_request_processing_pipeline(request_id, forge_type, forge_url)
 
     if request_history.new_status is not None:
         add_forge_request.status = request_history.new_status

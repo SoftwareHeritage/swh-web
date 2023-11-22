@@ -649,3 +649,71 @@ def test_add_forge_request_get_moderator_message_source(
 def test_add_forge_request_get_invalid(api_client):
     url = reverse("api-1-add-forge-request-get", url_args={"id": 3})
     check_api_get_responses(api_client, url, status_code=400)
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.parametrize("success", [True, False], ids=["success", "failure"])
+def test_add_forge_request_update_gitlab_pipeline_trigger(
+    api_client, regular_user, add_forge_moderator, requests_mock, mocker, success
+):
+    trigger_url = (
+        "https://gitlab.softwareheritage.org/api/v4/projects/xyz/trigger/pipeline"
+    )
+    token = "some-token"
+
+    # patch configuration to enable the POST request triggering gitlab pipeline
+    config = copy.deepcopy(get_config())
+    config["add_forge_now"]["gitlab_pipeline"] = {
+        "trigger_url": trigger_url,
+        "token": token,
+    }
+    mock_get_config = mocker.patch("swh.web.add_forge_now.utils.get_config")
+    mock_get_config.return_value = config
+
+    # mock POST request sent to gitlab
+    if success:
+        requests_mock.post(trigger_url, text="OK")
+    else:
+        requests_mock.post(trigger_url, text="KO", status_code=403)
+
+    create_add_forge_request(api_client, regular_user)
+
+    api_client.force_login(add_forge_moderator)
+    url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
+
+    check_api_post_response(
+        api_client,
+        url,
+        data={"new_status": "WAITING_FOR_FEEDBACK", "text": "waiting for feedback"},
+        status_code=200,
+    )
+
+    resp = check_api_post_response(
+        api_client,
+        url,
+        data={"new_status": "ACCEPTED", "text": "request accepted"},
+        status_code=200 if success else 500,
+    )
+
+    # check POST request was sent
+    assert requests_mock.request_history
+    sent_request = requests_mock.request_history[0]
+    assert sent_request.url == trigger_url
+    assert sent_request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+
+    expected_form_data = {
+        "token": token,
+        "ref": "main",
+        "variables[LISTER_TYPE]": ADD_FORGE_DATA_FORGE1["forge_type"],
+        "variables[INSTANCE_NAME]": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
+        "variables[REQUEST_ID]": 1,
+    }
+
+    assert requests_mock.request_history[0].body == urlencode(expected_form_data)
+
+    if not success:
+        # check POST request error is reported
+        assert resp.data == {
+            "exception": "HTTPError",
+            "reason": f"403 Client Error: None for url: {trigger_url}",
+        }

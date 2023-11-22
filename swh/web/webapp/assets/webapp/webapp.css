@@ -55,13 +55,6 @@ footer a:hover {
     color: #fecd1b;
 }
 
-footer a:hover {
-    text-decoration: underline;
-}
-
-.link-color {
-    color: #fecd1b;
-}
 
 pre {
     background-color: #f5f5f5;
@@ -105,15 +98,6 @@ pre {
 
 .swh-table-striped tbody tr:nth-child(odd) {
     background-color: #fff;
-}
-
-.swh-web-app-link a {
-    text-decoration: none;
-    border: none;
-}
-
-.swh-web-app-link:hover {
-    background-color: #efeff2;
 }
 
 .table > thead > tr > th {
@@ -344,7 +328,7 @@ a.dropdown-left::before {
 }
 
 .swh-background-gray {
-    background: #efeff2;
+    background: #f6f5f4;
 }
 
 .swh-donate-link {
@@ -380,6 +364,12 @@ a.dropdown-left::before {
     height: calc(100% - 7rem);
 }
 
+.sidebar .nav-header {
+    padding-left: 10px;
+    padding-top: 10px;
+    font-weight: 400;
+}
+
 .content-wrapper {
     background: none;
 }
@@ -395,6 +385,12 @@ a.dropdown-left::before {
     border-bottom: 5px solid #e20026 !important;
 }
 
+.brand-link:hover,
+.brand-link:focus {
+    color: #323232 !important;
+    background-color: #e7e7e7 !important;
+}
+
 .navbar-header a,
 ul.dropdown-menu a,
 ul.navbar-nav a,
@@ -403,13 +399,24 @@ ul.nav-sidebar a {
     color: #323232;
 }
 
-.swh-sidebar .nav-link.active {
-    color: #323232 !important;
-    background-color: #e7e7e7 !important;
-}
+.nav-sidebar .nav-icon
 
 .nav-tabs .nav-link.active {
     border-top: 3px solid #e20026;
+}
+
+.swh-menu-item .nav-icon {
+    color: #e20026 !important;
+}
+
+.swh-admin-menu-item .nav-icon {
+    color: #fecd1b ! important;
+}
+
+.swh-sidebar .nav-link.active,
+.swh-sidebar .nav-link:focus {
+    color: #323232 !important;
+    background-color: #e7e7e7 !important;
 }
 
 .swh-image-error {
@@ -483,6 +490,7 @@ ul.nav-sidebar a {
     text-align: center;
     font-size: 10pt;
     color: rgb(0 0 0 / 75%);
+    pointer-events: none;
 }
 
 .swh-words-logo:hover {
@@ -752,17 +760,17 @@ div.d3-tooltip {
 
 .swh-corner-ribbon {
     width: 200px;
-    background: #fecd1b;
+    background: #f6f5f4;
     color: #e20026;
     position: absolute;
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 55px;
+    top: 128px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
-    z-index: 2000;
+    z-index: 1000;
 }
 
 .swh-corner-ribbon-banner {
@@ -820,4 +828,33 @@ div.d3-tooltip {
     position: absolute;
     left: 35px;
     top: 5px;
+}
+
+#swh-web-api-link {
+    color: #e20026;
+}
+
+p a {
+    text-decoration: underline;
+}
+
+.skipnav {
+    text-align: left;
+}
+
+.skipnav a {
+    position: absolute;
+    left: -10000px;
+    top: 5px;
+    width: auto;
+    height: auto;
+    text-decoration: underline;
+    background: black;
+    color: white;
+    z-index: 100000;
+}
+
+.skipnav a:focus,
+.skipnav a:active {
+    left: 5px;
 }
