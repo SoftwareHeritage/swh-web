@@ -481,6 +481,10 @@ ul.nav-sidebar a {
     padding-right: 0;
 }
 
+.sidebar-mini.sidebar-collapse .sidebar .nav-header {
+    display: none;
+}
+
 .swh-words-logo {
     position: absolute;
     top: 0;
