@@ -24,6 +24,8 @@ describe('Sidebar tests On Large Screen', function() {
       .should('have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('not.be.visible');
+    cy.get('.sidebar .nav-header')
+      .should('have.css', 'display', 'none');
     cy.get('.swh-push-menu')
       .should('have.attr', 'aria-expanded', 'false')
       .click();
@@ -31,6 +33,8 @@ describe('Sidebar tests On Large Screen', function() {
       .should('not.have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('be.visible');
+    cy.get('.sidebar .nav-header')
+      .should('not.have.css', 'display', 'none');
     cy.get('.swh-push-menu')
       .should('have.attr', 'aria-expanded', 'true');
   });
