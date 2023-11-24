@@ -14,7 +14,7 @@ a minimalist Web UI is available for that use case.
     an iframe.
 
     :param string swhid: a SoftWare Heritage persistent IDentifier
-        object, or SWHID (see :ref:`persistent-identifiers` to learn more about its syntax)
+        object, or SWHID (see :ref:`swhids` to learn more about its syntax)
 
     :statuscode 200: no error
     :statuscode 400: the provided identifier is malformed or

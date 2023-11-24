@@ -16,7 +16,7 @@ let testsData;
 const firstSelLine = 6;
 const lastSelLine = 12;
 
-describe('Persistent Identifiers Tests', function() {
+describe('SWHIDs Tests', function() {
 
   before(function() {
     origin = this.origin[1];
