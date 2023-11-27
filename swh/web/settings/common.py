@@ -10,9 +10,11 @@ Django common settings for swh-web.
 
 from importlib.util import find_spec
 import os
+from pathlib import Path
 import site
 import sys
 from typing import Any, Dict
+import warnings
 
 from django.utils import encoding
 
@@ -198,14 +200,26 @@ STATIC_DIR = os.path.join(sys.prefix, "share/swh/web/static")
 if not os.path.exists(STATIC_DIR):
     # static folder location when swh-web has been installed with "pip --user"
     STATIC_DIR = os.path.join(site.getuserbase(), "share/swh/web/static")
+
 if not os.path.exists(STATIC_DIR):
-    # static folder location when developping swh-web
-    STATIC_DIR = os.path.join(PROJECT_DIR, "../../../static")
+    ROOT_DIR = Path(PROJECT_DIR).absolute()
+    while not (ROOT_DIR / "static").is_dir():
+        ROOT_DIR = ROOT_DIR = ROOT_DIR.parent
+        if (ROOT_DIR / ".git").is_dir() or (ROOT_DIR / "pyproject.toml").is_file():
+            break
+        if ROOT_DIR == ROOT_DIR.parent:
+            break
+    STATIC_DIR = str(ROOT_DIR / "static")
+
+if not os.path.exists(STATIC_DIR):
+    warnings.warn(
+        "Unable to find the static assets directory. Check your installation of swh.web."
+    )
+
 STATICFILES_DIRS = [STATIC_DIR]
 
 if "static_path" in SWH_MIRROR_CONFIG:
     STATICFILES_DIRS.append(SWH_MIRROR_CONFIG["static_path"])
-
 
 INTERNAL_IPS = ["127.0.0.1"]
 

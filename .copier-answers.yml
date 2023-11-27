@@ -1,0 +1,11 @@
+# Changes here will be overwritten by Copier
+_commit: v0.1.5
+_src_path: https://gitlab.softwareheritage.org/swh/devel/swh-py-template.git
+description: Software Heritage web UI
+distribution_name: swh-web
+have_cli: false
+have_workers: false
+package_root: swh/web
+project_name: swh.web
+python_minimal_version: '3.7'
+readme_format: rst
