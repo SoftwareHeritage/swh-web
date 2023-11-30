@@ -14,7 +14,6 @@ from swh.web.utils.identifiers import gen_swhid
 def test_swhid_resolve_success(
     api_client, content, directory, origin, release, revision, snapshot
 ):
-
     for obj_type, obj_id in (
         (ObjectType.CONTENT, content["sha1_git"]),
         (ObjectType.DIRECTORY, directory),
@@ -22,7 +21,6 @@ def test_swhid_resolve_success(
         (ObjectType.REVISION, revision),
         (ObjectType.SNAPSHOT, snapshot),
     ):
-
         swhid = gen_swhid(obj_type, obj_id, metadata={"origin": origin["url"]})
 
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})
@@ -72,7 +70,6 @@ def test_swhid_resolve_not_found(
     unknown_revision,
     unknown_snapshot,
 ):
-
     for obj_type, obj_id in (
         (ObjectType.CONTENT, unknown_content["sha1_git"]),
         (ObjectType.DIRECTORY, unknown_directory),
@@ -80,7 +77,6 @@ def test_swhid_resolve_not_found(
         (ObjectType.REVISION, unknown_revision),
         (ObjectType.SNAPSHOT, unknown_snapshot),
     ):
-
         swhid = gen_swhid(obj_type, obj_id)
 
         url = reverse("api-1-resolve-swhid", url_args={"swhid": swhid})

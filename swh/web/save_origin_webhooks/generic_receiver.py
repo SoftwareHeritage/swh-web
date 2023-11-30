@@ -95,7 +95,6 @@ class OriginSaveWebhookReceiver(abc.ABC):
         self,
         request: Request,
     ) -> Dict[str, Any]:
-
         if not self.is_forge_request(request):
             raise BadInputExc(
                 f"POST request was not sent by a {self.FORGE_TYPE} webhook and "

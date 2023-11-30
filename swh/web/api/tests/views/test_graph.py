@@ -211,7 +211,6 @@ def test_graph_response_resolve_origins(
             "application/x-ndjson",
         ),
     ):
-
         # set two lines response to check resolved origins cache
         response_text = response_text + response_text
 

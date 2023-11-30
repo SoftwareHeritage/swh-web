@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_auth", "0002_remove_stored_tokens"),
     ]

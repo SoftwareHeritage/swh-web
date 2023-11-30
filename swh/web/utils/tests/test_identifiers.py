@@ -69,7 +69,6 @@ def test_resolve_swhid_legacy(content, directory, release, revision, snapshot):
         (ObjectType.REVISION, revision),
         (ObjectType.SNAPSHOT, snapshot),
     ):
-
         swhid = gen_swhid(obj_type, obj_id)
 
         url_args = {}
@@ -362,7 +361,6 @@ def test_get_swhids_info_origin_snapshot_context(
                 {"anchor_type": ObjectType.REVISION, "anchor_id": revision_id},
             ),
         ):
-
             snapshot_context = get_snapshot_context(**snp_ctx_params)
 
             rev_id = head_rev_id

@@ -17,7 +17,6 @@ def _remove_duplicated_urls_in_authorized_list(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0004_auto_20190204_1324"),
     ]

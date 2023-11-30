@@ -37,7 +37,6 @@ def test_api_release_target_type_not_a_revision(
         (ObjectType.DIRECTORY, directory),
         (ObjectType.RELEASE, release),
     ):
-
         if target_type == ObjectType.CONTENT:
             target = target["sha1_git"]
 

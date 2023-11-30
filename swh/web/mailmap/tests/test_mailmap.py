@@ -35,9 +35,7 @@ def test_mailmap_endpoints_anonymous_user(api_client, view_name):
 def test_mailmap_endpoints_user_with_permission(
     api_client, mailmap_user, mailmap_admin
 ):
-
     for user, name in ((mailmap_user, "bar"), (mailmap_admin, "baz")):
-
         UserMailmapEvent.objects.all().delete()
 
         api_client.force_login(user)
@@ -75,9 +73,7 @@ def test_mailmap_endpoints_user_with_permission(
 
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_add_duplicate(api_client, mailmap_user, mailmap_admin):
-
     for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
-
         api_client.force_login(user)
 
         check_api_post_response(
@@ -96,9 +92,7 @@ def test_mailmap_add_duplicate(api_client, mailmap_user, mailmap_admin):
 
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_add_full(api_client, mailmap_user, mailmap_admin):
-
     for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
-
         api_client.force_login(user)
 
         UserMailmapEvent.objects.all().delete()
@@ -139,9 +133,7 @@ def test_mailmap_add_full(api_client, mailmap_user, mailmap_admin):
 
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_endpoints_error_response(api_client, mailmap_user, mailmap_admin):
-
     for user in (mailmap_user, mailmap_admin):
-
         api_client.force_login(user)
 
         UserMailmapEvent.objects.all().delete()
@@ -168,9 +160,7 @@ def test_mailmap_endpoints_error_response(api_client, mailmap_user, mailmap_admi
 
 @pytest.mark.django_db(transaction=True)
 def test_mailmap_update(api_client, mailmap_user, mailmap_admin):
-
     for user, name in ((mailmap_user, "foo"), (mailmap_admin, "bar")):
-
         api_client.force_login(user)
 
         UserMailmapEvent.objects.all().delete()
@@ -367,7 +357,7 @@ def test_mailmap_list_datatables_search(client, mailmap_admin):
 
 
 def populate_mailmap():
-    for (verified, activated) in (
+    for verified, activated in (
         (False, False),
         (False, True),
         (True, False),

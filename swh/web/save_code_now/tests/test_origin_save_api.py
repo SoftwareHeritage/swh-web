@@ -78,7 +78,6 @@ def check_created_save_request_status(
     expected_task_status=None,
     visit_date=None,
 ):
-
     mock_origin_exists = mocker.patch("swh.web.save_code_now.origin_save.origin_exists")
     mock_origin_exists.return_value = OriginExistenceCheckInfo(
         origin_url=origin_url, exists=True, last_modified=None, content_length=None
@@ -122,7 +121,6 @@ def check_save_request_status(
     visit_status=None,
     snapshot_id=None,
 ):
-
     if expected_task_status != SAVE_TASK_NOT_CREATED:
         task = dict(swh_scheduler.search_tasks()[0].items())
         backend_id = str(uuid.uuid4())
@@ -396,7 +394,6 @@ _origin_url = "https://github.com/python/cpython"
 
 
 def test_save_requests_rate_limit(api_client, swh_scheduler):
-
     url = reverse(
         "api-1-save-origin",
         url_args={"visit_type": _visit_type, "origin_url": _origin_url},
@@ -411,7 +408,6 @@ def test_save_requests_rate_limit(api_client, swh_scheduler):
 def test_save_requests_no_rate_limit_if_permission(
     api_client, regular_user, swh_scheduler
 ):
-
     regular_user.user_permissions.add(
         create_django_permission(API_SAVE_ORIGIN_PERMISSION)
     )
@@ -434,7 +430,6 @@ def test_save_requests_no_rate_limit_if_permission(
 def test_save_request_unknown_repo_with_permission(
     api_client, regular_user, mocker, swh_scheduler
 ):
-
     regular_user.user_permissions.add(
         create_django_permission(API_SAVE_ORIGIN_PERMISSION)
     )
@@ -483,7 +478,6 @@ def origin_to_review():
 def test_create_save_request_pending_review_anonymous_user(
     api_client, origin_to_review, swh_scheduler
 ):
-
     url = reverse(
         "api-1-save-origin",
         url_args={"visit_type": "git", "origin_url": origin_to_review},
@@ -555,7 +549,6 @@ def test_create_save_request_archives_with_ambassador_user(
 def test_create_save_request_archives_missing_artifacts_data(
     api_client, keycloak_oidc, swh_scheduler
 ):
-
     swh_scheduler.add_load_archive_task_type()
 
     keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
@@ -592,7 +585,6 @@ def test_create_save_request_archives_missing_artifacts_data(
 def test_create_save_request_archives_accepted_ambassador_user(
     api_client, origin_to_review, keycloak_oidc, mocker, swh_scheduler
 ):
-
     keycloak_oidc.realm_permissions = [SWH_AMBASSADOR_PERMISSION]
     oidc_profile = keycloak_oidc.login()
     api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {oidc_profile['refresh_token']}")
