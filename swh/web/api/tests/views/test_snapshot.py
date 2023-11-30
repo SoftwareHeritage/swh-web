@@ -17,7 +17,6 @@ from swh.web.utils import reverse
 
 
 def test_api_snapshot(api_client, archive_data, snapshot):
-
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot})
     rv = check_api_get_responses(api_client, url, status_code=200)
     expected_data = {**archive_data.snapshot_get(snapshot), "next_branch": None}
@@ -26,7 +25,6 @@ def test_api_snapshot(api_client, archive_data, snapshot):
 
 
 def test_api_snapshot_paginated(api_client, archive_data, snapshot):
-
     branches_offset = 0
     branches_count = 2
 
@@ -87,7 +85,6 @@ def test_api_snapshot_paginated(api_client, archive_data, snapshot):
 
 
 def test_api_snapshot_filtered(api_client, archive_data, snapshot):
-
     snapshot_branches = []
 
     for k, v in sorted(archive_data.snapshot_get(snapshot)["branches"].items()):

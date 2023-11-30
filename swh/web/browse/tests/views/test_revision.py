@@ -276,7 +276,6 @@ def test_revision_uppercase(client, revision):
 def _revision_browse_checks(
     client, archive_data, revision, origin_url=None, snapshot=None
 ):
-
     query_params = {}
     if origin_url:
         query_params["origin_url"] = origin_url

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_add_forge_now", "0003_request_submitter_forward_username"),
     ]

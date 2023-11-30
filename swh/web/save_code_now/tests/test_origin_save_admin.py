@@ -113,7 +113,6 @@ def test_remove_unauthorized_origin_url(client, staff_user):
 
 
 def test_accept_pending_save_request(client, staff_user, swh_scheduler):
-
     visit_type = "git"
     origin_url = "https://v2.pikacode.com/bthate/botlib.git"
     save_request_url = reverse(
@@ -139,7 +138,6 @@ def test_accept_pending_save_request(client, staff_user, swh_scheduler):
 
 
 def test_reject_pending_save_request(client, staff_user, swh_scheduler):
-
     visit_type = "git"
     origin_url = "https://wikipedia.com"
 
@@ -167,7 +165,6 @@ def test_reject_pending_save_request(client, staff_user, swh_scheduler):
 
 
 def test_reject_pending_save_request_not_found(client, staff_user, swh_scheduler):
-
     visit_type = "git"
     origin_url = "https://example.org"
 
@@ -181,7 +178,6 @@ def test_reject_pending_save_request_not_found(client, staff_user, swh_scheduler
 
 
 def test_reject_pending_save_request_with_note(client, staff_user, swh_scheduler):
-
     visit_type = "git"
     origin_url = "https://wikipedia.com"
 

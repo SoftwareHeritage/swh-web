@@ -99,7 +99,6 @@ def test_enrich_release_empty():
 
 
 def test_enrich_release_content_target(api_request_factory, archive_data, release):
-
     release_data = archive_data.release_get(release)
     release_data["target_type"] = "content"
 
@@ -118,7 +117,6 @@ def test_enrich_release_content_target(api_request_factory, archive_data, releas
 
 
 def test_enrich_release_directory_target(api_request_factory, archive_data, release):
-
     release_data = archive_data.release_get(release)
     release_data["target_type"] = "directory"
 
@@ -137,7 +135,6 @@ def test_enrich_release_directory_target(api_request_factory, archive_data, rele
 
 
 def test_enrich_release_revision_target(api_request_factory, archive_data, release):
-
     release_data = archive_data.release_get(release)
     release_data["target_type"] = "revision"
 
@@ -154,7 +151,6 @@ def test_enrich_release_revision_target(api_request_factory, archive_data, relea
 
 
 def test_enrich_release_release_target(api_request_factory, archive_data, release):
-
     release_data = archive_data.release_get(release)
     release_data["target_type"] = "release"
 
@@ -175,7 +171,6 @@ def test_enrich_directory_entry_no_type():
 
 
 def test_enrich_directory_entry_with_type(api_request_factory, archive_data, directory):
-
     dir_content = archive_data.directory_ls(directory)
 
     dir_entry = random.choice(dir_content)
@@ -214,9 +209,7 @@ def test_enrich_content_without_hashes():
 
 
 def test_enrich_content_with_hashes(api_request_factory, content):
-
     for algo in DEFAULT_ALGORITHMS:
-
         content_data = dict(content)
 
         query_string = "%s:%s" % (algo, content_data[algo])
@@ -248,9 +241,7 @@ def test_enrich_content_with_hashes(api_request_factory, content):
 
 
 def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, content):
-
     for algo in DEFAULT_ALGORITHMS:
-
         content_data = dict(content)
 
         query_string = "%s:%s" % (algo, content_data[algo])
@@ -288,7 +279,6 @@ def test_enrich_content_with_hashes_and_top_level_url(api_request_factory, conte
 def test_enrich_revision_without_children_or_parent(
     api_request_factory, archive_data, revision
 ):
-
     revision_data = archive_data.revision_get(revision)
     del revision_data["parents"]
 
@@ -579,7 +569,6 @@ def test_enrich_origin_search_result(api_request_factory, origin):
 
 
 def test_enrich_origin_visit(api_request_factory, origin):
-
     origin_visit = random.choice(get_origin_visits(origin))
 
     url = reverse(

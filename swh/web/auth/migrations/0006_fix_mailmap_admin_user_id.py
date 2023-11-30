@@ -29,7 +29,6 @@ def _set_first_mailmaps_as_edited_by_admin(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_auth", "0005_usermailmapevent"),
     ]

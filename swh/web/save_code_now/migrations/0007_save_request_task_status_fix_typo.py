@@ -18,7 +18,6 @@ def _rename_request_status_from_succeed_to_succeeded(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0006_rename_origin_type"),
     ]

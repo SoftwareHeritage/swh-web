@@ -107,7 +107,6 @@ def generate_archive_coverage_data(mocker, swh_scheduler):
 
 
 def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
-
     generate_archive_coverage_data(mocker, swh_scheduler)
 
     # check view gets rendered without errors
@@ -149,7 +148,6 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
 
 
 def test_coverage_view_with_focus(client, mocker, swh_scheduler):
-
     generate_archive_coverage_data(mocker, swh_scheduler)
 
     origins = (
@@ -277,7 +275,6 @@ def test_coverage_view_filter_out_non_visited_origins(
 
 
 def test_coverage_view_no_logo_for_origin_type(client, mocker, swh_scheduler):
-
     no_logo_origin_type = "forge_nologo"
 
     listed_origins["origins"].append(

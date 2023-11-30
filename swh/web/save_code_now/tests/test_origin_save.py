@@ -106,7 +106,6 @@ def _fill_scheduler_db(
     ],
 )
 def test_check_visit_type_savable(wrong_type, privileged_user, swh_scheduler):
-
     swh_scheduler.add_load_archive_task_type()
 
     with pytest.raises(BadInputExc, match="Allowed types"):
@@ -117,7 +116,6 @@ def test_check_visit_type_savable(wrong_type, privileged_user, swh_scheduler):
 
 
 def test_get_savable_visit_types(swh_scheduler):
-
     swh_scheduler.add_load_archive_task_type()
 
     default_list = list(_visit_type_task.keys())
