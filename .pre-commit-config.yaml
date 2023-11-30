@@ -5,6 +5,10 @@ repos:
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
+        exclude: >
+          (?x)^(
+              ^.*\.eml$
+          )$
       - id: check-json
       - id: check-yaml
 
