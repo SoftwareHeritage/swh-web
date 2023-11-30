@@ -11,6 +11,7 @@ import random
 
 from hypothesis import given, settings
 import pytest
+
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
@@ -26,7 +27,6 @@ from swh.model.model import (
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
-
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 from swh.web.utils import archive

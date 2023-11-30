@@ -1,11 +1,11 @@
 [project]
 name = "swh.web"
 authors = [
-    {name="Software Heritage developers", email="swh-devel@inria.fr"},
+    { name = "Software Heritage developers", email = "swh-devel@inria.fr" },
 ]
 
 description = "Software Heritage web UI"
-readme = {file = "README.rst", content-type = "text/x-rst"}
+readme = { file = "README.rst", content-type = "text/x-rst" }
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -21,10 +21,10 @@ dynamic = ["version", "dependencies", "optional-dependencies"]
 include = ["swh.*"]
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt", "requirements-swh.txt"]}
+dependencies = { file = ["requirements.txt", "requirements-swh.txt"] }
 
 [tool.setuptools.dynamic.optional-dependencies]
-testing = {file = ["requirements-test.txt"]}
+testing = { file = ["requirements-test.txt"] }
 
 [project.urls]
 "Homepage" = "https://gitlab.softwareheritage.org/swh/devel/swh-web"
@@ -54,6 +54,7 @@ line_length = 88
 force_sort_within_sections = true
 known_django = 'django,rest_framework'
 sections = 'FUTURE,STDLIB,THIRDPARTY,DJANGO,FIRSTPARTY,LOCALFOLDER'
+known_first_party = ['swh']
 
 [tool.djlint]
 # https://www.djlint.com/docs/linter/#rules
