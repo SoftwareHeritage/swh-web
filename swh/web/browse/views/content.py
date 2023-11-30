@@ -341,7 +341,7 @@ def content_display(
 
     if path:
         split_path = path.split("/")
-        first_path_is_sha = re.findall(r"\b[0-9a-f]{40}\b", split_path[0])
+        first_path_is_sha = re.findall(r"^\b[0-9a-f]{40}\b", split_path[0])
         if first_path_is_sha and archive.directory_exists(split_path[0]):
             root_dir = split_path[0]
         filename = split_path[-1]
