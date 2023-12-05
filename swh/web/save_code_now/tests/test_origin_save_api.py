@@ -3,13 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import uuid
 
 import pytest
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
