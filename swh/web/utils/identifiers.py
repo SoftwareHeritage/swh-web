@@ -33,7 +33,7 @@ def gen_swhid(
     metadata: SWHIDContext = {},
 ) -> str:
     """
-    Returns the SoftWare Heritage persistent IDentifier for a swh object based on:
+    Returns the SoftWare Hash IDentifier for a swh object based on:
 
         * the object type
         * the object id
@@ -81,11 +81,11 @@ def resolve_swhid(
     swhid: str, query_params: Optional[Mapping[str, str]] = None
 ) -> ResolvedSWHID:
     """
-    Try to resolve a SoftWare Heritage persistent IDentifier into an url for
+    Try to resolve a SoftWare Hash IDentifier into an url for
     browsing the targeted object.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier
+        swhid: a SoftWare Hash IDentifier
         query_params: optional dict filled with
             query parameters to append to the browse url
 
@@ -211,7 +211,7 @@ def get_qualified_swhid(swhid: str) -> QualifiedSWHID:
     This allows a superset of core SWHIDs, which are badly capitalized or quoted.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier.
+        swhid: a SoftWare Hash IDentifier.
 
     Raises:
         BadInputExc: if the provided SWHID can not be parsed.
@@ -235,7 +235,7 @@ def parse_core_swhid(swhid: str) -> CoreSWHID:
     """Check if a core SWHID is valid and return it parsed.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier.
+        swhid: a SoftWare Hash IDentifier.
 
     Raises:
         BadInputExc: if the provided SWHID can not be parsed.
@@ -255,12 +255,10 @@ def group_swhids(
     swhids: Iterable[CoreSWHID],
 ) -> Dict[ObjectType, List[bytes]]:
     """
-    Groups many SoftWare Heritage persistent IDentifiers into a
-    dictionary depending on their type.
+    Groups many SoftWare Hash IDentifiers into a dictionary depending on their type.
 
     Args:
-        swhids: an iterable of SoftWare Heritage persistent
-            IDentifier objects
+        swhids: an iterable of SoftWare Hash IDentifier objects
 
     Returns:
         A dictionary with:

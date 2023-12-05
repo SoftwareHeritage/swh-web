@@ -2,15 +2,28 @@ exclude: "^swh/web/tests/resources/"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
-        exclude: ".eml$"
+        exclude: >
+          (?x)^(
+              ^.*\.eml$
+          )$
       - id: check-json
       - id: check-yaml
 
+  - repo: https://github.com/python/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+
   - repo: https://github.com/pycqa/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
       - id: flake8
         additional_dependencies: [flake8-bugbear==22.9.23]
@@ -28,6 +41,9 @@ repos:
           )$
         args: [-L edn, -L crate]
         stages: [commit]
+      - id: codespell
+        name: Check commit message spelling
+        stages: [commit-msg]
 
   - repo: local
     hooks:
@@ -44,16 +60,6 @@ repos:
           --ignore-path assets/config/.eslintignore
         language: system
         types: [javascript]
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.11.5
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/python/black
-    rev: 22.10.0
-    hooks:
-      - id: black
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.31.1

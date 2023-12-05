@@ -61,7 +61,6 @@ class Command(BaseCommand):
         storage_db: psycopg2.extensions.connection,
         mailmaps: "QuerySet[UserMailmap]",
     ):
-
         execute_values(
             storage_db.cursor(),
             REFRESH_MAILMAPS_QUERY,

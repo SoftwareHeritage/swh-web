@@ -9,7 +9,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0005_remove_duplicated_authorized_origins"),
     ]

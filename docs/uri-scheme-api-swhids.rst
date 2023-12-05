@@ -1,5 +1,5 @@
-SWHIDs (persistent identifiers)
--------------------------------
+SWHIDs (SoftWare Hash IDentifiers)
+----------------------------------
 
 .. autosimple:: swh.web.api.views.identifiers.api_resolve_swhid
 

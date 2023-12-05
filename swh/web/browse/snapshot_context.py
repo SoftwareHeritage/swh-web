@@ -441,7 +441,6 @@ def get_snapshot_context(
     origin_visits_url = None
 
     if origin_url:
-
         if visit_id is not None:
             query_params["visit_id"] = visit_id
         elif snapshot_id is not None:

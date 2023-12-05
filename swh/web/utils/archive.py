@@ -1437,8 +1437,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
 
 
 def lookup_missing_hashes(grouped_swhids: Dict[ObjectType, List[bytes]]) -> Set[str]:
-    """Lookup missing Software Heritage persistent identifier hash, using
-    batch processing.
+    """Lookup missing SoftWare Hash IDentifiers using batch processing.
 
     Args:
         A dictionary with:

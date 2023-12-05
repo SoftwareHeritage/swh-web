@@ -98,7 +98,6 @@ def test_swh_multi_response_mimetype(mocker, api_request_factory):
     }
 
     for resp_format in accepted_response_formats:
-
         request = api_request_factory.get("/api/test/path/")
 
         content_type = accepted_response_formats[resp_format]
@@ -191,7 +190,6 @@ def test_api_endpoints_have_cors_headers(client, content, directory, revision):
 
 @override_settings(DEBUG=False)
 def test_api_response_invalid_url(client):
-
     json_reponse = (
         b'{"error":"Resource not found",'
         b'"reason":"The resource /api/1/foo/bar/ could not be found on the server."}'

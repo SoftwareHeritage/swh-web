@@ -14,7 +14,6 @@ from swh.web.metrics.prometheus import (
 
 
 def prometheus_metrics(request):
-
     compute_save_requests_metrics()
 
     return HttpResponse(
