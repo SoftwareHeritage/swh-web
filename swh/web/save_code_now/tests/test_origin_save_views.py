@@ -109,7 +109,6 @@ def test_save_origin_requests_list(client, mocker):
 
 @pytest.mark.django_db
 def test_save_origin_requests_list_user_filter(client, mocker, keycloak_oidc):
-
     # anonymous user created a save request
     sor = SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),

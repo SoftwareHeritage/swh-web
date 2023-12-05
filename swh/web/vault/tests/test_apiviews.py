@@ -27,7 +27,11 @@ def test_api_vault_cook_and_fetch(
 ):
     mock_archive = mocker.patch("swh.web.vault.api_views.archive")
 
-    for bundle_type, swhid, content_type, in (
+    for (
+        bundle_type,
+        swhid,
+        content_type,
+    ) in (
         ("flat", f"swh:1:dir:{directory}", "application/gzip"),
         ("gitfast", f"swh:1:rev:{revision}", "application/gzip"),
         ("git_bare", f"swh:1:rev:{revision}", "application/x-tar"),
@@ -281,12 +285,10 @@ def test_api_vault_cook_legacy(api_client, mocker, directory, revision):
 
 
 def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
-
     for obj_type, obj_id in (
         ("directory", directory),
         ("revision_gitfast", revision),
     ):
-
         url = reverse(
             f"api-1-vault-cook-{obj_type}-uppercase-checksum",
             url_args={f"{obj_type[:3]}_id": obj_id.upper()},
@@ -329,7 +331,6 @@ def test_api_vault_cook_notfound_legacy(
         ("directory", "flat", directory),
         ("revision_gitfast", "gitfast", revision),
     ):
-
         url = reverse(
             f"api-1-vault-cook-{obj_type}",
             url_args={f"{obj_type[:3]}_id": obj_id},

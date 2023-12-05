@@ -28,7 +28,6 @@ def _remove_archived_tasks_with_no_saved_status(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0002_saveoriginrequest_visit_date"),
     ]

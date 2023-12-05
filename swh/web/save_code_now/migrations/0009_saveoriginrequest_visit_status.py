@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0008_save-code-now_indexes_20210106_1327"),
     ]

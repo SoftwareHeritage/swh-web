@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0009_saveoriginrequest_visit_status"),
     ]

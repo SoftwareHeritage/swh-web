@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_add_forge_now", "0006_request_add_new_fields"),
     ]

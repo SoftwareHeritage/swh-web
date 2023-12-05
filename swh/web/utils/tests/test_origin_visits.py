@@ -53,7 +53,6 @@ def test_get_origin_visits(mocker, archive_data, new_origin, new_snapshots):
 
 @given(new_origin(), new_snapshots(5))
 def test_get_origin_visit(archive_data, new_origin, new_snapshots):
-
     archive_data.origin_add([new_origin])
     archive_data.snapshot_add(new_snapshots)
     visits = []

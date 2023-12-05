@@ -314,7 +314,6 @@ def test_add_forge_request_update_invalid_new_status(
 def test_add_forge_request_update_status_concurrent(
     api_client, regular_user, add_forge_moderator, mocker
 ):
-
     _block_while_testing = mocker.patch(
         "swh.web.add_forge_now.api_views._block_while_testing"
     )

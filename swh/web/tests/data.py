@@ -516,7 +516,7 @@ def get_tests_data(reset=False):
     if _tests_data is None:
         _tests_data = _init_tests_data()
         indexers = _init_indexers(_tests_data)
-        for (name, idx) in indexers.items():
+        for name, idx in indexers.items():
             # pytest makes the loggers use a temporary file; and deepcopy
             # requires serializability. So we remove them, and add them
             # back after the copy.
@@ -525,7 +525,7 @@ def get_tests_data(reset=False):
         _tests_data.update(indexers)
     if reset or _current_tests_data is None:
         _current_tests_data = deepcopy(_tests_data)
-        for (name, logger) in _indexer_loggers.items():
+        for name, logger in _indexer_loggers.items():
             _current_tests_data[name].log = logger
     return _current_tests_data
 

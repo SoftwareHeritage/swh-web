@@ -49,7 +49,6 @@ def test_get_hljs_language_from_mime_type():
 
 
 def test_get_hljs_language_from_filename():
-
     for filename, language in (
         ("foo", None),
         ("foo.h", "c"),

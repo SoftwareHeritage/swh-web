@@ -469,7 +469,6 @@ def test_browse_origin_directory_no_visit(client, mocker, origin):
 
 
 def test_browse_origin_directory_unknown_visit(client, origin):
-
     url = reverse(
         "browse-origin-directory",
         query_params={"origin_url": origin["url"], "visit_id": 200},
@@ -521,7 +520,6 @@ def _add_empty_snapshot_origin(new_origin, archive_data):
 def test_browse_origin_directory_empty_snapshot(
     client, staff_user, archive_data, new_origin
 ):
-
     _add_empty_snapshot_origin(new_origin, archive_data)
 
     # to check proper generation of raw extrinsic metadata api links
@@ -555,7 +553,6 @@ def test_browse_directory_snapshot_not_found(client, mocker, origin):
 
 @given(new_origin())
 def test_origin_empty_snapshot(client, archive_data, new_origin):
-
     _add_empty_snapshot_origin(new_origin, archive_data)
 
     url = reverse(
@@ -647,7 +644,6 @@ def test_origin_release_browse(client, archive_data, origin_with_releases):
 
 
 def test_origin_release_browse_not_found(client, origin_with_releases):
-
     invalid_release_name = "swh-foo-bar"
     url = reverse(
         "browse-origin-directory",

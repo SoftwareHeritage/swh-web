@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_add_forge_now", "0004_rename_tables"),
     ]

@@ -58,7 +58,6 @@ def fundraising_banner(request):
 
 @xframe_options_exempt
 def hiring_banner(request):
-
     lang = request.GET.get("lang")
 
     return render(
@@ -70,7 +69,6 @@ def hiring_banner(request):
 
 @xframe_options_exempt
 def downtime_banner(request):
-
     lang = request.GET.get("lang")
 
     return render(

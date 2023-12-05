@@ -46,7 +46,6 @@ def origin_save_list_view(request):
 
 
 def origin_save_requests_list(request, status):
-
     if status != "all":
         save_requests = SaveOriginRequest.objects.filter(status=status)
     else:

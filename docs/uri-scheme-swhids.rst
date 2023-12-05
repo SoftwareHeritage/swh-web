@@ -1,8 +1,8 @@
-URI scheme for SoftWare Heritage IDentifiers (SWHIDs)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+URI scheme for SoftWare Hash IDentifiers (SWHIDs)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A subset of Software Heritage objects (contents, directories, releases and
-revisions) can be browsed using :ref:`persistent-identifiers`.  Those
+revisions) can be browsed using :ref:`swhids`.  Those
 identifiers are guaranteed to remain stable (persistent) over time.
 
 
@@ -12,8 +12,8 @@ identifiers are guaranteed to remain stable (persistent) over time.
     A redirection to the adequate HTML view will be performed when
     reaching it.
 
-    :param string swhid: a SoftWare Heritage persistent IDentifier
-        object, or SWHID (see :ref:`persistent-identifiers` to learn more about its syntax)
+    :param string swhid: a SoftWare Hash IDentifier
+        object, or SWHID (see :ref:`swhids` to learn more about its syntax)
     :resheader Location: the redirection URL for browsing the Software Heritage object
         associated to the provided identifier
     :statuscode 302: no error

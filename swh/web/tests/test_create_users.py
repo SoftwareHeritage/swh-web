@@ -8,7 +8,6 @@ def test_create_users_test_users_exist(db):
     from .create_test_users import User, users
 
     for username, (_, _, permissions) in users.items():
-
         user = User.objects.filter(username=username).get()
         assert user is not None
 

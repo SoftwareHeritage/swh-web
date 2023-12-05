@@ -522,7 +522,6 @@ def _directory_view_checks(
 def test_browse_directory_snapshot_context_release_directory_target(
     client, staff_user, archive_data, directory_with_subdirs, staff_user_logged_in
 ):
-
     if staff_user_logged_in:
         client.force_login(staff_user)
 

@@ -12,7 +12,6 @@ from swh.web.utils import reverse
 
 
 def test_api_directory(api_client, archive_data, directory):
-
     url = reverse("api-1-directory", url_args={"sha1_git": directory})
     rv = check_api_get_responses(api_client, url, status_code=200)
 
@@ -36,7 +35,6 @@ def test_api_directory_not_found(api_client):
 
 
 def test_api_directory_with_path_found(api_client, archive_data, directory):
-
     directory_content = archive_data.directory_ls(directory)
     dir_entry = random.choice(directory_content)
 
@@ -48,7 +46,6 @@ def test_api_directory_with_path_found(api_client, archive_data, directory):
 
 
 def test_api_directory_with_path_not_found(api_client, directory):
-
     path = "some/path/to/nonexistent/dir/"
     url = reverse("api-1-directory", url_args={"sha1_git": directory, "path": path})
     rv = check_api_get_responses(api_client, url, status_code=404)
