@@ -130,6 +130,6 @@ function contactForgeAdmin(event) {
     emailText = encodeURIComponent(successEmailTempate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));
   }
   const w = window.open('', '_blank', '', true);
-  w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailReply}&Subject=${subject}&body=${emailText}`;
+  w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailReply}&Mail-Reply-To=${mailReply}&Mail-Followup-To=${mailReply}&Subject=${subject}&body=${emailText}`;
   w.focus();
 }
