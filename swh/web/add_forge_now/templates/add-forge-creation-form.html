@@ -84,8 +84,10 @@ See top-level LICENSE file for more information
         <div class="form-row">
           <div class="form-group col-md-12">
             <label for="swh-input-forge-comment">Comment</label>
-            <textarea class="form-control" id="swh-input-forge-comment" name="forge_contact_comment" rows="3">
-            </textarea>
+            {% spaceless %}
+              <textarea class="form-control" id="swh-input-forge-comment" name="forge_contact_comment" rows="3">
+              </textarea>
+            {% endspaceless %}
             <small class="form-text text-muted">Optionally, leave a comment to the moderator regarding your request.</small>
           </div>
         </div>
