@@ -14,7 +14,9 @@ See top-level LICENSE file for more information
 {% block header %}
   {{ block.super }}
   {% render_bundle 'origin_visits' %}
-  {% render_bundle 'save_code_now' %}
+  {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+    {% render_bundle 'save_code_now' %}
+  {% endif %}
 {% endblock header %}
 
 {% block swh-browse-content %}
