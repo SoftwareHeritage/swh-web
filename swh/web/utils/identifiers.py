@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -128,6 +128,8 @@ def resolve_swhid(
                 if release["target_type"] == ObjectType.REVISION.name.lower():
                     revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
+                elif release["target_type"] == ObjectType.DIRECTORY.name.lower():
+                    directory = release["target"]
             if object_type == ObjectType.CONTENT:
                 if (
                     not swhid_parsed.origin
