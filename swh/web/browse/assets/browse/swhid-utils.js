@@ -16,13 +16,12 @@ export function swhIdObjectTypeToggled(event) {
   $(event.target).tab('show');
 }
 
-export function swhIdContextOptionToggled(event) {
-  event.stopPropagation();
-  const swhIdElt = $(event.target).closest('.swhid-ui').find('.swhid');
-  const swhIdWithContext = $(event.target).data('swhid-with-context');
-  const swhIdWithContextUrl = $(event.target).data('swhid-with-context-url');
+function updateDisplayedSWHID(contextOptionCheckBox) {
+  const swhIdElt = $(contextOptionCheckBox).closest('.swhid-ui').find('.swhid');
+  const swhIdWithContext = $(contextOptionCheckBox).data('swhid-with-context');
+  const swhIdWithContextUrl = $(contextOptionCheckBox).data('swhid-with-context-url');
   let currentSwhId = swhIdElt.text();
-  if ($(event.target).prop('checked')) {
+  if ($(contextOptionCheckBox).prop('checked')) {
     swhIdElt.attr('href', swhIdWithContextUrl);
     currentSwhId = swhIdWithContext.replace(/;/g, ';\n');
   } else {
@@ -35,6 +34,11 @@ export function swhIdContextOptionToggled(event) {
   swhIdElt.text(currentSwhId);
 
   addLinesInfo();
+}
+
+export function swhIdContextOptionToggled(event) {
+  event.stopPropagation();
+  updateDisplayedSWHID(event.target);
 }
 
 function addLinesInfo() {
@@ -129,7 +133,11 @@ $(document).ready(() => {
 
   // set the tab visible once the close animation is terminated
   $('#swh-identifiers').addClass('d-none d-sm-block');
-  $('.swhid-context-option').trigger('click');
+
+  // ensure qualified SWHIDs are displayed by default
+  $('.swhid-context-option').each(function(i, elt) {
+    updateDisplayedSWHID(elt);
+  });
 
   // highlighted code lines changed
   $(window).on('hashchange', () => {
