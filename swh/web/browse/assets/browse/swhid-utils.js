@@ -59,14 +59,17 @@ function addLinesInfo() {
     linesPart += '-' + lines[1];
   }
 
-  if ($('#swhid-context-option-content').prop('checked')) {
+  const contextOptionCheckBox = $('#swhid-context-option-content');
+  if (contextOptionCheckBox.prop('checked')) {
+    let swhIdWithContextUrl = contextOptionCheckBox.data('swhid-with-context-url');
     currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
     if (lines.length > 0) {
       currentSwhId += linesPart;
+      swhIdWithContextUrl += linesPart;
     }
 
     swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
-    swhIdElt.attr('href', '/' + currentSwhId);
+    swhIdElt.attr('href', swhIdWithContextUrl);
   }
 }
 
