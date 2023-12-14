@@ -381,7 +381,7 @@ def get_swhids_info(
             )
             swhid_with_context_url = reverse(
                 "browse-swhid",
-                url_args={"swhid": quote(swhid_with_context, safe=":;=/")},
+                url_args={"swhid": quote(swhid_with_context, safe=":;=/%")},
             )
 
         swhids_info.append(
