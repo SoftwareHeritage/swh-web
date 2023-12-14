@@ -13,6 +13,7 @@ from swh.model.model import Origin
 from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.tests.data import random_sha1
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.identifiers import (
@@ -445,9 +446,13 @@ def test_get_swhids_info_origin_snapshot_context(
                 assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
-def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, origin):
+def test_get_swhids_info_characters_and_url_escaping(
+    archive_data, directory, origin, client
+):
     snapshot_context = get_snapshot_context(origin_url=origin["url"])
-    snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
+    new_origin_url = "http://example.org/?project=abc;def%"
+    archive_data.origin_add([Origin(url=new_origin_url)])
+    snapshot_context["origin_info"]["url"] = new_origin_url
     path = "/foo;/bar%"
 
     swhid_info = get_swhids_info(
@@ -463,19 +468,23 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, or
     assert swhid_info["context"]["path"] == "/foo%3B/bar%25"
 
     # check special characters in SWHID URL have been escaped
-    parsed_swhid_url = urlparse(swhid_info["swhid_with_context_url"])
+    swhid_url = swhid_info["swhid_with_context_url"]
+    parsed_swhid_url = urlparse(swhid_url)
     assert (
-        "origin=http://example.org/%253Fproject%25253Dabc%25253Bdef%252525;"
+        "origin=http://example.org/%253Fproject%253Dabc%253Bdef%2525;"
         in parsed_swhid_url.path
     )
-    assert "path=/foo%25253B/bar%252525" in parsed_swhid_url.path
+    assert "path=/foo%253B/bar%2525" in parsed_swhid_url.path
 
-    # check that by double unquoting SWHID URL path, we get back on the SWHID value
+    # check that by double unquoting SWHID URL path, we get back on the unquoted SWHID value
     # first unquoting is done by HTTP server, second unquoting by the SWHID parser
     # when processing origin and path qualifiers
-    assert (
-        unquote(unquote(parsed_swhid_url.path[1:])) == swhid_info["swhid_with_context"]
+    assert unquote(unquote(parsed_swhid_url.path[1:])) == unquote(
+        swhid_info["swhid_with_context"]
     )
+
+    # check SWHID can be successfully resolved
+    check_html_get_response(client, swhid_url, status_code=302)
 
 
 def test_resolve_swhids_snapshot_context(
