@@ -156,7 +156,7 @@ def _directory_browse(
         if f["length"] is not None:
             sum_file_sizes += f["length"]
         if f["name"].lower().startswith("readme"):
-            readmes[f["name"]] = f["checksums"]["sha1"]
+            readmes[f["name"]] = f.get("checksums", {}).get("sha1")
 
     readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
