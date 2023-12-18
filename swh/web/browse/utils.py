@@ -740,10 +740,14 @@ def get_readme_to_display(
         if common_readme_name in lc_readmes:
             readme_name = lc_readmes[common_readme_name]["orig_name"]
             readme_sha1 = lc_readmes[common_readme_name]["sha1"]
-            readme_url = reverse(
-                "browse-content-raw",
-                url_args={"query_string": readme_sha1},
-                query_params={"re_encode": "true"},
+            readme_url = (
+                reverse(
+                    "browse-content-raw",
+                    url_args={"query_string": readme_sha1},
+                    query_params={"re_encode": "true"},
+                )
+                if readme_sha1 is not None
+                else None
             )
             break
 
@@ -751,10 +755,14 @@ def get_readme_to_display(
     if not readme_name and len(readmes.items()) > 0:
         readme_name = next(iter(readmes))
         readme_sha1 = readmes[readme_name]
-        readme_url = reverse(
-            "browse-content-raw",
-            url_args={"query_string": readme_sha1},
-            query_params={"re_encode": "true"},
+        readme_url = (
+            reverse(
+                "browse-content-raw",
+                url_args={"query_string": readme_sha1},
+                query_params={"re_encode": "true"},
+            )
+            if readme_sha1 is not None
+            else None
         )
 
     # convert rst README to html server side as there is

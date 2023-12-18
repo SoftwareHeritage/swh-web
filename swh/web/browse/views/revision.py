@@ -524,7 +524,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 query_params=query_params,
             )
             if f["name"].lower().startswith("readme"):
-                readmes[f["name"]] = f["checksums"]["sha1"]
+                readmes[f["name"]] = f.get("checksums", {}).get("sha1")
 
         readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 
