@@ -16,7 +16,11 @@ from django.test.utils import override_settings
 from django.urls import re_path as url
 from django.urls.exceptions import NoReverseMatch
 
-from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
+from swh.web.config import (
+    SWH_WEB_SERVER_NAMES,
+    SWH_WEB_STAGING_SERVER_NAMES,
+    get_config,
+)
 from swh.web.utils import (
     cache,
     django_cache,
@@ -456,7 +460,7 @@ def test_is_swh_web_staging(request_factory, server_name):
 
 
 def test_is_swh_web_production(request_factory):
-    request = request_factory.get("/", SERVER_NAME=SWH_WEB_SERVER_NAME)
+    request = request_factory.get("/", SERVER_NAME=SWH_WEB_SERVER_NAMES[0])
     assert is_swh_web_production(request)
 
 

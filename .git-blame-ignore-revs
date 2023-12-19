@@ -4,5 +4,6 @@
 # test_origin_save: Fix black formatting
 00cc0c4daef20455144845214f52330063a211c3
 
-# python: Reformat code with black 22.3.0
+# python: Reformat code with black
 f9f5854c3af9fbaa164187c56ba544454041d26e
+d7809352485e8dcd96290c424b9c1155087744cc

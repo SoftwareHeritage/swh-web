@@ -1,5 +1,7 @@
 import { arrayify, logger } from '@sentry/utils';
+import { DEBUG_BUILD } from './debug-build.js';
 import { addGlobalEventProcessor } from './eventProcessors.js';
+import { getClient } from './exports.js';
 import { getCurrentHub } from './hub.js';
 
 const installedIntegrations = [];
@@ -90,9 +92,16 @@ function setupIntegrations(client, integrations) {
 function setupIntegration(client, integration, integrationIndex) {
   integrationIndex[integration.name] = integration;
 
+  // `setupOnce` is only called the first time
   if (installedIntegrations.indexOf(integration.name) === -1) {
+    // eslint-disable-next-line deprecation/deprecation
     integration.setupOnce(addGlobalEventProcessor, getCurrentHub);
     installedIntegrations.push(integration.name);
+  }
+
+  // `setup` is run for each client
+  if (integration.setup && typeof integration.setup === 'function') {
+    integration.setup(client);
   }
 
   if (client.on && typeof integration.preprocessEvent === 'function') {
@@ -110,15 +119,15 @@ function setupIntegration(client, integration, integrationIndex) {
     client.addEventProcessor(processor);
   }
 
-  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Integration installed: ${integration.name}`);
+  DEBUG_BUILD && logger.log(`Integration installed: ${integration.name}`);
 }
 
 /** Add an integration to the current hub's client. */
 function addIntegration(integration) {
-  const client = getCurrentHub().getClient();
+  const client = getClient();
 
   if (!client || !client.addIntegration) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot add integration "${integration.name}" because no SDK Client is available.`);
+    DEBUG_BUILD && logger.warn(`Cannot add integration "${integration.name}" because no SDK Client is available.`);
     return;
   }
 

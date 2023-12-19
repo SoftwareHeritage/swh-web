@@ -17,8 +17,12 @@ See top-level LICENSE file for more information
 {% block header %}
   {% render_bundle 'badges' %}
   {% render_bundle 'browse' %}
-  {% render_bundle 'vault' %}
-  {% render_bundle 'save_code_now' %}
+  {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+    {% render_bundle 'vault' %}
+  {% endif %}
+  {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+    {% render_bundle 'save_code_now' %}
+  {% endif %}
 {% endblock header %}
 
 {% block navbar-content %}

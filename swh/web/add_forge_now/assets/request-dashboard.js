@@ -60,8 +60,13 @@ async function populateRequestDetails(requestId, nextStatusesFor) {
     $('#updateComment').val('');
 
     // Setting data for the email, now adding static data
-    $('#contactForgeAdmin').attr('emailTo', forgeRequest.forge_contact_email);
-    $('#contactForgeAdmin').attr('emailCc', forgeRequest.inbound_email_address);
+    const mods = 'Software Heritage Archival Moderators <archival@softwareheritage.org>';
+    const emailTo = `${forgeRequest.forge_contact_name} <${forgeRequest.forge_contact_email}>`;
+    const emailCc = forgeRequest.inbound_email_address;
+    const emailReply = `${emailCc}, ${mods}, ${emailTo}`;
+    $('#contactForgeAdmin').attr('emailTo', emailTo);
+    $('#contactForgeAdmin').attr('emailCc', emailCc);
+    $('#contactForgeAdmin').attr('emailReply', emailReply);
     $('#contactForgeAdmin').attr('emailSubject', `Software Heritage archival notification for ${forgeRequest.forge_domain}`);
     populateRequestHistory(data.history);
     populateDecisionSelectOption(forgeRequest.status, nextStatusesFor);
@@ -114,6 +119,7 @@ function contactForgeAdmin(event) {
   // Open the mailclient with pre-filled text
   const mailTo = encodeURIComponent($('#contactForgeAdmin').attr('emailTo'));
   const mailCc = encodeURIComponent($('#contactForgeAdmin').attr('emailCc'));
+  const mailReply = encodeURIComponent($('#contactForgeAdmin').attr('emailReply'));
   const subject = encodeURIComponent($('#contactForgeAdmin').attr('emailSubject'));
   // select email template according to the status:
   let emailText = '';
@@ -124,6 +130,6 @@ function contactForgeAdmin(event) {
     emailText = encodeURIComponent(successEmailTempate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));
   }
   const w = window.open('', '_blank', '', true);
-  w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailCc}&Subject=${subject}&body=${emailText}`;
+  w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailReply}&Mail-Reply-To=${mailReply}&Mail-Followup-To=${mailReply}&Subject=${subject}&body=${emailText}`;
   w.focus();
 }

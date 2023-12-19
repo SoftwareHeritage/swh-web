@@ -180,7 +180,7 @@ function _wrapEventTarget(target) {
     return;
   }
 
-  fill(proto, 'addEventListener', function (original)
+  fill(proto, 'addEventListener', function (original,)
 
  {
     return function (

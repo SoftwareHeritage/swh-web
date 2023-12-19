@@ -1,10 +1,6 @@
 .. _swh-web:
 
-.. toctree::
-   :maxdepth: 3
-   :caption: README:
-
-   README
+.. include:: README.rst
 
 .. toctree::
    :maxdepth: 2

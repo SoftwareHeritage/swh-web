@@ -81,6 +81,7 @@ http_status_code_message = {
 def _generate_error_page(
     request: HttpRequest, error_code: int, error_description: str
 ) -> HttpResponse:
+
     error_data = {
         "error": http_status_code_message[error_code],
         "reason": error_description,

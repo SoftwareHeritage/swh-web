@@ -1,4 +1,5 @@
 import { logger } from '@sentry/utils';
+import { DEBUG_BUILD } from '../debug-build.js';
 
 /** Deduplication filter */
 class Dedupe  {
@@ -20,7 +21,7 @@ class Dedupe  {
   }
 
   /** @inheritDoc */
-   setupOnce(_addGlobaleventProcessor, _getCurrentHub) {
+   setupOnce(_addGlobalEventProcessor, _getCurrentHub) {
     // noop
   }
 
@@ -37,7 +38,7 @@ class Dedupe  {
     // Juuust in case something goes wrong
     try {
       if (_shouldDropEvent(currentEvent, this._previousEvent)) {
-        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Event dropped due to being a duplicate of previously captured event.');
+        DEBUG_BUILD && logger.warn('Event dropped due to being a duplicate of previously captured event.');
         return null;
       }
     } catch (_oO) {} // eslint-disable-line no-empty

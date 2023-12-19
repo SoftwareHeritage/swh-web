@@ -1,18 +1,29 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import datetime
 import random
 from urllib.parse import quote, unquote, urlparse
 
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.model import Origin
+from swh.model.model import (
+    Origin,
+    Person,
+    Release,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+    TimestampWithTimezone,
+)
+from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.tests.data import random_sha1
+from swh.web.tests.helpers import check_html_get_response
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.identifiers import (
@@ -445,9 +456,13 @@ def test_get_swhids_info_origin_snapshot_context(
                 assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
-def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, origin):
+def test_get_swhids_info_characters_and_url_escaping(
+    archive_data, directory, origin, client
+):
     snapshot_context = get_snapshot_context(origin_url=origin["url"])
-    snapshot_context["origin_info"]["url"] = "http://example.org/?project=abc;def%"
+    new_origin_url = "http://example.org/?project=abc;def%"
+    archive_data.origin_add([Origin(url=new_origin_url)])
+    snapshot_context["origin_info"]["url"] = new_origin_url
     path = "/foo;/bar%"
 
     swhid_info = get_swhids_info(
@@ -463,19 +478,23 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, directory, or
     assert swhid_info["context"]["path"] == "/foo%3B/bar%25"
 
     # check special characters in SWHID URL have been escaped
-    parsed_swhid_url = urlparse(swhid_info["swhid_with_context_url"])
+    swhid_url = swhid_info["swhid_with_context_url"]
+    parsed_swhid_url = urlparse(swhid_url)
     assert (
-        "origin=http://example.org/%253Fproject%25253Dabc%25253Bdef%252525;"
+        "origin=http://example.org/%253Fproject%253Dabc%253Bdef%2525;"
         in parsed_swhid_url.path
     )
-    assert "path=/foo%25253B/bar%252525" in parsed_swhid_url.path
+    assert "path=/foo%253B/bar%2525" in parsed_swhid_url.path
 
-    # check that by double unquoting SWHID URL path, we get back on the SWHID value
+    # check that by double unquoting SWHID URL path, we get back on the unquoted SWHID value
     # first unquoting is done by HTTP server, second unquoting by the SWHID parser
     # when processing origin and path qualifiers
-    assert (
-        unquote(unquote(parsed_swhid_url.path[1:])) == swhid_info["swhid_with_context"]
+    assert unquote(unquote(parsed_swhid_url.path[1:])) == unquote(
+        swhid_info["swhid_with_context"]
     )
+
+    # check SWHID can be successfully resolved
+    check_html_get_response(client, swhid_url, status_code=302)
 
 
 def test_resolve_swhids_snapshot_context(
@@ -777,3 +796,46 @@ def test_resolve_file_entry_swhid_with_anchor_directory(
     resolved_swhid = resolve_swhid(swhid)
 
     assert resolved_swhid["browse_url"] == browse_url
+
+
+def test_resolve_dir_swhid_with_release_targeting_dir_anchor(archive_data, directory):
+    release_dir_target = Release(
+        target=hash_to_bytes(directory),
+        target_type=ModelObjectType.DIRECTORY,
+        date=TimestampWithTimezone.from_datetime(
+            datetime.datetime(2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc)
+        ),
+        author=Person(
+            name=b"author name",
+            fullname=b"Author Name author@email",
+            email=b"author@email",
+        ),
+        name=b"v0.0.1",
+        message=b"some comment on release",
+        synthetic=True,
+    )
+    release_swhid = gen_swhid(ObjectType.RELEASE, release_dir_target.id.hex())
+
+    archive_data.release_add([release_dir_target])
+    snapshot_release_dir_target = Snapshot(
+        branches={
+            b"v0.0.1": SnapshotBranch(
+                target=release_dir_target.id, target_type=TargetType.RELEASE
+            )
+        }
+    )
+    archive_data.snapshot_add([snapshot_release_dir_target])
+    snapshot_release_dir_target_swhid = gen_swhid(
+        ObjectType.SNAPSHOT, snapshot_release_dir_target.id.hex()
+    )
+
+    swhid = gen_swhid(
+        ObjectType.DIRECTORY,
+        directory,
+        metadata={
+            "visit": snapshot_release_dir_target_swhid,
+            "anchor": release_swhid,
+            "path": "foo",
+        },
+    )
+    assert resolve_swhid(swhid)

@@ -16,6 +16,8 @@ See top-level LICENSE file for more information
   </div>
   {% if readme_html %}
     <script>$('.swh-readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));</script>
+  {% elif readme_url is None %}
+    <script>$('.swh-readme').text("Readme bytes are not available");</script>
   {% elif readme_name.lower == 'readme' or readme_name.lower == 'readme.txt' %}
     <script>swh.webapp.renderTxt('.swh-readme', '{{ readme_url }}');</script>
   {% elif readme_name.lower == 'readme.org' %}

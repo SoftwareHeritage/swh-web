@@ -383,7 +383,7 @@ module.exports = {
       patterns: [
         {
           from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.mjs'),
-          to: path.resolve(__dirname, '../../static/js/')
+          to: path.resolve(__dirname, '../../static/js/pdf.worker.min.js')
         },
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
@@ -419,7 +419,7 @@ module.exports = {
       },
       additionalScripts: Object.assign(
         {
-          'js/pdf.worker.min.mjs': [
+          'js/pdf.worker.min.js': [
             {
               'id': 'pdfjs-dist/build/pdf.worker.mjs',
               'path': './node_modules/pdfjs-dist/build/pdf.worker.mjs',
