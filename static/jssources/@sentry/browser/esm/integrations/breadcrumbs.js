@@ -1,8 +1,11 @@
-import { getCurrentHub } from '@sentry/core';
-import { addInstrumentationHandler, getEventDescription, severityLevelFromString, safeJoin, SENTRY_XHR_DATA_KEY, parseUrl, logger, htmlTreeAsString } from '@sentry/utils';
+import { getClient, getCurrentHub } from '@sentry/core';
+import { addConsoleInstrumentationHandler, addClickKeypressInstrumentationHandler, addXhrInstrumentationHandler, addFetchInstrumentationHandler, addHistoryInstrumentationHandler, getEventDescription, severityLevelFromString, safeJoin, SENTRY_XHR_DATA_KEY, parseUrl, logger, htmlTreeAsString } from '@sentry/utils';
+import { DEBUG_BUILD } from '../debug-build.js';
 import { WINDOW } from '../helpers.js';
 
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable max-lines */
+
+/** JSDoc */
 
 /** maxStringLength gets capped to prevent 100 breadcrumbs exceeding 1MB event payload size */
 const MAX_ALLOWED_STRING_LENGTH = 1024;
@@ -52,22 +55,22 @@ class Breadcrumbs  {
    */
    setupOnce() {
     if (this.options.console) {
-      addInstrumentationHandler('console', _consoleBreadcrumb);
+      addConsoleInstrumentationHandler(_consoleBreadcrumb);
     }
     if (this.options.dom) {
-      addInstrumentationHandler('dom', _domBreadcrumb(this.options.dom));
+      addClickKeypressInstrumentationHandler(_domBreadcrumb(this.options.dom));
     }
     if (this.options.xhr) {
-      addInstrumentationHandler('xhr', _xhrBreadcrumb);
+      addXhrInstrumentationHandler(_xhrBreadcrumb);
     }
     if (this.options.fetch) {
-      addInstrumentationHandler('fetch', _fetchBreadcrumb);
+      addFetchInstrumentationHandler(_fetchBreadcrumb);
     }
     if (this.options.history) {
-      addInstrumentationHandler('history', _historyBreadcrumb);
+      addHistoryInstrumentationHandler(_historyBreadcrumb);
     }
     if (this.options.sentry) {
-      const client = getCurrentHub().getClient();
+      const client = getClient();
       client && client.on && client.on('beforeSendEvent', addSentryBreadcrumb);
     }
   }
@@ -102,7 +105,7 @@ function _domBreadcrumb(dom) {
     let maxStringLength =
       typeof dom === 'object' && typeof dom.maxStringLength === 'number' ? dom.maxStringLength : undefined;
     if (maxStringLength && maxStringLength > MAX_ALLOWED_STRING_LENGTH) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+      DEBUG_BUILD &&
         logger.warn(
           `\`dom.maxStringLength\` cannot exceed ${MAX_ALLOWED_STRING_LENGTH}, but a value of ${maxStringLength} was configured. Sentry will use ${MAX_ALLOWED_STRING_LENGTH} instead.`,
         );
@@ -246,13 +249,14 @@ function _fetchBreadcrumb(handlerData) {
       hint,
     );
   } else {
+    const response = handlerData.response ;
     const data = {
       ...handlerData.fetchData,
-      status_code: handlerData.response && handlerData.response.status,
+      status_code: response && response.status,
     };
     const hint = {
       input: handlerData.args,
-      response: handlerData.response,
+      response,
       startTimestamp,
       endTimestamp,
     };
@@ -274,11 +278,11 @@ function _historyBreadcrumb(handlerData) {
   let from = handlerData.from;
   let to = handlerData.to;
   const parsedLoc = parseUrl(WINDOW.location.href);
-  let parsedFrom = parseUrl(from);
+  let parsedFrom = from ? parseUrl(from) : undefined;
   const parsedTo = parseUrl(to);
 
   // Initial pushState doesn't provide `from` information
-  if (!parsedFrom.path) {
+  if (!parsedFrom || !parsedFrom.path) {
     parsedFrom = parsedLoc;
   }
 

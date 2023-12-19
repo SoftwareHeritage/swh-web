@@ -1,5 +1,7 @@
 import { logger, uuid4, timestampInSeconds, isThenable } from '@sentry/utils';
+import { DEBUG_BUILD } from './debug-build.js';
 import { getCurrentHub } from './hub.js';
+import { parseEventHintOrCaptureContext } from './utils/prepareEvent.js';
 
 // Note: All functions in this file are typed with a return value of `ReturnType<Hub[HUB_FUNCTION]>`,
 // where HUB_FUNCTION is some method on the Hub class.
@@ -10,14 +12,15 @@ import { getCurrentHub } from './hub.js';
 
 /**
  * Captures an exception event and sends it to Sentry.
- *
- * @param exception An exception-like object.
- * @param captureContext Additional scope data to apply to exception event.
- * @returns The generated eventId.
+ * This accepts an event hint as optional second parameter.
+ * Alternatively, you can also pass a CaptureContext directly as second parameter.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-function captureException(exception, captureContext) {
-  return getCurrentHub().captureException(exception, { captureContext });
+function captureException(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exception,
+  hint,
+) {
+  return getCurrentHub().captureException(exception, parseEventHintOrCaptureContext(hint));
 }
 
 /**
@@ -181,9 +184,9 @@ function captureCheckIn(checkIn, upsertMonitorConfig) {
   const scope = hub.getScope();
   const client = hub.getClient();
   if (!client) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot capture check-in. No client defined.');
+    DEBUG_BUILD && logger.warn('Cannot capture check-in. No client defined.');
   } else if (!client.captureCheckIn) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot capture check-in. Client does not support sending check-ins.');
+    DEBUG_BUILD && logger.warn('Cannot capture check-in. Client does not support sending check-ins.');
   } else {
     return client.captureCheckIn(checkIn, upsertMonitorConfig, scope);
   }
@@ -243,11 +246,11 @@ function withMonitor(
  * doesn't (or if there's no client defined).
  */
 async function flush(timeout) {
-  const client = getCurrentHub().getClient();
+  const client = getClient();
   if (client) {
     return client.flush(timeout);
   }
-  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events. No client defined.');
+  DEBUG_BUILD && logger.warn('Cannot flush events. No client defined.');
   return Promise.resolve(false);
 }
 
@@ -260,11 +263,11 @@ async function flush(timeout) {
  * doesn't (or if there's no client defined).
  */
 async function close(timeout) {
-  const client = getCurrentHub().getClient();
+  const client = getClient();
   if (client) {
     return client.close(timeout);
   }
-  (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Cannot flush events and disable SDK. No client defined.');
+  DEBUG_BUILD && logger.warn('Cannot flush events and disable SDK. No client defined.');
   return Promise.resolve(false);
 }
 
@@ -277,5 +280,19 @@ function lastEventId() {
   return getCurrentHub().lastEventId();
 }
 
-export { addBreadcrumb, captureCheckIn, captureEvent, captureException, captureMessage, close, configureScope, flush, lastEventId, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withMonitor, withScope };
+/**
+ * Get the currently active client.
+ */
+function getClient() {
+  return getCurrentHub().getClient();
+}
+
+/**
+ * Get the currently active scope.
+ */
+function getCurrentScope() {
+  return getCurrentHub().getScope();
+}
+
+export { addBreadcrumb, captureCheckIn, captureEvent, captureException, captureMessage, close, configureScope, flush, getClient, getCurrentScope, lastEventId, setContext, setExtra, setExtras, setTag, setTags, setUser, startTransaction, withMonitor, withScope };
 //# sourceMappingURL=exports.js.map

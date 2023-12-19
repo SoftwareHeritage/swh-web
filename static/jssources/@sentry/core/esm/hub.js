@@ -1,7 +1,9 @@
 import { uuid4, dateTimestampInSeconds, consoleSandbox, logger, GLOBAL_OBJ, getGlobalSingleton } from '@sentry/utils';
 import { DEFAULT_ENVIRONMENT } from './constants.js';
+import { DEBUG_BUILD } from './debug-build.js';
 import { Scope } from './scope.js';
 import { closeSession, makeSession, updateSession } from './session.js';
+import { SDK_VERSION } from './version.js';
 
 /**
  * API compatibility version of this hub.
@@ -11,7 +13,7 @@ import { closeSession, makeSession, updateSession } from './session.js';
  *
  * @hidden
  */
-const API_VERSION = 4;
+const API_VERSION = parseFloat(SDK_VERSION);
 
 /**
  * Default maximum number of breadcrumbs added to an event. Can be overwritten
@@ -65,7 +67,7 @@ class Hub  {
    */
    pushScope() {
     // We want to clone the content of prev scope
-    const scope = Scope.clone(this.getScope());
+    const scope = this.getScope().clone();
     this.getStack().push({
       client: this.getClient(),
       scope,
@@ -287,7 +289,7 @@ class Hub  {
     try {
       return client.getIntegration(integration);
     } catch (_oO) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot retrieve integration ${integration.id} from the current Hub`);
+      DEBUG_BUILD && logger.warn(`Cannot retrieve integration ${integration.id} from the current Hub`);
       return null;
     }
   }
@@ -298,16 +300,14 @@ class Hub  {
    startTransaction(context, customSamplingContext) {
     const result = this._callExtensionMethod('startTransaction', context, customSamplingContext);
 
-    if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && !result) {
+    if (DEBUG_BUILD && !result) {
       const client = this.getClient();
       if (!client) {
-        // eslint-disable-next-line no-console
-        console.warn(
+        logger.warn(
           "Tracing extension 'startTransaction' is missing. You should 'init' the SDK before calling 'startTransaction'",
         );
       } else {
-        // eslint-disable-next-line no-console
-        console.warn(`Tracing extension 'startTransaction' has not been added. Call 'addTracingExtensions' before calling 'init':
+        logger.warn(`Tracing extension 'startTransaction' has not been added. Call 'addTracingExtensions' before calling 'init':
 Sentry.addTracingExtensions();
 Sentry.init({...});
 `);
@@ -430,7 +430,7 @@ Sentry.init({...});
     if (sentry && sentry.extensions && typeof sentry.extensions[method] === 'function') {
       return sentry.extensions[method].apply(this, args);
     }
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Extension method ${method} couldn't be found, doing nothing.`);
+    DEBUG_BUILD && logger.warn(`Extension method ${method} couldn't be found, doing nothing.`);
   }
 }
 
@@ -503,7 +503,7 @@ function ensureHubOnCarrier(carrier, parent = getGlobalHub()) {
   // If there's no hub on current domain, or it's an old API, assign a new one
   if (!hasHubOnCarrier(carrier) || getHubFromCarrier(carrier).isOlderThan(API_VERSION)) {
     const globalHubTopStack = parent.getStackTop();
-    setHubOnCarrier(carrier, new Hub(globalHubTopStack.client, Scope.clone(globalHubTopStack.scope)));
+    setHubOnCarrier(carrier, new Hub(globalHubTopStack.client, globalHubTopStack.scope.clone()));
   }
 }
 

@@ -82,7 +82,7 @@ export async function renderPdf(pdfUrl) {
 
   const pdfjs = await import(/* webpackChunkName: "pdfjs" */ 'pdfjs-dist');
 
-  pdfjs.GlobalWorkerOptions.workerSrc = staticAsset('js/pdf.worker.min.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc = staticAsset('js/pdf.worker.min.js');
 
   $(document).ready(async() => {
     $('#pdf-prev').click(onPrevPage);

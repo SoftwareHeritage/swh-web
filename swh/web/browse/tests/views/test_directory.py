@@ -601,3 +601,87 @@ def test_browse_directory_with_path_targeting_file(
     )
 
     check_http_get_response(client, resp["location"], status_code=200)
+
+
+@given(new_person(), new_swh_date())
+def test_directory_view_missing_readme_bytes(client, archive_data, person, date):
+    origin_url = "https://git.example.org/user/project"
+    root_dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"README.md",
+                type="file",
+                # dummy sha1_git not available in objstorage
+                target=hash_to_bytes("1" * 40),
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    archive_data.directory_add([root_dir])
+
+    revision = Revision(
+        directory=root_dir.id,
+        author=person,
+        committer=person,
+        message=b"commit message",
+        date=TimestampWithTimezone.from_datetime(date),
+        committer_date=TimestampWithTimezone.from_datetime(date),
+        synthetic=False,
+        type=RevisionType.GIT,
+    )
+    archive_data.revision_add([revision])
+
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target="refs/head/master".encode(),
+                target_type=TargetType.ALIAS,
+            ),
+            b"refs/head/master": SnapshotBranch(
+                target=revision.id,
+                target_type=TargetType.REVISION,
+            ),
+        }
+    )
+    archive_data.snapshot_add([snapshot])
+
+    archive_data.origin_add([Origin(url=origin_url)])
+    date = now()
+    visit = OriginVisit(origin=origin_url, date=date, type="git")
+    visit = archive_data.origin_visit_add([visit])[0]
+    visit_status = OriginVisitStatus(
+        origin=origin_url,
+        visit=visit.visit,
+        date=date,
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    # check all views that render README files
+    browse_dir_url = reverse(
+        "browse-directory", url_args={"sha1_git": root_dir.id.hex()}
+    )
+    resp = check_html_get_response(
+        client, browse_dir_url, status_code=200, template_used="browse-directory.html"
+    )
+    assert_contains(resp, "Readme bytes are not available")
+
+    browse_rev_url = reverse(
+        "browse-revision", url_args={"sha1_git": revision.id.hex()}
+    )
+    resp = check_html_get_response(
+        client, browse_rev_url, status_code=200, template_used="browse-revision.html"
+    )
+    assert_contains(resp, "Readme bytes are not available")
+
+    browse_origin_url = reverse(
+        "browse-origin-directory", query_params={"origin_url": origin_url}
+    )
+    resp = check_html_get_response(
+        client,
+        browse_origin_url,
+        status_code=200,
+        template_used="browse-directory.html",
+    )
+    assert_contains(resp, "Readme bytes are not available")

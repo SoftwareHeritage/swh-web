@@ -229,7 +229,7 @@ def _check_origin_url_valid(origin_url: str) -> None:
         )
 
     parsed_url = urlparse(origin_url)
-    if parsed_url.password not in (None, "", "anonymous"):
+    if parsed_url.password not in (None, "", "anonymous", "guest"):
         raise BadInputExc(
             "The provided origin url contains a password and cannot be "
             "accepted for security reasons."

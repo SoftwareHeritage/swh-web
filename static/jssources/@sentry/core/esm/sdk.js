@@ -1,4 +1,5 @@
-import { logger } from '@sentry/utils';
+import { logger, consoleSandbox } from '@sentry/utils';
+import { DEBUG_BUILD } from './debug-build.js';
 import { getCurrentHub } from './hub.js';
 
 /** A class object that can instantiate Client objects. */
@@ -15,12 +16,14 @@ function initAndBind(
   options,
 ) {
   if (options.debug === true) {
-    if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
+    if (DEBUG_BUILD) {
       logger.enable();
     } else {
       // use `console.warn` rather than `logger.warn` since by non-debug bundles have all `logger.x` statements stripped
-      // eslint-disable-next-line no-console
-      console.warn('[Sentry] Cannot initialize SDK with `debug` option using a non-debug bundle.');
+      consoleSandbox(() => {
+        // eslint-disable-next-line no-console
+        console.warn('[Sentry] Cannot initialize SDK with `debug` option using a non-debug bundle.');
+      });
     }
   }
   const hub = getCurrentHub();

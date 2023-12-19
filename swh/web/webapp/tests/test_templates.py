@@ -12,7 +12,11 @@ import pytest
 from django.conf import settings
 
 from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
-from swh.web.config import SWH_WEB_SERVER_NAME, SWH_WEB_STAGING_SERVER_NAMES, get_config
+from swh.web.config import (
+    SWH_WEB_SERVER_NAMES,
+    SWH_WEB_STAGING_SERVER_NAMES,
+    get_config,
+)
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_http_get_response, create_django_permission
 from swh.web.utils import reverse
@@ -23,7 +27,7 @@ swh_web_version = get_distribution("swh.web").version
 def test_layout_without_ribbon(client, config_updater):
     url = reverse("swh-web-homepage")
     resp = check_http_get_response(
-        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAME
+        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAMES[0]
     )
     assert_not_contains(resp, "swh-corner-ribbon")
 

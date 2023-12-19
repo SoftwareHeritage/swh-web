@@ -91,8 +91,8 @@ function wrap(
     } catch (ex) {
       ignoreNextOnError();
 
-      withScope((scope) => {
-        scope.addEventProcessor((event) => {
+      withScope(scope => {
+        scope.addEventProcessor(event => {
           if (options.mechanism) {
             addExceptionTypeValue(event, undefined, undefined);
             addExceptionMechanism(event, options.mechanism);

@@ -1,4 +1,5 @@
 import { logger, getEventDescription, stringMatchesSomePattern } from '@sentry/utils';
+import { DEBUG_BUILD } from '../debug-build.js';
 
 // "Script error." is hard coded into browsers for errors that it can't read.
 // this is the result of a script being pulled in from an external domain and CORS.
@@ -35,7 +36,7 @@ class InboundFilters  {
   /**
    * @inheritDoc
    */
-   setupOnce(_addGlobaleventProcessor, _getCurrentHub) {
+   setupOnce(_addGlobalEventProcessor, _getCurrentHub) {
     // noop
   }
 
@@ -72,26 +73,26 @@ function _mergeOptions(
 /** JSDoc */
 function _shouldDropEvent(event, options) {
   if (options.ignoreInternal && _isSentryError(event)) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+    DEBUG_BUILD &&
       logger.warn(`Event dropped due to being internal Sentry Error.\nEvent: ${getEventDescription(event)}`);
     return true;
   }
   if (_isIgnoredError(event, options.ignoreErrors)) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+    DEBUG_BUILD &&
       logger.warn(
         `Event dropped due to being matched by \`ignoreErrors\` option.\nEvent: ${getEventDescription(event)}`,
       );
     return true;
   }
   if (_isIgnoredTransaction(event, options.ignoreTransactions)) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+    DEBUG_BUILD &&
       logger.warn(
         `Event dropped due to being matched by \`ignoreTransactions\` option.\nEvent: ${getEventDescription(event)}`,
       );
     return true;
   }
   if (_isDeniedUrl(event, options.denyUrls)) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+    DEBUG_BUILD &&
       logger.warn(
         `Event dropped due to being matched by \`denyUrls\` option.\nEvent: ${getEventDescription(
           event,
@@ -100,7 +101,7 @@ function _shouldDropEvent(event, options) {
     return true;
   }
   if (!_isAllowedUrl(event, options.allowUrls)) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+    DEBUG_BUILD &&
       logger.warn(
         `Event dropped due to not being matched by \`allowUrls\` option.\nEvent: ${getEventDescription(
           event,
@@ -172,7 +173,7 @@ function _getPossibleEventMessages(event) {
     }
   }
 
-  if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && possibleMessages.length === 0) {
+  if (DEBUG_BUILD && possibleMessages.length === 0) {
     logger.error(`Could not extract message for event ${getEventDescription(event)}`);
   }
 
@@ -213,7 +214,7 @@ function _getEventFilterUrl(event) {
     }
     return frames ? _getLastValidUrl(frames) : null;
   } catch (oO) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error(`Cannot extract url for event ${getEventDescription(event)}`);
+    DEBUG_BUILD && logger.error(`Cannot extract url for event ${getEventDescription(event)}`);
     return null;
   }
 }

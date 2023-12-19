@@ -1,4 +1,5 @@
 import { htmlTreeAsString } from './browser.js';
+import { DEBUG_BUILD } from './debug-build.js';
 import { isError, isEvent, isInstanceOf, isElement, isPlainObject, isPrimitive } from './is.js';
 import { logger } from './logger.js';
 import { truncate } from './string.js';
@@ -47,7 +48,7 @@ function addNonEnumerableProperty(obj, name, value) {
       configurable: true,
     });
   } catch (o_O) {
-    (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Failed to add non-enumerable property "${name}" to object`, obj);
+    DEBUG_BUILD && logger.log(`Failed to add non-enumerable property "${name}" to object`, obj);
   }
 }
 
@@ -97,7 +98,9 @@ function urlEncode(object) {
  * @returns An Event or Error turned into an object - or the value argurment itself, when value is neither an Event nor
  *  an Error.
  */
-function convertToPlainObject(value)
+function convertToPlainObject(
+  value,
+)
 
  {
   if (isError(value)) {

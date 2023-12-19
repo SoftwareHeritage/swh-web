@@ -1,7 +1,10 @@
 import { makeDsn, logger, checkOrSetAlreadyCaught, isPrimitive, resolvedSyncPromise, addItemToEnvelope, createAttachmentEnvelopeItem, SyncPromise, rejectedSyncPromise, SentryError, isThenable, isPlainObject } from '@sentry/utils';
 import { getEnvelopeEndpointWithUrlEncodedAuth } from './api.js';
+import { DEBUG_BUILD } from './debug-build.js';
 import { createEventEnvelope, createSessionEnvelope } from './envelope.js';
+import { getCurrentHub } from './hub.js';
 import { setupIntegrations, setupIntegration } from './integration.js';
+import { createMetricEnvelope } from './metrics/envelope.js';
 import { updateSession } from './session.js';
 import { getDynamicSamplingContextFromClient } from './tracing/dynamicSamplingContext.js';
 import { prepareEvent } from './utils/prepareEvent.js';
@@ -40,6 +43,12 @@ const ALREADY_SEEN_ERROR = "Not capturing exception because it's already been ca
  * }
  */
 class BaseClient {
+  /**
+   * A reference to a metrics aggregator
+   *
+   * @experimental Note this is alpha API. It may experience breaking changes in the future.
+   */
+
   /** Options passed to the SDK. */
 
   /** The client Dsn, if specified in options. Without this Dsn, the SDK will be disabled. */
@@ -71,7 +80,7 @@ class BaseClient {
     if (options.dsn) {
       this._dsn = makeDsn(options.dsn);
     } else {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('No DSN provided, client will not send events.');
+      DEBUG_BUILD && logger.warn('No DSN provided, client will not send events.');
     }
 
     if (this._dsn) {
@@ -91,7 +100,7 @@ class BaseClient {
    captureException(exception, hint, scope) {
     // ensure we haven't captured this very object before
     if (checkOrSetAlreadyCaught(exception)) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(ALREADY_SEEN_ERROR);
+      DEBUG_BUILD && logger.log(ALREADY_SEEN_ERROR);
       return;
     }
 
@@ -141,7 +150,7 @@ class BaseClient {
    captureEvent(event, hint, scope) {
     // ensure we haven't captured this very object before
     if (hint && hint.originalException && checkOrSetAlreadyCaught(hint.originalException)) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(ALREADY_SEEN_ERROR);
+      DEBUG_BUILD && logger.log(ALREADY_SEEN_ERROR);
       return;
     }
 
@@ -161,7 +170,7 @@ class BaseClient {
    */
    captureSession(session) {
     if (!(typeof session.release === 'string')) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn('Discarded session because of missing or non-string release');
+      DEBUG_BUILD && logger.warn('Discarded session because of missing or non-string release');
     } else {
       this.sendSession(session);
       // After sending, we set init false to indicate it's not the first occurrence
@@ -205,6 +214,9 @@ class BaseClient {
    flush(timeout) {
     const transport = this._transport;
     if (transport) {
+      if (this.metricsAggregator) {
+        this.metricsAggregator.flush();
+      }
       return this._isClientDoneProcessing(timeout).then(clientFinished => {
         return transport.flush(timeout).then(transportFlushed => clientFinished && transportFlushed);
       });
@@ -219,6 +231,9 @@ class BaseClient {
    close(timeout) {
     return this.flush(timeout).then(result => {
       this.getOptions().enabled = false;
+      if (this.metricsAggregator) {
+        this.metricsAggregator.close();
+      }
       return result;
     });
   }
@@ -259,7 +274,7 @@ class BaseClient {
     try {
       return (this._integrations[integration.id] ) || null;
     } catch (_oO) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.warn(`Cannot retrieve integration ${integration.id} from the current Client`);
+      DEBUG_BUILD && logger.warn(`Cannot retrieve integration ${integration.id} from the current Client`);
       return null;
     }
   }
@@ -317,11 +332,24 @@ class BaseClient {
       // would be `Partial<Record<SentryRequestType, Partial<Record<Outcome, number>>>>`
       // With typescript 4.1 we could even use template literal types
       const key = `${reason}:${category}`;
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.log(`Adding outcome: "${key}"`);
+      DEBUG_BUILD && logger.log(`Adding outcome: "${key}"`);
 
       // The following works because undefined + 1 === NaN and NaN is falsy
       this._outcomes[key] = this._outcomes[key] + 1 || 1;
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+   captureAggregateMetrics(metricBucketItems) {
+    const metricsEnvelope = createMetricEnvelope(
+      metricBucketItems,
+      this._dsn,
+      this._options._metadata,
+      this._options.tunnel,
+    );
+    void this._sendEnvelope(metricsEnvelope);
   }
 
   // Keep on() & emit() signatures in sync with types' client.ts interface
@@ -485,7 +513,7 @@ class BaseClient {
         return finalEvent.event_id;
       },
       reason => {
-        if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
+        if (DEBUG_BUILD) {
           // If something's gone wrong, log the error as a warning. If it's just us having used a `SentryError` for
           // control flow, log just the message (no stack) as a log-level log.
           const sentryError = reason ;
@@ -620,10 +648,10 @@ class BaseClient {
 
     if (this._isEnabled() && this._transport) {
       return this._transport.send(envelope).then(null, reason => {
-        (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Error while sending event:', reason);
+        DEBUG_BUILD && logger.error('Error while sending event:', reason);
       });
     } else {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) && logger.error('Transport disabled');
+      DEBUG_BUILD && logger.error('Transport disabled');
     }
   }
 
@@ -705,5 +733,19 @@ function isTransactionEvent(event) {
   return event.type === 'transaction';
 }
 
-export { BaseClient };
+/**
+ * Add an event processor to the current client.
+ * This event processor will run for all events processed by this client.
+ */
+function addEventProcessor(callback) {
+  const client = getCurrentHub().getClient();
+
+  if (!client || !client.addEventProcessor) {
+    return;
+  }
+
+  client.addEventProcessor(callback);
+}
+
+export { BaseClient, addEventProcessor };
 //# sourceMappingURL=baseclient.js.map
