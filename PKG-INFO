@@ -1,14 +1,13 @@
 Metadata-Version: 2.1
 Name: swh.web
-Version: 0.3.1
-Summary: Software Heritage Web UI
-Home-page: https://gitlab.softwareheritage.org/swh/devel/swh-web
-Author: Software Heritage developers
-Author-email: swh-devel@inria.fr
+Version: 0.3.2
+Summary: Software Heritage web UI
+Author-email: Software Heritage developers <swh-devel@inria.fr>
+Project-URL: Homepage, https://gitlab.softwareheritage.org/swh/devel/swh-web
 Project-URL: Bug Reports, https://gitlab.softwareheritage.org/swh/devel/swh-web/-/issues
 Project-URL: Funding, https://www.softwareheritage.org/donate
-Project-URL: Source, https://gitlab.softwareheritage.org/swh/devel/swh-web.git
 Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-web/
+Project-URL: Source, https://gitlab.softwareheritage.org/swh/devel/swh-web.git
 Classifier: Programming Language :: Python :: 3
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)
