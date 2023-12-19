@@ -15,8 +15,11 @@ from swh.storage import get_storage
 from swh.vault import get_vault
 from swh.web import settings
 
-SWH_WEB_SERVER_NAME = "archive.softwareheritage.org"
-SWH_WEB_INTERNAL_SERVER_NAME = "archive.internal.softwareheritage.org"
+SWH_WEB_INTERNAL_SERVER_NAMES = [
+    "archive.internal.softwareheritage.org",
+    "webapp1.internal.softwareheritage.org",
+]
+SWH_WEB_SERVER_NAMES = ["archive.softwareheritage.org"] + SWH_WEB_INTERNAL_SERVER_NAMES
 
 SWH_WEB_STAGING_SERVER_NAMES = [
     "webapp.staging.swh.network",
@@ -151,6 +154,7 @@ DEFAULT_CONFIG = {
     ),
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "staging_server_names": ("list", SWH_WEB_STAGING_SERVER_NAMES),
+    "production_server_names": ("list", SWH_WEB_SERVER_NAMES),
     "instance_name": ("str", "archive-test.softwareheritage.org"),
     "give": ("dict", {"public_key": "", "token": ""}),
     "features": ("dict", {"add_forge_now": True}),

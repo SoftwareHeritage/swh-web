@@ -23,7 +23,7 @@ from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
-from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAMES, get_config
 from swh.web.utils import archive
 
 API_GRAPH_PERM = "swh.web.api.graph"
@@ -129,7 +129,7 @@ def api_graph(request: Request) -> None:
 def api_graph_proxy(
     request: Request, graph_query: str
 ) -> Union[Response, StreamingHttpResponse]:
-    if request.get_host() != SWH_WEB_INTERNAL_SERVER_NAME:
+    if request.get_host() not in SWH_WEB_INTERNAL_SERVER_NAMES:
         if not bool(request.user and request.user.is_authenticated):
             return Response("Authentication credentials were not provided.", status=401)
         if not request.user.has_perm(API_GRAPH_PERM):
