@@ -952,7 +952,17 @@ def stat_counters():
     res = {}
     if counters and config.get_config()["counters_backend"] == "swh-counters":
         res = counters.get_counts(
-            ["origin", "revision", "content", "directory", "release", "person"]
+            [
+                "origin",
+                "revision",
+                "content",
+                "directory",
+                "release",
+                "person",
+                "snapshot",
+                "skipped_content",
+                "origin_visit",
+            ]
         )
     else:
         res = storage.stat_counters()
@@ -1437,8 +1447,7 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
 
 
 def lookup_missing_hashes(grouped_swhids: Dict[ObjectType, List[bytes]]) -> Set[str]:
-    """Lookup missing Software Heritage persistent identifier hash, using
-    batch processing.
+    """Lookup missing SoftWare Hash IDentifiers using batch processing.
 
     Args:
         A dictionary with:

@@ -441,7 +441,6 @@ def get_snapshot_context(
     origin_visits_url = None
 
     if origin_url:
-
         if visit_id is not None:
             query_params["visit_id"] = visit_id
         elif snapshot_id is not None:
@@ -879,7 +878,7 @@ def browse_snapshot_directory(
         if f["length"] is not None:
             sum_file_sizes += f["length"]
         if f["name"].lower().startswith("readme"):
-            readmes[f["name"]] = f["checksums"]["sha1"]
+            readmes[f["name"]] = f.get("checksums", {}).get("sha1")
 
     readme_name, readme_url, readme_html = get_readme_to_display(readmes)
 

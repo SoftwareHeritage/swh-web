@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_save_code_now", "0013_saveoriginrequest_webhook_info"),
     ]

@@ -214,7 +214,6 @@ def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
     _generate_and_test_bearer_token(client, keycloak_oidc)
 
     for kc_err_msg in ("Offline session not active", "Offline user session not found"):
-
         kc_error_dict = {
             "error": "invalid_grant",
             "error_description": kc_err_msg,

@@ -162,7 +162,6 @@ def test_from_swh_none():
 
 
 def test_from_origin():
-
     origin_url = "rsync://ftp.gnu.org/gnu/octave"
 
     origin_input = {

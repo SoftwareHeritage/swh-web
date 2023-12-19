@@ -34,7 +34,7 @@ def test_api_1_stat_counters_raise_from_db(api_client, mocker):
     assert rv.data == {
         "exception": "StorageDBError",
         "reason": "An unexpected error occurred in the backend: "
-        "Storage exploded! Will be back online shortly!",
+        "('Storage exploded! Will be back online shortly!',)",
     }
 
 
@@ -49,7 +49,7 @@ def test_api_1_stat_counters_raise_from_api(api_client, mocker):
     assert rv.data == {
         "exception": "StorageAPIError",
         "reason": "An unexpected error occurred in the api backend: "
-        "Storage API dropped dead! Will resurrect from its ashes asap!",
+        "('Storage API dropped dead! Will resurrect from its ashes asap!',)",
     }
 
 

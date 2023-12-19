@@ -11,7 +11,7 @@ from swh.web.utils.identifiers import resolve_swhid
 
 def swhid_browse(request: HttpRequest, swhid: str) -> HttpResponse:
     """
-    Django view enabling to browse the archive using :ref:`persistent-identifiers`.
+    Django view enabling to browse the archive using :ref:`swhids`.
 
     The url that points to it is :http:get:`/(swhid)/`.
     """

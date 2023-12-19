@@ -346,7 +346,6 @@ def test_content_raw_bin(client, archive_data, content_binary_type):
 
 
 def test_content_raw_image_with_content_type(client, archive_data, content_image_type):
-
     url_raw = reverse(
         "browse-content-raw",
         url_args={"query_string": content_image_type["sha1"]},
@@ -366,7 +365,6 @@ def test_content_raw_image_with_content_type(client, archive_data, content_image
 def test_content_request_errors(
     client, staff_user, invalid_sha1, unknown_content, staff_user_logged_in
 ):
-
     if staff_user_logged_in:
         client.force_login(staff_user)
 
@@ -1102,7 +1100,6 @@ def _check_origin_link(resp, origin_url):
 def test_browse_content_snapshot_context_release_directory_target(
     client, staff_user, archive_data, directory_with_files, staff_user_logged_in
 ):
-
     if staff_user_logged_in:
         client.force_login(staff_user)
 
@@ -1151,11 +1148,10 @@ def test_browse_content_snapshot_context_release_directory_target(
 def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
     archive_data, client, content_text, content_image_type, new_origin
 ):
-
     # create a new origin with a snapshot including two releases targeting directories
     # containing a single file and a HEAD branch targeting the first release
 
-    first_release_dir = Directory(
+    first_release_subdir = Directory(
         entries=(
             DirectoryEntry(
                 name=b"text_file",
@@ -1165,6 +1161,27 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
             ),
         )
     )
+
+    first_subdir_name = ("1" * 40).encode()
+    second_subdir_name = b"foo-" + first_subdir_name
+
+    first_release_dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=first_subdir_name,
+                type="dir",
+                target=first_release_subdir.id,
+                perms=DentryPerms.directory,
+            ),
+            DirectoryEntry(
+                name=second_subdir_name,
+                type="dir",
+                target=first_release_subdir.id,
+                perms=DentryPerms.directory,
+            ),
+        )
+    )
+
     second_release_dir = Directory(
         entries=(
             DirectoryEntry(
@@ -1245,3 +1262,18 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
     check_html_get_response(
         client, url, status_code=200, template_used="browse-content.html"
     )
+
+    # check paths containing a sha1 sum can still be browsed
+    for subdir_name in (first_subdir_name, second_subdir_name):
+        url = reverse(
+            "browse-content",
+            url_args={"query_string": f"sha1_git:{content_text['sha1_git']}"},
+            query_params={
+                "path": f"{subdir_name.decode()}/text_file",
+                "origin_url": new_origin.url,
+            },
+        )
+
+        check_html_get_response(
+            client, url, status_code=200, template_used="browse-content.html"
+        )

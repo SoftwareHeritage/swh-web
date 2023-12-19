@@ -30,7 +30,6 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
     visits = archive_data.origin_visit_get(origin_with_multiple_visits["url"])
 
     for visit in visits:
-
         snapshot = archive_data.snapshot_get(visit["snapshot"])
         branches = []
         releases = []
@@ -91,13 +90,11 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
 
 
 def test_get_snapshot_context_no_origin(archive_data, snapshot):
-
     for browse_context, kwargs in (
         ("content", {"snapshot_id": snapshot, "path": "/some/path"}),
         ("directory", {"snapshot_id": snapshot}),
         ("log", {"snapshot_id": snapshot}),
     ):
-
         url_args = {"snapshot_id": snapshot}
 
         query_params = dict(kwargs)
@@ -170,7 +167,6 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
 
 def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_visits):
-
     origin_visits = get_origin_visits(origin_with_multiple_visits)
 
     timestamp = format_utc_iso_date(origin_visits[0]["date"], "%Y-%m-%dT%H:%M:%SZ")
@@ -197,7 +193,6 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
             },
         ),
     ):
-
         visit_id = kwargs["visit_id"] if "visit_id" in kwargs else None
         visit_ts = kwargs["timestamp"] if "timestamp" in kwargs else None
         visit_info = get_origin_visit(
@@ -322,7 +317,6 @@ def _check_branch_release_revision_parameters(
     assert snapshot_context == expected_branch
 
     if releases:
-
         release = random.choice(releases)
 
         snapshot_context = get_snapshot_context(
@@ -468,7 +462,6 @@ def test_get_snapshot_context_revision_release(archive_data, revision):
         {"snapshot_id": snapshot.id.hex(), "release_name": release_name},
         {"snapshot_id": snapshot_no_head.id.hex()},
     ):
-
         snapshot_context = get_snapshot_context(**params)
 
         assert snapshot_context["branches"] == []
@@ -516,7 +509,6 @@ def test_get_snapshot_context_directory_release(archive_data, directory):
         {"snapshot_id": snapshot.id.hex(), "release_name": release_name},
         {"snapshot_id": snapshot_no_head.id.hex()},
     ):
-
         snapshot_context = get_snapshot_context(**params)
 
         assert snapshot_context["branches"] == []

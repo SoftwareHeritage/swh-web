@@ -16,7 +16,6 @@ from swh.web.utils.exc import handle_view_exception
 
 
 def test_handle_view_exception_escape_remote_exception_text(request_factory, mocker):
-
     # we do not want to add traceback in error page as none will be
     # available in the context of that test
     config = deepcopy(get_config())

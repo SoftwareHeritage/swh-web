@@ -105,7 +105,6 @@ def test_add_forge_now_allow_no_comment(migrator):
 
 
 def test_add_forge_now_store_submitter_forward_username(migrator):
-
     state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0002))
     requestModel = state.apps.get_model(APP_LABEL, "Request")
     assert not hasattr(requestModel, "submitter_forward_username")
@@ -117,7 +116,6 @@ def test_add_forge_now_store_submitter_forward_username(migrator):
 
 
 def test_add_forge_now_add_new_fields_to_request(migrator):
-
     state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0005))
     Request = state.apps.get_model(APP_LABEL, "Request")
     RequestHistory = state.apps.get_model(APP_LABEL, "RequestHistory")
@@ -173,7 +171,6 @@ def test_add_forge_now_add_new_fields_to_request(migrator):
 
 
 def test_add_forge_now_denied_status_renamed_to_unsuccesful(migrator):
-
     state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0006))
     Request = state.apps.get_model(APP_LABEL, "Request")
 
@@ -215,7 +212,6 @@ def test_add_forge_now_denied_status_renamed_to_unsuccesful(migrator):
 
 
 def test_add_forge_now_url_validation(migrator):
-
     state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0007))
     Request = state.apps.get_model(APP_LABEL, "Request")
 

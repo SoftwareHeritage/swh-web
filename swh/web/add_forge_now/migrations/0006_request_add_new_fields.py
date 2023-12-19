@@ -20,7 +20,6 @@ def _set_new_fields_value_to_requests(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("swh_web_add_forge_now", "0005_prepare_inbound_email"),
     ]

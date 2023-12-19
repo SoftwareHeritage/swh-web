@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2023  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -33,7 +33,7 @@ def gen_swhid(
     metadata: SWHIDContext = {},
 ) -> str:
     """
-    Returns the SoftWare Heritage persistent IDentifier for a swh object based on:
+    Returns the SoftWare Hash IDentifier for a swh object based on:
 
         * the object type
         * the object id
@@ -81,11 +81,11 @@ def resolve_swhid(
     swhid: str, query_params: Optional[Mapping[str, str]] = None
 ) -> ResolvedSWHID:
     """
-    Try to resolve a SoftWare Heritage persistent IDentifier into an url for
+    Try to resolve a SoftWare Hash IDentifier into an url for
     browsing the targeted object.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier
+        swhid: a SoftWare Hash IDentifier
         query_params: optional dict filled with
             query parameters to append to the browse url
 
@@ -128,6 +128,8 @@ def resolve_swhid(
                 if release["target_type"] == ObjectType.REVISION.name.lower():
                     revision = archive.lookup_revision(release["target"])
                     directory = revision["directory"]
+                elif release["target_type"] == ObjectType.DIRECTORY.name.lower():
+                    directory = release["target"]
             if object_type == ObjectType.CONTENT:
                 if (
                     not swhid_parsed.origin
@@ -211,7 +213,7 @@ def get_qualified_swhid(swhid: str) -> QualifiedSWHID:
     This allows a superset of core SWHIDs, which are badly capitalized or quoted.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier.
+        swhid: a SoftWare Hash IDentifier.
 
     Raises:
         BadInputExc: if the provided SWHID can not be parsed.
@@ -235,7 +237,7 @@ def parse_core_swhid(swhid: str) -> CoreSWHID:
     """Check if a core SWHID is valid and return it parsed.
 
     Args:
-        swhid: a SoftWare Heritage persistent IDentifier.
+        swhid: a SoftWare Hash IDentifier.
 
     Raises:
         BadInputExc: if the provided SWHID can not be parsed.
@@ -255,12 +257,10 @@ def group_swhids(
     swhids: Iterable[CoreSWHID],
 ) -> Dict[ObjectType, List[bytes]]:
     """
-    Groups many SoftWare Heritage persistent IDentifiers into a
-    dictionary depending on their type.
+    Groups many SoftWare Hash IDentifiers into a dictionary depending on their type.
 
     Args:
-        swhids: an iterable of SoftWare Heritage persistent
-            IDentifier objects
+        swhids: an iterable of SoftWare Hash IDentifier objects
 
     Returns:
         A dictionary with:
@@ -383,7 +383,7 @@ def get_swhids_info(
             )
             swhid_with_context_url = reverse(
                 "browse-swhid",
-                url_args={"swhid": quote(swhid_with_context, safe=":;=/")},
+                url_args={"swhid": quote(swhid_with_context, safe=":;=/%")},
             )
 
         swhids_info.append(

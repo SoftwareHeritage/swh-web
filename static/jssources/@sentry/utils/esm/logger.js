@@ -1,9 +1,18 @@
+import { DEBUG_BUILD } from './debug-build.js';
 import { GLOBAL_OBJ } from './worldwide.js';
 
 /** Prefix for logging strings */
 const PREFIX = 'Sentry Logger ';
 
-const CONSOLE_LEVELS = ['debug', 'info', 'warn', 'error', 'log', 'assert', 'trace'] ;
+const CONSOLE_LEVELS = [
+  'debug',
+  'info',
+  'warn',
+  'error',
+  'log',
+  'assert',
+  'trace',
+] ;
 
 /** This may be mutated by the console instrumentation. */
 const originalConsoleMethods
@@ -57,7 +66,7 @@ function makeLogger() {
     isEnabled: () => enabled,
   };
 
-  if ((typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__)) {
+  if (DEBUG_BUILD) {
     CONSOLE_LEVELS.forEach(name => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       logger[name] = (...args) => {

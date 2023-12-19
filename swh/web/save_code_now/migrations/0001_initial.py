@@ -29,7 +29,6 @@ def _populate_save_authorized_origins(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     operations = [

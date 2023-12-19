@@ -19,7 +19,6 @@ from swh.web.tests.django_asserts import assert_template_used
 def _assert_http_response(
     response: HttpResponseBase, status_code: int, content_type: str
 ) -> HttpResponseBase:
-
     if isinstance(response, Response):
         drf_response = cast(Response, response)
         error_context = (

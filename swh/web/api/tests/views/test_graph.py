@@ -15,7 +15,7 @@ from django.http.response import StreamingHttpResponse
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
-from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAME, get_config
+from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAMES, get_config
 from swh.web.tests.helpers import check_http_get_response
 from swh.web.utils import reverse
 
@@ -29,7 +29,7 @@ def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_moc
         headers={"Content-Type": "application/json"},
     )
     check_http_get_response(
-        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAMES[0]
     )
 
 
@@ -211,7 +211,6 @@ def test_graph_response_resolve_origins(
             "application/x-ndjson",
         ),
     ):
-
         # set two lines response to check resolved origins cache
         response_text = response_text + response_text
 
@@ -367,7 +366,7 @@ def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_m
     # currently unauthenticated user can only use the graph endpoint from
     # Software Heritage VPN
     check_http_get_response(
-        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAME
+        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAMES[0]
     )
     assert (
         f"max_edges={graph_config['max_edges']['anonymous']}"

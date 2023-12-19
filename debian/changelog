@@ -1,8 +1,21 @@
-swh-web (0.2.47-1~swh1~bpo10+1) buster-swh; urgency=medium
+swh-web (0.3.1-1~swh1) unstable-swh; urgency=medium
 
-  * Rebuild for buster-swh
+  * New upstream release 0.3.1     - (tagged by Antoine Lambert
+    <anlambert@softwareheritage.org> on 2023-12-19 15:07:46 +0100)
+  * Upstream changes:     - version 0.3.1
 
- -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Thu, 23 Nov 2023 14:44:30 +0000
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 19 Dec 2023 14:55:53 +0000
+
+swh-web (0.3.0-1~swh1) unstable-swh; urgency=medium
+
+  * New upstream release 0.3.0     - (tagged by David Douard
+    <david.douard@sdfa3.org> on 2023-12-05 11:54:33 +0100)
+  * Upstream changes:     - v0.3.0     - Migrate to copier, PEP420 and
+    pyproject.toml based packaging.     - Use new definition for the
+    SWHID acronym (Software Hash Identifier).     - Fix a regression
+    preventing to browse paths containing a sha1.
+
+ -- Software Heritage autobuilder (on jenkins-debian1) <jenkins@jenkins-debian1.internal.softwareheritage.org>  Tue, 05 Dec 2023 11:21:21 +0000
 
 swh-web (0.2.47-1~swh1) unstable-swh; urgency=medium
 

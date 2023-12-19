@@ -56,7 +56,7 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_db(
     rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageDBError",
-        "reason": "An unexpected error occurred in the backend: %s" % err_msg,
+        "reason": f"An unexpected error occurred in the backend: ('{err_msg}',)",
     }
 
 
@@ -72,7 +72,7 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(
     rv = check_api_get_responses(api_client, url, status_code=503)
     assert rv.data == {
         "exception": "StorageAPIError",
-        "reason": "An unexpected error occurred in the api backend: %s" % err_msg,
+        "reason": f"An unexpected error occurred in the api backend: ('{err_msg}',)",
     }
 
 
@@ -111,7 +111,6 @@ def test_api_lookup_origin_visits(
             (None, all_visits[:2]),
             (all_visits[1]["visit"], all_visits[2:]),
         ):
-
             url = reverse(
                 "api-1-origin-visits",
                 url_args={"origin_url": new_origin.url},
@@ -166,7 +165,6 @@ def test_api_lookup_origin_visits_by_id(
             (None, all_visits[:2]),
             (all_visits[1]["visit"], all_visits[2:4]),
         ):
-
             url = reverse(
                 "api-1-origin-visits",
                 url_args={"origin_url": new_origin.url},
@@ -360,7 +358,6 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
 
 
 def test_api_lookup_origin_visit_not_found(api_client, origin):
-
     all_visits = list(reversed(get_origin_visits(origin)))
 
     max_visit_id = max([v["visit"] for v in all_visits])
@@ -440,7 +437,6 @@ def test_api_origin_by_url(api_client, archive_data, origin):
 
 @given(new_origin())
 def test_api_origin_not_found(api_client, new_origin):
-
     url = reverse("api-1-origin", url_args={"origin_url": new_origin.url})
     rv = check_api_get_responses(api_client, url, status_code=404)
     assert rv.data == {
@@ -639,7 +635,6 @@ def test_api_origin_search_ql_syntax_error(api_client, mocker):
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
 @pytest.mark.parametrize("limit", [1, 2, 3, 10])
 def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backend):
-
     if backend != "swh-search":
         # equivalent to not configuring search in the config
         mocker.patch("swh.web.utils.archive.search", None)
@@ -685,7 +680,6 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
 def test_api_origin_metadata_search(api_client, mocker, backend):
-
     mock_config = mocker.patch("swh.web.utils.archive.config")
     mock_config.get_config.return_value = {
         "search_config": {"metadata_backend": backend}
@@ -836,7 +830,6 @@ def test_api_origin_metadata_search_limit(api_client, mocker):
 
 
 def test_api_origin_intrinsic_metadata(api_client, origin):
-
     url = reverse(
         "api-origin-intrinsic-metadata", url_args={"origin_url": origin["url"]}
     )
@@ -855,7 +848,6 @@ def test_api_origin_metadata_search_invalid(api_client, mocker):
 
 @pytest.mark.parametrize("backend", ["swh-counters", "swh-storage"])
 def test_api_stat_counters(api_client, mocker, backend):
-
     mock_config = mocker.patch("swh.web.utils.archive.config")
     mock_config.get_config.return_value = {"counters_backend": backend}
 
@@ -893,11 +885,9 @@ def test_api_origin_search_empty_pattern(api_client, archived_origins):
 
 
 def test_api_origin_search_empty_pattern_and_visit_type(api_client, archived_origins):
-
     visit_types = {o["type"] for o in archived_origins}
 
     for visit_type in visit_types:
-
         url = reverse(
             "api-1-origin-search",
             url_args={"url_pattern": ""},

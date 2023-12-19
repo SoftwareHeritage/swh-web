@@ -71,7 +71,6 @@ def test_api_raw_snapshot(api_client, archive_data, snapshot, regular_user):
 
 @pytest.mark.django_db
 def test_api_raw_rate_limit(api_client, revision, regular_user):
-
     api_client.force_login(regular_user)
 
     url = reverse(

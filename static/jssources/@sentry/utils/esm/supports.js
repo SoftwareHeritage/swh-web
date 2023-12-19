@@ -1,3 +1,4 @@
+import { DEBUG_BUILD } from './debug-build.js';
 import { logger } from './logger.js';
 import { getGlobalObject } from './worldwide.js';
 
@@ -117,7 +118,7 @@ function supportsNativeFetch() {
       }
       doc.head.removeChild(sandbox);
     } catch (err) {
-      (typeof __SENTRY_DEBUG__ === 'undefined' || __SENTRY_DEBUG__) &&
+      DEBUG_BUILD &&
         logger.warn('Could not create sandbox iframe for pure fetch check, bailing to window.fetch: ', err);
     }
   }

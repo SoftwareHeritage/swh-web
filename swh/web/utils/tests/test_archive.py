@@ -11,7 +11,6 @@ import random
 
 from hypothesis import given, settings
 import pytest
-
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
@@ -27,8 +26,8 @@ from swh.model.model import (
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
+
 from swh.web.tests.data import random_content, random_sha1
-from swh.web.tests.helpers import fossology_missing
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
 from swh.web.utils import archive
 from swh.web.utils.exc import BadInputExc, NotFoundExc
@@ -94,15 +93,6 @@ def test_lookup_content_filetype(indexer_data, content):
 
     expected_filetype = indexer_data.content_get_mimetype(content["sha1"])
     assert actual_filetype == expected_filetype
-
-
-@pytest.mark.skipif(fossology_missing, reason="requires fossology-nomossa installed")
-def test_lookup_content_license(indexer_data, content):
-    indexer_data.content_add_license(content["sha1"])
-    actual_license = archive.lookup_content_license(content["sha1"])
-
-    expected_license = indexer_data.content_get_license(content["sha1"])
-    assert actual_license == expected_license
 
 
 def test_stat_counters(archive_data):
@@ -859,7 +849,6 @@ def test_lookup_unknown_objects(
 
 
 def test_lookup_invalid_objects(invalid_sha1):
-
     with pytest.raises(BadInputExc) as e:
         archive.lookup_object(ObjectType.CONTENT, invalid_sha1)
     assert e.match("Invalid hash")
@@ -972,7 +961,6 @@ def test_search_origin(origin):
 
 
 def test_search_origin_use_ql(mocker, origin):
-
     ORIGIN = [{"url": origin["url"]}]
 
     mock_archive_search = mocker.patch("swh.web.utils.archive.search")
@@ -1114,7 +1102,6 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
         (None, "refs/heads/", 3),
         ("refs", "refs/heads/master", 3),
     ):
-
         branches = archive.lookup_snapshot(
             hash_to_hex(snapshot.id),
             branch_name_include_substring=include_pattern,

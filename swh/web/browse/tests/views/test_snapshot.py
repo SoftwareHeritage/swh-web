@@ -168,7 +168,6 @@ def test_snapshot_browse_branches_targeting_multiple_types(
 
 
 def _origin_branches_test_helper(client, archive_data, origin_url):
-
     snapshot = archive_data.snapshot_get_latest(origin_url)
 
     snapshot_sizes = archive_data.snapshot_count_branches(snapshot["id"])
@@ -466,7 +465,6 @@ def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
 def test_browse_snapshot_log_when_revisions(
     client, archive_data, directory, person, date
 ):
-
     revision = Revision(
         directory=hash_to_bytes(directory),
         author=person,
@@ -517,7 +515,6 @@ def test_browse_snapshot_log_when_revisions(
 def test_browse_snapshot_single_branch_targeting_content(
     client, archive_data, content_text, aliased, with_origin, with_branch_query_param
 ):
-
     branch_name = "HEAD"
 
     if not aliased:
@@ -625,7 +622,6 @@ def test_browse_snapshot_single_branch_targeting_content(
 def test_browse_snapshot_single_branch_targeting_directory(
     client, archive_data, directory, aliased, with_origin, with_branch_query_param
 ):
-
     branch_name = "HEAD"
 
     if not aliased:
