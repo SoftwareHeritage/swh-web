@@ -34,7 +34,7 @@ from swh.web.auth.utils import (
     ADMIN_LIST_DEPOSIT_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
 )
-from swh.web.config import SWH_WEB_SERVER_NAME, get_config, search
+from swh.web.config import get_config, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
 
 SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
@@ -268,7 +268,12 @@ def is_swh_web_staging(request: HttpRequest) -> bool:
 
 def is_swh_web_production(request: HttpRequest) -> bool:
     """Indicate if we are running the public production version of swh-web."""
-    return SWH_WEB_SERVER_NAME in request.build_absolute_uri("/")
+    config = get_config()
+    site_base_url = request.build_absolute_uri("/")
+    return any(
+        server_name in site_base_url
+        for server_name in config["production_server_names"]
+    )
 
 
 browsers_supported_image_mimes = set(
