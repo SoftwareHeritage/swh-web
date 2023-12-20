@@ -89,7 +89,7 @@ def swh_badge(
     Returns:
         HTTP response with content type *image/svg+xml* containing the SVG
         badge data. If the provided parameters are invalid, HTTP 400 status
-        code will be returned. If the object can not be found in the archive,
+        code will be returned. If the object cannot be found in the archive,
         HTTP 404 status code will be returned.
 
     """

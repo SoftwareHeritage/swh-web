@@ -77,7 +77,7 @@ def api_origins(request: Request):
             results.
 
         :query int origin_count: The maximum number of origins to return
-            (default to 100, can not exceed 10000)
+            (default to 100, cannot exceed 10000)
 
         {return_origin_array}
 
@@ -131,7 +131,7 @@ def api_origin(request: Request, origin_url: str):
         {common_headers}
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
+        :statuscode 404: requested origin cannot be found in the archive
 
         **Example:**
 
@@ -328,7 +328,7 @@ def api_origin_visits(request: Request, origin_url: str):
         {return_origin_visit_array}
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
+        :statuscode 404: requested origin cannot be found in the archive
 
         **Example:**
 
@@ -415,7 +415,7 @@ def api_origin_visit_latest(request: Request, origin_url: str):
         {return_origin_visit}
 
         :statuscode 200: no error
-        :statuscode 404: requested origin or visit can not be found in the
+        :statuscode 404: requested origin or visit cannot be found in the
             archive
 
         **Example:**
@@ -458,7 +458,7 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
         {return_origin_visit}
 
         :statuscode 200: no error
-        :statuscode 404: requested origin or visit can not be found in the
+        :statuscode 404: requested origin or visit cannot be found in the
             archive
 
         **Example:**
@@ -499,7 +499,7 @@ def api_origin_intrinsic_metadata(request: Request, origin_url: str):
         {common_headers}
 
         :statuscode 200: no error
-        :statuscode 404: requested origin can not be found in the archive
+        :statuscode 404: requested origin cannot be found in the archive
 
         **Example:**
 

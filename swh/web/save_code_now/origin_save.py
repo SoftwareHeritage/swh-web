@@ -210,7 +210,7 @@ def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) ->
     if visit_type not in visit_type_tasks:
         allowed_visit_types = ", ".join(visit_type_tasks)
         raise BadInputExc(
-            f"Visit of type {visit_type} can not be saved! "
+            f"Visit of type {visit_type} cannot be saved! "
             f"Allowed types are the following: {allowed_visit_types}"
         )
 
@@ -624,7 +624,7 @@ def create_save_origin_request(
                 from_webhook=from_webhook,
                 webhook_origin=webhook_origin,
             )
-    # origin can not be saved as its url is blacklisted,
+    # origin cannot be saved as its url is blacklisted,
     # log the request to the database anyway
     else:
         sor = SaveOriginRequest.objects.create(

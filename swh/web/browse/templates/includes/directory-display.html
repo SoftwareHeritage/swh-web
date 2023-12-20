@@ -54,7 +54,7 @@ See top-level LICENSE file for more information
 {% elif "revision_found" in swh_object_metadata and swh_object_metadata.revision_found is False %}
   <i>Revision {{ swh_object_metadata.revision }} could not be found in the archive.</i>
   <br />
-  <i>Its associated directory can not be displayed.</i>
+  <i>Its associated directory cannot be displayed.</i>
 {% elif error_code != 200 %}
   {% include "includes/http-error.html" %}
 {% elif dirs|length == 0 and files|length == 0 %}

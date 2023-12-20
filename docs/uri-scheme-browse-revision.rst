@@ -26,7 +26,7 @@ Revision
         using the provided timestamp
     :query string path: optional relative path from the revision root directory
     :statuscode 200: no error
-    :statuscode 404: requested revision can not be found in the archive
+    :statuscode 404: requested revision cannot be found in the archive
 
     **Examples:**
 
@@ -65,7 +65,7 @@ Revision
     :query str revs_ordering: specify the revisions ordering, possible values are ``committer_date``,
         ``dfs``, ``dfs_post`` and ``bfs``
     :statuscode 200: no error
-    :statuscode 404: requested revision can not be found in the archive
+    :statuscode 404: requested revision cannot be found in the archive
 
     **Examples:**
 

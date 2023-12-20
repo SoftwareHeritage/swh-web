@@ -52,7 +52,7 @@ def api_content_filetype(request: Request, q: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested content can not be found in the archive
+        :statuscode 404: requested content cannot be found in the archive
 
         **Example:**
 
@@ -103,7 +103,7 @@ def api_content_language(request: Request, q: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested content can not be found in the archive
+        :statuscode 404: requested content cannot be found in the archive
 
         **Example:**
 
@@ -151,7 +151,7 @@ def api_content_license(request: Request, q: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested content can not be found in the archive
+        :statuscode 404: requested content cannot be found in the archive
 
         **Example:**
 
@@ -193,7 +193,7 @@ def api_content_raw(request: Request, q: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested content can not be found in the archive
+        :statuscode 404: requested content cannot be found in the archive
 
         **Example:**
 
@@ -326,7 +326,7 @@ def api_content_metadata(request: Request, q: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested content can not be found in the archive
+        :statuscode 404: requested content cannot be found in the archive
 
         **Example:**
 

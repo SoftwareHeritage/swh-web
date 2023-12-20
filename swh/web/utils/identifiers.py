@@ -216,7 +216,7 @@ def get_qualified_swhid(swhid: str) -> QualifiedSWHID:
         swhid: a SoftWare Hash IDentifier.
 
     Raises:
-        BadInputExc: if the provided SWHID can not be parsed.
+        BadInputExc: if the provided SWHID cannot be parsed.
 
     Return:
         A parsed SWHID.
@@ -240,7 +240,7 @@ def parse_core_swhid(swhid: str) -> CoreSWHID:
         swhid: a SoftWare Hash IDentifier.
 
     Raises:
-        BadInputExc: if the provided SWHID can not be parsed.
+        BadInputExc: if the provided SWHID cannot be parsed.
 
     Return:
         A parsed SWHID.

@@ -44,7 +44,7 @@ def api_release(request: Request, sha1_git: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
-        :statuscode 404: requested release can not be found in the archive
+        :statuscode 404: requested release cannot be found in the archive
 
         **Example:**
 

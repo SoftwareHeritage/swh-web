@@ -23,7 +23,7 @@ Origin visits
         (e.g. https://github.com/(user)/(repo))
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -46,7 +46,7 @@ Origin visits
 
     :param string origin_url: the url of the origin (e.g. https://github.com/(user)/(repo)/)
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -97,7 +97,7 @@ Origin directory
         of using the latest full visit by default
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
         or the provided path does not exist from the origin root directory
 
     **Examples:**
@@ -150,7 +150,7 @@ Origin directory
     :query int visit_id: specify a visit id to retrieve the directory from instead
         of using the latest full visit by default
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
         or the provided path does not exist from the origin root directory
 
     **Examples:**
@@ -204,7 +204,7 @@ Origin directory
     :query int visit_id: specify a visit id to retrieve the directory from instead
         of using the provided timestamp
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive,
+    :statuscode 404: requested origin cannot be found in the archive,
         requested visit timestamp does not exist or the provided path does
         not exist from the origin root directory
 
@@ -267,7 +267,7 @@ Origin content
         of using the latest full visit by default
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive,
+    :statuscode 404: requested origin cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -326,7 +326,7 @@ Origin content
         of using the latest full visit by default
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive,
+    :statuscode 404: requested origin cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -382,7 +382,7 @@ Origin content
     :query int visit_id: specify a visit id to retrieve the content from instead
         of using the latest full visit by default
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive,
+    :statuscode 404: requested origin cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -438,7 +438,7 @@ Origin content
     :query int visit_id: specify a visit id to retrieve the content from instead
         of using the provided timestamp
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive,
+    :statuscode 404: requested origin cannot be found in the archive,
         requested visit timestamp does not exist or the provided content path does
         not exist from the origin root directory
 
@@ -508,7 +508,7 @@ Origin history
         of using the latest visit by default
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -576,7 +576,7 @@ Origin history
     :query int visit_id: specify a visit id to retrieve the history log from instead
         of using the latest visit by default
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -637,7 +637,7 @@ Origin history
     :query int visit_id: specify a visit id to retrieve the history log from instead
         of using the provided timestamp
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -674,7 +674,7 @@ Origin branches
       closest visit.
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -709,7 +709,7 @@ Origin branches
     :query string timestamp: an ISO 8601 datetime string to parse in order to find the
       closest visit.
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -744,7 +744,7 @@ Origin branches
     :param string timestamp: an ISO 8601 datetime string to parse in order to find the
       closest visit.
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -781,7 +781,7 @@ Origin releases
       closest visit.
     :statuscode 200: no error
     :statuscode 400: no origin url has been provided as parameter
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -816,7 +816,7 @@ Origin releases
     :query string timestamp: an ISO 8601 datetime string to parse in order to find the
       closest visit.
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 
@@ -851,7 +851,7 @@ Origin releases
     :param string timestamp: an ISO 8601 datetime string to parse in order to find the
       closest visit.
     :statuscode 200: no error
-    :statuscode 404: requested origin can not be found in the archive
+    :statuscode 404: requested origin cannot be found in the archive
 
     **Examples:**
 

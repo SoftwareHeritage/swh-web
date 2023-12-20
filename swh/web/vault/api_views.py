@@ -151,7 +151,7 @@ def api_vault_cook_flat(request: Request, swhid: str):
         :statuscode 200: no error
         :statuscode 400: an invalid directory identifier has been provided
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     parsed_swhid = parse_core_swhid(swhid)
@@ -230,7 +230,7 @@ def api_vault_download_flat(request: Request, swhid: str):
 
         :statuscode 200: no error
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     fname = "{}.tar.gz".format(swhid).replace(":", "_")
@@ -324,7 +324,7 @@ def api_vault_cook_gitfast(request: Request, swhid: str):
 
         :statuscode 200: no error
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     parsed_swhid = parse_core_swhid(swhid)
@@ -402,7 +402,7 @@ def api_vault_download_revision_gitfast(request: Request, swhid: str):
 
         :statuscode 200: no error
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     fname = "{}.gitfast.gz".format(swhid).replace(":", "_")
@@ -509,7 +509,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
         :statuscode 200: no error
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     parsed_swhid = parse_core_swhid(swhid)
@@ -549,7 +549,7 @@ def api_vault_download_revision_git_bare(request: Request, swhid: str):
 
         :statuscode 200: no error
         :statuscode 404: requested directory did not receive any cooking
-            request yet (in case of GET) or can not be found in the archive
+            request yet (in case of GET) or cannot be found in the archive
             (in case of POST)
     """
     fname = "{}.git.tar".format(swhid).replace(":", "_")

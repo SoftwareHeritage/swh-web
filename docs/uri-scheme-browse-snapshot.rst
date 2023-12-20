@@ -22,7 +22,7 @@ Snapshot
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 
@@ -56,7 +56,7 @@ Snapshot directory
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 
@@ -92,7 +92,7 @@ Snapshot directory
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 
@@ -130,7 +130,7 @@ Snapshot content
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive,
+    :statuscode 404: requested snapshot cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -166,7 +166,7 @@ Snapshot content
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive,
+    :statuscode 404: requested snapshot cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**
@@ -223,7 +223,7 @@ Snapshot history
 
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 
@@ -270,7 +270,7 @@ Snapshot branches
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 
@@ -317,7 +317,7 @@ Snapshot releases
     :param string snapshot_id: hexadecimal representation of the snapshot **sha1** identifier
     :statuscode 200: no error
     :statuscode 400: an invalid snapshot identifier has been provided
-    :statuscode 404: requested snapshot can not be found in the archive
+    :statuscode 404: requested snapshot cannot be found in the archive
 
     **Examples:**
 

@@ -122,7 +122,7 @@ def _branch_not_found(
 ) -> None:
     """
     Utility function to raise an exception when a specified branch/release
-    can not be found.
+    cannot be found.
     """
     if branch_type == "branch":
         branch_type = "Branch"

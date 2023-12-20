@@ -21,7 +21,7 @@ Directory
         reachable from the provided root one
     :statuscode 200: no error
     :statuscode 400: an invalid **sha1_git** value has been provided
-    :statuscode 404: requested directory can not be found in the archive
+    :statuscode 404: requested directory cannot be found in the archive
 
     **Examples:**
 
@@ -55,7 +55,7 @@ Directory
         reachable from the provided root one
     :statuscode 200: no error
     :statuscode 400: an invalid **sha1_git** value has been provided
-    :statuscode 404: requested directory can not be found in the archive
+    :statuscode 404: requested directory cannot be found in the archive
 
     **Examples:**
 

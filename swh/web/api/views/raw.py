@@ -48,7 +48,7 @@ def api_raw_object(request: Request, swhid: str):
         :resheader Content-Type: application/octet-stream
 
         :statuscode 200: no error
-        :statuscode 404: the requested object can not be found in the archive
+        :statuscode 404: the requested object cannot be found in the archive
 
         **Example:**
 

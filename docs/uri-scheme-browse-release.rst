@@ -15,7 +15,7 @@ Release
     :param string sha1_git: hexadecimal representation for the **sha1_git**
          identifier of a release
     :statuscode 200: no error
-    :statuscode 404: requested release can not be found in the archive
+    :statuscode 404: requested release cannot be found in the archive
 
     **Examples:**
 

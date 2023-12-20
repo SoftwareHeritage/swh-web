@@ -182,7 +182,7 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.visit(this.directoryUrl);
 
     // Stub responses when requesting the vault API to simulate
-    // a task can not be created
+    // a task cannot be created
     cy.intercept('GET', this.vaultDirectoryUrl, {
       body: {'exception': 'NotFoundExc'}
     }).as('checkVaultCookingTask');

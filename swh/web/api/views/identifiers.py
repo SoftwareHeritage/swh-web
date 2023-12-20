@@ -87,7 +87,7 @@ def api_swhid_known(request: Request):
         `SoftWare Hash IDentifiers
         <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_.
 
-        :<jsonarr string -: input array of SWHIDs, its length can not exceed 1000.
+        :<jsonarr string -: input array of SWHIDs, its length cannot exceed 1000.
 
         :>json object <swhid>: an object whose keys are input SWHIDs and values
             objects with the following keys:

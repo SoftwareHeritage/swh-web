@@ -60,7 +60,7 @@ def api_snapshot(request: Request, snapshot_id: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid snapshot identifier has been provided
-        :statuscode 404: requested snapshot can not be found in the archive
+        :statuscode 404: requested snapshot cannot be found in the archive
 
         **Example:**
 

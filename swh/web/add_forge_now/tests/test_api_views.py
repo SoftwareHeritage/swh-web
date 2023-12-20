@@ -342,7 +342,7 @@ def test_add_forge_request_update_status_concurrent(
 
     # the other thread (slower) will attempt to modify the request status to REJECTED
     # but it will not be allowed as the first faster thread already modified it
-    # and REJECTED state can not be reached from WAITING_FOR_FEEDBACK one
+    # and REJECTED state cannot be reached from WAITING_FOR_FEEDBACK one
     time.sleep(0.5)
     check_api_post_response(
         api_client,

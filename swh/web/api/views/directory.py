@@ -66,7 +66,7 @@ def api_directory(request: Request, sha1_git: str, path: Optional[str] = None):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
-        :statuscode 404: requested directory can not be found in the archive
+        :statuscode 404: requested directory cannot be found in the archive
 
         **Example:**
 

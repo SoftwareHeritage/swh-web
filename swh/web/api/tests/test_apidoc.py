@@ -60,7 +60,7 @@ _httpdomain_doc = """
 
     :statuscode 200: no error
     :statuscode 400: an invalid **sha1_git** value has been provided
-    :statuscode 404: requested revision can not be found in the archive
+    :statuscode 404: requested revision cannot be found in the archive
 
     **Example:**
 
@@ -260,7 +260,7 @@ def test_api_doc_parse_httpdomain():
     expected_statuscodes = [
         {"code": "200", "doc": "no error"},
         {"code": "400", "doc": "an invalid **sha1_git** value has been provided"},
-        {"code": "404", "doc": "requested revision can not be found in the archive"},
+        {"code": "404", "doc": "requested revision cannot be found in the archive"},
     ]
 
     assert "status_codes" in doc_data

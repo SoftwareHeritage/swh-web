@@ -50,7 +50,7 @@ Content
         to retrieve the content.
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
-    :statuscode 404: requested content can not be found in the archive
+    :statuscode 404: requested content cannot be found in the archive
 
     **Examples:**
 
@@ -89,7 +89,7 @@ Content
         header for HTTP response to the content's mime type.
     :statuscode 200: no error
     :statuscode 400: an invalid query string has been provided
-    :statuscode 404: requested content can not be found in the archive
+    :statuscode 404: requested content cannot be found in the archive
 
     **Examples:**
 
@@ -117,7 +117,7 @@ Content
 
     :statuscode 200: no error
     :statuscode 404: path and/or the identifier is missing in the query parameters.
-    :statuscode 404: requested content can not be found in the archive,
+    :statuscode 404: requested content cannot be found in the archive,
         or the provided content path does not exist from the origin root directory
 
     **Examples:**

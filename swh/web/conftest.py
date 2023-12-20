@@ -441,7 +441,7 @@ def _content_unsupported_image_type_rendering():
 @pytest.fixture(scope="function")
 def content_unsupported_image_type_rendering():
     """Fixture returning a random image content ingested into the test archive that
-    can not be rendered by browsers.
+    cannot be rendered by browsers.
     """
     return random.choice(_content_unsupported_image_type_rendering())
 

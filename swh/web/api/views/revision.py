@@ -63,7 +63,7 @@ def api_revision(request: Request, sha1_git: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested revision cannot be found in the archive
 
         **Example:**
 
@@ -132,7 +132,7 @@ def api_revision_directory(
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
-        :statuscode 404: requested revision can not be found in the archive
+        :statuscode 404: requested revision cannot be found in the archive
 
         **Example:**
 
@@ -186,7 +186,7 @@ def api_revision_log(request: Request, sha1_git: str):
         :param string sha1_git: hexadecimal representation of the revision
             **sha1_git** identifier
         :query int limit: maximum number of revisions to return when performing
-            BFS traversal on the revision graph (default to 10, can not exceed 1000)
+            BFS traversal on the revision graph (default to 10, cannot exceed 1000)
 
         {common_headers}
 
@@ -194,7 +194,7 @@ def api_revision_log(request: Request, sha1_git: str):
 
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
-        :statuscode 404: head revision can not be found in the archive
+        :statuscode 404: head revision cannot be found in the archive
 
         **Example:**
 

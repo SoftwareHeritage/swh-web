@@ -16,7 +16,7 @@ def _remove_archived_tasks_with_no_saved_status(apps, schema_editor):
     state could not be known anymore as previous to this migration,
     the loading task status was not stored in the database.
     So remove the rows associated to already archived tasks as
-    the loading status can not be retrieved anymore.
+    the loading status cannot be retrieved anymore.
     """
     SaveOriginRequest = apps.get_model("swh_web_save_code_now", "SaveOriginRequest")
     no_saved_status_tasks = []
