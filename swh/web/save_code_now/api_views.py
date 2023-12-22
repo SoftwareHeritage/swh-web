@@ -63,7 +63,7 @@ save_code_now_api_urls = APIUrls()
 
 
 @api_route(
-    r"/origin/save/(?P<visit_type>.+)/url/(?P<origin_url>.+)/",
+    r"/origin/save/(?P<visit_type>.+?)/url/(?P<origin_url>.+)/",
     "api-1-save-origin",
     methods=["GET", "POST"],
     throttle_scope="swh_save_origin",

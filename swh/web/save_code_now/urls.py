@@ -92,12 +92,12 @@ urlpatterns = [
         name="admin-origin-save-remove-unauthorized-url",
     ),
     url(
-        r"^admin/origin/save/request/accept/(?P<visit_type>.+)/url/(?P<origin_url>.+)/$",
+        r"^admin/origin/save/request/accept/(?P<visit_type>.+?)/url/(?P<origin_url>.+)/$",
         admin_origin_save_request_accept,
         name="admin-origin-save-request-accept",
     ),
     url(
-        r"^admin/origin/save/request/reject/(?P<visit_type>.+)/url/(?P<origin_url>.+)/$",
+        r"^admin/origin/save/request/reject/(?P<visit_type>.+?)/url/(?P<origin_url>.+)/$",
         admin_origin_save_request_reject,
         name="admin-origin-save-request-reject",
     ),

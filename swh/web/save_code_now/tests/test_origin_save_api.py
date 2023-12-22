@@ -69,6 +69,17 @@ def test_invalid_origin_url(api_client, swh_scheduler):
     check_api_get_responses(api_client, url, status_code=400)
 
 
+def test_url_url_in_origin_url(api_client, swh_scheduler):
+    url = reverse(
+        "api-1-save-origin",
+        url_args={
+            "visit_type": "git",
+            "origin_url": "https://example.org/user/project/url/url/",
+        },
+    )
+    check_api_post_responses(api_client, url, status_code=200)
+
+
 def check_created_save_request_status(
     api_client,
     mocker,
