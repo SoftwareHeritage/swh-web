@@ -938,4 +938,36 @@ describe('Origin Save Tests', function() {
       .should('have.value', 'svn');
   });
 
+  it('should accept origin URL with character to quote', function() {
+    cy.visit(url);
+
+    const originUrl = 'https://example.org/user/repo name';
+    const requestUrl = this.Urls.api_1_save_origin('git', encodeURI(originUrl));
+
+    cy.intercept('POST', requestUrl).as('saveRequest');
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      // request is in pending state as it needs to be accepted
+      checkAlertVisible('warning', saveCodeMsg['warning']);
+    });
+  });
+
+  it('should accept origin URL with quoted character', function() {
+    cy.visit(url);
+
+    const originUrl = 'https://example.org/user/repo%20name';
+    const requestUrl = this.Urls.api_1_save_origin('git', originUrl);
+
+    cy.intercept('POST', requestUrl).as('saveRequest');
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      // request is in pending state as it needs to be accepted
+      checkAlertVisible('warning', saveCodeMsg['warning']);
+    });
+  });
+
 });

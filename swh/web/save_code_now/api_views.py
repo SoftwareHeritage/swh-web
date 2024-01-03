@@ -5,6 +5,7 @@
 
 import os
 from typing import Optional, cast
+from urllib.parse import quote
 
 from django.conf import settings
 from rest_framework.request import Request
@@ -179,9 +180,10 @@ def api_save_origin(
         )
         return sor
 
-    # handle case where the "://" character sequence was mangled into ":/"
-    # by HTTP clients
+    # requote origin URL unquoted by django when parsing URL arguments and handle
+    # case where the "://" character sequence was mangled into ":/" by HTTP clients
     if origin_url is not None:
+        origin_url = quote(origin_url, safe=":/@%")
         origin_url = demangle_url(origin_url)
 
     data = request.data or {}

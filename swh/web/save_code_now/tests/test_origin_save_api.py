@@ -734,3 +734,27 @@ def test_create_save_request_mangled_origin_url(api_client, swh_scheduler):
     sor = SaveOriginRequest.objects.get(origin_url=origin_url)
 
     assert sor.user_ids is None
+
+
+def test_create_save_request_origin_url_to_quote(api_client):
+    origin_url = "https://example.org/user/project name"
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+
+    resp = check_api_post_responses(api_client, url, status_code=200)
+
+    assert resp.data["origin_url"] == "https://example.org/user/project%20name"
+
+
+def test_create_save_request_origin_url_quoted(api_client):
+    origin_url = "https://example.org/user/project%20name"
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+
+    resp = check_api_post_responses(api_client, url, status_code=200)
+
+    assert resp.data["origin_url"] == "https://example.org/user/project%20name"
