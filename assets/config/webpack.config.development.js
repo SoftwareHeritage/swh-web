@@ -408,6 +408,10 @@ module.exports = {
           'spdxLicenseExpression': 'BSD-3-Clause',
           'licenseFilePath': './node_modules/highlightjs-chapel/LICENSE'
         },
+        './node_modules/highlightjs-lang/dist/lang.min.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './node_modules/highlightjs-lang/LICENSE'
+        },
         './node_modules/highlightjs-mirc/mirc.js': {
           'spdxLicenseExpression': 'MIT',
           'licenseFilePath': './node_modules/highlightjs-mirc/LICENSE'

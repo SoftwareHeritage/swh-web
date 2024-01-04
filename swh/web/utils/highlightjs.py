@@ -51,6 +51,11 @@ def _hljs_languages_aliases():
         "fx": "hlsl",
         "prg": "xsharp",
         "xs": "xsharp",
+        "scd": "sclang",
+        "c3t": "c3",
+        "cbl": "cobol",
+        "lkml": "lookml",
+        "sdm": "sdml",
     }
 
 

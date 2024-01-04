@@ -1000,6 +1000,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
+"@ballerina/highlightjs-ballerina@github:highlightjs/highlightjs-ballerina":
+  version "1.0.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-ballerina/tar.gz/095e99554ee5397de331d23415f5bec80c12b0de"
+
 "@colors/colors@1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
@@ -1217,6 +1221,11 @@
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
+
+"@highlightjs/cdn-assets@^11.9.0":
+  version "11.9.0"
+  resolved "https://registry.yarnpkg.com/@highlightjs/cdn-assets/-/cdn-assets-11.9.0.tgz#dda036f8a039d2e7ea9a3cc7e6c347116965e58f"
+  integrity sha512-F1vJKVAkLwj2Uz2ik1PDc+mDbkrecLI6gcBlAxSRUjyDpMPJjeDBanT9Y2B+xpNe1MT6zSG204Ohm/+nUMCApQ==
 
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
@@ -3006,6 +3015,10 @@ bytes@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"
   integrity sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==
+
+"c3@github:highlightjs/highlightjs-c3":
+  version "0.0.1"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-c3/tar.gz/955cd6039da464e6a6cfe620ddbb7b3d46dc6feb"
 
 cacache@^15.2.0:
   version "15.3.0"
@@ -6355,7 +6368,16 @@ hex-rgb@^5.0.0:
   resolved "https://registry.yarnpkg.com/hex-rgb/-/hex-rgb-5.0.0.tgz#e2c9eb6a37498d66c5a350a221ed4c2c7d1a92d6"
   integrity sha512-NQO+lgVUCtHxZ792FodgW0zflK+ozS9X9dwGp9XvvmPlH7pyxd588cn24TD3rmPm/N0AIRXF10Otah8yKqGw4w==
 
-highlight.js@^11.3.1, highlight.js@^11.9.0:
+"highlight.js-tsql@github:highlightjs/highlightjs-tsql":
+  version "1.1.2"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-tsql/tar.gz/0d13e40b011fb68b6b3b3858f2edc0396b8215fa"
+
+highlight.js@^10.4.1:
+  version "10.7.3"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.7.3.tgz#697272e3991356e40c3cac566a74eef681756531"
+  integrity sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==
+
+highlight.js@^11.0.0, highlight.js@^11.3.1, highlight.js@^11.4.0, highlight.js@^11.7.0, highlight.js@^11.9.0:
   version "11.9.0"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.9.0.tgz#04ab9ee43b52a41a047432c8103e2158a1b8b5b0"
   integrity sha512-fJ7cW7fQGCYAkgv4CPfwFHrfd/cLS4Hau96JuJ+ZTOWhjnhoeN1ub1tFmALm/+lW5z4WCAuAV9bm05AP0mS6Gw==
@@ -6370,10 +6392,31 @@ highlightjs-alan@^0.0.2:
   resolved "https://registry.yarnpkg.com/highlightjs-alan/-/highlightjs-alan-0.0.2.tgz#c9f764356feea1d71501d25c395b1452506cb461"
   integrity sha512-k5h0z9wBne1DMqJPjjVKKO1lzUA/v5px7992Rlw+Gw751hPQSkL8f9NpM5pa7gfw+kCdUalw9Ba2fTp51KSNEw==
 
+highlightjs-apex@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-apex/-/highlightjs-apex-1.3.3.tgz#18b0750c88717e1567c43925d9562f71600f5afa"
+  integrity sha512-EEVV/ulbKTOd1yCypv+rlUAZPJLh8z2tTMoFX+p5tzHXsO9Q3sjeHl+01pTPBSYgjBdVDyQnn7EAsH9JesCaTw==
+  dependencies:
+    "@highlightjs/cdn-assets" "^11.9.0"
+
 highlightjs-blade@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/highlightjs-blade/-/highlightjs-blade-0.1.0.tgz#dbc146b23f32fcf0560c81e2d387781a7baf5486"
   integrity sha512-c0fbvyHhiL5wi9rnVZ/Su8qM7TE5JXU2T1Urm7qHkQDRp3BFcAASbleQFQC7bQskeZ/9cuJ3QUommcVPN2VKaQ==
+
+"highlightjs-bqn@github:razetime/highlightjs-bqn":
+  version "0.0.1"
+  resolved "https://codeload.github.com/razetime/highlightjs-bqn/tar.gz/4b9625a693380000269a3d096a7d0e6e09500b06"
+
+"highlightjs-cairo@github:OpenZeppelin/highlightjs-cairo":
+  version "0.3.0"
+  resolved "https://codeload.github.com/OpenZeppelin/highlightjs-cairo/tar.gz/5537dd59740f986427d037d40b9121aadbe0b160"
+  dependencies:
+    highlight.js "^11.0.0"
+
+"highlightjs-cedar@github:cedar-policy/highlightjs-cedar":
+  version "0.2.0"
+  resolved "https://codeload.github.com/cedar-policy/highlightjs-cedar/tar.gz/94adfa923b4c19e49b599dcd4d6aa31fe0c6bee8"
 
 highlightjs-chaos@^0.0.10:
   version "0.0.10"
@@ -6383,6 +6426,17 @@ highlightjs-chaos@^0.0.10:
 "highlightjs-chapel@github:chapel-lang/highlightjs-chapel":
   version "0.0.0"
   resolved "https://codeload.github.com/chapel-lang/highlightjs-chapel/tar.gz/b1200f148e9e1a161f4416347fe53ae537e5b7bd"
+
+"highlightjs-cobol@github:otterkit/highlightjs-cobol":
+  version "0.3.3"
+  resolved "https://codeload.github.com/otterkit/highlightjs-cobol/tar.gz/f439e861eb8c0deee01b2b61035c272e9320e774"
+  dependencies:
+    minimist ">=1.2.6"
+    mkdirp "^1.0.4"
+
+"highlightjs-codeowners@github:highlightjs/highlightjs-codeowners":
+  version "1.0.0"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-codeowners/tar.gz/826889ae244df660be1fc7c620ab8fa99d477835"
 
 "highlightjs-cpcdos@github:SPinti-Software/highlightjs-cpcdos":
   version "1.0.0"
@@ -6420,6 +6474,15 @@ highlightjs-eta@^0.1.0:
   version "1.1.0"
   resolved "https://codeload.github.com/highlightjs/highlightjs-extempore/tar.gz/bdb27b37c86c968371288062052e2a5ad4190a47"
 
+"highlightjs-flix@github:flix/highlightjs-flix":
+  version "0.0.1"
+  resolved "https://codeload.github.com/flix/highlightjs-flix/tar.gz/bcba6834b5849b5c87c87e8f6bd7a8be9ede029a"
+
+highlightjs-func@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-func/-/highlightjs-func-0.3.1.tgz#29ca39cb029538e05d05b3a179834aa836773994"
+  integrity sha512-W9s2RLUchAD6ue9ZdhljgS+0O+aidwHBCF/r7dqzZAD24JqVmBHio4tJ1TrEXlzmkt83sVAtM3DYE05zngw0qQ==
+
 "highlightjs-gdscript@github:highlightjs/highlightjs-gdscript":
   version "0.0.1"
   resolved "https://codeload.github.com/highlightjs/highlightjs-gdscript/tar.gz/cedd6babcfce48099d9393aea6978b905850b020"
@@ -6444,6 +6507,12 @@ highlightjs-jolie@^0.1.8:
   resolved "https://registry.yarnpkg.com/highlightjs-jolie/-/highlightjs-jolie-0.1.8.tgz#ce393463dd11641c741b600d4a9c8fe683367db5"
   integrity sha512-ruvbry4xz3m8cPpxXyD3o3QEZWC1kuqdRBa9Fy9d+X2kY6ejfx0N0xVL2e5hjcwYdz6UId1sk3dEix3E51w0TQ==
 
+"highlightjs-lang@github:highlightjs/highlightjs-lang":
+  version "1.0.1"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-lang/tar.gz/dd0f4b0cf9c93d6c24e394e3eec99c19bd5f51d6"
+  dependencies:
+    highlight.js "^11.7.0"
+
 highlightjs-lean@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/highlightjs-lean/-/highlightjs-lean-1.1.0.tgz#1fc8f7ab1ef26dfd88fc410d3db449c162a50ceb"
@@ -6454,6 +6523,10 @@ highlightjs-line-numbers.js@^2.8.0:
   resolved "https://registry.yarnpkg.com/highlightjs-line-numbers.js/-/highlightjs-line-numbers.js-2.8.0.tgz#479ea8cff0c31fadc1578a66fa03e38b801f9ca6"
   integrity sha512-TEf1gw0c8mb8nan0QwliqS7obT4cpUd9hzsGzsZLweteNnWea/VIqy5/aQqsa5wnz9lnvmtAkS1ZtDTjB/goYQ==
 
+"highlightjs-lookml@github:spectacles-ci/highlightjs-lookml":
+  version "1.0.2"
+  resolved "https://codeload.github.com/spectacles-ci/highlightjs-lookml/tar.gz/72143007fccd7e43dcea56ea994765fda76d351c"
+
 highlightjs-lox@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/highlightjs-lox/-/highlightjs-lox-2.0.6.tgz#1c6138c82d8120ca8e74416812ef8e6a31e21527"
@@ -6461,18 +6534,50 @@ highlightjs-lox@^2.0.6:
   dependencies:
     highlight.js "^11.3.1"
 
+"highlightjs-luau@github:highlightjs/highlightjs-luau":
+  version "1.0.2"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-luau/tar.gz/7cddd73b606c280c03920c8e67ee3f0a2203473e"
+
+highlightjs-macaulay2@^0.1.10:
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/highlightjs-macaulay2/-/highlightjs-macaulay2-0.1.10.tgz#d6c3e21ee9e87e2ea67d1bbff9f48e5d7e70d31b"
+  integrity sha512-44DXLpOOAe/6ERJIf3GiGlUz3ePUO6JXhVmAzOP0SMbKIU6d+ruDpRuR8nVjm9FGrzeJcaD6ZZmnRdCAf4FV2g==
+  dependencies:
+    highlight.js "^11.4.0"
+
+"highlightjs-mint@github:mint-lang/highlightjs-mint":
+  version "0.1.0"
+  resolved "https://codeload.github.com/mint-lang/highlightjs-mint/tar.gz/6445e06330d06fdf18bf417db9c00eb98d132d08"
+
 "highlightjs-mirc@github:highlightjs/highlightjs-mirc":
   version "0.0.0"
   resolved "https://codeload.github.com/highlightjs/highlightjs-mirc/tar.gz/bb4f43a977031b5e498ea93b721ebd73cbfee647"
+
+"highlightjs-mlir@github:highlightjs/highlightjs-mlir":
+  version "0.0.1"
+  resolved "https://codeload.github.com/highlightjs/highlightjs-mlir/tar.gz/1250770701c7962940946d6449d6355a5f9de733"
 
 highlightjs-modelica@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/highlightjs-modelica/-/highlightjs-modelica-1.1.0.tgz#28099fb9093304cc2cedb53063473d90460252fb"
   integrity sha512-iLvSTwSaTPvzooYUokzIMcyOL3XJzOQjGyQbN1qOXDfWlRi7dgZpvQrg8PPSgRU7CVv/S3bUE+wzeh/xt45AJg==
 
+"highlightjs-motoko@github:rvanasa/highlightjs-motoko#8ae1b96":
+  version "1.0.0"
+  resolved "https://codeload.github.com/rvanasa/highlightjs-motoko/tar.gz/8ae1b9607714cf182104439bb21eb5c6cd31151f"
+
 "highlightjs-never@github:never-lang/highlightjs-never":
   version "0.0.0"
   resolved "https://codeload.github.com/never-lang/highlightjs-never/tar.gz/f708d44b0c8c1b415fe87e31bc63a6ce8046df8c"
+
+"highlightjs-oak@github:timlabs/highlightjs-oak":
+  version "0.1.1"
+  resolved "https://codeload.github.com/timlabs/highlightjs-oak/tar.gz/558592253b0ed1eb5ccb9eebf5a06b680cbc5cec"
+
+highlightjs-ocl@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-ocl/-/highlightjs-ocl-1.1.0.tgz#4d763bd65db1581998528cf8702dbec4c1dde3df"
+  integrity sha512-NSo2dx++zIJf2lPWfZxOk//8VLVjJUsurx3kpCE1IE3D4FhzFj0aBcFj/gQ23S3FuA0mgUQl5+p0pGlojMafoQ==
 
 highlightjs-octave@^0.1.0:
   version "0.1.0"
@@ -6496,6 +6601,11 @@ highlightjs-redbol@^2.0.3:
   dependencies:
     highlight.js "^11.9.0"
 
+highlightjs-rescript@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-rescript/-/highlightjs-rescript-0.1.2.tgz#d92bcaf732f5315769a769757e92ad4f808ec0aa"
+  integrity sha512-d2S9tlszrh9iTHjruZum0tV2WlDmGl+l5QqvhyE+KpgRn2uH01a2MWuwFuCqyDieVVO+QOVUQp0yYI5FXvhBKw==
+
 "highlightjs-robot@github:highlightjs/highlightjs-robot":
   version "1.0.6"
   resolved "https://codeload.github.com/highlightjs/highlightjs-robot/tar.gz/ebc6660a3870a3ade2b734f6698cd766224f518c"
@@ -6515,10 +6625,31 @@ highlightjs-sap-abap@^0.3.0:
   resolved "https://registry.yarnpkg.com/highlightjs-sap-abap/-/highlightjs-sap-abap-0.3.0.tgz#be9c3af1af7b5aabff357dbe28a4979bde310597"
   integrity sha512-nSiUvEOCycjtFA3pHaTowrbAAk5+lciBHyoVkDsd6FTRBtW9sT2dt42o2jAKbXjZVUidtacdk+j0Y2xnd233Mw==
 
+highlightjs-sclang@capital-G/highlightjs-supercollider#rewrite:
+  version "0.1.0"
+  resolved "https://codeload.github.com/capital-G/highlightjs-supercollider/tar.gz/1687a63c052e7b746c87ad98eaad0569f20e3fae"
+
+"highlightjs-sdml@github:sdm-lang/highlightjs-sdml":
+  version "0.0.1"
+  resolved "https://codeload.github.com/sdm-lang/highlightjs-sdml/tar.gz/53234af6348d63f155d0f70432c1c17b91d1c11b"
+
+"highlightjs-sfz@github:sfz/highlight.js":
+  version "0.1.0"
+  resolved "https://codeload.github.com/sfz/highlight.js/tar.gz/a4bb6e52af909019ded44dad50dc8e71d891fb9c"
+  dependencies:
+    minimist "^1.2.5"
+
 highlightjs-solidity@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-2.0.6.tgz#e7a702a2b05e0a97f185e6ba39fd4846ad23a990"
   integrity sha512-DySXWfQghjm2l6a/flF+cteroJqD4gI8GSdL4PtvxZSsAHie8m3yVe2JFoRg03ROKT6hp2Lc/BxXkqerNmtQYg==
+
+highlightjs-structured-text@^1.4.9:
+  version "1.4.9"
+  resolved "https://registry.yarnpkg.com/highlightjs-structured-text/-/highlightjs-structured-text-1.4.9.tgz#7a00fdbc3df02180fee5729eafb6ea1eb0422e86"
+  integrity sha512-u6IQpsuLflSrPnud5XwpAhwA/2wJMutiqPxqliuTlG2j2+RUcsdPWVT42tdl5Jl/sH5GyjDYG09pVU5n9pZSZQ==
+  dependencies:
+    highlight.js "^10.4.1"
 
 highlightjs-svelte@^1.0.6:
   version "1.0.6"
@@ -6528,6 +6659,11 @@ highlightjs-svelte@^1.0.6:
 "highlightjs-terraform@github:highlightjs/highlightjs-terraform":
   version "1.0.6"
   resolved "https://codeload.github.com/highlightjs/highlightjs-terraform/tar.gz/eb1b9661e143a43dff6b58b391128ce5cdad31d4"
+
+highlightjs-vba@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/highlightjs-vba/-/highlightjs-vba-0.2.1.tgz#7503d5e7be805c5884f5ad06455488c520c9725f"
+  integrity sha512-GBYOjoF8Lk+LFmC4aSvjfwQEFwf/ckdNbAqnO2YYiH6ariHQh1LZ4IUD039DCx7Y3R0ZfhmYnQxrczUJJoTBfQ==
 
 highlightjs-xsharp@^1.0.0:
   version "1.0.0"
