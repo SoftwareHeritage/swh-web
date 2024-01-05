@@ -14,6 +14,7 @@ const fs = require('fs');
 const log = require('webpack-log');
 const path = require('path');
 const schema = require('./plugin-options-schema.json');
+const spdxCorrect = require('spdx-correct');
 const spdxParse = require('spdx-expression-parse');
 const spdxLicensesMapping = require('./spdx-licenses-mapping');
 const {validate} = require('schema-utils');
@@ -307,7 +308,7 @@ class GenerateWebLabelsPlugin {
   parseSpdxLicenseExpression(spdxLicenseExpression, context) {
     let parsedLicense;
     try {
-      parsedLicense = spdxParse(spdxLicenseExpression);
+      parsedLicense = spdxParse(spdxCorrect(spdxLicenseExpression));
       if (spdxLicenseExpression.indexOf('AND') !== -1) {
         this.logger.warn(`The SPDX license expression '${spdxLicenseExpression}' associated to ${context} ` +
                          'contains an AND operator, this is currently not properly handled and erroneous ' +

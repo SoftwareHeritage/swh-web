@@ -151,6 +151,7 @@
     "schema-utils": "^4.2.0",
     "script-loader": "^0.7.2",
     "shelljs": "^0.8.5",
+    "spdx-correct": "^3.2.0",
     "spdx-expression-parse": "^4.0.0",
     "sqlite3": "^5.1.6",
     "style-loader": "^3.3.3",
