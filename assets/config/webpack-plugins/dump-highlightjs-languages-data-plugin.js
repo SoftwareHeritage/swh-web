@@ -92,7 +92,7 @@ class DumpHighlightjsLanguagesDataPlugin {
     compiler.hooks.done.tap('DumpHighlightjsLanguagesDataPlugin', statsObj => {
       const outputPath = statsObj.compilation.compiler.outputPath;
       const hljsDataFile = path.join(outputPath, 'json/highlightjs-languages.json');
-      const languages = hljs.listLanguages();
+      const languages = hljs.listLanguages().sort();
       const hljsLanguagesData = {'languages': languages};
       const languageAliases = {};
       for (const language of languages) {
