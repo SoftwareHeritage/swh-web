@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import base64
 from collections import defaultdict
 import datetime
 import itertools
@@ -11,7 +12,8 @@ import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
 from swh.model import hashutil
-from swh.model.model import Revision
+from swh.model.hashutil import hash_to_bytes, hash_to_hex
+from swh.model.model import ExtID, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -20,7 +22,7 @@ from swh.storage.interface import OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.utils import converters, demangle_url, query
-from swh.web.utils.exc import NotFoundExc
+from swh.web.utils.exc import BadInputExc, NotFoundExc
 from swh.web.utils.typing import (
     OriginInfo,
     OriginMetadataInfo,
@@ -1490,3 +1492,96 @@ def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:
     origins = storage.origin_get_by_sha1(sha1s_bytes)
     for origin in origins:
         yield converters.from_origin(origin)
+
+
+def encode_extid(extid_format: str, extid: bytes) -> str:
+    if extid_format == "base64url":
+        return base64.urlsafe_b64encode(extid).decode("ascii").rstrip("=")
+    elif extid_format == "hex":
+        return hash_to_hex(extid)
+    elif extid_format == "raw":
+        return extid.decode("ascii")
+    else:
+        raise BadInputExc(f"Invalid external identifier format: {extid_format}")
+
+
+def decode_extid(extid_format: str, extid: str) -> bytes:
+    if extid_format == "base64url":
+        padding = "=" * (4 - (len(extid) % 4))
+        return base64.urlsafe_b64decode(extid + padding)
+    elif extid_format == "hex":
+        return hash_to_bytes(extid)
+    elif extid_format == "raw":
+        return extid.encode("ascii")
+    else:
+        raise BadInputExc(f"Invalid external identifier format: {extid_format}")
+
+
+def _json_extid(raw_extid: ExtID, extid_format: str) -> Dict[str, Any]:
+    return {
+        "extid": encode_extid(extid_format, raw_extid.extid),
+        "extid_type": raw_extid.extid_type,
+        "extid_version": raw_extid.extid_version,
+        "target": str(raw_extid.target),
+    }
+
+
+def lookup_extid(
+    extid_type: str, extid_format: str, extid: str, extid_version: Optional[int] = None
+) -> Dict[str, Any]:
+    """Lookup an ExtID by its type and value.
+
+    Args:
+        extid_type: the type of the ExtID
+        extid_format: the format used to encode the extid in an ASCII string,
+            either ``base64url``, ``hex`` or ``raw``.
+        extid: the value of the ExtID
+        extid_version: the version of the ExtID
+
+    Returns:
+        ExtID information as a dict
+
+    """
+
+    raw_extid = storage.extid_get_from_extid(
+        extid_type, [decode_extid(extid_format, extid)], version=extid_version
+    )
+
+    if not raw_extid:
+        raise NotFoundExc(f"ExtID of type {extid_type} and value {extid} not found.")
+    else:
+        return _json_extid(raw_extid[0], extid_format=extid_format)
+
+
+def lookup_extid_by_target(
+    swhid: str,
+    extid_type: Optional[str] = None,
+    extid_version: Optional[int] = None,
+    extid_format: str = "hex",
+) -> List[Dict[str, Any]]:
+    """Lookup ExtIDs targeting an archived object.
+
+    Args:
+        extid_type: the type of the ExtID
+        extid_format: the format to use for encoding an extid to an ASCII string,
+            either ``base64url``, ``hex`` or ``raw``.
+        extid: the value of the ExtID
+        extid_version: the version of the ExtID
+
+    Returns:
+        ExtIDs information as a list of dict
+
+    """
+    parsed_swhid = CoreSWHID.from_string(swhid)
+
+    raw_extid = storage.extid_get_from_target(
+        target_type=parsed_swhid.object_type,
+        ids=[parsed_swhid.object_id],
+        extid_type=extid_type,
+        extid_version=extid_version,
+    )
+    print(raw_extid)
+    if not raw_extid:
+        raise NotFoundExc(f"ExtID targeting {swhid} not found.")
+    else:
+        return [_json_extid(extid, extid_format) for extid in raw_extid]

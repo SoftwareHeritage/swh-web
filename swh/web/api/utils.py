@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -355,3 +355,19 @@ def enrich_origin_visit(
     else:
         ov["snapshot_url"] = None
     return ov
+
+
+def enrich_extid(extid: Dict[str, Any], request: Optional[HttpRequest] = None):
+    """Enrich extid dict with additional link
+
+    Args:
+        extid: the extid as a dict
+        request: Absolute URIs will be generated if provided
+
+    Returns:
+        An enriched extid dict filled with additional url
+    """
+    extid["target_url"] = reverse(
+        "browse-swhid", url_args={"swhid": extid["target"]}, request=request
+    )
+    return extid
