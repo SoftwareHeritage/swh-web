@@ -79,17 +79,12 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         text = self._default_visit(node)
         refuri = node.attributes.get("refuri")
         if refuri is not None:
-            return f"`{text} <{refuri}>`__"
+            return f"`{text} <{refuri}>`_"
         else:
-            return f"`{text}`_"
+            return text
 
     def visit_target(self, node: docutils.nodes.reference) -> str:
-        parts = ["\n"]
-        parts.extend(
-            f".. _{name}: {node.attributes['refuri']}"
-            for name in node.attributes["names"]
-        )
-        return "\n".join(parts)
+        return ""
 
     def visit_literal(self, node: docutils.nodes.literal) -> str:
         return f"``{self._default_visit(node)}``"

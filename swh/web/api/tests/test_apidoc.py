@@ -550,3 +550,46 @@ def test_apidoc_with_links(client):
     assert first_link in html
     assert second_link in html
     assert third_link in html
+
+
+@api_route(r"/endpoint/links-in-text/in/doc/", "api-1-endpoint-links-in-text-in-doc")
+@api_doc("/endpoint/links/in/doc/", category="test")
+def apidoc_test_endpoint_with_links_in_text_in_doc(request):
+    """
+    .. http:get:: /api/1/links-in-text/endpoint/
+
+        Endpoint documentation with links to
+        `archive <https://archive.softwareheritage.org>`_
+        and `documentation <https://docs.softwareheritage.org>`_
+        for testing.
+    """
+    pass
+
+
+def test_apidoc_with_links_in_text(client):
+    url = reverse("api-1-endpoint-links-in-text-in-doc")
+    rv = check_html_get_response(
+        client, url, status_code=200, template_used="apidoc.html"
+    )
+
+    html = prettify_html(rv.content)
+
+    assert (
+        textwrap.indent(
+            (
+                "<p>\n"
+                " Endpoint documentation with links to\n"
+                ' <a class="reference external" href="https://archive.softwareheritage.org">\n'
+                "  archive\n"
+                " </a>\n"
+                " and\n"
+                ' <a class="reference external" href="https://docs.softwareheritage.org">\n'
+                "  documentation\n"
+                " </a>\n"
+                " for testing.\n"
+                "</p>\n"
+            ),
+            " " * 9,
+        )
+        in html
+    )
