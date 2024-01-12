@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2022  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -148,7 +148,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: this.originSaveUrl,
                      saveRequestStatus: 'accepted',
                      originUrl: origin.url,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest(origin.type, origin.url);
 
@@ -164,7 +164,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
                      originurl: gitlabSubProjectUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', gitlabSubProjectUrl);
 
@@ -180,7 +180,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
                      originurl: gitlabSubProjectUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', gitlabSubProjectUrl);
 
@@ -196,7 +196,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
                      originurl: sfUserGirProjectUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', sfUserGirProjectUrl);
 
@@ -513,7 +513,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: origin.url,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', originUrl);
 
@@ -634,7 +634,7 @@ describe('Origin Save Tests', function() {
       requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
-      saveTaskStatus: 'not yet scheduled'
+      saveTaskStatus: 'pending'
     });
 
     cy.ambassadorLogin();
@@ -721,7 +721,7 @@ describe('Origin Save Tests', function() {
         saveRequestStatus: 'accepted',
         originUrl: originUrl,
         saveRequestDate: new Date(),
-        saveTaskStatus: 'not yet scheduled',
+        saveTaskStatus: 'pending',
         visitDate: null,
         visitStatus: null
       }));
@@ -790,7 +790,7 @@ describe('Origin Save Tests', function() {
         saveRequestStatus: 'accepted',
         originUrl: canonicalOriginUrl,
         saveRequestDate: new Date(),
-        saveTaskStatus: 'not yet scheduled',
+        saveTaskStatus: 'pending',
         visitDate: null,
         visitStatus: null
       }));
@@ -861,7 +861,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', originUrl);
 
@@ -881,7 +881,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', originUrl);
 
@@ -901,7 +901,7 @@ describe('Origin Save Tests', function() {
     stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
-                     saveTaskStatus: 'not yet scheduled'});
+                     saveTaskStatus: 'pending'});
 
     makeOriginSaveRequest('git', originUrl);
 

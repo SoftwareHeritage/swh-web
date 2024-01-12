@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -57,6 +57,7 @@ SAVE_TASK_SCHEDULED = "scheduled"
 SAVE_TASK_SUCCEEDED = "succeeded"
 SAVE_TASK_FAILED = "failed"
 SAVE_TASK_RUNNING = "running"
+SAVE_TASK_PENDING = "pending"
 
 SAVE_TASK_STATUS = [
     (SAVE_TASK_NOT_CREATED, SAVE_TASK_NOT_CREATED),
@@ -65,6 +66,7 @@ SAVE_TASK_STATUS = [
     (SAVE_TASK_SUCCEEDED, SAVE_TASK_SUCCEEDED),
     (SAVE_TASK_FAILED, SAVE_TASK_FAILED),
     (SAVE_TASK_RUNNING, SAVE_TASK_RUNNING),
+    (SAVE_TASK_PENDING, SAVE_TASK_PENDING),
 ]
 
 VISIT_STATUS_CREATED = "created"

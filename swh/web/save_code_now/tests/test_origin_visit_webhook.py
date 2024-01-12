@@ -1,4 +1,4 @@
-# Copyright (C) 2023  The Software Heritage developers
+# Copyright (C) 2023-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,7 +11,13 @@ import pytest
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
-from swh.web.save_code_now.models import SaveAuthorizedOrigin, SaveOriginRequest
+from swh.web.save_code_now.models import (
+    SAVE_TASK_PENDING,
+    SAVE_TASK_RUNNING,
+    SAVE_TASK_SUCCEEDED,
+    SaveAuthorizedOrigin,
+    SaveOriginRequest,
+)
 from swh.web.save_code_now.origin_visit_webhook import webhooks_available
 from swh.web.tests.helpers import check_api_post_responses, check_http_post_response
 from swh.web.utils import reverse
@@ -131,7 +137,7 @@ def test_save_origin_visit_webhook(
     resp = check_api_post_responses(api_client, url, status_code=200)
 
     save_request = SaveOriginRequest.objects.first()
-    assert save_request.loading_task_status == "not yet scheduled"
+    assert save_request.loading_task_status == SAVE_TASK_PENDING
     assert save_request.snapshot_swhid is None
 
     # simulate loading task scheduling and execution
@@ -169,7 +175,7 @@ def test_save_origin_visit_webhook(
 
     # check save request status was updated
     save_request = SaveOriginRequest.objects.first()
-    assert save_request.loading_task_status == "running"
+    assert save_request.loading_task_status == SAVE_TASK_RUNNING
     assert save_request.snapshot_swhid is None
 
     # simulate end of loading task execution
@@ -203,7 +209,7 @@ def test_save_origin_visit_webhook(
 
     # check save request status was updated
     save_request = SaveOriginRequest.objects.first()
-    assert save_request.loading_task_status == "succeeded"
+    assert save_request.loading_task_status == SAVE_TASK_SUCCEEDED
     assert save_request.snapshot_swhid == snapshot_swhid
 
     # check next webhook processing is a noop

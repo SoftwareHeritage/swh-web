@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -20,7 +20,7 @@ from swh.web.save_code_now.models import (
     SAVE_REQUEST_REJECTED,
     SAVE_TASK_FAILED,
     SAVE_TASK_NOT_CREATED,
-    SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_PENDING,
     SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
@@ -237,7 +237,7 @@ def test_save_request_scheduled(api_client, mocker, swh_scheduler):
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
     check_save_request_status(
         api_client,
@@ -258,7 +258,7 @@ def test_save_request_completed(api_client, mocker, swh_scheduler, snapshot):
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
     visit_date = datetime.now(tz=timezone.utc) + timedelta(hours=1)
     check_save_request_status(
@@ -283,7 +283,7 @@ def test_save_request_failed(api_client, mocker, swh_scheduler):
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
     check_save_request_status(
         api_client,
@@ -308,7 +308,7 @@ def test_create_save_request_no_duplicate_if_already_scheduled(
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
 
     sors = list(
@@ -350,7 +350,7 @@ def test_create_save_request_if_previous_one_is_running(
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
 
     check_save_request_status(
@@ -374,7 +374,7 @@ def test_create_save_request_if_previous_one_is_running(
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
 
     sors = list(
@@ -454,7 +454,7 @@ def test_save_request_unknown_repo_with_permission(
         mocker,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
     check_save_request_status(
         api_client,
@@ -462,7 +462,7 @@ def test_save_request_unknown_repo_with_permission(
         swh_scheduler,
         origin_url,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
 
 
@@ -604,7 +604,7 @@ def test_create_save_request_archives_accepted_ambassador_user(
         mocker,
         origin_to_review,
         expected_request_status=SAVE_REQUEST_ACCEPTED,
-        expected_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+        expected_task_status=SAVE_TASK_PENDING,
     )
 
     assert SaveAuthorizedOrigin.objects.get(url=origin_to_review)

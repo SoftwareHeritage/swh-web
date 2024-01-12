@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -68,7 +68,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
             :>json string save_request_status: the status of the save request,
                 either **accepted**, **rejected** or **pending**
             :>json string save_task_status: the status of the origin saving task,
-                either **not created**, **not yet scheduled**, **scheduled**,
+                either **not created**, **pending**, **scheduled**, **running**,
                 **succeeded** or **failed**
             :>json string save_task_next_run: the date and time from which the
                 request is executed

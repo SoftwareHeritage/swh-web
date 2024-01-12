@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -27,7 +27,7 @@ from swh.web.save_code_now.models import (
     SAVE_REQUEST_PENDING,
     SAVE_REQUEST_REJECTED,
     SAVE_TASK_FAILED,
-    SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_PENDING,
     SAVE_TASK_RUNNING,
     SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
@@ -142,7 +142,7 @@ _visit_type_task_privileged = {
 
 # map scheduler task status to origin save status
 _save_task_status = {
-    "next_run_not_scheduled": SAVE_TASK_NOT_YET_SCHEDULED,
+    "next_run_not_scheduled": SAVE_TASK_PENDING,
     "next_run_scheduled": SAVE_TASK_SCHEDULED,
     "completed": SAVE_TASK_SUCCEEDED,
     "disabled": SAVE_TASK_FAILED,
@@ -476,8 +476,8 @@ def create_save_origin_request(
             * **save_request_status**: the request status, either **accepted**,
               **rejected** or **pending**
             * **save_task_status**: the origin loading task status, either
-              **not created**, **not yet scheduled**, **scheduled**,
-              **succeed** or **failed**
+              **not created**, **pending**, **scheduled**, **running**,
+              **succeeded** or **failed**
 
     """
     visit_type_tasks = get_savable_visit_types_dict(privileged_user)
@@ -692,7 +692,7 @@ def get_save_origin_requests_to_update(origin_url: Optional[str] = None) -> Quer
     and require update.
 
     Non-terminal requests are those whose status is **accepted** and their task status are
-    either **created**, **not yet scheduled**, **scheduled** or **running**.
+    either **created**, **pending**, **scheduled** or **running**.
 
     Args:
         origin_url: If provided, only return requests to update for the given origin URL
@@ -720,7 +720,7 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
     """Refresh non-terminal save origin requests (SOR) in the backend.
 
     Non-terminal SOR are requests whose status is **accepted** and their task status are
-    either **created**, **not yet scheduled**, **scheduled** or **running**.
+    either **created**, **pending**, **scheduled** or **running**.
 
     This shall compute this list of SOR, checks their status in the scheduler and
     optionally elasticsearch for their current status. Then update those in db.

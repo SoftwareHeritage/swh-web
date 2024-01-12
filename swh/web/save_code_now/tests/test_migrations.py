@@ -3,6 +3,14 @@
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime, timezone
+
+from swh.web.save_code_now.models import (
+    SAVE_REQUEST_ACCEPTED,
+    SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_PENDING,
+)
+
 APP_NAME = "swh_web_save_code_now"
 
 MIGRATION_0008 = "0008_save-code-now_indexes_20210106_1327"
@@ -12,6 +20,7 @@ MIGRATION_0011 = "0011_saveoriginrequest_user_ids"
 MIGRATION_0012 = "0012_saveoriginrequest_note"
 MIGRATION_0013 = "0013_saveoriginrequest_webhook_info"
 MIGRATION_0014 = "0014_saveoriginrequest_snapshot_swhid"
+MIGRATION_0015 = "0015_alter_saveoriginrequest_loading_task_status"
 
 
 def test_migrations_09_add_visit_status_to_sor_model(migrator):
@@ -94,3 +103,30 @@ def test_migrations_14_add_snapshot_info_to_sor_model(migrator):
     new_model = new_state.apps.get_model(APP_NAME, "SaveOriginRequest")
 
     assert hasattr(new_model, "snapshot_swhid") is True
+
+
+def test_migrations_15_add_pending_status_for_loading_task(migrator):
+    """Ensures the migration adds the pending status as possible value for
+    the loading_task_status filed of SaveOriginRequest model"""
+
+    new_pending_status = ("pending", "pending")
+
+    old_state = migrator.apply_initial_migration((APP_NAME, MIGRATION_0014))
+    old_model = old_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+    assert new_pending_status not in old_model.loading_task_status.field.choices
+
+    old_model.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type="git",
+        origin_url="https://example.org",
+        status=SAVE_REQUEST_ACCEPTED,
+        loading_task_status=SAVE_TASK_NOT_YET_SCHEDULED,
+    )
+
+    assert old_model.objects.first().loading_task_status == SAVE_TASK_NOT_YET_SCHEDULED
+
+    new_state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0015))
+    new_model = new_state.apps.get_model(APP_NAME, "SaveOriginRequest")
+    assert new_pending_status in new_model.loading_task_status.field.choices
+
+    assert new_model.objects.first().loading_task_status == SAVE_TASK_PENDING

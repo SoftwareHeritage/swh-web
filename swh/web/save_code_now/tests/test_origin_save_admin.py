@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
     SAVE_REQUEST_REJECTED,
-    SAVE_TASK_NOT_YET_SCHEDULED,
+    SAVE_TASK_PENDING,
     SaveAuthorizedOrigin,
     SaveOriginRequest,
     SaveUnauthorizedOrigin,
@@ -134,7 +134,7 @@ def test_accept_pending_save_request(client, staff_user, swh_scheduler):
 
     response = check_http_get_response(client, save_request_url, status_code=200)
     assert response.data[0]["save_request_status"] == SAVE_REQUEST_ACCEPTED
-    assert response.data[0]["save_task_status"] == SAVE_TASK_NOT_YET_SCHEDULED
+    assert response.data[0]["save_task_status"] == SAVE_TASK_PENDING
 
 
 def test_reject_pending_save_request(client, staff_user, swh_scheduler):

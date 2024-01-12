@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -113,9 +113,10 @@ def api_save_origin(
         Returned status can either be:
 
             * **not created**: no saving task has been created
-            * **not yet scheduled**: saving task has been created but its
-              execution has not yet been scheduled
+            * **pending**: saving task has been created and will be scheduled
+              for execution
             * **scheduled**: the task execution has been scheduled
+            * **running**: the task is currently executed
             * **succeeded**: the saving task has been successfully executed
             * **failed**: the saving task has been executed but it failed
 
@@ -143,7 +144,7 @@ def api_save_origin(
         :>json string save_request_status: the status of the save request,
             either **accepted**, **rejected** or **pending**
         :>json string save_task_status: the status of the origin saving task,
-            either **not created**, **not yet scheduled**, **scheduled**,
+            either **not created**, **pending**, **scheduled**, **running**,
             **succeeded** or **failed**
         :>json string visit_date: the date (in iso format) of the visit if a visit
             occurred, null otherwise.
