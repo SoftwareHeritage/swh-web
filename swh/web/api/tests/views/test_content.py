@@ -141,6 +141,20 @@ def test_api_content_raw_ko_not_found(api_client):
     }
 
 
+def test_api_content_raw_empty(api_client, archive_data):
+    sha1_git = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    url = reverse("api-1-content-raw", url_args={"q": "sha1_git:%s" % sha1_git})
+
+    rv = check_http_get_response(api_client, url, status_code=200)
+    assert rv["Content-Type"] == "application/octet-stream"
+    assert (
+        rv["Content-disposition"]
+        == 'attachment; filename="content_sha1_git_%s_raw"' % sha1_git
+    )
+    assert b"".join(rv.streaming_content) == b""
+    assert int(rv["Content-Length"]) == 0
+
+
 def test_api_content_raw_text(api_client, archive_data, content):
     url = reverse("api-1-content-raw", url_args={"q": "sha1:%s" % content["sha1"]})
 

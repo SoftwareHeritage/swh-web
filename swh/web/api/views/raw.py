@@ -73,7 +73,9 @@ def api_raw_object(request: Request, swhid: str):
             d = cnt.to_dict()
             d["data"] = archive.storage.content_get_data(cnt.sha1)
             cnt = model.Content.from_dict(d)
-            assert cnt.data, f"Content {hash_to_hex(cnt.sha1)} ceased to exist"
+            assert (
+                cnt.data is not None
+            ), f"Content {hash_to_hex(cnt.sha1)} ceased to exist"
         result = content_git_object(cnt)
 
     elif object_type == ObjectType.DIRECTORY:

@@ -43,6 +43,17 @@ def _test_api_raw_hash(api_client, regular_user, archive_data, object_id, object
 
 
 @pytest.mark.django_db
+def test_api_raw_empty_content(api_client, archive_data, regular_user):
+    _test_api_raw_hash(
+        api_client,
+        regular_user,
+        archive_data,
+        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "cnt",
+    )
+
+
+@pytest.mark.django_db
 def test_api_raw_content(api_client, archive_data, content, regular_user):
     _test_api_raw_hash(
         api_client, regular_user, archive_data, content["sha1_git"], "cnt"
