@@ -17,6 +17,7 @@ from django.utils.safestring import mark_safe
 from rest_framework.exceptions import APIException
 from rest_framework.renderers import JSONRenderer
 
+from swh.core.api import RemoteException, TransientRemoteException
 from swh.web.api.renderers import YAMLRenderer
 from swh.web.config import get_config
 
@@ -168,6 +169,8 @@ def sentry_capture_exception(exc: Exception) -> None:
             exceptions.PermissionDenied,
             BadInputExc,
             NotFoundExc,
+            RemoteException,
+            TransientRemoteException,
         ),
     ):
         # ignore noisy exceptions we cannot do anything about
