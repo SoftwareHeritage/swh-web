@@ -5,6 +5,9 @@
 
 from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
 from hypothesis import given
+import pytest
+
+from django.urls.exceptions import NoReverseMatch
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ObjectType, QualifiedSWHID
@@ -74,6 +77,7 @@ def test_badge_errors(
         (ObjectType.RELEASE, invalid_sha1),
         (ObjectType.REVISION, invalid_sha1),
         (ObjectType.SNAPSHOT, invalid_sha1),
+        (ObjectType.SNAPSHOT, "123"),
     ):
         url_args = {"object_type": object_type.name.lower(), "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
@@ -89,6 +93,13 @@ def test_badge_errors(
             client, url, status_code=200, content_type="image/svg+xml"
         )
         _check_generated_badge(resp, "", "", error="invalid id")
+
+    for object_type, object_id in (
+        (ObjectType.SNAPSHOT, "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"),
+    ):
+        url_args = {"object_type": object_type.name.lower(), "object_id": object_id}
+        with pytest.raises(NoReverseMatch):
+            reverse("swh-badge", url_args=url_args)
 
 
 def test_badge_endpoints_have_cors_header(client, origin, release):

@@ -9,12 +9,17 @@ from swh.web.badges import swh_badge, swh_badge_swhid
 
 urlpatterns = [
     url(
-        r"^badge/(?P<object_type>[a-z]+)/(?P<object_id>.+)/$",
+        r"^badge/(?P<object_type>origin)/(?P<object_id>.+)/$",
         swh_badge,
         name="swh-badge",
     ),
     url(
-        r"^badge/(?P<object_swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        r"^badge/(?P<object_type>[a-z]+)/(?P<object_id>[0-9a-f]+)/$",
+        swh_badge,
+        name="swh-badge",
+    ),
+    url(
+        r"^badge/(?P<object_swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+(;.*)?)/$",
         swh_badge_swhid,
         name="swh-badge-swhid",
     ),

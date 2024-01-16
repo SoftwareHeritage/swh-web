@@ -134,7 +134,7 @@ def swh_badge(
             if parsed_object_type == ObjectType.RELEASE:
                 right_text = "release %s" % swh_object["name"]
         left_text = "archived"
-    except (BadInputExc, ValidationError):
+    except (BadInputExc, ValidationError, ValueError):
         right_text = f'invalid {object_type if object_type else "object"} id'
         object_type = "error"
     except NotFoundExc:
