@@ -27,7 +27,7 @@ _pytest = "pytest" in sys.argv[0] or "PYTEST_XDIST_WORKER" in os.environ
 
 swh_web_config.update(
     {
-        # enable django debug mode only when running pytest
+        # enable django DEBUG mode only when running pytest
         "debug": _pytest,
         "secret_key": "test",
         "history_counters_url": "",
@@ -114,6 +114,7 @@ if not _pytest:
             "deposit": {},
         }
     )
+
     from django.conf import settings
 
     from swh.web.tests.data import get_tests_data, override_storages
@@ -144,9 +145,12 @@ if not _pytest:
         cursor.execute("PRAGMA journal_mode = WAL;")
 
     connection_created.connect(activate_wal_journal_mode)
-
+    # ensure logs are displayed in console when settings.DEBUG is False
+    LOGGING["handlers"]["console"]["filters"] = []  # type: ignore
+    # only display logs whose level is >= WARNING when running cypress tests
+    LOGGING["handlers"]["console"]["level"] = "WARNING"  # type: ignore
 else:
-    # Silent DEBUG output when running unit tests
+    # silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
 
 LOGIN_URL = "login" if not _pytest else "oidc-login"

@@ -224,7 +224,7 @@ def error_response(
 
     if get_config()["debug"]:
         error_data["traceback"] = traceback.format_exc()
-        logger.debug(error_data["traceback"])
+        logger.error(error_data["traceback"])
 
     return make_api_response(request, error_data, doc_data, options=error_opts)
 

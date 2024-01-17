@@ -190,7 +190,7 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     error_description = "%s: %s" % (type(exc).__name__, str(exc))
     if get_config()["debug"]:
         error_description = traceback.format_exc()
-        logger.debug(error_description)
+        logger.error(error_description)
     if isinstance(exc, BadInputExc):
         error_code = 400
     if isinstance(exc, ForbiddenExc):
