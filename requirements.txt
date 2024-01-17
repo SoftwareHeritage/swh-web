@@ -16,6 +16,7 @@ docutils
 htmlmin
 iso8601
 lxml
+msgpack
 prometheus-client
 pybadges >= 2.2.1
 pygments

@@ -1,13 +1,14 @@
-# Copyright (C) 2017-2023  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timezone
 import functools
+import hashlib
 import os
 import re
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 import urllib.parse
 
 from bs4 import BeautifulSoup
@@ -17,6 +18,7 @@ import docutils.utils
 from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
+import msgpack
 from pkg_resources import get_distribution
 import requests
 from requests.auth import HTTPBasicAuth
@@ -441,11 +443,25 @@ def django_cache(
 
     """
 
-    def inner(func):
+    def hash_object(obj: Any) -> str:
+        return hashlib.md5(
+            msgpack.packb(obj, use_bin_type=True),
+            usedforsecurity=False,
+        ).hexdigest()
+
+    def compute_cache_key(func: Callable, func_args: Tuple, key_prefix: str) -> str:
+        func_hash = hash_object((func.__module__, func.__name__))
+        func_args_hash = hash_object(func_args)
+        return f"swh.web.cache.internal.{key_prefix}.{func_hash}.{func_args_hash}"
+
+    def inner(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            config = get_config()
             func_args = args + (0,) + tuple(sorted(kwargs.items()))
-            cache_key = str(hash((func.__module__, func.__name__) + func_args))
+            cache_key = compute_cache_key(
+                func, func_args, key_prefix=config.get("instance_name", "localhost")
+            )
             ret = cache.get(cache_key)
             if ret is None or invalidate_cache_pred(ret):
                 try:
