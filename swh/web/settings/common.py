@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -401,6 +401,6 @@ OIDC_SWH_WEB_CLIENT_ID = "swh-web"
 SWH_AUTH_SERVER_URL = swh_web_config["keycloak"]["server_url"]
 SWH_AUTH_REALM_NAME = swh_web_config["keycloak"]["realm_name"]
 SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID
-SWH_AUTH_SESSION_EXPIRED_REDIRECT_VIEW = "logout"
+SWH_AUTH_SESSION_EXPIRED_REDIRECT_VIEW = "logout-page"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

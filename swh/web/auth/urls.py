@@ -1,9 +1,12 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import HttpRequest
+from django.http.response import HttpResponse
+from django.shortcuts import render
 from django.urls import re_path as url
 
 from swh.auth.django.views import urlpatterns as auth_urlpatterns
@@ -66,10 +69,20 @@ if oidc_enabled or config["e2e_tests_mode"]:
         ),
     ]
 
-urlpatterns.append(
+
+def logout_page(request: HttpRequest) -> HttpResponse:
+    return render(request, template_name="logout.html")
+
+
+urlpatterns += [
     url(
         r"^logout/$",
         LogoutView.as_view(template_name="logout.html"),
         name="logout",
-    )
-)
+    ),
+    url(
+        r"^logout-page/$",
+        logout_page,
+        name="logout-page",
+    ),
+]

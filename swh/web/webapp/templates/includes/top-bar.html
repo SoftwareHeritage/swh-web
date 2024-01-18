@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2023  The Software Heritage developers
+Copyright (C) 2023-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -44,17 +44,25 @@ See top-level LICENSE file for more information
       {% endif %}
       {% if user.is_authenticated %}
         Logged in as
-        {% if 'OIDC' in user.backend %}
-          <a id="swh-login" href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
-          <a href="{% url 'oidc-logout' %}?next={% url 'logout' %}?remote_user=1">logout</a>
-        {% else %}
-          <strong id="swh-login">{{ user.username }}</strong>,
-          <a href="{% url logout_url %}">logout</a>
-        {% endif %}
+        {% with "/logout-page/"|add:"?next="|add:request.get_full_path|urlencode as next_url %}
+          {% if 'OIDC' in user.backend %}
+            <a href="{% url 'oidc-profile' %}"><strong>{{ user.username }}</strong></a>,
+            <a id="swh-logout"
+               href="{% url 'oidc-logout' %}?next={{ next_url }}&remote_user=1">logout</a>
+          {% else %}
+            <strong>{{ user.username }}</strong>,
+            <form id="swh-logout-form"
+                  method="post"
+                  action="{% url logout_url %}?next={{ next_url }}">
+              {% csrf_token %}
+              <button type="submit">logout</button>
+            </form>
+          {% endif %}
+        {% endwith %}
       {% else %}
         {% if request.resolver_match.url_name != logout_url %}
           <a id="swh-login"
-             href="{% url login_url %}?next={{ request.build_absolute_uri }}">login</a>
+             href="{% url login_url %}?next={{ request.build_absolute_uri|urlencode }}">login</a>
         {% else %}
           <a id="swh-login" href="{% url login_url %}">login</a>
         {% endif %}

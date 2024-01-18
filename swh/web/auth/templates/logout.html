@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2023  The Software Heritage developers
+Copyright (C) 2018-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -18,14 +18,10 @@ See top-level LICENSE file for more information
 {% endblock navbar-content %}
 
 {% block content %}
-  {% if 'next' in request.GET %}
-    <p>Your authenticated session expired so you have been automatically logged out.</p>
-  {% else %}
-    <p>You have been successfully logged out.</p>
-  {% endif %}
+  <p>Your authenticated session expired or you explicitly logged out.</p>
   <p>
     {% if 'next' in request.GET %}
-      <a href="{% url login_url %}?next={{ request.GET.next }}">Log in</a>
+      <a href="{% url login_url %}?next={{ request.GET.next|urlencode }}">Log in</a>
     {% else %}
       <a href="{% url login_url %}">Log in</a>
     {% endif %}
