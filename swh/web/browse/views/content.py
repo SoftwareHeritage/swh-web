@@ -152,9 +152,12 @@ def _contents_diff(
                 )
                 language = content_from_display_data["language"]
                 content_from_size = content_from["length"]
-                if not (
-                    content_from["mimetype"].startswith("text/")
-                    or content_from["mimetype"] == "inode/x-empty"
+                if (
+                    not (
+                        content_from["mimetype"].startswith("text/")
+                        or content_from["mimetype"] == "inode/x-empty"
+                    )
+                    or content_from["encoding"] == "binary"
                 ):
                     text_diff = False
 
@@ -165,9 +168,12 @@ def _contents_diff(
                 )
                 language = content_to_display_data["language"]
                 content_to_size = content_to["length"]
-                if not (
-                    content_to["mimetype"].startswith("text/")
-                    or content_to["mimetype"] == "inode/x-empty"
+                if (
+                    not (
+                        content_to["mimetype"].startswith("text/")
+                        or content_to["mimetype"] == "inode/x-empty"
+                    )
+                    or content_to["encoding"] == "binary"
                 ):
                     text_diff = False
 
