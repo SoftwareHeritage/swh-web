@@ -56,7 +56,7 @@ class RequestStatus(enum.Enum):
                 cls.SUSPENDED,
                 cls.UNSUCCESSFUL,
             ],
-            cls.ACCEPTED: [cls.SCHEDULED],
+            cls.ACCEPTED: [cls.SCHEDULED, cls.REJECTED, cls.UNSUCCESSFUL],
             cls.SCHEDULED: [
                 cls.FIRST_LISTING_DONE,
                 # in case of race condition between lister and loader:
@@ -66,7 +66,7 @@ class RequestStatus(enum.Enum):
             cls.FIRST_ORIGIN_LOADED: [],
             cls.REJECTED: [],
             cls.SUSPENDED: [cls.PENDING],
-            cls.UNSUCCESSFUL: [],
+            cls.UNSUCCESSFUL: [cls.ACCEPTED],
         }
 
     @classmethod

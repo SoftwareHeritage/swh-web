@@ -39,6 +39,18 @@ from swh.web.add_forge_now.models import Request, RequestStatus
                 RequestStatus.UNSUCCESSFUL,
             ],
         ),
+        (
+            RequestStatus.ACCEPTED,
+            [
+                RequestStatus.SCHEDULED,
+                RequestStatus.REJECTED,
+                RequestStatus.UNSUCCESSFUL,
+            ],
+        ),
+        (
+            RequestStatus.UNSUCCESSFUL,
+            [RequestStatus.ACCEPTED],
+        ),
     ],
 )
 def test_allowed_next_statuses(current_status, allowed_next_statuses):
