@@ -95,7 +95,18 @@ def api_extid(request: Request, extid_type: str, extid_format: str, extid: str):
         <https://docs.softwareheritage.org/devel/glossary.html#term-external-identifier>`_
         is used by a system that does not fit the Software Heritage data model.
 
-        The types of external identifier that can be requested are the following:
+        As an external identifier is stored in binary into the archive database, the format
+        used to decode its ASCII representation must be explicitly specified. The available
+        formats are the following:
+
+        - ``base64url``: the external identifier is encoded to `base64url
+          <https://datatracker.ietf.org/doc/html/rfc4648#section-5>`_.
+        - ``hex``: the external identifier is a checksum in hexadecimal representation
+        - ``raw``: the external identifier is an ASCII string
+
+        The types of external identifier that can be requested are given below.
+
+        VCS related:
 
         - ``bzr-nodeid``: Revision ASCII identifier of a Bazaar repository, to get such
           identifiers use the following command in your Bazaar repository:
@@ -105,14 +116,19 @@ def api_extid(request: Request, extid_type: str, extid_format: str, extid: str):
           to get such identifier execute the following command in your Mercurial repository:
           ``hg id -r <rev_num> --template {hg_template}``.
 
-        As an external identifier is stored in binary into the archive database, the format
-        used to decode its ASCII representation must be explicitly specified. The available
-        formats are the following:
+        `Guix <https://guix.gnu.org/manual/en/html_node/Invoking-guix-hash.html>`_ and
+        `Nix <https://nixos.wiki/wiki/Nix_Hash>`_ related:
 
-        - ``base64url``: the external identifier is encoded to `base64url
-          <https://datatracker.ietf.org/doc/html/rfc4648#section-5>`_.
-        - ``hex``: the external identifier is a checksum in hexadecimal representation
-        - ``raw``: the external identifier is an ASCII string
+        - ``nar-sha256``: sha256 checksum of a `Nix Archive (NAR)
+          <https://edolstra.github.io/pubs/phd-thesis.pdf#page=101>`_, used to deterministically
+          identifies the contents of a source tree (corresponds to *recursive* hash mode used
+          by Guix and Nix)
+
+        - ``checksum-sha256``: sha256 checksum of a file, typically a tarball (corresponds to
+          *flat* hash mode used by Guix and Nix)
+
+        - ``checksum-sha512``: sha512 checksum of a file, typically a tarball (corresponds to
+          *flat* hash mode used by Guix and Nix)
 
         :param string extid_type: the type of external identifier
         :param string extid_format: the format used to encode the extid to an ASCII string,
@@ -138,6 +154,10 @@ def api_extid(request: Request, extid_type: str, extid_format: str, extid: str):
 
             :swh_web_api:`extid/bzr-nodeid/raw:rodney.dawes@canonical.com-20090512192901-f22ja60nsgq9j5a4/`
             :swh_web_api:`extid/hg-nodeid/hex:1ce49c60732c9020ce2f98d03a7a71ec8d5be191/`
+            :swh_web_api:`extid/checksum-sha256/base64url:s4lFKlaGmGiN2jiAIGg3ihbBXEr5sVPN2ZtlORKSu8c/`
+            :swh_web_api:`extid/nar-sha256/base64url:dPfSdTz-U7tD8GhrxwKg2S288XKOWPcVvz3y3jkplHI/`
+            :swh_web_api:`extid/checksum-sha512/base64url:AL5bxZ-gStT5UpzSc1dN-XVxxWN9FHtvBlZoFeFFMowwgMKWq9GLZHV8DWX-g7ugiKxlKa2ph2oTQCqvhixDQw/`
+
     """
 
     extid_version = request.GET.get("extid_version")
