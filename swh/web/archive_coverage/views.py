@@ -205,9 +205,9 @@ listed_origins: Dict[str, Any] = {
             "type": "guix",
             "info_url": "https://guix.gnu.org",
             "info": "source code tarballs used to build the Guix package collection",
-            "visit_types": ["nixguix"],
             "search_pattern": {
-                "default": "https://guix.gnu.org/sources.json",
+                "default": "",
+                "nixguix": "https://guix.gnu.org/sources.json",
             },
         },
         {
@@ -259,11 +259,9 @@ listed_origins: Dict[str, Any] = {
             "type": "nixos",
             "info_url": "https://nixos.org",
             "info": "source code tarballs used to build the Nix package collection",
-            "visit_types": ["nixguix"],
             "search_pattern": {
-                "default": (
-                    "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json"
-                )
+                "default": "",
+                "nixguix": "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json",
             },
         },
         {
@@ -549,15 +547,31 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         origins["instances"] = {}
         origins_type = origins["type"]
 
-        # special processing for nixos/guix origins as there is no
-        # scheduler metrics for those
+        # special processing for nixos/guix origins
         if origins_type in ("nixos", "guix"):
-            count = _get_nixguix_origins_count(
-                origins["search_pattern"]["default"], use_cache
+            manifest_url = origins["search_pattern"]["nixguix"]
+            lister_instance = urlparse(manifest_url).netloc
+            visit_data = listers_metrics.get("nixguix", [])
+            visit_type_counts = {}
+            # visit types from new nixguix lister
+            for instance, metrics in visit_data:
+                if instance != lister_instance:
+                    continue
+                visit_type_counts[metrics.visit_type] = (
+                    metrics.origins_enabled - metrics.origins_never_visited
+                )
+            # visit type from legacy nixguix lister
+            visit_type_counts["nixguix"] = _get_nixguix_origins_count(
+                manifest_url, cache_count=use_cache
             )
 
+            count = sum(visit_type_counts.values())
             origins["count"] = f"{count:,}"
-            origins["instances"][origins_type] = {"nixguix": {"count": count}}
+            origins["instances"][lister_instance] = {
+                key: {"count": f"{value:,}"}
+                for key, value in visit_type_counts.items()
+                if value > 0
+            }
 
         if origins_type not in listers_metrics:
             continue
