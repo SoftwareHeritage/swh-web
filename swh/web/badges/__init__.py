@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022  The Software Heritage developers
+# Copyright (C) 2019-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,10 +10,12 @@ from pybadges import badge
 
 from django.contrib.staticfiles import finders
 from django.http import HttpRequest, HttpResponse
+from django.middleware.cache import CacheMiddleware
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
+from swh.web.config import get_config
 from swh.web.utils import archive, reverse
 from swh.web.utils.exc import BadInputExc, NotFoundExc
 from swh.web.utils.identifiers import parse_object_type, resolve_swhid
@@ -73,7 +75,7 @@ def swh_badge(
     object_type: str,
     object_id: str,
     object_swhid: Optional[str] = "",
-) -> HttpResponse:
+):
     """
     Generate a Software Heritage badge for a given object type and id.
 
@@ -95,6 +97,22 @@ def swh_badge(
     """
     left_text = "error"
     whole_link = None
+
+    # cache badge for 30 days by default
+    cache_timeout = (
+        get_config().get("badges", {}).get("cache_timeout", 30 * 24 * 60 * 60)
+    )
+    cachemiddleware = CacheMiddleware(
+        cache_timeout=int(cache_timeout), get_response=lambda: HttpResponse()
+    )
+
+    response = cachemiddleware.process_request(request)
+
+    if response is not None:
+        # return cached badge response
+        return response
+
+    setattr(request, "_cache_update_cache", False)
 
     try:
         if object_type == "origin":
@@ -134,6 +152,8 @@ def swh_badge(
             if parsed_object_type == ObjectType.RELEASE:
                 right_text = "release %s" % swh_object["name"]
         left_text = "archived"
+        # cache badge response when targeted object is found
+        setattr(request, "_cache_update_cache", True)
     except (BadInputExc, ValidationError, ValueError):
         right_text = f'invalid {object_type if object_type else "object"} id'
         object_type = "error"
@@ -151,7 +171,8 @@ def swh_badge(
         embed_logo=True,
     )
 
-    return HttpResponse(badge_data, content_type="image/svg+xml")
+    response = HttpResponse(badge_data, content_type="image/svg+xml")
+    return cachemiddleware.process_response(request, response)
 
 
 def swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:

@@ -1,10 +1,9 @@
-# Copyright (C) 2019-2022  The Software Heritage developers
+# Copyright (C) 2019-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from corsheaders.middleware import ACCESS_CONTROL_ALLOW_ORIGIN
-from hypothesis import given
 import pytest
 
 from django.urls.exceptions import NoReverseMatch
@@ -14,7 +13,6 @@ from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.web.badges import badge_config, get_logo_data
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import check_http_get_response
-from swh.web.tests.strategies import new_origin
 from swh.web.utils import archive, reverse
 from swh.web.utils.identifiers import resolve_swhid
 
@@ -43,9 +41,6 @@ def test_snapshot_badge(client, snapshot):
     _test_badge_endpoints(client, "snapshot", snapshot)
 
 
-@given(
-    new_origin(),
-)
 def test_badge_errors(
     client,
     unknown_content,
@@ -54,8 +49,8 @@ def test_badge_errors(
     unknown_revision,
     unknown_snapshot,
     invalid_sha1,
-    new_origin,
 ):
+    new_origin = "https://example.org/not/found"
     for object_type, object_id in (
         ("content", unknown_content["sha1_git"]),
         ("directory", unknown_directory),
@@ -162,6 +157,7 @@ def _check_generated_badge(response, object_type, object_id, error=None):
     if object_type == "origin" and error is None:
         link = reverse("browse-origin", query_params={"origin_url": object_id})
         text = "repository"
+        assert "Cache-Control" in response
     elif error is None:
         text = str(
             QualifiedSWHID(
@@ -173,14 +169,17 @@ def _check_generated_badge(response, object_type, object_id, error=None):
         if object_type == "release":
             release = archive.lookup_release(object_id)
             text = release["name"]
+        assert "Cache-Control" in response
     elif error == "invalid id":
         text = "error"
         link = f"invalid {object_type} id"
         object_type = "error"
+        assert "Cache-Control" not in response
     elif error == "not found":
         text = "error"
         link = f"{object_type} not found"
         object_type = "error"
+        assert "Cache-Control" not in response
 
     assert_contains(response, "<svg ")
     assert_contains(response, "</svg>")
