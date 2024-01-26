@@ -357,6 +357,65 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         assert rv.data == expected_visit
 
 
+@given(new_origin(), visit_dates(2), new_snapshots(1))
+def test_api_lookup_origin_visit_latest_visit_type_filter(
+    api_client, subtest, new_origin, visit_dates, new_snapshots
+):
+    # ensure archive_data fixture will be reset between each hypothesis
+    # example test run
+    @subtest
+    def test_inner(archive_data):
+        archive_data.origin_add([new_origin])
+        visit_dates.sort()
+        visit_ids = []
+        for i, visit_date in enumerate(visit_dates):
+            for visit_type in ("git", "git-checkout"):
+                origin_visit = archive_data.origin_visit_add(
+                    [
+                        OriginVisit(
+                            origin=new_origin.url,
+                            date=visit_date,
+                            type=visit_type,
+                        )
+                    ]
+                )[0]
+                visit_ids.append(origin_visit.visit)
+
+        archive_data.snapshot_add([new_snapshots[0]])
+
+        for visit_id in visit_ids:
+            visit_status = OriginVisitStatus(
+                origin=new_origin.url,
+                visit=visit_id,
+                date=now(),
+                status="full",
+                snapshot=new_snapshots[0].id,
+            )
+            archive_data.origin_visit_status_add([visit_status])
+
+        for visit_type in ("git", "git-checkout"):
+            url = reverse(
+                "api-1-origin-visit-latest",
+                url_args={"origin_url": new_origin.url},
+                query_params={"visit_type": visit_type},
+            )
+
+            rv = check_api_get_responses(api_client, url, status_code=200)
+
+            expected_visit = archive_data.origin_visit_status_get_latest(
+                new_origin.url, type=visit_type
+            )
+
+            expected_visit = enrich_origin_visit(
+                expected_visit,
+                with_origin_link=True,
+                with_origin_visit_link=False,
+                request=rv.wsgi_request,
+            )
+
+            assert rv.data == expected_visit
+
+
 def test_api_lookup_origin_visit_not_found(api_client, origin):
     all_visits = list(reversed(get_origin_visits(origin)))
 

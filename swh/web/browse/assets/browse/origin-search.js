@@ -29,6 +29,7 @@ function clearOriginSearchResultsTable() {
 }
 
 async function populateOriginSearchResultsTable(origins) {
+  const visitType = $('#swh-search-visit-type').val();
   if (origins.length > 0) {
     $('#swh-origin-search-results').show();
     $('#swh-no-result').hide();
@@ -55,6 +56,9 @@ async function populateOriginSearchResultsTable(origins) {
       // get async latest visit snapshot and update visit status icon
       let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url.replace('?', '%3F'));
       latestSnapshotUrl += '?require_snapshot=true';
+      if (visitType !== 'any') {
+        latestSnapshotUrl += `&visit_type=${visitType}`;
+      }
       promises.push(fetch(latestSnapshotUrl));
     }
     const responses = await Promise.all(promises);

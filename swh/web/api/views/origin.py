@@ -409,6 +409,7 @@ def api_origin_visit_latest(request: Request, origin_url: str):
         :param str origin_url: a software origin URL
         :query boolean require_snapshot: if true, only return a visit
             with a snapshot
+        :query str visit_type: if provided, filter visits by type
 
         {common_headers}
 
@@ -430,6 +431,7 @@ def api_origin_visit_latest(request: Request, origin_url: str):
         archive.lookup_origin_visit_latest,
         origin_url,
         bool(strtobool(require_snapshot)),
+        type=request.query_params.get("visit_type"),
         lookup_similar_urls=False,
         notfound_msg=("No visit for origin {} found".format(origin_url)),
         enrich_fn=partial(
