@@ -119,7 +119,9 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
 
     # check token has been generated and saved encrypted to database
     assert len(OIDCUserOfflineTokens.objects.all()) == nb_tokens + 1
-    encrypted_token = OIDCUserOfflineTokens.objects.last().offline_token.tobytes()
+    encrypted_token = OIDCUserOfflineTokens.objects.last().offline_token
+    if isinstance(encrypted_token, memoryview):
+        encrypted_token = encrypted_token.tobytes()
     secret = get_config()["secret_key"].encode()
     salt = request.user.sub.encode()
     decrypted_token = decrypt_data(encrypted_token, secret, salt)
