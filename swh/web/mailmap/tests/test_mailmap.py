@@ -8,6 +8,7 @@ from io import StringIO
 import json
 from typing import Dict
 
+import psycopg2
 from psycopg2.extras import execute_values
 import pytest
 
@@ -401,6 +402,9 @@ MAILMAP_KNOWN_PEOPLE = tuple(
 
 
 def init_stub_storage_db(postgresql):
+    if not isinstance(postgresql, psycopg2.extensions.connection):
+        # wrap pytest-postgresql >= 4's psycopg3 connection into a psycopg2 one
+        postgresql = psycopg2.connect(postgresql.info.dsn)
     cur = postgresql.cursor()
     cur.execute(
         """
