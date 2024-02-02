@@ -21,8 +21,10 @@ from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 import msgpack
 from pkg_resources import get_distribution
+from pymemcache.exceptions import MemcacheServerError
 import requests
 from requests.auth import HTTPBasicAuth
+import sentry_sdk
 
 from django.conf import settings
 from django.core.cache import cache
@@ -444,7 +446,11 @@ def cache_set(
             not default supported by msgpack, see :mod:`swh.core.api.serializers`
     """
     payload = gzip.compress(msgpack_dumps(obj, extra_encoders=extra_encoders))
-    cache.set(_compute_final_cache_key(cache_key), payload, timeout=timeout)
+
+    try:
+        cache.set(_compute_final_cache_key(cache_key), payload, timeout=timeout)
+    except MemcacheServerError as mse:
+        sentry_sdk.capture_exception(mse)
 
 
 def cache_get(

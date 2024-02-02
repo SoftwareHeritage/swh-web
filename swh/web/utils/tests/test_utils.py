@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,6 +11,7 @@ from urllib.parse import quote
 
 import attr
 import docutils
+from pymemcache.exceptions import MemcacheServerError
 import pytest
 
 from django.test.utils import override_settings
@@ -565,3 +566,16 @@ def test_django_cache_with_extra_encoder_and_decoder(mocker):
     assert val == val2 == AddResult(val=3)
     assert spy_add.call_count == 1
     assert spy_cache_set.call_count == 1
+
+
+def test_django_cache_pass_through_on_memcache_error(mocker):
+    spy_cache_get = mocker.spy(cache, "get")
+    mocker.patch.object(cache, "set").side_effect = MemcacheServerError("Cache error")
+    cached_add = django_cache()(add)
+
+    # function still returns a value after the memcache server error
+    assert cached_add(1, 1) == 2
+
+    # but it should not be in cache
+    cache_key = spy_cache_get.mock_calls[0].args[0]
+    assert cache.get(cache_key) is None
