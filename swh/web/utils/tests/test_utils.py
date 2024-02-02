@@ -9,6 +9,7 @@ import math
 import sys
 from urllib.parse import quote
 
+import attr
 import docutils
 import pytest
 
@@ -536,3 +537,31 @@ def test_django_cache_catch_exception(mocker):
     assert math.isnan(val2)
     assert spy_add.call_count == 2
     assert spy_cache_set.call_count == 0
+
+
+@attr.s
+class AddResult:
+    val = attr.ib(type=int)
+
+
+def add_result(x: int, y: int) -> AddResult:
+    return AddResult(val=x + y)
+
+
+def test_django_cache_with_extra_encoder_and_decoder(mocker):
+    """Decorated function should be called once and returned value
+    put in django cache."""
+    spy_add = mocker.spy(sys.modules[__name__], "add_result")
+    spy_cache_set = mocker.spy(cache, "set")
+
+    cached_add = django_cache(
+        extra_encoders=[(AddResult, "add_result", attr.asdict)],
+        extra_decoders={"add_result": lambda d: AddResult(**d)},
+    )(add_result)
+
+    val = cached_add(1, 2)
+    val2 = cached_add(1, 2)
+
+    assert val == val2 == AddResult(val=3)
+    assert spy_add.call_count == 1
+    assert spy_cache_set.call_count == 1

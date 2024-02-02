@@ -5,6 +5,7 @@
 
 from datetime import datetime, timezone
 import functools
+import gzip
 import hashlib
 import os
 import re
@@ -31,6 +32,7 @@ from django.shortcuts import redirect
 from django.urls import resolve
 from django.urls import reverse as django_reverse
 
+from swh.core.api.serializers import msgpack_dumps, msgpack_loads
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
@@ -418,14 +420,70 @@ def prettify_html(html: str) -> str:
     return BeautifulSoup(html, "lxml").prettify()
 
 
+def _compute_final_cache_key(cache_key: str) -> str:
+    key_prefix = get_config().get("instance_name", "localhost")
+    return f"swh.web.cache.internal.{key_prefix}.{cache_key}"
+
+
+def cache_set(
+    cache_key: str,
+    obj: Any,
+    timeout: int = DEFAULT_TIMEOUT,
+    extra_encoders: Optional[List[Tuple[type, str, Callable]]] = None,
+) -> None:
+    """Set a value in django cache.
+
+    For optimizing cache size, the value to cache is serialized to binary
+    using msgpack and then compressed with gzip.
+
+    Args:
+        cache_key: string key for the value to set in cache
+        obj: value to store in cache
+        timeout: the duration in seconds after which the cache expires
+        extra_encoders: optional encoders for serializing types that are
+            not default supported by msgpack, see :mod:`swh.core.api.serializers`
+    """
+    payload = gzip.compress(msgpack_dumps(obj, extra_encoders=extra_encoders))
+    cache.set(_compute_final_cache_key(cache_key), payload, timeout=timeout)
+
+
+def cache_get(
+    cache_key: str, extra_decoders: Optional[Dict[str, Callable]] = None
+) -> Optional[Any]:
+    """Get a value from the django cache.
+
+    For optimizing cache size, values to cache are serialized to binary using
+    msgpack and then compressed with gzip.
+
+    Args:
+        cache_key: string key for the value to get from cache
+        extra_decoders: optional decoders for deserializing types that are
+            not default supported by msgpack, see :mod:`swh.core.api.serializers`
+
+    Returns:
+        the cached value or :const:`None` if it does not exist
+    """
+    payload = cache.get(_compute_final_cache_key(cache_key))
+    return (
+        msgpack_loads(gzip.decompress(payload), extra_decoders=extra_decoders)
+        if payload
+        else None
+    )
+
+
 def django_cache(
     timeout: int = DEFAULT_TIMEOUT,
     catch_exception: bool = False,
     exception_return_value: Any = None,
     invalidate_cache_pred: Callable[[Any], bool] = lambda val: False,
+    extra_encoders: Optional[List[Tuple[type, str, Callable]]] = None,
+    extra_decoders: Optional[Dict[str, Callable]] = None,
 ):
     """Decorator to put the result of a function call in Django cache,
     subsequent calls will directly return the cached value.
+
+    For optimizing cache size, values to cache are serialized to binary using
+    msgpack and then compressed with gzip.
 
     Args:
         timeout: The number of seconds value will be hold in cache
@@ -436,6 +494,10 @@ def django_cache(
         invalidate_cache_pred: A predicate function enabling to
             invalidate the cache under certain conditions, decorated
             function will then be called again
+        extra_encoders: optional encoders for serializing types that are
+            not default supported by msgpack, see :mod:`swh.core.api.serializers`
+        extra_decoders: optional decoders for deserializing types that are
+            not default supported by msgpack, see :mod:`swh.core.api.serializers`
 
     Returns:
         The returned value of the decorated function for the specified
@@ -449,20 +511,13 @@ def django_cache(
             usedforsecurity=False,
         ).hexdigest()
 
-    def compute_cache_key(func: Callable, func_args: Tuple, key_prefix: str) -> str:
-        func_hash = hash_object((func.__module__, func.__name__))
-        func_args_hash = hash_object(func_args)
-        return f"swh.web.cache.internal.{key_prefix}.{func_hash}.{func_args_hash}"
-
     def inner(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            config = get_config()
             func_args = args + (0,) + tuple(sorted(kwargs.items()))
-            cache_key = compute_cache_key(
-                func, func_args, key_prefix=config.get("instance_name", "localhost")
-            )
-            ret = cache.get(cache_key)
+            cache_key = hash_object((func.__module__, func.__name__))
+            cache_key += hash_object(func_args)
+            ret = cache_get(cache_key, extra_decoders=extra_decoders)
             if ret is None or invalidate_cache_pred(ret):
                 try:
                     ret = func(*args, **kwargs)
@@ -473,7 +528,12 @@ def django_cache(
                     else:
                         raise
                 else:
-                    cache.set(cache_key, ret, timeout=timeout)
+                    cache_set(
+                        cache_key,
+                        ret,
+                        timeout=timeout,
+                        extra_encoders=extra_encoders,
+                    )
             return ret
 
         return wrapper

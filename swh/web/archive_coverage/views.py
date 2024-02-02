@@ -7,6 +7,8 @@ from collections import Counter, defaultdict
 from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
 
+import attr
+
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -453,6 +455,8 @@ def _get_listers_metrics(
         catch_exception=True,
         exception_return_value={},
         invalidate_cache_pred=lambda m: not cache_metrics,
+        extra_encoders=[(SchedulerMetrics, "scheduler_metrics", attr.asdict)],
+        extra_decoders={"scheduler_metrics": lambda d: SchedulerMetrics(**d)},
     )
     def _get_listers_metrics_internal():
         listers_metrics = defaultdict(list)

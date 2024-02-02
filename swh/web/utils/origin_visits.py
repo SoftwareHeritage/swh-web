@@ -5,9 +5,7 @@
 
 from typing import List, Optional
 
-from django.core.cache import cache
-
-from swh.web.utils import archive, parse_iso8601_date_to_utc
+from swh.web.utils import archive, cache_get, cache_set, parse_iso8601_date_to_utc
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.typing import OriginVisitInfo
 
@@ -41,7 +39,7 @@ def get_origin_visits(
     )["url"]
 
     cache_entry_id = "origin_visits_%s" % origin_url
-    cache_entry = cache.get(cache_entry_id)
+    cache_entry = cache_get(cache_entry_id)
 
     last_visit = 0
     origin_visits = []
@@ -80,7 +78,7 @@ def get_origin_visits(
     # cache entry is already sorted with oldest visits
     origin_visits += sorted(new_visits, key=lambda v: _visit_sort_key(v))
 
-    cache.set(cache_entry_id, origin_visits)
+    cache_set(cache_entry_id, origin_visits)
 
     return origin_visits
 
