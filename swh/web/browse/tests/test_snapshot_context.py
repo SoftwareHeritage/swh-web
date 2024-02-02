@@ -45,7 +45,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
                         target=branch_data["target"],
                         directory=rev_data["directory"],
                         date=format_utc_iso_date(rev_data["date"]),
-                        message=rev_data["message"],
+                        message=None,
                         url=None,
                     )
                 )
@@ -59,7 +59,7 @@ def test_get_origin_visit_snapshot_simple(archive_data, origin_with_multiple_vis
                         branch_name=branch,
                         date=format_utc_iso_date(rel_data["date"]),
                         id=rel_data["id"],
-                        message=rel_data["message"],
+                        message=None,
                         target_type=rel_data["target_type"],
                         target=rel_data["target"],
                         directory=rev_data["directory"],

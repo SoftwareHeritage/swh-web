@@ -172,7 +172,7 @@ def _branch_not_found(
 
 
 def process_snapshot_branches(
-    snapshot: Dict[str, Any]
+    snapshot: Dict[str, Any], discard_messages: bool = False
 ) -> Tuple[List[SnapshotBranchInfo], List[SnapshotReleaseInfo], Dict[str, Any]]:
     """
     Process a dictionary describing snapshot branches: extract those
@@ -180,8 +180,10 @@ def process_snapshot_branches(
     then sort those lists in lexicographical order of the branches' names.
 
     Args:
-        snapshot: A dict describing a snapshot as returned for instance by
+        snapshot: a dict describing a snapshot as returned for instance by
             :func:`swh.web.utils.archive.lookup_snapshot`
+        discard_messages: if :const:`True`, do not retrieve messages associated
+            to branches and releases
 
     Returns:
         A tuple whose first member is the sorted list of branches
@@ -229,7 +231,7 @@ def process_snapshot_branches(
             date=format_utc_iso_date(release["date"]),
             directory=None,
             id=release["id"],
-            message=release["message"],
+            message=release["message"] if not discard_messages else None,
             target_type=release["target_type"],
             target=release["target"],
             url=None,
@@ -243,7 +245,7 @@ def process_snapshot_branches(
             target=revision["id"],
             directory=revision["directory"],
             date=format_utc_iso_date(revision["date"]),
-            message=revision["message"],
+            message=revision["message"] if not discard_messages else None,
             url=None,
         )
 
@@ -342,7 +344,9 @@ def get_snapshot_content(
         snapshot = archive.lookup_snapshot(
             snapshot_id, branches_count=snapshot_content_max_size
         )
-        branches, releases, aliases = process_snapshot_branches(snapshot)
+        branches, releases, aliases = process_snapshot_branches(
+            snapshot, discard_messages=True
+        )
 
     return branches, releases, aliases
 
