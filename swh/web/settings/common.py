@@ -8,6 +8,7 @@
 Django common settings for swh-web.
 """
 
+from importlib.metadata import version
 from importlib.util import find_spec
 import os
 from pathlib import Path
@@ -389,7 +390,10 @@ LOGIN_REDIRECT_URL = "swh-web-homepage"
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 CACHES = {
-    "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "VERSION": version("swh.web"),
+    },
 }
 
 JS_REVERSE_JS_MINIFY = False
