@@ -30,6 +30,7 @@ DOC_RETURN_ORIGIN = """
             :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
             to get the list of metadata authorities providing extrinsic metadata
             on this origin (and, indirectly, to the origin's extrinsic metadata itself)
+        :>json array visit_types: set of visit types for that origin
 """
 
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")

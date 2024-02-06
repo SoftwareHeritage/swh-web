@@ -247,7 +247,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
-            origin_info={"url": origin_url},
+            origin_info={"url": origin_url, "visit_types": {"git"}},
             origin_visits_url=origin_visits_url,
             release=None,
             release_alias=False,

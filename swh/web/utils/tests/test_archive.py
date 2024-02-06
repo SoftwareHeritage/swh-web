@@ -217,11 +217,15 @@ def test_origin_visit_find_by_date(archive_data, new_origin):
 
 
 @given(new_origin())
-def test_lookup_origin(archive_data, new_origin):
+def test_lookup_origin(archive_data, tests_data, new_origin):
     archive_data.origin_add([new_origin])
+    visit_types = {"git", "git-checkout"}
+    tests_data["search"].origin_update(
+        [{"url": new_origin.url, "visit_types": visit_types}]
+    )
 
     actual_origin = archive.lookup_origin(new_origin.url)
-    expected_origin = archive_data.origin_get([new_origin.url])[0]
+    expected_origin = OriginInfo(url=new_origin.url, visit_types=visit_types)
     assert actual_origin == expected_origin
 
 

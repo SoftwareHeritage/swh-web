@@ -13,7 +13,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Un
 
 from swh.model import hashutil
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.model import ExtID, Revision
+from swh.model.model import ExtID, Origin, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -185,6 +185,13 @@ def lookup_content_license(q):
     return converters.from_swh(lic, hashess={"id"})
 
 
+def _origin_info(origin: Origin) -> OriginInfo:
+    origin_dict = origin.to_dict()
+    origin_data = search.origin_get(origin.url) or {}
+    origin_dict["visit_types"] = set(origin_data.get("visit_types", []))
+    return converters.from_origin(origin_dict)
+
+
 def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginInfo:
     """Return information about the origin matching dict origin.
 
@@ -217,7 +224,7 @@ def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginIn
     for url in origin_urls:
         origins = storage.origin_get([url])
         if origins and origins[0]:
-            return converters.from_origin(origins[0].to_dict())
+            return _origin_info(origins[0])
     else:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -239,7 +246,7 @@ def lookup_origins(
     """
     page = storage.origin_list(page_token=page_token, limit=limit)
     return PagedResult(
-        [converters.from_origin(o.to_dict()) for o in page.results],
+        [_origin_info(o) for o in page.results],
         next_page_token=page.next_page_token,
     )
 
