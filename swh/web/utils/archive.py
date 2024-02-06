@@ -1195,9 +1195,11 @@ def lookup_snapshot(
         branches_from.encode(),
         branches_count,
         target_types,
-        branch_name_include_substring.encode()
-        if branch_name_include_substring
-        else None,
+        (
+            branch_name_include_substring.encode()
+            if branch_name_include_substring
+            else None
+        ),
         branch_name_exclude_prefix.encode() if branch_name_exclude_prefix else None,
     )
     return (
@@ -1580,7 +1582,6 @@ def lookup_extid_by_target(
         extid_type=extid_type,
         extid_version=extid_version,
     )
-    print(raw_extid)
     if not raw_extid:
         raise NotFoundExc(f"ExtID targeting {swhid} not found.")
     else:
