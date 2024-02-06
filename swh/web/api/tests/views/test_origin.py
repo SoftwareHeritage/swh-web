@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2023  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -105,7 +105,7 @@ def test_api_lookup_origin_visits(
             )
             archive_data.origin_visit_status_add([visit_status])
 
-        all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
+        all_visits = list(reversed(get_origin_visits(new_origin.url)))
 
         for last_visit, expected_visits in (
             (None, all_visits[:2]),
@@ -159,7 +159,7 @@ def test_api_lookup_origin_visits_by_id(
             )
             archive_data.origin_visit_status_add([visit_status])
 
-        all_visits = list(reversed(get_origin_visits(new_origin.to_dict())))
+        all_visits = list(reversed(get_origin_visits(new_origin.url)))
 
         for last_visit, expected_visits in (
             (None, all_visits[:2]),
@@ -417,7 +417,7 @@ def test_api_lookup_origin_visit_latest_visit_type_filter(
 
 
 def test_api_lookup_origin_visit_not_found(api_client, origin):
-    all_visits = list(reversed(get_origin_visits(origin)))
+    all_visits = list(reversed(get_origin_visits(origin["url"])))
 
     max_visit_id = max([v["visit"] for v in all_visits])
 

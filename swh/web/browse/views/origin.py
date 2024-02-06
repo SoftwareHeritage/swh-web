@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022 The Software Heritage developers
+# Copyright (C) 2021-2024 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -240,8 +240,8 @@ def _origin_visits_browse(
     if origin_url is None:
         raise BadInputExc("An origin URL must be provided as query parameter.")
 
-    origin_info = archive.lookup_origin({"url": origin_url})
-    origin_visits = cast(List[Dict[str, Any]], get_origin_visits(origin_info))
+    origin_info = archive.lookup_origin(origin_url)
+    origin_visits = cast(List[Dict[str, Any]], get_origin_visits(origin_info["url"]))
 
     snapshot_context = get_snapshot_context(origin_url=origin_url)
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -569,7 +569,7 @@ def test_enrich_origin_search_result(api_request_factory, origin):
 
 
 def test_enrich_origin_visit(api_request_factory, origin):
-    origin_visit = random.choice(get_origin_visits(origin))
+    origin_visit = random.choice(get_origin_visits(origin["url"]))
 
     url = reverse(
         "api-1-origin-visit",

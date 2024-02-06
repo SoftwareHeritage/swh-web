@@ -116,7 +116,7 @@ def swh_badge(
 
     try:
         if object_type == "origin":
-            archive.lookup_origin({"url": object_id})
+            archive.lookup_origin(object_id)
             right_text = "repository"
             whole_link = reverse(
                 "browse-origin", query_params={"origin_url": object_id}

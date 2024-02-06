@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -220,7 +220,7 @@ def test_origin_visit_find_by_date(archive_data, new_origin):
 def test_lookup_origin(archive_data, new_origin):
     archive_data.origin_add([new_origin])
 
-    actual_origin = archive.lookup_origin({"url": new_origin.url})
+    actual_origin = archive.lookup_origin(new_origin.url)
     expected_origin = archive_data.origin_get([new_origin.url])[0]
     assert actual_origin == expected_origin
 
@@ -915,14 +915,14 @@ def test_lookup_missing_hashes_some_present(content, directory):
 
 
 def test_lookup_origin_extra_trailing_slash(origin):
-    origin_info = archive.lookup_origin({"url": f"{origin['url']}/"})
+    origin_info = archive.lookup_origin(f"{origin['url']}/")
     assert origin_info["url"] == origin["url"]
 
 
 def test_lookup_origin_missing_trailing_slash(archive_data):
     deb_origin = Origin(url="http://snapshot.debian.org/package/r-base/")
     archive_data.origin_add([deb_origin])
-    origin_info = archive.lookup_origin({"url": deb_origin.url[:-1]})
+    origin_info = archive.lookup_origin(deb_origin.url[:-1])
     assert origin_info["url"] == deb_origin.url
 
 
@@ -930,7 +930,7 @@ def test_lookup_origin_single_slash_after_protocol(archive_data):
     origin_url = "http://snapshot.debian.org/package/r-base/"
     malformed_origin_url = "http:/snapshot.debian.org/package/r-base/"
     archive_data.origin_add([Origin(url=origin_url)])
-    origin_info = archive.lookup_origin({"url": malformed_origin_url})
+    origin_info = archive.lookup_origin(malformed_origin_url)
     assert origin_info["url"] == origin_url
 
 

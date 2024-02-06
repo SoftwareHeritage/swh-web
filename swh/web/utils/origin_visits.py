@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,11 +9,11 @@ from django.core.cache import cache
 
 from swh.web.utils import archive, parse_iso8601_date_to_utc
 from swh.web.utils.exc import NotFoundExc
-from swh.web.utils.typing import OriginInfo, OriginVisitInfo
+from swh.web.utils.typing import OriginVisitInfo
 
 
 def get_origin_visits(
-    origin_info: OriginInfo, lookup_similar_urls: bool = True
+    origin_url: str, lookup_similar_urls: bool = True
 ) -> List[OriginVisitInfo]:
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
@@ -23,7 +23,7 @@ def get_origin_visits(
     ascending order.
 
     Args:
-        origin_info: dict describing the origin to fetch visits from
+        origin_url: URL of origin
         lookup_similar_urls: if :const:`True`, lookup origin with and
             without trailing slash in its URL
 
@@ -37,7 +37,7 @@ def get_origin_visits(
     from swh.web.utils import archive
 
     origin_url = archive.lookup_origin(
-        origin_info, lookup_similar_urls=lookup_similar_urls
+        origin_url, lookup_similar_urls=lookup_similar_urls
     )["url"]
 
     cache_entry_id = "origin_visits_%s" % origin_url
@@ -86,7 +86,7 @@ def get_origin_visits(
 
 
 def get_origin_visit(
-    origin_info: OriginInfo,
+    origin_url: str,
     visit_ts: Optional[str] = None,
     visit_id: Optional[int] = None,
     snapshot_id: Optional[str] = None,
@@ -104,7 +104,7 @@ def get_origin_visit(
     otherwise.
 
     Args:
-        origin_info: a dict filled with origin information
+        origin_url: URL of origin
         visit_ts: an ISO 8601 datetime string to parse
         snapshot_id: a snapshot identifier
 
@@ -116,21 +116,19 @@ def get_origin_visit(
     """
     # returns the latest full visit with a valid snapshot
     visit = archive.lookup_origin_visit_latest(
-        origin_info["url"], allowed_statuses=["full"], require_snapshot=True
+        origin_url, allowed_statuses=["full"], require_snapshot=True
     )
     if not visit:
         # or the latest partial visit with a valid snapshot otherwise
         visit = archive.lookup_origin_visit_latest(
-            origin_info["url"], allowed_statuses=["partial"], require_snapshot=True
+            origin_url, allowed_statuses=["partial"], require_snapshot=True
         )
 
     if not visit_ts and not visit_id and not snapshot_id:
         if visit:
             return visit
         else:
-            raise NotFoundExc(
-                f"No valid visit for origin with url {origin_info['url']} found!"
-            )
+            raise NotFoundExc(f"No valid visit for origin with url {origin_url} found!")
 
     # no need to fetch all visits list and search in it if the latest
     # visit matches some criteria
@@ -138,11 +136,11 @@ def get_origin_visit(
         return visit
 
     if visit_id:
-        return archive.lookup_origin_visit(origin_info["url"], visit_id)
+        return archive.lookup_origin_visit(origin_url, visit_id)
 
     if visit_ts:
         visit = archive.origin_visit_find_by_date(
-            origin_info["url"],
+            origin_url,
             parse_iso8601_date_to_utc(visit_ts),
             greater_or_equal=False,
         )
@@ -151,25 +149,23 @@ def get_origin_visit(
         else:
             raise NotFoundExc(
                 (
-                    "Visit with timestamp %s for origin with "
-                    "url %s not found!" % (visit_ts, origin_info["url"])
+                    f"Visit with timestamp {visit_ts} for origin with "
+                    f"url {origin_url} not found!"
                 )
             )
 
-    visits = get_origin_visits(origin_info)
+    visits = get_origin_visits(origin_url)
 
     if not visits:
-        raise NotFoundExc(
-            f"No visits associated to origin with url {origin_info['url']}!"
-        )
+        raise NotFoundExc(f"No visits associated to origin with url {origin_url}!")
 
     if snapshot_id:
         visits = [v for v in visits if v["snapshot"] == snapshot_id]
         if len(visits) == 0:
             raise NotFoundExc(
                 (
-                    "Visit for snapshot with id %s for origin with"
-                    " url %s not found!" % (snapshot_id, origin_info["url"])
+                    f"Visit for snapshot with id {snapshot_id} for origin with"
+                    f" url {origin_url} not found!"
                 )
             )
         return visits[0]

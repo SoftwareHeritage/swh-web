@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2023  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -185,11 +185,11 @@ def lookup_content_license(q):
     return converters.from_swh(lic, hashess={"id"})
 
 
-def lookup_origin(origin: OriginInfo, lookup_similar_urls: bool = True) -> OriginInfo:
+def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginInfo:
     """Return information about the origin matching dict origin.
 
     Args:
-        origin: origin's dict with 'url' key
+        origin_url: URL of origin
         lookup_similar_urls: if :const:`True`, lookup origin with and
             without trailing slash in its URL
 
@@ -197,21 +197,21 @@ def lookup_origin(origin: OriginInfo, lookup_similar_urls: bool = True) -> Origi
         origin information as dict.
 
     """
-    origin_urls = [origin["url"]]
-    if origin["url"] and lookup_similar_urls:
+    origin_urls = [origin_url]
+    if origin_url and lookup_similar_urls:
         # handle case when user provided an origin url with a trailing
         # slash while the url in storage does not have it (e.g. GitHub)
-        if origin["url"].endswith("/"):
-            origin_urls.append(origin["url"][:-1])
+        if origin_url.endswith("/"):
+            origin_urls.append(origin_url[:-1])
         # handle case when user provided an origin url without a trailing
         # slash while the url in storage have it (e.g. Debian source package)
         else:
-            origin_urls.append(f"{origin['url']}/")
+            origin_urls.append(f"{origin_url}/")
 
     # handle case where the "://" character sequence was mangled into ":/"
     # by HTTP clients
-    demangled_url = demangle_url(origin["url"])
-    if origin["url"] != demangled_url:
+    demangled_url = demangle_url(origin_url)
+    if origin_url != demangled_url:
         origin_urls.append(demangled_url)
 
     for url in origin_urls:
@@ -219,7 +219,7 @@ def lookup_origin(origin: OriginInfo, lookup_similar_urls: bool = True) -> Origi
         if origins and origins[0]:
             return converters.from_origin(origins[0].to_dict())
     else:
-        raise NotFoundExc(f"Origin with url {origin['url']} not found!")
+        raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
 
 def lookup_origins(
@@ -417,9 +417,7 @@ def lookup_origin_intrinsic_metadata(
 
     """
     origins = [
-        lookup_origin(
-            OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
-        )["url"]
+        lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
     ]
     origin_info = storage.origin_get(origins)[0]
     if not origin_info:
@@ -627,7 +625,7 @@ def lookup_revision_message(rev_sha1_git) -> Dict[str, bytes]:
     return {"message": revision.message}
 
 
-def _lookup_revision_id_by(origin, branch_name, timestamp):
+def _lookup_revision_id_by(origin_url, branch_name, timestamp):
     def _get_snapshot_branch(snapshot, branch_name):
         branch_response = storage.snapshot_branch_get_by_name(
             snapshot_id=_to_sha1_bin(snapshot),
@@ -638,16 +636,9 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
             return branch_response.target
         return None
 
-    if isinstance(origin, int):
-        origin = {"id": origin}
-    elif isinstance(origin, str):
-        origin = {"url": origin}
-    else:
-        raise TypeError('"origin" must be an int or a string.')
-
     from swh.web.utils.origin_visits import get_origin_visit
 
-    visit = get_origin_visit(origin, visit_ts=timestamp)
+    visit = get_origin_visit(origin_url, visit_ts=timestamp)
     branch = _get_snapshot_branch(visit["snapshot"], branch_name)
     rev_id = None
     if branch and branch.target_type.value == "revision":
@@ -655,22 +646,25 @@ def _lookup_revision_id_by(origin, branch_name, timestamp):
 
     if not rev_id:
         raise NotFoundExc(
-            "Revision for origin %s and branch %s not found."
-            % (origin.get("url"), branch_name)
+            f"Revision for origin {origin_url} and branch {branch_name} not found."
         )
     return rev_id.hex()
 
 
-def lookup_revision_by(origin, branch_name="HEAD", timestamp=None):
+def lookup_revision_by(
+    origin_url: str,
+    branch_name: str = "HEAD",
+    timestamp: Optional[Union[int, str]] = None,
+):
     """Lookup revision by origin, snapshot branch name and visit timestamp.
 
     If branch_name is not provided, lookup using 'HEAD' as default.
     If timestamp is not provided, use the most recent.
 
     Args:
-        origin (Union[int,str]): origin of the revision
-        branch_name (str): snapshot branch name
-        timestamp (str/int): origin visit time frame
+        origin_url: URL of origin to lookup revision
+        branch_name: snapshot branch name
+        timestamp: origin visit time frame
 
     Returns:
         dict: The revision matching the criterions
@@ -679,7 +673,7 @@ def lookup_revision_by(origin, branch_name="HEAD", timestamp=None):
         NotFoundExc if no revision corresponds to the criterion
 
     """
-    rev_id = _lookup_revision_id_by(origin, branch_name, timestamp)
+    rev_id = _lookup_revision_id_by(origin_url, branch_name, timestamp)
     return lookup_revision(rev_id)
 
 
@@ -1040,9 +1034,9 @@ def lookup_origin_visit_latest(
     """
 
     # check origin existence in the archive
-    origin_url = lookup_origin(
-        OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
-    )["url"]
+    origin_url = lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)[
+        "url"
+    ]
 
     visit_status = origin_get_latest_visit_status(
         storage,
@@ -1077,9 +1071,8 @@ def lookup_origin_visit(
 
     """
     # check origin existence in the archive
-    origin_url = lookup_origin(
-        OriginInfo(url=origin_url), lookup_similar_urls=lookup_similar_urls
-    )["url"]
+    origin_info = lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)
+    origin_url = origin_info["url"]
 
     visit = storage.origin_visit_get_by(origin_url, visit_id)
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)

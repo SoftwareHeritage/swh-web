@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023  The Software Heritage developers
+# Copyright (C) 2020-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -167,7 +167,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
 
 
 def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_visits):
-    origin_visits = get_origin_visits(origin_with_multiple_visits)
+    origin_visits = get_origin_visits(origin_with_multiple_visits["url"])
 
     timestamp = format_utc_iso_date(origin_visits[0]["date"], "%Y-%m-%dT%H:%M:%SZ")
     visit_id = origin_visits[1]["visit"]
@@ -196,7 +196,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
         visit_id = kwargs["visit_id"] if "visit_id" in kwargs else None
         visit_ts = kwargs["timestamp"] if "timestamp" in kwargs else None
         visit_info = get_origin_visit(
-            {"url": kwargs["origin_url"]}, visit_ts=visit_ts, visit_id=visit_id
+            kwargs["origin_url"], visit_ts=visit_ts, visit_id=visit_id
         )
 
         snapshot = visit_info["snapshot"]

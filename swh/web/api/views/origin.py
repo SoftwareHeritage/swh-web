@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2023  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -21,7 +21,6 @@ from swh.web.api.views.utils import api_lookup
 from swh.web.utils import archive, origin_visit_types, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
-from swh.web.utils.typing import OriginInfo
 
 DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information
@@ -140,13 +139,11 @@ def api_origin(request: Request, origin_url: str):
             :swh_web_api:`origin/https://github.com/python/cpython/get/`
 
     """
-    ori_dict = {"url": origin_url}
-
-    error_msg = "Origin with url %s not found." % ori_dict["url"]
+    error_msg = f"Origin with url {origin_url} not found."
 
     return api_lookup(
         archive.lookup_origin,
-        ori_dict,
+        origin_url,
         lookup_similar_urls=False,
         notfound_msg=error_msg,
         enrich_fn=enrich_origin,
@@ -338,15 +335,14 @@ def api_origin_visits(request: Request, origin_url: str):
 
     """
     result = {}
-    origin_query = OriginInfo(url=origin_url)
     notfound_msg = "No origin {} found".format(origin_url)
     url_args_next = {"origin_url": origin_url}
     per_page = int(request.query_params.get("per_page", "10"))
     last_visit_str = request.query_params.get("last_visit")
     last_visit = int(last_visit_str) if last_visit_str else None
 
-    def _lookup_origin_visits(origin_query, last_visit=last_visit, per_page=per_page):
-        all_visits = get_origin_visits(origin_query, lookup_similar_urls=False)
+    def _lookup_origin_visits(origin_url, last_visit=last_visit, per_page=per_page):
+        all_visits = get_origin_visits(origin_url, lookup_similar_urls=False)
         all_visits.reverse()
         visits = []
         if not last_visit:
@@ -361,7 +357,7 @@ def api_origin_visits(request: Request, origin_url: str):
 
     results = api_lookup(
         _lookup_origin_visits,
-        origin_query,
+        origin_url,
         notfound_msg=notfound_msg,
         enrich_fn=partial(
             enrich_origin_visit, with_origin_link=False, with_origin_visit_link=True

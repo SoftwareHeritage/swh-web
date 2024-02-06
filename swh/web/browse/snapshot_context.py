@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -389,7 +389,7 @@ def get_origin_visit_snapshot(
         NotFoundExc if the origin or its visit are not found
     """
 
-    visit_info = get_origin_visit(origin_info, visit_ts, visit_id, snapshot_id)
+    visit_info = get_origin_visit(origin_info["url"], visit_ts, visit_id, snapshot_id)
 
     return get_snapshot_content(visit_info["snapshot"])
 
@@ -446,9 +446,11 @@ def get_snapshot_context(
         elif snapshot_id is not None:
             query_params["snapshot"] = snapshot_id
 
-        origin_info = archive.lookup_origin({"url": origin_url})
+        origin_info = archive.lookup_origin(origin_url)
 
-        visit_info = get_origin_visit(origin_info, timestamp, visit_id, snapshot_id)
+        visit_info = get_origin_visit(
+            origin_info["url"], timestamp, visit_id, snapshot_id
+        )
         formatted_date = format_utc_iso_date(visit_info["date"])
         visit_info["formatted_date"] = formatted_date
         snapshot_id = visit_info["snapshot"]
