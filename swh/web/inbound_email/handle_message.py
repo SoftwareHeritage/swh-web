@@ -52,6 +52,8 @@ class MessageHandler:
         if not handled:
             self.unhandled_message()
 
+        return handled
+
     @classmethod
     def failed_message(cls, raw_message: bytes):
         # TODO: forward email as attachment for inspection

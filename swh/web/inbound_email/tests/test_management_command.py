@@ -27,7 +27,7 @@ class CommandReturn:
 
 @pytest.fixture
 def receive_inbound_message(inbound_message):
-    def do_it():
+    def do_it(expect_failure=False):
         orig_stdin = sys.stdin
         try:
             sys.stdin = MockedStdin()
@@ -50,3 +50,13 @@ def receive_inbound_message(inbound_message):
         return inbound_message
 
     return do_it
+
+
+@pytest.mark.inbound_message(b"")
+def test_empty_stdin(caplog, receive_inbound_message):
+    receive_inbound_message()
+
+    assert len(caplog.records) == 1
+    log = caplog.records[0]
+    assert log.levelname == "ERROR"
+    assert "Unhandled message" in log.getMessage()
