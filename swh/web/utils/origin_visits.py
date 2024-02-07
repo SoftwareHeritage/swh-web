@@ -11,7 +11,9 @@ from swh.web.utils.typing import OriginVisitInfo
 
 
 def get_origin_visits(
-    origin_url: str, lookup_similar_urls: bool = True
+    origin_url: str,
+    lookup_similar_urls: bool = True,
+    visit_type: Optional[str] = None,
 ) -> List[OriginVisitInfo]:
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
@@ -33,6 +35,15 @@ def get_origin_visits(
     """
 
     from swh.web.utils import archive
+
+    def _filter_visits_by_type(
+        visits: List[OriginVisitInfo], visit_type: Optional[str] = None
+    ) -> List[OriginVisitInfo]:
+        return [
+            visit
+            for visit in visits
+            if visit_type is None or visit["type"] == visit_type
+        ]
 
     origin_url = archive.lookup_origin(
         origin_url, lookup_similar_urls=lookup_similar_urls
@@ -57,7 +68,7 @@ def get_origin_visits(
         if not new_visits:
             last_snp = archive.lookup_latest_origin_snapshot(origin_url)
             if not last_snp or last_snp["id"] == cache_entry[-1]["snapshot"]:
-                return cache_entry
+                return _filter_visits_by_type(cache_entry, visit_type=visit_type)
 
     # get new visits that we did not retrieve yet
     while 1:
@@ -80,7 +91,7 @@ def get_origin_visits(
 
     cache_set(cache_entry_id, origin_visits)
 
-    return origin_visits
+    return _filter_visits_by_type(origin_visits, visit_type=visit_type)
 
 
 def get_origin_visit(
@@ -88,6 +99,7 @@ def get_origin_visit(
     visit_ts: Optional[str] = None,
     visit_id: Optional[int] = None,
     snapshot_id: Optional[str] = None,
+    visit_type: Optional[str] = None,
 ) -> OriginVisitInfo:
     """Function that returns information about a visit for a given origin.
 
@@ -114,12 +126,18 @@ def get_origin_visit(
     """
     # returns the latest full visit with a valid snapshot
     visit = archive.lookup_origin_visit_latest(
-        origin_url, allowed_statuses=["full"], require_snapshot=True
+        origin_url,
+        allowed_statuses=["full"],
+        require_snapshot=True,
+        type=visit_type,
     )
     if not visit:
         # or the latest partial visit with a valid snapshot otherwise
         visit = archive.lookup_origin_visit_latest(
-            origin_url, allowed_statuses=["partial"], require_snapshot=True
+            origin_url,
+            allowed_statuses=["partial"],
+            require_snapshot=True,
+            type=visit_type,
         )
 
     if not visit_ts and not visit_id and not snapshot_id:
@@ -136,23 +154,28 @@ def get_origin_visit(
     if visit_id:
         return archive.lookup_origin_visit(origin_url, visit_id)
 
+    error_message_prefix = "Visit"
+    if visit_type is not None:
+        error_message_prefix += f" of type {visit_type}"
+
     if visit_ts:
         visit = archive.origin_visit_find_by_date(
             origin_url,
             parse_iso8601_date_to_utc(visit_ts),
             greater_or_equal=False,
+            type=visit_type,
         )
         if visit is not None:
             return visit
         else:
             raise NotFoundExc(
                 (
-                    f"Visit with timestamp {visit_ts} for origin with "
+                    f"{error_message_prefix} with timestamp {visit_ts} for origin with "
                     f"url {origin_url} not found!"
                 )
             )
 
-    visits = get_origin_visits(origin_url)
+    visits = get_origin_visits(origin_url, visit_type=visit_type)
 
     if not visits:
         raise NotFoundExc(f"No visits associated to origin with url {origin_url}!")
@@ -162,8 +185,8 @@ def get_origin_visit(
         if len(visits) == 0:
             raise NotFoundExc(
                 (
-                    f"Visit for snapshot with id {snapshot_id} for origin with"
-                    f" url {origin_url} not found!"
+                    f"{error_message_prefix} with snapshot id {snapshot_id} "
+                    f"for origin with url {origin_url} not found!"
                 )
             )
         return visits[0]

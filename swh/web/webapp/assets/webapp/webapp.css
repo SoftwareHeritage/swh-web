@@ -880,3 +880,7 @@ p a {
     text-decoration: underline;
     color: white !important;
 }
+
+.select-no-arrows {
+    background: none !important;
+}

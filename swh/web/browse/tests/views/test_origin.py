@@ -25,7 +25,12 @@ from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.tests.strategies import new_origin, new_snapshot, visit_dates
-from swh.web.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
+from swh.web.utils import (
+    archive,
+    format_utc_iso_date,
+    parse_iso8601_date_to_utc,
+    reverse,
+)
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import gen_swhid
 
@@ -855,6 +860,12 @@ def _origin_directory_view_test_helper(
             parse_iso8601_date_to_utc(timestamp).isoformat(), "%Y-%m-%dT%H:%M:%SZ"
         )
 
+    visit_type = origin_visit["type"]
+    assert_contains(resp, "select-no-arrows")
+    assert_contains(
+        resp, f'<option selected value="{visit_type}">{visit_type}</option>'
+    )
+
     for d in dirs:
         if d["type"] == "rev":
             dir_url = reverse("browse-revision", url_args={"sha1_git": d["target"]})
@@ -1049,3 +1060,38 @@ def test_browse_origin_directory_with_path_targeting_file(
             "path": file_entry["name"],
         },
     )
+
+
+def test_origin_browse_multiple_visit_types(client, origin_with_multiple_visit_types):
+    origin_url = origin_with_multiple_visit_types
+    origin_info = archive.lookup_origin(origin_url)
+    visit_types = origin_info["visit_types"]
+
+    assert len(visit_types) > 1
+
+    for visit_type in visit_types:
+        origin_visit = archive.lookup_origin_visit_latest(origin_url, type=visit_type)
+        assert origin_visit["type"] == visit_type
+        browse_url = reverse(
+            "browse-origin-directory",
+            query_params={"origin_url": origin_url, "visit_type": visit_type},
+        )
+
+        resp = check_html_get_response(client, browse_url, status_code=200)
+
+        # check select element for visit types
+        assert_not_contains(resp, "select-no-arrows")
+        for vtype in visit_types:
+            if vtype == visit_type:
+                assert_contains(
+                    resp, f'<option selected value="{vtype}">{vtype}</option>'
+                )
+            else:
+                assert_contains(resp, f'<option value="{vtype}">{vtype}</option>')
+
+        # check visit_type query parameter is used in links
+        assert_contains(resp, f"&visit_type={visit_type}")
+
+        # check correct visit and snapshot are browsed
+        assert_contains(resp, format_utc_iso_date(origin_visit["date"]))
+        assert_contains(resp, "swh:1:snp:" + origin_visit["snapshot"])

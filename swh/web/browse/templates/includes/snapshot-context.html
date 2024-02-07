@@ -7,6 +7,25 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
+{% if snapshot_context.origin_info %}
+  <div class="float-right form-group form-inline">
+    <label for="swh-origin-visit-type"
+           class="control-label mr-1"
+           style="font-weight: inherit">visit type:</label>
+    <select id="swh-origin-visit-type"
+            class="custom-select form-control custom-select-sm {% if snapshot_context.origin_info.visit_types|length == 1 %}select-no-arrows{% endif %}"
+            onchange="swh.browse.visitTypeChanged(this);"
+            {% if snapshot_context.origin_info.visit_types|length == 1 %}disabled{% endif %}>
+      {% for visit_type in snapshot_context.origin_info.visit_types %}
+        {% if visit_type == snapshot_context.visit_info.type %}
+          <option selected value="{{ visit_type }}">{{ visit_type }}</option>
+        {% else %}
+          <option value="{{ visit_type }}">{{ visit_type }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+{% endif %}
 <h5>
   {% if snapshot_context.origin_info %}
     <a id="swh-origin-url" class="swh-heading-color" href="{% url 'browse-origin' %}?origin_url={{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}">

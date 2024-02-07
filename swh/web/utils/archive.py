@@ -11,6 +11,7 @@ import os
 import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
+from swh.core.api.classes import _stream_results
 from swh.model import hashutil
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import ExtID, Origin, Revision
@@ -18,7 +19,7 @@ from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
-from swh.storage.interface import OriginVisitWithStatuses
+from swh.storage.interface import ListOrder, OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
 from swh.web.utils import converters, demangle_url, query
@@ -1025,8 +1026,7 @@ def lookup_origin_visit_latest(
 
     Args:
         origin_url: origin to list visits for
-        type: Optional visit type to filter on (e.g git, tar, dsc, svn,
-            hg, npm, pypi, ...)
+        type: Optional visit type to filter on (e.g git, svn, hg, npm, pypi, ...)
         allowed_statuses: list of visit statuses considered
             to find the latest visit. For instance,
             ``allowed_statuses=['full']`` will only consider visits that
@@ -1091,7 +1091,10 @@ def lookup_origin_visit(
 
 
 def origin_visit_find_by_date(
-    origin_url: str, visit_date: datetime.datetime, greater_or_equal: bool = True
+    origin_url: str,
+    visit_date: datetime.datetime,
+    greater_or_equal: bool = True,
+    type: Optional[str] = None,
 ) -> Optional[OriginVisitInfo]:
     """Retrieve origin visit status whose date is most recent than the provided visit_date.
 
@@ -1100,21 +1103,34 @@ def origin_visit_find_by_date(
         visit_date: provided visit date
         greater_or_equal: ensure returned visit has a date greater or equal
             than the one passed as parameter
+        type: Optional visit type to filter on (e.g git, svn, hg, npm, pypi, ...)
 
     Returns:
        The dict origin_visit_status matching the criteria if any.
 
     """
-    visit = storage.origin_visit_find_by_date(origin_url, visit_date)
+    visit = storage.origin_visit_find_by_date(origin_url, visit_date, type)
     if greater_or_equal and visit and visit.date < visit_date:
         # when visit is anterior to the provided date, trying to find another one most
         # recent
-        visits = storage.origin_visit_get(
-            origin_url,
-            page_token=str(visit.visit),
-            limit=1,
-        ).results
-        visit = visits[0] if visits else None
+
+        def iter_origin_visits_from(page_token):
+            yield from _stream_results(
+                storage.origin_visit_get,
+                origin_url,
+                page_token=page_token,
+                order=ListOrder.ASC,
+            )
+
+        visit_id = visit.visit
+        visit = None
+        for next_visit in iter_origin_visits_from(str(visit_id)):
+            if next_visit.date >= visit_date and (
+                type is None or next_visit.type == type
+            ):
+                visit = next_visit
+                break
+
     if not visit:
         return None
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)

@@ -70,6 +70,7 @@ def _directory_browse(
                 release_name=request.GET.get("release"),
                 revision_id=request.GET.get("revision"),
                 path=path,
+                visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
             if str(e).startswith("Origin") and origin_url is not None:

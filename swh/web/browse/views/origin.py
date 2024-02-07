@@ -241,9 +241,14 @@ def _origin_visits_browse(
         raise BadInputExc("An origin URL must be provided as query parameter.")
 
     origin_info = archive.lookup_origin(origin_url)
-    origin_visits = cast(List[Dict[str, Any]], get_origin_visits(origin_info["url"]))
+    origin_visits = cast(
+        List[Dict[str, Any]],
+        get_origin_visits(origin_info["url"], visit_type=request.GET.get("visit_type")),
+    )
 
-    snapshot_context = get_snapshot_context(origin_url=origin_url)
+    snapshot_context = get_snapshot_context(
+        origin_url=origin_url, visit_type=request.GET.get("visit_type")
+    )
 
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")

@@ -27,7 +27,9 @@ def get_snapshot_from_request(request: HttpRequest) -> str:
     if request.GET.get("origin_url") is None:
         raise BadInputExc("An origin URL must be provided as a query parameter.")
     return get_snapshot_context(
-        origin_url=request.GET.get("origin_url"), timestamp=request.GET.get("timestamp")
+        origin_url=request.GET.get("origin_url"),
+        timestamp=request.GET.get("timestamp"),
+        visit_type=request.GET.get("visit_type"),
     )["snapshot_id"]
 
 

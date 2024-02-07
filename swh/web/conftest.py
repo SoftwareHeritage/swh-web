@@ -36,12 +36,13 @@ from swh.model.hashutil import (
     hash_to_bytes,
     hash_to_hex,
 )
-from swh.model.model import Content, Directory
+from swh.model.model import Content, Directory, Origin, OriginVisit, OriginVisitStatus
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
+from swh.storage.utils import now
 from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
@@ -763,6 +764,36 @@ def origin_with_pull_request_branches():
     into the test archive.
     """
     return random.choice(_origin_with_pull_request_branches())
+
+
+@pytest.fixture
+def origin_with_multiple_visit_types(archive_data, tests_data):
+    origin = Origin(url="https://example.org/project/multiple/visit/types")
+    snapshots = _known_swh_objects(tests_data, "snapshots")
+    archive_data.origin_add([origin])
+    visit_types = ["git", "git-checkout"]
+    for i, visit_type in enumerate(visit_types):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=origin.url,
+                    date=now() + timedelta(days=i),
+                    type=visit_type,
+                )
+            ]
+        )[0]
+        visit_status = OriginVisitStatus(
+            origin=origin.url,
+            visit=origin_visit.visit,
+            date=now() + timedelta(days=i),
+            status="full",
+            snapshot=hash_to_bytes(snapshots[i]),
+        )
+        archive_data.origin_visit_status_add([visit_status])
+    tests_data["search"].origin_update(
+        [{"url": origin.url, "visit_types": visit_types, "has_visits": True}]
+    )
+    return origin.url
 
 
 @functools.lru_cache(maxsize=None)

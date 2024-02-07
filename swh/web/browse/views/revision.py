@@ -175,7 +175,10 @@ def _revision_diff(request: HttpRequest, sha1_git: str) -> HttpResponse:
     visit_id = int(visit_id_str) if visit_id_str is not None else None
     if origin_url:
         snapshot_context = get_snapshot_context(
-            origin_url=origin_url, timestamp=timestamp, visit_id=visit_id
+            origin_url=origin_url,
+            timestamp=timestamp,
+            visit_id=visit_id,
+            visit_type=request.GET.get("visit_type"),
         )
 
     changes = archive.diff_revision(sha1_git)
@@ -217,6 +220,7 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             branch_name=request.GET.get("branch"),
             release_name=request.GET.get("release"),
             revision_id=sha1_git,
+            visit_type=request.GET.get("visit_type"),
         )
     per_page = int(request.GET.get("per_page", NB_LOG_ENTRIES))
     offset = int(request.GET.get("offset", 0))
@@ -344,6 +348,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 release_name=request.GET.get("release"),
                 revision_id=sha1_git,
                 path=path,
+                visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
             raw_rev_url = reverse("browse-revision", url_args={"sha1_git": sha1_git})
@@ -390,15 +395,17 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         object_id=sha1_git,
         revision=sha1_git,
         author=revision["author"]["fullname"] if revision["author"] else "None",
-        author_url=gen_person_mail_link(revision["author"])
-        if revision["author"]
-        else "None",
-        committer=revision["committer"]["fullname"]
-        if revision["committer"]
-        else "None",
-        committer_url=gen_person_mail_link(revision["committer"])
-        if revision["committer"]
-        else "None",
+        author_url=(
+            gen_person_mail_link(revision["author"]) if revision["author"] else "None"
+        ),
+        committer=(
+            revision["committer"]["fullname"] if revision["committer"] else "None"
+        ),
+        committer_url=(
+            gen_person_mail_link(revision["committer"])
+            if revision["committer"]
+            else "None"
+        ),
         committer_date=format_utc_iso_date(revision["committer_date"]),
         date=format_utc_iso_date(revision["date"]),
         directory=revision["directory"],

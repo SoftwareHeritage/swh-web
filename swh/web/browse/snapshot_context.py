@@ -408,6 +408,7 @@ def get_snapshot_context(
     revision_id: Optional[str] = None,
     path: Optional[str] = None,
     browse_context: str = "directory",
+    visit_type: Optional[str] = None,
 ) -> SnapshotContext:
     """
     Utility function to compute relevant information when navigating
@@ -453,7 +454,7 @@ def get_snapshot_context(
         origin_info = archive.lookup_origin(origin_url)
 
         visit_info = get_origin_visit(
-            origin_info["url"], timestamp, visit_id, snapshot_id
+            origin_info["url"], timestamp, visit_id, snapshot_id, visit_type=visit_type
         )
         formatted_date = format_utc_iso_date(visit_info["date"])
         visit_info["formatted_date"] = formatted_date
@@ -476,9 +477,17 @@ def get_snapshot_context(
         )
 
         query_params["origin_url"] = origin_info["url"]
+        if len(origin_info["visit_types"]) > 1:
+            query_params["visit_type"] = visit_info["type"]
 
         origin_visits_url = reverse(
-            "browse-origin-visits", query_params={"origin_url": origin_info["url"]}
+            "browse-origin-visits",
+            query_params={
+                "origin_url": origin_info["url"],
+                "visit_type": (
+                    visit_info["type"] if len(origin_info["visit_types"]) > 1 else None
+                ),
+            },
         )
 
         if timestamp is not None:
@@ -789,6 +798,7 @@ def browse_snapshot_directory(
         branch_name=request.GET.get("branch"),
         release_name=request.GET.get("release"),
         revision_id=request.GET.get("revision"),
+        visit_type=request.GET.get("visit_type"),
     )
 
     root_directory = snapshot_context["root_directory"]
@@ -1050,6 +1060,7 @@ def browse_snapshot_log(
         branch_name=request.GET.get("branch"),
         release_name=request.GET.get("release"),
         revision_id=request.GET.get("revision"),
+        visit_type=request.GET.get("visit_type"),
     )
 
     revision_id = snapshot_context["revision_id"]
@@ -1197,6 +1208,7 @@ def browse_snapshot_branches(
         origin_url=origin_url,
         timestamp=timestamp,
         visit_id=visit_id or None,
+        visit_type=request.GET.get("visit_type"),
     )
 
     branches_bc_str = request.GET.get("branches_breadcrumbs", "")
@@ -1324,6 +1336,7 @@ def browse_snapshot_releases(
         origin_url=origin_url,
         timestamp=timestamp,
         visit_id=visit_id or None,
+        visit_type=request.GET.get("visit_type"),
     )
 
     rel_bc_str = request.GET.get("releases_breadcrumbs", "")

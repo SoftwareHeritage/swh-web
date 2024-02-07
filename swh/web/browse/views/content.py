@@ -232,6 +232,7 @@ def _get_content_from_request(request: HttpRequest) -> Dict[str, Any]:
         branch_name=request.GET.get("branch"),
         release_name=request.GET.get("release"),
         browse_context="content",
+        visit_type=request.GET.get("visit_type"),
     )
     root_directory = snapshot_context["root_directory"]
     assert root_directory is not None  # to keep mypy happy
@@ -295,6 +296,7 @@ def content_display(
                 revision_id=request.GET.get("revision"),
                 path=path,
                 browse_context="content",
+                visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
             if str(e).startswith("Origin") and origin_url is not None:

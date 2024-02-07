@@ -166,9 +166,9 @@ def test_origin_visit_find_by_date_no_result(archive_data, new_origin, visit_dat
         assert actual_origin_visit_status is None
 
 
-@settings(max_examples=1)
-@given(new_origin())
-def test_origin_visit_find_by_date(archive_data, new_origin):
+def test_origin_visit_find_by_date(archive_data):
+    new_origin = Origin(url="https://example.org/new/origin")
+
     # Add origin and two visits
     archive_data.origin_add([new_origin])
 

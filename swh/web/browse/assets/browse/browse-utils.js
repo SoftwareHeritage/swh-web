@@ -94,3 +94,10 @@ export function initBrowseNavbar() {
     $('#swh-browse-code-nav-link').addClass('active');
   }
 }
+
+export function visitTypeChanged(select) {
+  const visitType = $(select).val();
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.set('visit_type', visitType);
+  window.location.search = searchParams.toString();
+}

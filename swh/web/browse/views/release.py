@@ -56,6 +56,7 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 timestamp,
                 visit_id or None,
                 release_name=release["name"],
+                visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
             raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
@@ -86,9 +87,9 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         object_id=sha1_git,
         release=sha1_git,
         author=release["author"]["fullname"] if release["author"] else "None",
-        author_url=gen_person_mail_link(release["author"])
-        if release["author"]
-        else "None",
+        author_url=(
+            gen_person_mail_link(release["author"]) if release["author"] else "None"
+        ),
         date=format_utc_iso_date(release["date"]),
         name=release["name"],
         synthetic=release["synthetic"],
