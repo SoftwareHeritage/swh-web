@@ -758,3 +758,15 @@ def test_create_save_request_origin_url_quoted(api_client):
     resp = check_api_post_responses(api_client, url, status_code=200)
 
     assert resp.data["origin_url"] == "https://example.org/user/project%20name"
+
+
+def test_create_save_request_origin_url_no_plus_quote(api_client):
+    origin_url = "https://example.org/+user/project"
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+
+    resp = check_api_post_responses(api_client, url, status_code=200)
+
+    assert resp.data["origin_url"] == origin_url
