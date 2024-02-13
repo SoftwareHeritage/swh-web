@@ -4,9 +4,9 @@
 # See top-level LICENSE file for more information
 
 from copy import deepcopy
+from importlib.metadata import version
 import random
 
-from pkg_resources import get_distribution
 import pytest
 
 from django.conf import settings
@@ -21,7 +21,7 @@ from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_http_get_response, create_django_permission
 from swh.web.utils import reverse
 
-swh_web_version = get_distribution("swh.web").version
+swh_web_version = version("swh.web")
 
 
 def test_layout_without_ribbon(client, config_updater):

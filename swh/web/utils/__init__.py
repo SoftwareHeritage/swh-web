@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import functools
 import gzip
 import hashlib
+from importlib.metadata import version
 import os
 import re
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
@@ -20,7 +21,6 @@ from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
 import msgpack
-from pkg_resources import get_distribution
 from pymemcache.exceptions import MemcacheServerError
 import requests
 from requests.auth import HTTPBasicAuth
@@ -323,7 +323,7 @@ def context_processor(request):
         "swh_web_dev": is_swh_web_development(request),
         "swh_web_staging": is_swh_web_staging(request),
         "swh_web_prod": is_swh_web_production(request),
-        "swh_web_version": get_distribution("swh.web").version,
+        "swh_web_version": version("swh.web"),
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
