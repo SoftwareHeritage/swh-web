@@ -5,6 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
+const $ = Cypress.$;
 const nonExistentText = 'NoMatchExists';
 
 let origin;
@@ -311,6 +312,31 @@ describe('Test origin-search', function() {
         }
       });
     }
+  });
+
+  it('should display all visit types for an origin when visit type filter is disabled', function() {
+    const searchPattern = 'project/multiple/visit/types';
+    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+    cy.get('#swh-origins-url-patterns')
+      .type(searchPattern);
+    cy.get('.swh-search-icon')
+      .click();
+
+    checkSearchHasResults();
+    // ensure datatable update
+    cy.wait(100);
+
+    // should have two results, one by visit type
+    cy.get('tbody tr').should('have.length', 2);
+    cy.get('tbody tr').then(elts => {
+      for (const elt of elts) {
+        const visitType = $(elt.cells[0]).text();
+        const originUrl = $(elt.cells[1]).text();
+        const browseUrl = $(elt.cells[1].innerHTML).attr('href');
+        assert.include(originUrl, searchPattern);
+        assert.include(browseUrl, `&visit_type=${visitType}`);
+      }
+    });
   });
 
   it('should encode ? in origin URL provided as argument in latest visit URL queried by XHR', function() {

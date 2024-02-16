@@ -36,30 +36,41 @@ async function populateOriginSearchResultsTable(origins) {
     clearOriginSearchResultsTable();
     const table = $('#origin-search-results tbody');
     const promises = [];
-    for (const [i, origin] of origins.entries()) {
-      const browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
-      let tableRow =
-        `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
-      tableRow +=
-        `<td id="visit-type-origin-${i}" class="swh-origin-visit-type" style="width: 120px;">` +
-        '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
-        'Checking</td>';
-      tableRow +=
-        '<td style="white-space: nowrap;">' +
-        `<a href="${browseUrl}">${origin.url}</a></td>`;
-      tableRow +=
-        `<td class="swh-visit-status" id="visit-status-origin-${i}">` +
-        '<i title="Checking archiving status" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
-        'Checking</td>';
-      tableRow += '</tr>';
-      table.append(tableRow);
-      // get async latest visit snapshot and update visit status icon
-      let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url.replace('?', '%3F'));
-      latestSnapshotUrl += '?require_snapshot=true';
-      if (visitType !== 'any') {
-        latestSnapshotUrl += `&visit_type=${visitType}`;
+    let i = 0;
+    for (const origin of origins) {
+      let visitTypes = origin.visit_types;
+      if (visitTypes.includes(visitType)) {
+        visitTypes = [visitType];
       }
-      promises.push(fetch(latestSnapshotUrl));
+      for (const oVisitType of visitTypes) {
+        let browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
+        if (visitTypes.length > 1 || visitType !== 'any') {
+          browseUrl += `&visit_type=${oVisitType}`;
+        }
+        let tableRow =
+          `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
+        tableRow +=
+          `<td id="visit-type-origin-${i}" class="swh-origin-visit-type" style="width: 120px;">` +
+          '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
+          'Checking</td>';
+        tableRow +=
+          '<td style="white-space: nowrap;">' +
+          `<a href="${browseUrl}">${origin.url}</a></td>`;
+        tableRow +=
+          `<td class="swh-visit-status" id="visit-status-origin-${i}">` +
+          '<i title="Checking archiving status" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
+          'Checking</td>';
+        tableRow += '</tr>';
+        table.append(tableRow);
+        // get async latest visit snapshot and update visit status icon
+        let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url.replace('?', '%3F'));
+        latestSnapshotUrl += '?require_snapshot=true';
+        if (visitTypes.length > 1 || visitType !== 'any') {
+          latestSnapshotUrl += `&visit_type=${oVisitType}`;
+        }
+        promises.push(fetch(latestSnapshotUrl));
+        i = i + 1;
+      }
     }
     const responses = await Promise.all(promises);
     const responsesData = await Promise.all(responses.map(r => r.json()));
@@ -119,7 +130,7 @@ function searchOriginsFirst(searchQueryText, limit) {
   }
 
   // As we only use the 'url' field of results, tell the server not to send metadata
-  baseSearchUrl.searchParams.append('fields', 'url');
+  baseSearchUrl.searchParams.append('fields', 'url,visit_types');
 
   const withVisit = $('#swh-search-origins-with-visit').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);

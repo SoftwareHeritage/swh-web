@@ -961,7 +961,9 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
 
 def test_search_origin(origin):
     results = archive.search_origin(url_pattern=origin["url"])[0]
-    assert results == [{"url": origin["url"]}]
+    assert results == [
+        {"url": origin["url"], "visit_types": ["git"], "has_visits": True}
+    ]
 
 
 def test_search_origin_use_ql(mocker, origin):

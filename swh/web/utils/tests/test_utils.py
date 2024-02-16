@@ -446,7 +446,7 @@ def test_origin_visit_types(mocker, backend):
         assert origin_visit_types() == []
     else:
         # see swh/web/tests/data.py for origins added for tests
-        assert origin_visit_types() == ["git", "tar"]
+        assert origin_visit_types() == ["git", "git-checkout", "tar"]
 
 
 @pytest.mark.parametrize("server_name", ["localhost", "127.0.0.1", "testserver"])

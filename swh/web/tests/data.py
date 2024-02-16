@@ -18,7 +18,7 @@ from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.storage import get_indexer_storage
 from swh.indexer.storage.model import OriginIntrinsicMetadataRow
 from swh.loader.git.from_disk import GitLoaderFromArchive
-from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_hex
+from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import (
     Content,
     Directory,
@@ -460,6 +460,34 @@ def _init_tests_data():
         },
     )
 
+    snapshots_list = list(sorted(snapshots))
+
+    # Add fake origin with multiple visit types
+    origin = Origin(url="https://example.org/project/multiple/visit/types")
+    storage.origin_add([origin])
+    visit_types = ["git", "git-checkout"]
+    for i, visit_type in enumerate(visit_types):
+        origin_visit = storage.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=origin.url,
+                    date=now() + timedelta(days=i),
+                    type=visit_type,
+                )
+            ]
+        )[0]
+        visit_status = OriginVisitStatus(
+            origin=origin.url,
+            visit=origin_visit.visit,
+            date=now() + timedelta(days=i),
+            status="full",
+            snapshot=hash_to_bytes(snapshots_list[i]),
+        )
+        storage.origin_visit_status_add([visit_status])
+    search.origin_update(
+        [{"url": origin.url, "visit_types": visit_types, "has_visits": True}]
+    )
+
     counters.add("revision", revisions)
     counters.add("release", releases)
     counters.add("directory", directories)
@@ -476,7 +504,7 @@ def _init_tests_data():
         "directories": list(sorted(directories)),
         "releases": list(sorted(releases)),
         "revisions": list(sorted(map(hash_to_hex, revisions))),
-        "snapshots": list(sorted(snapshots)),
+        "snapshots": snapshots_list,
         "swhids": swhids,
     }
 

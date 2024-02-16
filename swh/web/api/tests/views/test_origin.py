@@ -507,12 +507,7 @@ def test_api_origin_not_found(api_client, new_origin):
     }
 
 
-@pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
-def test_api_origin_search(api_client, mocker, backend):
-    if backend != "swh-search":
-        # equivalent to not configuring search in the config
-        mocker.patch("swh.web.utils.archive.search", None)
-
+def test_api_origin_search(api_client):
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
         "https://github.com/memononen/libtess2",
@@ -528,7 +523,10 @@ def test_api_origin_search(api_client, mocker, backend):
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} <= expected_origins
     assert rv.data == [
-        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        enrich_origin(
+            {"url": origin["url"], "visit_types": ["git"], "has_visits": True},
+            request=rv.wsgi_request,
+        )
         for origin in rv.data
     ]
 
@@ -541,7 +539,10 @@ def test_api_origin_search(api_client, mocker, backend):
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
     assert rv.data == [
-        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        enrich_origin(
+            {"url": origin["url"], "visit_types": ["git"], "has_visits": True},
+            request=rv.wsgi_request,
+        )
         for origin in rv.data
     ]
 
@@ -554,17 +555,15 @@ def test_api_origin_search(api_client, mocker, backend):
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
     assert rv.data == [
-        enrich_origin({"url": origin["url"]}, request=rv.wsgi_request)
+        enrich_origin(
+            {"url": origin["url"], "visit_types": ["git"], "has_visits": True},
+            request=rv.wsgi_request,
+        )
         for origin in rv.data
     ]
 
 
-@pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
-def test_api_origin_search_words(api_client, mocker, backend):
-    if backend != "swh-search":
-        # equivalent to not configuring search in the config
-        mocker.patch("swh.web.utils.archive.search", None)
-
+def test_api_origin_search_words(api_client):
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
         "https://github.com/memononen/libtess2",
