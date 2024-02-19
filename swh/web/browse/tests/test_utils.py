@@ -125,7 +125,8 @@ def test_rst_readme(input_, expected_output):
     storage = get_tests_data()["storage"]
     storage.content_add([content])
     assert re.search(
-        expected_output, get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+        expected_output,
+        get_readme_to_display({"readme.rst": content.sha1_git.hex()})[2],
     )
 
 
@@ -134,7 +135,9 @@ def test_rst_readme_no_leak():
     content = Content.from_data(input_)
     storage = get_tests_data()["storage"]
     storage.content_add([content])
-    assert "root:" not in get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+    assert (
+        "root:" not in get_readme_to_display({"readme.rst": content.sha1_git.hex()})[2]
+    )
 
 
 def test_rst_readme_no_xss():
@@ -143,5 +146,6 @@ def test_rst_readme_no_xss():
     storage = get_tests_data()["storage"]
     storage.content_add([content])
     assert (
-        "<script>" not in get_readme_to_display({"readme.rst": content.sha1.hex()})[2]
+        "<script>"
+        not in get_readme_to_display({"readme.rst": content.sha1_git.hex()})[2]
     )

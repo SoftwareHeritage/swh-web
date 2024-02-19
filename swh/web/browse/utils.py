@@ -52,9 +52,11 @@ def get_directory_entries(
     for e in entries:
         e["perms"] = stat.filemode(e["perms"])
         if e["type"] == "rev":
-            # modify dir entry name to explicitly show it points
-            # to a revision
+            # modify dir entry name to explicitly show it points to a revision
             e["name"] = "%s @ %s" % (e["name"], e["target"][:7])
+        elif e["type"] == "file":
+            # remove unused checksums dict to reduce cache size
+            e.pop("checksums", None)
 
     dirs = [e for e in entries if e["type"] in ("dir", "rev")]
     files = [e for e in entries if e["type"] == "file"]
@@ -722,31 +724,33 @@ def get_readme_to_display(
 
     Args:
         readmes: a dict where keys are readme file names and values
-            are readme sha1s
+            are readme sha1_gits
 
     Returns:
         A tuple (readme_name, readme_url, readme_html)
     """
     readme_name = None
     readme_url = None
-    readme_sha1 = None
+    readme_sha1_git = None
     readme_html = None
 
-    lc_readmes = {k.lower(): {"orig_name": k, "sha1": v} for k, v in readmes.items()}
+    lc_readmes = {
+        k.lower(): {"orig_name": k, "sha1_git": v} for k, v in readmes.items()
+    }
 
     # look for readme names according to the preference order
     # defined by the _common_readme_names list
     for common_readme_name in _common_readme_names:
         if common_readme_name in lc_readmes:
             readme_name = lc_readmes[common_readme_name]["orig_name"]
-            readme_sha1 = lc_readmes[common_readme_name]["sha1"]
+            readme_sha1_git = lc_readmes[common_readme_name]["sha1_git"]
             readme_url = (
                 reverse(
                     "browse-content-raw",
-                    url_args={"query_string": readme_sha1},
+                    url_args={"query_string": f"sha1_git:{readme_sha1_git}"},
                     query_params={"re_encode": "true"},
                 )
-                if readme_sha1 is not None
+                if readme_sha1_git is not None
                 else None
             )
             break
@@ -754,14 +758,14 @@ def get_readme_to_display(
     # otherwise pick the first readme like file if any
     if not readme_name and len(readmes.items()) > 0:
         readme_name = next(iter(readmes))
-        readme_sha1 = readmes[readme_name]
+        readme_sha1_git = readmes[readme_name]
         readme_url = (
             reverse(
                 "browse-content-raw",
-                url_args={"query_string": readme_sha1},
+                url_args={"query_string": f"sha1_git:{readme_sha1_git}"},
                 query_params={"re_encode": "true"},
             )
-            if readme_sha1 is not None
+            if readme_sha1_git is not None
             else None
         )
 
@@ -773,10 +777,14 @@ def get_readme_to_display(
             catch_exception=True,
             exception_return_value="Readme bytes are not available",
         )
-        def _rst_readme_to_html(readme_sha1):
-            rst_doc = request_content(readme_sha1)
+        def _rst_readme_to_html(readme_sha1_git):
+            rst_doc = request_content(f"sha1_git:{readme_sha1_git}")
             return rst_to_html(rst_doc["raw_data"].decode("utf-8", errors="replace"))
 
-        readme_html = _rst_readme_to_html(readme_sha1)
+        readme_html = _rst_readme_to_html(readme_sha1_git)
+    elif readme_sha1_git:
+        # check content exists in the archive
+        if not archive.lookup_hash(f"sha1_git:{readme_sha1_git}")["found"]:
+            readme_url = None
 
     return readme_name, readme_url, readme_html
