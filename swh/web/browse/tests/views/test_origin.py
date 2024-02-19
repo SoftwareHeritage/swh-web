@@ -1147,3 +1147,40 @@ def test_citations_ui_activation_for_staff(client, origin, staff_user):
 
     resp = check_html_get_response(client, browse_url, status_code=200)
     assert_contains(resp, '<div id="swh-citations"')
+
+
+def test_origin_browse_multiple_visit_types_git_default(
+    client, origin_with_multiple_visit_types
+):
+    origin_url = origin_with_multiple_visit_types
+    origin_info = archive.lookup_origin(origin_url)
+    visit_types = origin_info["visit_types"]
+    default_visit_type = "git"
+
+    assert len(visit_types) > 1 and default_visit_type in visit_types
+
+    origin_visit = archive.lookup_origin_visit_latest(
+        origin_url, type=default_visit_type
+    )
+    assert origin_visit["type"] == default_visit_type
+    browse_url = reverse(
+        "browse-origin-directory", query_params={"origin_url": origin_url}
+    )
+
+    resp = check_html_get_response(client, browse_url, status_code=200)
+
+    # check select element for visit types
+    assert_not_contains(resp, "select-no-arrows")
+
+    # check default visit type is selected
+    assert_contains(
+        resp,
+        f'<option selected value="{default_visit_type}">{default_visit_type}</option>',
+    )
+
+    # check visit_type query parameter is used in links
+    assert_contains(resp, f"&visit_type={default_visit_type}")
+
+    # check correct visit and snapshot are browsed
+    assert_contains(resp, format_utc_iso_date(origin_visit["date"]))
+    assert_contains(resp, "swh:1:snp:" + origin_visit["snapshot"])
