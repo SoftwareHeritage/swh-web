@@ -442,7 +442,7 @@ def get_snapshot_context(
     origin_info = None
     visit_info = None
     url_args = {}
-    query_params: Dict[str, Any] = {}
+    query_params: Dict[str, Any] = {"visit_type": visit_type}
     origin_visits_url = None
 
     if origin_url:
@@ -453,9 +453,23 @@ def get_snapshot_context(
 
         origin_info = archive.lookup_origin(origin_url)
 
+        query_params["origin_url"] = origin_info["url"]
+        if len(origin_info["visit_types"]) > 1:
+            if visit_type is None:
+                # avoid selecting git-checkout, svn-export or hg-checkout visit types
+                # when no visit type is explicitly provided
+                for vtype in ("git", "svn", "hg"):
+                    if vtype in origin_info["visit_types"]:
+                        visit_type = vtype
+                        break
+
         visit_info = get_origin_visit(
             origin_info["url"], timestamp, visit_id, snapshot_id, visit_type=visit_type
         )
+
+        if len(origin_info["visit_types"]) > 1:
+            query_params["visit_type"] = visit_info["type"]
+
         formatted_date = format_utc_iso_date(visit_info["date"])
         visit_info["formatted_date"] = formatted_date
         snapshot_id = visit_info["snapshot"]
@@ -476,17 +490,11 @@ def get_snapshot_context(
             origin_info, timestamp, visit_id, snapshot_id
         )
 
-        query_params["origin_url"] = origin_info["url"]
-        if len(origin_info["visit_types"]) > 1:
-            query_params["visit_type"] = visit_info["type"]
-
         origin_visits_url = reverse(
             "browse-origin-visits",
             query_params={
                 "origin_url": origin_info["url"],
-                "visit_type": (
-                    visit_info["type"] if len(origin_info["visit_types"]) > 1 else None
-                ),
+                "visit_type": query_params["visit_type"],
             },
         )
 

@@ -98,6 +98,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         url_args = {"snapshot_id": snapshot}
 
         query_params = dict(kwargs)
+        query_params["visit_type"] = None
         query_params.pop("snapshot_id")
 
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
@@ -204,6 +205,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
         snapshot_context = get_snapshot_context(**kwargs, browse_context=browse_context)
 
         query_params = dict(kwargs)
+        query_params["visit_type"] = None
 
         branches, releases, _ = get_snapshot_content(snapshot)
         revision_id = None
@@ -300,6 +302,7 @@ def _check_branch_release_revision_parameters(
 
     query_params = dict(kwargs)
     query_params.pop("snapshot_id", None)
+    query_params["visit_type"] = None
 
     expected_branch = dict(base_expected_context)
     expected_branch["branch"] = branch["name"]
