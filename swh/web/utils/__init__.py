@@ -450,7 +450,8 @@ def cache_set(
     try:
         cache.set(_compute_final_cache_key(cache_key), payload, timeout=timeout)
     except MemcacheServerError as mse:
-        sentry_sdk.capture_exception(mse)
+        if mse.args[0] != b"object too large for cache":
+            sentry_sdk.capture_exception(mse)
 
 
 def cache_get(
