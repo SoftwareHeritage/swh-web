@@ -253,37 +253,46 @@ export function showModalHtml(title, html, width = '500px') {
 }
 
 export function addJumpToPagePopoverToDataTable(dataTableElt) {
+  const ellipsisButtonSelector = '.dt-paging-button.page-item.disabled:contains("…")';
   dataTableElt.on('draw.dt', function() {
-    $('.paginate_button.disabled').css('cursor', 'pointer');
-    $('.paginate_button.disabled').on('click', event => {
-      const pageInfo = dataTableElt.page.info();
-      let content = '<select class="jump-to-page">';
-      for (let i = 1; i <= pageInfo.pages; ++i) {
-        let selected = '';
-        if (i === pageInfo.page + 1) {
-          selected = 'selected';
+    setTimeout(() => {
+      $(ellipsisButtonSelector).css('cursor', 'pointer');
+      $(ellipsisButtonSelector).attr('title', 'Jump to page');
+      $(ellipsisButtonSelector).on('click', event => {
+        $(ellipsisButtonSelector).popover('hide');
+        const pageInfo = dataTableElt.page.info();
+        let content = '<select class="jump-to-page">';
+        for (let i = 1; i <= pageInfo.pages; ++i) {
+          let selected = '';
+          if (i === pageInfo.page + 1) {
+            selected = 'selected';
+          }
+          content += `<option value="${i}" ${selected}>${i}</option>`;
         }
-        content += `<option value="${i}" ${selected}>${i}</option>`;
-      }
-      content += `</select><span> / ${pageInfo.pages}</span>`;
-      $(event.target).popover({
-        'title': 'Jump to page',
-        'content': content,
-        'html': true,
-        'placement': 'top',
-        'sanitizeFn': swh.webapp.filterXSS
+        content += `</select><span> / ${pageInfo.pages}</span>`;
+        $(event.target).popover({
+          'title': 'Jump to page',
+          'content': content,
+          'html': true,
+          'placement': 'top',
+          'sanitizeFn': swh.webapp.filterXSS
+        });
+        $(event.target).popover('show');
+        $('.jump-to-page').on('change', function() {
+          $(ellipsisButtonSelector).popover('hide');
+          const pageNumber = parseInt($(this).val()) - 1;
+          dataTableElt.page(pageNumber).draw('page');
+        });
       });
-      $(event.target).popover('show');
-      $('.jump-to-page').on('change', function() {
-        $('.paginate_button.disabled').popover('hide');
-        const pageNumber = parseInt($(this).val()) - 1;
-        dataTableElt.page(pageNumber).draw('page');
-      });
-    });
+    }, 10);
   });
-
   dataTableElt.on('preXhr.dt', () => {
-    $('.paginate_button.disabled').popover('hide');
+    $(ellipsisButtonSelector).popover('hide');
+  });
+  $('body').on('click', e => {
+    if ($(e.target).text() !== '…' && $(e.target).parents('.popover').length === 0) {
+      $(ellipsisButtonSelector).popover('hide');
+    }
   });
 }
 

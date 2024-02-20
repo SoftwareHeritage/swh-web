@@ -93,11 +93,11 @@ pre {
 }
 
 .swh-table-striped tbody tr:nth-child(even) {
-    background-color: #f2f4f5;
+    background-color: #f2f4f5 !important;
 }
 
 .swh-table-striped tbody tr:nth-child(odd) {
-    background-color: #fff;
+    background-color: #fff !important;
 }
 
 .table > thead > tr > th {
