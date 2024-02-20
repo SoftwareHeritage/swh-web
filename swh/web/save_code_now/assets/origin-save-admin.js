@@ -36,7 +36,6 @@ export function initOriginSaveAdmin() {
       serverSide: true,
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
-      scrollY: '50vh',
       scrollCollapse: true,
       info: false
     });
@@ -47,7 +46,6 @@ export function initOriginSaveAdmin() {
       serverSide: true,
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
-      scrollY: '50vh',
       scrollCollapse: true,
       info: false
     });
@@ -104,7 +102,6 @@ export function initOriginSaveAdmin() {
       ajax: Urls.origin_save_requests_list('pending'),
       searchDelay: 1000,
       columns: columnsData,
-      scrollY: '50vh',
       scrollCollapse: true,
       order: [[0, 'desc']],
       responsive: {
@@ -143,7 +140,6 @@ export function initOriginSaveAdmin() {
       ajax: Urls.origin_save_requests_list('rejected'),
       searchDelay: 1000,
       columns: columnsData,
-      scrollY: '50vh',
       scrollCollapse: true,
       order: [[0, 'desc']],
       responsive: {
@@ -169,7 +165,6 @@ export function initOriginSaveAdmin() {
       ajax: Urls.origin_save_requests_list('accepted'),
       searchDelay: 1000,
       columns: columnsData,
-      scrollY: '50vh',
       scrollCollapse: true,
       order: [[0, 'desc']],
       responsive: {

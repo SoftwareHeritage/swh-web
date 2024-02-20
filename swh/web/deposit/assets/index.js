@@ -134,7 +134,6 @@ export function initDepositAdmin(username, isStaff) {
           }
         ],
         scrollX: true,
-        scrollY: '50vh',
         scrollCollapse: true,
         order: [[0, 'desc']]
       });

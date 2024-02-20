@@ -152,7 +152,6 @@ export function initMailmapUI() {
          ordering: true,
          searching: true,
          searchDelay: 1000,
-         scrollY: '50vh',
          scrollCollapse: true
        });
   });

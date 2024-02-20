@@ -248,7 +248,6 @@ export function initOriginSave() {
             }
           }
         ],
-        scrollY: '50vh',
         scrollCollapse: true,
         order: [[0, 'desc']],
         responsive: {

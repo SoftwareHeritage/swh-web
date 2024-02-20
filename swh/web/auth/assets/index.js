@@ -173,7 +173,6 @@ export function initProfilePage() {
         ],
         ordering: false,
         searching: false,
-        scrollY: '50vh',
         scrollCollapse: true
       });
     $('#swh-oidc-profile-tokens-tab').on('shown.bs.tab', () => {
