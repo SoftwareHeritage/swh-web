@@ -143,6 +143,7 @@ export function initProfilePage() {
       })
       .DataTable({
         serverSide: true,
+        fixedHeader: true,
         ajax: Urls.oidc_list_bearer_tokens(),
         columns: [
           {

@@ -37,7 +37,8 @@ export function initOriginSaveAdmin() {
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       scrollCollapse: true,
-      info: false
+      info: false,
+      fixedHeader: true
     });
     enableRowSelection('#swh-authorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
@@ -47,7 +48,8 @@ export function initOriginSaveAdmin() {
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       scrollCollapse: true,
-      info: false
+      info: false,
+      fixedHeader: true
     });
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
@@ -103,6 +105,7 @@ export function initOriginSaveAdmin() {
       searchDelay: 1000,
       columns: columnsData,
       scrollCollapse: true,
+      fixedHeader: true,
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -141,6 +144,7 @@ export function initOriginSaveAdmin() {
       searchDelay: 1000,
       columns: columnsData,
       scrollCollapse: true,
+      fixedHeader: true,
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -166,6 +170,7 @@ export function initOriginSaveAdmin() {
       searchDelay: 1000,
       columns: columnsData,
       scrollCollapse: true,
+      fixedHeader: true,
       order: [[0, 'desc']],
       responsive: {
         details: {

@@ -24,10 +24,12 @@ import 'admin-lte';
 // js-cookie
 import 'js-cookie';
 
-// jquery datatables
+// datatables and extensions
 import 'datatables.net';
 import 'datatables.net-bs4';
+import 'datatables.net-fixedheader-bs4';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
+import 'datatables.net-fixedheader-bs4/css/fixedHeader.bootstrap4.css';
 import './datatables.css';
 
 // chosen-js

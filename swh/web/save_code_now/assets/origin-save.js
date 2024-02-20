@@ -138,6 +138,7 @@ export function initOriginSave() {
       .DataTable({
         serverSide: true,
         processing: true,
+        fixedHeader: true,
         language: {
           processing: `<img src="${swhSpinnerSrc}"></img>`
         },

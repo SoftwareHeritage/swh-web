@@ -20,6 +20,7 @@ export async function populateModerationList() {
       serverSide: true,
       processing: true,
       searching: true,
+      fixedHeader: true,
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {

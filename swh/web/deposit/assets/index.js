@@ -30,6 +30,7 @@ export function initDepositAdmin(username, isStaff) {
       .DataTable({
         serverSide: true,
         processing: true,
+        fixedHeader: true,
         // let's define the order of table options display
         // f: (f)ilter
         // l: (l)ength changing
