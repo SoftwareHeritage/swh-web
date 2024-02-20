@@ -71,6 +71,7 @@ export function populateRequestBrowseList() {
       retrieve: true,
       searching: true,
       fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000],
       // Layout configuration, see [1] for more details
       // [1] https://datatables.net/reference/option/dom
       dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +

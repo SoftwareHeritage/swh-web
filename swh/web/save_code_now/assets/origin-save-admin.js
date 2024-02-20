@@ -38,7 +38,8 @@ export function initOriginSaveAdmin() {
       columns: [{data: 'url', name: 'url'}],
       scrollCollapse: true,
       info: false,
-      fixedHeader: true
+      fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000]
     });
     enableRowSelection('#swh-authorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
@@ -49,7 +50,8 @@ export function initOriginSaveAdmin() {
       columns: [{data: 'url', name: 'url'}],
       scrollCollapse: true,
       info: false,
-      fixedHeader: true
+      fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000]
     });
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
@@ -106,6 +108,7 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollCollapse: true,
       fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -145,6 +148,7 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollCollapse: true,
       fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -171,6 +175,7 @@ export function initOriginSaveAdmin() {
       columns: columnsData,
       scrollCollapse: true,
       fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {

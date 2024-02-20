@@ -142,6 +142,7 @@ export function initOriginSave() {
         language: {
           processing: `<img src="${swhSpinnerSrc}"></img>`
         },
+        lengthMenu: [10, 25, 50, 100, 1000],
         ajax: {
           url: Urls.origin_save_requests_list('all'),
           data: (d) => {

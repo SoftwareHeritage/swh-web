@@ -21,6 +21,7 @@ export async function populateModerationList() {
       processing: true,
       searching: true,
       fixedHeader: true,
+      lengthMenu: [10, 25, 50, 100, 1000],
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {

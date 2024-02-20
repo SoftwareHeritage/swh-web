@@ -31,6 +31,7 @@ export function initDepositAdmin(username, isStaff) {
         serverSide: true,
         processing: true,
         fixedHeader: true,
+        lengthMenu: [10, 25, 50, 100, 1000],
         // let's define the order of table options display
         // f: (f)ilter
         // l: (l)ength changing

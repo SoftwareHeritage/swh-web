@@ -85,6 +85,7 @@ export function initMailmapUI() {
        .DataTable({
          serverSide: true,
          fixedHeader: true,
+         lengthMenu: [10, 25, 50, 100, 1000],
          ajax: Urls.profile_mailmap_list_datatables(),
          columns: [
            {
