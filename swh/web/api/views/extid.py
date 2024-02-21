@@ -117,7 +117,8 @@ def api_extid(request: Request, extid_type: str, extid_format: str, extid: str):
           ``hg id -r <rev_num> --template {hg_template}``.
 
         `Guix <https://guix.gnu.org/manual/en/html_node/Invoking-guix-hash.html>`_ and
-        `Nix <https://nixos.wiki/wiki/Nix_Hash>`_ related:
+        `Nix <https://nixos.wiki/wiki/Nix_Hash>`_ related (must be queried with the
+        **extid_version** query parameter set to **1** to ensure correctness):
 
         - ``nar-sha256``: sha256 checksum of a `Nix Archive (NAR)
           <https://edolstra.github.io/pubs/phd-thesis.pdf#page=101>`_, used to deterministically
@@ -154,9 +155,9 @@ def api_extid(request: Request, extid_type: str, extid_format: str, extid: str):
 
             :swh_web_api:`extid/bzr-nodeid/raw:rodney.dawes@canonical.com-20090512192901-f22ja60nsgq9j5a4/`
             :swh_web_api:`extid/hg-nodeid/hex:1ce49c60732c9020ce2f98d03a7a71ec8d5be191/`
-            :swh_web_api:`extid/checksum-sha256/base64url:s4lFKlaGmGiN2jiAIGg3ihbBXEr5sVPN2ZtlORKSu8c/`
-            :swh_web_api:`extid/nar-sha256/base64url:dPfSdTz-U7tD8GhrxwKg2S288XKOWPcVvz3y3jkplHI/`
-            :swh_web_api:`extid/checksum-sha512/base64url:AL5bxZ-gStT5UpzSc1dN-XVxxWN9FHtvBlZoFeFFMowwgMKWq9GLZHV8DWX-g7ugiKxlKa2ph2oTQCqvhixDQw/`
+            :swh_web_api:`extid/checksum-sha256/base64url:s4lFKlaGmGiN2jiAIGg3ihbBXEr5sVPN2ZtlORKSu8c/?extid_version=1`
+            :swh_web_api:`extid/nar-sha256/base64url:AAAlhKVqm86FeTUVYEKY-LOx6Ul-APxjYaDC5zHAY_M/?extid_version=1`
+            :swh_web_api:`extid/checksum-sha512/base64url:AL5bxZ-gStT5UpzSc1dN-XVxxWN9FHtvBlZoFeFFMowwgMKWq9GLZHV8DWX-g7ugiKxlKa2ph2oTQCqvhixDQw/?extid_version=1`
 
     """
 
