@@ -13,3 +13,15 @@ export const BREAKPOINT_MD = 992;
 export const BREAKPOINT_LG = 1200;
 
 export const swhSpinnerSrc = staticAsset('img/swh-spinner.gif');
+
+export const dataTableCommonConfig = {
+  serverSide: true,
+  processing: true,
+  language: {
+    processing: `<img src="${swhSpinnerSrc}"></img>`
+  },
+  fixedHeader: true,
+  lengthMenu: [10, 25, 50, 100, 1000],
+  scrollCollapse: true,
+  searchDelay: 1000
+};

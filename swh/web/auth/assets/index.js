@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2020  The Software Heritage developers
+ * Copyright (C) 2020-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 import {handleFetchError, csrfPost, removeUrlFragment} from 'utils/functions';
+import {dataTableCommonConfig} from 'utils/constants';
 import './auth.css';
 
 let apiTokensTable;
@@ -142,8 +143,7 @@ export function initProfilePage() {
         console.log(message);
       })
       .DataTable({
-        serverSide: true,
-        fixedHeader: true,
+        ...dataTableCommonConfig,
         ajax: Urls.oidc_list_bearer_tokens(),
         columns: [
           {
@@ -173,8 +173,7 @@ export function initProfilePage() {
           }
         ],
         ordering: false,
-        searching: false,
-        scrollCollapse: true
+        searching: false
       });
     $('#swh-oidc-profile-tokens-tab').on('shown.bs.tab', () => {
       apiTokensTable.draw();

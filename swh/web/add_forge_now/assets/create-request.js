@@ -1,16 +1,16 @@
 /**
- * Copyright (C) 2022  The Software Heritage developers
+ * Copyright (C) 2022-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {swhSpinnerSrc} from 'utils/constants';
 import {
   csrfPost, errorMessageFromResponse, genLink, getHumanReadableDate,
   handleFetchError, validateUrl
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
+import {dataTableCommonConfig} from 'utils/constants';
 
 let requestBrowseTable;
 
@@ -63,15 +63,9 @@ export function populateRequestBrowseList() {
       $('#add-forge-browse-request-error').text(message);
     })
     .DataTable({
-      serverSide: true,
-      processing: true,
-      language: {
-        processing: `<img src="${swhSpinnerSrc}"></img>`
-      },
+      ...dataTableCommonConfig,
       retrieve: true,
       searching: true,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000],
       // Layout configuration, see [1] for more details
       // [1] https://datatables.net/reference/option/dom
       dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +

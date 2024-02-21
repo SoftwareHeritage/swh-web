@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {swhSpinnerSrc} from 'utils/constants';
 import {csrfPost, getHumanReadableDate, handleFetchError, htmlAlert} from 'utils/functions';
+import {dataTableCommonConfig} from 'utils/constants';
 
 let authorizedOriginTable;
 let unauthorizedOriginTable;
@@ -33,25 +33,19 @@ export function initOriginSaveAdmin() {
     $.fn.dataTable.ext.errMode = 'throw';
 
     authorizedOriginTable = $('#swh-authorized-origin-urls').DataTable({
-      serverSide: true,
+      ...dataTableCommonConfig,
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
-      scrollCollapse: true,
-      info: false,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000]
+      info: false
     });
     enableRowSelection('#swh-authorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
 
     unauthorizedOriginTable = $('#swh-unauthorized-origin-urls').DataTable({
-      serverSide: true,
+      ...dataTableCommonConfig,
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
-      scrollCollapse: true,
-      info: false,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000]
+      info: false
     });
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
@@ -98,17 +92,9 @@ export function initOriginSaveAdmin() {
     ];
 
     pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable({
-      serverSide: true,
-      processing: true,
-      language: {
-        processing: `<img src="${swhSpinnerSrc}"></img>`
-      },
+      ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('pending'),
-      searchDelay: 1000,
       columns: columnsData,
-      scrollCollapse: true,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -138,17 +124,9 @@ export function initOriginSaveAdmin() {
     });
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
-      serverSide: true,
-      processing: true,
-      language: {
-        processing: `<img src="${swhSpinnerSrc}"></img>`
-      },
+      ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('rejected'),
-      searchDelay: 1000,
       columns: columnsData,
-      scrollCollapse: true,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {
@@ -165,17 +143,9 @@ export function initOriginSaveAdmin() {
     });
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable({
-      serverSide: true,
-      processing: true,
-      language: {
-        processing: `<img src="${swhSpinnerSrc}"></img>`
-      },
+      ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('accepted'),
-      searchDelay: 1000,
       columns: columnsData,
-      scrollCollapse: true,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000],
       order: [[0, 'desc']],
       responsive: {
         details: {

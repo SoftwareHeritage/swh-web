@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
-import {swhSpinnerSrc} from 'utils/constants';
+import {swhSpinnerSrc, dataTableCommonConfig} from 'utils/constants';
 import {
   csrfPost, getCanonicalOriginURL, getHumanReadableDate, handleFetchError,
   htmlAlert, isGitRepoUrl, validateUrl
@@ -136,13 +136,7 @@ export function initOriginSave() {
         console.log(message);
       })
       .DataTable({
-        serverSide: true,
-        processing: true,
-        fixedHeader: true,
-        language: {
-          processing: `<img src="${swhSpinnerSrc}"></img>`
-        },
-        lengthMenu: [10, 25, 50, 100, 1000],
+        ...dataTableCommonConfig,
         ajax: {
           url: Urls.origin_save_requests_list('all'),
           data: (d) => {
@@ -151,7 +145,6 @@ export function initOriginSave() {
             }
           }
         },
-        searchDelay: 1000,
         // see https://datatables.net/examples/advanced_init/dom_toolbar.html and the comments section
         // this option customizes datatables UI components by adding an extra checkbox above the table
         // while keeping bootstrap layout
@@ -250,7 +243,7 @@ export function initOriginSave() {
             }
           }
         ],
-        scrollCollapse: true,
+
         order: [[0, 'desc']],
         responsive: {
           details: {

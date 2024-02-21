@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2022  The Software Heritage developers
+ * Copyright (C) 2022-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 import {genLink, getHumanReadableDate} from 'utils/functions';
+import {dataTableCommonConfig} from 'utils/constants';
 
 export function onModerationPageLoad() {
   populateModerationList();
@@ -17,11 +18,8 @@ export async function populateModerationList() {
       $('#swh-add-forge-now-moderation-list-error').text(message);
     })
     .DataTable({
-      serverSide: true,
-      processing: true,
+      ...dataTableCommonConfig,
       searching: true,
-      fixedHeader: true,
-      lengthMenu: [10, 25, 50, 100, 1000],
       dom: '<<"d-flex justify-content-between align-items-center"f' +
         '<"#list-exclude">l>rt<"bottom"ip>>',
       ajax: {

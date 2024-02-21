@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 import {getHumanReadableDate, genLink} from 'utils/functions';
+import {dataTableCommonConfig} from 'utils/constants';
 
 function genSwhLink(data, type, linkText = '') {
   if (type === 'display' && data && data.startsWith('swh')) {
@@ -28,10 +29,7 @@ export function initDepositAdmin(username, isStaff) {
         $('#swh-admin-deposit-list-error').text(message);
       })
       .DataTable({
-        serverSide: true,
-        processing: true,
-        fixedHeader: true,
-        lengthMenu: [10, 25, 50, 100, 1000],
+        ...dataTableCommonConfig,
         // let's define the order of table options display
         // f: (f)ilter
         // l: (l)ength changing
@@ -136,7 +134,6 @@ export function initDepositAdmin(username, isStaff) {
           }
         ],
         scrollX: true,
-        scrollCollapse: true,
         order: [[0, 'desc']]
       });
 

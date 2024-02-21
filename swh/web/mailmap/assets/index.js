@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2022  The Software Heritage developers
+ * Copyright (C) 2022-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 import {csrfPost, handleFetchError} from 'utils/functions';
-
+import {dataTableCommonConfig} from 'utils/constants';
 import mailmapFormTemplate from './mailmap-form.ejs';
 
 let mailmapsTable;
@@ -83,9 +83,7 @@ export function initMailmapUI() {
          console.log(message);
        })
        .DataTable({
-         serverSide: true,
-         fixedHeader: true,
-         lengthMenu: [10, 25, 50, 100, 1000],
+         ...dataTableCommonConfig,
          ajax: Urls.profile_mailmap_list_datatables(),
          columns: [
            {
@@ -152,9 +150,7 @@ export function initMailmapUI() {
 
          ],
          ordering: true,
-         searching: true,
-         searchDelay: 1000,
-         scrollCollapse: true
+         searching: true
        });
   });
 }
