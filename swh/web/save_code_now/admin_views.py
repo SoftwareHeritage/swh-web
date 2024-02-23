@@ -38,13 +38,13 @@ def admin_origin_save_filters(request):
 
 
 def _datatables_origin_urls_response(request, urls_query_set):
-    search_value = request.GET["search[value]"]
+    search_value = request.GET.get("search[value]")
     if search_value:
         urls_query_set = urls_query_set.filter(url__icontains=search_value)
 
-    column_order = request.GET["order[0][column]"]
-    field_order = request.GET["columns[%s][name]" % column_order]
-    order_dir = request.GET["order[0][dir]"]
+    column_order = request.GET.get("order[0][column]")
+    field_order = request.GET.get(f"columns[{column_order}][name]", "id")
+    order_dir = request.GET.get("order[0][dir]", "desc")
     if order_dir == "desc":
         field_order = "-" + field_order
 

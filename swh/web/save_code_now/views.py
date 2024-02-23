@@ -55,11 +55,11 @@ def origin_save_requests_list(request, status):
     table_data["recordsTotal"] = save_requests.count()
     table_data["draw"] = int(request.GET["draw"])
 
-    search_value = request.GET["search[value]"]
+    search_value = request.GET.get("search[value]")
 
-    column_order = request.GET["order[0][column]"]
-    field_order = request.GET["columns[%s][name]" % column_order]
-    order_dir = request.GET["order[0][dir]"]
+    column_order = request.GET.get("order[0][column]")
+    field_order = request.GET.get(f"columns[{column_order}][name]", "id")
+    order_dir = request.GET.get("order[0][dir]", "desc")
     if order_dir == "desc":
         field_order = "-" + field_order
 
