@@ -32,10 +32,10 @@ def _savable_visit_types() -> str:
     docstring = ""
     if os.environ.get("DJANGO_SETTINGS_MODULE") != "swh.web.settings.tests":
         visit_types = sorted(get_savable_visit_types())
-        docstring = ""
-        for visit_type in visit_types[:-1]:
-            docstring += f"**{visit_type}**, "
-        docstring += f"and **{visit_types[-1]}**"
+        if visit_types:
+            for visit_type in visit_types[:-1]:
+                docstring += f"**{visit_type}**, "
+            docstring += f"and **{visit_types[-1]}**"
     return docstring
 
 
