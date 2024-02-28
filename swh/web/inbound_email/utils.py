@@ -14,16 +14,39 @@ from django.utils.crypto import constant_time_compare
 
 logger = logging.getLogger(__name__)
 
+# Cribbed from the procmail TO_ macro:
+#
+# #define TO_substitute "(^((Original-)?(Resent-)?(To|Cc|Bcc)|\
+#   (X-Envelope|Apparently(-Resent)?)-To):(.*[^-a-zA-Z0-9_.])?)"
+
+HEADERS = (
+    "to",
+    "cc",
+    "bcc",
+    "original-to",
+    "original-cc",
+    "original-bcc",
+    "resent-to",
+    "resent-cc",
+    "resent-bcc",
+    "original-resent-to",
+    "original-resent-cc",
+    "original-resent-bcc",
+    "x-envelope-to",
+    "apparently-to",
+    "apparently-resent-to",
+)
+
 
 def extract_recipients(message: EmailMessage) -> List[Address]:
     """Extract a list of recipients of the `message`.
 
-    This uses the ``To`` and ``Cc`` fields.
+    This uses all the fields in :data:`HEADERS`
     """
 
     ret = []
 
-    for header_name in ("to", "cc"):
+    for header_name in HEADERS:
         for header in message.get_all(header_name, []):
             ret.extend(header.addresses)
 
