@@ -161,13 +161,31 @@ def test_recipient_matches_real_world(filename: str, recipient: str, extension: 
     assert matches[0].extension == extension
 
 
-def test_get_address_for_pk():
+def test_get_address_for_pk_multiple_algorithms():
+    salt = "test_salt"
+    pk = 10
+    base_address = "base@example.com"
+
+    addresses = {
+        utils.get_address_for_pk(
+            salt=salt, base_address=base_address, pk=pk, algorithm=algorithm
+        )
+        for algorithm in utils.ADDRESS_SIGNER_SUPPORTED
+    }
+    assert len(utils.ADDRESS_SIGNER_SUPPORTED) > 1
+    assert len(addresses) == len(utils.ADDRESS_SIGNER_SUPPORTED)
+
+
+@pytest.mark.parametrize("algorithm", utils.ADDRESS_SIGNER_SUPPORTED)
+def test_get_address_for_pk(algorithm):
     salt = "test_salt"
     pks = [1, 10, 1000]
     base_address = "base@example.com"
 
     addresses = {
-        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        pk: utils.get_address_for_pk(
+            salt=salt, base_address=base_address, pk=pk, algorithm=algorithm
+        )
         for pk in pks
     }
 
@@ -181,24 +199,30 @@ def test_get_address_for_pk():
         assert extension.startswith(f"{pk}.")
 
 
-def test_get_address_for_pk_salt():
+@pytest.mark.parametrize("algorithm", utils.ADDRESS_SIGNER_SUPPORTED)
+def test_get_address_for_pk_salt(algorithm):
     pk = 1000
     base_address = "base@example.com"
     addresses = [
-        utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        utils.get_address_for_pk(
+            salt=salt, base_address=base_address, pk=pk, algorithm=algorithm
+        )
         for salt in ["salt1", "salt2"]
     ]
 
     assert len(addresses) == len(set(addresses))
 
 
-def test_get_pks_from_message():
+@pytest.mark.parametrize("algorithm", utils.ADDRESS_SIGNER_SUPPORTED)
+def test_get_pks_from_message(algorithm):
     salt = "test_salt"
     pks = [1, 10, 1000]
     base_address = "base@example.com"
 
     addresses = {
-        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        pk: utils.get_address_for_pk(
+            salt=salt, base_address=base_address, pk=pk, algorithm=algorithm
+        )
         for pk in pks
     }
 
@@ -225,13 +249,16 @@ def test_get_pks_from_message():
     assert utils.get_pks_from_message(salt, base_address, message) == {1, 10}
 
 
-def test_get_pks_from_message_logging(caplog):
+@pytest.mark.parametrize("algorithm", utils.ADDRESS_SIGNER_SUPPORTED)
+def test_get_pks_from_message_logging(caplog, algorithm):
     salt = "test_salt"
     pks = [1, 10, 1000]
     base_address = "base@example.com"
 
     addresses = {
-        pk: utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk)
+        pk: utils.get_address_for_pk(
+            salt=salt, base_address=base_address, pk=pk, algorithm=algorithm
+        )
         for pk in pks
     }
 

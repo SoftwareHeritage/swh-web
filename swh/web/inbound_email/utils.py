@@ -112,13 +112,21 @@ def recipient_matches(message: EmailMessage, address: str) -> List[AddressMatch]
 ADDRESS_SIGNER_SEP = "."
 """Separator for email address signatures"""
 
+ADDRESS_SIGNER_DEFAULT = "sha1"
+"""Default algorithm for signed address creation"""
 
-def get_address_signer(salt: str) -> Signer:
-    """Get a signer for the given seed"""
-    return Signer(salt=salt, sep=ADDRESS_SIGNER_SEP)
+ADDRESS_SIGNER_SUPPORTED = (ADDRESS_SIGNER_DEFAULT, "sha256")
+"""Supported algorithms for signed address validation"""
 
 
-def get_address_for_pk(salt: str, base_address: str, pk: int) -> str:
+def get_address_signer(salt: str, algorithm: str = ADDRESS_SIGNER_DEFAULT) -> Signer:
+    """Get an address signer for the given salt and algorithm."""
+    return Signer(salt=salt, sep=ADDRESS_SIGNER_SEP, algorithm=algorithm)
+
+
+def get_address_for_pk(
+    salt: str, base_address: str, pk: int, algorithm: str = ADDRESS_SIGNER_DEFAULT
+) -> str:
     """Get the email address that will be able to receive messages to be logged in
     this request."""
     if "@" not in base_address:
@@ -126,7 +134,7 @@ def get_address_for_pk(salt: str, base_address: str, pk: int) -> str:
 
     username, domain = base_address.split("@")
 
-    extension = get_address_signer(salt).sign(str(pk))
+    extension = get_address_signer(salt, algorithm=algorithm).sign(str(pk))
 
     return f"{username}+{extension}@{domain}"
 
@@ -134,21 +142,30 @@ def get_address_for_pk(salt: str, base_address: str, pk: int) -> str:
 def get_pk_from_extension(salt: str, extension: str) -> int:
     """Retrieve the primary key for the given inbound address extension.
 
-    We reimplement `Signer.unsign`, because the extension can be casemapped at any
-    point in the email chain (even though email is, theoretically, case sensitive),
-    so we have to compare lowercase versions of both the extension and the
-    signature...
+    We reimplement `Signer.unsign`, because the extension can be casemapped at
+    any point in the email chain (even though email is, theoretically, case
+    sensitive), so we have to compare lowercase versions of both the extension
+    and the signature... We also support addresses generated with multiple
+    signature algorithms, to keep compatibility with older pre-Django 3.1
+    deployments.
 
     Raises ValueError if the signature couldn't be verified.
 
     """
 
     value, signature = extension.rsplit(ADDRESS_SIGNER_SEP, 1)
-    expected_signature = get_address_signer(salt).signature(value)
-    if not constant_time_compare(signature.lower(), expected_signature.lower()):
-        raise ValueError(f"Invalid signature for extension {extension}")
 
-    return int(value)
+    valid = False
+    for algorithm in ADDRESS_SIGNER_SUPPORTED:
+        signer = get_address_signer(salt, algorithm=algorithm)
+        expected_signature = signer.signature(value)
+        if constant_time_compare(signature.lower(), expected_signature.lower()):
+            valid = True
+
+    if valid:
+        return int(value)
+    else:
+        raise ValueError(f"Invalid signature for extension {extension}")
 
 
 def get_pks_from_message(
