@@ -74,6 +74,7 @@ DEFAULT_CONFIG = {
     "host": ("string", "127.0.0.1"),
     "port": ("int", 5004),
     "secret_key": ("string", "development key"),
+    "secret_key_fallbacks": ("list[string]", []),
     # do not display code highlighting for content > 1MB
     "content_display_max_size": ("int", 5 * 1024 * 1024),
     "snapshot_content_max_size": ("int", 1000),

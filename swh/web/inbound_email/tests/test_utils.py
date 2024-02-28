@@ -176,6 +176,26 @@ def test_get_address_for_pk_multiple_algorithms():
     assert len(addresses) == len(utils.ADDRESS_SIGNER_SUPPORTED)
 
 
+def test_get_address_for_pk_for_old_secret_key(settings):
+    settings.SECRET_KEY_FALLBACKS = ["fallback1", "fallback2"]
+
+    salt = "test_salt"
+    pk = 10
+    base_address = "base@example.com"
+
+    addresses = {
+        utils.get_address_for_pk(salt=salt, base_address=base_address, pk=pk, key=key)
+        for key in [settings.SECRET_KEY] + settings.SECRET_KEY_FALLBACKS
+    }
+
+    assert len(addresses) == 3
+
+    for address in addresses:
+        localpart, _, _ = address.partition("@")
+        _, _, extension = localpart.partition("+")
+        assert utils.get_pk_from_extension(salt, extension) == pk
+
+
 @pytest.mark.parametrize("algorithm", utils.ADDRESS_SIGNER_SUPPORTED)
 def test_get_address_for_pk(algorithm):
     salt = "test_salt"

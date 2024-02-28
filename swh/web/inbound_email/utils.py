@@ -9,6 +9,7 @@ from email.message import EmailMessage, Message
 import logging
 from typing import List, Optional, Set, Tuple, Union
 
+from django.conf import settings
 from django.core.signing import Signer
 from django.utils.crypto import constant_time_compare
 
@@ -119,13 +120,21 @@ ADDRESS_SIGNER_SUPPORTED = (ADDRESS_SIGNER_DEFAULT, "sha256")
 """Supported algorithms for signed address validation"""
 
 
-def get_address_signer(salt: str, algorithm: str = ADDRESS_SIGNER_DEFAULT) -> Signer:
-    """Get an address signer for the given salt and algorithm."""
-    return Signer(salt=salt, sep=ADDRESS_SIGNER_SEP, algorithm=algorithm)
+def get_address_signer(
+    salt: str, algorithm: str = ADDRESS_SIGNER_DEFAULT, key: Optional[str] = None
+) -> Signer:
+    """Get an address signer for the given salt, algorithm and secret key."""
+    if key is None:
+        key = settings.SECRET_KEY
+    return Signer(salt=salt, sep=ADDRESS_SIGNER_SEP, algorithm=algorithm, key=key)
 
 
 def get_address_for_pk(
-    salt: str, base_address: str, pk: int, algorithm: str = ADDRESS_SIGNER_DEFAULT
+    salt: str,
+    base_address: str,
+    pk: int,
+    algorithm: str = ADDRESS_SIGNER_DEFAULT,
+    key: Optional[str] = None,
 ) -> str:
     """Get the email address that will be able to receive messages to be logged in
     this request."""
@@ -134,7 +143,7 @@ def get_address_for_pk(
 
     username, domain = base_address.split("@")
 
-    extension = get_address_signer(salt, algorithm=algorithm).sign(str(pk))
+    extension = get_address_signer(salt, algorithm=algorithm, key=key).sign(str(pk))
 
     return f"{username}+{extension}@{domain}"
 
@@ -157,10 +166,11 @@ def get_pk_from_extension(salt: str, extension: str) -> int:
 
     valid = False
     for algorithm in ADDRESS_SIGNER_SUPPORTED:
-        signer = get_address_signer(salt, algorithm=algorithm)
-        expected_signature = signer.signature(value)
-        if constant_time_compare(signature.lower(), expected_signature.lower()):
-            valid = True
+        for key in [settings.SECRET_KEY] + settings.SECRET_KEY_FALLBACKS:
+            signer = get_address_signer(salt, algorithm=algorithm, key=key)
+            expected_signature = signer.signature(value)
+            if constant_time_compare(signature.lower(), expected_signature.lower()):
+                valid = True
 
     if valid:
         return int(value)
