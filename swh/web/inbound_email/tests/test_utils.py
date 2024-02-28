@@ -139,6 +139,28 @@ def test_recipient_matches_casemapping():
     assert matches[0].extension == "weirdCaseMapping"
 
 
+@pytest.mark.parametrize(
+    "filename,recipient,extension",
+    (
+        pytest.param(
+            "bounce-implicit-dest.eml",
+            "swh-web-recipient@example.com",
+            "address-extension",
+            id="bounce-implicit-destination",
+        ),
+    ),
+)
+def test_recipient_matches_real_world(filename: str, recipient: str, extension: str):
+    with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
+        message = email.message_from_binary_file(f, policy=email.policy.default)
+
+    assert isinstance(message, EmailMessage)
+
+    matches = utils.recipient_matches(message, recipient)
+    assert matches
+    assert matches[0].extension == extension
+
+
 def test_get_address_for_pk():
     salt = "test_salt"
     pks = [1, 10, 1000]

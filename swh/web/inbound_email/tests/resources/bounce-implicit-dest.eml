@@ -1,0 +1,144 @@
+Return-Path: <sender-alias@example.com>
+X-Original-To: swh-web-recipient+address-extension@example.com
+Delivered-To: virtual-for-domain-archive.softwareheritage.org@pergamon.softwareheritage.org
+Received: from relay8-d.mail.example.com (relay8-d.mail.example.com [127.0.0.1])
+	by pergamon.softwareheritage.org (Postfix) with ESMTPS id 1FB9440043
+	for <swh-web-recipient+address-extension@example.com>; Tue, 20 Feb 2024 23:06:54 +0000 (UTC)
+Received: by mail.example.com (Postfix) with ESMTPSA id F288A1BF203
+	for <swh-web-recipient+address-extension@example.com>; Tue, 20 Feb 2024 23:06:52 +0000 (UTC)
+Received: from mslow1.mail.example.com (mslow1.mail.example.com
+ [127.0.0.1]) by spool.mail.example.com (Postfix) with ESMTPS id
+ 460FAD8067E for <sender-alias@example.com>; Sun, 17 Dec 2023 02:52:50
+ +0000 (UTC)
+Received: by mslow1.mail.example.com (Postfix)
+	id 0729EC20E4; Sun, 17 Dec 2023 02:52:00 +0000 (UTC)
+Date: Sun, 17 Dec 2023 02:52:00 +0000 (UTC)
+From: MAILER-DAEMON@mslow1.mail.example.com (Mail Delivery System)
+Subject: Undelivered Mail Returned to Sender
+To: sender-alias@example.com
+Auto-Submitted: auto-replied
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="AD724C0936.1702781520/mslow1.mail.example.com"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20231217025200.0729EC20E4@mslow1.mail.example.com>
+Authentication-Results: spool.mail.example.com; dkim=none; spf=pass
+ (spool.mail.example.com: domain of mslow1.mail.example.com designates
+ 127.0.0.1 as permitted sender) smtp.helo=mslow1.mail.example.com;
+ dmarc=pass (policy=none) header.from=example.com
+Resent-From: Sender <sender-alias@example.com>
+Resent-To: "SWH Web recipient name" <swh-web-recipient+address-extension@example.com>
+Resent-Date: Wed, 21 Feb 2024 07:04:47 +0800
+X-Spam-Flag: yes
+X-Spam-Level: ********************
+X-GND-Spam-Score: 300
+X-GND-Status: SPAM
+X-GND-Sasl: sender-alias@example.com
+
+This is a MIME-encapsulated message.
+
+--AD724C0936.1702781520/mslow1.mail.example.com
+Content-Description: Notification
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+This is the mail system at host mslow1.mail.example.com.
+
+I'm sorry to have to inform you that your message could not
+be delivered to one or more recipients. It's attached below.
+
+For further assistance, please send mail to postmaster.
+
+If you do so, please include this problem report. You can
+delete your own text from the attached returned message.
+
+                   The mail system
+
+<original-recipient@example.com>: host mail.example.com[127.0.0.1] said: 451 4.3.0
+    <original-recipient@example.com>: Temporary lookup failure (in reply to RCPT TO command)
+
+--AD724C0936.1702781520/mslow1.mail.example.com
+Content-Description: Delivery report
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; mslow1.mail.example.com
+X-Postfix-Queue-ID: AD724C0936
+X-Postfix-Sender: rfc822; sender-alias@example.com
+Arrival-Date: Tue, 12 Dec 2023 02:12:46 +0000 (UTC)
+
+Final-Recipient: rfc822; original-recipient@example.com
+Original-Recipient: rfc822;original-recipient@example.com
+Action: failed
+Status: 4.3.0
+Remote-MTA: dns; mail.example.com
+Diagnostic-Code: smtp; 451 4.3.0 <original-recipient@example.com>: Temporary lookup failure
+
+--AD724C0936.1702781520/mslow1.mail.example.com
+Content-Description: Undelivered Message
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 8bit
+
+Return-Path: <sender-alias@example.com>
+Received: from relay9-d.mail.example.com (unknown [127.0.0.1])
+	by mslow1.mail.example.com (Postfix) with ESMTP id AD724C0936
+	for <original-recipient@example.com>; Tue, 12 Dec 2023 02:12:46 +0000 (UTC)
+Received: by mail.example.com (Postfix) with ESMTPSA id 1705BFF805;
+	Tue, 12 Dec 2023 02:12:42 +0000 (UTC)
+Message-ID: <38f2c9741e6251dd0a4e5f767e20e468f383d3e9.camel@softwareheritage.org>
+Subject: Software Heritage archival notification for git.example.com
+From: Sender <sender-alias@example.com>
+Reply-To:
+	swh-web-recipient+address-extension@example.com,
+	Software Heritage Archival Moderators
+	 <sender-alias@example.com>, Original Recipient <original-recipient@example.com>, Original Recipient
+	 <original-recipient-other-domain@example.com>
+To: Original Recipient <original-recipient@example.com>, Original Recipient <original-recipient-other-domain@example.com>
+Cc:
+	swh-web-recipient+address-extension@example.com
+Organization: Software Heritage
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Tue, 12 Dec 2023 10:12:34 +0800
+MIME-Version: 1.0
+User-Agent: Evolution 3.50.2-1 
+X-GND-Sasl: sender-alias@example.com
+
+Hello Original Recipient,
+
+The mission of Software Heritage is to collect, preserve and share all
+the publicly available source code: https://www.softwareheritage.org
+
+We have received a request to add the forge hosted at the URL below
+to the list of software origins that are archived, and it is our
+understanding that you are or know the contact person for this forge.
+
+https://git.example.com/
+
+In order to archive the forge contents, we will have to periodically
+pull the public repositories it contains and clone them into the
+Software Heritage archive. FAQs for our processes are available:
+
+https://docs.softwareheritage.org/user/faq/#add-forge-now
+https://www.softwareheritage.org/faq/
+
+Please let us know if there are any issues to consider before
+we launch the archival of the public repositories hosted on your
+infrastructure. Please use "Reply all" to ensure our system will
+process your answer properly.
+
+In the absence of an answer to this message, we will start to archive
+your forge in the coming weeks. Only the publicly accessible
+repositories will be archived.
+
+Thank you in advance for your help.
+
+Kind regards,
+The Software Heritage team
+
+--=20
+bye,
+pabs
+
+https://wiki.softwareheritage.org/wiki/User:PaulWise
+
+--AD724C0936.1702781520/mslow1.mail.example.com--
