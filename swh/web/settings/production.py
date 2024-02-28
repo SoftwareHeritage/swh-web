@@ -9,11 +9,14 @@ Django production settings for swh-web.
 
 import django
 
+from swh.web.config import DEFAULT_CONFIG
+
 from .common import (
     CACHES,
     DEBUG,
     MIDDLEWARE,
     REST_FRAMEWORK,
+    SECRET_KEY,
     WEBPACK_LOADER,
     swh_web_config,
 )
@@ -71,3 +74,9 @@ DATABASES = {
 }
 
 WEBPACK_LOADER["DEFAULT"]["CACHE"] = not DEBUG
+
+if SECRET_KEY == DEFAULT_CONFIG["secret_key"][-1]:
+    raise ValueError(
+        "The SECRET_KEY value matches the development default, "
+        "check the contents of SWH_CONFIG_FILENAME"
+    )
