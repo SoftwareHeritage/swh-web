@@ -57,6 +57,29 @@ fs.readdirSync(appsDir).forEach(app => {
   }
 });
 
+const mathjaxExtensionsLicenses = {};
+
+const mathjaxTexExtensionsPath = path.join(nodeModules, 'mathjax/es5/input/tex/extensions');
+const mathjaxMMLExtensionsPath = path.join(nodeModules, 'mathjax/es5/input/mml/extensions');
+
+for (const mathjaxExtData of [
+  {'extsType': 'tex', 'extsPath': mathjaxTexExtensionsPath},
+  {'extsType': 'mml', 'extsPath': mathjaxMMLExtensionsPath}]) {
+  fs.readdirSync(mathjaxExtData['extsPath']).forEach(extension => {
+    if (extension.endsWith('.js')) {
+      mathjaxExtensionsLicenses[`js/mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`] = [
+        {
+          'id': `mathjax/es5/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
+          'path': `./node_modules/mathjax/es5/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
+          'spdxLicenseExpression': 'Apache-2.0',
+          'licenseFilePath': './node_modules/mathjax/LICENSE'
+
+        }
+      ];
+    }
+  });
+}
+
 // common loaders for css related assets (css, sass)
 const cssLoaders = [
   MiniCssExtractPlugin.loader,
@@ -388,6 +411,18 @@ module.exports = {
         {
           from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
           to: path.resolve(__dirname, '../../static/fonts/[name][ext]')
+        },
+        {
+          from: path.resolve(nodeModules, 'mathjax/es5/input/tex/extensions/'),
+          to: path.resolve(__dirname, '../../static/js/mathjax/input/tex/extensions/')
+        },
+        {
+          from: path.resolve(nodeModules, 'mathjax/es5/input/mml/extensions/'),
+          to: path.resolve(__dirname, '../../static/js/mathjax/input/mml/extensions/')
+        },
+        {
+          from: path.resolve(nodeModules, 'mathjax/es5/sre/mathmaps/'),
+          to: path.resolve(__dirname, '../../static/js/mathjax/sre/mathmaps/')
         }
       ]
     }),
@@ -447,7 +482,8 @@ module.exports = {
               'spdxLicenseExpression': 'BSD-3-Clause',
               'licenseFilePath': 'https://github.com/matomo-org/matomo/blob/master/js/LICENSE.txt'
             }
-          ]
+          ],
+          ...mathjaxExtensionsLicenses
         }
       )
     }),

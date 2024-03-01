@@ -20,6 +20,11 @@ export async function typesetMath() {
       displayMath: [ ['$$', '$$'], ['\\[', '\\]'] ],
       processEscapes: true,
       processEnvironments: true
+    },
+    loader: {
+      paths: {
+        mathjax: staticAsset('js/mathjax')
+      }
     }
   };
 
