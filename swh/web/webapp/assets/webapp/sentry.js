@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/browser';
 // loaded.
 export function sentryInit(sentryDsn) {
   if (sentryDsn !== undefined) {
-    Sentry.init({dsn: sentryDsn});
+    Sentry.init({dsn: sentryDsn, ignoreErrors: ['ChunkLoadError']});
   }
 }
 
