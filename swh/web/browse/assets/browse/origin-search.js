@@ -179,6 +179,7 @@ async function searchOrigins(searchUrl) {
 async function doSearch() {
   $('#swh-no-result').hide();
   const searchQueryText = $('#swh-origins-url-patterns').val();
+  const visitType = $('#swh-search-visit-type').val();
   inSearch = true;
   if (searchQueryText.startsWith('swh:')) {
     try {
@@ -199,10 +200,14 @@ async function doSearch() {
       $('#swh-no-result').text(data.reason);
       $('#swh-no-result').show();
     }
-  } else if (await isArchivedOrigin(searchQueryText)) {
+  } else if (await isArchivedOrigin(searchQueryText, visitType)) {
     // redirect to the browse origin
-    window.location.href =
+    let browseOriginUrl =
       `${Urls.browse_origin()}?origin_url=${encodeURIComponent(searchQueryText)}`;
+    if (visitType && visitType !== 'any') {
+      browseOriginUrl += `&visit_type=${visitType}`;
+    }
+    window.location.href = browseOriginUrl;
   } else {
     // otherwise, proceed with origins search irrespective of the error
     $('#swh-origin-search-results').show();

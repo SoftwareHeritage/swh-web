@@ -115,13 +115,18 @@ export function validateUrl(url, allowedProtocols = []) {
   return validUrl ? originUrl : null;
 }
 
-export async function isArchivedOrigin(originPath) {
+export async function isArchivedOrigin(originPath, visitType) {
   if (!validateUrl(originPath)) {
     // Not a valid URL, return immediately
     return false;
   } else {
     const response = await fetch(Urls.api_1_origin(originPath));
-    return response.ok && response.status === 200; // Success response represents an archived origin
+    if (!response.ok || response.status !== 200) {
+      return false;
+    } else {
+      const originData = await response.json();
+      return !visitType || visitType === 'any' || originData.visit_types.includes(visitType);
+    }
   }
 }
 

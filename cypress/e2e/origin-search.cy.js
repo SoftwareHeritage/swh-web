@@ -339,6 +339,21 @@ describe('Test origin-search', function() {
     });
   });
 
+  it('should redirect to browse origin with selected visit type when search pattern is equal to origin URL', function() {
+    const searchPattern = 'https://example.org/project/multiple/visit/types';
+    for (const visitType of ['git', 'git-checkout']) {
+      cy.get('#swh-origins-url-patterns')
+        .type(searchPattern);
+      cy.get('#swh-search-visit-type')
+        .select(visitType);
+      cy.get('.swh-search-icon')
+        .click();
+      cy.url().should('include', `/browse/origin/directory/?origin_url=${searchPattern}&visit_type=${visitType}`);
+      cy.get('#swh-origin-visit-type').should('have.value', visitType);
+      cy.visit(url);
+    }
+  });
+
   it('should encode ? in origin URL provided as argument in latest visit URL queried by XHR', function() {
     // origin added in tests data by Python
     const originUrl = 'https://example.org/project/download.php?version=2.0';
