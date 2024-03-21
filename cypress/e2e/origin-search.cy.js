@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2022  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -202,7 +202,10 @@ describe('Test origin-search', function() {
         cy.wait('@originMetadataSearch').then((req) => {
           expect(req.response.body).to.deep.equal(
             [
-              {'url': 'https://github.com/wcoder/highlightjs-line-numbers.js'}
+              {
+                'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
+                'visit_types': ['git']
+              }
             ]
             // origins are defined in _TEST_ORIGINS variable in swh/web/tests/data.py
           );

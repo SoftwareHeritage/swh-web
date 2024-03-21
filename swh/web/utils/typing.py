@@ -19,9 +19,7 @@ class OriginInfo(TypedDict):
     """Visit types associated to the origin"""
 
 
-class OriginMetadataInfo(TypedDict):
-    url: str
-    """URL of the origin"""
+class OriginMetadataInfo(OriginInfo):
     metadata: Dict[str, Any]
     """Origin metadata associated to the origin"""
 

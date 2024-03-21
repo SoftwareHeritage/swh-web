@@ -359,7 +359,9 @@ def search_origin_metadata(
             metadata_pattern=fulltext,
             limit=limit,
         )
+
         origin_urls = [r["url"] for r in page_result.results]
+        visit_types = {r["url"]: r["visit_types"] for r in page_result.results}
 
         if return_metadata:
             metadata = {
@@ -384,6 +386,7 @@ def search_origin_metadata(
                 conjunction=[fulltext], limit=limit
             )
         ]
+        visit_types = {}
 
     origins = storage.origin_get([match["id"] for match in matches])
 
@@ -401,7 +404,13 @@ def search_origin_metadata(
         del match["id"]
         if not return_metadata:
             match.pop("metadata", None)
-        results.append(OriginMetadataInfo(url=origin.url, metadata=match))
+        results.append(
+            OriginMetadataInfo(
+                url=origin.url,
+                visit_types=visit_types.get(origin.url, []),
+                metadata=match,
+            )
+        )
 
     return results
 

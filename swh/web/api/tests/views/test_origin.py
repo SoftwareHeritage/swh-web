@@ -10,8 +10,6 @@ import json
 from hypothesis import given
 import pytest
 
-from swh.indexer.storage.model import OriginIntrinsicMetadataRow
-from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
 from swh.search.exc import SearchQuerySyntaxError
 from swh.search.interface import PagedResult
@@ -740,7 +738,7 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
-def test_api_origin_metadata_search(api_client, mocker, backend):
+def test_api_origin_metadata_search(api_client, mocker, tests_data, backend):
     mock_config = mocker.patch("swh.web.utils.archive.config")
     mock_config.get_config.return_value = {
         "search_config": {"metadata_backend": backend}
@@ -756,6 +754,11 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         [
             {
                 "url": origin_url,
+                "visit_types": (
+                    tests_data["search"].origin_get(origin_url).get("visit_types", [])
+                    if backend == "swh-search"
+                    else []
+                ),
                 "metadata": {
                     "from_directory": ORIGIN_MASTER_DIRECTORY[origin_url],
                     "tool": {
@@ -784,7 +787,7 @@ def test_api_origin_metadata_search(api_client, mocker, backend):
         assert response == expected
 
 
-def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker):
+def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker, tests_data):
     """Tests the origin search for results present in swh-search but not
     returned by ``origin_intrinsic_metadata_get`` (which happens when results
     come from extrinsic metadata).
@@ -810,7 +813,13 @@ def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker):
 
     expected_data = sorted(
         [
-            {"url": origin_url, "metadata": {}}
+            {
+                "url": origin_url,
+                "visit_types": tests_data["search"].origin_get(origin_url)[
+                    "visit_types"
+                ],
+                "metadata": {},
+            }
             for origin_url in sorted(ORIGIN_MASTER_REVISION.keys())
         ],
         key=lambda d: d["url"],
@@ -851,27 +860,38 @@ def test_api_origin_metadata_search_url_only(api_client, mocker, backend, fields
     assert expected_data == rv.data
 
 
-def test_api_origin_metadata_search_limit(api_client, mocker):
-    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
-    oimsft = mock_idx_storage.origin_intrinsic_metadata_search_fulltext
+@pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
+def test_api_origin_metadata_search_limit(api_client, mocker, backend):
+    mock_config = mocker.patch("swh.web.utils.archive.config")
+    mock_config.get_config.return_value = {
+        "search_config": {"metadata_backend": backend}
+    }
 
-    oimsft.side_effect = lambda conjunction, limit: [
-        OriginIntrinsicMetadataRow(
-            id=origin_url,
-            from_directory=hash_to_bytes(directory),
-            indexer_configuration_id=INDEXER_TOOL["id"],
-            metadata={ORIGIN_METADATA_KEY: ORIGIN_METADATA_VALUE},
-            mappings=[],
+    from swh.web.utils import archive
+
+    if backend == "swh-search":
+        spied_search = mocker.spy(archive.search, "origin_search")
+    else:
+        spied_search = mocker.spy(
+            archive.idx_storage, "origin_intrinsic_metadata_search_fulltext"
         )
-        for origin_url, directory in ORIGIN_MASTER_DIRECTORY.items()
-    ]
+
+    def _check_search_call(limit):
+        if backend == "swh-search":
+            spied_search.assert_called_with(
+                metadata_pattern=ORIGIN_METADATA_VALUE, limit=limit
+            )
+        else:
+            spied_search.assert_called_with(
+                conjunction=[ORIGIN_METADATA_VALUE], limit=limit
+            )
 
     url = reverse(
         "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
-    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=70)
+    _check_search_call(limit=70)
 
     url = reverse(
         "api-1-origin-metadata-search",
@@ -879,7 +899,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
-    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=10)
+    _check_search_call(limit=10)
 
     url = reverse(
         "api-1-origin-metadata-search",
@@ -887,7 +907,7 @@ def test_api_origin_metadata_search_limit(api_client, mocker):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == len(ORIGIN_MASTER_REVISION)
-    oimsft.assert_called_with(conjunction=[ORIGIN_METADATA_VALUE], limit=100)
+    _check_search_call(limit=100)
 
 
 def test_api_origin_intrinsic_metadata(api_client, origin):
