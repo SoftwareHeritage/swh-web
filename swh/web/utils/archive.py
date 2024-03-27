@@ -808,17 +808,19 @@ def lookup_revision_with_context(
     else:
         sha1_git_root_bin = sha1_git_root["id"]
 
-    revision_log = storage.revision_log([sha1_git_root_bin], limit=limit)
+    revision_log = [
+        Revision.from_dict(rev) if isinstance(rev, dict) else rev
+        for rev in storage.revision_log([sha1_git_root_bin], limit=limit)
+    ]
 
     parents: Dict[str, List[str]] = {}
     children = defaultdict(list)
 
     for rev in revision_log:
-        rev_id = rev["id"]
-        parents[rev_id] = []
-        for parent_id in rev["parents"]:
-            parents[rev_id].append(parent_id)
-            children[parent_id].append(rev_id)
+        parents[rev.id] = []
+        for parent_id in rev.parents:
+            parents[rev.id].append(parent_id)
+            children[parent_id].append(rev.id)
 
     if revision.id not in parents:
         raise NotFoundExc(f"Revision {sha1_git} is not an ancestor of {sha1_git_root}")

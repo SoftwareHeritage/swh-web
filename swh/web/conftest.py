@@ -35,7 +35,7 @@ from swh.model.hashutil import (
     hash_to_bytes,
     hash_to_hex,
 )
-from swh.model.model import Content, Directory
+from swh.model.model import Content, Directory, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.origin import origin_get_latest_visit_status
@@ -578,13 +578,19 @@ def _ancestor_revisions_data():
     master_revisions = []
     children = defaultdict(list)
     init_rev_found = False
+    # TODO: remove this when the migration to new revision_walker/revision_log
+    # is done in swh-storage (so probably when swh-storage v3 is published)
+    revisions = (
+        Revision.from_dict(rev) if isinstance(rev, dict) else rev
+        for rev in revisions_walker
+    )
     # get revisions only authored in the master branch
-    for rev in revisions_walker:
-        for rev_p in rev["parents"]:
-            children[rev_p].append(rev["id"])
+    for rev in revisions:
+        for rev_p in rev.parents:
+            children[rev_p].append(rev.id)
         if not init_rev_found:
             master_revisions.append(rev)
-        if not rev["parents"]:
+        if not rev.parents:
             init_rev_found = True
     return master_revisions, children
 
@@ -601,11 +607,11 @@ def ancestor_revisions():
     # in the master branch
     ancestor_rev_idx = random.choice(list(range(1, len(master_revisions) - 1)))
     ancestor_rev = master_revisions[ancestor_rev_idx]
-    ancestor_child_revs = children[ancestor_rev["id"]]
+    ancestor_child_revs = children[ancestor_rev.id]
 
     return {
-        "sha1_git_root": hash_to_hex(root_rev["id"]),
-        "sha1_git": hash_to_hex(ancestor_rev["id"]),
+        "sha1_git_root": hash_to_hex(root_rev.id),
+        "sha1_git": hash_to_hex(ancestor_rev.id),
         "children": [hash_to_hex(r) for r in ancestor_child_revs],
     }
 
@@ -617,12 +623,18 @@ def _non_ancestor_revisions_data():
     revisions_walker = _get_origin_dfs_revisions_walker(get_tests_data())
     merge_revs = []
     children = defaultdict(list)
+    # TODO: remove this when the migration to new revision_walker/revision_log
+    # is done in swh-storage (so probably when swh-storage v3 is published)
+    revisions = (
+        Revision.from_dict(rev) if isinstance(rev, dict) else rev
+        for rev in revisions_walker
+    )
     # get all merge revisions
-    for rev in revisions_walker:
-        if len(rev["parents"]) > 1:
+    for rev in revisions:
+        if len(rev.parents) > 1:
             merge_revs.append(rev)
-        for rev_p in rev["parents"]:
-            children[rev_p].append(rev["id"])
+        for rev_p in rev.parents:
+            children[rev_p].append(rev.id)
     return merge_revs, children
 
 
@@ -636,8 +648,8 @@ def non_ancestor_revisions():
     random.shuffle(merge_revs)
     selected_revs = None
     for merge_rev in merge_revs:
-        if all(len(children[rev_p]) == 1 for rev_p in merge_rev["parents"]):
-            selected_revs = merge_rev["parents"]
+        if all(len(children[rev_p]) == 1 for rev_p in merge_rev.parents):
+            selected_revs = merge_rev.parents
 
     return {
         "sha1_git_root": hash_to_hex(selected_revs[0]),
