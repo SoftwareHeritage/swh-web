@@ -11,7 +11,7 @@ django-cors-headers
 # https://github.com/ierror/django-js-reverse/issues/112
 django-js-reverse-swh
 djangorestframework
-django-webpack-loader
+django-webpack-loader >= 3
 docutils
 htmlmin
 iso8601
