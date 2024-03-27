@@ -489,7 +489,7 @@ def test_api_origin_by_url(api_client, archive_data, tests_data, origin):
     url = reverse("api-1-origin", url_args={"origin_url": origin_url})
     rv = check_api_get_responses(api_client, url, status_code=200)
     expected_origin = archive_data.origin_get([origin_url])[0]
-    expected_origin["visit_types"] = set(
+    expected_origin["visit_types"] = list(
         tests_data["search"].origin_get(origin_url).get("visit_types", [])
     )
     expected_origin = enrich_origin(expected_origin, rv.wsgi_request)

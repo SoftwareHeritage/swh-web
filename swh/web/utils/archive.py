@@ -189,7 +189,7 @@ def lookup_content_license(q):
 def _origin_info(origin: Origin) -> OriginInfo:
     origin_dict = origin.to_dict()
     origin_data = search.origin_get(origin.url) or {}
-    origin_dict["visit_types"] = set(origin_data.get("visit_types", []))
+    origin_dict["visit_types"] = list(origin_data.get("visit_types", []))
     return converters.from_origin(origin_dict)
 
 

@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 
 from typing_extensions import TypedDict
 
@@ -15,7 +15,7 @@ from swh.model.swhids import ObjectType
 class OriginInfo(TypedDict):
     url: str
     """URL of the origin"""
-    visit_types: Set[str]
+    visit_types: List[str]
     """Visit types associated to the origin"""
 
 

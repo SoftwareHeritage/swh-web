@@ -249,7 +249,7 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
             branches=branches,
             branches_url=branches_url,
             is_empty=is_empty,
-            origin_info={"url": origin_url, "visit_types": {"git"}},
+            origin_info={"url": origin_url, "visit_types": ["git"]},
             origin_visits_url=origin_visits_url,
             release=None,
             release_alias=False,
@@ -272,7 +272,6 @@ def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_vis
             expected["revision_info"]["revision_url"] = gen_revision_url(
                 revision_id, snapshot_context
             )
-
         assert snapshot_context == expected
 
         _check_branch_release_revision_parameters(
