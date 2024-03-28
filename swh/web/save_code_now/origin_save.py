@@ -5,7 +5,6 @@
 
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-import json
 import logging
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
@@ -40,12 +39,7 @@ from swh.web.save_code_now.models import (
     SaveUnauthorizedOrigin,
 )
 from swh.web.utils import archive, parse_iso8601_date_to_utc
-from swh.web.utils.exc import (
-    BadInputExc,
-    ForbiddenExc,
-    NotFoundExc,
-    sentry_capture_exception,
-)
+from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc
 from swh.web.utils.typing import OriginExistenceCheckInfo, SaveOriginRequestInfo
 
 logger = logging.getLogger(__name__)
@@ -722,10 +716,10 @@ def refresh_save_origin_request_statuses() -> List[SaveOriginRequestInfo]:
     Non-terminal SOR are requests whose status is **accepted** and their task status are
     either **created**, **pending**, **scheduled** or **running**.
 
-    This shall compute this list of SOR, checks their status in the scheduler and
-    optionally elasticsearch for their current status. Then update those in db.
+    This shall compute this list of save requests, checks their status in the scheduler,
+    then update those in database.
 
-    Finally, this returns the refreshed information on those SOR.
+    Finally, this returns the refreshed information on those save requests.
     """
     save_requests = get_save_origin_requests_to_update()
 
@@ -790,9 +784,7 @@ def get_save_origin_request(request_id: int) -> SaveOriginRequestInfo:
     return update_save_origin_requests_from_queryset(sors)[0]
 
 
-def get_save_origin_task_info(
-    save_request_id: int, full_info: bool = True
-) -> Dict[str, Any]:
+def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
     """
     Get detailed information about an accepted save origin request
     and its associated loading task.
@@ -802,7 +794,6 @@ def get_save_origin_task_info(
 
     Args:
         save_request_id: identifier of a save origin request
-        full_info: whether to return detailed info for staff users
 
     Returns:
         A dictionary with the following keys:
@@ -815,15 +806,6 @@ def get_save_origin_task_info(
             - **ended**: loading task termination date
             - **status**: loading task execution status
             - **visit_status**: Actual visit status
-
-        Depending on the availability of the task logs in the elasticsearch
-        cluster of Software Heritage, the returned dictionary may also
-        contain the following keys:
-
-            - **name**: associated celery task name
-            - **message**: relevant log message from task execution
-            - **duration**: task execution time (only if it succeeded)
-            - **worker**: name of the worker that executed the task
     """
     try:
         save_request = SaveOriginRequest.objects.get(id=save_request_id)
@@ -857,81 +839,6 @@ def get_save_origin_task_info(
     del task_info["metadata"]
     # Enrich the task info with the loading visit status
     task_info["visit_status"] = save_request.visit_status
-
-    es_workers_index_url = get_config()["es_workers_index_url"]
-    if not es_workers_index_url:
-        return task_info
-    es_workers_index_url += "/_search"
-
-    if save_request.visit_date:
-        min_ts = save_request.visit_date
-        max_ts = min_ts + timedelta(days=7)
-    else:
-        min_ts = save_request.request_date
-        max_ts = min_ts + timedelta(days=MAX_THRESHOLD_DAYS)
-    min_ts_unix = int(min_ts.timestamp()) * 1000
-    max_ts_unix = int(max_ts.timestamp()) * 1000
-
-    save_task_status = _save_task_status[task["status"]]
-    priority = "3" if save_task_status == SAVE_TASK_FAILED else "6"
-
-    query = {
-        "bool": {
-            "must": [
-                {"match_phrase": {"syslog.priority": {"query": priority}}},
-                {
-                    "match_phrase": {
-                        "journald.custom.swh_task_id": {"query": task_run["backend_id"]}
-                    }
-                },
-                {
-                    "range": {
-                        "@timestamp": {
-                            "gte": min_ts_unix,
-                            "lte": max_ts_unix,
-                            "format": "epoch_millis",
-                        }
-                    }
-                },
-            ]
-        }
-    }
-
-    try:
-        response = requests.post(
-            es_workers_index_url,
-            json={"query": query, "sort": ["@timestamp"]},
-            timeout=30,
-        )
-        results = json.loads(response.text)
-        if results["hits"]["total"]["value"] >= 1:
-            task_run_info = results["hits"]["hits"][-1]["_source"]
-            journald_custom = task_run_info.get("journald", {}).get("custom", {})
-            task_info["duration"] = journald_custom.get(
-                "swh_logging_args_runtime", "not available"
-            )
-            task_info["message"] = task_run_info.get("message", "not available")
-            task_info["name"] = journald_custom.get("swh_task_name", "not available")
-            task_info["worker"] = task_run_info.get("host", {}).get("hostname")
-
-    except Exception as exc:
-        logger.warning("Request to Elasticsearch failed\n%s", exc)
-        sentry_capture_exception(exc)
-
-    if not full_info:
-        for field in ("id", "backend_id", "worker"):
-            # remove some staff only fields
-            task_info.pop(field, None)
-        if "message" in task_run and "Loading failure" in task_run["message"]:
-            # hide traceback for non staff users, only display exception
-            message_lines = task_info["message"].split("\n")
-            message = ""
-            for line in message_lines:
-                if line.startswith("Traceback"):
-                    break
-                message += f"{line}\n"
-            message += message_lines[-1]
-            task_info["message"] = message
 
     return task_info
 

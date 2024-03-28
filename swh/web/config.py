@@ -129,7 +129,6 @@ DEFAULT_CONFIG = {
         },
     ),
     "e2e_tests_mode": ("bool", False),
-    "es_workers_index_url": ("string", ""),
     "history_counters_url": (
         "string",
         (

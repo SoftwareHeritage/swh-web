@@ -1,21 +1,16 @@
-# Copyright (C) 2019-2021  The Software Heritage developers
+# Copyright (C) 2019-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from datetime import datetime, timedelta, timezone
-from functools import partial
-import re
 from typing import Optional
 import uuid
 
 import iso8601
 import pytest
-import requests
 
-from swh.core.pytest_plugin import get_response_cb
 from swh.scheduler.utils import create_oneshot_task_dict
-from swh.web.config import get_config
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_TASK_FAILED,
@@ -46,20 +41,9 @@ from swh.web.utils.typing import (
     SaveOriginRequestInfo,
 )
 
-_es_url = "http://esnode1.internal.softwareheritage.org:9200"
-_es_workers_index_url = "%s/swh_workers-*" % _es_url
-
 _origin_url = "https://gitlab.com/inkscape/inkscape"
 _visit_type = "git"
 _task_id = 1
-
-
-@pytest.fixture(autouse=True)
-def requests_mock_datadir(datadir, requests_mock_datadir):
-    """Override default behavior to deal with post method"""
-    cb = partial(get_response_cb, datadir=datadir)
-    requests_mock_datadir.post(re.compile("https?://"), body=cb)
-    return requests_mock_datadir
 
 
 @pytest.mark.django_db
@@ -68,8 +52,8 @@ def test_get_save_origin_archived_task_info(swh_scheduler):
 
 
 @pytest.mark.django_db
-def test_get_save_origin_task_info_without_es(swh_scheduler):
-    _get_save_origin_task_info_test(swh_scheduler, es_available=False)
+def test_get_save_origin_task_info(swh_scheduler):
+    _get_save_origin_task_info_test(swh_scheduler)
 
 
 def _fill_scheduler_db(
@@ -129,15 +113,9 @@ def test_get_savable_visit_types(swh_scheduler):
 
 
 def _get_save_origin_task_info_test(
-    swh_scheduler, task_archived=False, es_available=True, full_info=True
+    swh_scheduler,
+    task_archived=False,
 ):
-    swh_web_config = get_config()
-
-    if es_available:
-        swh_web_config.update({"es_workers_index_url": _es_workers_index_url})
-    else:
-        swh_web_config.update({"es_workers_index_url": ""})
-
     sor = SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -149,11 +127,7 @@ def _get_save_origin_task_info_test(
 
     task, task_run = _fill_scheduler_db(swh_scheduler, task_archived=task_archived)
 
-    es_response = requests.post("%s/_search" % _es_workers_index_url).json()
-
-    task_exec_data = es_response["hits"]["hits"][-1]["_source"]
-
-    sor_task_info = get_save_origin_task_info(sor.id, full_info=full_info)
+    sor_task_info = get_save_origin_task_info(sor.id)
 
     expected_result = (
         {
@@ -171,28 +145,15 @@ def _get_save_origin_task_info_test(
         else {}
     )
 
-    if es_available and not task_archived:
-        expected_result.update(
-            {
-                "message": task_exec_data["message"],
-                "name": task_exec_data["swh_task_name"],
-                "worker": task_exec_data["hostname"],
-            }
-        )
-
-    if not full_info:
-        expected_result.pop("id", None)
-        expected_result.pop("backend_id", None)
-        expected_result.pop("worker", None)
-        if "message" in expected_result:
-            message = ""
-            message_lines = expected_result["message"].split("\n")
-            for line in message_lines:
-                if line.startswith("Traceback"):
-                    break
-                message += f"{line}\n"
-            message += message_lines[-1]
-            expected_result["message"] = message
+    if "message" in expected_result:
+        message = ""
+        message_lines = expected_result["message"].split("\n")
+        for line in message_lines:
+            if line.startswith("Traceback"):
+                break
+            message += f"{line}\n"
+        message += message_lines[-1]
+        expected_result["message"] = message
 
     assert sor_task_info == expected_result
 

@@ -89,9 +89,7 @@ def origin_save_requests_list(request, status):
 
 
 def save_origin_task_info(request, save_request_id):
-    request_info = get_save_origin_task_info(
-        save_request_id, full_info=request.user.is_staff
-    )
+    request_info = get_save_origin_task_info(save_request_id)
     for date_field in ("scheduled", "started", "ended"):
         if date_field in request_info and request_info[date_field] is not None:
             request_info[date_field] = request_info[date_field].isoformat()
