@@ -54,6 +54,16 @@ repos:
         pass_filenames: false
         language: system
         types: [python]
+      - id: twine-check
+        name: twine check
+        description: call twine check when pushing an annotated release tag
+        entry: bash -c "ref=$(git describe) &&
+          [[ $ref =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] &&
+          (python3 -m build --sdist && twine check $(ls -t dist/* | head -1)) || true"
+        pass_filenames: false
+        stages: [pre-push]
+        language: python
+        additional_dependencies: [twine, build]
       - id: eslint
         name: eslint
         entry: node_modules/.bin/eslint -c assets/config/.eslintrc
