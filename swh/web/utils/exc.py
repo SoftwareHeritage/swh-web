@@ -12,8 +12,7 @@ import sentry_sdk
 from django.core import exceptions
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import conditional_escape, escape
 from rest_framework.exceptions import APIException
 from rest_framework.renderers import JSONRenderer
 
@@ -109,7 +108,7 @@ def _generate_error_page(
             {
                 "error_code": error_code,
                 "error_message": http_status_code_message[error_code],
-                "error_description": mark_safe(error_description),
+                "error_description": error_description,
             },
             status=error_code,
         )
@@ -200,9 +199,9 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
         error_code = 403
     if isinstance(exc, NotFoundExc):
         error_code = 404
-    else:
-        # some NotFoundExc texts have HTML links we want to preserve
-        error_description = escape(error_description)
+
+    # some NotFoundExc texts have HTML links we want to preserve
+    error_description = conditional_escape(error_description)
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:
         resp.traceback = error_description  # type: ignore[attr-defined]

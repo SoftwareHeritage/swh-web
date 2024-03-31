@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 import chardet
 import magic
 
-from django.utils.html import escape
+from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
 
 from swh.web.config import get_config
@@ -291,11 +291,17 @@ def gen_link(
     attrs = " "
     if link_attrs:
         for k, v in link_attrs.items():
-            attrs += '%s="%s" ' % (k, v)
+            if k != escape(k):
+                raise ValueError("weird attribute passed to gen_link")
+            attrs += '%s="%s" ' % (k, escape(v))
     if not link_text:
         link_text = url
-    link = '<a%shref="%s">%s</a>' % (attrs, escape(url), escape(link_text))
-    return mark_safe(link)
+    return format_html(
+        '<a{attrs}href="{url}">{link_text}</a>',
+        attrs=mark_safe(attrs),
+        url=url,
+        link_text=link_text,
+    )
 
 
 def _snapshot_context_query_params(

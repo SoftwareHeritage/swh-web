@@ -685,3 +685,17 @@ def test_directory_view_missing_readme_bytes(client, archive_data, person, date)
         template_used="browse-directory.html",
     )
     assert_contains(resp, "Readme bytes are not available")
+
+
+def test_directory_notfound_xss(client):
+    dir_url = reverse(
+        "browse-origin-directory",
+        query_params={"origin_url": "<script>alert(1)</script>"},
+    )
+
+    resp = check_html_get_response(
+        client, dir_url, status_code=404, template_used="error.html"
+    )
+
+    assert_not_contains(resp, "<script>alert(1)</script>", status_code=404)
+    assert_contains(resp, "&lt;script&gt;", status_code=404)
