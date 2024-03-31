@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from swh.model.hashutil import hash_to_bytes
@@ -352,14 +353,15 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             )
         except NotFoundExc as e:
             raw_rev_url = reverse("browse-revision", url_args={"sha1_git": sha1_git})
-            error_message = (
+            error_message = format_html(
                 "The Software Heritage archive has a revision "
                 "with the hash you provided but the origin "
-                "mentioned in your request appears broken: %s. "
+                "mentioned in your request appears broken: {}. "
                 "Please check the URL and try again.\n\n"
                 "Nevertheless, you can still browse the revision "
-                "without origin information: %s"
-                % (gen_link(origin_url), gen_link(raw_rev_url))
+                "without origin information: {}",
+                gen_link(origin_url),
+                gen_link(raw_rev_url),
             )
             if str(e).startswith("Origin"):
                 raise NotFoundExc(error_message)

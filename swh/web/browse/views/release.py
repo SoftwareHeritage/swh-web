@@ -7,6 +7,7 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.utils.html import format_html
 
 from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
@@ -60,14 +61,15 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             )
         except NotFoundExc as e:
             raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
-            error_message = (
+            error_message = format_html(
                 "The Software Heritage archive has a release "
                 "with the hash you provided but the origin "
-                "mentioned in your request appears broken: %s. "
+                "mentioned in your request appears broken: {}. "
                 "Please check the URL and try again.\n\n"
                 "Nevertheless, you can still browse the release "
-                "without origin information: %s"
-                % (gen_link(origin_url), gen_link(raw_rel_url))
+                "without origin information: {}",
+                gen_link(origin_url),
+                gen_link(raw_rel_url),
             )
             if str(e).startswith("Origin"):
                 raise NotFoundExc(error_message)

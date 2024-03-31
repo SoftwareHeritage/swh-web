@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional
 
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.html import format_html
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import ObjectType
@@ -303,14 +304,15 @@ def content_display(
                 raw_cnt_url = reverse(
                     "browse-content", url_args={"query_string": query_string}
                 )
-                error_message = (
+                error_message = format_html(
                     "The Software Heritage archive has a content "
                     "with the hash you provided but the origin "
-                    "mentioned in your request appears broken: %s. "
+                    "mentioned in your request appears broken: {}. "
                     "Please check the URL and try again.\n\n"
                     "Nevertheless, you can still browse the content "
-                    "without origin information: %s"
-                    % (gen_link(origin_url), gen_link(raw_cnt_url))
+                    "without origin information: {}",
+                    gen_link(origin_url),
+                    gen_link(raw_cnt_url),
                 )
                 raise NotFoundExc(error_message)
             else:

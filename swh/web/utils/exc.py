@@ -12,7 +12,7 @@ import sentry_sdk
 from django.core import exceptions
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.utils.html import conditional_escape, escape
+from django.utils.html import escape, format_html
 from rest_framework.exceptions import APIException
 from rest_framework.renderers import JSONRenderer
 
@@ -41,7 +41,8 @@ class NotFoundExc(exceptions.ObjectDoesNotExist):
 
     """
 
-    pass
+    def __str__(self):
+        return self.args[0]
 
 
 class ForbiddenExc(exceptions.PermissionDenied):
@@ -188,11 +189,14 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     was raised inside a swh-web browse view.
     """
     sentry_capture_exception(exc)
-    error_code = 500
-    error_description = "%s: %s" % (type(exc).__name__, str(exc))
+
+    error_description = format_html("{}: {}", type(exc).__name__, str(exc))
     if get_config()["debug"]:
-        error_description = traceback.format_exc()
-        logger.error(error_description)
+        traceback_str = traceback.format_exc()
+        logger.error(traceback_str)
+        error_description = escape(traceback_str)
+
+    error_code = 500
     if isinstance(exc, BadInputExc):
         error_code = 400
     if isinstance(exc, ForbiddenExc):
@@ -200,8 +204,6 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     if isinstance(exc, NotFoundExc):
         error_code = 404
 
-    # some NotFoundExc texts have HTML links we want to preserve
-    error_description = conditional_escape(error_description)
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:
         resp.traceback = error_description  # type: ignore[attr-defined]
