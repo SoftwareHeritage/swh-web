@@ -20,7 +20,6 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
-    gen_link,
     prepare_content_for_display,
     request_content,
 )
@@ -302,7 +301,9 @@ def content_display(
         except NotFoundExc as e:
             if str(e).startswith("Origin") and origin_url is not None:
                 raw_cnt_url = reverse(
-                    "browse-content", url_args={"query_string": query_string}
+                    "browse-content",
+                    url_args={"query_string": query_string},
+                    request=request,
                 )
                 error_message = format_html(
                     "The Software Heritage archive has a content "
@@ -311,8 +312,8 @@ def content_display(
                     "Please check the URL and try again.\n\n"
                     "Nevertheless, you can still browse the content "
                     "without origin information: {}",
-                    gen_link(origin_url),
-                    gen_link(raw_cnt_url),
+                    origin_url,
+                    raw_cnt_url,
                 )
                 raise NotFoundExc(error_message)
             else:

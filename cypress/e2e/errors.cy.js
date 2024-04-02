@@ -107,17 +107,19 @@ describe('Test Errors', function() {
         with correct content hash`, function() {
       const url = this.Urls.browse_content(`sha1_git:${origin.content[0].sha1git}`) +
                   `?origin_url=${this.unarchivedRepo.url}`;
-      urlShouldShowError(url, {
-        code: '404',
-        msg: 'The Software Heritage archive has a content ' +
-            'with the hash you provided but the origin ' +
-            'mentioned in your request appears broken: ' +
-            this.unarchivedRepo.url + '. ' +
-            'Please check the URL and try again.\n\n' +
-            'Nevertheless, you can still browse the content ' +
-            'without origin information: ' +
-            '/browse/content/sha1_git:' +
-            origin.content[0].sha1git + '/'
+      cy.visit('/').window().then(win => {
+        urlShouldShowError(url, {
+          code: '404',
+          msg: 'The Software Heritage archive has a content ' +
+              'with the hash you provided but the origin ' +
+              'mentioned in your request appears broken: ' +
+              this.unarchivedRepo.url + '. ' +
+              'Please check the URL and try again.\n\n' +
+              'Nevertheless, you can still browse the content ' +
+              'without origin information: ' +
+              `${win.location.protocol}//${win.location.host}/browse/content/sha1_git:` +
+              origin.content[0].sha1git + '/'
+        });
       });
     });
   });

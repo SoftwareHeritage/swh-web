@@ -13,7 +13,7 @@ from django.utils.html import format_html
 from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
-from swh.web.browse.utils import gen_link, get_directory_entries, get_readme_to_display
+from swh.web.browse.utils import get_directory_entries, get_readme_to_display
 from swh.web.utils import archive, gen_path_info, reverse, swh_object_icons
 from swh.web.utils.exc import (
     NotFoundExc,
@@ -76,7 +76,9 @@ def _directory_browse(
         except NotFoundExc as e:
             if str(e).startswith("Origin") and origin_url is not None:
                 raw_dir_url = reverse(
-                    "browse-directory", url_args={"sha1_git": dir_sha1_git}
+                    "browse-directory",
+                    url_args={"sha1_git": dir_sha1_git},
+                    request=request,
                 )
                 error_message = format_html(
                     "The Software Heritage archive has a directory "
@@ -85,8 +87,8 @@ def _directory_browse(
                     "Please check the URL and try again.\n\n"
                     "Nevertheless, you can still browse the directory "
                     "without origin information: {}",
-                    gen_link(origin_url),
-                    gen_link(raw_dir_url),
+                    origin_url,
+                    raw_dir_url,
                 )
                 raise NotFoundExc(error_message)
             else:

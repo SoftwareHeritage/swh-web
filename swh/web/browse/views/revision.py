@@ -352,7 +352,9 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
-            raw_rev_url = reverse("browse-revision", url_args={"sha1_git": sha1_git})
+            raw_rev_url = reverse(
+                "browse-revision", url_args={"sha1_git": sha1_git}, request=request
+            )
             error_message = format_html(
                 "The Software Heritage archive has a revision "
                 "with the hash you provided but the origin "
@@ -360,8 +362,8 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "Please check the URL and try again.\n\n"
                 "Nevertheless, you can still browse the revision "
                 "without origin information: {}",
-                gen_link(origin_url),
-                gen_link(raw_rev_url),
+                origin_url,
+                raw_rev_url,
             )
             if str(e).startswith("Origin"):
                 raise NotFoundExc(error_message)

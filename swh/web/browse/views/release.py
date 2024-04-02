@@ -60,7 +60,9 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 visit_type=request.GET.get("visit_type"),
             )
         except NotFoundExc as e:
-            raw_rel_url = reverse("browse-release", url_args={"sha1_git": sha1_git})
+            raw_rel_url = reverse(
+                "browse-release", url_args={"sha1_git": sha1_git}, request=request
+            )
             error_message = format_html(
                 "The Software Heritage archive has a release "
                 "with the hash you provided but the origin "
@@ -68,8 +70,8 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 "Please check the URL and try again.\n\n"
                 "Nevertheless, you can still browse the release "
                 "without origin information: {}",
-                gen_link(origin_url),
-                gen_link(raw_rel_url),
+                origin_url,
+                raw_rel_url,
             )
             if str(e).startswith("Origin"):
                 raise NotFoundExc(error_message)
