@@ -151,6 +151,23 @@ def test_directory_request_errors(client, invalid_sha1, unknown_directory):
     )
 
 
+def test_directory_masked(client, mocker, directory, make_masked_object_exception):
+    masked_object_exception = make_masked_object_exception(f"swh:1:dir:{directory}")
+
+    mock_archive = mocker.patch("swh.web.browse.utils.archive")
+    mock_archive.lookup_directory.side_effect = masked_object_exception
+
+    url = reverse("browse-directory", url_args={"sha1_git": directory})
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
+    )
+
+
 def test_directory_with_invalid_path(client, directory):
     path = "foo/bar"
     dir_url = reverse(

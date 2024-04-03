@@ -1,0 +1,38 @@
+{% comment %}
+Copyright (C) 2018-2024  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+
+<div class="swh-http-error">
+  <div class="swh-http-error-head">Error</div>
+  <div class="swh-http-error-code">
+    <img class="hidden-xs swh-image-error"
+         src="{% static 'img/swh-logo.svg' %}"
+         alt="swh logo" />
+    {{ error_code }}
+    <img class="hidden-xs swh-image-error"
+         src="{% static 'img/swh-logo.svg' %}"
+         alt="swh logo" />
+  </div>
+  <h3>{{ error_message }}</h3>
+  {% block error-description %}
+  {% endblock error-description %}
+
+  {% if not iframe_mode %}
+    <div>
+      <a class="btn" onclick="window.history.back();">
+        <i class="mdi mdi-arrow-left" aria-hidden="true"></i>
+        Go back to previous page
+      </a>
+      or
+      <a class="btn" href="{% url 'swh-web-homepage' %}">
+        <i class="mdi mdi-arrow-left" aria-hidden="true"></i>
+        Go back to homepage
+      </a>
+    </div>
+  {% endif %}
+</div>

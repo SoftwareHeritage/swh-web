@@ -12,12 +12,14 @@ import sentry_sdk
 
 from django.core import exceptions
 from django.http import HttpRequest, HttpResponse
+from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.utils.html import escape, format_html
 from rest_framework.exceptions import APIException
 from rest_framework.renderers import JSONRenderer
 
 from swh.core.api import RemoteException, TransientRemoteException
+from swh.storage.exc import MaskedObjectException
 from swh.web.api.renderers import YAMLRenderer
 from swh.web.config import get_config
 
@@ -123,6 +125,61 @@ def _generate_error_page(
         )
 
 
+def masked_to_common_types(exc: MaskedObjectException):
+    """Convert ``exc.masked`` to common types, suitable for
+    JSON and YAML encoding.
+
+    ExtendedSWHID becomes strings and MaskedStatus becomes a dict.
+    """
+    return {
+        str(swhid): [
+            {
+                "request": status.request,
+                "status": status.state.name.lower().replace("_", "-"),
+            }
+            for status in statuses
+        ]
+        for swhid, statuses in exc.masked.items()
+    }
+
+
+def _generate_masked_object_page(
+    request: HttpRequest, exc: MaskedObjectException
+) -> HttpResponse:
+    error_code = 403  # Forbidden
+    error_data = {
+        "error": http_status_code_message[error_code],
+        "reason": str(exc),
+        "masked": masked_to_common_types(exc),
+    }
+
+    accepted_media_type = request.headers.get("Accept", "application/json")
+
+    if accepted_media_type in ("application/json", "*/*"):
+        return JsonResponse(
+            error_data,
+            status=error_code,
+        )
+    elif accepted_media_type == "application/yaml":
+        return HttpResponse(
+            YAMLRenderer().render(error_data),
+            content_type="application/yaml",
+            status=error_code,
+        )
+    else:
+        return render(
+            request,
+            "masked.html",
+            {
+                "error_code": error_code,
+                "error_message": "Access restricted",
+                "error_description": str(exc),
+                "masked": exc.masked,
+            },
+            status=error_code,
+        )
+
+
 def swh_handle400(
     request: HttpRequest, exception: Optional[Exception] = None
 ) -> HttpResponse:
@@ -216,6 +273,8 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
         error_code = 404
     elif isinstance(exc, Ratelimited):
         error_code = 429
+    elif isinstance(exc, MaskedObjectException):
+        return _generate_masked_object_page(request, exc)
 
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:

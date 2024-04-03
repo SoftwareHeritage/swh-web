@@ -9,7 +9,7 @@ from django.utils.html import escape
 
 from swh.model.swhids import ObjectType
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.helpers import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import format_utc_iso_date, reverse
 from swh.web.utils.identifiers import gen_swhid
 
@@ -50,6 +50,23 @@ def test_release_browse_not_found(client, archive_data, unknown_release):
     )
     err_msg = "Release with sha1_git %s not found" % unknown_release
     assert_contains(resp, err_msg, status_code=404)
+
+
+def test_release_masked(client, mocker, release, make_masked_object_exception):
+    masked_object_exception = make_masked_object_exception(f"swh:1:rel:{release}")
+
+    mock_archive = mocker.patch("swh.web.browse.views.release.archive")
+    mock_archive.lookup_release.side_effect = masked_object_exception
+
+    url = reverse("browse-release", url_args={"sha1_git": release})
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
+    )
 
 
 def test_release_uppercase(client, release):

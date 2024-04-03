@@ -457,6 +457,29 @@ def test_browse_visits_origin_not_found(client, new_origin):
     )
 
 
+def test_browse_visits_origin_masked(
+    client, mocker, origin, make_masked_object_exception
+):
+    import hashlib
+
+    masked_object_exception = make_masked_object_exception(
+        f"swh:1:ori:{hashlib.sha1(origin['url'].encode('utf-8')).hexdigest()}"
+    )
+
+    mock_archive = mocker.patch("swh.web.browse.views.origin.archive")
+    mock_archive.lookup_origin.side_effect = masked_object_exception
+
+    url = reverse("browse-origin-visits", query_params={"origin_url": origin["url"]})
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
+    )
+
+
 def test_browse_origin_directory_no_visit(client, mocker, origin):
     mock_get_origin_visits = mocker.patch(
         "swh.web.utils.origin_visits.get_origin_visits"

@@ -20,6 +20,9 @@ from swh.web.api.apiresponse import (
     make_api_response,
     transform,
 )
+from swh.web.browse.tests.views.conftest import (  # noqa: F401
+    make_masked_object_exception,
+)
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import check_http_get_response, check_http_post_response
 from swh.web.utils import reverse
@@ -150,6 +153,20 @@ def test_error_response_handler(mocker, api_client):
     assert resp.status_code == 500
     assert "traceback" in resp.data
     assert "Traceback" in resp.data["traceback"]
+
+
+def test_error_response_handler_for_masked(
+    mocker, api_client, content, make_masked_object_exception  # noqa: F811
+):
+    swhid = f"swh:1:cnt:{content['sha1_git']}"
+    masked_object_exception = make_masked_object_exception(swhid)
+
+    mock_archive = mocker.patch("swh.web.api.views.stat.archive")
+    mock_archive.stat_counters.side_effect = masked_object_exception
+    url = reverse("api-1-stat-counters")
+    resp = api_client.get(url)
+    assert resp.status_code == 403
+    assert swhid in resp.data["masked"]
 
 
 def test_api_endpoints_have_cors_headers(client, content, directory, revision):

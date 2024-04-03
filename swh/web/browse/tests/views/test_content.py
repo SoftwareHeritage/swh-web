@@ -396,6 +396,27 @@ def test_content_bytes_missing(client, archive_data, mocker, content):
     )
 
 
+def test_content_masked(
+    client, archive_data, mocker, content, make_masked_object_exception
+):
+    masked_object_exception = make_masked_object_exception(
+        f"swh:1:cnt:{content['sha1_git']}"
+    )
+
+    mock_archive = mocker.patch("swh.web.browse.utils.archive")
+    mock_archive.lookup_content.side_effect = masked_object_exception
+
+    url = reverse("browse-content", url_args={"query_string": content["sha1"]})
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
+    )
+
+
 def test_content_too_large(client, mocker):
     mock_request_content = mocker.patch("swh.web.browse.views.content.request_content")
     stub_content_too_large_data = {

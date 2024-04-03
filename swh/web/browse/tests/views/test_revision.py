@@ -14,7 +14,7 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import Revision, RevisionType, TimestampWithTimezone
 from swh.model.swhids import ObjectType
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date
 from swh.web.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.utils.identifiers import gen_swhid
@@ -258,6 +258,28 @@ def test_revision_request_errors(client, revision, unknown_revision, new_origin)
     )
     assert_contains(
         resp, "the origin mentioned in your request" " appears broken", status_code=404
+    )
+
+
+def test_revision_masked(client, mocker, revision, make_masked_object_exception):
+    masked_object_exception = make_masked_object_exception(f"swh:1:rev:{revision}")
+
+    mock_archive = mocker.patch("swh.web.browse.views.revision.archive")
+    mock_archive.lookup_revision.side_effect = masked_object_exception
+
+    url = reverse("browse-revision", url_args={"sha1_git": revision})
+
+    url = reverse(
+        "browse-revision",
+        url_args={"sha1_git": revision},
+    )
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
     )
 
 

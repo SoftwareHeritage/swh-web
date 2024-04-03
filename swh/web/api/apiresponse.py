@@ -26,8 +26,10 @@ from swh.web.utils.exc import (
     BadInputExc,
     ForbiddenExc,
     LargePayloadExc,
+    MaskedObjectException,
     NotFoundExc,
     UnauthorizedExc,
+    masked_to_common_types,
     sentry_capture_exception,
 )
 
@@ -198,6 +200,11 @@ def error_response(
         doc_data: documentation data for HTML response
 
     """
+    error_data = {
+        "exception": exception.__class__.__name__,
+        "reason": str(exception),
+    }
+
     error_code = 500
     if isinstance(exception, BadInputExc):
         error_code = 400
@@ -207,6 +214,9 @@ def error_response(
         error_code = 404
     elif isinstance(exception, ForbiddenExc):
         error_code = 403
+    elif isinstance(exception, MaskedObjectException):
+        error_code = 403
+        error_data["masked"] = masked_to_common_types(exception)
     elif isinstance(exception, LargePayloadExc):
         error_code = 413
     elif isinstance(exception, StorageDBError):
@@ -217,10 +227,6 @@ def error_response(
         error_code = exception.status_code
 
     error_opts = {"status": error_code}
-    error_data = {
-        "exception": exception.__class__.__name__,
-        "reason": str(exception),
-    }
 
     if getattr(request, "accepted_media_type", None) == "text/html":
         error_data["reason"] = escape(error_data["reason"])

@@ -30,7 +30,7 @@ from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
 from swh.web.tests.data import random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_html_get_response
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date, visit_dates
 from swh.web.utils import format_utc_iso_date, reverse
 
@@ -122,6 +122,30 @@ def test_snapshot_browse_without_id_and_origin(client, browse_context):
     assert re.search(
         "An origin URL must be provided as a query parameter",
         resp.content.decode("utf-8"),
+    )
+
+
+@pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
+def test_snapshot_masked(
+    client, mocker, browse_context, snapshot, make_masked_object_exception
+):
+    masked_object_exception = make_masked_object_exception(f"swh:1:snp:{snapshot}")
+
+    mocker.patch(
+        "swh.web.browse.snapshot_context.get_snapshot_context",
+        side_effect=masked_object_exception,
+    )
+
+    url = reverse(
+        f"browse-snapshot-{browse_context}", url_args={"snapshot_id": snapshot}
+    )
+
+    check_html_get_response(client, url, status_code=403, template_used="masked.html")
+    check_http_get_response(
+        client, url, content_type="application/json", status_code=403
+    )
+    check_http_get_response(
+        client, url, content_type="application/yaml", status_code=403
     )
 
 
