@@ -22,6 +22,7 @@ const GenerateWebLabelsPlugin = require('./webpack-plugins/generate-weblabels-we
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const DumpHighlightjsLanguagesDataPlugin = require('./webpack-plugins/dump-highlightjs-languages-data-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const StylelintPlugin = require('stylelint-webpack-plugin');
 
 // are we running webpack-dev-server ?
 const isDevServer = process.argv.find(v => v.includes('serve')) !== undefined;
@@ -95,20 +96,6 @@ const cssLoaders = [
       sourceMap: !isDevServer,
       postcssOptions: {
         plugins: [
-          // lint swh-web stylesheets
-          ['stylelint', {
-            'config': {
-              'extends': 'stylelint-config-standard',
-              'rules': {
-                'font-family-no-missing-generic-family-keyword': null,
-                'no-descending-specificity': null,
-                'selector-class-pattern': null,
-                'media-feature-range-notation': 'prefix'
-              },
-              'ignoreFiles': ['node_modules/**/*.css',
-                              'assets/src/thirdparty/**/*.css']
-            }
-          }],
           // automatically add vendor prefixes to css rules
           'autoprefixer',
           'postcss-normalize',
@@ -499,6 +486,31 @@ module.exports = {
       ignorePath: path.join(__dirname, '.eslintignore'),
       cache: true,
       emitWarning: true
+    }),
+    // lint swh-web stylesheets
+    new StylelintPlugin({
+      config: {
+        extends: 'stylelint-config-standard',
+        rules: {
+          'font-family-no-missing-generic-family-keyword': null,
+          'no-descending-specificity': null,
+          'selector-class-pattern': null,
+          'media-feature-range-notation': 'prefix'
+        },
+        ignoreFiles: ['node_modules/**/*.css',
+                      'node_modules/**/*.scss',
+                      '.tox/**/*.css',
+                      '.tox/**/*.scss',
+                      'swh/web/tests/resources/**/*.css',
+                      'swh/web/tests/resources/**/*.scss',
+                      'build/**/*.css',
+                      'build/**/*.scss',
+                      'cypress/**/*.css',
+                      'assets/config/*.scss',
+                      'assets/src/thirdparty/**/*.css',
+                      'docs/**/*.css',
+                      '.cypress_cache/**/*.css']
+      }
     })
   ],
   // webpack optimizations
