@@ -3,7 +3,7 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 beautifulsoup4
-chardet
+charset-normalizer
 cryptography
 django
 django-cors-headers

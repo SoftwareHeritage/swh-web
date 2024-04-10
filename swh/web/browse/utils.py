@@ -6,9 +6,9 @@
 import base64
 import stat
 import textwrap
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
-import chardet
+import charset_normalizer
 import magic
 
 from django.utils.html import escape, format_html
@@ -107,11 +107,12 @@ def re_encode_content(
         after processing), content raw bytes (possibly reencoded to UTF-8)
     """
     if mimetype.startswith("text/") and encoding not in ("us-ascii", "utf-8"):
-        # first check if chardet detects an encoding with confidence
-        result = chardet.detect(content_data)
-        if result["confidence"] >= 0.9:
-            encoding = result["encoding"]
-            content_data = content_data.decode(encoding).encode("utf-8")
+        # first check if charset_normalizer detects an encoding with confidence
+        result = charset_normalizer.detect(content_data)
+        assert isinstance(result["confidence"], float)
+        if cast(float, result["confidence"]) >= 0.9:
+            encoding = cast(str, result["encoding"])
+            content_data = content_data.decode(encoding, "replace").encode("utf-8")
         elif encoding == "unknown-8bit":
             # probably a malformed UTF-8 content, re-encode it
             # by replacing invalid chars with a substitution one

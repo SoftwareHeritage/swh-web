@@ -104,7 +104,7 @@ def test_re_encode_content_for_shift_jis_encoding():
 
     _, encoding, re_encoded_data = re_encode_content(mime_type, encoding, data)
 
-    assert encoding == "SHIFT_JIS"
+    assert encoding == "CP932"
     assert data.decode(encoding) == re_encoded_data.decode("utf-8")
     assert re_encoded_data.decode("utf-8") == "/* 関連の文字コード変換 */"
 

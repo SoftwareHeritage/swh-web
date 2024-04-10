@@ -12,7 +12,6 @@ swh.core[http] >= 3.0.0
 swh.loader.git >= 0.8.0
 swh-scheduler[testing] >= 2.0.0
 swh.storage >= 0.1.1
-types-chardet
 types-cryptography
 types-docutils
 types-psycopg2
