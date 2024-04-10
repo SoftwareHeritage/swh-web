@@ -249,10 +249,13 @@ def test_rst_to_html_topic_processing():
         )
 
     if docutils.__version_info__ >= (0, 18):
+        title = "Contents"
+        if docutils.__version_info__ >= (0, 21):
+            title = '<a class="reference internal" href="#top">Contents</a>'
         expected_html = (
             '<div class="swh-rst"><main>\n'
             '<nav class="contents" id="contents" role="doc-toc">\n'
-            '<p class="topic-title">Contents</p>\n'
+            f'<p class="topic-title">{title}</p>\n'
             '<ul class="simple">\n'
             '<li><p><a class="reference internal" href="#section" id="toc-entry-1">'
             "Section</a></p>\n"
