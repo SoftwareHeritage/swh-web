@@ -109,7 +109,6 @@ def re_encode_content(
     if mimetype.startswith("text/") and encoding not in ("us-ascii", "utf-8"):
         # first check if charset_normalizer detects an encoding with confidence
         result = charset_normalizer.detect(content_data)
-        assert isinstance(result["confidence"], float)
         if cast(float, result["confidence"]) >= 0.9:
             encoding = cast(str, result["encoding"])
             content_data = content_data.decode(encoding, "replace").encode("utf-8")
