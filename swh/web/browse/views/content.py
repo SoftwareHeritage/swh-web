@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2023  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,6 +9,8 @@ import io
 import os
 import re
 from typing import Any, Dict, Optional
+
+from django_ratelimit.decorators import ratelimit
 
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -23,6 +25,7 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     request_content,
 )
+from swh.web.config import get_config
 from swh.web.utils import (
     archive,
     browsers_supported_image_mimes,
@@ -41,12 +44,15 @@ from swh.web.utils.exc import (
 from swh.web.utils.identifiers import get_swhids_info
 from swh.web.utils.typing import ContentMetadata, SWHObjectInfo
 
+browse_content_rate_limit = get_config().get("browse_content_rate_limit", {})
+
 
 @browse_route(
     r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+)/raw/",
     view_name="browse-content-raw",
     checksum_args=["query_string"],
 )
+@ratelimit(key="user_or_ip", rate=browse_content_rate_limit.get("rate", "60/m"))
 def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
     """Django view that produces a raw display of a content identified
     by its hash value.
@@ -245,6 +251,7 @@ def _get_content_from_request(request: HttpRequest) -> Dict[str, Any]:
     view_name="browse-content",
     checksum_args=["query_string"],
 )
+@ratelimit(key="user_or_ip", rate=browse_content_rate_limit.get("rate", "60/m"))
 def content_display(
     request: HttpRequest, query_string: Optional[str] = None
 ) -> HttpResponse:

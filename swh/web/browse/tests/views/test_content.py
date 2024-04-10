@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2023  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,7 @@ import re
 from hypothesis import given
 import pytest
 
+from django.test.utils import override_settings
 from django.utils.html import escape
 
 from swh.model.from_disk import DentryPerms
@@ -1277,3 +1278,15 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
         check_html_get_response(
             client, url, status_code=200, template_used="browse-content.html"
         )
+
+
+@override_settings(RATELIMIT_ENABLE=True)
+@pytest.mark.parametrize("view_name", ["browse-content", "browse-content-raw"])
+def test_browse_content_rate_limit(client, content_text, view_name):
+    url = reverse(
+        view_name,
+        url_args={"query_string": f"sha1_git:{content_text['sha1_git']}"},
+    )
+
+    check_http_get_response(client, url, status_code=200)
+    check_http_get_response(client, url, status_code=429)

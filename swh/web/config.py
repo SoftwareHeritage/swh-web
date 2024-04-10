@@ -201,6 +201,7 @@ DEFAULT_CONFIG = {
     "show_corner_ribbon": ("bool", True),
     "save_code_now_webhook_secret": ("str", ""),
     "inbound_email": ("dict", {"shared_key": "shared_key"}),
+    "browse_content_rate_limit": ("dict", {"enabled": True, "rate": "60/m"}),
 }
 
 swhweb_config: Dict[str, Any] = {}

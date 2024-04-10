@@ -395,6 +395,7 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "VERSION": version("swh.web"),
     },
+    "rate-limit": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
 }
 
 JS_REVERSE_JS_MINIFY = False
@@ -409,3 +410,6 @@ SWH_AUTH_CLIENT_ID = OIDC_SWH_WEB_CLIENT_ID
 SWH_AUTH_SESSION_EXPIRED_REDIRECT_VIEW = "logout-page"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+RATELIMIT_USE_CACHE = "rate-limit"
+RATELIMIT_ENABLE = False

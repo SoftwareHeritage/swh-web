@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,6 +7,7 @@ import logging
 import traceback
 from typing import Optional
 
+from django_ratelimit.exceptions import Ratelimited
 import sentry_sdk
 
 from django.core import exceptions
@@ -72,6 +73,7 @@ http_status_code_message = {
     403: "Access Denied",
     404: "Resource not found",
     413: "Payload Too Large",
+    429: "Too Many Requests",
     500: "Internal Server Error",
     501: "Not Implemented",
     502: "Bad Gateway",
@@ -171,6 +173,7 @@ def sentry_capture_exception(exc: Exception) -> None:
             NotFoundExc,
             RemoteException,
             TransientRemoteException,
+            Ratelimited,
         ),
     ):
         # ignore noisy exceptions we cannot do anything about
@@ -199,10 +202,12 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     error_code = 500
     if isinstance(exc, BadInputExc):
         error_code = 400
-    if isinstance(exc, ForbiddenExc):
+    elif isinstance(exc, ForbiddenExc):
         error_code = 403
-    if isinstance(exc, NotFoundExc):
+    elif isinstance(exc, NotFoundExc):
         error_code = 404
+    elif isinstance(exc, Ratelimited):
+        error_code = 429
 
     resp = _generate_error_page(request, error_code, error_description)
     if get_config()["debug"]:

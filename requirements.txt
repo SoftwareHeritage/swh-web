@@ -10,6 +10,7 @@ django-cors-headers
 # upstream django-js-reverse is not compatible with django 4
 # https://github.com/ierror/django-js-reverse/issues/112
 django-js-reverse-swh
+django-ratelimit
 djangorestframework
 django-webpack-loader >= 3
 docutils
