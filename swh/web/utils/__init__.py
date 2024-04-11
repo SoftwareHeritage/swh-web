@@ -413,6 +413,11 @@ def prettify_html(html: str) -> str:
     """
     Prettify an HTML document.
 
+    Since it adds whitespace (in the form of newlines), this method changes
+    the meaning of the HTML document and should not be used for reformatting
+    purpose. The goal is to help visually understanding the structure of the
+    document.
+
     Args:
         html: Input HTML document
 

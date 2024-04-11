@@ -6,30 +6,7 @@
 
 from htmlmin import minify
 
-from swh.web.utils import prettify_html
 from swh.web.utils.exc import handle_view_exception, sentry_capture_exception
-
-
-class HtmlPrettifyMiddleware(object):
-    """
-    Django middleware for prettifying generated HTML in
-    development mode.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-        if "text/html" in response.get("Content-Type", ""):
-            if hasattr(response, "content"):
-                content = response.content
-                response.content = prettify_html(content)
-            elif hasattr(response, "streaming_content"):
-                content = b"".join(response.streaming_content)
-                response.streaming_content = prettify_html(content)
-
-        return response
 
 
 class HtmlMinifyMiddleware(object):

@@ -10,9 +10,6 @@ Django development settings for swh-web.
 from django.core.cache import cache
 
 from .common import *  # noqa
-from .common import MIDDLEWARE
-
-MIDDLEWARE += ["swh.web.utils.middlewares.HtmlPrettifyMiddleware"]
 
 AUTH_PASSWORD_VALIDATORS = []  # disable any pwd validation mechanism
 
