@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,8 +14,12 @@ from swh.storage.exc import StorageAPIError, StorageDBError
 from swh.web.api.apidoc import _parse_httpdomain_doc, api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_api_get_responses, check_html_get_response
-from swh.web.utils import prettify_html, reverse
+from swh.web.tests.helpers import (
+    check_api_get_responses,
+    check_html_get_response,
+    prettify_html,
+)
+from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc
 
 _httpdomain_doc = """

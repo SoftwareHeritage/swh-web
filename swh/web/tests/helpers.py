@@ -1,10 +1,12 @@
-# Copyright (C) 2020-2023  The Software Heritage developers
+# Copyright (C) 2020-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import shutil
 from typing import Any, Dict, Optional, cast
+
+from bs4 import BeautifulSoup
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -270,6 +272,24 @@ def create_django_permission(perm_name: str) -> Permission:
         content_type=content_type,
         id=1000 + Permission.objects.count(),
     )
+
+
+def prettify_html(html: str) -> str:
+    """
+    Prettify an HTML document.
+
+    Since it adds whitespace (in the form of newlines), this method changes
+    the meaning of the HTML document and should not be used for reformatting
+    purpose. The goal is to help visually understanding the structure of the
+    document.
+
+    Args:
+        html: Input HTML document
+
+    Returns:
+        The prettified HTML document
+    """
+    return BeautifulSoup(html, "lxml").prettify()
 
 
 fossology_missing = shutil.which("nomossa") is None

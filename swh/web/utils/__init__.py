@@ -13,7 +13,6 @@ import re
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 import urllib.parse
 
-from bs4 import BeautifulSoup
 from docutils.core import publish_parts
 import docutils.parsers.rst
 import docutils.utils
@@ -407,24 +406,6 @@ def rst_to_html(rst: str) -> str:
         return f'<div class="swh-rst">{pp["html_body"]}</div>'
     except SystemMessage:
         return f'<div class="swh-readme-txt"><pre>{rst}</pre></div>'
-
-
-def prettify_html(html: str) -> str:
-    """
-    Prettify an HTML document.
-
-    Since it adds whitespace (in the form of newlines), this method changes
-    the meaning of the HTML document and should not be used for reformatting
-    purpose. The goal is to help visually understanding the structure of the
-    document.
-
-    Args:
-        html: Input HTML document
-
-    Returns:
-        The prettified HTML document
-    """
-    return BeautifulSoup(html, "lxml").prettify()
 
 
 def _compute_final_cache_key(cache_key: str) -> str:

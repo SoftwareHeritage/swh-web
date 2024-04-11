@@ -2,7 +2,6 @@
 # should match https://pypi.python.org/pypi names. For the full spec or
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
-beautifulsoup4
 charset-normalizer
 cryptography
 django
@@ -16,7 +15,6 @@ django-webpack-loader >= 3
 docutils
 htmlmin
 iso8601
-lxml
 msgpack
 prometheus-client
 pybadges >= 2.2.1

@@ -1,3 +1,4 @@
+beautifulsoup4
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
 django-stubs != 4.2.2
