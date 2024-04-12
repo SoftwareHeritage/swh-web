@@ -53,6 +53,7 @@ def check_http_get_response(
     content_type: str = "*/*",
     http_origin: Optional[str] = None,
     server_name: Optional[str] = None,
+    **headers,
 ) -> HttpResponseBase:
     """Helper function to check HTTP response for a GET request.
 
@@ -72,6 +73,7 @@ def check_http_get_response(
             HTTP_ACCEPT=content_type,
             HTTP_ORIGIN=http_origin,
             SERVER_NAME=server_name if server_name else "testserver",
+            **headers,
         ),
         status_code=status_code,
         content_type=content_type,

@@ -87,7 +87,3 @@ if SECRET_KEY == DEFAULT_CONFIG["secret_key"][-1]:
 
 browse_content_rate_limit = swh_web_config.get("browse_content_rate_limit", {})
 RATELIMIT_ENABLE = browse_content_rate_limit.get("enabled", True)
-# get real client IP address when behind production reverse proxy
-RATELIMIT_IP_META_KEY = lambda request: request.META.get(  # noqa
-    "HTTP_X_ORIGINAL_FORWARDED_FOR", request.META["REMOTE_ADDR"]
-)

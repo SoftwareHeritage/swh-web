@@ -1292,6 +1292,25 @@ def test_browse_content_rate_limit(client, content_text, view_name):
     check_http_get_response(client, url, status_code=429)
 
 
+@override_settings(RATELIMIT_ENABLE=True)
+@pytest.mark.parametrize(
+    "forwarded_for",
+    ["1234:1234:1234::123", "123.123.123.123", "1234:1234:1234::123, 123.123.123.123"],
+)
+def test_browse_content_rate_limit_forwarded_for(client, content_text, forwarded_for):
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{content_text['sha1_git']}"},
+    )
+
+    check_http_get_response(
+        client, url, status_code=200, HTTP_X_ORIGINAL_FORWARDED_FOR=forwarded_for
+    )
+    check_http_get_response(
+        client, url, status_code=429, HTTP_X_ORIGINAL_FORWARDED_FOR=forwarded_for
+    )
+
+
 def test_browse_content_failed_encoding_detection(
     client, content_text_non_utf8, mocker
 ):
