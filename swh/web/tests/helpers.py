@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from html import unescape
 import shutil
 from typing import Any, Dict, Optional, cast
 
@@ -31,7 +32,13 @@ def _assert_http_response(
     elif isinstance(response, StreamingHttpResponse):
         error_context = getattr(response, "traceback", response.streaming_content)
     elif isinstance(response, HttpResponse):
-        error_context = getattr(response, "traceback", response.content)
+        error_context = (
+            # traceback was escaped for HTML views as they are displayed in error page
+            # when debug mode is activated
+            unescape(response.traceback)
+            if hasattr(response, "traceback")
+            else response.content
+        )
 
     assert response.status_code == status_code, error_context
     if content_type != "*/*":
