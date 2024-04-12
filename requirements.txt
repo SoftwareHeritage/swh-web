@@ -6,9 +6,7 @@ charset-normalizer
 cryptography
 django
 django-cors-headers
-# upstream django-js-reverse is not compatible with django 4
-# https://github.com/ierror/django-js-reverse/issues/112
-django-js-reverse-swh
+django-js-reverse
 django-ratelimit
 djangorestframework
 django-webpack-loader >= 3
@@ -25,4 +23,3 @@ python-magic >= 0.4.0
 pyyaml
 requests
 sentry-sdk
-
