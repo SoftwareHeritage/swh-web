@@ -2,6 +2,7 @@
 # should match https://pypi.python.org/pypi names. For the full spec or
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
+chardet
 charset-normalizer
 cryptography
 django

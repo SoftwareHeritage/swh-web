@@ -8,6 +8,7 @@ import stat
 import textwrap
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, cast
 
+import chardet
 import charset_normalizer
 import magic
 
@@ -111,6 +112,10 @@ def re_encode_content(
         result = charset_normalizer.detect(content_data)
         if result.get("confidence") and cast(float, result["confidence"]) >= 0.9:
             encoding = cast(str, result["encoding"])
+            content_data = content_data.decode(encoding, "replace").encode("utf-8")
+        # then try to detect encoding with chardet if the above failed
+        elif (cresult := chardet.detect(content_data)).get("confidence", 0) >= 0.9:
+            encoding = cast(str, cresult["encoding"])
             content_data = content_data.decode(encoding, "replace").encode("utf-8")
         elif encoding == "unknown-8bit":
             # probably a malformed UTF-8 content, re-encode it

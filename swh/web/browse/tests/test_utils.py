@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
 import re
 
 import pytest
@@ -107,6 +108,14 @@ def test_re_encode_content_for_shift_jis_encoding():
     assert encoding == "CP932"
     assert data.decode(encoding) == re_encoded_data.decode("utf-8")
     assert re_encoded_data.decode("utf-8") == "/* 関連の文字コード変換 */"
+
+
+def test_re_encode_content_chardet_fallback(datadir):
+    with open(os.path.join(datadir, "content_iso-8859-7_encoded"), "rb") as f:
+        content = f.read()
+        mime_type, encoding = get_mimetype_and_encoding_for_content(content)
+        _, encoding, _ = re_encode_content(mime_type, encoding, content)
+        assert encoding == "ISO-8859-7"
 
 
 @pytest.mark.parametrize(

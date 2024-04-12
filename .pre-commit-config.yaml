@@ -37,7 +37,8 @@ repos:
           (?x)^(
               cypress/integration/directory.spec.js|
               yarn.lock|
-              package.json
+              package.json|
+              swh/web/browse/tests/data/content_iso-8859-7_encoded
           )$
         args: [-L edn, -L crate]
         stages: [commit]
