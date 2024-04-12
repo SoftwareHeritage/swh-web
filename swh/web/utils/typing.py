@@ -4,9 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TypeVar
-
-from typing_extensions import TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, TypeVar
 
 from swh.core.api.classes import PagedResult as CorePagedResult
 from swh.model.swhids import ObjectType

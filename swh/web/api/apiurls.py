@@ -4,9 +4,7 @@
 # See top-level LICENSE file for more information
 
 import functools
-from typing import Dict, List, Optional
-
-from typing_extensions import Literal
+from typing import Dict, List, Literal, Optional
 
 from django.http.response import HttpResponseBase
 from rest_framework.decorators import api_view

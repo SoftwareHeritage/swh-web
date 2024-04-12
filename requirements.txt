@@ -17,14 +17,12 @@ htmlmin
 iso8601
 msgpack
 prometheus-client
+psycopg2
 pybadges >= 2.2.1
 pygments
 pymemcache
 python-magic >= 0.4.0
-# TODO: remove python-memcached requirement once we use django >= 3.2 in production
-python-memcached
 pyyaml
 requests
 sentry-sdk
-typing-extensions
-psycopg2
+

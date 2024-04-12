@@ -3,10 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, TypedDict
 from urllib.parse import quote, unquote
-
-from typing_extensions import TypedDict
 
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
