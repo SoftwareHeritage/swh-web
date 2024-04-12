@@ -1290,3 +1290,20 @@ def test_browse_content_rate_limit(client, content_text, view_name):
 
     check_http_get_response(client, url, status_code=200)
     check_http_get_response(client, url, status_code=429)
+
+
+def test_browse_content_failed_encoding_detection(
+    client, content_text_non_utf8, mocker
+):
+    # simulate charset_normalizer.detect failure
+    detect = mocker.patch("charset_normalizer.detect")
+    detect.return_value = {"confidence": None, "encoding": None, "language": ""}
+
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{content_text_non_utf8['sha1_git']}"},
+    )
+
+    # content should be rendered even if encoding detection failed
+    check_http_get_response(client, url, status_code=200)
+    detect.assert_called()
