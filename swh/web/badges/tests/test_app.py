@@ -25,7 +25,7 @@ def test_badges_deactivate(client, django_settings, directory):
     url = reverse("browse-directory", url_args={"sha1_git": directory})
 
     resp = check_html_get_response(client, url, status_code=200)
-    assert_not_contains(resp, "swh-badges")
+    assert_not_contains(resp, 'class="swh-badges"')
 
     badges_view_names = set(urlpattern.name for urlpattern in urlpatterns)
     all_view_names = set(get_resolver().reverse_dict.keys())

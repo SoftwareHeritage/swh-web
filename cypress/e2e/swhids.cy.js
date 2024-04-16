@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+const $ = Cypress.$;
+
 let origin, originBadgeUrl, originBrowseUrl;
 let url, urlPrefix;
 let cntSWHID, cntSWHIDWithContext;
@@ -237,6 +239,23 @@ describe('SWHIDs Tests', function() {
         assert.equal(swhIdsContext[testData.objectType].swhid,
                      testData.objectSWHIDs.slice(-1)[0]);
       }
+    });
+  });
+
+  it('should update tab size according to screen size', function() {
+    // use a small viewport size
+    cy.viewport(320, 480);
+    cy.visit(url);
+    cy.get('.ui-slideouttab-handle')
+      .click();
+    cy.window().then(win => {
+      // SWHIDs tab should fit in the screen
+      cy.get('#swh-identifiers').invoke('width').should('be.lt', win.innerWidth);
+      cy.get('#swh-identifiers').invoke('height').should('be.lt', win.innerHeight);
+      // its content should be scrollable
+      cy.get('#swh-identifiers').then(tab => {
+        expect($(tab).height()).to.be.lessThan($(tab).prop('scrollHeight'));
+      });
     });
   });
 

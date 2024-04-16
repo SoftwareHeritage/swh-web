@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -8,8 +8,6 @@
 import ClipboardJS from 'clipboard';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
-
-import {BREAKPOINT_SM} from 'utils/constants';
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
@@ -73,6 +71,30 @@ function addLinesInfo() {
   }
 }
 
+function updateSWHIDsTabSize() {
+  // update tab width based on browser windows width
+  $('#swh-identifiers').css('width', Math.min(window.innerWidth - 45, 1000) + 'px');
+  // update tab anchor top position based on browser windows height
+  const top = window.innerHeight >= 700 ? 250 : 35;
+  $('#swh-identifiers').css('top', top + 'px');
+  // backup current display state for tab content
+  const currentDisplay = $('#swh-identifiers-content').css('display');
+  // reset tab height to be automatically computed
+  $('#swh-identifiers').css('height', 'auto');
+  // ensure tab content is displayed for current height computation
+  $('#swh-identifiers-content').css('display', 'block');
+  // update tab height to fit in the screen (its content is scrollable in case of overflow)
+  if (top + $('#swh-identifiers').height() > window.innerHeight) {
+    $('#swh-identifiers').css('height', (window.innerHeight - top - 5) + 'px');
+  }
+  // hide badges and iframes links on display with small height
+  $('#swh-identifiers .swh-badges-iframe').css('display', window.innerHeight >= 700 ? 'flex' : 'none');
+  // hide badges and iframes links on display with small width
+  $('#swh-identifiers .swh-badges-iframe').css('display', window.innerWidth >= 700 ? 'flex' : 'none');
+  // restore current display state for tab content
+  $('#swh-identifiers-content').css('display', currentDisplay);
+}
+
 $(document).ready(() => {
   new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
@@ -88,10 +110,6 @@ $(document).ready(() => {
     }
   });
 
-  if (window.innerWidth * 0.7 > 1000) {
-    $('#swh-identifiers').css('width', '1000px');
-  }
-
   // prevent automatic closing of SWHIDs tab during guided tour
   // as it is displayed programmatically
   function clickScreenToCloseFilter() {
@@ -101,14 +119,6 @@ $(document).ready(() => {
   const tabSlideOptions = {
     tabLocation: 'right',
     clickScreenToCloseFilters: [clickScreenToCloseFilter, '.ui-slideouttab-panel', '.modal'],
-    offset: function() {
-      const width = $(window).width();
-      if (width < BREAKPOINT_SM) {
-        return '250px';
-      } else {
-        return '200px';
-      }
-    },
     onBeforeOpen: function() {
       $('#swh-identifiers-content').css('display', 'block');
       return true;
@@ -126,21 +136,16 @@ $(document).ready(() => {
       }, 500);
     }
   };
-  // ensure tab scrolling on small screens
-  if (window.innerHeight < 600 || window.innerWidth < 500) {
-    tabSlideOptions['otherOffset'] = '20px';
-  }
 
   // initiate the sliding identifiers tab
   $('#swh-identifiers').tabSlideOut(tabSlideOptions);
-
-  // set the tab visible once the close animation is terminated
-  $('#swh-identifiers').addClass('d-none d-sm-block');
 
   // ensure qualified SWHIDs are displayed by default
   $('.swhid-context-option').each(function(i, elt) {
     updateDisplayedSWHID(elt);
   });
+
+  updateSWHIDsTabSize();
 
   // highlighted code lines changed
   $(window).on('hashchange', () => {
@@ -150,6 +155,10 @@ $(document).ready(() => {
   // highlighted code lines removed
   $('body').click(() => {
     addLinesInfo();
+  });
+
+  $(window).on('resize', () => {
+    updateSWHIDsTabSize();
   });
 
 });
