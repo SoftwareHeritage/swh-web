@@ -1,9 +1,10 @@
-# Copyright (C) 2021-2023  The Software Heritage developers
+# Copyright (C) 2021-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from copy import deepcopy
+from datetime import datetime, timezone
 from importlib.metadata import version
 import random
 
@@ -16,6 +17,11 @@ from swh.web.config import (
     SWH_WEB_SERVER_NAMES,
     SWH_WEB_STAGING_SERVER_NAMES,
     get_config,
+)
+from swh.web.save_code_now.models import (
+    SAVE_REQUEST_ACCEPTED,
+    SAVE_REQUEST_PENDING,
+    SaveOriginRequest,
 )
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_http_get_response, create_django_permission
@@ -178,3 +184,33 @@ def test_top_bar_custom_links(client, config_updater):
     assert_contains(resp, doc_link)
     assert_contains(resp, donate_link)
     assert_contains(resp, status_link)
+
+
+@pytest.mark.django_db
+def test_save_code_now_pending_requests_notification(client, staff_user):
+    client.force_login(staff_user)
+
+    url = reverse("swh-web-homepage")
+
+    # no pending save requests, notification icon should not be displayed
+    assert SaveOriginRequest.objects.first() is None
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "mdi-bell swh-notification-icon")
+
+    # new pending save request, notification icon should be displayed
+    sor = SaveOriginRequest.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type="git",
+        origin_url="https://git.example.org/user/project",
+        status=SAVE_REQUEST_PENDING,
+    )
+    assert SaveOriginRequest.objects.first() == sor
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_contains(resp, "mdi-bell swh-notification-icon")
+
+    # pending save request got accepted, notification icon should no longer
+    # be displayed
+    sor.status = SAVE_REQUEST_ACCEPTED
+    sor.save()
+    resp = check_http_get_response(client, url, status_code=200)
+    assert_not_contains(resp, "mdi-bell swh-notification-icon")

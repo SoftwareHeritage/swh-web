@@ -885,3 +885,12 @@ def schedule_origins_recurrent_visits(
         listed_origins = scheduler().record_listed_origins(listed_origins)
 
     return len(listed_origins)
+
+
+def has_pending_save_code_now_requests() -> bool:
+    """Return :const:`True` if at least one submitted save request requires
+    manual validation by staff member."""
+    return (
+        SaveOriginRequest.objects.filter(status=SAVE_REQUEST_PENDING).first()
+        is not None
+    )

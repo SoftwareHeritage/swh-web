@@ -265,6 +265,13 @@ export function acceptOriginSaveRequest() {
       const acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['visit_type'], encodeURI(rowData['origin_url']));
       await csrfPost(acceptSaveRequestUrl);
       pendingSaveRequestsTable.ajax.reload(null, false);
+      // ensure to remove notification icon in sidebar admin menu when
+      // there is no remaining pending requests
+      setTimeout(() => {
+        if ($('td.dt-empty').is(':visible')) {
+          location.reload(true);
+        }
+      }, 100);
     };
 
     swh.webapp.showModalConfirm(

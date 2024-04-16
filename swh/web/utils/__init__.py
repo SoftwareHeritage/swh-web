@@ -309,7 +309,7 @@ def context_processor(request):
         # when rendering templates when standard Django user is logged in.
         request.user.backend = "django.contrib.auth.backends.ModelBackend"
 
-    return {
+    context = {
         "swh_object_icons": swh_object_icons,
         "available_languages": None,
         "swh_client_config": config["client_config"],
@@ -337,6 +337,17 @@ def context_processor(request):
         "matomo": config.get("matomo", {}),
         "show_corner_ribbon": config.get("show_corner_ribbon", False),
     }
+
+    if (
+        "swh.web.save_code_now" in settings.SWH_DJANGO_APPS
+        and hasattr(request, "user")
+        and request.user.is_staff
+    ):
+        from swh.web.save_code_now.origin_save import has_pending_save_code_now_requests
+
+        context["pending_save_code_now_requests"] = has_pending_save_code_now_requests()
+
+    return context
 
 
 def resolve_branch_alias(

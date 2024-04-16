@@ -413,6 +413,11 @@ ul.nav-sidebar a {
     color: #fecd1b ! important;
 }
 
+.swh-notification-icon {
+    color: #e20026 !important;
+    transform: translate(8px, -6px);
+}
+
 .swh-sidebar .nav-link.active,
 .swh-sidebar .nav-link:focus {
     color: #323232 !important;
@@ -726,6 +731,23 @@ div.d3-tooltip {
 .mdi-fw {
     text-align: center;
     width: 1.25em;
+}
+
+.mdi-stack {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    vertical-align: middle;
+}
+
+.mdi-stack .mdi {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .main-header .nav-link {
