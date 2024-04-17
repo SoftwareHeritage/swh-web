@@ -86,7 +86,7 @@ swh_web_config.update(
             "realm_name": "SoftwareHeritage",
         },
         # use a stricter browse content views rate limit for the tests
-        "browse_content_rate_limit": {"enabled": True, "rate": "1/s"},
+        "browse_content_rate_limit": {"enabled": True, "rate": "1/m"},
     }
 )
 
