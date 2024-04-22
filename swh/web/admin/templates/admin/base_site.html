@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% comment %}
+Copyright (C) 2024  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% comment %}
+Override base_site.html template from django.contrib.admin application
+to include SWH logo in admin site header.
+{% endcomment %}
+
+{% load static %}
+
+{% block title %}
+  {% if subtitle %}{{ subtitle }} |{% endif %}
+  {{ title }} | {{ site_title|default:_("Django site admin") }}
+{% endblock title %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+  #header {
+    padding-bottom: 0 !important;
+  }
+  {% if "/login/" in request.get_full_path or "/logout/" in request.get_full_path %}
+  #swh-admin-header {
+    position: relative;
+    top: -16px;
+    left: 4px;
+  }
+  {% else %}
+  #swh-admin-header {
+    position: absolute;
+    top: 13px;
+    left: 95px;
+  }
+  {% endif %}
+  </style>
+{% endblock extrastyle %}
+
+{% block branding %}
+  <div id="site-name">
+    <img src="{% static 'img/swh-logo.png' %}"
+         alt="Software Heritage logo"
+         height="45px" />
+    <a href="{% url 'admin:index' %}" id="swh-admin-header">
+      {{ site_header|default:_("Django administration") }}
+    </a>
+  </div>
+  {% if user.is_anonymous %}
+    {% include "admin/color_theme_toggle.html" %}
+  {% endif %}
+{% endblock branding %}
+
+{% block nav-global %}
+{% endblock nav-global %}

@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -57,6 +57,9 @@ def stat_counters(request):
 
 urlpatterns = [
     url(r"^favicon\.ico/$", favicon_view, name="favicon"),
+    # to prevent django.template.base.VariableDoesNotExist exception when
+    # browsing django admin site
+    url(r"^favicon\.ico$", favicon_view, name="favicon-no-trailing-slash"),
     url(r"^$", default_view, name="swh-web-homepage"),
     url(r"^jsreverse/$", urls_js, name="js-reverse"),
     url(r"^stat_counters/$", stat_counters, name="stat-counters"),

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -38,8 +38,8 @@ def insecure_serve(request, path, **kwargs):
 
 # enable to serve compressed assets through django development server
 if swh_web_config["serve_assets"]:
-    static_pattern = r"^%s(?P<path>.*)/$" % settings.STATIC_URL[1:]
-    urlpatterns.append(url(static_pattern, insecure_serve))
+    static_pattern = r"^%s(?P<path>.*)$" % settings.STATIC_URL[1:]
+    urlpatterns.append(url(static_pattern, insecure_serve, name="insecure-serve"))
 
 
 handler400 = swh_handle400  # noqa

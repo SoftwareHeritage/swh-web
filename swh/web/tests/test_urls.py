@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ def test_swh_web_urls_have_trailing_slash():
     urls = set(
         value[1]
         for key, value in get_resolver().reverse_dict.items()
-        if key != "browse-swhid"  # (see T3234)
+        if type(key) is str and key not in ("browse-swhid", "favicon-no-trailing-slash")
     )
     for url in urls:
         if url != "$":

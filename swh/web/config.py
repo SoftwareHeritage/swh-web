@@ -172,6 +172,7 @@ DEFAULT_CONFIG = {
         "list",
         [
             "swh.web.add_forge_now",
+            "swh.web.admin",
             "swh.web.archive_coverage",
             "swh.web.badges",
             "swh.web.banners",
