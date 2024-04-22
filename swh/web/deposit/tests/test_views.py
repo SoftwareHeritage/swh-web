@@ -9,13 +9,12 @@ import pytest
 
 from django.conf import settings
 
-from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
-from swh.web.config import get_config
-from swh.web.tests.helpers import (
-    check_html_get_response,
-    check_http_get_response,
-    create_django_permission,
+from swh.web.auth.utils import (
+    ADMIN_LIST_DEPOSIT_PERMISSION,
+    get_or_create_django_permission,
 )
+from swh.web.config import get_config
+from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
 
 
@@ -37,7 +36,7 @@ def test_deposit_admin_view_available_for_staff_user(client, staff_user):
 @pytest.mark.django_db
 def test_deposit_admin_view_available_for_user_with_permission(client, regular_user):
     regular_user.user_permissions.add(
-        create_django_permission(ADMIN_LIST_DEPOSIT_PERMISSION)
+        get_or_create_django_permission(ADMIN_LIST_DEPOSIT_PERMISSION)
     )
     client.force_login(regular_user)
     url = reverse("admin-deposit")

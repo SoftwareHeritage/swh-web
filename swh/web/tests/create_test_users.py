@@ -12,8 +12,8 @@ from swh.web.auth.utils import (
     ADMIN_LIST_DEPOSIT_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
+    get_or_create_django_permission,
 )
-from swh.web.tests.helpers import create_django_permission
 
 User = get_user_model()
 
@@ -45,7 +45,7 @@ for username, (password, email, permissions) in users.items():
         user = User.objects.create_user(username, email, password)
         if permissions:
             for perm_name in permissions:
-                permission = create_django_permission(perm_name)
+                permission = get_or_create_django_permission(perm_name)
                 user.user_permissions.add(permission)
 
             user.save()

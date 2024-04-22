@@ -12,7 +12,10 @@ import pytest
 
 from django.conf import settings
 
-from swh.web.auth.utils import ADMIN_LIST_DEPOSIT_PERMISSION
+from swh.web.auth.utils import (
+    ADMIN_LIST_DEPOSIT_PERMISSION,
+    get_or_create_django_permission,
+)
 from swh.web.config import (
     SWH_WEB_SERVER_NAMES,
     SWH_WEB_STAGING_SERVER_NAMES,
@@ -24,7 +27,7 @@ from swh.web.save_code_now.models import (
     SaveOriginRequest,
 )
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_http_get_response, create_django_permission
+from swh.web.tests.helpers import check_http_get_response
 from swh.web.utils import reverse
 
 swh_web_version = version("swh.web")
@@ -119,7 +122,7 @@ def test_layout_deposit_admin_for_staff_user(client, staff_user):
 @pytest.mark.django_db
 def test_layout_deposit_admin_for_user_with_permission(client, regular_user):
     regular_user.user_permissions.add(
-        create_django_permission(ADMIN_LIST_DEPOSIT_PERMISSION)
+        get_or_create_django_permission(ADMIN_LIST_DEPOSIT_PERMISSION)
     )
     client.force_login(regular_user)
     url = reverse("swh-web-homepage")

@@ -3,8 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from __future__ import annotations
+
 from base64 import urlsafe_b64encode
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
@@ -14,12 +16,24 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from django.contrib.auth.decorators import user_passes_test
 from django.http.request import HttpRequest
 
+if TYPE_CHECKING:
+    from django.contrib.auth.models import Permission
+
 SWH_AMBASSADOR_PERMISSION = "swh.ambassador"
 API_SAVE_ORIGIN_PERMISSION = "swh.web.api.save_origin"
 ADMIN_LIST_DEPOSIT_PERMISSION = "swh.web.admin.list_deposits"
 MAILMAP_PERMISSION = "swh.web.mailmap"
 ADD_FORGE_MODERATOR_PERMISSION = "swh.web.add_forge_now.moderator"
 MAILMAP_ADMIN_PERMISSION = "swh.web.admin.mailmap"
+
+WEBAPP_PERMISSIONS = [
+    SWH_AMBASSADOR_PERMISSION,
+    API_SAVE_ORIGIN_PERMISSION,
+    ADMIN_LIST_DEPOSIT_PERMISSION,
+    MAILMAP_PERMISSION,
+    ADD_FORGE_MODERATOR_PERMISSION,
+    MAILMAP_ADMIN_PERMISSION,
+]
 
 
 def _get_fernet(password: bytes, salt: bytes) -> Fernet:
@@ -121,3 +135,32 @@ def is_add_forge_now_moderator(user) -> bool:
 
     """
     return user.is_staff or user.has_perm(ADD_FORGE_MODERATOR_PERMISSION)
+
+
+def get_or_create_django_permission(perm_name: str) -> Permission:
+    """Get or create a swh-web permission (different from django model permission)
+    out of a permission name string.
+
+    Args:
+        perm_name: Permission name (e.g. swh.web.api.throttling_exempted,
+          swh.ambassador, ...)
+
+    Returns:
+        The persisted permission
+
+    """
+
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+
+    app_label, codename = perm_name.rsplit(".", maxsplit=1)
+    content_type = ContentType.objects.get_or_create(
+        app_label=app_label,
+        model=codename,
+    )[0]
+
+    return Permission.objects.get_or_create(
+        codename=codename,
+        name=perm_name,
+        content_type=content_type,
+    )[0]

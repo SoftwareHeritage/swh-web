@@ -19,6 +19,7 @@ from swh.web.api.throttling import (
     SwhWebUserRateThrottle,
     throttle_scope,
 )
+from swh.web.auth.utils import get_or_create_django_permission
 from swh.web.settings.tests import (
     scope1_limiter_rate,
     scope1_limiter_rate_post,
@@ -27,7 +28,6 @@ from swh.web.settings.tests import (
     scope3_limiter_rate,
     scope3_limiter_rate_post,
 )
-from swh.web.tests.helpers import create_django_permission
 from swh.web.urls import urlpatterns
 
 
@@ -293,7 +293,7 @@ def test_users_with_throttling_exempted_perm_are_not_rate_limited(
     api_client, regular_user
 ):
     regular_user.user_permissions.add(
-        create_django_permission(API_THROTTLING_EXEMPTED_PERM)
+        get_or_create_django_permission(API_THROTTLING_EXEMPTED_PERM)
     )
 
     assert regular_user.has_perm(API_THROTTLING_EXEMPTED_PERM)

@@ -13,7 +13,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.api.throttling import SwhWebUserRateThrottle
-from swh.web.auth.utils import API_SAVE_ORIGIN_PERMISSION, SWH_AMBASSADOR_PERMISSION
+from swh.web.auth.utils import (
+    API_SAVE_ORIGIN_PERMISSION,
+    SWH_AMBASSADOR_PERMISSION,
+    get_or_create_django_permission,
+)
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -35,7 +39,6 @@ from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_response,
     check_api_post_responses,
-    create_django_permission,
 )
 from swh.web.utils import reverse
 from swh.web.utils.typing import OriginExistenceCheckInfo
@@ -419,7 +422,7 @@ def test_save_requests_no_rate_limit_if_permission(
     api_client, regular_user, swh_scheduler
 ):
     regular_user.user_permissions.add(
-        create_django_permission(API_SAVE_ORIGIN_PERMISSION)
+        get_or_create_django_permission(API_SAVE_ORIGIN_PERMISSION)
     )
 
     assert regular_user.has_perm(API_SAVE_ORIGIN_PERMISSION)
@@ -441,7 +444,7 @@ def test_save_request_unknown_repo_with_permission(
     api_client, regular_user, mocker, swh_scheduler
 ):
     regular_user.user_permissions.add(
-        create_django_permission(API_SAVE_ORIGIN_PERMISSION)
+        get_or_create_django_permission(API_SAVE_ORIGIN_PERMISSION)
     )
 
     assert regular_user.has_perm(API_SAVE_ORIGIN_PERMISSION)

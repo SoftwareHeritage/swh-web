@@ -28,13 +28,11 @@ def create_add_forge_requests(client, regular_user, regular_user2):
         }
 
         requests.append(
-            json.loads(
-                create_add_forge_request(
-                    client,
-                    regular_user,
-                    data=request,
-                ).content
-            )
+            create_add_forge_request(
+                client,
+                regular_user,
+                data=request,
+            ).data
         )
 
         request = {
@@ -46,13 +44,11 @@ def create_add_forge_requests(client, regular_user, regular_user2):
         }
 
         requests.append(
-            json.loads(
-                create_add_forge_request(
-                    client,
-                    regular_user2,
-                    data=request,
-                ).content
-            )
+            create_add_forge_request(
+                client,
+                regular_user2,
+                data=request,
+            ).data
         )
     return requests
 
@@ -78,11 +74,11 @@ def test_add_forge_request_list_datatables_no_parameters(
     assert "submitter_name" not in data["data"][0]
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_datatables(
     client, regular_user, regular_user2, add_forge_moderator
 ):
-    create_add_forge_requests(client, regular_user, regular_user2)
+    requests = create_add_forge_requests(client, regular_user, regular_user2)
 
     length = 10
 
@@ -100,8 +96,8 @@ def test_add_forge_request_list_datatables(
     assert data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
     assert len(data["data"]) == length
     # default ordering is by descending id
-    assert data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
+    assert data["data"][0]["id"] == requests[-1]["id"]
+    assert data["data"][-1]["id"] == requests[-1]["id"] - length + 1
     assert "submitter_name" not in data["data"][0]
 
     client.force_login(add_forge_moderator)
@@ -113,14 +109,14 @@ def test_add_forge_request_list_datatables(
     assert data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
     assert len(data["data"]) == length
     # default ordering is by descending id
-    assert data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
+    assert data["data"][0]["id"] == requests[-1]["id"]
+    assert data["data"][-1]["id"] == requests[-1]["id"] - length + 1
     assert "submitter_name" in data["data"][0]
     assert "last_moderator" in data["data"][0]
     assert "last_modified_date" in data["data"][0]
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("order_field", ["forge_url", "last_modified_date"])
 def test_add_forge_request_list_datatables_ordering(
     client, add_forge_moderator, admin_user, order_field

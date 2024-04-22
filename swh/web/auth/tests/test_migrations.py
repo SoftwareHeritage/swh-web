@@ -7,11 +7,14 @@ from datetime import datetime
 
 import pytest
 
+from swh.web.auth.utils import WEBAPP_PERMISSIONS
+
 APP_NAME = "swh_web_auth"
 
 MIGRATION_0005 = "0005_usermailmapevent"
 MIGRATION_0006 = "0006_fix_mailmap_admin_user_id"
 MIGRATION_0007 = "0007_mailmap_django_app"
+MIGRATION_0008 = "0008_create_webapp_permissions"
 
 
 def test_fix_mailmap_admin_user_id(migrator):
@@ -52,3 +55,15 @@ def test_mailmap_django_app(migrator):
         LookupError, match="App 'swh_web_auth' doesn't have a 'UserMailmap' model."
     ):
         state.apps.get_model(APP_NAME, "UserMailmap")
+
+
+def test_create_webapp_permissions(migrator):
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0007))
+    Permission = state.apps.get_model("auth", "Permission")
+    for webapp_permission in WEBAPP_PERMISSIONS:
+        assert Permission.objects.filter(name=webapp_permission).count() == 0
+
+    state = migrator.apply_tested_migration((APP_NAME, MIGRATION_0008))
+    Permission = state.apps.get_model("auth", "Permission")
+    for webapp_permission in WEBAPP_PERMISSIONS:
+        assert Permission.objects.filter(name=webapp_permission).count() == 1

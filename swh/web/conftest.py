@@ -46,6 +46,7 @@ from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     MAILMAP_PERMISSION,
+    get_or_create_django_permission,
 )
 from swh.web.config import get_config
 from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
@@ -59,7 +60,6 @@ from swh.web.tests.data import (
     random_sha1_bytes,
     random_sha256,
 )
-from swh.web.tests.helpers import create_django_permission
 from swh.web.utils import browsers_supported_image_mimes, converters
 from swh.web.utils.typing import OriginVisitInfo
 
@@ -1244,7 +1244,7 @@ def regular_user2():
 def add_forge_moderator():
     moderator = User.objects.create_user(username="add-forge moderator", password="")
     moderator.user_permissions.add(
-        create_django_permission(ADD_FORGE_MODERATOR_PERMISSION)
+        get_or_create_django_permission(ADD_FORGE_MODERATOR_PERMISSION)
     )
     return moderator
 
@@ -1253,7 +1253,7 @@ def add_forge_moderator():
 def mailmap_admin():
     mailmap_admin = User.objects.create_user(username="mailmap-admin", password="")
     mailmap_admin.user_permissions.add(
-        create_django_permission(MAILMAP_ADMIN_PERMISSION)
+        get_or_create_django_permission(MAILMAP_ADMIN_PERMISSION)
     )
     return mailmap_admin
 
@@ -1261,7 +1261,9 @@ def mailmap_admin():
 @pytest.fixture
 def mailmap_user():
     mailmap_user = User.objects.create_user(username="mailmap-user", password="")
-    mailmap_user.user_permissions.add(create_django_permission(MAILMAP_PERMISSION))
+    mailmap_user.user_permissions.add(
+        get_or_create_django_permission(MAILMAP_PERMISSION)
+    )
     return mailmap_user
 
 
