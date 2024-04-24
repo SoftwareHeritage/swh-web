@@ -4,7 +4,7 @@
 # See top-level LICENSE file for more information
 
 from dataclasses import dataclass
-from email.headerregistry import Address
+from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage, Message
 import logging
 from typing import List, Optional, Set, Tuple, Union
@@ -48,7 +48,9 @@ def extract_recipients(message: EmailMessage) -> List[Address]:
     ret = []
 
     for header_name in HEADERS:
-        for header in message.get_all(header_name, []):
+        for header in filter(
+            lambda h: isinstance(h, AddressHeader), message.get_all(header_name, [])
+        ):
             ret.extend(header.addresses)
 
     return ret

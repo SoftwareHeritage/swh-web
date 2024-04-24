@@ -39,6 +39,8 @@ def test_extract_recipients():
     ]
 
     del message["To"]
+    # check invalid address header are discarded
+    message["x-envelope-to"] = "foo"
     assert utils.extract_recipients(message) == [
         Address(addr_spec="test-recipient-2@example.com"),
         Address(
