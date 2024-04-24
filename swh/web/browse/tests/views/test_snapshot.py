@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 The Software Heritage developers
+# Copyright (C) 2022-2024 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,6 @@ import random
 import re
 import string
 
-from dateutil import parser
 from hypothesis import given
 import pytest
 
@@ -33,7 +32,7 @@ from swh.web.tests.data import random_sha1
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response
 from swh.web.tests.strategies import new_origin, new_person, new_swh_date, visit_dates
-from swh.web.utils import reverse
+from swh.web.utils import format_utc_iso_date, reverse
 
 
 @pytest.mark.parametrize(
@@ -85,7 +84,7 @@ def test_snapshot_browse_with_id_origin_and_timestamp(
     resp = check_html_get_response(
         client, url, status_code=200, template_used="includes/snapshot-context.html"
     )
-    requested_time = parser.parse(visit["date"]).strftime("%d %B %Y, %H:%M")
+    requested_time = format_utc_iso_date(visit["date"])
     assert_contains(resp, requested_time)
     assert_contains(resp, visit["origin"])
 
