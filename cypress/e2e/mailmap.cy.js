@@ -138,7 +138,7 @@ describe('Test mailmap administration', function() {
     cy.get('#swh-mailmap-form :invalid').should('not.exist');
 
     // ensure table redraw before next check
-    cy.contains(fromEmail);
+    cy.contains(fromEmail).should('be.visible');
 
     cy.get('#swh-mailmap-form')
       .should('not.be.visible');
@@ -181,7 +181,7 @@ describe('Test mailmap administration', function() {
     cy.get('#swh-mailmap-form :invalid').should('not.exist');
 
     // ensure table redraw before next check
-    cy.contains(fromEmail);
+    cy.contains(fromEmail).should('be.visible');
 
     cy.get('#swh-mailmap-form')
       .should('not.be.visible');
@@ -195,7 +195,7 @@ describe('Test mailmap administration', function() {
     cy.get('#swh-mailmap-form :invalid').should('not.exist');
 
     // ensure table redraw before next check
-    cy.contains(fromEmail);
+    cy.contains(fromEmail).should('be.visible');
 
     cy.get('#swh-mailmap-form')
       .should('not.be.visible');
@@ -214,13 +214,16 @@ describe('Test mailmap administration', function() {
     cy.wait('@mailmapAdd');
 
     // ensure table redraw before next check
-    cy.contains(fromEmail);
+    cy.contains(fromEmail).should('be.visible');
 
     checkMailmapRow(fromEmail, displayName, true, false);
 
     cy.task('db:user_mailmap:mark_processed');
 
     cy.visit(this.url);
+    // ensure table redraw before next check
+    cy.contains(fromEmail).should('be.visible');
+
     checkMailmapRow(fromEmail, displayName, true, true);
 
   });
