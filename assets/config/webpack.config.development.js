@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -392,7 +392,7 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(nodeModules, 'pdfjs-dist/build/pdf.worker.min.mjs'),
+          from: path.resolve(nodeModules, 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'),
           to: path.resolve(__dirname, '../../static/js/pdf.worker.min.js')
         },
         {
@@ -447,7 +447,7 @@ module.exports = {
         {
           'js/pdf.worker.min.js': [
             {
-              'id': 'pdfjs-dist/build/pdf.worker.mjs',
+              'id': 'pdfjs-dist/legacy/build/pdf.worker.mjs',
               'path': './node_modules/pdfjs-dist/build/pdf.worker.mjs',
               'spdxLicenseExpression': 'Apache-2.0',
               'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
