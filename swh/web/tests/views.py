@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -15,7 +15,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from swh.model import from_disk
-from swh.model.from_disk import DiskBackedContent
 from swh.model.hashutil import hash_to_hex
 from swh.model.model import (
     Content,
@@ -58,12 +57,11 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     directory = from_disk.Directory.from_disk(path=test_contents_dir)
 
     contents = []
-    for name, obj_ in directory.items():
-        obj = obj_.to_model()
-        if obj.object_type in [Content.object_type, DiskBackedContent.object_type]:
-            c = obj.with_data().to_dict()
-            c["status"] = "visible"
-            sha1 = hash_to_hex(c["sha1"])
+    for name, obj in directory.items():
+        if obj.object_type == "content":
+            with open(obj.data["path"], "rb") as f:
+                content = Content.from_data(f.read())
+            sha1 = hash_to_hex(content.sha1)
             if ext_key:
                 key = name.decode("utf-8").split(".")[-1]
                 filename = "test." + key
@@ -72,7 +70,8 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
                 key = filename
             language = get_hljs_language_from_filename(filename)
             data_dict[key] = {"sha1": sha1, "language": language}
-            contents.append(Content.from_dict(c))
+            contents.append(content)
+
     storage = get_tests_data()["storage"]
     storage.content_add(contents)
 
