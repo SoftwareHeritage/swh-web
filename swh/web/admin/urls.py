@@ -9,35 +9,37 @@ from django.urls import path as url
 
 from swh.web.config import get_config
 
-config = get_config()
+# check if admin app for swh-web is enabled to avoid errors with autodoc
+if "swh.web.admin" in settings.SWH_DJANGO_APPS:
+    config = get_config()
 
-oidc_enabled = bool(config["keycloak"]["server_url"])
+    oidc_enabled = bool(config["keycloak"]["server_url"])
 
-if oidc_enabled:
-    # use swh-auth views in admin site for login/logout when webapp
-    # uses Keycloak for authentication
-    from swh.auth.django.views import oidc_login, oidc_logout
+    if oidc_enabled:
+        # use swh-auth views in admin site for login/logout when webapp
+        # uses Keycloak for authentication
+        from swh.auth.django.views import oidc_login, oidc_logout
 
-    admin.site.login = oidc_login  # type: ignore[assignment]
-    admin.site.logout = oidc_logout  # type: ignore[assignment]
+        admin.site.login = oidc_login  # type: ignore[assignment]
+        admin.site.logout = oidc_logout  # type: ignore[assignment]
 
-if "swh.web.add_forge_now" in settings.SWH_DJANGO_APPS:
-    # register add forge now request model as manageable by admin site
-    from swh.web.add_forge_now.models import Request
+    if "swh.web.add_forge_now" in settings.SWH_DJANGO_APPS:
+        # register add forge now request model as manageable by admin site
+        from swh.web.add_forge_now.models import Request
 
-    if not admin.site.is_registered(Request):
-        admin.site.register(Request)
+        if not admin.site.is_registered(Request):
+            admin.site.register(Request)
 
-if "swh.web.save_code_now" in settings.SWH_DJANGO_APPS:
-    # register save code now request model as manageable by admin site
-    from swh.web.save_code_now.models import SaveOriginRequest
+    if "swh.web.save_code_now" in settings.SWH_DJANGO_APPS:
+        # register save code now request model as manageable by admin site
+        from swh.web.save_code_now.models import SaveOriginRequest
 
-    if not admin.site.is_registered(SaveOriginRequest):
-        admin.site.register(SaveOriginRequest)
+        if not admin.site.is_registered(SaveOriginRequest):
+            admin.site.register(SaveOriginRequest)
 
-admin.site.site_header = "swh-web management"
-admin.site.site_title = "Software Heritage Web Application management"
+    admin.site.site_header = "swh-web management"
+    admin.site.site_title = "Software Heritage Web Application management"
 
-urlpatterns = [
-    url("manage/", admin.site.urls),
-]
+    urlpatterns = [
+        url("manage/", admin.site.urls),
+    ]
