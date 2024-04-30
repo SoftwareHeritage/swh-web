@@ -88,7 +88,7 @@ def inbound_email_for_pk(pk: int) -> str:
     )
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize(
     "add_forge_data",
     [
@@ -141,7 +141,7 @@ def test_add_forge_request_create_success_post(
     assert request.submitter_name == regular_user.username
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_create_success_form_encoded(client, regular_user):
     client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
@@ -167,7 +167,7 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
         "submitter_email": regular_user.email,
         "last_moderator": resp.data["last_moderator"],
         "last_modified_date": resp.data["last_modified_date"],
-        "inbound_email_address": inbound_email_for_pk(1),
+        "inbound_email_address": inbound_email_for_pk(resp.data["id"]),
         "forge_domain": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
     }
 
@@ -179,7 +179,7 @@ def test_add_forge_request_create_success_form_encoded(client, regular_user):
     assert request.submitter_name == regular_user.username
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_create_duplicate(api_client, regular_user):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
@@ -200,7 +200,7 @@ def test_add_forge_request_create_duplicate(api_client, regular_user):
     assert len(requests) == 1
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_create_invalid_forge_url(api_client, regular_user):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
@@ -221,13 +221,13 @@ def test_add_forge_request_create_invalid_forge_url(api_client, regular_user):
     }
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update_anonymous_user(api_client):
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
     check_api_post_response(api_client, url, status_code=403)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update_regular_user(api_client, regular_user):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
@@ -261,7 +261,7 @@ def test_add_forge_request_update_empty(api_client, regular_user, add_forge_mode
     check_api_post_response(api_client, url, status_code=400)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update_missing_field(
     api_client, regular_user, add_forge_moderator
 ):
@@ -275,12 +275,12 @@ def test_add_forge_request_update_missing_field(
     )
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update(api_client, regular_user, add_forge_moderator):
-    create_add_forge_request(api_client, regular_user)
+    resp = create_add_forge_request(api_client, regular_user)
 
     api_client.force_login(add_forge_moderator)
-    url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
+    url = reverse("api-1-add-forge-request-update", url_args={"id": resp.data["id"]})
 
     check_api_post_response(
         api_client, url, data={"text": "updating request"}, status_code=200
@@ -294,14 +294,14 @@ def test_add_forge_request_update(api_client, regular_user, add_forge_moderator)
     )
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update_invalid_new_status(
     api_client, regular_user, add_forge_moderator
 ):
-    create_add_forge_request(api_client, regular_user)
+    resp = create_add_forge_request(api_client, regular_user)
 
     api_client.force_login(add_forge_moderator)
-    url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
+    url = reverse("api-1-add-forge-request-update", url_args={"id": resp.data["id"]})
     check_api_post_response(
         api_client,
         url,
@@ -310,7 +310,7 @@ def test_add_forge_request_update_invalid_new_status(
     )
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_update_status_concurrent(
     api_client, regular_user, add_forge_moderator, mocker
 ):
@@ -319,10 +319,10 @@ def test_add_forge_request_update_status_concurrent(
     )
     _block_while_testing.side_effect = lambda: time.sleep(1)
 
-    create_add_forge_request(api_client, regular_user)
+    resp = create_add_forge_request(api_client, regular_user)
 
     api_client.force_login(add_forge_moderator)
-    url = reverse("api-1-add-forge-request-update", url_args={"id": 1})
+    url = reverse("api-1-add-forge-request-update", url_args={"id": resp.data["id"]})
 
     worker_ended = False
 
@@ -354,7 +354,7 @@ def test_add_forge_request_update_status_concurrent(
     assert worker_ended
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_anonymous(api_client, regular_user):
     url = reverse("api-1-add-forge-request-list")
 
@@ -432,7 +432,7 @@ def test_add_forge_request_list_moderator(
     assert resp.data == [other_forge_request, add_forge_request]
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_pagination(
     api_client, regular_user, api_request_factory
 ):
@@ -468,7 +468,7 @@ def test_add_forge_request_list_pagination(
     assert resp["Link"] == f'<{prev_url}>; rel="previous"'
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_submitter_filtering(
     api_client, regular_user, regular_user2
 ):
@@ -587,7 +587,7 @@ def test_add_forge_request_get_moderator(api_client, regular_user, add_forge_mod
     }
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_get_moderator_message_source(
     api_client, regular_user, add_forge_moderator
 ):
@@ -644,7 +644,7 @@ def test_add_forge_request_get_moderator_message_source(
     api_client.force_login(add_forge_moderator)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_get_invalid(api_client):
     url = reverse("api-1-add-forge-request-get", url_args={"id": 3})
     check_api_get_responses(api_client, url, status_code=400)

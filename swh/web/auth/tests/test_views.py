@@ -134,7 +134,7 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
     return decrypted_token
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_generate_bearer_token_authenticated_user_success(client, keycloak_oidc):
     """
     Authenticated user should be able to generate a bearer token using OIDC
@@ -153,7 +153,7 @@ def test_oidc_list_bearer_tokens_anonymous_user(client):
     check_http_get_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_list_bearer_tokens(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to list his tokens.
@@ -170,11 +170,8 @@ def test_oidc_list_bearer_tokens(client, keycloak_oidc):
     response = check_http_get_response(client, url, status_code=200)
     tokens_data = list(reversed(json.loads(response.content.decode("utf-8"))["data"]))
 
-    for oidc_token in OIDCUserOfflineTokens.objects.all():
-        assert (
-            oidc_token.creation_date.isoformat()
-            == tokens_data[oidc_token.id - 1]["creation_date"]
-        )
+    for i, oidc_token in enumerate(OIDCUserOfflineTokens.objects.all()):
+        assert oidc_token.creation_date.isoformat() == tokens_data[i]["creation_date"]
 
 
 def test_oidc_get_bearer_token_anonymous_user(client):
@@ -185,14 +182,14 @@ def test_oidc_get_bearer_token_anonymous_user(client):
     check_http_post_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_get_bearer_token(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to display a token.
     """
     nb_tokens = 3
 
-    for i in range(nb_tokens):
+    for _ in range(nb_tokens):
         token = _generate_and_test_bearer_token(client, keycloak_oidc)
 
         url = reverse("oidc-get-bearer-token")
@@ -201,13 +198,13 @@ def test_oidc_get_bearer_token(client, keycloak_oidc):
             client,
             url,
             status_code=200,
-            data={"token_id": i + 1},
+            data={"token_id": OIDCUserOfflineTokens.objects.last().id},
             content_type="text/plain",
         )
         assert response.content == token
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to display a token.
@@ -231,7 +228,7 @@ def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
             client,
             url,
             status_code=400,
-            data={"token_id": 1},
+            data={"token_id": OIDCUserOfflineTokens.objects.last().id},
             content_type="text/plain",
         )
         assert (
@@ -247,7 +244,7 @@ def test_oidc_revoke_bearer_tokens_anonymous_user(client):
     check_http_post_response(client, url, status_code=403)
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_revoke_bearer_tokens(client, keycloak_oidc):
     """
     User with correct credentials should be allowed to revoke tokens.
@@ -257,13 +254,15 @@ def test_oidc_revoke_bearer_tokens(client, keycloak_oidc):
     for _ in range(nb_tokens):
         _generate_and_test_bearer_token(client, keycloak_oidc)
 
+    token_ids = [token.id for token in OIDCUserOfflineTokens.objects.all()]
+
     url = reverse("oidc-revoke-bearer-tokens")
 
     check_http_post_response(
         client,
         url,
         status_code=200,
-        data={"token_ids": [1]},
+        data={"token_ids": [token_ids[0]]},
     )
     assert len(OIDCUserOfflineTokens.objects.all()) == 2
 
@@ -271,7 +270,7 @@ def test_oidc_revoke_bearer_tokens(client, keycloak_oidc):
         client,
         url,
         status_code=200,
-        data={"token_ids": [2, 3]},
+        data={"token_ids": token_ids[1:]},
     )
     assert len(OIDCUserOfflineTokens.objects.all()) == 0
 
@@ -287,7 +286,7 @@ def test_oidc_profile_view_anonymous_user(client):
     assert resp["location"] == login_url
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_oidc_profile_view(client, keycloak_oidc):
     """
     Authenticated users should be able to request the profile page

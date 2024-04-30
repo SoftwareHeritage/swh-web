@@ -271,7 +271,7 @@ def _create_mailmaps(client):
     return mailmaps
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_mailmap_list_datatables_no_parameters(client, mailmap_admin):
     client.force_login(mailmap_admin)
     mailmaps = _create_mailmaps(client)
@@ -289,7 +289,7 @@ def test_mailmap_list_datatables_no_parameters(client, mailmap_admin):
         assert mailmap_data["data"][i]["from_email"] == mailmaps[i]["from_email"]
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("sort_direction", ["asc", "desc"])
 def test_mailmap_list_datatables_ordering(client, mailmap_admin, sort_direction):
     client.force_login(mailmap_admin)
@@ -328,7 +328,7 @@ def test_mailmap_list_datatables_ordering(client, mailmap_admin, sort_direction)
         assert display_names == expected_display_names
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_mailmap_list_datatables_search(client, mailmap_admin):
     client.force_login(mailmap_admin)
     _create_mailmaps(client)

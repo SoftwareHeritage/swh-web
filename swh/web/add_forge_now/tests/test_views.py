@@ -53,11 +53,11 @@ def create_add_forge_requests(client, regular_user, regular_user2):
     return requests
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_datatables_no_parameters(
     client, regular_user, regular_user2
 ):
-    create_add_forge_requests(client, regular_user, regular_user2)
+    requests = create_add_forge_requests(client, regular_user, regular_user2)
 
     url = reverse("add-forge-request-list-datatables")
     resp = check_http_get_response(client, url, status_code=200)
@@ -69,8 +69,8 @@ def test_add_forge_request_list_datatables_no_parameters(
     assert data["recordsTotal"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
     assert len(data["data"]) == length
     # default ordering is by descending id
-    assert data["data"][0]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE
-    assert data["data"][-1]["id"] == NB_FORGE_TYPE * NB_FORGES_PER_TYPE - length + 1
+    assert data["data"][0]["id"] == requests[-1]["id"]
+    assert data["data"][-1]["id"] == requests[-1]["id"] - length + 1
     assert "submitter_name" not in data["data"][0]
 
 
@@ -160,7 +160,7 @@ def test_add_forge_request_list_datatables_ordering(
             assert page_forge_urls == expected_forge_urls
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_datatables_search(client, regular_user, regular_user2):
     create_add_forge_requests(client, regular_user, regular_user2)
 
@@ -187,7 +187,7 @@ def test_add_forge_request_list_datatables_search(client, regular_user, regular_
     assert page_forge_type == ["gitlab"] * NB_FORGES_PER_TYPE
 
 
-@pytest.mark.django_db(transaction=True, reset_sequences=True)
+@pytest.mark.django_db(transaction=True)
 def test_add_forge_request_list_datatables_user_requests(
     client, regular_user, regular_user2
 ):
