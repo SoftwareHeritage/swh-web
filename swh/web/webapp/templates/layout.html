@@ -262,55 +262,70 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
             </li>
           </ul>
         </nav>
-        {% if user.is_authenticated and not SWH_MIRROR_CONFIG %}
+        {% if user.is_authenticated %}
           <h6 class="nav-header">Administration</h6>
           <nav class="mt-2" aria-label="Administration">
             <ul class="nav nav-pills nav-sidebar flex-column"
                 data-widget="treeview"
                 role="menu"
                 data-accordion="false">
-              {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
-                <li class="nav-item swh-admin-menu-item swh-origin-save-admin-item"
-                    title="Save code now administration"
+              {% if "swh.web.admin" in SWH_DJANGO_APPS and user.is_staff %}
+                <li class="nav-item swh-admin-menu-item swh-origin-manage-item"
+                    title="Users administration"
                     role="menuitem">
-                  <a href="{% url 'admin-origin-save-requests' %}"
-                     class="nav-link swh-origin-save-admin-link">
-                    {% if pending_save_code_now_requests %}
-                      <div class="nav-icon mdi-stack">
-                        <i class="mdi mdi-24px mdi-camera"></i>
-                        <i class="mdi mdi-18px mdi-bell swh-notification-icon"></i>
-                      </div>
-                    {% else %}
-                      <i class="nav-icon mdi mdi-24px mdi-camera"></i>
-                    {% endif %}
-                    <p>Save code now</p>
+                  <a href="{% if oidc_enabled %}{{ keycloak.server_url }}admin/master/console/#/realms/{{ keycloak.realm_name }}/users{% else %}{% url 'admin:index' %}auth/user{% endif %}"
+                     class="nav-link swh-admin-manage-link"
+                     target="_blank"
+                     rel="noopener noreferrer">
+                    <i class="nav-icon mdi mdi-24px mdi-account-cog"></i>
+                    <p>Users & permissions</p>
                   </a>
                 </li>
               {% endif %}
-              {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
-                {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
-                  <li class="nav-item swh-admin-menu-item swh-add-forge-now-moderation-item"
-                      title="Add forge now moderation"
+              {% if not SWH_MIRROR_CONFIG %}
+                {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
+                  <li class="nav-item swh-admin-menu-item swh-origin-save-admin-item"
+                      title="Save code now administration"
                       role="menuitem">
-                    <a href="{% url 'add-forge-now-requests-moderation' %}"
-                       class="nav-link swh-add-forge-now-moderation-link">
-                      <i class="nav-icon mdi mdi-24px mdi-anvil"></i>
-                      <p>Add forge now</p>
+                    <a href="{% url 'admin-origin-save-requests' %}"
+                       class="nav-link swh-origin-save-admin-link">
+                      {% if pending_save_code_now_requests %}
+                        <div class="nav-icon mdi-stack">
+                          <i class="mdi mdi-24px mdi-camera"></i>
+                          <i class="mdi mdi-18px mdi-bell swh-notification-icon"></i>
+                        </div>
+                      {% else %}
+                        <i class="nav-icon mdi mdi-24px mdi-camera"></i>
+                      {% endif %}
+                      <p>Save code now</p>
                     </a>
                   </li>
                 {% endif %}
-              {% endif %}
-              {% if "swh.web.deposit" in SWH_DJANGO_APPS %}
-                {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
-                  <li class="nav-item swh-admin-menu-item swh-deposit-admin-item"
-                      title="Deposit administration"
-                      role="menuitem">
-                    <a href="{% url 'admin-deposit' %}"
-                       class="nav-link swh-deposit-admin-link">
-                      <i class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
-                      <p>Deposit</p>
-                    </a>
-                  </li>
+                {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+                  {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
+                    <li class="nav-item swh-admin-menu-item swh-add-forge-now-moderation-item"
+                        title="Add forge now moderation"
+                        role="menuitem">
+                      <a href="{% url 'add-forge-now-requests-moderation' %}"
+                         class="nav-link swh-add-forge-now-moderation-link">
+                        <i class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                        <p>Add forge now</p>
+                      </a>
+                    </li>
+                  {% endif %}
+                {% endif %}
+                {% if "swh.web.deposit" in SWH_DJANGO_APPS %}
+                  {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
+                    <li class="nav-item swh-admin-menu-item swh-deposit-admin-item"
+                        title="Deposit administration"
+                        role="menuitem">
+                      <a href="{% url 'admin-deposit' %}"
+                         class="nav-link swh-deposit-admin-link">
+                        <i class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
+                        <p>Deposit</p>
+                      </a>
+                    </li>
+                  {% endif %}
                 {% endif %}
               {% endif %}
               {% if "swh.web.mailmap" in SWH_DJANGO_APPS and MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
