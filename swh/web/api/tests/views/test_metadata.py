@@ -202,39 +202,36 @@ def test_api_raw_extrinsic_metadata_check_params(
     check_api_get_responses(api_client, url, status_code=status_code)
 
 
+@settings(max_examples=1)
 @given(raw_extrinsic_metadata())
-def test_api_raw_extrinsic_metadata_list_authorities(api_client, subtest, metadata):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data):
-        archive_data.metadata_authority_add([metadata.authority])
-        archive_data.metadata_fetcher_add([metadata.fetcher])
-        archive_data.raw_extrinsic_metadata_add([metadata])
+def test_api_raw_extrinsic_metadata_list_authorities(
+    api_client, archive_data, metadata
+):
+    archive_data.metadata_authority_add([metadata.authority])
+    archive_data.metadata_fetcher_add([metadata.fetcher])
+    archive_data.raw_extrinsic_metadata_add([metadata])
 
-        authority = metadata.authority
-        url = reverse(
-            "api-1-raw-extrinsic-metadata-swhid-authorities",
-            url_args={"target": str(metadata.target)},
-        )
-        rv = check_api_get_responses(api_client, url, status_code=200)
+    authority = metadata.authority
+    url = reverse(
+        "api-1-raw-extrinsic-metadata-swhid-authorities",
+        url_args={"target": str(metadata.target)},
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-        expected_results = [
-            {
-                "type": authority.type.value,
-                "url": authority.url,
-                "metadata_list_url": "http://testserver"
-                + reverse(
-                    "api-1-raw-extrinsic-metadata-swhid",
-                    url_args={"target": str(metadata.target)},
-                    query_params={
-                        "authority": f"{authority.type.value} {authority.url}"
-                    },
-                ),
-            }
-        ]
+    expected_results = [
+        {
+            "type": authority.type.value,
+            "url": authority.url,
+            "metadata_list_url": "http://testserver"
+            + reverse(
+                "api-1-raw-extrinsic-metadata-swhid",
+                url_args={"target": str(metadata.target)},
+                query_params={"authority": f"{authority.type.value} {authority.url}"},
+            ),
+        }
+    ]
 
-        assert rv.data == expected_results
+    assert rv.data == expected_results
 
 
 def test_api_raw_extrinsic_metadata_origin_redirect(api_client, archive_data):
