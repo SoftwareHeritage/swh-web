@@ -3,14 +3,17 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import os
+
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path as url
 
 from swh.web.config import get_config
 
-# check if admin app for swh-web is enabled to avoid errors with autodoc
-if "swh.web.admin" in settings.SWH_DJANGO_APPS:
+# prevent code execution when building documentation to avoid errors
+# with autodoc processing
+if "SWH_DOC_BUILD" not in os.environ:
     config = get_config()
 
     oidc_enabled = bool(config["keycloak"]["server_url"])
