@@ -10,7 +10,7 @@ import uuid
 import iso8601
 import pytest
 
-from swh.scheduler.utils import create_oneshot_task_dict
+from swh.scheduler.utils import create_oneshot_task
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_TASK_FAILED,
@@ -66,18 +66,16 @@ def _fill_scheduler_db(
     task = task_run = None
     if not task_archived:
         task = swh_scheduler.create_tasks(
-            [create_oneshot_task_dict("load-git", repo_url=_origin_url)]
+            [create_oneshot_task("load-git", repo_url=_origin_url)]
         )[0]
         backend_id = str(uuid.uuid4())
 
         if task_status != "next_run_not_scheduled":
-            swh_scheduler.schedule_task_run(task["id"], backend_id)
+            swh_scheduler.schedule_task_run(task.id, backend_id)
 
         if task_run_status is not None:
             swh_scheduler.start_task_run(backend_id)
-            task_run = dict(
-                swh_scheduler.end_task_run(backend_id, task_run_status).items()
-            )
+            task_run = swh_scheduler.end_task_run(backend_id, task_run_status)
     return task, task_run
 
 
@@ -131,14 +129,14 @@ def _get_save_origin_task_info_test(
 
     expected_result = (
         {
-            "type": task["type"],
-            "arguments": task["arguments"],
-            "id": task["id"],
-            "backend_id": task_run["backend_id"],
-            "scheduled": task_run["scheduled"],
-            "started": task_run["started"],
-            "ended": task_run["ended"],
-            "status": task_run["status"],
+            "type": task.type,
+            "arguments": task.arguments.to_dict(),
+            "id": task.id,
+            "backend_id": task_run.backend_id,
+            "scheduled": task_run.scheduled,
+            "started": task_run.started,
+            "ended": task_run.ended,
+            "status": task_run.status,
             "visit_status": sor.visit_status,
         }
         if not task_archived

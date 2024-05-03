@@ -18,8 +18,8 @@ from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
-from swh.scheduler.model import ListedOrigin
-from swh.scheduler.utils import create_oneshot_task_dict
+from swh.scheduler.model import ListedOrigin, Task, TaskRun
+from swh.scheduler.utils import create_oneshot_task
 from swh.web.config import get_config, scheduler
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
@@ -331,23 +331,23 @@ def _check_visit_update_status(
 
 
 def _compute_task_loading_status(
-    task: Optional[Dict[str, Any]] = None,
-    task_run: Optional[Dict[str, Any]] = None,
+    task: Optional[Task] = None,
+    task_run: Optional[TaskRun] = None,
 ) -> Optional[str]:
     loading_task_status: Optional[str] = None
     # First determine the loading task status out of task information
     if task:
-        loading_task_status = _save_task_status[task["status"]]
+        loading_task_status = _save_task_status[task.status]
         if task_run:
-            loading_task_status = _save_task_run_status[task_run["status"]]
+            loading_task_status = _save_task_run_status[task_run.status]
 
     return loading_task_status
 
 
 def _update_save_request_info(
     save_request: SaveOriginRequest,
-    task: Optional[Dict[str, Any]] = None,
-    task_run: Optional[Dict[str, Any]] = None,
+    task: Optional[Task] = None,
+    task_run: Optional[TaskRun] = None,
 ) -> SaveOriginRequestInfo:
     """Update save request information out of the visit status and fallback to the task and
     task_run information if the visit status is missing.
@@ -418,7 +418,7 @@ def _update_save_request_info(
 
     sr_dict = save_request.to_dict()
     if task:
-        sr_dict["next_run"] = task["next_run"]
+        sr_dict["next_run"] = task.next_run
 
     return sr_dict
 
@@ -555,7 +555,7 @@ def create_save_origin_request(
                 if from_webhook and task:
                     # a scheduler task whose execution is in the future has already been
                     # created for that webhook save request, no need to recreate a new one
-                    if task["next_run"] > datetime.now(tz=timezone.utc):
+                    if task.next_run > datetime.now(tz=timezone.utc):
                         can_create_task = False
 
         if can_create_task:
@@ -572,23 +572,23 @@ def create_save_origin_request(
                     )
 
             # effectively create the scheduler task
-            task_dict = create_oneshot_task_dict(
+            task = create_oneshot_task(
                 visit_type_tasks[visit_type], next_run=next_run, **task_kwargs
             )
 
-            task = scheduler().create_tasks([task_dict])[0]
+            task = scheduler().create_tasks([task])[0]
 
             # pending save request has been accepted
             if sor and sor.status != SAVE_REQUEST_ACCEPTED:
                 sor.status = SAVE_REQUEST_ACCEPTED
-                sor.loading_task_id = task["id"]
+                sor.loading_task_id = task.id
                 sor.save()
             else:
                 sor = SaveOriginRequest.objects.create(
                     visit_type=visit_type,
                     origin_url=origin_url,
                     status=save_request_status,
-                    loading_task_id=task["id"],
+                    loading_task_id=task.id,
                     user_ids=f'"{user_id}"' if user_id else None,
                     from_webhook=from_webhook,
                     webhook_origin=webhook_origin,
@@ -663,9 +663,9 @@ def update_save_origin_requests_from_queryset(
     if task_ids:
         try:
             tasks = scheduler().get_tasks(task_ids)
-            tasks = {task["id"]: task for task in tasks}
+            tasks = {task.id: task for task in tasks}
             task_runs = scheduler().get_task_runs(tasks)
-            task_runs = {task_run["task"]: task_run for task_run in task_runs}
+            task_runs = {task_run.task: task_run for task_run in task_runs}
         except Exception:
             # allow to avoid mocking api GET responses for /origin/save endpoint when
             # running cypress tests as scheduler is not available
@@ -827,14 +827,14 @@ def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
     if task is None:
         return task_info
 
-    task_run = scheduler().get_task_runs([task["id"]])
+    task_run = scheduler().get_task_runs([task.id])
     task_run = task_run[0] if task_run else None
     if task_run is None:
         return task_info
-    task_info.update(task_run)
-    task_info["type"] = task["type"]
-    task_info["arguments"] = task["arguments"]
-    task_info["id"] = task_run["task"]
+    task_info.update(task_run.to_dict())
+    task_info["type"] = task.type
+    task_info["arguments"] = task.arguments.to_dict()
+    task_info["id"] = task_run.task
     del task_info["task"]
     del task_info["metadata"]
     # Enrich the task info with the loading visit status

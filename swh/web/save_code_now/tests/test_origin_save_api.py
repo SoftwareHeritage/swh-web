@@ -135,17 +135,15 @@ def check_save_request_status(
     snapshot_id=None,
 ):
     if expected_task_status != SAVE_TASK_NOT_CREATED:
-        task = dict(swh_scheduler.search_tasks()[0].items())
+        task = swh_scheduler.search_tasks()[0]
         backend_id = str(uuid.uuid4())
 
     if scheduler_task_status != "next_run_not_scheduled":
-        swh_scheduler.schedule_task_run(task["id"], backend_id)
+        swh_scheduler.schedule_task_run(task.id, backend_id)
 
     if scheduler_task_run_status is not None:
         swh_scheduler.start_task_run(backend_id)
-        task_run = dict(
-            swh_scheduler.end_task_run(backend_id, scheduler_task_run_status).items()
-        )
+        task_run = swh_scheduler.end_task_run(backend_id, scheduler_task_run_status)
 
     url = reverse(
         "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url}
@@ -188,7 +186,7 @@ def check_save_request_status(
         # Check that save task status is still available when
         # the scheduler task has been archived
         swh_scheduler.delete_archived_tasks(
-            [{"task_id": task["id"], "task_run_id": task_run["id"]}]
+            [{"task_id": task.id, "task_run_id": task_run.id}]
         )
         response = check_api_get_responses(api_client, url, status_code=200)
         save_request_data = response.data[0]

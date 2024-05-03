@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -52,8 +52,7 @@ def origin_save_webhook_receiver_test(
 
     tasks = swh_scheduler.search_tasks(task_type=f"load-{expected_visit_type}")
     assert tasks
-    task = dict(tasks[0].items())
-    assert task["arguments"]["kwargs"]["url"] == expected_origin_url
+    assert tasks[0].arguments.kwargs["url"] == expected_origin_url
 
     request = SaveOriginRequest.objects.get(
         origin_url=expected_origin_url, visit_type=expected_visit_type
@@ -209,7 +208,7 @@ def origin_save_webhook_receiver_cooldown_requests_test(
     # first webhook request should be executed immediately
     first_sor = get_save_origin_request(resp.data["id"])
     task = swh_scheduler.get_tasks([first_sor["loading_task_id"]])[0]
-    assert task["next_run"] <= datetime.now(tz=timezone.utc)
+    assert task.next_run <= datetime.now(tz=timezone.utc)
 
     # simulate first task successful execution
     last_sor = SaveOriginRequest.objects.first()
@@ -232,8 +231,8 @@ def origin_save_webhook_receiver_cooldown_requests_test(
 
     # second webhook request in a row should delay loading task execution
     assert second_sor["id"] != first_sor["id"]
-    assert task["next_run"] > datetime.now(tz=timezone.utc)
-    assert task["next_run"] == iso8601.parse_date(
+    assert task.next_run > datetime.now(tz=timezone.utc)
+    assert task.next_run == iso8601.parse_date(
         first_sor["save_request_date"]
     ) + timedelta(minutes=WEBHOOK_REQUEST_COOLDOWN_INTERVAL)
 
@@ -262,7 +261,7 @@ def origin_save_webhook_receiver_cooldown_requests_test(
         sor.visit_status = "full"
         sor.save()
     swh_scheduler.set_status_tasks(
-        [task["id"]],
+        [task.id],
         next_run=datetime.now(tz=timezone.utc)
         - timedelta(minutes=WEBHOOK_REQUEST_COOLDOWN_INTERVAL),
     )
@@ -280,4 +279,4 @@ def origin_save_webhook_receiver_cooldown_requests_test(
 
     # fourth webhhok request should be executed immediately
     assert fourth_sor["id"] != third_sor["id"]
-    assert task["next_run"] <= datetime.now(tz=timezone.utc)
+    assert task.next_run <= datetime.now(tz=timezone.utc)
