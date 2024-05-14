@@ -536,3 +536,40 @@ def api_origin_intrinsic_metadata(request: Request):
         enrich_fn=enrich_origin,
         request=request,
     )
+
+
+@api_route(r"/extrinsic-metadata/origin/", "api-origin-extrinsic-metadata")
+@api_doc("/extrinsic-metadata/origin/", category="Metadata")
+@format_docstring()
+def api_origin_extrinsic_metadata(request: Request):
+    """
+    .. http:get:: /api/1/origin/(origin_url)/extrinsic-metadata
+
+        Get extrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
+
+        :query str origin_url: parameter for origin url
+
+        :>json string ???: extrinsic metadata field of the origin
+
+        {common_headers}
+
+        :statuscode 200: no error
+        :statuscode 404: requested origin cannot be found in the archive
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`extrinsic-metadata/origin/origin_url=https://github.com/node-red/node-red-nodegen`
+    """
+    origin_url = request.GET.get("origin_url")
+    if origin_url is None:
+        raise BadInputExc("An origin URL must be provided as query parameter.")
+    return api_lookup(
+        archive.lookup_origin_extrinsic_metadata,
+        origin_url,
+        lookup_similar_urls=False,
+        notfound_msg=f"Origin with url {origin_url} not found",
+        enrich_fn=enrich_origin,
+        request=request,
+    )

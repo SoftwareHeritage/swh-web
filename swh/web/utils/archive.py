@@ -447,6 +447,38 @@ def lookup_origin_intrinsic_metadata(
     return result
 
 
+def lookup_origin_extrinsic_metadata(
+    origin_url: str, lookup_similar_urls: bool = True
+) -> Dict[str, Any]:
+    """Return extrinsic metadata for origin whose origin matches given
+    origin.
+
+    Args:
+        origin_url: origin url
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
+
+    Raises:
+        NotFoundExc when the origin is not found
+
+    Returns:
+        origin metadata.
+
+    """
+    origins = [
+        lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
+    ]
+    origin_info = storage.origin_get(origins)[0]
+    if not origin_info:
+        raise NotFoundExc(f"Origin with url {origin_url} not found!")
+
+    match = _first_element(idx_storage.origin_extrinsic_metadata_get(origins))
+    result = {}
+    if match:
+        result = match.metadata
+    return result
+
+
 def _to_sha1_bin(sha1_hex):
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
         sha1_hex, ["sha1"], "Only sha1_git is supported."  # HACK: sha1_git really

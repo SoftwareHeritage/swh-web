@@ -930,6 +930,16 @@ def test_api_origin_intrinsic_metadata(api_client, origin):
     assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
 
 
+def test_api_origin_extrinsic_metadata(api_client, origin):
+    url = reverse(
+        "api-origin-extrinsic-metadata", query_params={"origin_url": origin["url"]}
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    assert ORIGIN_METADATA_KEY in rv.data
+    assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
+
+
 def test_api_origin_metadata_search_invalid(api_client, mocker):
     mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
     url = reverse("api-1-origin-metadata-search")

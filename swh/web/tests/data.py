@@ -16,7 +16,10 @@ from swh.counters import get_counters
 from swh.indexer.fossology_license import FossologyLicenseIndexer
 from swh.indexer.mimetype import MimetypeIndexer
 from swh.indexer.storage import get_indexer_storage
-from swh.indexer.storage.model import OriginIntrinsicMetadataRow
+from swh.indexer.storage.model import (
+    OriginExtrinsicMetadataRow,
+    OriginIntrinsicMetadataRow,
+)
 from swh.loader.git.from_disk import GitLoaderFromArchive
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import (
@@ -314,18 +317,30 @@ def _init_tests_data():
                     )
                 )
                 if b"master" in branch_name:
-                    # Add some origin intrinsic metadata for tests
+                    # Add some origin intrinsic and extrinsic metadata for tests
                     metadata = common_metadata
                     metadata.update(origin.get("metadata", {}))
                     revision = storage.revision_get([branch_data.target])[0]
-                    origin_metadata = OriginIntrinsicMetadataRow(
+                    origin_intrinsic_metadata = OriginIntrinsicMetadataRow(
                         id=origin["url"],
                         from_directory=revision.directory,
                         indexer_configuration_id=idx_tool["id"],
                         metadata=metadata,
                         mappings=[],
                     )
-                    idx_storage.origin_intrinsic_metadata_add([origin_metadata])
+                    idx_storage.origin_intrinsic_metadata_add(
+                        [origin_intrinsic_metadata]
+                    )
+                    origin_extrinsic_metadata = OriginExtrinsicMetadataRow(
+                        id=origin["url"],
+                        from_remd_id=revision.directory,
+                        indexer_configuration_id=idx_tool["id"],
+                        metadata=metadata,
+                        mappings=[],
+                    )
+                    idx_storage.origin_extrinsic_metadata_add(
+                        [origin_extrinsic_metadata]
+                    )
                     search.origin_update([{"url": origin["url"], "jsonld": metadata}])
 
                     ORIGIN_MASTER_REVISION[origin["url"]] = hash_to_hex(
