@@ -24,7 +24,7 @@ from swh.model.model import (
     ReleaseTargetType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
@@ -1118,7 +1118,7 @@ def test_browse_content_snapshot_context_release_directory_target(
     snapshot = Snapshot(
         branches={
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -1217,13 +1217,13 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
     snapshot = Snapshot(
         branches={
             first_release_name.encode(): SnapshotBranch(
-                target=first_release.id, target_type=TargetType.RELEASE
+                target=first_release.id, target_type=SnapshotTargetType.RELEASE
             ),
             second_release_name.encode(): SnapshotBranch(
-                target=second_release.id, target_type=TargetType.RELEASE
+                target=second_release.id, target_type=SnapshotTargetType.RELEASE
             ),
             b"HEAD": SnapshotBranch(
-                target=first_release_name.encode(), target_type=TargetType.ALIAS
+                target=first_release_name.encode(), target_type=SnapshotTargetType.ALIAS
             ),
         },
     )

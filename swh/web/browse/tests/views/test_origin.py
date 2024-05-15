@@ -17,7 +17,7 @@ from swh.model.model import (
     OriginVisitStatus,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
@@ -578,7 +578,7 @@ def test_origin_empty_snapshot_null_revision(client, archive_data, new_origin):
         branches={
             b"HEAD": SnapshotBranch(
                 target="refs/head/master".encode(),
-                target_type=TargetType.ALIAS,
+                target_type=SnapshotTargetType.ALIAS,
             ),
             b"refs/head/master": None,
         }
@@ -678,7 +678,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
         branches={
             branch_name.encode(): SnapshotBranch(
                 target=hash_to_bytes(unknown_revision),
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             )
         }
     )

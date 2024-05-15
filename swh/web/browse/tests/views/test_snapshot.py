@@ -23,7 +23,7 @@ from swh.model.model import (
     RevisionType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
     TimestampWithTimezone,
 )
 from swh.storage.utils import now
@@ -135,15 +135,15 @@ def test_snapshot_browse_branches_targeting_multiple_types(
         branches={
             b"content": SnapshotBranch(
                 target=hash_to_bytes(content_text["sha1_git"]),
-                target_type=TargetType.CONTENT,
+                target_type=SnapshotTargetType.CONTENT,
             ),
             b"directory": SnapshotBranch(
                 target=hash_to_bytes(directory),
-                target_type=TargetType.DIRECTORY,
+                target_type=SnapshotTargetType.DIRECTORY,
             ),
             b"revision": SnapshotBranch(
                 target=hash_to_bytes(revision),
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         },
     )
@@ -429,10 +429,10 @@ def test_browse_snapshot_log_no_revisions(client, archive_data, directory):
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=release_name.encode(), target_type=TargetType.ALIAS
+                target=release_name.encode(), target_type=SnapshotTargetType.ALIAS
             ),
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -479,7 +479,7 @@ def test_browse_snapshot_log_when_revisions(
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=revision.id, target_type=TargetType.REVISION
+                target=revision.id, target_type=SnapshotTargetType.REVISION
             ),
         },
     )
@@ -521,7 +521,7 @@ def test_browse_snapshot_single_branch_targeting_content(
             branches={
                 branch_name.encode(): SnapshotBranch(
                     target=hash_to_bytes(content_text["sha1_git"]),
-                    target_type=TargetType.CONTENT,
+                    target_type=SnapshotTargetType.CONTENT,
                 ),
             },
         )
@@ -530,11 +530,11 @@ def test_browse_snapshot_single_branch_targeting_content(
             branches={
                 branch_name.encode(): SnapshotBranch(
                     target=b"content",
-                    target_type=TargetType.ALIAS,
+                    target_type=SnapshotTargetType.ALIAS,
                 ),
                 branch_name.encode(): SnapshotBranch(
                     target=hash_to_bytes(content_text["sha1_git"]),
-                    target_type=TargetType.CONTENT,
+                    target_type=SnapshotTargetType.CONTENT,
                 ),
             },
         )
@@ -628,7 +628,7 @@ def test_browse_snapshot_single_branch_targeting_directory(
             branches={
                 branch_name.encode(): SnapshotBranch(
                     target=hash_to_bytes(directory),
-                    target_type=TargetType.DIRECTORY,
+                    target_type=SnapshotTargetType.DIRECTORY,
                 ),
             },
         )
@@ -637,11 +637,11 @@ def test_browse_snapshot_single_branch_targeting_directory(
             branches={
                 branch_name.encode(): SnapshotBranch(
                     target=b"directory",
-                    target_type=TargetType.ALIAS,
+                    target_type=SnapshotTargetType.ALIAS,
                 ),
                 b"directory": SnapshotBranch(
                     target=hash_to_bytes(directory),
-                    target_type=TargetType.DIRECTORY,
+                    target_type=SnapshotTargetType.DIRECTORY,
                 ),
             },
         )
@@ -726,19 +726,19 @@ def test_browse_snapshot_with_branches_targetting_same_release(
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=second_release_branch_name, target_type=TargetType.ALIAS
+                target=second_release_branch_name, target_type=SnapshotTargetType.ALIAS
             ),
             second_release_branch_name: SnapshotBranch(
-                target=second_release.id, target_type=TargetType.RELEASE
+                target=second_release.id, target_type=SnapshotTargetType.RELEASE
             ),
             b"v2": SnapshotBranch(
-                target=second_release.id, target_type=TargetType.RELEASE
+                target=second_release.id, target_type=SnapshotTargetType.RELEASE
             ),
             firs_release_branch_name: SnapshotBranch(
-                target=first_release.id, target_type=TargetType.RELEASE
+                target=first_release.id, target_type=SnapshotTargetType.RELEASE
             ),
             b"v1": SnapshotBranch(
-                target=first_release.id, target_type=TargetType.RELEASE
+                target=first_release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )

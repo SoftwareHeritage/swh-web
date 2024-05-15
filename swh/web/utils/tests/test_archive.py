@@ -23,7 +23,7 @@ from swh.model.model import (
     Revision,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
 )
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
@@ -1010,19 +1010,19 @@ def test_lookup_snapshot_sizes_with_filtering(archive_data, revision):
         branches={
             b"refs/heads/master": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/heads/incoming": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/pull/1": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/pull/2": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         },
     )
@@ -1056,7 +1056,7 @@ def test_lookup_snapshot_empty_branch_list(archive_data, revision):
         branches={
             b"refs/heads/master": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         },
     )
@@ -1079,23 +1079,23 @@ def test_lookup_snapshot_branch_names_filtering(archive_data, revision):
         branches={
             b"refs/heads/master": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/heads/incoming": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/pull/1": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             b"refs/pull/2": SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
             "non_ascii_name_é".encode(): SnapshotBranch(
                 target=rev_id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         },
     )
@@ -1130,19 +1130,19 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
     for i in range(nb_branches_by_target_type):
         branches[f"branch/directory/bar{i}".encode()] = SnapshotBranch(
             target=hash_to_bytes(directory),
-            target_type=TargetType.DIRECTORY,
+            target_type=SnapshotTargetType.DIRECTORY,
         )
         branches[f"branch/revision/bar{i}".encode()] = SnapshotBranch(
             target=hash_to_bytes(revision),
-            target_type=TargetType.REVISION,
+            target_type=SnapshotTargetType.REVISION,
         )
         branches[f"branch/directory/{pattern}{i}".encode()] = SnapshotBranch(
             target=hash_to_bytes(directory),
-            target_type=TargetType.DIRECTORY,
+            target_type=SnapshotTargetType.DIRECTORY,
         )
         branches[f"branch/revision/{pattern}{i}".encode()] = SnapshotBranch(
             target=hash_to_bytes(revision),
-            target_type=TargetType.REVISION,
+            target_type=SnapshotTargetType.REVISION,
         )
 
     snapshot = Snapshot(branches=branches)

@@ -11,7 +11,7 @@ from swh.model.model import (
     ReleaseTargetType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
 )
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
@@ -441,10 +441,10 @@ def test_get_snapshot_context_revision_release(archive_data, revision):
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=release_name.encode(), target_type=TargetType.ALIAS
+                target=release_name.encode(), target_type=SnapshotTargetType.ALIAS
             ),
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -453,7 +453,7 @@ def test_get_snapshot_context_revision_release(archive_data, revision):
     snapshot_no_head = Snapshot(
         branches={
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -490,10 +490,10 @@ def test_get_snapshot_context_directory_release(archive_data, directory):
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=release_name.encode(), target_type=TargetType.ALIAS
+                target=release_name.encode(), target_type=SnapshotTargetType.ALIAS
             ),
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -502,7 +502,7 @@ def test_get_snapshot_context_directory_release(archive_data, directory):
     snapshot_no_head = Snapshot(
         branches={
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )

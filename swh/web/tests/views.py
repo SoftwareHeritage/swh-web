@@ -26,7 +26,7 @@ from swh.model.model import (
     RevisionType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
     TimestampWithTimezone,
 )
 from swh.storage.utils import now
@@ -242,7 +242,7 @@ def add_origin_with_contents(request):
     snapshot = Snapshot(
         branches={
             b"main": SnapshotBranch(
-                target=revision.id, target_type=TargetType.REVISION
+                target=revision.id, target_type=SnapshotTargetType.REVISION
             ),
         },
     )

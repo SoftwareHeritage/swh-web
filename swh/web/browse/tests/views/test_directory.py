@@ -24,7 +24,7 @@ from swh.model.model import (
     RevisionType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
     TimestampWithTimezone,
 )
 from swh.model.swhids import ObjectType
@@ -100,11 +100,11 @@ def test_sub_directory_view_origin_context(
         branches={
             b"HEAD": SnapshotBranch(
                 target="refs/head/master".encode(),
-                target_type=TargetType.ALIAS,
+                target_type=SnapshotTargetType.ALIAS,
             ),
             b"refs/head/master": SnapshotBranch(
                 target=revision.id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         }
     )
@@ -539,7 +539,7 @@ def test_browse_directory_snapshot_context_release_directory_target(
     snapshot = Snapshot(
         branches={
             release_name.encode(): SnapshotBranch(
-                target=release.id, target_type=TargetType.RELEASE
+                target=release.id, target_type=SnapshotTargetType.RELEASE
             ),
         },
     )
@@ -636,11 +636,11 @@ def test_directory_view_missing_readme_bytes(client, archive_data, person, date)
         branches={
             b"HEAD": SnapshotBranch(
                 target="refs/head/master".encode(),
-                target_type=TargetType.ALIAS,
+                target_type=SnapshotTargetType.ALIAS,
             ),
             b"refs/head/master": SnapshotBranch(
                 target=revision.id,
-                target_type=TargetType.REVISION,
+                target_type=SnapshotTargetType.REVISION,
             ),
         }
     )

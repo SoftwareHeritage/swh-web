@@ -22,7 +22,7 @@ from swh.model.model import (
     ReleaseTargetType,
     Snapshot,
     SnapshotBranch,
-    TargetType,
+    SnapshotTargetType,
     TimestampWithTimezone,
 )
 from swh.model.swhids import ObjectType, QualifiedSWHID
@@ -487,7 +487,7 @@ def test_get_swhids_info_characters_and_url_escaping(archive_data, client):
     snapshot = Snapshot(
         branches={
             b"HEAD": SnapshotBranch(
-                target=directory.id, target_type=TargetType.DIRECTORY
+                target=directory.id, target_type=SnapshotTargetType.DIRECTORY
             ),
         },
     )
@@ -876,7 +876,7 @@ def test_resolve_dir_swhid_with_release_targeting_dir_anchor(archive_data, direc
     snapshot_release_dir_target = Snapshot(
         branches={
             b"v0.0.1": SnapshotBranch(
-                target=release_dir_target.id, target_type=TargetType.RELEASE
+                target=release_dir_target.id, target_type=SnapshotTargetType.RELEASE
             )
         }
     )
