@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023  The Software Heritage developers
+# Copyright (C) 2020-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,9 +9,12 @@ from urllib.parse import quote, unquote, urlparse
 
 import pytest
 
+from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
     Origin,
+    OriginVisit,
+    OriginVisitStatus,
     Person,
     Release,
     Snapshot,
@@ -19,8 +22,10 @@ from swh.model.model import (
     TargetType,
     TimestampWithTimezone,
 )
+from swh.model.model import Directory, DirectoryEntry
 from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType, QualifiedSWHID
+from swh.storage.utils import now
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.tests.data import random_sha1
 from swh.web.tests.helpers import check_html_get_response
@@ -456,17 +461,66 @@ def test_get_swhids_info_origin_snapshot_context(
                 assert swhid_rel_parsed.qualifiers() == expected_rev_context
 
 
-def test_get_swhids_info_characters_and_url_escaping(
-    archive_data, directory, origin, client
-):
-    snapshot_context = get_snapshot_context(origin_url=origin["url"])
+def test_get_swhids_info_characters_and_url_escaping(archive_data, client):
     new_origin_url = "http://example.org/?project=abc;def%"
+    sub_directory = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"bar%",
+                type="dir",
+                target=Directory(entries=()).id,
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    directory = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"foo;",
+                type="dir",
+                target=sub_directory.id,
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    snapshot = Snapshot(
+        branches={
+            b"HEAD": SnapshotBranch(
+                target=directory.id, target_type=TargetType.DIRECTORY
+            ),
+        },
+    )
+    archive_data.directory_add([directory, sub_directory])
+    archive_data.snapshot_add([snapshot])
     archive_data.origin_add([Origin(url=new_origin_url)])
+    origin_visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin_url,
+                date=now(),
+                type="git",
+            )
+        ]
+    )[0]
+    visit_status = OriginVisitStatus(
+        origin=new_origin_url,
+        visit=origin_visit.visit,
+        date=now(),
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+    snapshot_context = get_snapshot_context(origin_url=new_origin_url)
     snapshot_context["origin_info"]["url"] = new_origin_url
     path = "/foo;/bar%"
 
     swhid_info = get_swhids_info(
-        [SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=directory)],
+        [
+            SWHObjectInfo(
+                object_type=ObjectType.DIRECTORY,
+                object_id=snapshot_context["root_directory"],
+            )
+        ],
         snapshot_context=snapshot_context,
         extra_context={"path": path},
     )[0]
@@ -481,7 +535,7 @@ def test_get_swhids_info_characters_and_url_escaping(
     swhid_url = swhid_info["swhid_with_context_url"]
     parsed_swhid_url = urlparse(swhid_url)
     assert (
-        "origin=http://example.org/%253Fproject%253Dabc%253Bdef%2525;"
+        "origin=http://example.org/%253Fproject%25253Dabc%25253Bdef%252525;"
         in parsed_swhid_url.path
     )
     assert "path=/foo%253B/bar%2525" in parsed_swhid_url.path
@@ -493,8 +547,9 @@ def test_get_swhids_info_characters_and_url_escaping(
         swhid_info["swhid_with_context"]
     )
 
-    # check SWHID can be successfully resolved
-    check_html_get_response(client, swhid_url, status_code=302)
+    # check SWHID can be successfully resolved and browsed
+    resp = check_html_get_response(client, swhid_url, status_code=302)
+    check_html_get_response(client, resp["location"], status_code=200)
 
 
 def test_resolve_swhids_snapshot_context(
