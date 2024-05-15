@@ -12,18 +12,19 @@ import pytest
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
+    Directory,
+    DirectoryEntry,
     Origin,
     OriginVisit,
     OriginVisitStatus,
     Person,
     Release,
+    ReleaseTargetType,
     Snapshot,
     SnapshotBranch,
     TargetType,
     TimestampWithTimezone,
 )
-from swh.model.model import Directory, DirectoryEntry
-from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType, QualifiedSWHID
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -856,7 +857,7 @@ def test_resolve_file_entry_swhid_with_anchor_directory(
 def test_resolve_dir_swhid_with_release_targeting_dir_anchor(archive_data, directory):
     release_dir_target = Release(
         target=hash_to_bytes(directory),
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         date=TimestampWithTimezone.from_datetime(
             datetime.datetime(2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc)
         ),

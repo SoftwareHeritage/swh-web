@@ -16,15 +16,16 @@ from django.utils.html import escape
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
+    Directory,
+    DirectoryEntry,
     OriginVisit,
     OriginVisitStatus,
     Release,
+    ReleaseTargetType,
     Snapshot,
     SnapshotBranch,
     TargetType,
 )
-from swh.model.model import Directory, DirectoryEntry
-from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
@@ -1109,7 +1110,7 @@ def test_browse_content_snapshot_context_release_directory_target(
         name=release_name.encode(),
         message=f"release {release_name}".encode(),
         target=hash_to_bytes(directory_with_files),
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         synthetic=True,
     )
     archive_data.release_add([release])
@@ -1200,7 +1201,7 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
         name=first_release_name.encode(),
         message=f"release {first_release_name}".encode(),
         target=first_release_dir.id,
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         synthetic=True,
     )
     second_release_name = "v2.0.0"
@@ -1208,7 +1209,7 @@ def test_browse_content_from_dir_with_origin_context_and_breadcrumbs(
         name=second_release_name.encode(),
         message=f"release {second_release_name}".encode(),
         target=first_release_dir.id,
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         synthetic=True,
     )
     archive_data.release_add([first_release, second_release])

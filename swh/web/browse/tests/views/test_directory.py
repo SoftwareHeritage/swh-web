@@ -13,10 +13,13 @@ from django.utils.html import escape
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
+    Directory,
+    DirectoryEntry,
     Origin,
     OriginVisit,
     OriginVisitStatus,
     Release,
+    ReleaseTargetType,
     Revision,
     RevisionType,
     Snapshot,
@@ -24,8 +27,6 @@ from swh.model.model import (
     TargetType,
     TimestampWithTimezone,
 )
-from swh.model.model import Directory, DirectoryEntry
-from swh.model.model import ObjectType as ModelObjectType
 from swh.model.swhids import ObjectType
 from swh.storage.utils import now
 from swh.web.browse.snapshot_context import process_snapshot_branches
@@ -530,7 +531,7 @@ def test_browse_directory_snapshot_context_release_directory_target(
         name=release_name.encode(),
         message=f"release {release_name}".encode(),
         target=hash_to_bytes(directory_with_subdirs),
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         synthetic=True,
     )
     archive_data.release_add([release])

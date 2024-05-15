@@ -6,8 +6,13 @@
 import random
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.model import ObjectType as ModelObjectType
-from swh.model.model import Release, Snapshot, SnapshotBranch, TargetType
+from swh.model.model import (
+    Release,
+    ReleaseTargetType,
+    Snapshot,
+    SnapshotBranch,
+    TargetType,
+)
 from swh.model.swhids import ObjectType
 from swh.web.browse.snapshot_context import (
     _get_release,
@@ -428,7 +433,7 @@ def test_get_snapshot_context_revision_release(archive_data, revision):
         name=release_name.encode(),
         message=f"release {release_name}".encode(),
         target=hash_to_bytes(revision),
-        target_type=ModelObjectType.REVISION,
+        target_type=ReleaseTargetType.REVISION,
         synthetic=True,
     )
     archive_data.release_add([release])
@@ -477,7 +482,7 @@ def test_get_snapshot_context_directory_release(archive_data, directory):
         name=release_name.encode(),
         message=f"release {release_name}".encode(),
         target=hash_to_bytes(directory),
-        target_type=ModelObjectType.DIRECTORY,
+        target_type=ReleaseTargetType.DIRECTORY,
         synthetic=True,
     )
     archive_data.release_add([release])
