@@ -24,7 +24,7 @@ from swh.web.tests.data import (
     ORIGIN_METADATA_KEY,
     ORIGIN_METADATA_VALUE,
 )
-from swh.web.tests.helpers import check_api_get_responses
+from swh.web.tests.helpers import check_api_get_responses, check_html_get_response
 from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
@@ -910,9 +910,19 @@ def test_api_origin_metadata_search_limit(api_client, mocker, backend):
     _check_search_call(limit=100)
 
 
+def test_api_origin_intrinsic_metadata_legacy_redirects(api_client, origin):
+    url = reverse(
+        "api-origin-intrinsic-metadata-legacy", url_args={"origin_url": origin["url"]}
+    )
+    rv = check_html_get_response(api_client, url, status_code=301)
+    assert rv["location"] == reverse(
+        "api-origin-intrinsic-metadata", query_params={"origin_url": origin["url"]}
+    )
+
+
 def test_api_origin_intrinsic_metadata(api_client, origin):
     url = reverse(
-        "api-origin-intrinsic-metadata", url_args={"origin_url": origin["url"]}
+        "api-origin-intrinsic-metadata", query_params={"origin_url": origin["url"]}
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
@@ -989,7 +999,6 @@ def test_api_origin_search_empty_pattern_and_visit_type(api_client, archived_ori
         ("api-1-origin-visits", {}),
         ("api-1-origin-visit", {"visit_id": 1}),
         ("api-1-origin-visit-latest", {}),
-        ("api-origin-intrinsic-metadata", {}),
     ],
 )
 def test_api_origin_by_url_with_extra_trailing_slash(
@@ -1013,7 +1022,6 @@ def test_api_origin_by_url_with_extra_trailing_slash(
         ("api-1-origin-visits", {}),
         ("api-1-origin-visit", {"visit_id": 1}),
         ("api-1-origin-visit-latest", {}),
-        ("api-origin-intrinsic-metadata", {}),
     ],
 )
 def test_api_origin_by_url_with_double_slashes_mangled(

@@ -18,7 +18,7 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive, origin_visit_types, reverse
+from swh.web.utils import archive, origin_visit_types, redirect_to_new_route, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
 
@@ -483,17 +483,34 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
 
 
 @api_route(
-    r"/origin/(?P<origin_url>.+)/intrinsic-metadata/", "api-origin-intrinsic-metadata"
+    r"/origin/(?P<origin_url>.+)/intrinsic-metadata/",
+    "api-origin-intrinsic-metadata-legacy",
 )
 @api_doc("/origin/intrinsic-metadata/", category="Metadata")
 @format_docstring()
-def api_origin_intrinsic_metadata(request: Request, origin_url: str):
+def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     """
-    .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
+    This route is deprecated;
+    use http:get:`/intrinsic-metadata/origin/origin_url=(origin_url)` instead
+
+    Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
+
+    The url that points to it is
+    :http:get:`/api/1/origin/(origin_url)/intrinsic-metadata`
+    """
+    return redirect_to_new_route(request, "api-origin-intrinsic-metadata")
+
+
+@api_route(r"/intrinsic-metadata/origin/", "api-origin-intrinsic-metadata")
+@api_doc("/intrinsic-metadata/origin/", category="Metadata")
+@format_docstring()
+def api_origin_intrinsic_metadata(request: Request):
+    """
+    .. http:get:: /api/1/intrinsic-metadata/origin/origin_url=(origin_url)
 
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
-        :param string origin_url: the origin url
+        :query str origin_url: parameter for origin url
 
         :>json string ???: intrinsic metadata field of the origin
 
@@ -506,8 +523,11 @@ def api_origin_intrinsic_metadata(request: Request, origin_url: str):
 
         .. parsed-literal::
 
-            :swh_web_api:`origin/https://github.com/node-red/node-red-nodegen/intrinsic-metadata`
+            :swh_web_api:`intrinsic-metadata/origin/origin_url=https://github.com/node-red/node-red-nodegen`
     """
+    origin_url = request.GET.get("origin_url")
+    if origin_url is None:
+        raise BadInputExc("An origin URL must be provided as query parameter.")
     return api_lookup(
         archive.lookup_origin_intrinsic_metadata,
         origin_url,
