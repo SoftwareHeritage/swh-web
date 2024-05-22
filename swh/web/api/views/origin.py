@@ -496,7 +496,7 @@ def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
     The url that points to it is
-    :http:get:`/api/1/origin/(origin_url)/intrinsic-metadata`
+    :http:get:`/api/1/origin/(origin_url)/intrinsic-metadata/`
     """
     return redirect_to_new_route(request, "api-origin-intrinsic-metadata")
 
