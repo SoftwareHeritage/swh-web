@@ -491,7 +491,7 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
 def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     """
     This route is deprecated;
-    use http:get:`/origin/intrinsic-metadata/` instead
+    use http:get:`/api/1/origin/intrinsic-metadata/` instead
 
     Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 

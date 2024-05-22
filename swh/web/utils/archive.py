@@ -418,8 +418,7 @@ def search_origin_metadata(
 def lookup_origin_intrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
 ) -> Dict[str, Any]:
-    """Return intrinsic metadata for origin whose origin matches given
-    origin.
+    """Return intrinsic metadata for the given origin (as a JSON-LD/CodeMeta dictionary).
 
     Args:
         origin_url: origin url
@@ -450,8 +449,7 @@ def lookup_origin_intrinsic_metadata(
 def lookup_origin_extrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
 ) -> Dict[str, Any]:
-    """Return extrinsic metadata for origin whose origin matches given
-    origin.
+    """Return extrinsic metadata for the given origin (as a JSON-LD/CodeMeta dictionary).
 
     Args:
         origin_url: origin url
