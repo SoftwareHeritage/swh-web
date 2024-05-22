@@ -506,7 +506,7 @@ def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
 @format_docstring()
 def api_origin_intrinsic_metadata(request: Request):
     """
-    .. http:get:: /api/1/intrinsic-metadata/origin/origin_url=(origin_url)
+    .. http:get:: /api/1/intrinsic-metadata/origin/
 
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
