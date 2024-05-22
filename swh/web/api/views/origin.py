@@ -543,7 +543,7 @@ def api_origin_intrinsic_metadata(request: Request):
 @format_docstring()
 def api_origin_extrinsic_metadata(request: Request):
     """
-    .. http:get:: /api/1/origin/(origin_url)/extrinsic-metadata
+    .. http:get:: /api/1/extrinsic-metadata/origin/
 
         Get extrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
