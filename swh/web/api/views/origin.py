@@ -510,7 +510,7 @@ def api_origin_intrinsic_metadata(request: Request):
 
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
 
-        :query str origin_url: parameter for origin url
+        :query string origin_url: the URL of the origin
 
         :>json string ???: intrinsic metadata field of the origin
 
