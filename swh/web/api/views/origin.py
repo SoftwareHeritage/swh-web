@@ -486,17 +486,16 @@ def api_origin_visit(request: Request, visit_id: str, origin_url: str):
     r"/origin/(?P<origin_url>.+)/intrinsic-metadata/",
     "api-origin-intrinsic-metadata-legacy",
 )
-@api_doc("/origin/intrinsic-metadata/", category="Metadata")
+@api_doc("/origin/intrinsic-metadata/", category="Metadata", tags=["deprecated"])
 @format_docstring()
 def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     """
+    .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
+
     This route is deprecated;
     use http:get:`/api/1/origin/intrinsic-metadata/` instead
 
     Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
-
-    The url that points to it is
-    :http:get:`/api/1/origin/(origin_url)/intrinsic-metadata/`
     """
     return redirect_to_new_route(request, "api-origin-intrinsic-metadata")
 
