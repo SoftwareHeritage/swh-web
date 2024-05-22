@@ -560,7 +560,7 @@ def api_origin_extrinsic_metadata(request: Request):
 
         .. parsed-literal::
 
-            :swh_web_api:`extrinsic-metadata/origin/origin_url=https://github.com/node-red/node-red-nodegen`
+            :swh_web_api:`extrinsic-metadata/origin/?origin_url=https://github.com/node-red/node-red-nodegen`
     """
     origin_url = request.GET.get("origin_url")
     if origin_url is None:
