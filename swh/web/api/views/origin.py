@@ -518,7 +518,7 @@ def api_origin_intrinsic_metadata(request: Request):
 
         :query string origin_url: the URL of the origin
 
-        :>json array ???: intrinsic metadata field of the origin
+        :>jsonarr ??? ???: intrinsic metadata field of the origin
 
         {common_headers}
 
@@ -555,7 +555,7 @@ def api_origin_extrinsic_metadata(request: Request):
 
         :query str origin_url: parameter for origin url
 
-        :>json array ???: extrinsic metadata field of the origin
+        :>jsonarr ??? ???: extrinsic metadata field of the origin
 
         {common_headers}
 
