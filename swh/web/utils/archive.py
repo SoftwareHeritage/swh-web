@@ -417,7 +417,7 @@ def search_origin_metadata(
 
 def lookup_origin_intrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
-) -> Dict[str, Any]:
+) -> list[Dict[str, Any]]:
     """Return intrinsic metadata for the given origin (as a JSON-LD/CodeMeta dictionary).
 
     Args:
@@ -440,15 +440,15 @@ def lookup_origin_intrinsic_metadata(
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
     match = _first_element(idx_storage.origin_intrinsic_metadata_get(origins))
-    result = {}
+    result = []
     if match:
-        result = match.metadata
+        result = [match.metadata]
     return result
 
 
 def lookup_origin_extrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
-) -> Dict[str, Any]:
+) -> list[Dict[str, Any]]:
     """Return extrinsic metadata for the given origin (as a JSON-LD/CodeMeta dictionary).
 
     Args:
@@ -471,9 +471,9 @@ def lookup_origin_extrinsic_metadata(
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
     match = _first_element(idx_storage.origin_extrinsic_metadata_get(origins))
-    result = {}
+    result = []
     if match:
-        result = match.metadata
+        result = [match.metadata]
     return result
 
 

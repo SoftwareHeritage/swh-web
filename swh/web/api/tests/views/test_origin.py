@@ -24,7 +24,7 @@ from swh.web.tests.data import (
     ORIGIN_METADATA_KEY,
     ORIGIN_METADATA_VALUE,
 )
-from swh.web.tests.helpers import check_api_get_responses, check_html_get_response
+from swh.web.tests.helpers import check_api_get_responses
 from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
@@ -910,14 +910,14 @@ def test_api_origin_metadata_search_limit(api_client, mocker, backend):
     _check_search_call(limit=100)
 
 
-def test_api_origin_intrinsic_metadata_legacy_redirects(api_client, origin):
+def test_api_origin_intrinsic_metadata_legacy(api_client, origin):
     url = reverse(
         "api-origin-intrinsic-metadata-legacy", url_args={"origin_url": origin["url"]}
     )
-    rv = check_html_get_response(api_client, url, status_code=301)
-    assert rv["location"] == reverse(
-        "api-origin-intrinsic-metadata", query_params={"origin_url": origin["url"]}
-    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    assert ORIGIN_METADATA_KEY in rv.data
+    assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
 
 
 def test_api_origin_intrinsic_metadata(api_client, origin):
@@ -926,8 +926,8 @@ def test_api_origin_intrinsic_metadata(api_client, origin):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert ORIGIN_METADATA_KEY in rv.data
-    assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
+    assert ORIGIN_METADATA_KEY in rv.data[0]
+    assert rv.data[0][ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
 
 
 def test_api_origin_extrinsic_metadata(api_client, origin):
@@ -936,8 +936,8 @@ def test_api_origin_extrinsic_metadata(api_client, origin):
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
 
-    assert ORIGIN_METADATA_KEY in rv.data
-    assert rv.data[ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
+    assert ORIGIN_METADATA_KEY in rv.data[0]
+    assert rv.data[0][ORIGIN_METADATA_KEY] == ORIGIN_METADATA_VALUE
 
 
 def test_api_origin_metadata_search_invalid(api_client, mocker):

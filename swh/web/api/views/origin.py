@@ -18,7 +18,7 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive, origin_visit_types, redirect_to_new_route, reverse
+from swh.web.utils import archive, origin_visit_types, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
 
@@ -492,12 +492,19 @@ def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
 
-    This route is deprecated;
-    use http:get:`/api/1/origin/intrinsic-metadata/` instead
+        This route is deprecated; use http:get:/api/1/intrinsic-metadata/origin/ instead
 
-    Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
+        Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
     """
-    return redirect_to_new_route(request, "api-origin-intrinsic-metadata")
+    response = api_lookup(
+        archive.lookup_origin_intrinsic_metadata,
+        origin_url,
+        lookup_similar_urls=False,
+        notfound_msg=f"Origin with url {origin_url} not found",
+        enrich_fn=enrich_origin,
+        request=request,
+    )
+    return response[0]
 
 
 @api_route(r"/intrinsic-metadata/origin/", "api-origin-intrinsic-metadata")
@@ -511,7 +518,7 @@ def api_origin_intrinsic_metadata(request: Request):
 
         :query string origin_url: the URL of the origin
 
-        :>json string ???: intrinsic metadata field of the origin
+        :>json array ???: intrinsic metadata field of the origin
 
         {common_headers}
 
@@ -548,7 +555,7 @@ def api_origin_extrinsic_metadata(request: Request):
 
         :query str origin_url: parameter for origin url
 
-        :>json string ???: extrinsic metadata field of the origin
+        :>json array ???: extrinsic metadata field of the origin
 
         {common_headers}
 
