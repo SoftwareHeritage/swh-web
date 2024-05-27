@@ -1,7 +1,7 @@
 beautifulsoup4
 decorator  # dependency of swh.core[http]
 djangorestframework-stubs
-django-stubs != 4.2.2
+django-stubs >= 5.0.2
 django-test-migrations
 hypothesis
 pytest >= 8.1

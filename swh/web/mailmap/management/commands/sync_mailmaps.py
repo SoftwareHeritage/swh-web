@@ -1,7 +1,9 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from __future__ import annotations
 
 import psycopg2
 import psycopg2.extensions
@@ -46,7 +48,7 @@ class Command(BaseCommand):
     def disable_mailmaps(
         self,
         storage_db: psycopg2.extensions.connection,
-        mailmaps: "QuerySet[UserMailmap]",
+        mailmaps: QuerySet[UserMailmap, UserMailmap],
     ):
         """Return the SQL to disable a set of mailmaps"""
 
@@ -59,7 +61,7 @@ class Command(BaseCommand):
     def refresh_mailmaps(
         self,
         storage_db: psycopg2.extensions.connection,
-        mailmaps: "QuerySet[UserMailmap]",
+        mailmaps: QuerySet[UserMailmap, UserMailmap],
     ):
         execute_values(
             storage_db.cursor(),
