@@ -118,7 +118,8 @@
     "typeface-alegreya": "^1.1.13",
     "typeface-alegreya-sans": "^1.1.13",
     "waypoints": "^4.0.1",
-    "whatwg-fetch": "^3.6.20"
+    "whatwg-fetch": "^3.6.20",
+    "yarn-deduplicate": "^6.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.6",
@@ -138,6 +139,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.2",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "cypress": "^13.10.0",
     "cypress-accessibility-checker": "^3.1.71",
     "cypress-axe": "^1.5.0",
@@ -167,7 +169,6 @@
     "mochawesome-report-generator": "^6.2.0",
     "node-sass": "^9.0.0",
     "nyc": "^15.1.0",
-    "optimize-css-assets-webpack-plugin": "^6.0.1",
     "postcss": "^8.4.38",
     "postcss-loader": "^8.1.1",
     "postcss-normalize": "^10.0.1",

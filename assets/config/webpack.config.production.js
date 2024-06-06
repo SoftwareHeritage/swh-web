@@ -9,7 +9,7 @@
 
 // import required webpack plugins
 const TerserPlugin = require('terser-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const sentryWebpackPlugin = require('@sentry/webpack-plugin').sentryWebpackPlugin;
 const shelljs = require('shelljs');
 
@@ -26,8 +26,8 @@ webpackProdConfig.optimization.minimizer = [
     parallel: true
   }),
   // use cssnano for minimizing css and generate source map files
-  new OptimizeCSSAssetsPlugin({
-    cssProcessorOptions: {
+  new CssMinimizerPlugin({
+    minimizerOptions: {
       map: {
         inline: false,
         annotation: true
