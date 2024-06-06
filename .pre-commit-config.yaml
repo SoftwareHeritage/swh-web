@@ -67,8 +67,7 @@ repos:
         additional_dependencies: [twine, build]
       - id: eslint
         name: eslint
-        entry: node_modules/.bin/eslint -c assets/config/.eslintrc
-          --ignore-path assets/config/.eslintignore
+        entry: node_modules/.bin/eslint
         language: system
         types: [javascript]
 

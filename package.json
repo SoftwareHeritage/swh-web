@@ -8,7 +8,7 @@
     "start-dev": "NODE_ENV=development webpack serve --config assets/config/webpack.config.development.js --color",
     "build": "NODE_ENV=production webpack --config assets/config/webpack.config.production.js --color",
     "mochawesome": "mochawesome-merge cypress/mochawesome/results/*.json > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
-    "eslint": "eslint -c assets/config/.eslintrc --fix assets/** cypress/integration/** cypress/plugins/** cypress/support/**",
+    "eslint": "eslint --no-warn-ignored --fix assets/** swh/web/**/assets/** cypress/e2e/** cypress/plugins/** cypress/support/**",
     "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)",
     "nyc-report": "nyc report --reporter=lcov"
   },
@@ -127,6 +127,7 @@
     "@babel/plugin-transform-runtime": "^7.24.6",
     "@babel/preset-env": "^7.24.6",
     "@cypress/code-coverage": "^3.12.39",
+    "@eslint/compat": "^1.0.3",
     "@sentry/webpack-plugin": "^2.17.0",
     "autoprefixer": "^10.4.19",
     "axe-core": "^4.9.1",
@@ -145,9 +146,9 @@
     "cypress-split": "^1.23.4",
     "ejs": "^3.1.10",
     "ejs-compiled-loader": "^3.1.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-chai-friendly": "^0.8.0",
-    "eslint-plugin-cypress": "^3.2.0",
+    "eslint": "^9.4.0",
+    "eslint-plugin-chai-friendly": "^1.0.0",
+    "eslint-plugin-cypress": "^3.3.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.2.0",
@@ -203,5 +204,6 @@
   ],
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
