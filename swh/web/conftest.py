@@ -38,9 +38,14 @@ from swh.model.hashutil import (
 from swh.model.model import Content, Directory, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
+from swh.storage.algos.directory import directory_get
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
-from swh.storage.algos.snapshot import snapshot_get_all_branches, snapshot_get_latest
+from swh.storage.algos.snapshot import (
+    snapshot_get_all_branches,
+    snapshot_get_latest,
+    snapshot_resolve_alias,
+)
 from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
@@ -560,7 +565,7 @@ def unknown_revision(tests_data):
 
 def _get_origin_dfs_revisions_walker(tests_data):
     storage = tests_data["storage"]
-    origin = random.choice(tests_data["origins"][:-1])
+    origin = random.choice(tests_data["origins"][0:1])
     snapshot = snapshot_get_latest(storage, origin["url"])
     if snapshot.branches[b"HEAD"].target_type.value == "alias":
         target = snapshot.branches[b"HEAD"].target
@@ -747,10 +752,63 @@ def _origin_with_releases():
     return origins
 
 
+def _get_origin_latest_snapshot_head_root_directory(origin, storage):
+    latest_snapshot = snapshot_get_latest(storage, origin["url"])
+    snapshot_branch = snapshot_resolve_alias(storage, latest_snapshot.id, b"HEAD")
+    if snapshot_branch.target_type == "release":
+        release_id = snapshot_branch.target
+        release = storage.release_get([release_id])[0]
+        target_type = release.target_type
+        target_id = release.target
+    else:
+        target_type = snapshot_branch.target_type
+        target_id = snapshot_branch.target
+    root_directory_id = None
+    match target_type.value:
+        case "directory":
+            root_directory_id = target_id
+        case "revision":
+            revision = storage.revision_get([target_id])[0]
+            root_directory_id = revision.directory
+    directory = directory_get(storage, root_directory_id)
+    return directory
+
+
+@functools.lru_cache(maxsize=None)
+def _origin_with_metadata_file():
+    tests_data = get_tests_data()
+    storage = tests_data["storage"]
+    origins = []
+    for origin in tests_data["origins"]:
+        directory = _get_origin_latest_snapshot_head_root_directory(origin, storage)
+        metadata_file_names = [
+            b"codemeta.json",
+            b"citation.cff",
+            b"CODEMETA.json",
+            b"CITATION.cff",
+        ]
+        if directory is not None:
+            metadata_files = [
+                entry
+                for entry in directory.entries
+                if entry.name in metadata_file_names
+            ]
+            if len(metadata_files) > 0:
+                origins.append(origin)
+    return origins
+
+
 @pytest.fixture(scope="function")
 def origin_with_releases():
     """Fixture returning a random origin with releases ingested into the test archive."""
     return random.choice(_origin_with_releases())
+
+
+@pytest.fixture(scope="function")
+def origin_with_metadata_file():
+    """Fixture returning a random origin with metadata (codemeta.json
+    or citation.cff file) ingested into the test archive."""
+    return random.choice(_origin_with_metadata_file())
 
 
 @functools.lru_cache(maxsize=None)

@@ -1188,3 +1188,17 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
         for i in range(branches_count, 2 * branches_count):
             assert f"branch/{target_type}/{pattern}{i}" in branches
         assert partial_branches["next_branch"] is None
+
+
+def test_lookup_origin_raw_intrinsic_metadata(origin_with_metadata_file):
+    metadata = archive.lookup_origin_raw_intrinsic_metadata(
+        origin_with_metadata_file["url"]
+    )
+
+    assert (
+        metadata["codemeta.json"]["@context"]
+        == "https://doi.org/10.5063/schema/codemeta-2.0"
+    )
+    assert metadata["codemeta.json"]["type"] == "SoftwareSourceCode"
+    assert metadata["codemeta.json"]["name"] == "Test Software"
+    assert metadata["citation.cff"]["cff-version"] == "1.2.0"

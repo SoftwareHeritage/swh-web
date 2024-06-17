@@ -41,7 +41,7 @@ build-backend = "setuptools.build_meta"
 fallback_version = "0.0.1"
 
 [tool.black]
-target-version = ['py37']
+target-version = ['py310']
 exclude = 'swh/web/tests/resources/contents'
 
 [tool.isort]

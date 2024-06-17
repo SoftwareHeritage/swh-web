@@ -148,6 +148,15 @@ _TEST_ORIGINS = [
             "description": "This is just a sample repository with submodules",
         },
     },
+    {
+        "type": "git",
+        "url": "https://git.example.org/repo_with_metadata_file",
+        "archives": ["repo_with_metadata_file.zip"],
+        "metadata": {
+            "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+            "description": "This is just a sample repository with a codemeta.json file.",
+        },
+    },
 ]
 
 _contents = {}

@@ -7,9 +7,14 @@ import base64
 from collections import defaultdict
 import datetime
 import itertools
+import json
+from json import JSONDecodeError
 import os
 import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
+
+import yaml
+from yaml import YAMLError
 
 from swh.core.api.classes import _stream_results
 from swh.model import hashutil
@@ -267,6 +272,29 @@ def lookup_origin_snapshots(origin: OriginInfo) -> List[str]:
     ]
 
 
+def _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
+    origin_url: str,
+) -> Optional[str]:
+    """Get main branch root directory of the latest visit snapshot given a software origin.
+
+    Args:
+        origin_url: origin url
+
+    Returns:
+        The latest visit snapshot main branch root directory id.
+
+    Raises:
+        NotFoundExc: if snapshot or another of the intermediate objects is missing.
+        BadInputException: if the latest visit snapshot main branch root directory
+         does not exist.
+    """
+    latest_snapshot = lookup_latest_origin_snapshot(origin_url)
+    if latest_snapshot is None:
+        raise NotFoundExc(f"No snapshot for origin {origin_url} found.")
+    latest_snapshot_id = latest_snapshot["id"]
+    return lookup_snapshot_branch_directory(latest_snapshot_id)
+
+
 def search_origin(
     url_pattern: str,
     use_ql: bool = False,
@@ -446,6 +474,81 @@ def lookup_origin_intrinsic_metadata(
     return result
 
 
+def lookup_origin_raw_intrinsic_metadata(
+    origin_url: str, lookup_similar_urls: bool = True
+) -> dict[str, dict[str, Any]]:
+    """Get raw intrinsic metadata given a software origin, i.e. original codemeta.json,
+    and citation.cff, for the latest visit snapshot main branch root directory.
+
+    Args:
+        origin_url: origin url
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
+
+    Returns:
+        raw origin intrinsic metadata in the form of a dictionary, prefixed with
+         the type of metadata file and which value is a dictionary extracted from
+          the medata file content
+
+    Raises:
+        NotFoundExc: when the origin/snapshot/intermediate object/directory or
+         a metadata file could not be found or the metadata file could not be decoded.
+        BadInputException: if the latest visit snapshot main branch root directory
+         does not exist.
+    """
+    try:
+        origin_similar_url = lookup_origin(
+            origin_url, lookup_similar_urls=lookup_similar_urls
+        )["url"]
+    except NotFoundExc:
+        raise NotFoundExc(f"Not origin with url {origin_url} found.")
+
+    directory_id = _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
+        origin_similar_url
+    )
+    if directory_id is None:
+        raise NotFoundExc(
+            "Not directory for the latest visit snapshot main branch of origin"
+            f" {origin_url} found."
+        )
+
+    metadata_files_info = {}
+    metadata_file_paths = [
+        "codemeta.json",
+        "citation.cff",
+        "CODEMETA.json",
+        "CITATION.cff",
+    ]
+    for path in metadata_file_paths:
+        try:
+            metadata_file_info = lookup_directory_with_path(directory_id, path)
+            metadata_files_info[path.lower()] = metadata_file_info
+        except NotFoundExc:
+            pass
+
+    if not metadata_files_info:
+        raise NotFoundExc(
+            f"No metadata file ({', '.join(metadata_file_paths)}) in directory"
+            f" with sha1_git {directory_id} found."
+        )
+
+    metadata_files = {}
+    for path, metadata_file_info in metadata_files_info.items():
+        metadata_file_id = metadata_file_info["target"]
+        metadata_file_content = lookup_content_raw(f"sha1_git:{metadata_file_id}")
+        try:
+            if path == "codemeta.json":
+                metadata_files[path] = json.loads(metadata_file_content["data"])
+            elif path == "citation.cff":
+                metadata_files[path] = yaml.safe_load(metadata_file_content["data"])
+        except (JSONDecodeError, YAMLError):
+            raise NotFoundExc(
+                f"Metadata file {path} (sha1: {metadata_file_id}) could not be decoded."
+            )
+
+    return metadata_files
+
+
 def lookup_origin_extrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
 ) -> list[Dict[str, Any]]:
@@ -573,7 +676,7 @@ def lookup_release(release_sha1_git: str) -> Dict[str, Any]:
 
     Raises:
         ValueError if the identifier provided is not of sha1 nature.
-
+        NotFoundExc if there is no release with the provided sha1_git.
     """
     sha1_git_bin = _to_sha1_bin(release_sha1_git)
     release = _first_element(storage.release_get([sha1_git_bin]))
@@ -1309,6 +1412,64 @@ def lookup_snapshot_alias(
         if resolved_alias is not None
         else None
     )
+
+
+def lookup_snapshot_branch_directory(
+    snapshot_id: str, branch_name_or_alias: str = "HEAD"
+) -> Optional[str]:
+    """Get the root directory associated to a given snapshot branch name or alias
+     (default is `HEAD`).
+
+    Args:
+        snapshot_id: hexadecimal representation of the snapshot id (sha1)
+        branch_name_or_alias: name or alias of the snapshot branch to follow
+
+    Returns:
+        Associated root directory id (sha1) or None if it could not be found.
+
+    Raises:
+        NotFoundExc: if one of the intermediate object is missing.
+        BadInputException: if the branch name or alias does not allow to find a directory.
+    """
+    # resolve branch pointer
+    snapshot_branch = lookup_snapshot_alias(snapshot_id, branch_name_or_alias)
+    if snapshot_branch is None:
+        raise NotFoundExc(
+            f"""
+        No branch with name or alias {branch_name_or_alias} for snapshot
+         with id {snapshot_id} found.
+        """
+        )
+
+    if snapshot_branch["target_type"] == "release":
+        # if branch points to a release, then resolve it as well
+        release_id = snapshot_branch["target"]
+        release = lookup_release(release_id)
+        # not need to check for `release` as it already raises NotFoundExc if it does not exist
+        target_type = release["target_type"]
+        target_id = release["target"]
+    else:
+        target_type = snapshot_branch["target_type"]
+        target_id = snapshot_branch["target"]
+
+    match target_type:
+        case "directory":
+            root_directory_id = target_id
+        case "revision":
+            revision = lookup_revision(target_id)
+            # not need to check for `revision` as it already raises NotFoundExc
+            # if it does not exist
+            root_directory_id = revision["directory"]
+        case _:
+            # case "content": directory cannot be retrieved from content
+            # case "release": ignore nested releases
+            # case "snapshot": ignore nested snapshots
+            # case "alias": should not happen (alias should have been resolved)
+            raise BadInputExc(
+                "No directory can be found for branch with name or alias"
+                f" {branch_name_or_alias} as it targets a {target_type}"
+            )
+    return root_directory_id
 
 
 def lookup_revision_through(revision, limit=100):
