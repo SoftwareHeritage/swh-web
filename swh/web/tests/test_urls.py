@@ -16,7 +16,7 @@ def test_swh_web_urls_have_trailing_slash():
     )
     for url in urls:
         if url != "$":
-            assert url.endswith("/$")
+            assert url.endswith(("/$", "/\\Z"))
 
 
 def test_urls_registration_error_for_not_found_django_app(django_settings):

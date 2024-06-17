@@ -191,6 +191,7 @@ DEFAULT_CONFIG = {
             "swh.web.jslicenses",
             "swh.web.mailmap",
             "swh.web.metrics",
+            "swh.web.save_bulk",
             "swh.web.save_code_now",
             "swh.web.save_origin_webhooks",
             "swh.web.vault",

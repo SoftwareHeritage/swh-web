@@ -241,14 +241,13 @@ def test_add_forge_request_update_non_existent(api_client, add_forge_moderator):
     check_api_post_response(api_client, url, status_code=400)
 
 
-def create_add_forge_request(api_client, regular_user, data=ADD_FORGE_DATA_FORGE1):
+def create_add_forge_request(
+    api_client, regular_user, data=ADD_FORGE_DATA_FORGE1, **kwargs
+):
     api_client.force_login(regular_user)
     url = reverse("api-1-add-forge-request-create")
     return check_api_post_response(
-        api_client,
-        url,
-        data=data,
-        status_code=201,
+        api_client, url, data=data, status_code=201, **kwargs
     )
 
 

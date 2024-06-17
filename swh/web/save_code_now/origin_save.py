@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 import logging
 from typing import Any, Dict, List, Optional, Set, Tuple
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import requests
 
@@ -210,13 +210,21 @@ def _check_visit_type_savable(visit_type: str, privileged_user: bool = False) ->
 
 
 _validate_url = URLValidator(
-    schemes=["http", "https", "svn", "git", "rsync", "pserver", "ssh", "bzr"]
+    schemes=["http", "https", "svn", "git", "rsync", "pserver", "ssh", "bzr", "ftp"]
 )
 
 
-def _check_origin_url_valid(origin_url: str) -> None:
+def validate_origin_url(origin_url: str) -> None:
+    """Check an origin URL is well formed and does not contain password.
+
+    Args:
+        origin_url: The URL to check
+
+    Raises:
+        BadInputExc: if one of the checks failed
+    """
     try:
-        _validate_url(origin_url)
+        _validate_url(quote(origin_url, safe=":/@%+"))
     except ValidationError:
         raise BadInputExc(
             f"The provided origin URL '{escape(origin_url)}' is not valid!"
@@ -476,7 +484,7 @@ def create_save_origin_request(
     """
     visit_type_tasks = get_savable_visit_types_dict(privileged_user)
     _check_visit_type_savable(visit_type, privileged_user)
-    _check_origin_url_valid(origin_url)
+    validate_origin_url(origin_url)
 
     # if all checks passed so far, we can try and save the origin
     save_request_status = can_save_origin(origin_url, privileged_user)
@@ -755,7 +763,7 @@ def get_save_origin_requests(
         :func:`swh.web.save_code_now.origin_save.create_save_origin_request`
     """
     _check_visit_type_savable(visit_type)
-    _check_origin_url_valid(origin_url)
+    validate_origin_url(origin_url)
     sors = SaveOriginRequest.objects.filter(
         visit_type=visit_type, origin_url=origin_url
     )

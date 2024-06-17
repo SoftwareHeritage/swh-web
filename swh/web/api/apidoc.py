@@ -207,9 +207,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         parts = ["\n\n"]
         for child in node.traverse():
             # process list item
-            if isinstance(child, docutils.nodes.paragraph):
+            if isinstance(child, docutils.nodes.list_item):
                 line_text = self.dispatch_visit(child)
                 parts.append("\t* %s\n" % textwrap.indent(line_text, "\t  ").strip())
+
         return "".join(parts)
 
     # visit_bullet_list collects and handles this with a more global view:

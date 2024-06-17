@@ -32,6 +32,7 @@ def create_add_forge_requests(client, regular_user, regular_user2):
                 client,
                 regular_user,
                 data=request,
+                HTTP_CONTENT_TYPE="application/json",
             ).data
         )
 
@@ -48,6 +49,7 @@ def create_add_forge_requests(client, regular_user, regular_user2):
                 client,
                 regular_user2,
                 data=request,
+                HTTP_CONTENT_TYPE="application/json",
             ).data
         )
     return requests

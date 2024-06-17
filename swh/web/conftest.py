@@ -48,6 +48,7 @@ from swh.storage.algos.snapshot import (
 from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
+    API_SAVE_BULK_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     MAILMAP_PERMISSION,
     get_or_create_django_permission,
@@ -1237,6 +1238,22 @@ def swh_scheduler(swh_scheduler):
             )
         )
 
+    # create list-bulk-save task type
+    swh_scheduler.create_task_type(
+        TaskType(
+            type="list-bulk-save",
+            description="Check a list of origins provided by a user",
+            backend_name="swh.lister.bulk_save.tasks.BulkSaveListerTask",
+            default_interval=timedelta(days=64),
+            min_interval=timedelta(hours=12),
+            max_interval=timedelta(days=64),
+            backoff_factor=2.0,
+            max_queue_length=None,
+            num_retries=7,
+            retry_delay=timedelta(hours=2),
+        )
+    )
+
     swh_scheduler.add_load_archive_task_type = add_load_archive_task_type
 
     yield swh_scheduler
@@ -1303,6 +1320,15 @@ def mailmap_user():
         get_or_create_django_permission(MAILMAP_PERMISSION)
     )
     return mailmap_user
+
+
+@pytest.fixture
+def save_bulk_user():
+    save_bulk_user = User.objects.create_user(username="save-bulk-user", password="")
+    save_bulk_user.user_permissions.add(
+        get_or_create_django_permission(API_SAVE_BULK_PERMISSION)
+    )
+    return save_bulk_user
 
 
 def reload_urlconf():

@@ -150,7 +150,7 @@ def check_api_post_response(
     url: str,
     status_code: int,
     content_type: str = "*/*",
-    data: Optional[Dict[str, Any]] = None,
+    data: Optional[Any] = None,
     **headers,
 ) -> Response:
     """Helper function to check Web API response for a POST request
@@ -170,7 +170,8 @@ def check_api_post_response(
             response=api_client.post(
                 url,
                 data=data,
-                format="json",
+                content_type=headers.get("HTTP_CONTENT_TYPE"),
+                format="json" if not headers.get("HTTP_CONTENT_TYPE") else None,
                 HTTP_ACCEPT=content_type,
                 **headers,
             ),
