@@ -284,7 +284,8 @@ def _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
         The latest visit snapshot main branch root directory id.
 
     Raises:
-        NotFoundExc: if snapshot or another of the intermediate objects is missing.
+        swh.web.utils.exc.NotFoundExc: if snapshot or another of the intermediate objects
+         is missing.
         BadInputException: if the latest visit snapshot main branch root directory
          does not exist.
     """
@@ -454,7 +455,7 @@ def lookup_origin_intrinsic_metadata(
             without trailing slash in its URL
 
     Raises:
-        NotFoundExc when the origin is not found
+        swh.web.utils.exc.NotFoundExc: when the origin is not found
 
     Returns:
         origin metadata.
@@ -491,7 +492,7 @@ def lookup_origin_raw_intrinsic_metadata(
           the medata file content
 
     Raises:
-        NotFoundExc: when the origin/snapshot/intermediate object/directory or
+        swh.web.utils.exc.NotFoundExc: when the origin/snapshot/intermediate object/directory or
          a metadata file could not be found or the metadata file could not be decoded.
         BadInputException: if the latest visit snapshot main branch root directory
          does not exist.
@@ -560,7 +561,7 @@ def lookup_origin_extrinsic_metadata(
             without trailing slash in its URL
 
     Raises:
-        NotFoundExc when the origin is not found
+        swh.web.utils.exc.NotFoundExc: when the origin is not found
 
     Returns:
         origin metadata.
@@ -646,7 +647,7 @@ def lookup_directory_with_path(sha1_git: str, path: str) -> Dict[str, Any]:
         Directory entry information as dict.
 
     Raises:
-        NotFoundExc if the directory entry is not found
+        swh.web.utils.exc.NotFoundExc: if the directory entry is not found
     """
     sha1_git_bin = _to_sha1_bin(sha1_git)
 
@@ -675,8 +676,8 @@ def lookup_release(release_sha1_git: str) -> Dict[str, Any]:
         Release information as dict.
 
     Raises:
-        ValueError if the identifier provided is not of sha1 nature.
-        NotFoundExc if there is no release with the provided sha1_git.
+        ValueError: if the identifier provided is not of sha1 nature.
+        swh.web.utils.exc.NotFoundExc: if there is no release with the provided sha1_git.
     """
     sha1_git_bin = _to_sha1_bin(release_sha1_git)
     release = _first_element(storage.release_get([sha1_git_bin]))
@@ -718,8 +719,8 @@ def lookup_revision(rev_sha1_git) -> Dict[str, Any]:
         Revision information as dict.
 
     Raises:
-        ValueError if the identifier provided is not of sha1 nature.
-        NotFoundExc if there is no revision with the provided sha1_git.
+        ValueError: if the identifier provided is not of sha1 nature.
+        swh.web.utils.exc.NotFoundExc: if there is no revision with the provided sha1_git.
 
     """
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
@@ -762,8 +763,8 @@ def lookup_revision_message(rev_sha1_git) -> Dict[str, bytes]:
         Decoded revision message as dict {'message': <the_message>}
 
     Raises:
-        ValueError if the identifier provided is not of sha1 nature.
-        NotFoundExc if the revision is not found, or if it has no message
+        ValueError: if the identifier provided is not of sha1 nature.
+        swh.web.utils.exc.NotFoundExc: if the revision is not found, or if it has no message
 
     """
     sha1_git_bin = _to_sha1_bin(rev_sha1_git)
@@ -820,7 +821,7 @@ def lookup_revision_by(
         dict: The revision matching the criterions
 
     Raises:
-        NotFoundExc if no revision corresponds to the criterion
+        swh.web.utils.exc.NotFoundExc: if no revision corresponds to the criterion
 
     """
     rev_id = _lookup_revision_id_by(origin_url, branch_name, timestamp)
@@ -893,9 +894,9 @@ def lookup_revision_with_context_by(
         including children leading to sha1_git_root
 
     Raises:
-        - BadInputExc in case of unknown algo_hash or bad hash.
-        - NotFoundExc if either revision is not found or if sha1_git is not an
-        ancestor of sha1_git_root.
+        - BadInputExc: in case of unknown algo_hash or bad hash.
+        - swh.web.utils.exc.NotFoundExc: if either revision is not found or if sha1_git
+         is not an ancestor of sha1_git_root.
 
     """
     rev_root_id = _lookup_revision_id_by(origin, branch_name, timestamp)
@@ -928,8 +929,8 @@ def lookup_revision_with_context(
         including children leading to sha1_git_root
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash
-        NotFoundExc if either revision is not found or if sha1_git is not an
+        BadInputExc: in case of unknown algo_hash or bad hash
+        swh.web.utils.exc.NotFoundExc: if either revision is not found or if sha1_git is not an
         ancestor of sha1_git_root
 
     """
@@ -987,10 +988,10 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         Information on the directory pointed to by that revision.
 
     Raises:
-        BadInputExc in case of unknown algo_hash or bad hash.
-        NotFoundExc either if the revision is not found or the path referenced
-        does not exist.
-        NotImplementedError in case of dir_path exists but do not reference a
+        BadInputExc: in case of unknown algo_hash or bad hash.
+        swh.web.utils.exc.NotFoundExc: either if the revision is not found or the path
+         referenced does not exist.
+        NotImplementedError: in case of dir_path exists but do not reference a
         type 'dir' or 'file'.
 
     """
@@ -1053,7 +1054,7 @@ def lookup_content(q: str) -> Dict[str, Any]:
         q: The release's sha1 as hexadecimal
 
     Raises:
-        NotFoundExc if the requested content is not found
+        swh.web.utils.exc.NotFoundExc: if the requested content is not found
 
     """
     algo, hash_ = query.parse_hash(q)
@@ -1075,7 +1076,7 @@ def lookup_content_raw(q: str) -> Dict[str, Any]:
         data representing its raw data decoded.
 
     Raises:
-        NotFoundExc if the requested content is not found or
+        swh.web.utils.exc.NotFoundExc: if the requested content is not found or
         if the content bytes are not available in the storage
 
     """
@@ -1215,7 +1216,7 @@ def lookup_origin_visit(
             without trailing slash in its URL
 
     Raises:
-        NotFoundExc if no origin visit matching the criteria is found
+        swh.web.utils.exc.NotFoundExc: if no origin visit matching the criteria is found
 
     Returns:
        The dict origin_visit concerned
@@ -1341,7 +1342,7 @@ def lookup_snapshot(
             starts with given pattern
 
     Raises:
-        NotFoundExc if the given snapshot_id is missing
+        swh.web.utils.exc.NotFoundExc: if the given snapshot_id is missing
 
     Returns:
         A dict filled with the snapshot content.
@@ -1428,7 +1429,7 @@ def lookup_snapshot_branch_directory(
         Associated root directory id (sha1) or None if it could not be found.
 
     Raises:
-        NotFoundExc: if one of the intermediate object is missing.
+        swh.web.utils.exc.NotFoundExc: if one of the intermediate object is missing.
         BadInputException: if the branch name or alias does not allow to find a directory.
     """
     # resolve branch pointer
