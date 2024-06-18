@@ -157,7 +157,7 @@ _save_task_run_status = {
 @lru_cache()
 def get_scheduler_load_task_types() -> List[str]:
     task_types = scheduler().get_task_types()
-    return [t["type"] for t in task_types if t["type"].startswith("load")]
+    return [t.type for t in task_types if t.type.startswith("load")]
 
 
 def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
@@ -577,6 +577,7 @@ def create_save_origin_request(
             )
 
             task = scheduler().create_tasks([task])[0]
+            assert task.id
 
             # pending save request has been accepted
             if sor and sor.status != SAVE_REQUEST_ACCEPTED:
@@ -662,10 +663,14 @@ def update_save_origin_requests_from_queryset(
     save_requests = []
     if task_ids:
         try:
-            tasks = scheduler().get_tasks(task_ids)
-            tasks = {task.id: task for task in tasks}
-            task_runs = scheduler().get_task_runs(tasks)
-            task_runs = {task_run.task: task_run for task_run in task_runs}
+            tasks_list = scheduler().get_tasks(task_ids)
+            tasks = {task.id: task for task in tasks_list if task.id is not None}
+            task_runs_list = scheduler().get_task_runs(list(tasks.keys()))
+            task_runs = {
+                task_run.task: task_run
+                for task_run in task_runs_list
+                if task_run.task is not None
+            }
         except Exception:
             # allow to avoid mocking api GET responses for /origin/save endpoint when
             # running cypress tests as scheduler is not available
@@ -817,18 +822,18 @@ def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
         task_info["note"] = save_request.note
 
     try:
-        task = scheduler().get_tasks([save_request.loading_task_id])
+        tasks = scheduler().get_tasks([save_request.loading_task_id])
     except Exception:
         # to avoid mocking GET responses of /save/task/info/ endpoint when running
         # cypress tests as scheduler is not available in that case
-        task = None
+        tasks = None
 
-    task = task[0] if task else None
-    if task is None:
+    task = tasks[0] if tasks else None
+    if task is None or task.id is None:
         return task_info
 
-    task_run = scheduler().get_task_runs([task.id])
-    task_run = task_run[0] if task_run else None
+    task_runs = scheduler().get_task_runs([task.id])
+    task_run = task_runs[0] if task_runs else None
     if task_run is None:
         return task_info
     task_info.update(task_run.to_dict())
@@ -858,6 +863,8 @@ def schedule_origins_recurrent_visits(
     lister = scheduler().get_or_create_lister(
         name="save-code-now", instance_name=get_config()["instance_name"]
     )
+
+    assert lister.id
 
     origins: Set[Tuple[str, str]] = set()
     listed_origins = []

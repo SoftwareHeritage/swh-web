@@ -3,8 +3,10 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from __future__ import annotations
+
 import os
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 from swh.core import config
 from swh.counters import get_counters
@@ -14,6 +16,14 @@ from swh.search import get_search
 from swh.storage import get_storage
 from swh.vault import get_vault
 from swh.web import settings
+
+if TYPE_CHECKING:
+    from swh.counters.interface import CountersInterface
+    from swh.indexer.storage.interface import IndexerStorageInterface
+    from swh.scheduler.interface import SchedulerInterface
+    from swh.search.interface import SearchInterface
+    from swh.storage.interface import StorageInterface
+    from swh.vault.interface import VaultInterface
 
 SWH_WEB_INTERNAL_SERVER_NAMES = [
     "archive.internal.softwareheritage.org",
@@ -243,31 +253,31 @@ def get_config(config_file="web/web"):
     return swhweb_config
 
 
-def search():
+def search() -> SearchInterface:
     """Return the current application's search."""
     return get_config()["search"]
 
 
-def storage():
+def storage() -> StorageInterface:
     """Return the current application's storage."""
     return get_config()["storage"]
 
 
-def vault():
+def vault() -> VaultInterface:
     """Return the current application's vault."""
     return get_config()["vault"]
 
 
-def indexer_storage():
+def indexer_storage() -> IndexerStorageInterface:
     """Return the current application's indexer storage."""
     return get_config()["indexer_storage"]
 
 
-def scheduler():
+def scheduler() -> SchedulerInterface:
     """Return the current application's scheduler."""
     return get_config()["scheduler"]
 
 
-def counters():
+def counters() -> CountersInterface:
     """Return the current application's counters."""
     return get_config()["counters"]

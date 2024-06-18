@@ -86,7 +86,7 @@ def lookup_hash(q: str) -> Dict[str, Any]:
 
     """
     algo, hash_ = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash_}))
+    found = _first_element(storage.content_find({algo: hash_}))  # type: ignore[misc]
     if found:
         content = converters.from_content(found.to_dict())
     else:
@@ -106,7 +106,7 @@ def search_hash(q: str) -> Dict[str, bool]:
 
     """
     algo, hash_ = query.parse_hash(q)
-    found = _first_element(storage.content_find({algo: hash_}))
+    found = _first_element(storage.content_find({algo: hash_}))  # type: ignore[misc]
     return {"found": found is not None}
 
 
@@ -122,7 +122,7 @@ def _lookup_content_sha1(q: str) -> Optional[bytes]:
     """
     algo, hash_ = query.parse_hash(q)
     if algo != "sha1":
-        hashes = _first_element(storage.content_find({algo: hash_}))
+        hashes = _first_element(storage.content_find({algo: hash_}))  # type: ignore[misc]
         if not hashes:
             return None
         return hashes.sha1
@@ -228,9 +228,10 @@ def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginIn
         origin_urls.append(demangled_url)
 
     for url in origin_urls:
+        # TODO: remove type ignores when origin_get signature is fixed in storage
         origins = storage.origin_get([url])
-        if origins and origins[0]:
-            return _origin_info(origins[0])
+        if origins and origins[0]:  # type: ignore[index]
+            return _origin_info(origins[0])  # type: ignore[index]
     else:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -325,7 +326,7 @@ def search_origin(
 
     if search:
         if use_ql:
-            page_result = search.origin_search(
+            search_result = search.origin_search(
                 query=url_pattern,
                 page_token=page_token,
                 with_visit=with_visit,
@@ -333,14 +334,17 @@ def search_origin(
                 limit=limit,
             )
         else:
-            page_result = search.origin_search(
+            search_result = search.origin_search(
                 url_pattern=url_pattern,
                 page_token=page_token,
                 with_visit=with_visit,
                 visit_types=visit_types,
                 limit=limit,
             )
-        origins = [converters.from_origin(ori_dict) for ori_dict in page_result.results]
+        origins = [
+            converters.from_origin(ori_dict) for ori_dict in search_result.results
+        ]
+        next_page_token = search_result.next_page_token
     else:
         # Fallback to swh-storage if swh-search is not configured
         search_words = [re.escape(word) for word in url_pattern.split()]
@@ -361,8 +365,9 @@ def search_origin(
             regexp=True,
         )
         origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]
+        next_page_token = page_result.next_page_token
 
-    return (origins, page_result.next_page_token)
+    return (origins, next_page_token)
 
 
 def search_origin_metadata(
@@ -464,7 +469,8 @@ def lookup_origin_intrinsic_metadata(
     origins = [
         lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
     ]
-    origin_info = storage.origin_get(origins)[0]
+    # TODO: remove type ignore when origin_get signature is fixed in storage
+    origin_info = storage.origin_get(origins)[0]  # type: ignore[index]
     if not origin_info:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -570,7 +576,8 @@ def lookup_origin_extrinsic_metadata(
     origins = [
         lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
     ]
-    origin_info = storage.origin_get(origins)[0]
+    # TODO: remove type ignore when origin_get signature is fixed in storage
+    origin_info = storage.origin_get(origins)[0]  # type: ignore
     if not origin_info:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -1058,7 +1065,7 @@ def lookup_content(q: str) -> Dict[str, Any]:
 
     """
     algo, hash_ = query.parse_hash(q)
-    c = _first_element(storage.content_find({algo: hash_}))
+    c = _first_element(storage.content_find({algo: hash_}))  # type: ignore[misc]
     if not c:
         hhex = hashutil.hash_to_hex(hash_)
         raise NotFoundExc(f"Content with {algo} checksum equals to {hhex} not found!")
@@ -1227,12 +1234,17 @@ def lookup_origin_visit(
     origin_url = origin_info["url"]
 
     visit = storage.origin_visit_get_by(origin_url, visit_id)
-    visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
     if not visit:
         raise NotFoundExc(
             f"Origin {origin_url} or its visit with id {visit_id} not found!"
         )
-    return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
+    visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
+    if visit_status:
+        return converters.from_origin_visit(
+            {**visit_status.to_dict(), "type": visit.type}
+        )
+    else:
+        return converters.from_origin_visit(visit.to_dict())
 
 
 def origin_visit_find_by_date(
@@ -1276,12 +1288,16 @@ def origin_visit_find_by_date(
                 visit = next_visit
                 break
 
-    if not visit:
+    if visit and visit.visit:
+        visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)
+        if visit_status:
+            return converters.from_origin_visit(
+                {**visit_status.to_dict(), "type": visit.type}
+            )
+        else:
+            return converters.from_origin_visit(visit.to_dict())
+    else:
         return None
-    visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)
-    if not visit_status:
-        return None
-    return converters.from_origin_visit({**visit_status.to_dict(), "type": visit.type})
 
 
 def lookup_snapshot_sizes(
@@ -1302,10 +1318,10 @@ def lookup_snapshot_sizes(
         snapshot_id_bin,
         branch_name_exclude_prefix.encode() if branch_name_exclude_prefix else None,
     )
-    # remove possible None key returned by snapshot_count_branches
-    # when null branches are present in the snapshot
-    branch_counts.pop(None, None)
-    snapshot_sizes.update(branch_counts)
+    if branch_counts:
+        # remove possible None key returned by snapshot_count_branches)
+        # when null branches are present in the snapshot
+        snapshot_sizes.update({k: v for k, v in branch_counts.items() if k is not None})
 
     snapshot_sizes["branch"] = sum(
         snapshot_sizes.get(target_type, 0)
@@ -1712,7 +1728,7 @@ def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:
     sha1s_bytes = [hashutil.hash_to_bytes(sha1) for sha1 in sha1s]
     origins = storage.origin_get_by_sha1(sha1s_bytes)
     for origin in origins:
-        yield converters.from_origin(origin)
+        yield converters.from_origin(origin) if origin else None
 
 
 def encode_extid(extid_format: str, extid: bytes) -> str:
