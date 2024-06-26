@@ -116,6 +116,7 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
 # Lightweight git repositories that will be loaded to generate
 # input data for tests
 ORIGIN_WITH_METADATA_FILES = "https://git.example.org/repo_with_metadata_file"
+ORIGIN_WITH_CFF_FILE = "https://git.example.org/repo_with_cff_file"
 _TEST_ORIGINS = [
     {
         "type": "git",
@@ -153,6 +154,11 @@ _TEST_ORIGINS = [
         "type": "git",
         "url": ORIGIN_WITH_METADATA_FILES,
         "archives": ["repo_with_metadata_file.zip"],
+    },
+    {
+        "type": "git",
+        "url": ORIGIN_WITH_CFF_FILE,
+        "archives": ["repo_with_cff_file.zip"],
     },
 ]
 
@@ -275,7 +281,7 @@ def _init_tests_data():
             storage,
             search,
             counters,
-            origin_url=f"https://many.origins/{i+1}",
+            origin_url=f"https://many.origins/{i + 1}",
             visit_type="tar",
         )
 

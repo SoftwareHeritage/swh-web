@@ -59,6 +59,7 @@ from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
 from swh.web.settings import common as common_settings
 from swh.web.settings import tests as tests_settings
 from swh.web.tests.data import (
+    ORIGIN_WITH_CFF_FILE,
     ORIGIN_WITH_METADATA_FILES,
     get_tests_data,
     override_storages,
@@ -686,6 +687,18 @@ def origin_with_metadata_file():
         filtered_origin
         for filtered_origin in origins
         if filtered_origin["url"] == ORIGIN_WITH_METADATA_FILES
+    )
+
+
+@pytest.fixture(scope="function")
+def origin_with_cff_file():
+    """Fixture returning the origin with raw intrinsic metadata (codemeta.json
+    and citation.cff file) ingested into the test archive."""
+    origins = _known_swh_objects(get_tests_data(), "origins")
+    return next(
+        filtered_origin
+        for filtered_origin in origins
+        if filtered_origin["url"] == ORIGIN_WITH_CFF_FILE
     )
 
 

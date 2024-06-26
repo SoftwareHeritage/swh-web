@@ -561,7 +561,7 @@ def lookup_origin_raw_intrinsic_metadata(
             origin_url, lookup_similar_urls=lookup_similar_urls
         )["url"]
     except NotFoundExc:
-        raise NotFoundExc(f"Not origin with url {origin_url} found.")
+        raise NotFoundExc(f"No origin with url {origin_url} found.")
 
     directory_id = _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
         origin_similar_url

@@ -8,6 +8,7 @@ from swh.web.utils.url_path_converters import register_url_path_converters
 
 register_url_path_converters()
 
+import swh.web.api.views.citation  # noqa
 import swh.web.api.views.content  # noqa
 import swh.web.api.views.directory  # noqa
 import swh.web.api.views.extid  # noqa
