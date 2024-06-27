@@ -394,7 +394,7 @@ _HTML_WRITER = Writer()
 _HTML_WRITER.translator_class = _NoHeaderHTMLTranslator
 
 
-def rst_to_html(rst: str) -> str:
+def rst_to_html(rst: str, raw_enabled: bool = False) -> str:
     """
     Convert reStructuredText document into HTML.
 
@@ -410,7 +410,7 @@ def rst_to_html(rst: str) -> str:
         "halt_level": 4,
         "traceback": True,
         "file_insertion_enabled": False,
-        "raw_enabled": False,
+        "raw_enabled": raw_enabled,
     }
     try:
         pp = publish_parts(rst, writer=_HTML_WRITER, settings_overrides=settings)

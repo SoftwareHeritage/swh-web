@@ -190,9 +190,18 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         """
         Visit literal blocks
         """
-        text = node.astext()
 
-        return f"\n\n::\n\n{textwrap.indent(text, '   ')}\n"
+        text = node.astext()
+        node_classes = node["classes"]
+        if node_classes and node_classes[0] == "code":
+            language = node_classes[1] if len(node_classes) > 1 else ""
+            # code block will be rendered by highlightjs
+            return (
+                f'\n\n.. raw:: html\n\n    <pre><code class="{language}">'
+                f'{textwrap.indent(text, " "*4)[4:]}</code></pre>'
+            )
+        else:
+            return f"\n\n::\n\n{textwrap.indent(text, '   ')}\n"
 
     def visit_bullet_list(self, node: docutils.nodes.bullet_list) -> str:
         parts = ["\n\n"]
@@ -241,10 +250,12 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
     def visit_block_quote(self, node: docutils.nodes.block_quote) -> str:
         return self._default_visit(node)
-        return (
-            f".. code-block::\n"
-            f"{textwrap.indent(self._default_visit(node), '   ')}\n"
-        )
+
+    def visit_inline(self, node):
+        return self._default_visit(node)
+
+    def visit_code_block(self, node) -> str:
+        return self._default_visit(node)
 
     def visit_title_reference(self, node: docutils.nodes.title_reference) -> str:
         text = self._default_visit(node)

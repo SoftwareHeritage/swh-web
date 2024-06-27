@@ -23,7 +23,7 @@ def docstring_display(docstring):
     Utility function to htmlize reST-formatted documentation in browsable
     api.
     """
-    return rst_to_html(docstring)
+    return rst_to_html(docstring, raw_enabled=True)
 
 
 @register.filter

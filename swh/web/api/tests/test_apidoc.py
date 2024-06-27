@@ -597,3 +597,32 @@ def test_apidoc_with_links_in_text(client):
         )
         in html
     )
+
+
+@api_route(r"/endpoint/codeblock-in-doc/", "api-1-endpoint-codeblock-in-doc")
+@api_doc("/endpoint/links/in/doc/", category="test")
+def apidoc_test_endpoint_with_codeblock_in_doc(request):
+    """
+    .. http:get:: /api/1/codeblock-in-doc/endpoint/
+
+        .. code-block:: python
+
+            def add(a, b):
+                return a + B
+
+    """
+    pass
+
+
+def test_apidoc_with_codeblock(client):
+    url = reverse("api-1-endpoint-codeblock-in-doc")
+    rv = check_html_get_response(
+        client, url, status_code=200, template_used="apidoc.html"
+    )
+
+    html = prettify_html(rv.content)
+
+    assert (
+        '         <pre><code class="python">def add(a, b):\n'
+        "    return a + B</code></pre>"
+    ) in html
