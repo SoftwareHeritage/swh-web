@@ -820,6 +820,8 @@ div.d3-tooltip {
 }
 
 .docutils.literal {
+    background-color: #f9f2f4;
+    color: #c7254e;
     font-family: monospace;
 }
 
