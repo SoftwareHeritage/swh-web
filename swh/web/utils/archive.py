@@ -18,9 +18,10 @@ from yaml import YAMLError
 
 from swh.core.api.classes import _stream_results
 from swh.model import hashutil
+from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import ExtID, Origin, Revision
-from swh.model.swhids import CoreSWHID, ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
@@ -285,16 +286,15 @@ def _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
         The latest visit snapshot main branch root directory id.
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: if snapshot or another of the intermediate objects
-         is missing.
-        BadInputException: if the latest visit snapshot main branch root directory
-         does not exist.
+        swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory
+            is missing.
+        BadInputExc: when the origin does not allow to find a root directory.
     """
     latest_snapshot = lookup_latest_origin_snapshot(origin_url)
     if latest_snapshot is None:
         raise NotFoundExc(f"No snapshot for origin {origin_url} found.")
     latest_snapshot_id = latest_snapshot["id"]
-    return lookup_snapshot_branch_directory(latest_snapshot_id)
+    return _lookup_snapshot_branch_root_directory(latest_snapshot_id)
 
 
 def search_origin(
@@ -481,44 +481,24 @@ def lookup_origin_intrinsic_metadata(
     return result
 
 
-def lookup_origin_raw_intrinsic_metadata(
-    origin_url: str, lookup_similar_urls: bool = True
+def _lookup_directory_raw_intrinsic_metadata(
+    directory_id: str,
 ) -> dict[str, dict[str, Any]]:
-    """Get raw intrinsic metadata given a software origin, i.e. original codemeta.json,
-    and citation.cff, for the latest visit snapshot main branch root directory.
+    """Get raw intrinsic metadata given a directory id, i.e. original codemeta.json
+    and citation.cff found in this directory.
 
     Args:
-        origin_url: origin url
-        lookup_similar_urls: if :const:`True`, lookup origin with and
-            without trailing slash in its URL
+        directory_id: hexadecimal representation of a directory id (sha1)
 
     Returns:
-        raw origin intrinsic metadata in the form of a dictionary, prefixed with
-         the type of metadata file and which value is a dictionary extracted from
-          the medata file content
+        raw intrinsic metadata in the form of a dictionary,
+            which key is the type of the metadata file,
+            and which value is a dictionary parsed from the metadata file content
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: when the origin/snapshot/intermediate object/directory or
-         a metadata file could not be found or the metadata file could not be decoded.
-        BadInputException: if the latest visit snapshot main branch root directory
-         does not exist.
+        swh.web.utils.exc.NotFoundExc: when the directory is missing, no metadata could be found
+            or the metadata files could not be decoded.
     """
-    try:
-        origin_similar_url = lookup_origin(
-            origin_url, lookup_similar_urls=lookup_similar_urls
-        )["url"]
-    except NotFoundExc:
-        raise NotFoundExc(f"Not origin with url {origin_url} found.")
-
-    directory_id = _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
-        origin_similar_url
-    )
-    if directory_id is None:
-        raise NotFoundExc(
-            "Not directory for the latest visit snapshot main branch of origin"
-            f" {origin_url} found."
-        )
-
     metadata_files_info = {}
     metadata_file_paths = [
         "codemeta.json",
@@ -554,6 +534,72 @@ def lookup_origin_raw_intrinsic_metadata(
             )
 
     return metadata_files
+
+
+def lookup_origin_raw_intrinsic_metadata(
+    origin_url: str, lookup_similar_urls: bool = True
+) -> dict[str, dict[str, Any]]:
+    """Get raw intrinsic metadata given a software origin, i.e. original codemeta.json
+    and citation.cff, for the latest visit snapshot main branch root directory.
+
+    Args:
+        origin_url: origin url
+        lookup_similar_urls: if :const:`True`, lookup origin with and
+            without trailing slash in its URL
+
+    Returns:
+        raw intrinsic metadata in the form of a dictionary,
+            which key is the type of the metadata file,
+            and which value is a dictionary parsed from the metadata file content
+
+    Raises:
+        NotFoundExc: when snapshot, branch or directory is missing,
+            no metadata could be found or the metadata files could not be decoded.
+        BadInputExc: when the origin does not allow to find metadata.
+    """
+    try:
+        origin_similar_url = lookup_origin(
+            origin_url, lookup_similar_urls=lookup_similar_urls
+        )["url"]
+    except NotFoundExc:
+        raise NotFoundExc(f"Not origin with url {origin_url} found.")
+
+    directory_id = _lookup_origin_latest_visit_snapshot_main_branch_root_directory(
+        origin_similar_url
+    )
+    if directory_id is None:
+        raise NotFoundExc(
+            "No root directory for the latest visit snapshot main branch of origin "
+            f"{origin_url} found."
+        )
+    return _lookup_directory_raw_intrinsic_metadata(directory_id)
+
+
+def lookup_raw_intrinsic_metadata_by_target_swhid(
+    target_swhid: str,
+) -> dict[str, dict[str, Any]]:
+    """Get raw intrinsic metadata given a SWHID, i.e. original codemeta.json
+    and citation.cff, for the target object.
+    If the target object is of type Snapshot, get metadata from the main branch ('HEAD').
+
+    Args:
+        target_swhid: SWHID which target object cannot be of type Content
+            and which can be qualified or not
+
+    Returns:
+        raw intrinsic metadata in the form of a dictionary,
+            which key is the type of the metadata file,
+            and which value is a dictionary parsed from the metadata file content
+
+    Raises:
+        NotFoundExc: when the target object is missing, no metadata could be found
+            or the metadata files could not be decoded.
+        BadInputExc: when the target object does not allow to find metadata.
+    """
+    directory_id = _lookup_swhid_root_directory(target_swhid)
+    if directory_id is None:
+        raise NotFoundExc(f"No root directory for target SWHID {target_swhid} found.")
+    return _lookup_directory_raw_intrinsic_metadata(directory_id)
 
 
 def lookup_origin_extrinsic_metadata(
@@ -1431,44 +1477,73 @@ def lookup_snapshot_alias(
     )
 
 
-def lookup_snapshot_branch_directory(
-    snapshot_id: str, branch_name_or_alias: str = "HEAD"
-) -> Optional[str]:
-    """Get the root directory associated to a given snapshot branch name or alias
-     (default is `HEAD`).
+def _lookup_swhid_root_directory(swhid: str) -> Optional[str]:
+    """Get the root directory, given a SWHID, associated to the target object.
+    If the target object is of type Snapshot, get root directory
+    from the main branch ('HEAD').
 
     Args:
-        snapshot_id: hexadecimal representation of the snapshot id (sha1)
-        branch_name_or_alias: name or alias of the snapshot branch to follow
+        swhid: SWHID which target object cannot be of type Content
+            and which can be qualified or not
 
     Returns:
         Associated root directory id (sha1) or None if it could not be found.
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: if one of the intermediate object is missing.
-        BadInputException: if the branch name or alias does not allow to find a directory.
+        NotFoundExc: when the target object is missing or no root directory could be found.
+        BadInputExc: when the target object does not allow to find a root directory.
     """
-    # resolve branch pointer
-    snapshot_branch = lookup_snapshot_alias(snapshot_id, branch_name_or_alias)
-    if snapshot_branch is None:
-        raise NotFoundExc(
-            f"""
-        No branch with name or alias {branch_name_or_alias} for snapshot
-         with id {snapshot_id} found.
-        """
+    try:
+        parsed_swhid = QualifiedSWHID.from_string(swhid)
+    except ValidationError as e:
+        raise BadInputExc(
+            f"No root directory can be found for SWHID {swhid} "
+            f"as it cannot be parsed with error: {e.message}"
         )
 
-    if snapshot_branch["target_type"] == "release":
-        # if branch points to a release, then resolve it as well
-        release_id = snapshot_branch["target"]
-        release = lookup_release(release_id)
-        # not need to check for `release` as it already raises NotFoundExc if it does not exist
-        target_type = release["target_type"]
-        target_id = release["target"]
-    else:
-        target_type = snapshot_branch["target_type"]
-        target_id = snapshot_branch["target"]
+    object_id = hash_to_hex(parsed_swhid.object_id)
+    match parsed_swhid.object_type:
+        case ObjectType.SNAPSHOT:
+            root_directory_id = _lookup_snapshot_branch_root_directory(
+                object_id
+            )  # for default branch'HEAD'
+        case ObjectType.REVISION:
+            revision = lookup_revision(object_id)
+            # not need to check for `revision` as it already raises NotFoundExc
+            # if it does not exist
+            root_directory_id = revision["directory"]
+        case ObjectType.RELEASE:
+            root_directory_id = _lookup_release_root_directory(object_id)
+        case ObjectType.DIRECTORY:
+            root_directory_id = object_id
+        case _:
+            # case "content": directory cannot be retrieved from content
+            raise BadInputExc(
+                f"No root directory can be found for SWHID {swhid} "
+                f"as it targets a {parsed_swhid.object_type}."
+            )
+    return root_directory_id
 
+
+def _lookup_release_root_directory(release_id: str) -> Optional[str]:
+    """Get the root directory associated to a given release.
+    If the target object is of type Snapshot, get root directory
+    from the main branch ('HEAD').
+
+    Args:
+        release_id: hexadecimal representation of the release id (sha1)
+
+    Returns:
+        Associated root directory id (sha1) or None if it could not be found.
+
+    Raises:
+        NotFoundExc: when the release is missing or no root directory could be found.
+        BadInputExc: when the release does not allow to find a root directory.
+    """
+    release = lookup_release(release_id)
+    # not need to check for `release` as it already raises NotFoundExc if it does not exist
+    target_type = release["target_type"]
+    target_id = release["target"]
     match target_type:
         case "directory":
             root_directory_id = target_id
@@ -1477,14 +1552,69 @@ def lookup_snapshot_branch_directory(
             # not need to check for `revision` as it already raises NotFoundExc
             # if it does not exist
             root_directory_id = revision["directory"]
+        case "release":
+            root_directory_id = _lookup_release_root_directory(target_id)
+        case "snapshot":
+            root_directory_id = _lookup_snapshot_branch_root_directory(
+                target_id
+            )  # for default branch 'HEAD'
         case _:
             # case "content": directory cannot be retrieved from content
-            # case "release": ignore nested releases
-            # case "snapshot": ignore nested snapshots
+            raise BadInputExc(
+                f"No root directory can be found for release with id {release_id} "
+                f"as it targets a {target_type}"
+            )
+    return root_directory_id
+
+
+def _lookup_snapshot_branch_root_directory(
+    snapshot_id: str, branch_name_or_alias: str = "HEAD"
+) -> Optional[str]:
+    """Get the root directory associated to a given snapshot branch name or alias
+    (default is `HEAD`).
+
+    Args:
+        snapshot_id: hexadecimal representation of the snapshot id (sha1)
+        branch_name_or_alias: branch name or alias (default is 'HEAD')
+
+    Returns:
+        Associated root directory id (sha1) or None if it could not be found.
+
+    Raises:
+        swh.web.utils.exc.NotFoundExc: when the snapshot is missing or no root directory
+            could be found.
+        BadInputExc: when the branch name or alias does not allow to find a directory.
+    """
+    # resolve branch pointer
+    snapshot_branch = lookup_snapshot_alias(snapshot_id, branch_name_or_alias)
+    if snapshot_branch is None:
+        raise NotFoundExc(
+            f"No branch with name or alias {branch_name_or_alias} "
+            f"for snapshot with id {snapshot_id} found."
+        )
+
+    target_type = snapshot_branch["target_type"]
+    target_id = snapshot_branch["target"]
+    match target_type:
+        case "directory":
+            root_directory_id = target_id
+        case "revision":
+            revision = lookup_revision(target_id)
+            # not need to check for `revision` as it already raises NotFoundExc
+            # if it does not exist
+            root_directory_id = revision["directory"]
+        case "release":
+            root_directory_id = _lookup_release_root_directory(target_id)
+        case "snapshot":
+            root_directory_id = _lookup_snapshot_branch_root_directory(
+                target_id
+            )  # for default branch 'HEAD'
+        case _:
+            # case "content": directory cannot be retrieved from content
             # case "alias": should not happen (alias should have been resolved)
             raise BadInputExc(
-                "No directory can be found for branch with name or alias"
-                f" {branch_name_or_alias} as it targets a {target_type}"
+                "No root directory can be found for branch with name or alias "
+                f"{branch_name_or_alias} as it targets a {target_type}"
             )
     return root_directory_id
 

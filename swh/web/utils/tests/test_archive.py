@@ -1202,3 +1202,35 @@ def test_lookup_origin_raw_intrinsic_metadata(origin_with_metadata_file):
     assert metadata["codemeta.json"]["type"] == "SoftwareSourceCode"
     assert metadata["codemeta.json"]["name"] == "Test Software"
     assert metadata["citation.cff"]["cff-version"] == "1.2.0"
+
+
+def test_lookup_swhid_raw_intrinsic_metadata(objects_with_metadata_file):
+    for object_with_metadata_file in objects_with_metadata_file:
+        metadata = archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+            str(object_with_metadata_file)
+        )
+
+        assert (
+            metadata["codemeta.json"]["@context"]
+            == "https://doi.org/10.5063/schema/codemeta-2.0"
+        )
+        assert metadata["codemeta.json"]["type"] == "SoftwareSourceCode"
+        assert metadata["codemeta.json"]["name"] == "Test Software"
+        assert metadata["citation.cff"]["cff-version"] == "1.2.0"
+
+
+def test_lookup_swhid_raw_intrinsic_metadata_not_found(unknown_core_swhid):
+    if unknown_core_swhid.object_type != ObjectType.CONTENT:
+        with pytest.raises(NotFoundExc):
+            archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+                str(unknown_core_swhid)
+            )
+
+
+def test_lookup_swhid_raw_intrinsic_metadata_invalid_object(unknown_core_swhid):
+    if unknown_core_swhid.object_type == ObjectType.CONTENT:
+        with pytest.raises(BadInputExc) as e:
+            archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+                str(unknown_core_swhid)
+            )
+        assert "as it targets a ObjectType.CONTENT" in str(e)

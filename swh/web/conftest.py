@@ -38,7 +38,6 @@ from swh.model.hashutil import (
 from swh.model.model import Content, Directory, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
-from swh.storage.algos.directory import directory_get
 from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import (
@@ -58,6 +57,7 @@ from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
 from swh.web.settings import common as common_settings
 from swh.web.settings import tests as tests_settings
 from swh.web.tests.data import (
+    ORIGIN_WITH_METADATA_FILES,
     get_tests_data,
     override_storages,
     random_content,
@@ -676,6 +676,36 @@ def revision_with_submodules():
 
 
 @pytest.fixture(scope="function")
+def origin_with_metadata_file():
+    """Fixture returning the origin with raw intrinsic metadata (codemeta.json
+    and citation.cff file) ingested into the test archive."""
+    origins = _known_swh_objects(get_tests_data(), "origins")
+    return next(
+        filtered_origin
+        for filtered_origin in origins
+        if filtered_origin["url"] == ORIGIN_WITH_METADATA_FILES
+    )
+
+
+@pytest.fixture(scope="function")
+def objects_with_metadata_file(tests_data):
+    """Fixture returning the objects (snapshot and revision)
+    with raw intrinsic metadata (codemeta.json and citation.cff file)
+    ingested into the test archive."""
+    swh_objects = _known_swh_objects(get_tests_data(), "swhids")
+    snapshot = snapshot_get_latest(tests_data["storage"], ORIGIN_WITH_METADATA_FILES)
+    snapshot_branch = snapshot_resolve_alias(
+        tests_data["storage"], hash_to_bytes(snapshot.id), b"HEAD"
+    )
+    objects_with_metadata_file = [snapshot.id, snapshot_branch.target]
+    return [
+        object_with_metadata_file
+        for object_with_metadata_file in swh_objects
+        if object_with_metadata_file.object_id in objects_with_metadata_file
+    ]
+
+
+@pytest.fixture(scope="function")
 def release(tests_data):
     """Fixture returning a random release ingested into the test archive."""
     return random.choice(_known_swh_objects(tests_data, "releases"))
@@ -752,63 +782,10 @@ def _origin_with_releases():
     return origins
 
 
-def _get_origin_latest_snapshot_head_root_directory(origin, storage):
-    latest_snapshot = snapshot_get_latest(storage, origin["url"])
-    snapshot_branch = snapshot_resolve_alias(storage, latest_snapshot.id, b"HEAD")
-    if snapshot_branch.target_type == "release":
-        release_id = snapshot_branch.target
-        release = storage.release_get([release_id])[0]
-        target_type = release.target_type
-        target_id = release.target
-    else:
-        target_type = snapshot_branch.target_type
-        target_id = snapshot_branch.target
-    root_directory_id = None
-    match target_type.value:
-        case "directory":
-            root_directory_id = target_id
-        case "revision":
-            revision = storage.revision_get([target_id])[0]
-            root_directory_id = revision.directory
-    directory = directory_get(storage, root_directory_id)
-    return directory
-
-
-@functools.lru_cache(maxsize=None)
-def _origin_with_metadata_file():
-    tests_data = get_tests_data()
-    storage = tests_data["storage"]
-    origins = []
-    for origin in tests_data["origins"]:
-        directory = _get_origin_latest_snapshot_head_root_directory(origin, storage)
-        metadata_file_names = [
-            b"codemeta.json",
-            b"citation.cff",
-            b"CODEMETA.json",
-            b"CITATION.cff",
-        ]
-        if directory is not None:
-            metadata_files = [
-                entry
-                for entry in directory.entries
-                if entry.name in metadata_file_names
-            ]
-            if len(metadata_files) > 0:
-                origins.append(origin)
-    return origins
-
-
 @pytest.fixture(scope="function")
 def origin_with_releases():
     """Fixture returning a random origin with releases ingested into the test archive."""
     return random.choice(_origin_with_releases())
-
-
-@pytest.fixture(scope="function")
-def origin_with_metadata_file():
-    """Fixture returning a random origin with metadata (codemeta.json
-    or citation.cff file) ingested into the test archive."""
-    return random.choice(_origin_with_metadata_file())
 
 
 @functools.lru_cache(maxsize=None)

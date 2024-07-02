@@ -115,6 +115,7 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
 
 # Lightweight git repositories that will be loaded to generate
 # input data for tests
+ORIGIN_WITH_METADATA_FILES = "https://git.example.org/repo_with_metadata_file"
 _TEST_ORIGINS = [
     {
         "type": "git",
@@ -150,12 +151,8 @@ _TEST_ORIGINS = [
     },
     {
         "type": "git",
-        "url": "https://git.example.org/repo_with_metadata_file",
+        "url": ORIGIN_WITH_METADATA_FILES,
         "archives": ["repo_with_metadata_file.zip"],
-        "metadata": {
-            "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-            "description": "This is just a sample repository with a codemeta.json file.",
-        },
     },
 ]
 
