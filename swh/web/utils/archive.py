@@ -553,8 +553,9 @@ def lookup_origin_raw_intrinsic_metadata(
             and which value is a dictionary parsed from the metadata file content
 
     Raises:
-        NotFoundExc: when snapshot, branch or directory is missing,
-            no metadata could be found or the metadata files could not be decoded.
+        swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory is
+            missing, no metadata could be found or the metadata files could not
+            be decoded.
         BadInputExc: when the origin does not allow to find metadata.
     """
     try:
@@ -592,8 +593,8 @@ def lookup_raw_intrinsic_metadata_by_target_swhid(
             and which value is a dictionary parsed from the metadata file content
 
     Raises:
-        NotFoundExc: when the target object is missing, no metadata could be found
-            or the metadata files could not be decoded.
+        swh.web.utils.exc.NotFoundExc: when the target object is missing, no
+            metadata could be found or the metadata files could not be decoded.
         BadInputExc: when the target object does not allow to find metadata.
     """
     directory_id = _lookup_swhid_root_directory(target_swhid)
