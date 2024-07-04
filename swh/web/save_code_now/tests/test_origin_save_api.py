@@ -679,7 +679,7 @@ def test_reject_origin_url_with_password(api_client, swh_scheduler):
     assert resp.data == {
         "exception": "BadInputExc",
         "reason": (
-            "The provided origin url contains a password and cannot "
+            "The provided origin URL contains a password and cannot "
             "be accepted for security reasons."
         ),
     }

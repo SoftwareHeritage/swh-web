@@ -219,13 +219,13 @@ def _check_origin_url_valid(origin_url: str) -> None:
         _validate_url(origin_url)
     except ValidationError:
         raise BadInputExc(
-            f"The provided origin url ({escape(origin_url)}) is not valid!"
+            f"The provided origin URL '{escape(origin_url)}' is not valid!"
         )
 
     parsed_url = urlparse(origin_url)
     if parsed_url.password not in (None, "", "anonymous", "guest"):
         raise BadInputExc(
-            "The provided origin url contains a password and cannot be "
+            "The provided origin URL contains a password and cannot be "
             "accepted for security reasons."
         )
 
