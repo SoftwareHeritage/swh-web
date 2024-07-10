@@ -58,6 +58,12 @@ class ForbiddenExc(exceptions.PermissionDenied):
     pass
 
 
+class UnauthorizedExc(Exception):
+    """Request to Web API endpoint requires authentication."""
+
+    pass
+
+
 class LargePayloadExc(Exception):
     """The input size is too large.
 
@@ -202,6 +208,8 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     error_code = 500
     if isinstance(exc, BadInputExc):
         error_code = 400
+    elif isinstance(exc, UnauthorizedExc):
+        error_code = 401
     elif isinstance(exc, ForbiddenExc):
         error_code = 403
     elif isinstance(exc, NotFoundExc):

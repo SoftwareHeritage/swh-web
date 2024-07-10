@@ -27,6 +27,7 @@ from swh.web.utils.exc import (
     ForbiddenExc,
     LargePayloadExc,
     NotFoundExc,
+    UnauthorizedExc,
     sentry_capture_exception,
 )
 
@@ -200,6 +201,8 @@ def error_response(
     error_code = 500
     if isinstance(exception, BadInputExc):
         error_code = 400
+    elif isinstance(exception, UnauthorizedExc):
+        error_code = 401
     elif isinstance(exception, NotFoundExc):
         error_code = 404
     elif isinstance(exception, ForbiddenExc):

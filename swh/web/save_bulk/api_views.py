@@ -5,9 +5,11 @@
 
 import csv
 import io
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 from urllib.parse import urlparse
+from uuid import UUID
 
+from django.core.paginator import EmptyPage, Paginator
 from django.utils.encoding import force_str
 from rest_framework.decorators import parser_classes
 from rest_framework.exceptions import ParseError
@@ -15,6 +17,7 @@ from rest_framework.parsers import BaseParser, JSONParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.scheduler.utils import create_oneshot_task
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
@@ -24,7 +27,7 @@ from swh.web.config import get_config, scheduler
 from swh.web.save_bulk.models import SaveBulkOrigin, SaveBulkRequest
 from swh.web.save_code_now.origin_save import validate_origin_url
 from swh.web.utils import reverse
-from swh.web.utils.exc import BadInputExc
+from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc, UnauthorizedExc
 
 save_bulk_api_urls = APIUrls()
 
@@ -298,4 +301,254 @@ def api_origin_save_bulk(request: Request) -> Response:
 
     scheduler().create_tasks([task])
 
-    return Response({"status": "accepted", "request_id": save_bulk_request_id})
+    return Response(
+        {
+            "status": "accepted",
+            "request_id": save_bulk_request_id,
+            "request_info_url": reverse(
+                "api-1-save-origin-bulk-request-info",
+                url_args={"request_id": save_bulk_request_id},
+                request=request,
+            ),
+        }
+    )
+
+
+class SumbittedOriginInfo(TypedDict):
+    origin_url: str
+    visit_type: str
+    status: str
+    last_scheduling_date: Optional[str]
+    last_visit_date: Optional[str]
+    last_visit_status: Optional[str]
+    last_snapshot_swhid: Optional[str]
+    rejection_reason: Optional[str]
+    browse_url: Optional[str]
+
+
+@api_doc("/origin/save/bulk/request/", category="Request archival")
+@format_docstring()
+@api_route(
+    "/origin/save/bulk/request/<uuid:request_id>/",
+    "api-1-save-origin-bulk-request-info",
+    never_cache=True,
+    api_urls=save_bulk_api_urls,
+)
+def api_origin_save_bulk_request_info(request: Request, request_id: UUID):
+    """
+    .. http:get:: /api/1/origin/save/bulk/request/(request_id)/
+
+        Get feedback about loading statuses of origins submitted through a save bulk request.
+
+        That endpoint enables to track the archival statuses of origins sumitted through a POST
+        request using the :http:post:`/api/1/origin/save/bulk/` endpoint. Info about submitted
+        origins are returned in a paginated way.
+
+        .. note::
+            Only origin visits whose dates are greater than the request date are reported by
+            that endpoint.
+
+        .. warning::
+            That endpoint is not publicly available and requires authentication and
+            special user permission in order to request it. Staff users are also
+            allowed to query it.
+
+        .. warning::
+            Only the user that created a save bulk request or a staff user can get
+            feedback about it.
+
+        :param string request_id: UUID identifier of a save bulk request
+
+        :query number page: The submitted origins info page number to retrieve
+        :query number per_page: Number of submitted origins info per page, default to 1000,
+            maximum is 10000
+
+        :>jsonarr string origin_url: URL of submitted origin
+        :>jsonarr string visit_type: visit type for the origin
+        :>jsonarr string status: submitted origin status, either ``pending``, ``accepted``
+            or ``rejected``
+        :>jsonarr date last_scheduling_date: ISO8601/RFC3339 representation of the last date
+            (in UTC) when the origin was scheduled for loading into the archive, ``null`` if
+            the origin got rejected
+        :>jsonarr date last_visit_date: ISO8601/RFC3339 representation of the last date
+            (in UTC) when the origin was visited by Software Heritage, ``null`` if the origin
+            got rejected or was not visited yet
+        :>jsonarr string last_visit_status: last visit status for the origin, either
+            ``successful`` or ``failed``, ``null`` if the origin got rejected or was not
+            visited yet
+        :>jsonarr string last_snapshot_swhid: last produced snapshot SWHID associated to the
+            visit, ``null`` if the origin got rejected or was not visited yet
+        :>jsonarr string rejection_reason: if the origin got rejected gives more details
+            about it
+        :>jsonarr string browse_url: URL to browse the submitted origin if it got accepted
+            and loaded into the archive, ``null`` if the origin got rejected or was not
+            visited yet
+
+        {common_headers}
+        {resheader_link}
+
+        :statuscode 200: no error
+        :statuscode 401: request is not authenticated
+        :statuscode 403: user does not have permission to query the endpoint or get feedback
+            about a request he did not submit
+    """
+    # authentication and permission checks
+    if not bool(request.user and request.user.is_authenticated):
+        raise UnauthorizedExc("This API endpoint requires authentication.")
+    if (
+        not request.user.has_perm(API_SAVE_BULK_PERMISSION)
+        and not request.user.is_staff
+    ):
+        raise ForbiddenExc("This API endpoint requires a special user permission.")
+
+    request_id_str = str(request_id)
+
+    # fetch request info
+    try:
+        save_bulk_request = SaveBulkRequest.objects.get(id=request_id_str)
+    except SaveBulkRequest.DoesNotExist:
+        raise NotFoundExc(f"Save bulk request with id {request_id_str} not found!")
+
+    # only the user that created the request can retrieve its detailed info
+    if save_bulk_request.user_id != str(request.user.id) and not request.user.is_staff:
+        raise ForbiddenExc(
+            f"Save bulk request with id {request_id_str} was not created with "
+            "your user account!"
+        )
+
+    # get the lister associated to the request
+    lister = scheduler().get_lister("bulk-save", instance_name=request_id_str)
+
+    # get list of origins rejected by the lister
+    lister_state = lister.current_state if lister else {}
+    rejected_origins = {
+        (rejected_origin["origin_url"], rejected_origin["visit_type"]): rejected_origin
+        for rejected_origin in lister_state.get("rejected_origins", [])
+    }
+
+    # fetch the page of submitted origins to get loadings info
+    page_num = int(request.GET.get("page", 1))
+    per_page = int(request.GET.get("per_page", 1000))
+    per_page = min(per_page, 10000)
+
+    submitted_origins = SaveBulkOrigin.objects.filter(
+        requests__in=[save_bulk_request]
+    ).order_by("origin_url")
+
+    paginator = Paginator(submitted_origins, per_page)
+    try:
+        page = paginator.page(page_num)
+    except EmptyPage:
+        return []
+
+    # fetch listed origins filtered by URLs
+    listed_origins = {}
+    if lister:
+        listed_origins = {
+            (listed_origin.url, listed_origin.visit_type): listed_origin
+            for listed_origin in scheduler()
+            .get_listed_origins(
+                lister.id, urls=[origin.origin_url for origin in page.object_list]
+            )
+            .results
+        }
+
+    # get origin visit statistics from scheduler
+    origin_visit_stats = {
+        (visit_stats.url, visit_stats.visit_type): visit_stats
+        for visit_stats in scheduler().origin_visit_stats_get(
+            (origin.origin_url, origin.visit_type) for origin in page.object_list
+        )
+    }
+
+    # build response
+    response_data = []
+    for origin in page.object_list:
+        origin_key = (origin.origin_url, origin.visit_type)
+        status = "pending"
+        last_scheduled = None
+        last_visit_date = None
+        last_visit_status = None
+        last_snapshot = None
+        rejection_reason = None
+        browse_url = None
+        if origin_key in rejected_origins:
+            # origin rejected by lister, add rejection reason
+            status = "rejected"
+            rejection_reason = rejected_origins[origin_key]["reason"]
+        elif origin_key in listed_origins:
+            # origin accepted by lister, get origin visit stats
+            status = "accepted"
+            if origin_key in origin_visit_stats:
+                last_scheduled = origin_visit_stats[origin_key].last_scheduled
+                last_visit_date = origin_visit_stats[origin_key].last_visit
+                last_visit_status = origin_visit_stats[origin_key].last_visit_status
+                last_snapshot = origin_visit_stats[origin_key].last_snapshot
+            if last_snapshot:
+                browse_url = reverse(
+                    "browse-swhid",
+                    url_args={
+                        "swhid": QualifiedSWHID(
+                            object_type=ObjectType.SNAPSHOT,
+                            object_id=last_snapshot,
+                            origin=origin.origin_url,
+                        )
+                    },
+                    request=request,
+                )
+            if last_scheduled and last_scheduled > save_bulk_request.request_date:
+                # only report visit date greater than request date
+                if last_visit_date and last_visit_date < save_bulk_request.request_date:
+                    last_visit_date = None
+                    last_visit_status = None
+                    last_snapshot = None
+                    browse_url = None
+        # add submitted origin info to response data
+        response_data.append(
+            SumbittedOriginInfo(
+                origin_url=origin.origin_url,
+                visit_type=origin.visit_type,
+                status=status,
+                last_scheduling_date=(
+                    last_scheduled.isoformat() if last_scheduled else None
+                ),
+                last_visit_date=(
+                    last_visit_date.isoformat() if last_visit_date else None
+                ),
+                last_visit_status=(
+                    last_visit_status.value if last_visit_status else None
+                ),
+                last_snapshot_swhid=(
+                    str(
+                        CoreSWHID(
+                            object_type=ObjectType.SNAPSHOT, object_id=last_snapshot
+                        )
+                    )
+                    if last_snapshot
+                    else None
+                ),
+                rejection_reason=rejection_reason,
+                browse_url=browse_url,
+            )
+        )
+
+    response: Dict[str, Any] = {"results": response_data, "headers": {}}
+
+    # compute link header for pagination
+    if page.has_previous():
+        response["headers"]["link-prev"] = reverse(
+            "api-1-save-origin-bulk-request-info",
+            url_args={"request_id": request_id},
+            query_params={"per_page": str(per_page), "page": str(page_num - 1)},
+            request=request,
+        )
+
+    if page.has_next():
+        response["headers"]["link-next"] = reverse(
+            "api-1-save-origin-bulk-request-info",
+            url_args={"request_id": request_id},
+            query_params={"per_page": str(per_page), "page": str(page_num + 1)},
+            request=request,
+        )
+
+    return response
