@@ -11,8 +11,7 @@ import {decode} from 'html-encoder-decoder';
 import {resolve} from 'pathifist';
 
 export function addReadmeHeadingAnchors() {
-  swh.webapp.addHeadingAnchors(
-    '.swh-readme h2, .swh-readme h3, .swh-readme h4, .swh-readme h5, .swh-readme h6');
+  swh.webapp.addHeadingAnchors('.swh-readme');
 }
 
 // replace showdown generated relative links to archived objects in readme HTML:

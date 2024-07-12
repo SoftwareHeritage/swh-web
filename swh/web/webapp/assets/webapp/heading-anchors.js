@@ -8,13 +8,12 @@
 import AnchorJS from 'anchor-js';
 import './heading-anchors.css';
 
-export function addHeadingAnchors(
-  cssSelector = '.content h2, .content h3, .content h4, .content h5, .content h6') {
+export function addHeadingAnchors(parentSelector = '.content') {
   $(function() {
     const anchors = new AnchorJS({
       class: 'swh-heading-anchor',
       ariaLabel: 'anchor to heading'
     });
-    anchors.add(cssSelector);
+    anchors.add(`${parentSelector} :is(h2, h3, h4, h5, h6)`);
   });
 }
