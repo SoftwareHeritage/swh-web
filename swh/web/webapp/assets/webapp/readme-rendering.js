@@ -10,6 +10,11 @@ import * as EmailValidator from 'email-validator';
 import {decode} from 'html-encoder-decoder';
 import {resolve} from 'pathifist';
 
+export function addReadmeHeadingAnchors() {
+  swh.webapp.addHeadingAnchors(
+    '.swh-readme h2, .swh-readme h3, .swh-readme h4, .swh-readme h5, .swh-readme h6');
+}
+
 // replace showdown generated relative links to archived objects in readme HTML:
 // from /browse.*/directory/<path>/.* to /browse.*/directory/?path=<path>.*
 function fixSwhRelativeLinksInReadme(readmeHtml) {
@@ -124,6 +129,7 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
         html = fixSwhRelativeLinksInReadme(html);
       }
       $(domElt).html(swh.webapp.filterXSS(html));
+      addReadmeHeadingAnchors();
     } catch (_) {
       $(domElt).text('Readme bytes are not available');
     }
@@ -144,7 +150,6 @@ export async function renderOrgData(domElt, orgDocData) {
   // with other readme renderings
   $('.swh-org ul').first().remove();
   $('.section-number').remove();
-
 }
 
 export function renderOrg(domElt, orgDocUrl) {
@@ -154,6 +159,7 @@ export function renderOrg(domElt, orgDocUrl) {
       handleFetchError(response);
       const data = await response.text();
       renderOrgData(domElt, data);
+      addReadmeHeadingAnchors();
     } catch (_) {
       $(domElt).text('Readme bytes are not available');
     }

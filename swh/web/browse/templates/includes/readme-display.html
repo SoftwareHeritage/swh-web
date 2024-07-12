@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -15,7 +15,10 @@ See top-level LICENSE file for more information
     <div class="swh-readme card-body"></div>
   </div>
   {% if readme_html %}
-    <script>$('.swh-readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));</script>
+    <script>
+      $('.swh-readme').html(swh.webapp.filterXSS({{ readme_html|jsonify }}));
+      swh.webapp.addReadmeHeadingAnchors();
+    </script>
   {% elif readme_url is None %}
     <script>$('.swh-readme').text("Readme bytes are not available");</script>
   {% elif readme_name.lower == 'readme' or readme_name.lower == 'readme.txt' %}

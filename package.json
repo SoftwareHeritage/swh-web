@@ -24,6 +24,7 @@
     "@mdi/font": "^7.4.47",
     "@sentry/browser": "^8.15.0",
     "admin-lte": "^3.2.0",
+    "anchor-js": "^5.0.0",
     "ansi_up": "^6.0.2",
     "bootstrap": "^4.6.2",
     "c3": "github:highlightjs/highlightjs-c3",

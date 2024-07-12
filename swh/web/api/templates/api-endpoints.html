@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2015-2023  The Software Heritage developers
+Copyright (C) 2015-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -81,5 +81,6 @@ See top-level LICENSE file for more information
   <script type="text/javascript">
     swh.webapp.initPage('api');
     swh.webapp.highlightCode(false);
+    swh.webapp.addHeadingAnchors();
   </script>
 {% endblock content %}

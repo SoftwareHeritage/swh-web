@@ -1,0 +1,19 @@
+/**
+ * Copyright (C) 2024  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+ /* to prevent headings being covered by sticky top bar */
+:target::before {
+  content: "";
+  display: block;
+  margin-top: -30px;
+  height: 30px;
+  width: 1px;
+}
+
+.swh-heading-anchor {
+  color: #e20026;
+}
