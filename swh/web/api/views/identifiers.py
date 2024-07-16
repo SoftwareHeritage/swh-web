@@ -92,7 +92,7 @@ def api_swhid_known(request: Request):
         :>json object <swhid>: an object whose keys are input SWHIDs and values
             objects with the following keys:
 
-                * **known (bool)**: whether the object was found
+            * **known (bool)**: whether the object was found
 
         {common_headers}
 

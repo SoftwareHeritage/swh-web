@@ -102,23 +102,23 @@ def api_save_origin(
 
         Depending of the provided origin url, the save request can either be:
 
-            * immediately **accepted**, for well known code hosting providers
-              like for instance GitHub or GitLab
-            * **rejected**, in case the url is blacklisted by Software Heritage
-            * **put in pending state** until a manual check is done in order to
-              determine if it can be loaded or not
+        * immediately **accepted**, for well known code hosting providers
+          like for instance GitHub or GitLab
+        * **rejected**, in case the url is blacklisted by Software Heritage
+        * **put in pending state** until a manual check is done in order to
+          determine if it can be loaded or not
 
         Once a saving request has been accepted, its associated saving task
         status can then be checked through a GET request on the same url.
         Returned status can either be:
 
-            * **not created**: no saving task has been created
-            * **pending**: saving task has been created and will be scheduled
-              for execution
-            * **scheduled**: the task execution has been scheduled
-            * **running**: the task is currently executed
-            * **succeeded**: the saving task has been successfully executed
-            * **failed**: the saving task has been executed but it failed
+        * **not created**: no saving task has been created
+        * **pending**: saving task has been created and will be scheduled
+          for execution
+        * **scheduled**: the task execution has been scheduled
+        * **running**: the task is currently executed
+        * **succeeded**: the saving task has been successfully executed
+        * **failed**: the saving task has been executed but it failed
 
         When issuing a POST request an object will be returned while a GET
         request will return an array of objects (as multiple save requests

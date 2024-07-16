@@ -41,9 +41,9 @@ DOC_RETURN_ORIGIN_VISIT = """
         :>json string date: ISO8601/RFC3339 representation of the visit date (in UTC)
         :>json str origin: the origin canonical url
         :>json string origin_url: link to get information about the origin
-        :>jsonarr string snapshot: the snapshot identifier of the visit
+        :>json string snapshot: the snapshot identifier of the visit
             (may be null if status is not **full**).
-        :>jsonarr string snapshot_url: link to
+        :>json string snapshot_url: link to
             :http:get:`/api/1/snapshot/(snapshot_id)/` in order to get
             information about the snapshot of the visit
             (may be null if status is not **full**).
