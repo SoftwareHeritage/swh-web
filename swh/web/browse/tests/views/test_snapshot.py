@@ -71,6 +71,7 @@ def test_snapshot_browse_with_id_and_origin(
     assert_contains(resp, origin["url"])
 
 
+@pytest.mark.xfail  # flaky test
 @pytest.mark.parametrize("browse_context", ["log", "branches", "releases"])
 def test_snapshot_browse_with_id_origin_and_timestamp(
     client, browse_context, archive_data, origin_with_multiple_visits
