@@ -203,7 +203,7 @@ def api_add_forge_request_update(
     request: Union[HttpRequest, Request], id: int
 ) -> HttpResponse:
     """
-    .. http:post:: /api/1/add-forge/request/update/
+    .. http:post:: /api/1/add-forge/request/(id)/update/
 
         Update a request to add a forge to the list of those crawled regularly
         by Software Heritage.
@@ -375,7 +375,7 @@ def api_add_forge_request_list(request: Request):
 @format_docstring()
 def api_add_forge_request_get(request: Request, id: int):
     """
-    .. http:get:: /api/1/add-forge/request/get/
+    .. http:get:: /api/1/add-forge/request/(id)/get/
 
         Return all details about an add-forge request.
 
