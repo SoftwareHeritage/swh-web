@@ -646,14 +646,25 @@ a.toggle-col.col-hidden {
     border: 1px solid #faebcc;
     padding: 15px;
     border-radius: 4px;
+    margin-bottom: 1rem;
 }
 
 .admonition.warning p {
     margin-bottom: 0;
 }
 
-.admonition.warning .first {
-    font-size: 1.5rem;
+.admonition.warning .admonition-title {
+    font-weight: bold;
+}
+
+.admonition.warning .admonition-title::before {
+    content: "\f0026";
+    font-family: "Material Design Icons";
+    display: block;
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-left: 0;
 }
 
 .swh-popover {
