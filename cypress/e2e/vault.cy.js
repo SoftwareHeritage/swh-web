@@ -517,6 +517,54 @@ describe('Vault Cooking User Interface Tests', function() {
     });
   });
 
+  it('should offer to recook a tarball already cooked by another user but no longer in cache', function() {
+    cy.visit(this.directoryUrl);
+
+    // set bundle as already cooked
+    cy.intercept(this.vaultDirectoryUrl, {
+      body: this.genVaultDirCookingResponse('done')
+    }).as('checkVaultCookingTask');
+
+    // but no longer available in cache
+    cy.intercept({url: this.vaultDownloadDirectoryUrl}, {
+      statusCode: 404,
+      body: {
+        'exception': 'NotFoundExc',
+        'reason': `Directory with ID '${this.directory}' not found.`
+      },
+      headers: {
+        'Content-Type': 'json'
+      }
+    }).as('fetchCookedArchive');
+
+    cy.intercept('POST', this.vaultDirectoryUrl, {
+      body: this.genVaultDirCookingResponse('new')
+    }).as('createVaultCookingTask');
+
+    // request tarball download
+    cy.contains('button', 'Download')
+      .click();
+
+    cy.wait('@checkVaultCookingTask');
+
+    // vault backend indicated tarball was already cooked, download dialog is displayed
+    cy.get('#vault-download-directory-modal')
+      .should('be.visible')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    cy.wait('@fetchCookedArchive');
+
+    // tarball is no longer in cache, recook dialog is displayed
+    cy.get('#vault-recook-object-modal > .modal-dialog')
+      .should('be.visible')
+      .contains('button:visible', 'Ok')
+      .click();
+
+    // check new cooking request was sent
+    cy.wait('@createVaultCookingTask');
+  });
+
   it('should remove selected vault items', function() {
 
     updateVaultItemList(this.vaultItems);

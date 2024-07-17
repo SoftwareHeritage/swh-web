@@ -16,6 +16,26 @@ const alertStyle = {
   'z-index': '100000'
 };
 
+export function displayCookingTaskCreatedAlert() {
+  const cookingTaskCreatedAlert =
+    $(htmlAlert('success',
+                'Archive cooking request successfully submitted.<br/>' +
+                      `Go to the <a href="${Urls.vault()}">Downloads</a> page ` +
+                      'to get the download link once it is ready.',
+                true));
+  cookingTaskCreatedAlert.css(alertStyle);
+  $('body').append(cookingTaskCreatedAlert);
+}
+
+export function displayCookingTaskCreationFailedAlert() {
+  const cookingTaskFailedAlert =
+      $(htmlAlert('danger',
+                  'Archive cooking request submission failed.',
+                  true));
+  cookingTaskFailedAlert.css(alertStyle);
+  $('body').append(cookingTaskFailedAlert);
+}
+
 export async function vaultRequest(objectType, swhid) {
   let vaultUrl;
   if (objectType === 'directory') {
@@ -35,9 +55,9 @@ export async function vaultRequest(objectType, swhid) {
     swh.vault.removeCookingTaskInfo([swhid]);
     const vaultModalId = `#vault-cook-${objectType}-modal`;
     $(vaultModalId).modal('show');
-    // object has been cooked and should be in the vault cache,
-    // it will be asked to cook it again if it is not
   } else if (data.status === 'done') {
+    // object has been cooked but is no longer in the vault cache,
+    // it will be asked to cook it again
     const vaultModalId = `#vault-download-${objectType}-modal`;
     $(vaultModalId).modal('show');
   } else {
@@ -86,29 +106,19 @@ async function addVaultCookingTask(objectType, cookingTask) {
       localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
       $('#vault-cook-directory-modal').modal('hide');
       $('#vault-cook-revision-modal').modal('hide');
-      const cookingTaskCreatedAlert =
-          $(htmlAlert('success',
-                      'Archive cooking request successfully submitted.<br/>' +
-                      `Go to the <a href="${Urls.vault()}">Downloads</a> page ` +
-                      'to get the download link once it is ready.',
-                      true));
-      cookingTaskCreatedAlert.css(alertStyle);
-      $('body').append(cookingTaskCreatedAlert);
+      displayCookingTaskCreatedAlert();
     } catch (_) {
       $('#vault-cook-directory-modal').modal('hide');
       $('#vault-cook-revision-modal').modal('hide');
-      const cookingTaskFailedAlert =
-          $(htmlAlert('danger',
-                      'Archive cooking request submission failed.',
-                      true));
-      cookingTaskFailedAlert.css(alertStyle);
-      $('body').append(cookingTaskFailedAlert);
+      displayCookingTaskCreationFailedAlert();
     }
   }
 }
 
 export function cookDirectoryArchive(event, swhid) {
-  event.preventDefault();
+  if (event) {
+    event.preventDefault();
+  }
   const email = $('#swh-vault-directory-email').val().trim();
   if (!email || EmailValidator.validate(email)) {
     const cookingTask = {
@@ -126,6 +136,8 @@ export function cookDirectoryArchive(event, swhid) {
 
 export async function fetchDirectoryArchive(directorySwhid) {
   $('#vault-download-directory-modal').modal('hide');
+  $('#vault-recook-object-modal').attr('swh-object-type', 'directory');
+  $('#vault-recook-object-modal').attr('swh-object-swhid', directorySwhid);
   const vaultUrl = Urls.api_1_vault_cook_flat(directorySwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();
@@ -133,7 +145,9 @@ export async function fetchDirectoryArchive(directorySwhid) {
 }
 
 export function cookRevisionArchive(event, revisionId) {
-  event.preventDefault();
+  if (event) {
+    event.preventDefault();
+  }
   const email = $('#swh-vault-revision-email').val().trim();
   if (!email || EmailValidator.validate(email)) {
     const cookingTask = {
@@ -150,6 +164,8 @@ export function cookRevisionArchive(event, revisionId) {
 
 export async function fetchRevisionArchive(revisionSwhid) {
   $('#vault-download-revision-modal').modal('hide');
+  $('#vault-recook-object-modal').attr('swh-object-type', 'revision');
+  $('#vault-recook-object-modal').attr('swh-object-swhid', revisionSwhid);
   const vaultUrl = Urls.api_1_vault_cook_git_bare(revisionSwhid);
   const response = await fetch(vaultUrl);
   const data = await response.json();

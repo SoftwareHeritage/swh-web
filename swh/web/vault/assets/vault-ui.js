@@ -59,10 +59,12 @@ export async function fetchCookedObject(fetchUrl) {
   } else {
     // get the associated cooking task
     const vaultCookingTasks = JSON.parse(localStorage.getItem('swh-vault-cooking-tasks'));
-    for (let i = 0; i < vaultCookingTasks.length; ++i) {
-      if (vaultCookingTasks[i].fetch_url === fetchUrl) {
-        recookTask = vaultCookingTasks[i];
-        break;
+    if (vaultCookingTasks) {
+      for (let i = 0; i < vaultCookingTasks.length; ++i) {
+        if (vaultCookingTasks[i].fetch_url === fetchUrl) {
+          recookTask = vaultCookingTasks[i];
+          break;
+        }
       }
     }
     // display a modal asking the user if he wants to recook the archive
@@ -71,9 +73,12 @@ export async function fetchCookedObject(fetchUrl) {
 }
 
 // called when the user wants to recook an archive
-// for which the download link is not available anymore
+// for which the download link is no longer available
 export async function recookObject() {
   if (recookTask) {
+    // previous cooking task already present in local storage, request
+    // new cooking and update task status
+
     // stop cooking tasks status polling
     clearTimeout(checkVaultId);
     // build cook request url
@@ -87,7 +92,7 @@ export async function recookObject() {
       cookingUrl += '?email=' + recookTask.email;
     }
     try {
-    // request archive cooking
+      // request archive cooking
       const response = await csrfPost(cookingUrl);
       handleFetchError(response);
 
@@ -102,16 +107,24 @@ export async function recookObject() {
       }
       // save updated tasks to local storage
       localStorage.setItem('swh-vault-cooking-tasks', JSON.stringify(vaultCookingTasks));
-      // hide recook archive modal
-      $('#vault-recook-object-modal').modal('hide');
-      // restart cooking tasks status polling
-      await checkVaultCookingTasks();
+      swh.vault.displayCookingTaskCreatedAlert();
     } catch (_) {
-      // something went wrong
-      $('#vault-recook-object-modal').modal('hide');
-      await checkVaultCookingTasks();
+      swh.vault.displayCookingTaskCreationFailedAlert();
+    }
+  } else {
+    // previous cooking task not present in local storage, request cooking
+    const objectType = $('#vault-recook-object-modal').attr('swh-object-type');
+    const objectSwhid = $('#vault-recook-object-modal').attr('swh-object-swhid');
+    if (objectType === 'directory') {
+      swh.vault.cookDirectoryArchive(null, objectSwhid);
+    } else if (objectType === 'revision') {
+      swh.vault.cookRevisionArchive(null, objectSwhid);
     }
   }
+  // hide recook archive modal
+  $('#vault-recook-object-modal').modal('hide');
+  // restart cooking tasks status polling
+  await checkVaultCookingTasks();
 }
 
 async function checkVaultCookingTasks() {
