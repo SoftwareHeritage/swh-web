@@ -608,3 +608,70 @@ def test_save_bulk_request_info_visit_date_before_request_date(
             "browse_url": None,
         }
     ]
+
+
+NB_SAVE_BULK_REQUESTS = 100
+
+
+@pytest.fixture
+def user_save_bulk_requests(save_bulk_user):
+    SaveBulkRequest.objects.bulk_create(
+        [
+            SaveBulkRequest(user_id=str(save_bulk_user.id))
+            for _ in range(NB_SAVE_BULK_REQUESTS)
+        ]
+    )
+    return SaveBulkRequest.objects
+
+
+def test_list_save_bulk_requests_anonymous(api_client):
+    url = reverse("api-1-save-origin-bulk-requests")
+    resp = check_api_get_responses(api_client, url, status_code=401)
+    assert resp.data == {
+        "exception": "UnauthorizedExc",
+        "reason": "This API endpoint requires authentication.",
+    }
+
+
+def test_list_save_bulk_requests_user_without_permission(api_client, regular_user):
+    api_client.force_login(regular_user)
+    url = reverse("api-1-save-origin-bulk-requests")
+    resp = check_api_get_responses(api_client, url, status_code=403)
+    assert resp.data == {
+        "exception": "ForbiddenExc",
+        "reason": "This API endpoint requires a special user permission.",
+    }
+
+
+def test_list_save_bulk_requests(api_client, save_bulk_user, user_save_bulk_requests):
+    api_client.force_login(save_bulk_user)
+
+    per_page = 10
+    nb_pages = NB_SAVE_BULK_REQUESTS // per_page
+
+    user_save_bulk_requests = user_save_bulk_requests.order_by("-request_date")
+
+    for page in range(1, nb_pages + 2):
+        url = reverse(
+            "api-1-save-origin-bulk-requests",
+            query_params={"per_page": per_page, "page": page},
+        )
+
+        resp = check_api_get_responses(api_client, url, status_code=200)
+
+        expected_data = [
+            {
+                "request_id": str(save_bulk_request.id),
+                "request_date": save_bulk_request.request_date.isoformat(),
+                "request_info_url": reverse(
+                    "api-1-save-origin-bulk-request-info",
+                    url_args={"request_id": str(save_bulk_request.id)},
+                    request=resp.wsgi_request,
+                ),
+            }
+            for save_bulk_request in user_save_bulk_requests[
+                (page - 1) * per_page : page * per_page
+            ]
+        ]
+
+        assert resp.data == expected_data

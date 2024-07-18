@@ -552,3 +552,95 @@ def api_origin_save_bulk_request_info(request: Request, request_id: UUID):
         )
 
     return response
+
+
+@api_doc("/origin/save/bulk/requests/", category="Request archival")
+@format_docstring()
+@api_route(
+    "/origin/save/bulk/requests/",
+    "api-1-save-origin-bulk-requests",
+    never_cache=True,
+    api_urls=save_bulk_api_urls,
+)
+def api_origin_save_bulk_requests(request: Request):
+    """
+    .. http:get:: /api/1/origin/save/bulk/requests/
+
+        List previously submitted save bulk requests.
+
+        That endpoint enables to list the save bulk requests submitted by
+        your user account and get their info URLs
+        (see :http:get:`/api/1/origin/save/bulk/request/(request_id)/`).
+        That list is returned in a paginated way if the number or requests
+        is large.
+
+        .. warning::
+            That endpoint is not publicly available and requires authentication and
+            special user permission in order to request it.
+
+        :query number page: The submitted requests page number to retrieve
+        :query number per_page: Number of submitted requests per page, default to 1000,
+            maximum is 10000
+
+        :>jsonarr string request_id: UUID identifier of the request
+        :>jsonarr date request_date: the date the request was submitted
+        :>jsonarr string request_info_url: URL to get detailed info about the request
+
+        {common_headers}
+        {resheader_link}
+
+        :statuscode 200: no error
+        :statuscode 401: request is not authenticated
+        :statuscode 403: user does not have permission to query the endpoint
+
+    """
+
+    if not bool(request.user and request.user.is_authenticated):
+        raise UnauthorizedExc("This API endpoint requires authentication.")
+    if not request.user.has_perm(API_SAVE_BULK_PERMISSION):
+        raise ForbiddenExc("This API endpoint requires a special user permission.")
+
+    save_bulk_requests = SaveBulkRequest.objects.filter(
+        user_id=str(request.user.id)
+    ).order_by("-request_date")
+
+    page_num = int(request.GET.get("page", 1))
+    per_page = int(request.GET.get("per_page", 1000))
+    per_page = min(per_page, 10000)
+
+    paginator = Paginator(save_bulk_requests, per_page)
+    try:
+        page = paginator.page(page_num)
+    except EmptyPage:
+        return []
+
+    response_data = [
+        {
+            "request_id": str(save_bulk_request.id),
+            "request_date": save_bulk_request.request_date.isoformat(),
+            "request_info_url": reverse(
+                "api-1-save-origin-bulk-request-info",
+                url_args={"request_id": str(save_bulk_request.id)},
+                request=request,
+            ),
+        }
+        for save_bulk_request in page.object_list
+    ]
+
+    response: Dict[str, Any] = {"results": response_data, "headers": {}}
+
+    if page.has_previous():
+        response["headers"]["link-prev"] = reverse(
+            "api-1-save-origin-bulk-requests",
+            query_params={"per_page": str(per_page), "page": str(page_num - 1)},
+            request=request,
+        )
+
+    if page.has_next():
+        response["headers"]["link-next"] = reverse(
+            "api-1-save-origin-bulk-requests",
+            query_params={"per_page": str(per_page), "page": str(page_num + 1)},
+            request=request,
+        )
+
+    return response

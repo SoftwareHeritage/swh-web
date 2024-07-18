@@ -13,6 +13,8 @@ Request archival
 
 .. autosimple:: swh.web.save_bulk.api_views.api_origin_save_bulk
 
+.. autosimple:: swh.web.save_bulk.api_views.api_origin_save_bulk_requests
+
 .. autosimple:: swh.web.save_bulk.api_views.api_origin_save_bulk_request_info
 
 .. autosimple:: swh.web.save_code_now.api_views.api_save_origin
