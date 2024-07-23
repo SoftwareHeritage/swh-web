@@ -220,6 +220,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         text = self._default_visit(node)
         return "\n\n.. warning::\n%s\n" % textwrap.indent(text, "\t")
 
+    def visit_note(self, node: docutils.nodes.note) -> str:
+        text = self._default_visit(node)
+        return "\n\n.. note::\n%s\n" % textwrap.indent(text, "\t")
+
     def visit_Text(self, node: docutils.nodes.Text) -> str:
         """Leaf node"""
         return str(node).replace("\n", " ")  # Prettier in generated HTML

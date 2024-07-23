@@ -644,27 +644,43 @@ a.toggle-col.col-hidden {
 .admonition.warning {
     background: #fcf8e3;
     border: 1px solid #faebcc;
+}
+
+.admonition.note {
+    background: #dce7fc;
+    border: 1px solid #c3d6fa;
+}
+
+.admonition.warning, .admonition.note {
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 1rem;
 }
 
-.admonition.warning p {
+.admonition.warning p, .admonition.note p {
     margin-bottom: 0;
 }
 
-.admonition.warning .admonition-title {
+.admonition-title {
     font-weight: bold;
 }
 
-.admonition.warning .admonition-title::before {
-    content: "\f0026";
-    font-family: "Material Design Icons";
+.admonition-title::before {
     display: block;
     width: 20px;
     height: 20px;
     float: left;
     margin-left: 0;
+}
+
+.admonition.warning .admonition-title::before {
+    content: "\f0026";
+    font-family: "Material Design Icons";
+}
+
+.admonition.note .admonition-title::before {
+    content: "\f02fc";
+    font-family: "Material Design Icons";
 }
 
 .swh-popover {
