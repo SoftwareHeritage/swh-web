@@ -40,7 +40,7 @@ def save_origin_visit_webhook(request):
     except ValueError:
         raise BadInputExc("Webhook body verification failed")
 
-    origin_url = payload.get("origin_url")
+    origin_url = payload["origin_url"]
     save_requests = get_save_origin_requests_to_update(origin_url=origin_url)
 
     if save_requests.count() > 0:
