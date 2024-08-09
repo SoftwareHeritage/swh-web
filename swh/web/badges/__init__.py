@@ -75,7 +75,7 @@ def swh_badge(
     object_type: str,
     object_id: str,
     object_swhid: Optional[str] = "",
-):
+) -> HttpResponse:
     """
     Generate a Software Heritage badge for a given object type and id.
 
@@ -96,21 +96,24 @@ def swh_badge(
 
     """
     left_text = "error"
-    whole_link = None
+    whole_link: str | None = None
 
     # cache badge for 30 days by default
     cache_timeout = (
         get_config().get("badges", {}).get("cache_timeout", 30 * 24 * 60 * 60)
     )
+
+    def get_response(request: HttpRequest) -> HttpResponse:
+        return HttpResponse()
+
     cachemiddleware = CacheMiddleware(
-        cache_timeout=int(cache_timeout), get_response=lambda: HttpResponse()
+        cache_timeout=int(cache_timeout),
+        get_response=get_response,
     )
 
-    response = cachemiddleware.process_request(request)
-
-    if response is not None:
+    if (response := cachemiddleware.process_request(request)) is not None:
         # return cached badge response
-        return response
+        return cast(HttpResponse, response)
 
     setattr(request, "_cache_update_cache", False)
 
@@ -172,7 +175,7 @@ def swh_badge(
     )
 
     response = HttpResponse(badge_data, content_type="image/svg+xml")
-    return cachemiddleware.process_response(request, response)
+    return cast(HttpResponse, cachemiddleware.process_response(request, response))
 
 
 def swh_badge_swhid(request: HttpRequest, object_swhid: str) -> HttpResponse:

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage, Message
 import logging
-from typing import List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union, cast
 
 from django.conf import settings
 from django.core.signing import Signer
@@ -230,8 +230,10 @@ def _get_message_text(message: Union[Message, EmailMessage]) -> Tuple[bool, List
     subtype = message.get_content_subtype()
     if maintype == "text":
         # This is a simple message (message part)
-        current_part_bytes = message.get_payload(decode=True).rstrip(b"\n")
-        charset = message.get_param("charset", "utf-8")
+        # XXX email.message API says we are sure to get a bytes here, but mypy cannot tell
+        current_part_bytes = cast(bytes, message.get_payload(decode=True)).rstrip(b"\n")
+        # XXX same, we know we get a str, but mypy cannot tell, so make it happy
+        charset = str(message.get_param("charset", "utf-8"))
         current_part = current_part_bytes.decode(charset, errors="replace")
 
         if subtype == "plain":
@@ -249,12 +251,14 @@ def _get_message_text(message: Union[Message, EmailMessage]) -> Tuple[bool, List
 
         # Parse each part independently:
         for part in message.get_payload():
-            (is_plain_text, current_part) = _get_message_text(part)
+            (is_plain_text, current_part_list) = _get_message_text(
+                cast(Union[Message, EmailMessage], part)
+            )
             if is_plain_text:
-                text_parts.append("".join(current_part))
+                text_parts.append("".join(current_part_list))
             else:
-                fallback_parts.append("".join(current_part))
-            all_parts.extend(current_part)
+                fallback_parts.append("".join(current_part_list))
+            all_parts.extend(current_part_list)
 
         if subtype == "alternative":
             # Return the largest plain text part if any; or the largest HTML otherwise

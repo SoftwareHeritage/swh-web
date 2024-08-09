@@ -229,10 +229,9 @@ def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginIn
         origin_urls.append(demangled_url)
 
     for url in origin_urls:
-        # TODO: remove type ignores when origin_get signature is fixed in storage
         origins = storage.origin_get([url])
-        if origins and origins[0]:  # type: ignore[index]
-            return _origin_info(origins[0])  # type: ignore[index]
+        if origins and origins[0]:
+            return _origin_info(origins[0])
     else:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -469,8 +468,7 @@ def lookup_origin_intrinsic_metadata(
     origins = [
         lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
     ]
-    # TODO: remove type ignore when origin_get signature is fixed in storage
-    origin_info = storage.origin_get(origins)[0]  # type: ignore[index]
+    origin_info = storage.origin_get(origins)[0]
     if not origin_info:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
@@ -623,8 +621,7 @@ def lookup_origin_extrinsic_metadata(
     origins = [
         lookup_origin(origin_url, lookup_similar_urls=lookup_similar_urls)["url"]
     ]
-    # TODO: remove type ignore when origin_get signature is fixed in storage
-    origin_info = storage.origin_get(origins)[0]  # type: ignore
+    origin_info = storage.origin_get(origins)[0]
     if not origin_info:
         raise NotFoundExc(f"Origin with url {origin_url} not found!")
 
