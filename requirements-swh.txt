@@ -5,6 +5,6 @@ swh.indexer >= 2.0.0
 swh.model >= 6.13.0
 swh.scheduler >= 2.3.0
 swh.search >= 0.16.0
-swh.storage >= 2.6.1
+swh.storage >= 2.7.0
 swh-vault >= 1.12.2
 swh.webhooks >= 0.1.1
