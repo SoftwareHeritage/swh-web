@@ -7,8 +7,7 @@ from typing import Callable, List
 
 from django.http.response import HttpResponseBase
 from django.shortcuts import redirect
-from django.urls import URLPattern
-from django.urls import re_path as url
+from django.urls import URLPattern, path, re_path
 
 
 class UrlsIndex:
@@ -27,14 +26,23 @@ class UrlsIndex:
         Adds an URL pattern.
 
         Args:
-            url_pattern: regex describing a Django URL
+            url_pattern: string or regex describing a Django URL
             view: function implementing the Django view
             view_name: name of the view used to reverse the URL
         """
-        if view_name:
-            self.urlpatterns.append(url(url_pattern, view, name=view_name))
+
+        if "(?P<" in url_pattern:
+            url = re_path
+            assert not url_pattern.startswith("^")
+            assert not url_pattern.endswith("$")
+            pattern = "^" + url_pattern + "$"
         else:
-            self.urlpatterns.append(url(url_pattern, view))
+            url = path
+            pattern = url_pattern
+        if view_name:
+            self.urlpatterns.append(url(pattern, view, name=view_name))
+        else:
+            self.urlpatterns.append(url(pattern, view))
 
     def add_redirect_for_checksum_args(
         self, view_name: str, url_patterns: List[str], checksum_args: List[str]

@@ -381,7 +381,7 @@ def api_doc(
             return make_api_response(request, None, doc_data)
 
         route_name = "%s-doc" % route[1:-1].replace("/", "-")
-        urlpattern = f"^api/{api_version}{route}doc/$"
+        urlpattern = f"api/{api_version}{route}doc/"
 
         view_name = "api-%s-%s" % (api_version, route_name)
         api_urls.add_url_pattern(urlpattern, doc_view, view_name)
@@ -389,7 +389,7 @@ def api_doc(
         # for backward compatibility as previous apidoc URLs were missing
         # the /api prefix
         old_view_name = view_name.replace("api-", "")
-        old_urlpattern = f"^{api_version}{route}doc/$"
+        old_urlpattern = f"{api_version}{route}doc/"
 
         @api_view(["GET", "HEAD"])
         def old_doc_view(request):

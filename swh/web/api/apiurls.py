@@ -89,7 +89,7 @@ def api_route(
 
     """
 
-    url_pattern = "^api/" + api_version + url_pattern + "$"
+    url_pattern = "api/" + api_version + url_pattern
 
     def decorator(f):
         # create a DRF view from the wrapped function
