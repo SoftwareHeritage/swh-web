@@ -36,9 +36,6 @@ import './datatables.css';
 import 'chosen-js';
 import 'chosen-js/chosen.min.css';
 
-// iframe-resizer
-import 'iframe-resizer';
-
 // web fonts
 import 'typeface-alegreya';
 import 'typeface-alegreya-sans';

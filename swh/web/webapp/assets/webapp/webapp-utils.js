@@ -9,6 +9,7 @@ import objectFitImages from 'object-fit-images';
 import {selectText} from 'utils/functions';
 import {BREAKPOINT_MD} from 'utils/constants';
 import Cookies from 'js-cookie';
+import iframeResize from '@iframe-resizer/parent';
 
 function ensureNoFooterOverflow() {
   $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
@@ -193,7 +194,7 @@ export function initHomePage() {
     // mirror version of swh-web does not have coverage widget and counters
     // in the homepage
     if (Object.keys(swh.webapp.mirrorConfig()).length === 0) {
-      $('.swh-coverage-iframe').iFrameResize({heightCalculationMethod: 'taggedElement'});
+      iframeResize({license: 'GPLv3', heightCalculationMethod: 'taggedElement'}, '.swh-coverage-iframe');
       const response = await fetch(Urls.stat_counters());
       const data = await response.json();
 
