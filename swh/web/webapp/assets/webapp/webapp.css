@@ -669,7 +669,7 @@ a.toggle-col.col-hidden {
 
 .swh-popover {
     max-height: 50vh;
-    overflow: auto auto;
+    overflow: auto;
     padding: 0;
 }
 

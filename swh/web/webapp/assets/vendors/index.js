@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -25,7 +25,7 @@ import 'admin-lte';
 import 'js-cookie';
 
 // datatables and extensions
-import 'datatables.net';
+import dataTable from 'datatables.net';
 import 'datatables.net-bs4';
 import 'datatables.net-fixedheader-bs4';
 import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
@@ -49,3 +49,6 @@ import '@sentry/browser';
 
 // fix js error on homepage due to admin-lte 3.2
 localStorage.setItem('AdminLTE:IFrame:Options', JSON.stringify({}));
+
+// ensure datatables jquery plugin is properly initialized
+$.fn.dataTable = dataTable;
