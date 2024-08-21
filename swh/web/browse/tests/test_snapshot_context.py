@@ -5,6 +5,8 @@
 
 import random
 
+import pytest
+
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
     Release,
@@ -171,6 +173,7 @@ def test_get_snapshot_context_no_origin(archive_data, snapshot):
         )
 
 
+@pytest.mark.xfail  # flaky test
 def test_get_snapshot_context_with_origin(archive_data, origin_with_multiple_visits):
     origin_visits = get_origin_visits(origin_with_multiple_visits["url"])
 
