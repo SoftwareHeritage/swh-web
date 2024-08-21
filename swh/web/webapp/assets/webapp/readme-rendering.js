@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2023  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -7,8 +7,8 @@
 
 import {handleFetchError} from 'utils/functions';
 import * as EmailValidator from 'email-validator';
-import {decode} from 'html-encoder-decoder';
 import {resolve} from 'pathifist';
+import * as showdownHighlight from 'showdown-highlight';
 
 export function addReadmeHeadingAnchors() {
   swh.webapp.addHeadingAnchors('.swh-readme');
@@ -69,43 +69,10 @@ export async function renderMarkdown(domElt, markdownDocUrl) {
   const showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
-  // Adapted from https://github.com/Bloggify/showdown-highlight
-  // Copyright (c) 2016-19 Bloggify <support@bloggify.org> (https://bloggify.org)
-  function showdownHighlight() {
-    return [{
-      type: 'output',
-      filter: function(text, converter, options) {
-        const left = '<pre><code\\b[^>]*>';
-        const right = '</code></pre>';
-        const flags = 'g';
-        const classAttr = 'class="';
-        const replacement = (wholeMatch, match, left, right) => {
-          match = decode(match);
-          const lang = (left.match(/class="([^ "]+)/) || [])[1];
-
-          if (left.includes(classAttr)) {
-            const attrIndex = left.indexOf(classAttr) + classAttr.length;
-            left = left.slice(0, attrIndex) + 'hljs ' + left.slice(attrIndex);
-          } else {
-            left = left.slice(0, -1) + ' class="hljs">';
-          }
-
-          if (lang && hljs.getLanguage(lang)) {
-            return left + hljs.highlight(match, {language: lang}).value + right;
-          } else {
-            return left + match + right;
-          }
-        };
-
-        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-      }
-    }];
-  }
-
   $(document).ready(async() => {
     const converter = new showdown.Converter({
       tables: true,
-      extensions: [showdownHighlight]
+      extensions: [showdownHighlight({auto_detection: false})]
     });
     const url = new URL(window.location.href);
     if (url.searchParams.has('origin_url')) {
