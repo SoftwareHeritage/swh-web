@@ -161,7 +161,7 @@ def api_origin_save_bulk(request: Request) -> Response:
           .. code-block:: shell
 
             $ curl -X POST -H "Authorization: Bearer ****" \\
-                -H "Content-Type : application/json" \\
+                -H "Content-Type: application/json" \\
                 --data-binary @/path/to/origins.json \\
                 https://archive.softwareheritage.org/api/1/origin/save/bulk/
 
@@ -183,7 +183,7 @@ def api_origin_save_bulk(request: Request) -> Response:
           .. code-block:: shell
 
             $ curl -X POST -H "Authorization: Bearer ****" \\
-                -H "Content-Type : application/yaml" \\
+                -H "Content-Type: application/yaml" \\
                 --data-binary @/path/to/origins.yaml \\
                 https://archive.softwareheritage.org/api/1/origin/save/bulk/
 
