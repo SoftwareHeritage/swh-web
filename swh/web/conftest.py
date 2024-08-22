@@ -1238,12 +1238,12 @@ def swh_scheduler(swh_scheduler):
             )
         )
 
-    # create list-bulk-save task type
+    # create list-save-bulk task type
     swh_scheduler.create_task_type(
         TaskType(
-            type="list-bulk-save",
+            type="list-save-bulk",
             description="Check a list of origins provided by a user",
-            backend_name="swh.lister.bulk_save.tasks.BulkSaveListerTask",
+            backend_name="swh.lister.save_bulk.tasks.SaveBulkListerTask",
             default_interval=timedelta(days=64),
             min_interval=timedelta(hours=12),
             max_interval=timedelta(days=64),

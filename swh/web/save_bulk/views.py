@@ -15,7 +15,7 @@ from swh.web.utils.exc import NotFoundExc
 def api_save_bulk_origins_list(request: HttpRequest, request_id: str) -> JsonResponse:
     """View that returns a list of origins and their visit types, submitted by a user
     through a POST request to the /api/1/origin/save/bulk/ endpoint, in a paginated
-    way. Its purpose is to be consumed by the bulk-save lister that checks origins
+    way. Its purpose is to be consumed by the save-bulk lister that checks origins
     can be archived and schedules their loadings.
     """
     try:

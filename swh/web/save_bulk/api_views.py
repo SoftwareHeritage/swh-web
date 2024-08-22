@@ -279,7 +279,7 @@ def api_origin_save_bulk(request: Request) -> Response:
         user_id=str(request.user.id), origins=request.data
     )
 
-    # generate URL to be queried by the bulk-save lister
+    # generate URL to be queried by the save-bulk lister
     origins_list_url = reverse(
         "save-origin-bulk-origins-list",
         url_args={"request_id": save_bulk_request_id},
@@ -291,9 +291,9 @@ def api_origin_save_bulk(request: Request) -> Response:
             urlparse(origins_list_url)._replace(scheme="http", netloc="nginx").geturl()
         )
 
-    # create the bulk-save listing task
+    # create the save-bulk listing task
     task = create_oneshot_task(
-        "list-bulk-save",
+        "list-save-bulk",
         url=origins_list_url,
         instance=save_bulk_request_id,
         per_page=10,
@@ -417,7 +417,7 @@ def api_origin_save_bulk_request_info(request: Request, request_id: UUID):
         )
 
     # get the lister associated to the request
-    lister = scheduler().get_lister("bulk-save", instance_name=request_id_str)
+    lister = scheduler().get_lister("save-bulk", instance_name=request_id_str)
 
     # get list of origins rejected by the lister
     lister_state = lister.current_state if lister else {}

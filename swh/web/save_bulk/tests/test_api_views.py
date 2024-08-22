@@ -404,7 +404,7 @@ def save_bulk_request_info_lister_data(
     rejected_origin_urls = {origin["origin_url"] for origin in rejected_origins}
 
     lister = swh_scheduler.get_or_create_lister(
-        name="bulk-save", instance_name=request_id
+        name="save-bulk", instance_name=request_id
     )
 
     lister.current_state = {
@@ -560,7 +560,7 @@ def test_save_bulk_request_info_visit_date_before_request_date(
     save_bulk_origin.requests.set([save_bulk_request])
 
     lister = swh_scheduler.get_or_create_lister(
-        name="bulk-save", instance_name=request_id
+        name="save-bulk", instance_name=request_id
     )
 
     swh_scheduler.record_listed_origins(
