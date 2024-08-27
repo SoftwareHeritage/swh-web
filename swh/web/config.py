@@ -78,6 +78,13 @@ DEFAULT_CONFIG = {
             "metadata_backend": "swh-search",
         },  # or "swh-search"
     ),
+    "provenance": (
+        "dict",
+        {
+            "cls": "graph",
+            "url": "granet.internal.softwareheritage.org:50091",
+        },
+    ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
     "serve_assets": ("bool", False),
@@ -191,6 +198,7 @@ DEFAULT_CONFIG = {
             "swh.web.jslicenses",
             "swh.web.mailmap",
             "swh.web.metrics",
+            "swh.web.provenance",
             "swh.web.save_bulk",
             "swh.web.save_code_now",
             "swh.web.save_origin_webhooks",

@@ -48,6 +48,7 @@ from swh.storage.algos.snapshot import (
 from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
+    API_PROVENANCE_PERMISSION,
     API_SAVE_BULK_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     MAILMAP_PERMISSION,
@@ -1329,6 +1330,15 @@ def save_bulk_user():
         get_or_create_django_permission(API_SAVE_BULK_PERMISSION)
     )
     return save_bulk_user
+
+
+@pytest.fixture
+def provenance_user():
+    provenance_user = User.objects.create_user(username="provenance-user", password="")
+    provenance_user.user_permissions.add(
+        get_or_create_django_permission(API_PROVENANCE_PERMISSION)
+    )
+    return provenance_user
 
 
 def reload_urlconf():

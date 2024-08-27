@@ -21,6 +21,7 @@ CategoryId = Literal[
     "Miscellaneous",
     "test",
     "External IDentifiers",
+    "Provenance",
 ]
 
 

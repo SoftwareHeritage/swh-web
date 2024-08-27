@@ -8,9 +8,26 @@ from django.db import migrations
 
 
 def _create_webapp_permissions(apps, schema_editor):
-    from swh.web.auth.utils import WEBAPP_PERMISSIONS, get_or_create_django_permission
+    from swh.web.auth.utils import (
+        ADD_FORGE_MODERATOR_PERMISSION,
+        ADMIN_LIST_DEPOSIT_PERMISSION,
+        API_SAVE_BULK_PERMISSION,
+        API_SAVE_ORIGIN_PERMISSION,
+        MAILMAP_ADMIN_PERMISSION,
+        MAILMAP_PERMISSION,
+        SWH_AMBASSADOR_PERMISSION,
+        get_or_create_django_permission,
+    )
 
-    for permission in WEBAPP_PERMISSIONS:
+    for permission in [
+        SWH_AMBASSADOR_PERMISSION,
+        API_SAVE_ORIGIN_PERMISSION,
+        ADMIN_LIST_DEPOSIT_PERMISSION,
+        MAILMAP_PERMISSION,
+        ADD_FORGE_MODERATOR_PERMISSION,
+        MAILMAP_ADMIN_PERMISSION,
+        API_SAVE_BULK_PERMISSION,
+    ]:
         get_or_create_django_permission(permission)
 
 
