@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -136,8 +136,10 @@ export async function drawHistoryCounterGraph(container, historyData) {
 
   function updateTooltip(event) {
     const x0 = xScale.invert(d3.pointer(event)[0]);
-    const i = bisectDate(historyData, x0, 1);
-    if (i >= historyData.length) return;
+    let i = bisectDate(historyData, x0, 1);
+    if (i >= historyData.length) {
+      i = historyData.length - 1;
+    }
     const d0 = historyData[i - 1];
     const d1 = historyData[i];
     const d = x0 - d0[0] > d1[0] - x0 ? d1 : d0;
