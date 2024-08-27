@@ -1,11 +1,11 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.urls import re_path as url
+from django.urls import path as url
 
 from swh.web.browse.browseurls import browse_urls
 from swh.web.browse.identifiers import swhid_browse
@@ -17,6 +17,7 @@ import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
 from swh.web.utils import is_swh_web_production, origin_visit_types, reverse
+from swh.web.utils.url_path_converters import register_url_path_converters
 
 
 def _browse_help_view(request: HttpRequest) -> HttpResponse:
@@ -44,30 +45,32 @@ def _browse_swhid_iframe_legacy(request: HttpRequest, swhid: str) -> HttpRespons
     return redirect(reverse("browse-swhid-iframe", url_args={"swhid": swhid}))
 
 
+register_url_path_converters()
+
 urlpatterns = [
-    url(r"^browse/$", _browse_search_view),
-    url(r"^browse/help/$", _browse_help_view, name="browse-help"),
-    url(r"^browse/search/$", _browse_search_view, name="browse-search"),
+    url("browse/", _browse_search_view),
+    url("browse/help/", _browse_help_view, name="browse-help"),
+    url("browse/search/", _browse_search_view, name="browse-search"),
     # for backward compatibility
-    url(r"^browse/origin/save/$", _browse_origin_save_view, name="browse-origin-save"),
+    url("browse/origin/save/", _browse_origin_save_view, name="browse-origin-save"),
     url(
-        r"^browse/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        "browse/<swhid:swhid>/",
         swhid_browse,
         name="browse-swhid-legacy",
     ),
     url(
-        r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        "embed/<swhid:swhid>/",
         _browse_swhid_iframe_legacy,
         name="browse-swhid-iframe-legacy",
     ),
     # keep legacy SWHID resolving URL with trailing slash for backward compatibility
     url(
-        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)/$",
+        "<swhid:swhid>/",
         swhid_browse,
         name="browse-swhid-legacy",
     ),
     url(
-        r"^(?P<swhid>(swh|SWH):[0-9]+:[A-Za-z]+:[0-9A-Fa-f]+.*)$",
+        "<swhid:swhid>",
         swhid_browse,
         name="browse-swhid",
     ),

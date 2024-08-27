@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from django.shortcuts import render
-from django.urls import re_path as url
+from django.urls import path as url
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_bytes
@@ -184,7 +184,7 @@ def _get_breacrumbs_data(
 
 
 @browse_route(
-    r"embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/",
+    "embed/<swhid:swhid>/",
     view_name="browse-swhid-iframe",
 )
 @xframe_options_exempt
@@ -342,7 +342,7 @@ def swhid_iframe(request, swhid: str):
 
 urlpatterns = [
     url(
-        r"^embed/(?P<swhid>swh:[0-9]+:[a-z]+:[0-9a-f]+.*)/$",
+        "embed/<swhid:swhid>/",
         swhid_iframe,
         name="browse-swhid-iframe",
     ),

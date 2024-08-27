@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -20,13 +20,13 @@ from swh.storage.algos.directory import directory_get
 from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.utils import SWHID_RE, archive
+from swh.web.utils import archive
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import parse_core_swhid
 
 
 @api_route(
-    f"/raw/(?P<swhid>{SWHID_RE})/",
+    "/raw/<swhid:swhid>/",
     "api-1-raw-object",
     throttle_scope="swh_raw_object",
 )

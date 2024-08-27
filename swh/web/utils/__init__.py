@@ -42,9 +42,6 @@ from swh.web.auth.utils import (
 from swh.web.config import get_config, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
 
-SWHID_RE = "swh:1:[a-z]{3}:[0-9a-z]{40}"
-
-
 swh_object_icons = {
     "alias": "mdi mdi-star",
     "branch": "mdi mdi-source-branch",

@@ -17,6 +17,7 @@ from swh.web.utils.exc import swh_handle400, swh_handle403, swh_handle404, swh_h
 
 swh_web_config = get_config()
 
+
 urlpatterns: List[Union[URLPattern, URLResolver]] = []
 
 # Register URLs for each SWH Django application

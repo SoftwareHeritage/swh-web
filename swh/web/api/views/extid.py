@@ -10,12 +10,12 @@ from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_extid
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import SWHID_RE, archive
+from swh.web.utils import archive
 from swh.web.utils.exc import BadInputExc
 
 
 @api_route(
-    f"/extid/target/(?P<swhid>{SWHID_RE})/",
+    "/extid/target/<swhid:swhid>/",
     "api-1-extid-target",
 )
 @api_doc("/extid/target/", category="External IDentifiers")

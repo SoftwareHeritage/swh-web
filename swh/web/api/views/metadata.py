@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -17,12 +17,12 @@ from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.utils import SWHID_RE, archive, converters, reverse
+from swh.web.utils import archive, converters, reverse
 from swh.web.utils.exc import BadInputExc, NotFoundExc
 
 
 @api_route(
-    f"/raw-extrinsic-metadata/swhid/(?P<target>{SWHID_RE})/",
+    "/raw-extrinsic-metadata/swhid/<swhid:target>/",
     "api-1-raw-extrinsic-metadata-swhid",
 )
 @api_doc("/raw-extrinsic-metadata/swhid/", category="Metadata")
@@ -219,7 +219,7 @@ def api_raw_extrinsic_metadata_get(request: Request, id: str):
 
 
 @api_route(
-    f"/raw-extrinsic-metadata/swhid/(?P<target>{SWHID_RE})/authorities/",
+    "/raw-extrinsic-metadata/swhid/<swhid:target>/authorities/",
     "api-1-raw-extrinsic-metadata-swhid-authorities",
 )
 @api_doc("/raw-extrinsic-metadata/swhid/authorities/", category="Metadata")

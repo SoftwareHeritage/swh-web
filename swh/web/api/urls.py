@@ -3,8 +3,11 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-
 from swh.web.api.apiurls import api_urls
+from swh.web.utils.url_path_converters import register_url_path_converters
+
+register_url_path_converters()
+
 import swh.web.api.views.content  # noqa
 import swh.web.api.views.directory  # noqa
 import swh.web.api.views.extid  # noqa

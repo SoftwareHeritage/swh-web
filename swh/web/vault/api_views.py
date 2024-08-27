@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2023  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -16,9 +16,12 @@ from swh.vault.cookers.git_bare import RootObjectType
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import SWHID_RE, archive, query, reverse
+from swh.web.utils import archive, query, reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.identifiers import parse_core_swhid
+from swh.web.utils.url_path_converters import register_url_path_converters
+
+register_url_path_converters()
 
 ######################################################
 # Common
@@ -100,7 +103,7 @@ vault_api_urls = APIUrls()
 
 
 @api_route(
-    f"/vault/flat/(?P<swhid>{SWHID_RE})/",
+    "/vault/flat/<swhid:swhid>/",
     "api-1-vault-cook-flat",
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
@@ -210,7 +213,7 @@ def api_vault_cook_directory(request: Request, dir_id: str):
 
 
 @api_route(
-    f"/vault/flat/(?P<swhid>{SWHID_RE})/raw/",
+    "/vault/flat/<swhid:swhid>/raw/",
     "api-1-vault-download-flat",
     api_urls=vault_api_urls,
 )
@@ -272,7 +275,7 @@ def api_vault_download_directory(request: Request, dir_id: str):
 
 
 @api_route(
-    f"/vault/gitfast/(?P<swhid>{SWHID_RE})/",
+    "/vault/gitfast/<swhid:swhid>/",
     "api-1-vault-cook-gitfast",
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
@@ -382,7 +385,7 @@ def api_vault_cook_revision_gitfast(request: Request, rev_id: str):
 
 
 @api_route(
-    f"/vault/gitfast/(?P<swhid>{SWHID_RE})/raw/",
+    "/vault/gitfast/<swhid:swhid>/raw/",
     "api-1-vault-download-gitfast",
     api_urls=vault_api_urls,
 )
@@ -443,7 +446,7 @@ def _api_vault_revision_gitfast_raw(request: Request, rev_id: str):
 
 
 @api_route(
-    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/",
+    "/vault/git-bare/<swhid:swhid>/",
     "api-1-vault-cook-git-bare",
     methods=["GET", "POST"],
     throttle_scope="swh_vault_cooking",
@@ -529,7 +532,7 @@ def api_vault_cook_git_bare(request: Request, swhid: str):
 
 
 @api_route(
-    f"/vault/git-bare/(?P<swhid>{SWHID_RE})/raw/",
+    "/vault/git-bare/<swhid:swhid>/raw/",
     "api-1-vault-download-git-bare",
     api_urls=vault_api_urls,
 )
