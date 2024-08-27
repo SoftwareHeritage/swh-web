@@ -98,11 +98,12 @@ def test_signal_receiver(return_value, err_contents, caplog, receive_inbound_mes
 
 @pytest.mark.inbound_message(TEST_MESSAGE)
 def test_multiple_receivers(caplog, receive_inbound_message):
-    with mock_signal_receiver(
-        signals.email_received, name="ignored"
-    ) as ignored, mock_signal_receiver(
-        signals.email_received, name="processed", disconnect_old_receivers=False
-    ) as processed:
+    with (
+        mock_signal_receiver(signals.email_received, name="ignored") as ignored,
+        mock_signal_receiver(
+            signals.email_received, name="processed", disconnect_old_receivers=False
+        ) as processed,
+    ):
         ignored.return_value = signals.EmailProcessingStatus.IGNORED
         processed.return_value = signals.EmailProcessingStatus.PROCESSED
 

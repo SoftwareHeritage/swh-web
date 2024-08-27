@@ -220,9 +220,11 @@ def test_dump_savecodenow_data_command(tmp_path):
                     scn_request.status,
                     scn_request.visit_status,
                     str(scn_request.from_webhook).lower(),
-                    hashlib.sha1(scn_request.user_ids.encode()).hexdigest()[:7]
-                    if scn_request.user_ids
-                    else "",
+                    (
+                        hashlib.sha1(scn_request.user_ids.encode()).hexdigest()[:7]
+                        if scn_request.user_ids
+                        else ""
+                    ),
                 ]
             )
             + "\n"

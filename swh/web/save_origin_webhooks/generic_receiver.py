@@ -26,15 +26,13 @@ class OriginSaveWebhookReceiver(abc.ABC):
     REPO_TYPES: str
 
     @abc.abstractmethod
-    def is_forge_request(self, request: Request) -> bool:
-        ...
+    def is_forge_request(self, request: Request) -> bool: ...
 
     def is_ping_event(self, request: Request) -> bool:
         return False
 
     @abc.abstractmethod
-    def is_push_event(self, request: Request) -> bool:
-        ...
+    def is_push_event(self, request: Request) -> bool: ...
 
     @abc.abstractmethod
     def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:

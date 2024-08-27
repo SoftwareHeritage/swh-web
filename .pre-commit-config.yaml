@@ -40,7 +40,7 @@ repos:
               package.json|
               swh/web/browse/tests/data/content_iso-8859-7_encoded
           )$
-        args: [-L edn, -L crate, -L THIRDPARTY]
+        args: [-L edn, -L crate, -L THIRDPARTY, -L thirdparty]
         stages: [commit]
       - id: codespell
         name: Check commit message spelling

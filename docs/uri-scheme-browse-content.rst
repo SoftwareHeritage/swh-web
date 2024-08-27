@@ -41,8 +41,8 @@ Content
     :query string path: describe the path of the content relative to a root
         directory (used to add context aware navigation links when navigating
         from a directory view)
-    :query string origin_url: optional; specify the origin from which to retrieve the contnet.
-    :query string snapshot: optional; specify the snapshot from which to retrieve the contnet.
+    :query string origin_url: optional; specify the origin from which to retrieve the content.
+    :query string snapshot: optional; specify the snapshot from which to retrieve the content.
     :query string timestamp: optional; an ISO 8601 datetime string to parse in order to find the closest visit
     :query string branch: optional; specify the snapshot branch name from which
         to retrieve the content. HEAD branch will be used by default.
@@ -107,8 +107,8 @@ Content
     as query parameters.
 
     :query string path: The path of the content relative to the root directory
-    :query string origin_url: optional; specify the origin from which to retrieve the contnet.
-    :query string snapshot: optional; specify the snapshot from which to retrieve the contnet.
+    :query string origin_url: optional; specify the origin from which to retrieve the content.
+    :query string snapshot: optional; specify the snapshot from which to retrieve the content.
     :query string timestamp: optional; an ISO 8601 datetime string to parse in order to find the closest visit
     :query string branch: optional; specify the snapshot branch name from which
         to retrieve the content. HEAD branch will be used by default.

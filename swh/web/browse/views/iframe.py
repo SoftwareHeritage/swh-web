@@ -140,9 +140,9 @@ def _get_breacrumbs_data(
                     "browse-swhid-iframe",
                     url_args={"swhid": str(root_dir_swhid)},
                     query_params={
-                        "focus_swhid": str(focus_swhid)
-                        if focus_swhid != root_dir_swhid
-                        else None
+                        "focus_swhid": (
+                            str(focus_swhid) if focus_swhid != root_dir_swhid else None
+                        )
                     },
                 ),
             }
@@ -216,9 +216,9 @@ def swhid_iframe(request, swhid: str):
         if parsed_swhid.origin or parsed_swhid.visit:
             snapshot_context = get_snapshot_context(
                 origin_url=parsed_swhid.origin,
-                snapshot_id=parsed_swhid.visit.object_id.hex()
-                if parsed_swhid.visit
-                else None,
+                snapshot_id=(
+                    parsed_swhid.visit.object_id.hex() if parsed_swhid.visit else None
+                ),
                 revision_id=revision_id,
             )
 

@@ -680,7 +680,7 @@ def _process_content_for_display(archive_data, content):
         content_data, mime_type, content["path"]
     )
 
-    assert type(content_display["content_data"]) == str
+    assert type(content_display["content_data"]) is str
 
     return content_display
 
@@ -975,7 +975,7 @@ def _origin_content_view_test_helper(
         client, url, status_code=200, template_used="browse-content.html"
     )
 
-    assert type(content["data"]) == str
+    assert type(content["data"]) is str
 
     assert_contains(resp, '<code class="%s">' % content["hljs_language"])
     assert_contains(resp, escape(content["data"]))

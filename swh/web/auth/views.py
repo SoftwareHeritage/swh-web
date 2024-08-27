@@ -91,7 +91,7 @@ def oidc_list_bearer_tokens(request: HttpRequest) -> HttpResponse:
 
 
 def _encrypted_token_bytes(token: Union[bytes, memoryview]) -> bytes:
-    # token has been retrieved from a PosgreSQL database
+    # token has been retrieved from a PostgreSQL database
     if isinstance(token, memoryview):
         return token.tobytes()
     else:

@@ -67,9 +67,9 @@ def test_origin_save_metrics(client, swh_scheduler):
             status=request_satus,
             loading_task_status=load_task_status,
             from_webhook=from_webhook,
-            webhook_origin=random.choice(supported_forge_types)
-            if from_webhook
-            else None,
+            webhook_origin=(
+                random.choice(supported_forge_types) if from_webhook else None
+            ),
         )
 
         if load_task_status in (SAVE_TASK_SUCCEEDED, SAVE_TASK_FAILED):

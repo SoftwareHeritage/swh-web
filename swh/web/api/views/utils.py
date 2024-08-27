@@ -67,7 +67,7 @@ def api_lookup(
     res = lookup_fn(*args, **kwargs)
     if res is None:
         raise NotFoundExc(notfound_msg)
-    if isinstance(res, (list, GeneratorType)) or type(res) == map:
+    if isinstance(res, (list, GeneratorType)) or type(res) is map:
         return [enrich_fn(x, request) for x in iter(res)]
     return enrich_fn(res, request)
 

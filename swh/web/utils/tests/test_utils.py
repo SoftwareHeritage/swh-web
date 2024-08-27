@@ -358,7 +358,7 @@ def test_reverse_query_params_only():
 
 @override_settings(ROOT_URLCONF=__name__)
 def test_reverse_query_params_encode():
-    libname = "libstc++"
+    libname = "libstdc++"
     url = reverse("sample-test-view-no-url-args", query_params={"libname": libname})
     assert url == f"/sample/test/view/no/url/args/?libname={quote(libname, safe='/;:')}"
 
