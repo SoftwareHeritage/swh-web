@@ -6,7 +6,7 @@ authors = [
 
 description = "Software Heritage web UI"
 readme = { file = "README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Intended Audience :: Developers",
@@ -41,7 +41,7 @@ build-backend = "setuptools.build_meta"
 fallback_version = "0.0.1"
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py310', 'py311', 'py312']
 exclude = 'swh/web/tests/resources/contents'
 
 [tool.isort]
