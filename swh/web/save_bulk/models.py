@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from __future__ import annotations
+
 import uuid
 
 from django.db import models
@@ -19,6 +21,8 @@ class SaveBulkRequest(models.Model):
         app_label = "swh_web_save_bulk"
         db_table = "save_bulk_request"
         ordering = ["-id"]
+
+    objects: models.Manager[SaveBulkRequest]
 
 
 class SaveBulkOrigin(models.Model):
@@ -38,3 +42,5 @@ class SaveBulkOrigin(models.Model):
                 name="unicity",
             ),
         ]
+
+    objects: models.Manager[SaveBulkOrigin]
