@@ -509,6 +509,7 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
       'Type': ['raw', 'type'],
       'Visit status': ['raw', 'visit_status'],
       'Arguments': ['json', 'arguments'],
+      'Metadata': ['json', 'metadata'],
       'Id': ['raw', 'id'],
       'Backend id': ['raw', 'backend_id'],
       'Scheduling date': ['date', 'scheduled'],

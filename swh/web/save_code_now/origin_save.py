@@ -819,6 +819,8 @@ def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
             - **ended**: loading task termination date
             - **status**: loading task execution status
             - **visit_status**: Actual visit status
+            - **metadata**: any other metadata related to the loading task;
+                            typically comes with the error for a failed task
     """
     try:
         save_request = SaveOriginRequest.objects.get(id=save_request_id)
@@ -849,7 +851,6 @@ def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
     task_info["arguments"] = task.arguments.to_dict()
     task_info["id"] = task_run.task
     del task_info["task"]
-    del task_info["metadata"]
     # Enrich the task info with the loading visit status
     task_info["visit_status"] = save_request.visit_status
 
