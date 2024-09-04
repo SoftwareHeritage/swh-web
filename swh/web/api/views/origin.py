@@ -49,6 +49,7 @@ DOC_RETURN_ORIGIN_VISIT = """
             (may be null if status is not **full**).
         :>json string status: status of the visit (either **full**,
             **partial** or **ongoing**)
+        :>json string type: visit type for the origin
         :>json number visit: the unique identifier of the visit
 """
 
