@@ -1,10 +1,10 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import json
-from typing import Any, Dict, Union, cast
+from typing import Any, Dict, Optional, Union, cast
 
 from cryptography.fernet import InvalidToken
 
@@ -98,6 +98,31 @@ def _encrypted_token_bytes(token: Union[bytes, memoryview]) -> bytes:
         return token
 
 
+def _decrypt_user_token(
+    token_data: OIDCUserOfflineTokens, salt: bytes
+) -> Optional[bytes]:
+    current_secret = get_config()["secret_key"].encode()
+    fallback_secrets = [
+        secret.encode() for secret in get_config()["secret_key_fallbacks"]
+    ]
+    decrypted_token = None
+    for secret in [current_secret] + fallback_secrets:
+        try:
+            decrypted_token = decrypt_data(
+                _encrypted_token_bytes(token_data.offline_token), secret, salt
+            )
+            if secret in fallback_secrets:
+                # re-encrypt user token if django secret got rotated
+                token_data.offline_token = encrypt_data(
+                    decrypted_token, current_secret, salt
+                )
+                token_data.save()
+            break
+        except InvalidToken:
+            pass
+    return decrypted_token
+
+
 @require_http_methods(["POST"])
 def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated or not isinstance(request.user, OIDCUser):
@@ -106,18 +131,17 @@ def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
         data = json.loads(request.body.decode("ascii"))
         user = cast(OIDCUser, request.user)
         token_data = OIDCUserOfflineTokens.objects.get(id=data["token_id"])
-        secret = get_config()["secret_key"].encode()
-        salt = user.sub.encode()
-        decrypted_token = decrypt_data(
-            _encrypted_token_bytes(token_data.offline_token), secret, salt
-        )
+        decrypted_token = _decrypt_user_token(token_data, salt=user.sub.encode())
+        if decrypted_token is None:
+            return HttpResponseBadRequest(
+                "Stored bearer token could not be decrypted, please generate a new one.",
+                content_type="text/plain",
+            )
         refresh_token = decrypted_token.decode("ascii")
         # check token is still valid
         oidc_client = keycloak_oidc_client()
         oidc_client.refresh_token(refresh_token)
         return HttpResponse(refresh_token, content_type="text/plain")
-    except InvalidToken:
-        return HttpResponse(status=401)
     except KeycloakError as ke:
         error_msg = keycloak_error_message(ke)
         if error_msg in (
@@ -132,22 +156,17 @@ def oidc_get_bearer_token(request: HttpRequest) -> HttpResponse:
 def oidc_revoke_bearer_tokens(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated or not isinstance(request.user, OIDCUser):
         return HttpResponseForbidden()
-    try:
-        data = json.loads(request.body.decode("ascii"))
-        user = cast(OIDCUser, request.user)
-        for token_id in data["token_ids"]:
-            token_data = OIDCUserOfflineTokens.objects.get(id=token_id)
-            secret = get_config()["secret_key"].encode()
-            salt = user.sub.encode()
-            decrypted_token = decrypt_data(
-                _encrypted_token_bytes(token_data.offline_token), secret, salt
-            )
+
+    data = json.loads(request.body.decode("ascii"))
+    user = cast(OIDCUser, request.user)
+    for token_id in data["token_ids"]:
+        token_data = OIDCUserOfflineTokens.objects.get(id=token_id)
+        decrypted_token = _decrypt_user_token(token_data, salt=user.sub.encode())
+        if decrypted_token is not None:
             oidc_client = keycloak_oidc_client()
             oidc_client.logout(decrypted_token.decode("ascii"))
-            token_data.delete()
-        return HttpResponse(status=200)
-    except InvalidToken:
-        return HttpResponse(status=401)
+        token_data.delete()
+    return HttpResponse(status=200)
 
 
 @login_required(login_url="oidc-login")

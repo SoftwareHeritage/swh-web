@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021  The Software Heritage developers
+# Copyright (C) 2020-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,7 +14,7 @@ from django.http import QueryDict
 
 from swh.auth.keycloak import KeycloakError
 from swh.web.auth.models import OIDCUserOfflineTokens
-from swh.web.auth.utils import decrypt_data
+from swh.web.auth.views import _decrypt_user_token
 from swh.web.config import get_config
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import (
@@ -119,12 +119,8 @@ def _generate_and_test_bearer_token(client, kc_oidc_mock):
 
     # check token has been generated and saved encrypted to database
     assert len(OIDCUserOfflineTokens.objects.all()) == nb_tokens + 1
-    encrypted_token = OIDCUserOfflineTokens.objects.last().offline_token
-    if isinstance(encrypted_token, memoryview):
-        encrypted_token = encrypted_token.tobytes()
-    secret = get_config()["secret_key"].encode()
-    salt = request.user.sub.encode()
-    decrypted_token = decrypt_data(encrypted_token, secret, salt)
+    token_data = OIDCUserOfflineTokens.objects.last()
+    decrypted_token = _decrypt_user_token(token_data, salt=request.user.sub.encode())
     oidc_profile = kc_oidc_mock.authorization_code(code=code, redirect_uri=redirect_uri)
     assert decrypted_token.decode("ascii") == oidc_profile["refresh_token"]
 
@@ -183,7 +179,7 @@ def test_oidc_get_bearer_token_anonymous_user(client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_oidc_get_bearer_token(client, keycloak_oidc):
+def test_oidc_get_bearer_token(client, keycloak_oidc, mocker):
     """
     User with correct credentials should be allowed to display a token.
     """
@@ -234,6 +230,79 @@ def test_oidc_get_bearer_token_expired_token(client, keycloak_oidc):
         assert (
             response.content == b"Bearer token has expired, please generate a new one."
         )
+
+
+@pytest.mark.django_db(transaction=True)
+def test_oidc_get_bearer_token_secret_rotated(client, keycloak_oidc, mocker):
+    url = reverse("oidc-get-bearer-token")
+
+    # initial secrets configuration
+    secrets = {
+        "secret_key": "foo",
+        "secret_key_fallbacks": [],
+    }
+    mocker.patch("swh.web.auth.views.get_config").return_value = secrets
+
+    # generate token
+    token = _generate_and_test_bearer_token(client, keycloak_oidc)
+
+    # rotating secret
+    secrets["secret_key"] = "bar"
+    secrets["secret_key_fallbacks"] = ["foo"]
+
+    # encrypted token should be decoded after secret rotation
+    response = check_http_post_response(
+        client,
+        url,
+        status_code=200,
+        data={"token_id": OIDCUserOfflineTokens.objects.last().id},
+        content_type="text/plain",
+    )
+    assert response.content == token
+
+    # removing old secret from fallbacks
+    secrets["secret_key_fallbacks"] = []
+
+    # encrypted token should still be decoded as it was previously re-encrypted
+    # with new secret
+    response = check_http_post_response(
+        client,
+        url,
+        status_code=200,
+        data={"token_id": OIDCUserOfflineTokens.objects.last().id},
+        content_type="text/plain",
+    )
+    assert response.content == token
+
+
+@pytest.mark.django_db(transaction=True)
+def test_oidc_get_bearer_token_decrypt_failure(client, keycloak_oidc, mocker):
+    url = reverse("oidc-get-bearer-token")
+
+    # initial secrets configuration
+    secrets = {
+        "secret_key": "foo",
+        "secret_key_fallbacks": [],
+    }
+    mocker.patch("swh.web.auth.views.get_config").return_value = secrets
+
+    # generate token
+    _generate_and_test_bearer_token(client, keycloak_oidc)
+
+    # rotating secret without adding old one in fallbacks
+    secrets["secret_key"] = "bar"
+
+    response = check_http_post_response(
+        client,
+        url,
+        status_code=400,
+        data={"token_id": OIDCUserOfflineTokens.objects.last().id},
+        content_type="text/plain",
+    )
+    assert (
+        response.content
+        == b"Stored bearer token could not be decrypted, please generate a new one."
+    )
 
 
 def test_oidc_revoke_bearer_tokens_anonymous_user(client):
