@@ -109,7 +109,7 @@ describe('Test add forge now request dashboard load', function() {
       .should('contain', 'bitbucket');
 
     cy.get('#requestURL a')
-      .should('have.attr', 'href', 'http://test.example.com');
+      .should('have.attr', 'href', 'https://test.example.com');
 
     cy.get('#requestContactEmail')
       .should('contain', 'test@example.com');
