@@ -205,7 +205,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
 
     def visit_bullet_list(self, node: docutils.nodes.bullet_list) -> str:
         parts = ["\n\n"]
-        for child in node.traverse():
+        for child in node.findall():
             # process list item
             if isinstance(child, docutils.nodes.list_item):
                 line_text = self.dispatch_visit(child)
@@ -314,7 +314,7 @@ def _parse_httpdomain_doc(doc, data):
     # unknown httpdomain roles
     document = parse_rst("\n".join(doc_lines_filtered), report_level=5)
     # remove the system_message nodes from the parsed document
-    for node in document.traverse(docutils.nodes.system_message):
+    for node in document.findall(docutils.nodes.system_message):
         node.parent.remove(node)
     # visit the document nodes to extract relevant endpoint info
     visitor = _HTTPDomainDocVisitor(document, data)
