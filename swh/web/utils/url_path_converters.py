@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from django.urls import register_converter
+from django.urls.converters import REGISTERED_CONVERTERS, register_converter
 
 from swh.model.swhids import CoreSWHID, ExtendedSWHID, QualifiedSWHID
 
@@ -33,5 +33,12 @@ class SWHIDConverter:
         raise ValueError()
 
 
-def register_url_path_converters():
-    register_converter(SWHIDConverter, "swhid")
+def register_url_path_converters() -> None:
+    """Adds :class:`.SWHIDConverter` to django's url path converters.
+
+    This method is called by the root `URLconf` but also in every app's `URLconf` that
+    needs it to ease testing, that's why we need to check if it is already registered
+    before adding it.
+    """
+    if "swhid" not in REGISTERED_CONVERTERS:
+        register_converter(SWHIDConverter, "swhid")
