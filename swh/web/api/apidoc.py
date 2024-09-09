@@ -198,7 +198,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
             # code block will be rendered by highlightjs
             return (
                 f'\n\n.. raw:: html\n\n    <pre><code class="{language}">'
-                f'{textwrap.indent(text, " "*4)[4:]}</code></pre>'
+                f'{textwrap.indent(text, " " * 4)[4:]}</code></pre>'
             )
         else:
             return f"\n\n::\n\n{textwrap.indent(text, '   ')}\n"

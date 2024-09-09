@@ -734,7 +734,7 @@ def test_origin_browse_directory_branch_with_non_resolvable_revision(
         client, url, status_code=200, template_used="browse-directory.html"
     )
     assert_contains(
-        resp, f"Revision {unknown_revision } could not be found in the archive."
+        resp, f"Revision {unknown_revision} could not be found in the archive."
     )
 
     # no revision card
