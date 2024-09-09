@@ -52,11 +52,9 @@ _TEST_INDEXER_BASE_CONFIG = {
     "storage": {"cls": "memory"},
     "objstorage": {
         "cls": "memory",
-        "args": {},
     },
     "indexer_storage": {
         "cls": "memory",
-        "args": {},
     },
 }
 
@@ -439,7 +437,7 @@ def _init_tests_data():
         if content.sha1 in content_path:
             path = content_path[content.sha1]
 
-        cnt_data = storage.content_get_data(content.sha1)
+        cnt_data = storage.content_get_data({"sha1": content.sha1})
         assert cnt_data is not None
         mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
         _, _, cnt_data = re_encode_content(mimetype, encoding, cnt_data)

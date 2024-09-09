@@ -128,9 +128,7 @@ DEFAULT_CONFIG = {
         "dict",
         {
             "cls": "remote",
-            "args": {
-                "url": "http://127.0.0.1:5005/",
-            },
+            "url": "http://127.0.0.1:5005/",
         },
     ),
     "scheduler": ("dict", {"cls": "remote", "url": "http://127.0.0.1:5008/"}),
@@ -227,7 +225,7 @@ DEFAULT_CONFIG = {
 swhweb_config: Dict[str, Any] = {}
 
 
-def get_config(config_file="web/web"):
+def get_config(config_file: str = "web/web") -> Dict[str, Any]:
     """Read the configuration file `config_file`.
 
     If an environment variable SWH_CONFIG_FILENAME is defined, this
@@ -240,7 +238,6 @@ def get_config(config_file="web/web"):
     configuration.
 
     """
-
     if not swhweb_config:
         config_filename = os.environ.get("SWH_CONFIG_FILENAME")
         if config_filename:
@@ -259,6 +256,7 @@ def get_config(config_file="web/web"):
         )
         swhweb_config["scheduler"] = get_scheduler(**swhweb_config["scheduler"])
         swhweb_config["counters"] = get_counters(**swhweb_config["counters"])
+
     return swhweb_config
 
 
