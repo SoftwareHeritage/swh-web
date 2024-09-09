@@ -223,10 +223,7 @@ def parse_rst(text, report_level=2):
         docutils.nodes.document: a parsed docutils document
     """
     parser = docutils.parsers.rst.Parser()
-    components = (docutils.parsers.rst.Parser,)
-    settings = docutils.frontend.OptionParser(
-        components=components
-    ).get_default_values()
+    settings = docutils.frontend.get_default_settings(docutils.parsers.rst.Parser)
     settings.report_level = report_level
     document = docutils.utils.new_document("rst-doc", settings=settings)
     parser.parse(text, document)
