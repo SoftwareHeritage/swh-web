@@ -259,4 +259,34 @@ describe('SWHIDs Tests', function() {
     });
   });
 
+  it('should update copy buttons after clicking on them', function() {
+    cy.get('.ui-slideouttab-handle')
+      .click();
+
+    for (const td of testsData) {
+      cy.get(`a[href="#swhid-tab-${td.objectType}"]`)
+        .click();
+
+      cy.get(`#swhid-tab-${td.objectType}`)
+        .should('be.visible');
+
+      cy.get(`#swhid-tab-${td.objectType} .btn-swhid-copy`)
+          .should('contain.text', 'Copy identifier')
+          .should('not.contain.text', 'Copied!')
+          .click()
+          .should('have.text', 'Copied!')
+          .wait(1001)
+          .should('not.contain.text', 'Copied!')
+          .should('contain.text', 'Copy identifier');
+
+      cy.get(`#swhid-tab-${td.objectType} .btn-swhid-url-copy`)
+          .should('contain.text', 'Copy permalink')
+          .should('not.contain.text', 'Copied!')
+          .click()
+          .should('have.text', 'Copied!')
+          .wait(1001)
+          .should('not.contain.text', 'Copied!')
+          .should('contain.text', 'Copy permalink');
+    }
+  });
 });

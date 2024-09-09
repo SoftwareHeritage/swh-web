@@ -96,11 +96,26 @@ function updateSWHIDsTabSize() {
 }
 
 $(document).ready(() => {
+  const toggleButtonText = (button, text) => {
+    const currentLabel = button.innerHTML;
+
+    if (currentLabel === text) {
+      return;
+    }
+
+    button.innerHTML = text;
+    setTimeout(function() {
+      button.innerHTML = currentLabel;
+    }, 1000);
+  };
+
   new ClipboardJS('.btn-swhid-copy', {
     text: trigger => {
       const swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
       return swhId.replace(/;\n/g, ';');
     }
+  }).on('success', function(e) {
+    toggleButtonText(e.trigger, 'Copied!');
   });
 
   new ClipboardJS('.btn-swhid-url-copy', {
@@ -108,6 +123,8 @@ $(document).ready(() => {
       const swhIdUrl = $(trigger).closest('.swhid-ui').find('.swhid').attr('href');
       return window.location.origin + swhIdUrl;
     }
+  }).on('success', function(e) {
+    toggleButtonText(e.trigger, 'Copied!');
   });
 
   // prevent automatic closing of SWHIDs tab during guided tour
