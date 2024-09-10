@@ -72,7 +72,7 @@ repos:
         types: [javascript]
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.31.1
+    rev: v1.35.2
     hooks:
       - id: djlint-django
         name: Django templates formatter
@@ -81,7 +81,7 @@ repos:
           - --quiet
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.31.1
+    rev: v1.35.2
     hooks:
       - id: djlint-django
         name: Django templates linter
