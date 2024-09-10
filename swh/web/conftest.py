@@ -290,7 +290,7 @@ def _new_content(tests_data):
     while True:
         new_content = random_content()
         sha1_bytes = hash_to_bytes(new_content["sha1"])
-        if tests_data["storage"].content_get_data(sha1_bytes) is None:
+        if tests_data["storage"].content_get_data({"sha1": sha1_bytes}) is None:
             return new_content
 
 
@@ -947,7 +947,7 @@ class _ArchiveData:
 
     def content_get_data(self, cnt_id: str) -> Optional[Dict[str, Any]]:
         cnt_id_bytes = hash_to_bytes(cnt_id)
-        cnt_data = self.storage.content_get_data(cnt_id_bytes)
+        cnt_data = self.storage.content_get_data({"sha1": cnt_id_bytes})
         if cnt_data is None:
             return None
         return converters.from_content({"data": cnt_data, "sha1": cnt_id_bytes})

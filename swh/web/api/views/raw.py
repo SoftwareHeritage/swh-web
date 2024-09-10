@@ -71,7 +71,7 @@ def api_raw_object(request: Request, swhid: str):
         # `cnt.with_data()` unfortunately doesn't seem to work.
         if cnt.data is None:
             d = cnt.to_dict()
-            d["data"] = archive.storage.content_get_data(cnt.sha1)
+            d["data"] = archive.storage.content_get_data({"sha1": cnt.sha1})
             cnt = model.Content.from_dict(d)
             assert (
                 cnt.data is not None

@@ -1077,7 +1077,7 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             raise NotFoundExc(f"Content not found for revision {sha1_git}")
         content_d = content.to_dict()
         if with_data:
-            data = storage.content_get_data(content.sha1)
+            data = storage.content_get_data({"sha1": content.sha1})
             if data:
                 content_d["data"] = data
         return {
@@ -1133,7 +1133,7 @@ def lookup_content_raw(q: str) -> Dict[str, Any]:
     """
     c = lookup_content(q)
     content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
-    content_data = storage.content_get_data(content_sha1_bytes)
+    content_data = storage.content_get_data({"sha1": content_sha1_bytes})
     if content_data is None:
         algo, hash_ = query.parse_hash(q)
         raise NotFoundExc(
