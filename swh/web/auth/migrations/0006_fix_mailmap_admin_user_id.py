@@ -6,6 +6,7 @@
 import datetime
 
 from django.db import migrations
+from django.utils.timezone import get_current_timezone
 
 
 def _set_first_mailmaps_as_edited_by_admin(apps, schema_editor):
@@ -20,7 +21,7 @@ def _set_first_mailmaps_as_edited_by_admin(apps, schema_editor):
 
     for mailmap in UserMailmap.objects.filter(
         last_update_date__lte=datetime.datetime(
-            2022, 2, 12
+            2022, 2, 12, tzinfo=get_current_timezone()
         )  # first mailmaps added on 2022/2/11 in production
     ):
         if mailmap.user_id is not None:

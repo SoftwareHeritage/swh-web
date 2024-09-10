@@ -7,6 +7,8 @@ from datetime import datetime
 
 import pytest
 
+from django.utils.timezone import get_current_timezone
+
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
@@ -41,7 +43,9 @@ def test_fix_mailmap_admin_user_id(migrator):
     )
 
     UserMailmap.objects.filter(user_id=user_id).update(
-        last_update_date=datetime(2022, 2, 11, 14, 16, 13, 614000)
+        last_update_date=datetime(
+            2022, 2, 11, 14, 16, 13, 614000, get_current_timezone()
+        )
     )
 
     assert UserMailmap.objects.filter(user_id=user_id).count() == 1
