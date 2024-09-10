@@ -6,8 +6,8 @@
 import pytest
 
 from swh.model.hashutil import hash_to_bytes
-from swh.model.identifiers import CoreSWHID, ObjectType
 from swh.model.model import ExtID
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.tests.helpers import check_api_get_responses
 from swh.web.utils import reverse
 from swh.web.utils.archive import decode_extid
