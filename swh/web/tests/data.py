@@ -8,6 +8,8 @@ from datetime import timedelta
 import os
 from pathlib import Path
 import random
+from shutil import unpack_archive
+import tempfile
 import time
 from typing import Dict, List, Optional, Set
 
@@ -20,7 +22,7 @@ from swh.indexer.storage.model import (
     OriginExtrinsicMetadataRow,
     OriginIntrinsicMetadataRow,
 )
-from swh.loader.git.from_disk import GitLoaderFromArchive
+from swh.loader.git.loader import GitLoader
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import (
     Content,
@@ -202,6 +204,29 @@ ORIGIN_MASTER_REVISION = {}
 ORIGIN_MASTER_DIRECTORY = {}
 
 
+class GitLoaderFromArchive(GitLoader):
+    """Simple GitLoader wrapper that overrides the fetch_pack_from_origin
+    operation to fetch git objects from an unpacked archive on disk instead
+    of fetching them from a remote URL."""
+
+    def __init__(self, storage, origin_url, archive_path):
+        super().__init__(storage, origin_url)
+        self.archive_path = archive_path
+
+    def fetch_pack_from_origin(
+        self,
+        origin_url,
+        base_repo,
+        do_activity,
+    ):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            unpack_archive(self.archive_path, tmp_dir)
+            repo_name = os.listdir(tmp_dir)[0]
+            return super().fetch_pack_from_origin(
+                f"file://{tmp_dir}/{repo_name}", base_repo, do_activity
+            )
+
+
 def _add_origin(
     storage, search, counters, origin_url, visit_type="git", snapshot_branches={}
 ):
@@ -264,7 +289,6 @@ def _init_tests_data():
                 origin["url"],
                 archive_path=origin_repo_archive,
             )
-
             result = loader.load()
             assert result["status"] == "eventful"
 
