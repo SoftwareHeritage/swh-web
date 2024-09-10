@@ -46,7 +46,7 @@ def inbound_message(request) -> bytes:
     return marker.args[0]
 
 
-def test_message() -> bytes:
+def _test_message() -> bytes:
     message = EmailMessage()
     message["to"] = "test@example.com"
     message["subject"] = "Test Subject"
@@ -55,7 +55,7 @@ def test_message() -> bytes:
     return bytes(message)
 
 
-TEST_MESSAGE = test_message()
+TEST_MESSAGE = _test_message()
 
 
 @pytest.mark.inbound_message(TEST_MESSAGE)
