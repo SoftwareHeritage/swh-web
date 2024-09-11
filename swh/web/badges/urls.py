@@ -12,13 +12,13 @@ register_url_path_converters()
 
 urlpatterns = [
     url(
-        "badge/<str:object_type>/<path:object_id>/",
-        swh_badge,
-        name="swh-badge",
-    ),
-    url(
         "badge/<swhid:object_swhid>/",
         swh_badge_swhid,
         name="swh-badge-swhid",
+    ),
+    url(
+        "badge/<str:object_type>/<path:object_id>/",
+        swh_badge,
+        name="swh-badge",
     ),
 ]

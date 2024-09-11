@@ -97,6 +97,7 @@ def swh_badge(
     """
     left_text = "error"
     whole_link: str | None = None
+    status_code = 200
 
     # cache badge for 30 days by default
     cache_timeout = (
@@ -160,9 +161,11 @@ def swh_badge(
     except (BadInputExc, ValidationError, ValueError):
         right_text = f'invalid {object_type if object_type else "object"} id'
         object_type = "error"
+        status_code = 400
     except NotFoundExc:
         right_text = f'{object_type if object_type else "object"} not found'
         object_type = "error"
+        status_code = 404
 
     badge_data = badge(
         left_text=left_text,
@@ -174,7 +177,9 @@ def swh_badge(
         embed_logo=True,
     )
 
-    response = HttpResponse(badge_data, content_type="image/svg+xml")
+    response = HttpResponse(
+        badge_data, content_type="image/svg+xml", status=status_code
+    )
     return cast(HttpResponse, cachemiddleware.process_response(request, response))
 
 

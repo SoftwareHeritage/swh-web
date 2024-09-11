@@ -59,9 +59,9 @@ def test_badge_errors(
         url_args = {"object_type": object_type, "object_id": object_id}
         url = reverse("swh-badge", url_args=url_args)
         resp = check_http_get_response(
-            client, url, status_code=200, content_type="image/svg+xml"
+            client, url, status_code=404, content_type="image/svg+xml"
         )
-        _check_generated_badge(resp, **url_args, error="not found")
+        _check_generated_badge(resp, **url_args, error="not found", status_code=404)
 
     for object_type, object_id in (
         (ObjectType.CONTENT, invalid_sha1),
@@ -75,16 +75,16 @@ def test_badge_errors(
         url = reverse("swh-badge", url_args=url_args)
 
         resp = check_http_get_response(
-            client, url, status_code=200, content_type="image/svg+xml"
+            client, url, status_code=400, content_type="image/svg+xml"
         )
-        _check_generated_badge(resp, **url_args, error="invalid id")
+        _check_generated_badge(resp, **url_args, error="invalid id", status_code=400)
 
         object_swhid = f"swh:1:{object_type.value}:{object_id}"
         url = reverse("swh-badge-swhid", url_args={"object_swhid": object_swhid})
         resp = check_http_get_response(
-            client, url, status_code=200, content_type="image/svg+xml"
+            client, url, status_code=400, content_type="image/svg+xml"
         )
-        _check_generated_badge(resp, "", "", error="invalid id")
+        _check_generated_badge(resp, "", "", error="invalid id", status_code=400)
 
 
 def test_badge_endpoints_have_cors_header(client, origin, release):
@@ -128,6 +128,7 @@ def _test_badge_endpoints(client, object_type: str, object_id: str):
             QualifiedSWHID(
                 object_type=ObjectType[object_type.upper()],
                 object_id=hash_to_bytes(object_id),
+                origin="https://git.example.org/user/project",
             )
         )
         url = reverse("swh-badge-swhid", url_args={"object_swhid": obj_swhid})
@@ -137,8 +138,9 @@ def _test_badge_endpoints(client, object_type: str, object_id: str):
         _check_generated_badge(resp, **url_args)
 
 
-def _check_generated_badge(response, object_type, object_id, error=None):
-    assert response.status_code == 200, response.content
+def _check_generated_badge(
+    response, object_type, object_id, error=None, status_code=200
+):
     assert response["Content-Type"] == "image/svg+xml"
 
     if not object_type:
@@ -171,10 +173,14 @@ def _check_generated_badge(response, object_type, object_id, error=None):
         object_type = "error"
         assert "Cache-Control" not in response
 
-    assert_contains(response, "<svg ")
-    assert_contains(response, "</svg>")
-    assert_contains(response, get_logo_data())
-    assert_contains(response, badge_config[object_type]["color"])
-    assert_contains(response, badge_config[object_type]["title"])
-    assert_contains(response, text)
-    assert_contains(response, link)
+    assert_contains(response, "<svg ", status_code=status_code)
+    assert_contains(response, "</svg>", status_code=status_code)
+    assert_contains(response, get_logo_data(), status_code=status_code)
+    assert_contains(
+        response, badge_config[object_type]["color"], status_code=status_code
+    )
+    assert_contains(
+        response, badge_config[object_type]["title"], status_code=status_code
+    )
+    assert_contains(response, text, status_code=status_code)
+    assert_contains(response, link, status_code=status_code)
