@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,7 @@
 import json
 from typing import Any, Dict, Union
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -170,6 +171,7 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
             status=409,  # Conflict
         )
 
+    assert isinstance(request.user, User)
     add_forge_request.submitter_name = request.user.username
     add_forge_request.submitter_email = request.user.email
 
