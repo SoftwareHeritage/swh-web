@@ -14,8 +14,10 @@ swh.graph >= 5.1.1
 swh.loader.git >= 0.8.0
 swh-scheduler[testing] >= 2.3.0
 swh.storage >= 0.1.1
+types-beautifulsoup4
 types-cryptography
 types-docutils
 types-psycopg2
+types-Pygments
 types-pyyaml
 types-requests

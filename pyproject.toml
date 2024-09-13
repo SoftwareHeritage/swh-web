@@ -85,3 +85,28 @@ consider_namespace_packages = true
 markers = """
     inbound_message: used to pass a message parameter to the inbound_message fixture
 """
+
+[tool.django-stubs]
+django_settings_module = "swh.web.settings.development"
+
+[tool.mypy]
+namespace_packages = true
+warn_unused_ignores = true
+explicit_package_bases = true
+# ^ Needed for mypy to detect py.typed from swh packages installed
+# in editable mode
+
+plugins = [
+    "mypy_django_plugin.main",
+    "mypy_drf_plugin.main"
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "django_js_reverse.*",
+    "django_ratelimit.*",
+    "msgpack",
+    "pymemcache.*",
+    "htmlmin",
+]
+ignore_missing_imports = true
