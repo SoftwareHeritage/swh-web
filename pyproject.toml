@@ -110,3 +110,14 @@ module = [
     "htmlmin",
 ]
 ignore_missing_imports = true
+
+[tool.flake8]
+select = ["C", "E", "F", "W", "B950"]
+ignore = [
+    "E203", # whitespaces before ':' <https://github.com/psf/black/issues/315>
+    "E231", # missing whitespace after ','
+    "E501", # line too long, use B950 warning from flake8-bugbear instead
+    "E704", # multiple statements on one line
+    "W503" # line break before binary operator <https://github.com/psf/black/issues/52>
+]
+max-line-length = 88
