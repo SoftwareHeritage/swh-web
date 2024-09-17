@@ -935,3 +935,8 @@ p a {
 .select-no-arrows {
     background: none !important;
 }
+
+.btn-swhid-copy, .btn-swhid-url-copy {
+    width: 125px;
+    height: 32px;
+}
