@@ -192,10 +192,11 @@ def lookup_content_license(q):
     return converters.from_swh(lic, hashess={"id"})
 
 
-def _origin_info(origin: Origin) -> OriginInfo:
+def _origin_info(origin: Origin, with_visit_types: bool = True) -> OriginInfo:
     origin_dict = origin.to_dict()
-    origin_data = search.origin_get(origin.url) or {}
-    origin_dict["visit_types"] = list(origin_data.get("visit_types", []))
+    if with_visit_types:
+        origin_data = search.origin_get(origin.url) or {}
+        origin_dict["visit_types"] = list(origin_data.get("visit_types", []))
     return converters.from_origin(origin_dict)
 
 
@@ -253,7 +254,7 @@ def lookup_origins(
     """
     page = storage.origin_list(page_token=page_token, limit=limit)
     return PagedResult(
-        [_origin_info(o) for o in page.results],
+        [_origin_info(o, with_visit_types=False) for o in page.results],
         next_page_token=page.next_page_token,
     )
 

@@ -30,12 +30,16 @@ DOC_RETURN_ORIGIN = """
             :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
             to get the list of metadata authorities providing extrinsic metadata
             on this origin (and, indirectly, to the origin's extrinsic metadata itself)
-        :>json array visit_types: set of visit types for that origin
         :>json boolean has_visits: indicates if Software Heritage made at least one full
             visit of the origin
 """
 
+
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
+
+DOC_RETURN_ORIGIN += (
+    "        :>json array visit_types: set of visit types for that origin"
+)
 
 DOC_RETURN_ORIGIN_VISIT = """
         :>json string date: ISO8601/RFC3339 representation of the visit date (in UTC)
@@ -82,6 +86,7 @@ def api_origins(request: Request):
         :query int origin_count: The maximum number of origins to return
             (default to 100, cannot exceed 10000)
 
+
         {return_origin_array}
 
         {common_headers}
@@ -105,6 +110,7 @@ def api_origins(request: Request):
     limit = min(int(request.query_params.get("origin_count", "100")), 10000)
 
     page_result = archive.lookup_origins(page_token, limit)
+
     origins = [enrich_origin(o, request=request) for o in page_result.results]
     next_page_token = page_result.next_page_token
 
