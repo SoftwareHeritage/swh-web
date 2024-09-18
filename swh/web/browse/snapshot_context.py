@@ -89,15 +89,22 @@ def _get_release(
         return filtered_releases[0]
     elif release_name:
         # case where a large branches list has been truncated
-        try:
-            # git origins have specific branches for releases
-            snp = archive.lookup_snapshot(
-                snapshot_id,
-                branches_from=f"refs/tags/{release_name}",
-                branches_count=1,
-                target_types=["release"],
-            )
-        except NotFoundExc:
+
+        # git/hg/package origins have specific branches for releases
+        for branch_prefix in ("refs/tags", "tags", "releases"):
+            try:
+                branch_name = f"{branch_prefix}/{release_name}"
+                snp = archive.lookup_snapshot(
+                    snapshot_id,
+                    branches_from=branch_name,
+                    branches_count=1,
+                    target_types=["release", "alias"],
+                )
+                if branch_name in snp["branches"]:
+                    break
+            except NotFoundExc:
+                pass
+        else:
             snp = archive.lookup_snapshot(
                 snapshot_id,
                 branches_from=release_name,

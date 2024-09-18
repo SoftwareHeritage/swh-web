@@ -417,6 +417,25 @@ def test_get_release_large_snapshot(archive_data, origin_with_releases):
     assert release_data["name"] == release["name"]
     assert release_data["id"] == release["id"]
 
+    # check mercurial/package release branch edge cases
+    for branch_prefix in ("tags", "releases"):
+        snapshot = Snapshot(
+            branches={
+                f"{branch_prefix}/{release['name']}".encode(): SnapshotBranch(
+                    target=hash_to_bytes(release_id),
+                    target_type=SnapshotTargetType.RELEASE,
+                ),
+            }
+        )
+        archive_data.snapshot_add([snapshot])
+        release = _get_release(
+            releases=[],
+            release_name=release_data["name"],
+            snapshot_id=snapshot.id.hex(),
+        )
+        assert release_data["name"] == release["name"]
+        assert release_data["id"] == release["id"]
+
 
 def _get_revision_info(archive_data, revision_id):
     revision_info = None
