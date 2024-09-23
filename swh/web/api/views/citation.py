@@ -69,9 +69,9 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
         Get a software citation, given an object SWHID and a format (only currently
         supported format is BibTeX).
 
-        :query string target_swhid: The SWHID, with or without qualifiers, of the
-         software object to cite
         :query string citation_format: the citation expected format (currently bibtex)
+        :query string target_swhid: the SWHID, with or without qualifiers, of the
+         software object to cite
 
         :<json string the software citation in the expected format
 
@@ -86,7 +86,7 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
 
         .. parsed-literal::
 
-            :swh_web_api:`raw-intrinsic-metadata/citation/swhid/target_swhid=swh:1:dir:2dc0f462d191524530f5612d2935851505af41dd;origin=https://github.com/rdicosmo/parmap;visit=swh:1:snp:2128ed4f25f2d7ae7c8b7950a611d69cf4429063/&citation_format=bibtex`
+            :swh_web_api:`raw-intrinsic-metadata/citation/swhid/?citation_format=bibtex&target_swhid=swh:1:dir:2dc0f462d191524530f5612d2935851505af41dd;origin=https://github.com/rdicosmo/parmap;visit=swh:1:snp:2128ed4f25f2d7ae7c8b7950a611d69cf4429063`
     """
     target_swhid = request.GET.get("target_swhid", "")
     try:

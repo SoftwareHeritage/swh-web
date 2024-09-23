@@ -6,6 +6,7 @@
 import yaml
 
 from swh.indexer.bibtex import cff_to_bibtex, codemeta_to_bibtex
+from swh.model.swhids import QualifiedSWHID
 from swh.web.utils.archive import (
     lookup_origin_raw_intrinsic_metadata,
     lookup_raw_intrinsic_metadata_by_target_swhid,
@@ -66,11 +67,12 @@ def get_bibtex_from_swhid(target_swhid: str) -> str:
         BadInputExc: when the origin does not allow to find metadata.
     """
     metadata = lookup_raw_intrinsic_metadata_by_target_swhid(target_swhid)
+    parsed_swhid = QualifiedSWHID.from_string(target_swhid)
     if metadata.get("codemeta.json"):
-        bibtex = codemeta_to_bibtex(metadata["codemeta.json"])
+        bibtex = codemeta_to_bibtex(metadata["codemeta.json"], parsed_swhid)
     elif metadata.get("citation.cff"):
         bibtex = cff_to_bibtex(
-            yaml.dump(metadata["citation.cff"], default_flow_style=False)
+            yaml.dump(metadata["citation.cff"], default_flow_style=False), parsed_swhid
         )
     else:
         # Cannot happen: metadata contains at least one of codemeta.json or citation.cff

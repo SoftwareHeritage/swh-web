@@ -18,3 +18,7 @@ def test_get_bibtex_from_swhid(objects_with_metadata_file):
 
     assert "@software" in bibtex
     assert 'title = "Test Software"' in bibtex
+    assert (
+        'swhid = "swh:1:snp:89cb4bc962dd297a70053c9288f98d3fde8db740;'
+        r'origin=https://git.example.org/repo\_with\_metadata\_file"' in bibtex
+    )
