@@ -256,10 +256,10 @@ def _origin_visits_browse(
         query_params = {"origin_url": origin_url, "timestamp": url_date}
         if i < len(origin_visits) - 1:
             if visit["date"] == origin_visits[i + 1]["date"]:
-                query_params = {"visit_id": visit["visit"]}
+                query_params = {"origin_url": origin_url, "visit_id": visit["visit"]}
         if i > 0:
             if visit["date"] == origin_visits[i - 1]["date"]:
-                query_params = {"visit_id": visit["visit"]}
+                query_params = {"origin_url": origin_url, "visit_id": visit["visit"]}
 
         snapshot = visit["snapshot"] if visit["snapshot"] else ""
 
