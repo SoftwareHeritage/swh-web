@@ -582,8 +582,8 @@ def lookup_raw_intrinsic_metadata_by_target_swhid(
     If the target object is of type Snapshot, get metadata from the main branch ('HEAD').
 
     Args:
-        target_swhid: SWHID which target object cannot be of type Content
-            and which can be qualified or not
+        target_swhid: SWHID which can be qualified or not
+            If the target object is of type Content, it must be qualified with an anchor.
 
     Returns:
         raw intrinsic metadata in the form of a dictionary,
@@ -1481,8 +1481,8 @@ def _lookup_swhid_root_directory(swhid: str) -> Optional[str]:
     from the main branch ('HEAD').
 
     Args:
-        swhid: SWHID which target object cannot be of type Content
-            and which can be qualified or not
+        swhid: SWHID which can be qualified or not
+            If the target object is of type Content, it must be qualified with an anchor.
 
     Returns:
         Associated root directory id (sha1) or None if it could not be found.
@@ -1498,6 +1498,8 @@ def _lookup_swhid_root_directory(swhid: str) -> Optional[str]:
             f"No root directory can be found for SWHID {swhid} "
             f"as it cannot be parsed with error: {e.message}"
         )
+
+    parsed_swhid = _lookup_cnt_or_dir_root_directory_swhid(parsed_swhid)
 
     object_id = hash_to_hex(parsed_swhid.object_id)
     match parsed_swhid.object_type:
@@ -1515,12 +1517,31 @@ def _lookup_swhid_root_directory(swhid: str) -> Optional[str]:
         case ObjectType.DIRECTORY:
             root_directory_id = object_id
         case _:
-            # case "content": directory cannot be retrieved from content
-            raise BadInputExc(
-                f"No root directory can be found for SWHID {swhid} "
-                f"as it targets a {parsed_swhid.object_type}."
+            # Cannot happen
+            assert False, (
+                f"SWHID should be of type {ObjectType.SNAPSHOT}, {ObjectType.REVISION}, "
+                f"{ObjectType.RELEASE} or {ObjectType.DIRECTORY}."
             )
     return root_directory_id
+
+
+def _lookup_cnt_or_dir_root_directory_swhid(parsed_swhid):
+    """Try to resolve the closest object with root directory SWHID for a given SWHID of
+    type Content or Directory.
+    """
+    if parsed_swhid.object_type == ObjectType.CONTENT:
+        if parsed_swhid.anchor:
+            parsed_swhid = parsed_swhid.anchor
+        else:
+            raise BadInputExc(
+                f"No root directory can be found for SWHID {str(parsed_swhid)} "
+                f"as it targets a {parsed_swhid.object_type} "
+                "and is lacking a qualified anchor."
+            )
+    if parsed_swhid.object_type == ObjectType.DIRECTORY:
+        if parsed_swhid.anchor:
+            parsed_swhid = parsed_swhid.anchor
+    return parsed_swhid
 
 
 def _lookup_release_root_directory(release_id: str) -> Optional[str]:

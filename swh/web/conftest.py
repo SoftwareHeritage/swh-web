@@ -712,11 +712,18 @@ def objects_with_metadata_file(tests_data):
     snapshot_branch = snapshot_resolve_alias(
         tests_data["storage"], hash_to_bytes(snapshot.id), b"HEAD"
     )
-    objects_with_metadata_file = [snapshot.id, snapshot_branch.target]
+    object_ids_with_metadata_file = [snapshot.id, snapshot_branch.target]
     return [
         object_with_metadata_file
         for object_with_metadata_file in swh_objects
-        if object_with_metadata_file.object_id in objects_with_metadata_file
+        if (
+            object_with_metadata_file.object_id in object_ids_with_metadata_file
+            or (
+                object_with_metadata_file.anchor is not None
+                and object_with_metadata_file.anchor.object_id
+                in object_ids_with_metadata_file
+            )
+        )
     ]
 
 

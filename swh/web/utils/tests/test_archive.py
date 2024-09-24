@@ -1227,10 +1227,14 @@ def test_lookup_swhid_raw_intrinsic_metadata_not_found(unknown_core_swhid):
             )
 
 
-def test_lookup_swhid_raw_intrinsic_metadata_invalid_object(unknown_core_swhid):
+def test_lookup_swhid_raw_intrinsic_metadata_cnt_unqualified(unknown_core_swhid):
     if unknown_core_swhid.object_type == ObjectType.CONTENT:
         with pytest.raises(BadInputExc) as e:
             archive.lookup_raw_intrinsic_metadata_by_target_swhid(
                 str(unknown_core_swhid)
             )
-        assert "as it targets a ObjectType.CONTENT" in str(e)
+        assert "No root directory can be found for SWHID" in str(e)
+        assert (
+            "as it targets a ObjectType.CONTENT and is lacking a qualified anchor."
+            in str(e)
+        )

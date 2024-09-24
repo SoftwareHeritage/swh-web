@@ -54,8 +54,8 @@ def get_bibtex_from_swhid(target_swhid: str) -> str:
     target object.
 
     Args:
-        target_swhid: SWHID which target object cannot be of type Content and which can
-        be qualified or no
+        target_swhid: SWHID which can be qualified or not
+            If the target object is of type Content, it must be qualified with an anchor.
 
     Returns:
         The software citation in BibTeX format (cannot be empty: it contains at least
