@@ -1526,23 +1526,26 @@ def _lookup_swhid_root_directory(swhid: str) -> Optional[str]:
     return root_directory_id
 
 
-def _lookup_cnt_or_dir_root_directory_swhid(parsed_swhid):
+def _lookup_cnt_or_dir_root_directory_swhid(
+    parsed_swhid: QualifiedSWHID,
+) -> QualifiedSWHID:
     """Try to resolve the closest object with root directory SWHID for a given SWHID of
     type Content or Directory.
     """
+    new_parsed_swhid = parsed_swhid
     if parsed_swhid.object_type == ObjectType.CONTENT:
         if parsed_swhid.anchor:
-            parsed_swhid = parsed_swhid.anchor
+            new_parsed_swhid = CoreSWHID.to_qualified(parsed_swhid.anchor)
         else:
             raise BadInputExc(
                 f"No root directory can be found for SWHID {str(parsed_swhid)} "
                 f"as it targets a {parsed_swhid.object_type} "
                 "and is lacking a qualified anchor."
             )
-    if parsed_swhid.object_type == ObjectType.DIRECTORY:
+    elif parsed_swhid.object_type == ObjectType.DIRECTORY:
         if parsed_swhid.anchor:
-            parsed_swhid = parsed_swhid.anchor
-    return parsed_swhid
+            new_parsed_swhid = CoreSWHID.to_qualified(parsed_swhid.anchor)
+    return new_parsed_swhid
 
 
 def _lookup_release_root_directory(release_id: str) -> Optional[str]:
