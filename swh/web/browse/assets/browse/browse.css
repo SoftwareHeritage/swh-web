@@ -56,23 +56,40 @@
     z-index: 30000;
 }
 
-#swh-identifiers {
+.swh-side-tab {
     width: 70vw;
     top: 0;
-    border: 1px solid #e20026;
 }
 
-#swh-identifiers .handle {
-    background-color: #e20026;
-    border: 1px solid #e20026;
+.swh-side-tab .handle {
     color: white;
     padding-top: 0.1em;
     padding-bottom: 0.1em;
 }
 
-#swh-identifiers-content {
+.swh-side-tab-content {
     height: 100%;
+    min-height: 300px;
     overflow: auto;
+}
+
+#swh-identifiers {
+    border: 1px solid #e20026;
+}
+
+#swh-identifiers .handle {
+    background-color: #e20026 !important;
+    border: 1px solid #e20026 !important;
+}
+
+#swh-citations {
+    border: 1px solid #f16d20;
+}
+
+#swh-citations .handle {
+    background-color: #f16d20 !important;
+    border: 1px solid #f16d20 !important;
+    color: black;
 }
 
 .swh-empty-snapshot {

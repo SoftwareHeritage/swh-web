@@ -62,6 +62,9 @@ $(() => {
         if (targetElement && targetElement.id === 'swh-identifiers') {
           return openSWHIDsTabBeforeNextStep();
         }
+        if (targetElement && targetElement.id === 'citations-handle') {
+          $(targetElement).trigger('click');
+        }
         return true;
       }
     },

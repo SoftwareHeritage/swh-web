@@ -251,6 +251,13 @@ browseOrigin:
       buttons.
     position: bottom
 
+  - element: "#citations-handle"
+    title: Generate software citations for browsed objects
+    intro: |
+      When clicking on this handle, a tab will be displayed containing an interface to
+      generate software citations for browsed objects in multiple formats.
+    position: left
+
   - title: Browsing a source code file
     intro: |
       Special features are also offered when browsing a source code file.<br/>

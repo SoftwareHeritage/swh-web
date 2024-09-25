@@ -16,4 +16,4 @@ export * from './browse-utils';
 export * from './iframe';
 export * from './origin-search';
 export * from './snapshot-navigation';
-export * from './swhid-utils';
+export * from './sidetabs';

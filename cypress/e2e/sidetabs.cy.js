@@ -98,7 +98,7 @@ describe('SWHIDs Tests', function() {
     cy.get('#swh-identifiers-content')
       .should('have.css', 'display', 'none');
 
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     cy.get('#swh-identifiers')
@@ -106,7 +106,7 @@ describe('SWHIDs Tests', function() {
     cy.get('#swh-identifiers-content')
       .should('have.css', 'display', 'block');
 
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     cy.get('#swh-identifiers')
@@ -117,7 +117,7 @@ describe('SWHIDs Tests', function() {
   });
 
   it('should display identifiers with permalinks for browsed objects', function() {
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     for (const td of testsData) {
@@ -136,7 +136,7 @@ describe('SWHIDs Tests', function() {
   });
 
   it('should update other object identifiers contextual info when toggling context checkbox', function() {
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     for (const td of testsData) {
@@ -166,7 +166,7 @@ describe('SWHIDs Tests', function() {
   });
 
   it('should display swh badges in identifiers tab for browsed objects', function() {
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     const originBadgeUrl = this.Urls.swh_badge('origin', origin.url);
@@ -187,7 +187,7 @@ describe('SWHIDs Tests', function() {
 
   it('should display badge integration info when clicking on it', function() {
 
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     for (const td of testsData) {
@@ -246,7 +246,7 @@ describe('SWHIDs Tests', function() {
     // use a small viewport size
     cy.viewport(320, 480);
     cy.visit(url);
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
     cy.window().then(win => {
       // SWHIDs tab should fit in the screen
@@ -260,7 +260,7 @@ describe('SWHIDs Tests', function() {
   });
 
   it('should update copy buttons after clicking on them', function() {
-    cy.get('.ui-slideouttab-handle')
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
 
     for (const td of testsData) {
@@ -288,5 +288,45 @@ describe('SWHIDs Tests', function() {
           .should('not.contain.text', 'Copied!')
           .should('contain.text', 'Copy permalink');
     }
+  });
+
+  it('should make citations tab current when clicking on its handle', function() {
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.get('#swh-citations-content')
+      .should('be.visible');
+
+    cy.get('#swh-identifiers-content')
+      .should('not.be.visible');
+  });
+
+  it('should switch opened tabs when clicking on their handles', function() {
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
+      .click();
+
+    cy.get('#swh-identifiers-content')
+      .should('be.visible');
+
+    cy.get('#swh-citations-content')
+      .should('not.be.visible');
+
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.get('#swh-citations-content')
+      .should('be.visible');
+
+    cy.get('#swh-identifiers-content')
+      .should('not.be.visible');
+
+    cy.get('#swh-identifiers .ui-slideouttab-handle')
+      .click();
+
+    cy.get('#swh-identifiers-content')
+      .should('be.visible');
+
+    cy.get('#swh-citations-content')
+      .should('not.be.visible');
   });
 });
