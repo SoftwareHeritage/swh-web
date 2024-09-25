@@ -1,7 +1,7 @@
 {% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -22,7 +22,7 @@ See top-level LICENSE file for more information
 {% block swh-browse-content %}
   <div class="p-3">
     <h4>Overview</h4>
-    <div class="float-right">{% include "includes/take-new-snapshot.html" %}</div>
+    <div class="float-end">{% include "includes/take-new-snapshot.html" %}</div>
     <ul>
       <li class="d-inline-block">
         <b>Total number of visits: </b>{{ origin_visits|length }}
@@ -43,38 +43,38 @@ See top-level LICENSE file for more information
     </ul>
     <h4>History</h4>
     <form class="text-center">
-      <div class="custom-control custom-radio custom-control-inline">
-        <input class="custom-control-input"
+      <div class="form-check form-check-inline">
+        <input class="form-check-input"
                type="radio"
                id="swh-all-visits"
                name="swh-visits"
                value="option3"
                checked />
-        <label class="custom-control-label font-weight-normal"
+        <label class="form-check-label font-weight-normal"
                for="swh-all-visits"
-               onclick="swh.origin_visits.showAllVisits(event)">Show all visits</label>
+               onclick="swh.origin_visits.reloadPage(event)">Show all visits</label>
       </div>
-      <div class="custom-control custom-radio custom-control-inline">
-        <input class="custom-control-input"
+      <div class="form-check form-check-inline">
+        <input class="form-check-input"
                type="radio"
                id="swh-full-visits-different-snapshots"
                name="swh-visits"
                value="option1" />
-        <label class="custom-control-label font-weight-normal"
+        <label class="form-check-label font-weight-normal"
                for="swh-full-visits-different-snapshots"
-               onclick="swh.origin_visits.showFullVisitsDifferentSnapshots(event)">
+               onclick="swh.origin_visits.reloadPage(event)">
           Show full visits with different snapshots
         </label>
       </div>
-      <div class="custom-control custom-radio custom-control-inline">
-        <input class="custom-control-input"
+      <div class="form-check form-check-inline">
+        <input class="form-check-input"
                type="radio"
                id="swh-full-visits"
                name="swh-visits"
                value="option2" />
-        <label class="custom-control-label font-weight-normal"
+        <label class="form-check-label font-weight-normal"
                for="swh-full-visits"
-               onclick="swh.origin_visits.showFullVisits(event)">Show all full visits</label>
+               onclick="swh.origin_visits.reloadPage(event)">Show all full visits</label>
       </div>
     </form>
     <h5>Timeline</h5>

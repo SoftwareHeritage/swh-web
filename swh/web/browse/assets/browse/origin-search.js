@@ -101,14 +101,18 @@ async function populateOriginSearchResultsTable(origins) {
 
   if (linkNext === null) {
     $('#origins-next-results-button').addClass('disabled');
+    $('#origins-next-results-button').attr('tabindex', '-1');
   } else {
     $('#origins-next-results-button').removeClass('disabled');
+    $('#origins-next-results-button').attr('tabindex', '0');
   }
 
   if (linksPrev.length === 0) {
     $('#origins-prev-results-button').addClass('disabled');
+    $('#origins-prev-results-button').attr('tabindex', '-1');
   } else {
     $('#origins-prev-results-button').removeClass('disabled');
+    $('#origins-prev-results-button').attr('tabindex', '0');
   }
 
   inSearch = false;
@@ -269,6 +273,12 @@ export function initOriginSearch() {
       inSearch = true;
       searchOrigins(linksPrev.pop());
       event.preventDefault();
+    });
+
+    $('.page-item').on('keypress', e => {
+      if (e.key === 'Enter') {
+        $(e.target).trigger('click');
+      }
     });
 
     if (window.location.search) {

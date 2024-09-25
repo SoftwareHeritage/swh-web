@@ -430,7 +430,7 @@ describe('Origin Save Tests', function() {
       .should('not.exist');
   });
 
-  it('should hide task info popover when clicking on the close button', function() {
+  it('should hide task info popover when clicking outside it', function() {
     cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
       .as('saveRequestsList');
     cy.intercept('/save/task/info/**', {fixture: 'save-task-info'})
@@ -446,7 +446,7 @@ describe('Origin Save Tests', function() {
     cy.get('.swh-save-request-info-popover')
       .should('be.visible');
 
-    cy.get('.swh-save-request-info-close')
+    cy.get('#dt-search-0')
       .click();
 
     cy.get('.swh-save-request-info-popover')

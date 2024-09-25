@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -29,7 +29,7 @@ def test_banners_deactivate(client, django_settings):
     resp = check_html_get_response(client, url, status_code=200)
     assert_contains(resp, "swh-banner")
     assert_contains(resp, "swh-navbar-banner")
-    assert_contains(resp, "main-sidebar-banner")
+    assert_contains(resp, "app-sidebar-banner")
     assert_contains(resp, "swh-corner-ribbon-banner")
 
     django_settings.SWH_DJANGO_APPS = [
@@ -41,7 +41,7 @@ def test_banners_deactivate(client, django_settings):
     resp = check_html_get_response(client, url, status_code=200)
     assert_not_contains(resp, "swh-banner")
     assert_not_contains(resp, "swh-navbar-banner")
-    assert_not_contains(resp, "main-sidebar-banner")
+    assert_not_contains(resp, "app-sidebar-banner")
     assert_not_contains(resp, "swh-corner-ribbon-banner")
 
     banners_view_names = set(urlpattern.name for urlpattern in urlpatterns)

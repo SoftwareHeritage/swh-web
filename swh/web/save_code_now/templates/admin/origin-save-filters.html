@@ -1,7 +1,7 @@
 {% extends "./origin-save-common.html" %}
 
 {% comment %}
-Copyright (C) 2018-2023  The Software Heritage developers
+Copyright (C) 2018-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ See top-level LICENSE file for more information
       <li class="nav-item">
         <a class="nav-link active"
            id="swh-authorized-origins-tab"
-           data-toggle="pill"
+           data-bs-toggle="pill"
            href="#swh-authorized-origins"
            role="tab"
            aria-controls="swh-authorized-origins"
@@ -22,7 +22,7 @@ See top-level LICENSE file for more information
       <li class="nav-item">
         <a class="nav-link"
            id="swh-unauthorized-origins-tab"
-           data-toggle="pill"
+           data-bs-toggle="pill"
            href="#swh-unauthorized-origins"
            role="tab"
            aria-controls="swh-unauthorized-origins"
@@ -43,23 +43,21 @@ See top-level LICENSE file for more information
             </tr>
           </thead>
         </table>
-        <div class="row text-right mt-3">
+        <div class="row text-end mt-3">
           <div class="col-md-10">
             <div class="input-group">
               <input class="form-control"
                      placeholder="Enter authorized origin url prefix to add"
                      type="text"
                      id="swh-authorized-url-prefix" />
-              <div class="input-group-append">
-                <button id="swh-add-authorized-origin-url"
-                        class="btn btn-default"
-                        onclick="swh.save_code_now.addAuthorizedOriginUrl()">Add new</button>
-              </div>
+              <button id="swh-add-authorized-origin-url"
+                      class="btn btn-secondary"
+                      onclick="swh.save_code_now.addAuthorizedOriginUrl()">Add new</button>
             </div>
           </div>
           <div class="col-md-2">
             <button id="swh-remove-authorized-origin-url"
-                    class="btn btn-default swh-action-need-selection"
+                    class="btn btn-secondary swh-action-need-selection"
                     onclick="swh.save_code_now.removeAuthorizedOriginUrl()"
                     disabled>Remove selected</button>
           </div>
@@ -79,23 +77,21 @@ See top-level LICENSE file for more information
             </tr>
           </thead>
         </table>
-        <div class="row text-right mt-3">
+        <div class="row text-end mt-3">
           <div class="col-md-10">
             <div class="input-group">
               <input class="form-control"
                      placeholder="Enter unauthorized origin url prefix to add"
                      type="text"
                      id="swh-unauthorized-url-prefix" />
-              <div class="input-group-append">
-                <button id="swh-add-unauthorized-origin-url"
-                        class="btn btn-default"
-                        onclick="swh.save_code_now.addUnauthorizedOriginUrl()">Add new</button>
-              </div>
+              <button id="swh-add-unauthorized-origin-url"
+                      class="btn btn-secondary"
+                      onclick="swh.save_code_now.addUnauthorizedOriginUrl()">Add new</button>
             </div>
           </div>
           <div class="col-md-2">
             <button id="swh-remove-unauthorized-origin-url"
-                    class="btn btn-default swh-action-need-selection"
+                    class="btn btn-secondary swh-action-need-selection"
                     onclick="swh.save_code_now.removeUnauthorizedOriginUrl()"
                     disabled>Remove selected</button>
           </div>

@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2020-2023  The Software Heritage developers
+Copyright (C) 2020-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -16,23 +16,19 @@ See top-level LICENSE file for more information
            oninput="swh.webapp.validateSWHIDInput(this)"
            aria-label="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
            autofocus />
-    <div class="input-group-append">
-      <button class="btn btn-primary"
-              type="submit"
-              aria-label="Search software origins">
-        <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
-      </button>
-    </div>
+    <button class="btn btn-primary"
+            type="submit"
+            aria-label="Search software origins">
+      <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+    </button>
     <div class="invalid-feedback"></div>
   </div>
-  <div class="row mt-1 mb-1 float-right position-relative"
-       style="z-index: 1000">
-    <div class="form-group form-inline">
+  <div class="row mt-1 mb-1 float-end" style="z-index: 1000">
+    <div class="input-group input-group-sm">
       <label for="swh-search-visit-type"
-             class="control-label mr-1"
-             style="font-weight: inherit">visit type:</label>
-      <select id="swh-search-visit-type"
-              class="custom-select form-control custom-select-sm">
+             class="input-group-text"
+             style="font-weight: inherit">visit type</label>
+      <select id="swh-search-visit-type" class="form-select form-control">
         <option selected value="any">any</option>
         {% for visit_type in visit_types %}
           <option value="{{ visit_type }}">{{ visit_type }}</option>
@@ -40,41 +36,40 @@ See top-level LICENSE file for more information
       </select>
     </div>
   </div>
-  <div role="group" aria-label="Search options">
-    <div class="custom-control custom-checkbox swhid-option">
-      <input class="custom-control-input"
+  <div class="row">
+    <div class="form-check swhid-option">
+      <input class="form-check-input"
              value="option-origins-with-visit"
              type="checkbox"
              id="swh-search-origins-with-visit"
              checked />
-      <label class="custom-control-label font-weight-normal"
+      <label class="form-check-label font-weight-normal"
              for="swh-search-origins-with-visit">only show origins visited at least once</label>
     </div>
-    <div class="custom-control custom-checkbox swhid-option">
-      <input class="custom-control-input"
+    <div class="form-check swhid-option">
+      <input class="form-check-input"
              value="option-filter-empty-visits"
              type="checkbox"
              id="swh-filter-empty-visits"
              checked />
-      <label class="custom-control-label font-weight-normal"
+      <label class="form-check-label font-weight-normal"
              for="swh-filter-empty-visits">filter out origins with no archived content</label>
     </div>
-    <div class="custom-control custom-checkbox swhid-option">
-      <input class="custom-control-input"
+    <div class="form-check swhid-option">
+      <input class="form-check-input"
              value="option-filter-empty-visits"
              type="checkbox"
              id="swh-search-origin-metadata" />
-      <label class="custom-control-label font-weight-normal"
+      <label class="form-check-label font-weight-normal"
              for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
     </div>
     {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
-      <div class="custom-control custom-checkbox swhid-option">
-        <input class="custom-control-input"
+      <div class="form-check swhid-option">
+        <input class="form-check-input"
                value="option-use-ql"
                type="checkbox"
                id="swh-search-use-ql" />
-        <label class="custom-control-label font-weight-normal"
-               for="swh-search-use-ql">
+        <label class="form-check-label font-weight-normal" for="swh-search-use-ql">
           search using the
           <a target="_blank"
              rel="noopener noreferrer"

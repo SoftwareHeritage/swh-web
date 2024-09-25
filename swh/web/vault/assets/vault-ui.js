@@ -218,7 +218,7 @@ async function checkVaultCookingTasks() {
         const downloadLink = rowTask.find('.vault-dl-link');
         if (cookingTask.status === 'done') {
           downloadLink[0].innerHTML =
-              '<button class="btn btn-default btn-sm" ' +
+              '<button class="btn btn-secondary btn-sm" ' +
               `onclick="swh.vault.fetchCookedObject('${cookingTask.fetch_url}')">` +
               '<i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>Download</button>';
         } else {

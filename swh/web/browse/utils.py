@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -371,7 +371,7 @@ def gen_revision_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> Optional[str]:
@@ -412,7 +412,7 @@ def gen_directory_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> Optional[str]:
@@ -450,7 +450,7 @@ def gen_snapshot_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> str:
@@ -487,7 +487,7 @@ def gen_content_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> Optional[str]:
@@ -560,7 +560,7 @@ def gen_revision_log_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> Optional[str]:
@@ -625,7 +625,7 @@ def gen_release_link(
     snapshot_context: Optional[SnapshotContext] = None,
     link_text: Optional[str] = "Browse",
     link_attrs: Optional[Dict[str, str]] = {
-        "class": "btn btn-default btn-sm",
+        "class": "btn btn-secondary btn-sm",
         "role": "button",
     },
 ) -> str:

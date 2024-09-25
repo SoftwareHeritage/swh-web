@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -104,6 +104,12 @@ export function showFullVisits(event) {
 export function showAllVisits(event) {
   filteredVisits = allVisits;
   updateDisplayedVisits();
+}
+
+// bootstrap 5 popovers on calendar days have display issues after dynamically updating calendar
+// so we refresh the page instead when changing visits filter
+export function reloadPage() {
+  location.reload();
 }
 
 export function initVisitsReporting(visits) {

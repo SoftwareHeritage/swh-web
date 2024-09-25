@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022-204  The Software Heritage developers
+ * Copyright (C) 2022-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -316,7 +316,7 @@ describe('Test add-forge-request creation', function() {
     submitForm(); // Submitting the same data again
 
     cy.get('#userMessage')
-      .should('have.class', 'badge-danger')
+      .should('have.class', 'text-bg-danger')
       .should('contain', 'already exists');
   });
 

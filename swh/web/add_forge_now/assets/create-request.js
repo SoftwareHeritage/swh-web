@@ -31,8 +31,8 @@ export function onCreateRequestPageLoad() {
         handleFetchError(response);
         $('#userMessageDetail').empty();
         $('#userMessage').text('Your request has been submitted');
-        $('#userMessage').removeClass('badge-danger');
-        $('#userMessage').addClass('badge-success');
+        $('#userMessage').removeClass('text-bg-danger');
+        $('#userMessage').addClass('text-bg-success');
         requestBrowseTable.draw(); // redraw the table to update the list
       } catch (errorResponse) {
         $('#userMessageDetail').empty();
@@ -48,8 +48,8 @@ export function onCreateRequestPageLoad() {
             errorData, 'An unknown error occurred during the request creation');
         }
         $('#userMessage').text(errorMessage);
-        $('#userMessage').removeClass('badge-success');
-        $('#userMessage').addClass('badge-danger');
+        $('#userMessage').removeClass('text-bg-success');
+        $('#userMessage').addClass('text-bg-danger');
       }
     });
 
@@ -68,9 +68,9 @@ export function populateRequestBrowseList() {
       searching: true,
       // Layout configuration, see [1] for more details
       // [1] https://datatables.net/reference/option/dom
-      dom: '<"row"<"col-sm-3"l><"col-sm-6 text-left user-requests-filter"><"col-sm-3"f>>' +
+      dom: '<"row mb-2"<"col-sm-3"l><"col-sm-6 text-start user-requests-filter"><"col-sm-3"f>>' +
            '<"row"<"col-sm-12"tr>>' +
-           '<"row"<"col-sm-5"i><"col-sm-7"p>>',
+           '<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
       ajax: {
         'url': Urls.add_forge_request_list_datatables(),
         data: (d) => {

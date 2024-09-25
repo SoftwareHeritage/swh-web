@@ -15,7 +15,7 @@ body {
     min-height: 100%;
     margin: 0;
     position: relative;
-    padding-bottom: 120px;
+    overflow-y: clip;
 }
 
 /* The Alegreya font used in swh-web ships some ligatures producing
@@ -30,6 +30,18 @@ a.active {
     outline: none;
 }
 
+a:focus-visible,
+.page-item:focus-visible,
+.page-link:focus-visible {
+    outline:rgb(226 0 38 / 25%) 4px solid !important;
+    z-index: 100;
+}
+
+.swh-top-bar a:focus-visible,
+footer a:focus-visible {
+    outline:rgb(226 0 38 / 75%) 3px solid !important;
+}
+
 code {
     background-color: #f9f2f4;
 }
@@ -39,11 +51,9 @@ pre code {
 }
 
 footer {
-    background-color: #262626;
-    color: #fff;
+    background-color: #262626 !important;
+    color: #fff !important;
     font-size: 0.8rem;
-    position: absolute;
-    bottom: 0;
     width: 100%;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -58,10 +68,19 @@ footer a:hover {
 
 pre {
     background-color: #f5f5f5;
+    color: #212529;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 9.5px;
     font-size: 0.8rem;
+}
+
+.app-content {
+    padding-top: 10px;
+}
+
+.app-main {
+    overflow: hidden !important;
 }
 
 .btn.active {
@@ -72,6 +91,7 @@ pre {
     margin-bottom: 5px !important;
     overflow-x: auto;
 }
+
 
 .navbar-brand {
     padding: 5px;
@@ -235,7 +255,6 @@ a.dropdown-left::before {
         1 1 1 1;
     width: 100%;
     padding: 5px;
-    margin-bottom: 10px;
     margin-top: 30px;
     justify-content: normal;
     flex-wrap: nowrap;
@@ -340,7 +359,8 @@ a.dropdown-left::before {
 }
 
 .swh-navbar-content h4 {
-    padding-top: 7px;
+    padding-top: 11px;
+    padding-left: 15px;
 }
 
 .swh-navbar-content .bread-crumbs {
@@ -349,57 +369,59 @@ a.dropdown-left::before {
 }
 
 .swh-navbar-content .bread-crumbs li.bc-no-root {
-    padding-top: 7px;
+    padding-top: 0.7rem;
 }
 
-.main-sidebar {
-    margin-top: 30px;
+.app-sidebar {
+    background: white;
+    top: 30px !important;
+    max-height: 96.6vh !important;
 }
 
-.main-sidebar-banner {
+.app-sidebar-banner {
     margin-top: 60px;
-}
-
-.sidebar {
-    height: calc(100% - 7rem);
-}
-
-.sidebar .nav-header {
-    padding-left: 10px;
-    padding-top: 10px;
-    font-weight: 400;
 }
 
 .content-wrapper {
     background: none;
 }
 
-.brand-image {
-    max-height: 40px;
+.swh-push-menu {
+    padding-top: 5px;
 }
 
-.brand-link {
+.sidebar-brand {
     padding-top: 18.5px;
     padding-bottom: 18px;
     padding-left: 4px;
     border-bottom: 5px solid #e20026 !important;
+    height: 4.5rem;
+    font-weight: 500;
 }
 
-.brand-link:hover,
-.brand-link:focus {
+.brand-image {
+    max-height: 40px;
+}
+
+.sidebar-brand:hover,
+.sidebar-brand:focus {
     color: #323232 !important;
     background-color: #e7e7e7 !important;
+}
+
+.sidebar-menu .nav-link p {
+    padding-top: 5px;
 }
 
 .navbar-header a,
 ul.dropdown-menu a,
 ul.navbar-nav a,
-ul.nav-sidebar a {
+ul.nav.sidebar-menu a {
     border-bottom-style: none;
     color: #323232;
 }
 
-.nav-sidebar .nav-icon
+.nav.sidebar-menu .nav-icon
 
 .nav-tabs .nav-link.active {
     border-top: 3px solid #e20026;
@@ -444,10 +466,6 @@ ul.nav-sidebar a {
     }
 }
 
-.form-check-label {
-    padding-top: 4px;
-}
-
 .swhid {
     white-space: pre-wrap;
 }
@@ -466,27 +484,25 @@ ul.nav-sidebar a {
     color: #e20026 !important;
 }
 
-.sidebar-mini.sidebar-collapse .main-sidebar:hover {
+.sidebar-mini.sidebar-collapse .app-sidebar:hover {
     width: 4.6rem;
+
+    /* ensure collapsed sidebar is not automatically expanded when hovering it */
+    min-width: 4.6rem;
+    max-width: 4.6rem;
 }
 
-.sidebar-mini.sidebar-collapse .main-sidebar:hover .user-panel > .info,
-.sidebar-mini.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
-.sidebar-mini.sidebar-collapse .main-sidebar:hover .brand-text {
+.sidebar-mini.sidebar-collapse .brand-text {
+    display: none !important;
+}
+
+.sidebar-mini.sidebar-collapse .app-sidebar:hover .user-panel > .info,
+.sidebar-mini.sidebar-collapse .app-sidebar:hover .nav.sidebar-menu .nav-link p,
+.sidebar-mini.sidebar-collapse .app-sidebar:hover .brand-text {
     visibility: hidden !important;
 }
 
-.sidebar .nav-link p,
-.main-sidebar .brand-text,
-.sidebar .user-panel .info {
-    transition: none;
-}
-
-.sidebar-mini.sidebar-mini.sidebar-collapse .sidebar {
-    padding-right: 0;
-}
-
-.sidebar-mini.sidebar-collapse .sidebar .nav-header {
+.sidebar-mini.sidebar-collapse .app-sidebar .nav-header {
     display: none;
 }
 
@@ -514,6 +530,14 @@ ul.nav-sidebar a {
 
 .sidebar-collapse .swh-words-logo-swh {
     visibility: visible;
+}
+
+.sidebar-open .swh-words-logo-swh {
+    visibility: hidden;
+}
+
+.sidebar-open .sidebar-wrapper {
+    padding-left: 1.5rem;
 }
 
 hr.swh-faded-line {
@@ -781,16 +805,16 @@ div.d3-tooltip {
     height: inherit;
 }
 
-.nav-sidebar .nav-header:not(:first-of-type) {
+.nav.sidebar-menu .nav-header:not(:first-of-type) {
     padding-top: 1rem;
 }
 
-.nav-sidebar .nav-link {
+.nav.sidebar-menu .nav-link {
     padding-top: 0;
     padding-bottom: 0;
 }
 
-.nav-sidebar > .nav-item .nav-icon {
+.nav.sidebar-menu > .nav-item .nav-icon {
     vertical-align: sub;
 }
 
@@ -801,14 +825,10 @@ div.d3-tooltip {
 
 .swh-search-navbar {
     position: absolute;
-    top: 0.7rem;
-    right: 15rem;
+    top: 1rem;
+    right: 4rem;
     z-index: 50000;
     width: 500px;
-}
-
-.sidebar-collapse .swh-search-navbar {
-    right: 4rem;
 }
 
 .swh-corner-ribbon {
@@ -819,7 +839,7 @@ div.d3-tooltip {
     text-align: center;
     letter-spacing: 1px;
     box-shadow: 0 0 3px rgb(0 0 0 / 30%);
-    top: 128px;
+    top: 28px;
     right: -50px;
     left: auto;
     transform: rotate(45deg);
@@ -832,8 +852,8 @@ div.d3-tooltip {
 
 @media screen and (max-width: 600px) {
     .swh-corner-ribbon {
-        top: 53px;
-        right: -65px;
+        top: 24px;
+        right: -55px;
     }
 }
 
@@ -852,10 +872,25 @@ div.d3-tooltip {
     font-family: monospace;
 }
 
-.swh-text-under-logo {
+.swh-text-under-logo, .swh-mirror-text-under-logo {
     position: absolute;
-    left: 16px;
     top: 45px;
+}
+
+.swh-text-under-logo {
+    left: 30px;
+}
+
+.swh-mirror-text-under-logo {
+    left: 33px;
+}
+
+.sidebar-collapse .swh-text-under-logo {
+    left: 15px;
+}
+
+.sidebar-collapse .swh-mirror-text-under-logo {
+    left: 17px;
 }
 
 .swh-mirror-partner-logo {
@@ -940,3 +975,4 @@ p a {
     width: 125px;
     height: 32px;
 }
+

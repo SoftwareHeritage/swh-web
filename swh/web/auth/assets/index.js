@@ -160,11 +160,11 @@ export function initProfilePage() {
           {
             render: (data, type, row) => {
               const html =
-                `<button class="btn btn-default"
+                `<button class="btn btn-secondary btn-sm"
                          onclick="swh.auth.applyTokenAction('display', ${row.id})">
                   Display token
                 </button>
-                <button class="btn btn-default"
+                <button class="btn btn-secondary btn-sm"
                         onclick="swh.auth.applyTokenAction('revoke', ${row.id})">
                   Revoke token
                 </button>`;

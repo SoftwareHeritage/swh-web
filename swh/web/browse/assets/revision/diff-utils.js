@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020  The Software Heritage developers
+ * Copyright (C) 2018-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -354,7 +354,7 @@ export async function computeDiff(diffUrl, diffId) {
   // add a button to force its computation
   if (data.diff_str.indexOf('Large diff') === 0) {
     $(`#${diffId}`)[0].innerHTML = data.diff_str +
-          `<br/><button class="btn btn-default btn-sm" type="button"
+          `<br/><button class="btn btn-secondary btn-sm" type="button"
            onclick="swh.revision.computeDiff('${diffUrl}&force=true', '${diffId}')">` +
            'Request diff</button>';
     setDiffVisible(diffId);
@@ -523,6 +523,7 @@ export async function computeDiff(diffUrl, diffId) {
     // hide the diff mode switch button in case of not generated diffs
     if (data.diff_str.indexOf('Diffs are not generated for non textual content') !== 0) {
       $(`#diff_${diffId} .diff-styles`).css('visibility', 'visible');
+      $(`#diff_${diffId} .diff-styles`).children().first().prop('checked', true);
     }
 
     setDiffVisible(diffId);
@@ -663,7 +664,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
   // callback when the 'Changes' tab is activated
-  $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', async e => {
+  $(document).on('shown.bs.tab', 'a[data-bs-toggle="tab"]', async e => {
     currentTabName = e.currentTarget.text.trim();
     if (currentTabName === 'Changes') {
       window.location.hash = changesUrlFragment;
@@ -723,7 +724,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
     if (revisionMessageBody.length > 0) {
       $('#swh-revision-message').addClass('in');
     } else {
-      $('#swh-collapse-revision-message').attr('data-toggle', '');
+      $('#swh-collapse-revision-message').attr('data-bs-toggle', '');
     }
 
     // callback when the user requests to scroll on a specific diff or back to top

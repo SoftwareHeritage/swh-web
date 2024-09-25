@@ -20,8 +20,9 @@ export async function populateModerationList() {
     .DataTable({
       ...dataTableCommonConfig,
       searching: true,
-      dom: '<<"d-flex justify-content-between align-items-center"f' +
-        '<"#list-exclude">l>rt<"bottom"ip>>',
+      dom: '<"row mb-2"<"col-sm-3"l><"col-sm-6"><"col-sm-3"f>>' +
+           '<"row"<"col-sm-12"tr>>' +
+           '<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
       ajax: {
         'url': Urls.add_forge_request_list_datatables()
       },

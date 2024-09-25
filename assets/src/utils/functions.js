@@ -88,9 +88,7 @@ export function htmlAlert(type, message, closable = false) {
   let extraClasses = '';
   if (closable) {
     closeButton =
-      `<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>`;
+      `<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
     extraClasses = 'alert-dismissible';
   }
   return `<div class="alert alert-${type} ${extraClasses}" role="alert">${message}${closeButton}</div>`;

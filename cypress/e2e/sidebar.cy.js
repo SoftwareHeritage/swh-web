@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -24,7 +24,7 @@ describe('Sidebar tests On Large Screen', function() {
       .should('have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('not.be.visible');
-    cy.get('.sidebar .nav-header')
+    cy.get('.app-sidebar .nav-header')
       .should('have.css', 'display', 'none');
     cy.get('.swh-push-menu')
       .should('have.attr', 'aria-expanded', 'false')
@@ -33,7 +33,7 @@ describe('Sidebar tests On Large Screen', function() {
       .should('not.have.class', 'sidebar-collapse')
       .get('.nav-link > p')
       .should('be.visible');
-    cy.get('.sidebar .nav-header')
+    cy.get('.app-sidebar .nav-header')
       .should('not.have.css', 'display', 'none');
     cy.get('.swh-push-menu')
       .should('have.attr', 'aria-expanded', 'true');
@@ -50,7 +50,7 @@ describe('Sidebar tests On Large Screen', function() {
       })
       .get('.swh-push-menu')
       .click()
-      .get('.swh-sidebar-expanded')
+      .get('.sidebar-open')
       .invoke('width')
       .then(openWidth => {
         assert.isBelow(collapseWidth, openWidth);
@@ -74,7 +74,7 @@ describe('Sidebar Tests on small screens', function() {
       .click()
       .get('.swh-sidebar')
       .should('be.visible')
-      .get('#sidebar-overlay')
+      .get('.sidebar-overlay')
       .click({force: true})
       .get('.swh-sidebar')
       .should('not.be.visible');

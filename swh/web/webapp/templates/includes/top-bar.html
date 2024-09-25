@@ -12,14 +12,14 @@ See top-level LICENSE file for more information
   <ul>
     <li class="swh-position-left">
       <div id="swh-full-width-switch-container"
-           class="custom-control custom-switch d-none d-lg-block d-xl-block"
+           class="form-check form-switch d-none d-lg-block d-xl-block"
            role="group"
            aria-label="Display options">
         <input type="checkbox"
-               class="custom-control-input"
+               class="form-check-input"
                id="swh-full-width-switch"
                onclick="swh.webapp.fullWidthToggled(event)" />
-        <label class="custom-control-label font-weight-normal"
+        <label class="form-check-label font-weight-normal pt-0"
                for="swh-full-width-switch">Full width</label>
       </div>
     </li>
@@ -37,7 +37,7 @@ See top-level LICENSE file for more information
       {% if "server_url" in status %}
         <a href="{{ status.server_url }}"
            target="_blank"
-           class="swh-current-status mr-3 d-none d-lg-inline-block d-xl-inline-block">
+           class="swh-current-status me-3 d-none d-lg-inline-block d-xl-inline-block">
           <span id="swh-current-status-description">Operational</span>
           <i class="swh-current-status-indicator green"></i>
         </a>

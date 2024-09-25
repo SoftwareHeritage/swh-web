@@ -386,7 +386,7 @@ def test_apidoc_input_output_doc(client):
     input_html_doc = textwrap.indent(
         (
             '<dl class="row">\n'
-            ' <dt class="col col-md-2 text-right">\n'
+            ' <dt class="col col-md-2 text-end">\n'
             "  array\n"
             " </dt>\n"
             ' <dd class="col col-md-9">\n'
@@ -396,14 +396,14 @@ def test_apidoc_input_output_doc(client):
             " </dd>\n"
             "</dl>\n"
         ),
-        " " * 7,
+        " " * 8,
     )
 
     if docutils.__version_info__ >= (0, 17):
         output_html_doc = textwrap.indent(
             (
                 '<dl class="row">\n'
-                ' <dt class="col col-md-2 text-right">\n'
+                ' <dt class="col col-md-2 text-end">\n'
                 "  object\n"
                 " </dt>\n"
                 ' <dd class="col col-md-9">\n'
@@ -442,13 +442,13 @@ def test_apidoc_input_output_doc(client):
                 " </dd>\n"
                 "</dl>\n"
             ),
-            " " * 7,
+            " " * 8,
         )
     else:
         output_html_doc = textwrap.indent(
             (
                 '<dl class="row">\n'
-                ' <dt class="col col-md-2 text-right">\n'
+                ' <dt class="col col-md-2 text-end">\n'
                 "  object\n"
                 " </dt>\n"
                 ' <dd class="col col-md-9">\n'
@@ -487,7 +487,7 @@ def test_apidoc_input_output_doc(client):
                 " </dd>\n"
                 "</dl>"
             ),
-            " " * 7,
+            " " * 8,
         )
 
     html = prettify_html(rv.content)
@@ -519,7 +519,7 @@ def test_apidoc_with_links(client):
     html = prettify_html(rv.content)
 
     endpoint_full_url = textwrap.indent(
-        "<p>\n http://testserver/api/1/post/endpoint/\n</p>", " " * 13
+        "<p>\n http://testserver/api/1/post/endpoint/\n</p>", " " * 14
     )
 
     first_link = textwrap.indent(
@@ -528,7 +528,7 @@ def test_apidoc_with_links(client):
             " /api/1/content/\n"
             "</a>"
         ),
-        " " * 10,
+        " " * 11,
     )
 
     second_link = textwrap.indent(
@@ -537,7 +537,7 @@ def test_apidoc_with_links(client):
             " /api/1/directory/\n"
             "</a>"
         ),
-        " " * 10,
+        " " * 11,
     )
 
     third_link = textwrap.indent(
@@ -547,7 +547,7 @@ def test_apidoc_with_links(client):
             " archive\n"
             "</a>"
         ),
-        " " * 10,
+        " " * 11,
     )
 
     assert endpoint_full_url in html
@@ -593,7 +593,7 @@ def test_apidoc_with_links_in_text(client):
                 " for testing.\n"
                 "</p>\n"
             ),
-            " " * 9,
+            " " * 10,
         )
         in html
     )

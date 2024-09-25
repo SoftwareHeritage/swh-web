@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -207,7 +207,7 @@ describe('SWHIDs Tests', function() {
       cy.get('.modal .swh-badge-html')
         .should('contain.text', `alt="Archived | ${origin.url}"`);
 
-      cy.get('.modal.show .close')
+      cy.get('.modal.show .btn-close')
         .click()
         .wait(500);
 
@@ -224,7 +224,7 @@ describe('SWHIDs Tests', function() {
       cy.get('.modal .swh-badge-html')
         .should('contain.text', `alt="Archived | ${td.objectSWHIDs[1]}"`);
 
-      cy.get('.modal.show .close')
+      cy.get('.modal.show .btn-close')
         .click()
         .wait(500);
 

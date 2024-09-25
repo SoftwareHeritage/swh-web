@@ -283,12 +283,12 @@ export function acceptOriginSaveRequest() {
 
 const rejectModalHtml = `
 <form id="swh-rejection-form">
-  <div class="form-group row">
+  <div class="row">
     <label for="swh-rejection-reason" class="col-4 col-form-label">
       Rejection reason:
     </label>
     <div class="col-8">
-      <select class="custom-select" id="swh-rejection-reason">
+      <select class="form-select" id="swh-rejection-reason">
         <option value="custom" selected>Custom</option>
         <option value="invalid-origin">Invalid origin</option>
         <option value="invalid-origin-type">Invalid origin type</option>
@@ -296,10 +296,10 @@ const rejectModalHtml = `
       </select>
     </div>
   </div>
-  <div class="form-group row">
+  <div class="row mt-3 mb-3">
     <textarea class="form-control" id="swh-rejection-text"></textarea>
   </div>
-  <button type="submit" class="btn btn-default float-right" id="swh-rejection-submit">
+  <button type="submit" class="btn btn-secondary float-end" id="swh-rejection-submit">
     Reject
   </button>
 </form>

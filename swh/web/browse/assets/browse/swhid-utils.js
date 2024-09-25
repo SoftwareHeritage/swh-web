@@ -9,11 +9,6 @@ import ClipboardJS from 'clipboard';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
 
-export function swhIdObjectTypeToggled(event) {
-  event.preventDefault();
-  $(event.target).tab('show');
-}
-
 function updateDisplayedSWHID(contextOptionCheckBox) {
   const swhIdElt = $(contextOptionCheckBox).closest('.swhid-ui').find('.swhid');
   const swhIdWithContext = $(contextOptionCheckBox).data('swhid-with-context');

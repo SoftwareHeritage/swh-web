@@ -114,7 +114,7 @@ const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
 
 const csvExportButton = `
 <a href="${Urls.admin_origin_save_requests_csv()}"
-   class="btn btn-default btn-sm swh-tr-link"
+   class="btn btn-secondary btn-sm swh-tr-link"
    role="button">
   <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
   CSV export
@@ -148,10 +148,10 @@ export function initOriginSave() {
         // see https://datatables.net/examples/advanced_init/dom_toolbar.html and the comments section
         // this option customizes datatables UI components by adding an extra checkbox above the table
         // while keeping bootstrap layout
-        dom: '<"row"<"col-sm-3"l><"col-sm-3 text-left user-requests-filter">' +
+        dom: '<"row mb-2"<"col-sm-3"l><"col-sm-3 text-start user-requests-filter">' +
              '<"col-sm-3 requests-csv-export"><"col-sm-3"f>>' +
              '<"row"<"col-sm-12"tr>>' +
-             '<"row"<"col-sm-5"i><"col-sm-7"p>>',
+             '<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
         fnInitComplete: function() {
           if (swh.webapp.isUserLoggedIn()) {
             $('div.user-requests-filter').html(userRequestsFilterCheckbox);
@@ -231,7 +231,7 @@ export function initOriginSave() {
             render: (data, type, row) => {
               if (row.save_request_status === 'accepted') {
                 const saveAgainButton =
-                  '<button class="btn btn-default btn-sm swh-save-origin-again" type="button" ' +
+                  '<button class="btn btn-secondary btn-sm swh-save-origin-again" type="button" ' +
                   `onclick="swh.save_code_now.fillSaveRequestFormAndScroll(` +
                   `'${row.visit_type}', '${row.origin_url}');">` +
                   '<i class="mdi mdi-camera mdi-fw" aria-hidden="true"></i>' +
@@ -463,18 +463,18 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
   event.stopPropagation();
   const saveRequestTaskInfoUrl = Urls.origin_save_task_info(saveRequestId);
   // close popover when clicking again on the info icon
-  if ($(event.target).data('bs.popover')) {
+  if ($(event.target).data('has.popover')) {
+    $(event.target).data('has.popover', false);
     $(event.target).popover('dispose');
     return;
   }
   $('.swh-save-request-info').popover('dispose');
+  $(event.target).data('has.popover', true);
   $(event.target).popover({
     animation: false,
     boundary: 'viewport',
     container: 'body',
-    title: 'Save request task information ' +
-             '<i style="cursor: pointer; position: absolute; right: 1rem;" ' +
-             `class="mdi mdi-close swh-save-request-info-close"></i>`,
+    title: 'Save request task information',
     content: `<div class="swh-popover swh-save-request-info-popover">
                   <div class="text-center">
                     <img src=${swhSpinnerSrc}></img>
@@ -484,13 +484,6 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
     html: true,
     placement: 'left',
     sanitizeFn: swh.webapp.filterXSS
-  });
-
-  $(event.target).on('shown.bs.popover', function() {
-    const popoverId = $(this).attr('aria-describedby');
-    $(`#${popoverId} .mdi-close`).click(() => {
-      $(this).popover('dispose');
-    });
   });
 
   $(event.target).popover('show');

@@ -228,8 +228,8 @@ describe('Test add forge now request update', function() {
     cy.wait('@forgeRequestUpdate');
     cy.get('#userMessage')
       .should('contain', 'The request status has been updated')
-      .should('not.have.class', 'badge-danger')
-      .should('have.class', 'badge-success');
+      .should('not.have.class', 'text-bg-danger')
+      .should('have.class', 'text-bg-success');
   });
 
   it('should update the dashboard after submit', function() {
@@ -305,7 +305,7 @@ describe('Test add forge now request update', function() {
     cy.wait('@updateFailedRequest');
     cy.get('#userMessage')
       .should('contain', 'Sorry; Updating the request failed')
-      .should('have.class', 'badge-danger')
-      .should('not.have.class', 'badge-success');
+      .should('have.class', 'text-bg-danger')
+      .should('not.have.class', 'text-bg-success');
   });
 });

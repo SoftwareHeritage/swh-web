@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2022  The Software Heritage developers
+ * Copyright (C) 2020-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -20,7 +20,7 @@ describe('Test moderation deposit Login/logout', function() {
 
   it('should not display deposit moderation link in sidebar when anonymous', function() {
     cy.visit(depositModerationUrl);
-    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${depositModerationUrl}"]`)
       .should('not.exist');
   });
 
@@ -28,7 +28,7 @@ describe('Test moderation deposit Login/logout', function() {
     cy.userLogin();
     cy.visit(depositModerationUrl);
 
-    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${depositModerationUrl}"]`)
       .should('not.exist');
 
   });
@@ -37,7 +37,7 @@ describe('Test moderation deposit Login/logout', function() {
     cy.depositLogin();
     cy.visit(depositModerationUrl);
 
-    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${depositModerationUrl}"]`)
       .should('exist');
   });
 
@@ -45,7 +45,7 @@ describe('Test moderation deposit Login/logout', function() {
     cy.adminLogin();
     cy.visit(depositModerationUrl);
 
-    cy.get(`.sidebar a[href="${depositModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${depositModerationUrl}"]`)
       .should('exist');
   });
 
@@ -188,7 +188,7 @@ describe('Test admin deposit page', function() {
           cy.get('#swh-web-modal-html code.xml').should('be.visible');
 
           // Dismiss the modal
-          cy.wait(500).get('#swh-web-modal-html .close').click();
+          cy.wait(500).get('#swh-web-modal-html .btn-close').click();
           cy.get('#swh-web-modal-html code.xml').should('not.be.visible');
         } else {
           cy.get('button.metadata', {withinSubject: row}).should('not.exist');

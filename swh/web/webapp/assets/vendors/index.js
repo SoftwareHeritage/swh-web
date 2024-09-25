@@ -16,20 +16,21 @@ import './elementsfrompoint-polyfill';
 
 // jquery and bootstrap
 import 'jquery';
-import 'bootstrap-loader/lib/bootstrap.loader?configFilePath=../../../assets/config/.bootstraprc!bootstrap-loader/no-op.js';
+import 'bootstrap';
+import './bootstrap.scss';
 
 // admin-lte scripts
-import 'admin-lte';
+import 'admin-lte/dist/js/adminlte';
 
 // js-cookie
 import 'js-cookie';
 
 // datatables and extensions
 import dataTable from 'datatables.net';
-import 'datatables.net-bs4';
-import 'datatables.net-fixedheader-bs4';
-import 'datatables.net-bs4/css/dataTables.bootstrap4.css';
-import 'datatables.net-fixedheader-bs4/css/fixedHeader.bootstrap4.css';
+import 'datatables.net-bs5';
+import 'datatables.net-fixedheader-bs5';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.css';
+import 'datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.css';
 import './datatables.css';
 
 // chosen-js
@@ -43,9 +44,6 @@ import '@mdi/font/css/materialdesignicons.css';
 
 // monitoring
 import '@sentry/browser';
-
-// fix js error on homepage due to admin-lte 3.2
-localStorage.setItem('AdminLTE:IFrame:Options', JSON.stringify({}));
 
 // ensure datatables jquery plugin is properly initialized
 $.fn.dataTable = dataTable;

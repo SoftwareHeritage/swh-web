@@ -1,0 +1,203 @@
+{% comment %}
+Copyright (C) 2024  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load static %}
+
+<aside class="swh-sidebar app-sidebar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}app-sidebar-banner{% endif %} sidebar-light-primary shadow-lg"
+       aria-label="Sidebar">
+  <div class="sidebar-brand">
+    <a href="{% url 'swh-web-homepage' %}" class="brand-link">
+      {% if not SWH_MIRROR_CONFIG %}
+        <img class="brand-image"
+             src="{% static 'img/swh-logo.png' %}"
+             alt="swh logo" />
+      {% else %}
+        <img class="brand-image"
+             src="{% static 'img/swh-mirror.png' %}"
+             alt="swh logo" />
+      {% endif %}
+      <div class="brand-text sitename">
+        <span class="first-word">Software</span>
+        <span class="second-word">Heritage</span>
+      </div>
+    </a>
+    <div class="swh-words-logo">
+      <div class="swh-words-logo-swh">
+        <span class="first-word">Software</span>
+        <br />
+        <span class="second-word">Heritage</span>
+      </div>
+      {% if not SWH_MIRROR_CONFIG %}
+        <span class="swh-text-under-logo">Archive</span>
+      {% else %}
+        <span class="swh-mirror-text-under-logo">Mirror</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sidebar-wrapper">
+    <h6 class="nav-header">Features</h6>
+    <nav class="mt-2" aria-label="Features">
+      <ul class="nav sidebar-menu flex-column"
+          data-lte-toggle="treeview"
+          role="menu"
+          data-accordion="false">
+        <li class="nav-item swh-menu-item swh-search-item"
+            title="Search archived software"
+            role="menuitem"
+            tabindex="0">
+          <a href="{% url 'browse-search' %}" class="nav-link swh-search-link">
+            <i class="nav-icon mdi mdi-24px mdi-magnify"></i>
+            <p>Search</p>
+          </a>
+        </li>
+        {% if "swh.web.vault" in SWH_DJANGO_APPS %}
+          <li class="nav-item swh-menu-item swh-vault-item"
+              title="Download archived software from the Vault"
+              role="menuitem">
+            <a href="{% url 'vault' %}" class="nav-link swh-vault-link">
+              <i class="nav-icon mdi mdi-24px mdi-download"></i>
+              <p>Downloads</p>
+            </a>
+          </li>
+        {% endif %}
+        {% if "swh.web.save_code_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
+          <li class="nav-item swh-menu-item swh-origin-save-item"
+              title="Request the saving of a software origin into the archive"
+              role="menuitem">
+            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
+              <a class="nav-link swh-origin-save-link" href="{% url 'origin-save' %}">
+                <i class="nav-icon mdi mdi-24px mdi-camera"></i>
+                <p>Save code now</p>
+              </a>
+            {% elif SWH_MIRROR_CONFIG %}
+              <a class="nav-link swh-origin-save-link"
+                 href="https://archive.softwareheritage.org/save/"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                <i class="nav-icon mdi mdi-24px mdi-camera"></i>
+                <p>Save code now</p>
+                <i class="nav-icon mdi mdi-open-in-new"></i>
+              </a>
+            {% endif %}
+          </li>
+        {% endif %}
+        {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}
+          <li class="nav-item swh-menu-item swh-add-forge-now-item"
+              title="Request adding a new forge listing"
+              role="menuitem">
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+              <a href="{% url 'forge-add-create' %}"
+                 class="nav-link swh-add-forge-now-link">
+                <i class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                <p>Add forge now</p>
+              </a>
+            {% elif SWH_MIRROR_CONFIG %}
+              <a href="https://archive.softwareheritage.org/add-forge/request/create/"
+                 class="nav-link swh-add-forge-now-link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                <i class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                <p>Add forge now</p>
+                <i class="nav-icon mdi mdi-open-in-new"></i>
+              </a>
+            {% endif %}
+          </li>
+        {% endif %}
+        <li class="nav-item swh-menu-item swh-help-item"
+            title="How to browse the archive ?"
+            role="menuitem">
+          <a href="#"
+             class="nav-link swh-help-link"
+             onclick="swh.guided_tour.guidedTourButtonClick(event)">
+            <i class="nav-icon mdi mdi-24px mdi-help-circle"></i>
+            <p>Help</p>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    {% if user.is_authenticated %}
+      <h6 class="nav-header">Administration</h6>
+      <nav class="mt-2" aria-label="Administration">
+        <ul class="nav sidebar-menu flex-column"
+            data-widget="treeview"
+            role="menu"
+            data-accordion="false">
+          {% if "swh.web.admin" in SWH_DJANGO_APPS and user.is_staff %}
+            <li class="nav-item swh-admin-menu-item swh-origin-manage-item"
+                title="Users administration"
+                role="menuitem">
+              <a href="{% if oidc_enabled %}{{ keycloak.server_url }}admin/master/console/#/realms/{{ keycloak.realm_name }}/users{% else %}{% url 'admin:index' %}auth/user{% endif %}"
+                 class="nav-link swh-admin-manage-link"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                <i class="nav-icon mdi mdi-24px mdi-account-cog"></i>
+                <p>Users & permissions</p>
+              </a>
+            </li>
+          {% endif %}
+          {% if not SWH_MIRROR_CONFIG %}
+            {% if "swh.web.save_code_now" in SWH_DJANGO_APPS and user.is_staff %}
+              <li class="nav-item swh-admin-menu-item swh-origin-save-admin-item"
+                  title="Save code now administration"
+                  role="menuitem">
+                <a href="{% url 'admin-origin-save-requests' %}"
+                   class="nav-link swh-origin-save-admin-link">
+                  {% if pending_save_code_now_requests %}
+                    <div class="nav-icon mdi-stack">
+                      <i class="mdi mdi-24px mdi-camera"></i>
+                      <i class="mdi mdi-18px mdi-bell swh-notification-icon"></i>
+                    </div>
+                  {% else %}
+                    <i class="nav-icon mdi mdi-24px mdi-camera"></i>
+                  {% endif %}
+                  <p>Save code now</p>
+                </a>
+              </li>
+            {% endif %}
+            {% if "swh.web.add_forge_now" in SWH_DJANGO_APPS %}
+              {% if user.is_staff or ADD_FORGE_MODERATOR_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-admin-menu-item swh-add-forge-now-moderation-item"
+                    title="Add forge now moderation"
+                    role="menuitem">
+                  <a href="{% url 'add-forge-now-requests-moderation' %}"
+                     class="nav-link swh-add-forge-now-moderation-link">
+                    <i class="nav-icon mdi mdi-24px mdi-anvil"></i>
+                    <p>Add forge now</p>
+                  </a>
+                </li>
+              {% endif %}
+            {% endif %}
+            {% if "swh.web.deposit" in SWH_DJANGO_APPS %}
+              {% if user.is_staff or ADMIN_LIST_DEPOSIT_PERMISSION in user.get_all_permissions %}
+                <li class="nav-item swh-admin-menu-item swh-deposit-admin-item"
+                    title="Deposit administration"
+                    role="menuitem">
+                  <a href="{% url 'admin-deposit' %}"
+                     class="nav-link swh-deposit-admin-link">
+                    <i class="nav-icon mdi mdi-24px mdi-folder-upload"></i>
+                    <p>Deposit</p>
+                  </a>
+                </li>
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          {% if "swh.web.mailmap" in SWH_DJANGO_APPS and MAILMAP_ADMIN_PERMISSION in user.get_all_permissions %}
+            <li class="nav-item swh-admin-menu-item swh-mailmap-admin-item"
+                title="Mailmap administration"
+                role="menuitem">
+              <a href="{% url 'admin-mailmap' %}"
+                 class="nav-link swh-mailmap-admin-link">
+                <i class="nav-icon mdi mdi-24px mdi-email"></i>
+                <p>Mailmap</p>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+</aside>

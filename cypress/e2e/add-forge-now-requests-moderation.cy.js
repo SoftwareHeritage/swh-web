@@ -43,7 +43,7 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
 
   it('should not display moderation link in sidebar when anonymous', function() {
     cy.visit(this.addForgeModerationUrl);
-    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('not.exist');
   });
 
@@ -51,7 +51,7 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
     cy.userLogin();
     cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('not.exist');
 
   });
@@ -60,7 +60,7 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
     cy.addForgeModeratorLogin();
     cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('exist');
   });
 
@@ -68,7 +68,7 @@ describe('Test "Add Forge Now" moderation Login/logout', function() {
     cy.adminLogin();
     cy.visit(this.addForgeModerationUrl);
 
-    cy.get(`.sidebar a[href="${this.addForgeModerationUrl}"]`)
+    cy.get(`.app-sidebar a[href="${this.addForgeModerationUrl}"]`)
       .should('exist');
   });
 });

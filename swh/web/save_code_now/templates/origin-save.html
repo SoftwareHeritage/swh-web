@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2023  The Software Heritage developers
+Copyright (C) 2018-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -27,14 +27,14 @@ See top-level LICENSE file for more information
     You can contribute to extend the content of the Software Heritage archive by submitting an origin
     save request. To do so, fill the required info in the form below:
   </p>
-  <form id="swh-save-origin-form" class="needs-validation" novalidate>
+  <form id="swh-save-origin-form" class="needs-validation mb-3" novalidate>
     {% csrf_token %}
-    <div class="form-row">
+    <div class="row gx-3">
       <div class="col-md-1"></div>
-      <div class="form-group col-md-2">
-        <label for="swh-input-visit-type">Origin type</label>
+      <div class="col-md-1">
+        <label for="swh-input-visit-type" class="form-label">Origin type</label>
         <select id="swh-input-visit-type"
-                class="form-control"
+                class="form-select form-control"
                 required
                 onchange="swh.save_code_now.maybeRequireExtraInputs();">
           {% for visit_type in visit_types %}
@@ -43,8 +43,8 @@ See top-level LICENSE file for more information
         </select>
         <div class="invalid-feedback">The origin type must be specified</div>
       </div>
-      <div class="form-group col-md-6">
-        <label for="swh-input-origin-url">Origin url</label>
+      <div class="col-md-5">
+        <label for="swh-input-origin-url" class="form-label">Origin url</label>
         <input type="text"
                class="form-control"
                id="swh-input-origin-url"
@@ -56,17 +56,16 @@ See top-level LICENSE file for more information
         </div>
       </div>
       <div class="col-md-2">
-        <div class="form-group">
-          <label for="swh-input-origin-save-submit">&#8203;</label>
-          <button type="submit"
-                  id="swh-input-origin-save-submit"
-                  class="btn btn-default btn-block">Submit</button>
-        </div>
+        <label for="swh-input-origin-save-submit" class="form-label">&#8203;</label>
+        <button type="submit"
+                id="swh-input-origin-save-submit"
+                class="btn btn-secondary btn-block form-control">Submit</button>
       </div>
+      <div class="col-md-1"></div>
     </div>
     <!-- extra help text for the 'archives' type, hidden by default -->
     <p id="swh-save-origin-archives-help"
-       class="swh-save-origin-archives-form"
+       class="swh-save-origin-archives-form mt-3"
        style="display: none">
       The <code>archives</code> visit type enables to save multiple source code archive files (*.tar.gz, *.zip)
       under a same software origin.

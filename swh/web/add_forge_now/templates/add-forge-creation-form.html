@@ -1,7 +1,7 @@
 {% extends "./add-forge-common.html" %}
 
 {% comment %}
-Copyright (C) 2022-2023  The Software Heritage developers
+Copyright (C) 2022-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -22,10 +22,10 @@ See top-level LICENSE file for more information
             id="requestCreateForm"
             class="collapse show">
         {% csrf_token %}
-        <div class="form-row">
-          <div class="form-group col-md-5">
-            <label for="swh-input-forge-type" class="swh-required-label">Forge type</label>
-            <select class="form-control"
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label for="swh-input-forge-type" class="form-label swh-required-label">Forge type</label>
+            <select class="form-select form-control"
                     id="swh-input-forge-type"
                     name="forge_type"
                     autofocus>
@@ -35,72 +35,74 @@ See top-level LICENSE file for more information
                 </option>
               {% endfor %}
             </select>
-            <small class="form-text text-muted">Supported forge types in software archive.</small>
+            <small class="form-text text-black-50">Supported forge types in software archive.</small>
           </div>
-          <div class="form-group col-md-7">
-            <label for="swh-input-forge-url" class="swh-required-label">Forge URL</label>
+          <div class="col-md-7">
+            <label for="swh-input-forge-url" class="form-label swh-required-label">Forge URL</label>
             <input type="text"
                    class="form-control"
                    id="swh-input-forge-url"
                    name="forge_url"
                    oninput="swh.add_forge_now.validateForgeUrl(this)"
                    required />
-            <small class="form-text text-muted">Remote URL of the forge.</small>
+            <small class="form-text text-black-50">Remote URL of the forge.</small>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col-md-5">
-            <label for="swh-input-forge-contact-name" class="swh-required-label">Forge contact name</label>
+        <div class="row g-3 mt-1">
+          <div class="col-md-5">
+            <label for="swh-input-forge-contact-name"
+                   class="form-label swh-required-label">Forge contact name</label>
             <input type="text"
                    class="form-control"
                    name="forge_contact_name"
                    id="swh-input-forge-contact-name"
                    required />
-            <small class="form-text text-muted">Name of the forge administrator.</small>
+            <small class="form-text text-black-50">Name of the forge administrator.</small>
           </div>
-          <div class="form-group col-md-7">
-            <label for="swh-input-forge-contact-email" class="swh-required-label">Forge contact email</label>
+          <div class="col-md-7">
+            <label for="swh-input-forge-contact-email"
+                   class="form-label swh-required-label">Forge contact email</label>
             <input type="email"
                    class="form-control"
                    name="forge_contact_email"
                    id="swh-input-forge-contact-email"
                    required />
-            <small class="form-text text-muted">
+            <small class="form-text text-black-50">
               Email of the forge administrator. The given email address will not be used
               for any purpose outside the “add forge now” process.
             </small>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group form-check">
+        <div class="row mt-3">
+          <div class="form-check">
             <input class="form-check-input"
                    type="checkbox"
                    id="swh-input-consent-check"
                    name="submitter_forward_username" />
-            <label for="swh-input-consent-check">
+            <label class="form-check-label" for="swh-input-consent-check">
               I consent to add my username in the communication with the forge.
             </label>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group col-md-12">
-            <label for="swh-input-forge-comment">Comment</label>
+        <div class="row mt-3">
+          <div class="col-md-12">
+            <label class="form-label" for="swh-input-forge-comment">Comment</label>
             {% spaceless %}
               <textarea class="form-control" id="swh-input-forge-comment" name="forge_contact_comment" rows="3">
               </textarea>
             {% endspaceless %}
-            <small class="form-text text-muted">Optionally, leave a comment to the moderator regarding your request.</small>
+            <small class="form-text text-black-50">Optionally, leave a comment to the moderator regarding your request.</small>
           </div>
         </div>
-        <div class="form-row">
+        <div class="row">
           <div class="col-md-12">
             <input id="swh-input-form-submit"
                    type="submit"
                    value="Submit Add Request"
-                   class="btn btn-default float-right" />
+                   class="btn btn-secondary float-end" />
           </div>
         </div>
-        <div class="form-row">
+        <div class="row">
           <div class="col-md-12">
             <h3 class="text-center">
               <span id="userMessage" class="badge"></span>

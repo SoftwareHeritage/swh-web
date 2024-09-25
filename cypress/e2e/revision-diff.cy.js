@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2024  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -45,11 +45,11 @@ describe('Test Revision View', function() {
   it('should add/remove #swh-revision-changes url fragment when switching tab', function() {
     const url = this.Urls.browse_revision(revision) + `?origin=${origin}`;
     cy.visit(url);
-    cy.get('a[data-toggle="tab"]')
+    cy.get('a[data-bs-toggle="tab"]')
       .contains('Changes')
       .click();
     cy.hash().should('be.equal', '#swh-revision-changes');
-    cy.get('a[data-toggle="tab"]')
+    cy.get('a[data-bs-toggle="tab"]')
       .contains('Files')
       .click();
     cy.hash().should('be.equal', '');
@@ -75,7 +75,7 @@ describe('Test Diffs View', function() {
           diffData = res.body;
         });
     });
-    cy.get('a[data-toggle="tab"]')
+    cy.get('a[data-bs-toggle="tab"]')
       .contains('Changes')
       .click();
   });
@@ -477,7 +477,7 @@ describe('Test Diffs View', function() {
   it('should highlight diff lines properly when a content is browsed in the Files tab', function() {
     const url = this.Urls.browse_revision(revision) + `?origin=${origin}&path=README.md`;
     cy.visit(url);
-    cy.get('a[data-toggle="tab"]')
+    cy.get('a[data-bs-toggle="tab"]')
       .contains('Changes')
       .click();
     const diffHighlightingData = diffsHighlightingData['unified'];

@@ -48,7 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
   </head>
   <body style="padding-bottom: 0;">
     <div class="wrapper" style="margin-left: 0;" data-iframe-size>
-      <main class="content">
+      <main class="content link-opacity-75">
         <div id="swh-coverage-content" class="container-fluid">
           <p>
             A significant amount of source code has already been ingested in the Software Heritage
@@ -89,7 +89,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                     </a>
                     <div class="card-header swh-coverage-header">
                       <a class="{% if not focus %}collapsed{% endif %} d-block"
-                         data-toggle="collapse"
+                         data-bs-toggle="collapse"
                          href="#swh-coverage-info-{{ origins.type.lower|cut:' ' }}"
                          aria-expanded="true"
                          aria-controls="swh-coverage-info-{{ origins.type.lower|cut:' ' }}"

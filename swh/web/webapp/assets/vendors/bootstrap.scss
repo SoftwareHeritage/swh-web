@@ -1,0 +1,19 @@
+/**
+ * Copyright (C) 2024  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+@import "swh-custom";
+@import "~admin-lte/src/scss/adminlte";
+
+// define button style similar to the default one from adminlte 3.x
+// that was previously used.
+.btn-secondary {
+  @include button-variant($background: $secondary,
+                          $border: #ddd,
+                          $color: #2b2b2b,
+                          $hover-background: #e9ecef);
+  --bs-btn-focus-box-shadow: 0 0 0 #{$btn-focus-width} rgba(226, 0, 38, .25);
+}

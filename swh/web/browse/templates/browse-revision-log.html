@@ -1,7 +1,7 @@
 {% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -25,50 +25,47 @@ See top-level LICENSE file for more information
     <hr class="mt-0 mb-0" />
     <form class="text-center">
       sort by:
-      <div class="custom-control custom-radio custom-control-inline"
+      <div class="form-check form-check-inline"
            title="reverse chronological order">
-        <input class="custom-control-input"
+        <input class="form-check-input"
                type="radio"
                name="revs-ordering"
                id="revs-ordering-date"
                value=""
                onclick="swh.revision.revsOrderingTypeClicked(event)"
                checked />
-        <label class="custom-control-label font-weight-normal"
-               for="revs-ordering-date">revision date</label>
+        <label class="form-check-label font-weight-normal" for="revs-ordering-date">revision date</label>
       </div>
-      <div class="custom-control custom-radio custom-control-inline"
+      <div class="form-check form-check-inline"
            title="pre-order, depth-first visit on the revision graph">
-        <input class="custom-control-input"
+        <input class="form-check-input"
                type="radio"
                name="revs-ordering"
                id="revs-ordering-dfs"
                value="dfs"
                onclick="swh.revision.revsOrderingTypeClicked(event)" />
-        <label class="custom-control-label font-weight-normal"
-               for="revs-ordering-dfs">DFS</label>
+        <label class="form-check-label font-weight-normal" for="revs-ordering-dfs">DFS</label>
       </div>
-      <div class="custom-control custom-radio custom-control-inline"
+      <div class="form-check form-check-inline"
            title="post-order, depth-first visit on the revision graph">
-        <input class="custom-control-input"
+        <input class="form-check-input"
                type="radio"
                name="revs-ordering"
                id="revs-ordering-dfs-post"
                value="dfs_post"
                onclick="swh.revision.revsOrderingTypeClicked(event)" />
-        <label class="custom-control-label font-weight-normal"
+        <label class="form-check-label font-weight-normal"
                for="revs-ordering-dfs-post">DFS post-ordering</label>
       </div>
-      <div class="custom-control custom-radio custom-control-inline"
+      <div class="form-check form-check-inline"
            title="breadth-first visit on the revision graph">
-        <input class="custom-control-input"
+        <input class="form-check-input"
                type="radio"
                name="revs-ordering"
                id="revs-ordering-bfs"
                value="bfs"
                onclick="swh.revision.revsOrderingTypeClicked(event)" />
-        <label class="custom-control-label font-weight-normal"
-               for="revs-ordering-bfs">BFS</label>
+        <label class="form-check-label font-weight-normal" for="revs-ordering-bfs">BFS</label>
       </div>
     </form>
     <div class="table-responsive mb-3">

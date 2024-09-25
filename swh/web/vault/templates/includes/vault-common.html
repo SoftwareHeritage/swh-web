@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2019-2023  The Software Heritage developers
+Copyright (C) 2019-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -16,18 +16,21 @@ See top-level LICENSE file for more information
     <div class="modal-content">
       <div class="modal-header">
         <h6 class="modal-title" id="vault-recook-object-modal-label">Download link has expired</h6>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>The requested archive is no longer available for download from the Software Heritage Vault.</p>
         <p>Do you want to cook it again ?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancel</button>
         <button type="button"
-                class="btn btn-default btn-sm"
+                class="btn btn-secondary btn-sm"
+                data-bs-dismiss="modal">Cancel</button>
+        <button type="button"
+                class="btn btn-secondary btn-sm"
                 onclick="swh.vault.recookObject()">Ok</button>
       </div>
     </div>

@@ -39,7 +39,7 @@ export function initDepositAdmin(username, isStaff) {
         // p: (p)agination
         // see https://datatables.net/examples/basic_init/dom.html
         dom: '<<"d-flex justify-content-between align-items-center"f' +
-             '<"#list-exclude">l>rt<"bottom"ip>>',
+             '<"#list-exclude">l>rt<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
         // div#list-exclude is a custom filter added next to dataTable
         // initialization below through js dom manipulation, see
         // https://datatables.net/examples/advanced_init/dom_toolbar.html
@@ -92,7 +92,7 @@ export function initDepositAdmin(username, isStaff) {
             render: (data, type, row) => {
               if (type === 'display') {
                 if (row.raw_metadata) {
-                  return `<button class="btn btn-default metadata">display</button>`;
+                  return `<button class="btn btn-secondary metadata">display</button>`;
                 }
               }
               return data;
@@ -138,19 +138,18 @@ export function initDepositAdmin(username, isStaff) {
       });
 
     // Some more customization is needed on the table
-    $('div#list-exclude').html(`<div id="swh-admin-deposit-list-exclude-wrapper">
-    <div id="swh-admin-deposit-list-exclude-div-wrapper" class="dataTables_filter">
-      <label>
-        Exclude:<input id="swh-admin-deposit-list-exclude-filter"
-                       type="search"
-                       value="check-deposit"
-                       class="form-control form-control-sm"
-                       placeholder="exclude-pattern" aria-controls="swh-admin-deposit-list">
-          </input>
-      </label>
-    </div>
-  </div>
-`);
+    $('div#list-exclude').html(`
+      <div id="swh-admin-deposit-list-exclude-div-wrapper" class="dataTables_filter">
+        <label for="swh-admin-deposit-list-exclude-filter">
+          Exclude:
+        </label>
+        <input id="swh-admin-deposit-list-exclude-filter"
+              type="search"
+              value="check-deposit"
+              class="form-control form-control-sm mb-2"
+              placeholder="exclude-pattern" aria-controls="swh-admin-deposit-list">
+        </input>
+      </div>`);
 
     // Show a modal when the "metadata" button is clicked
     $('#swh-admin-deposit-list tbody').on('click', 'tr button.metadata', function() {

@@ -8,7 +8,7 @@
 import AnchorJS from 'anchor-js';
 import './heading-anchors.css';
 
-export function addHeadingAnchors(parentSelector = '.content') {
+export function addHeadingAnchors(parentSelector = '.app-content') {
   $(function() {
     const anchors = new AnchorJS({
       class: 'swh-heading-anchor',

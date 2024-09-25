@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -8,9 +8,9 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if 'metadata' in swh_object_metadata and swh_object_metadata.metadata != '{}' %}
-  <button id="swh-metadata-toggler"
-          class="btn btn-default btn-sm swh-popover-toggler"
-          data-toggle="popover"
+  <button id="swh-metadata-bs-toggler"
+          class="btn btn-secondary btn-sm swh-popover-toggler"
+          data-bs-toggle="popover"
           data-popover-content="#swh-metadata-popover">
     <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
     {% if user.is_staff %}
@@ -29,9 +29,9 @@ See top-level LICENSE file for more information
 {% if user.is_staff or "swh.web.ui.metadata.display" in user.get_all_permissions %}
   {% if swhids_info %}
     <div class="btn-group">
-      <button class="btn btn-default btn-sm dropdown-toggle"
+      <button class="btn btn-secondary btn-sm dropdown-toggle"
               type="button"
-              data-toggle="dropdown">
+              data-bs-toggle="dropdown">
         <i class="mdi mdi-table mdi-fw" aria-hidden="true"></i>
         Extrinsic metadata
       </button>

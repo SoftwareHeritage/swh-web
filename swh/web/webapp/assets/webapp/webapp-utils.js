@@ -7,13 +7,8 @@
 
 import objectFitImages from 'object-fit-images';
 import {selectText} from 'utils/functions';
-import {BREAKPOINT_MD} from 'utils/constants';
 import Cookies from 'js-cookie';
 import iframeResize from '@iframe-resizer/parent';
-
-function ensureNoFooterOverflow() {
-  $('body').css('padding-bottom', $('footer').outerHeight() + 'px');
-}
 
 $(document).ready(() => {
   // redirect to last browse page if any when clicking on the 'Browse' entry
@@ -26,43 +21,26 @@ $(document).ready(() => {
     }
   });
 
-  const mainSideBar = $('.main-sidebar');
+  const mainSideBar = $('.app-sidebar');
+  const body = $('body');
 
   function updateSidebarState() {
-    const body = $('body');
     if (body.hasClass('sidebar-collapse') &&
         !mainSideBar.hasClass('swh-sidebar-collapsed')) {
-      mainSideBar.removeClass('swh-sidebar-expanded');
       mainSideBar.addClass('swh-sidebar-collapsed');
-      $('.swh-words-logo-swh').css('visibility', 'visible');
       Cookies.set('sidebar-state', 'collapsed');
       $('.swh-push-menu').attr('aria-expanded', 'false');
       $('.swh-push-menu').attr('aria-label', 'Expand sidebar');
-    } else if (!body.hasClass('sidebar-collapse') &&
-               !mainSideBar.hasClass('swh-sidebar-expanded')) {
+    } else if (!body.hasClass('sidebar-collapse')) {
       mainSideBar.removeClass('swh-sidebar-collapsed');
-      mainSideBar.addClass('swh-sidebar-expanded');
-      $('.swh-words-logo-swh').css('visibility', 'hidden');
       Cookies.set('sidebar-state', 'expanded');
       $('.swh-push-menu').attr('aria-expanded', 'true');
       $('.swh-push-menu').attr('aria-label', 'Collapse sidebar');
     }
-    // ensure correct sidebar state when loading a page
-    if (body.hasClass('hold-transition')) {
-      setTimeout(() => {
-        updateSidebarState();
-      });
-    }
   }
 
-  $('body').on('collapsed.lte.pushmenu', event => {
-    if ($('body').width() >= BREAKPOINT_MD) {
-      $('.swh-words-logo-swh').css('visibility', 'visible');
-    }
-  });
-
-  $('body').on('collapsed-done.lte.pushmenu', event => {
-    if ($('body').attr('class').indexOf('sidebar-closed') !== -1) {
+  $('.swh-push-menu').on('collapse.lte.push-menu', event => {
+    if (body.attr('class').indexOf('sidebar-closed') !== -1) {
       // do not display sidebar when closed but no longer visible,
       // typically when browser zoom level is >= 200%,
       // in order to make it non keyboard focusable
@@ -70,27 +48,16 @@ $(document).ready(() => {
     }
   });
 
-  $('body').on('shown.lte.pushmenu', event => {
-    $('.swh-words-logo-swh').css('visibility', 'hidden');
-    mainSideBar.css('display', 'block');
-  });
-
   // set sidebar state after collapse / expand animation
   mainSideBar.on('transitionend', evt => {
     updateSidebarState();
   });
 
-  updateSidebarState();
-
-  // ensure footer do not overflow main content for mobile devices
-  // or after resizing the browser window
-  ensureNoFooterOverflow();
-  $(window).resize(function() {
-    ensureNoFooterOverflow();
-    if ($('body').hasClass('sidebar-collapse') && $('body').width() >= BREAKPOINT_MD) {
-      $('.swh-words-logo-swh').css('visibility', 'visible');
-    }
+  // ensure correct sidebar state when loading a page
+  setTimeout(() => {
+    updateSidebarState();
   });
+
   // activate css polyfill 'object-fit: contain' in old browsers
   objectFitImages();
 
@@ -255,13 +222,14 @@ export function showModalHtml(title, html, width = '500px') {
 }
 
 export function addJumpToPagePopoverToDataTable(dataTableElt) {
-  const ellipsisButtonSelector = '.dt-paging-button.page-item.disabled:contains("…")';
+  const ellipsisButtonSelector = '.dt-paging-button.page-item:contains("…")';
   dataTableElt.on('draw.dt', function() {
     setTimeout(() => {
+      $(ellipsisButtonSelector).removeClass('disabled');
       $(ellipsisButtonSelector).css('cursor', 'pointer');
       $(ellipsisButtonSelector).attr('title', 'Jump to page');
       $(ellipsisButtonSelector).on('click', event => {
-        $(ellipsisButtonSelector).popover('hide');
+        $('.popover').remove();
         const pageInfo = dataTableElt.page.info();
         let content = '<select class="jump-to-page">';
         for (let i = 1; i <= pageInfo.pages; ++i) {
@@ -289,11 +257,11 @@ export function addJumpToPagePopoverToDataTable(dataTableElt) {
     }, 10);
   });
   dataTableElt.on('preXhr.dt', () => {
-    $(ellipsisButtonSelector).popover('hide');
+    $('.popover').remove();
   });
   $('body').on('click', e => {
     if ($(e.target).text() !== '…' && $(e.target).parents('.popover').length === 0) {
-      $(ellipsisButtonSelector).popover('hide');
+      $('.popover').remove();
     }
   });
 }

@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -11,9 +11,9 @@ See top-level LICENSE file for more information
   {% if snapshot_context %}
     {% if snapshot_context.branch or snapshot_context.release or snapshot_context.revision_id %}
       <div class="dropdown" id="swh-branches-releases-dd">
-        <button class="btn btn-block btn-default btn-sm dropdown-toggle"
+        <button class="btn btn-block btn-secondary btn-sm dropdown-toggle"
                 type="button"
-                data-toggle="dropdown">
+                data-bs-toggle="dropdown">
           {% if snapshot_context.branch %}
             {% if snapshot_context.branch_alias %}
               <i class="{{ swh_object_icons.alias }} mdi-fw" aria-hidden="true"></i>
@@ -36,10 +36,10 @@ See top-level LICENSE file for more information
         <ul class="scrollable-menu dropdown-menu swh-branches-releases">
           <ul class="nav nav-tabs">
             <li class="nav-item">
-              <a class="nav-link active swh-branches-switch" data-toggle="tab">Branches</a>
+              <a class="nav-link active swh-branches-switch" data-bs-toggle="tab">Branches</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link swh-releases-switch" data-toggle="tab">Releases</a>
+              <a class="nav-link swh-releases-switch" data-bs-toggle="tab">Releases</a>
             </li>
           </ul>
           <div class="tab-content">
@@ -116,10 +116,10 @@ See top-level LICENSE file for more information
     {% endif %}
   {% endif %}
   <div id="swh-breadcrumbs-container" class="flex-grow-1">{% include "./breadcrumbs.html" %}</div>
-  <div class="btn-group swh-actions-dropdown ml-auto">
+  <div class="btn-group swh-actions-dropdown ms-auto">
     {% if top_right_link %}
       <a href="{{ top_right_link.url | safe }}"
-         class="btn btn-default btn-sm swh-tr-link"
+         class="btn btn-secondary btn-sm swh-tr-link"
          role="button">
         {% if top_right_link.icon %}
           <i class="{{ top_right_link.icon }} mdi-fw" aria-hidden="true"></i>

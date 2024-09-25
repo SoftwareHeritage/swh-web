@@ -41,14 +41,13 @@ See top-level LICENSE file for more information
         Select below a type of object currently browsed in order to display its
         associated SWHID and permalink.
       </p>
-      <ul id="swhid-object-types" class="nav nav-pills ml-auto p-2">
+      <ul id="swhid-object-types" class="nav nav-pills ms-auto p-2">
         {% for swhid_info in swhids_info %}
           {% if forloop.first %}
             <li class="nav-item">
               <a class="nav-link active"
                  href="#swhid-tab-{{ swhid_info.object_type.name.lower }}"
-                 data-toggle="tab"
-                 onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                 data-bs-toggle="tab">
                 <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw"
                    aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
               </a>
@@ -57,8 +56,7 @@ See top-level LICENSE file for more information
             <li class="nav-item">
               <a class="nav-link"
                  href="#swhid-tab-{{ swhid_info.object_type.name.lower }}"
-                 data-toggle="tab"
-                 onclick="swh.browse.swhIdObjectTypeToggled(event)">
+                 data-bs-toggle="tab">
                 <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw"
                    aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
               </a>
@@ -86,15 +84,15 @@ See top-level LICENSE file for more information
                                onclick="swh.badges.showBadgeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())"
                                title="Click to display badge integration info" />
                         {% endif %}
+                        {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
+                          <a class="ms-auto float-end"
+                             style="cursor: pointer"
+                             role="button"
+                             onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
+                            Iframe embedding
+                          </a>
+                        {% endif %}
                       </div>
-                    {% endif %}
-                    {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
-                      <a class="ml-auto float-right"
-                         style="cursor: pointer"
-                         role="button"
-                         onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
-                        Iframe embedding
-                      </a>
                     {% endif %}
                   </div>
                 {% endif %}
@@ -102,11 +100,11 @@ See top-level LICENSE file for more information
                   <pre><a class="swhid" target="_blank" rel="noopener noreferrer" id="{{ swhid_info.swhid }}" href="{{ swhid_info.swhid_url }}">{{ swhid_info.swhid }}</a></pre>
                 {% endif %}
                 {% if swhid_info.swhid_with_context is not None %}
-                  <div class="float-left">
+                  <div class="float-start">
                     <form id="swhid-options-{{ swhid_info.object_type.name.lower }}"
                           aria-label="Options for {{ swhid_info.object_type.name.lower }} SWHID">
-                      <div class="custom-control custom-checkbox swhid-option">
-                        <input class="custom-control-input swhid-context-option"
+                      <div class="form-check swhid-option">
+                        <input class="form-check-input swhid-context-option"
                                value="option-origin"
                                type="checkbox"
                                id="swhid-context-option-{{ swhid_info.object_type.name.lower }}"
@@ -114,7 +112,7 @@ See top-level LICENSE file for more information
                                data-swhid-with-context-url="{{ swhid_info.swhid_with_context_url }}"
                                onclick="swh.browse.swhIdContextOptionToggled(event)"
                                checked />
-                        <label class="custom-control-label font-weight-normal"
+                        <label class="form-check-label font-weight-normal"
                                for="swhid-context-option-{{ swhid_info.object_type.name.lower }}">
                           Add contextual information
                         </label>
@@ -122,14 +120,14 @@ See top-level LICENSE file for more information
                     </form>
                   </div>
                 {% endif %}
-                <div id="swhid-copy-buttons" class="float-right">
+                <div id="swhid-copy-buttons" class="float-end">
                   <button type="button"
-                          class="btn btn-default btn-sm btn-swhid-copy"
+                          class="btn btn-secondary btn-sm btn-swhid-copy"
                           title="Copy SWHID to clipboard">
                     <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy identifier
                   </button>
                   <button type="button"
-                          class="btn btn-default btn-sm btn-swhid-url-copy"
+                          class="btn btn-secondary btn-sm btn-swhid-url-copy"
                           title="Copy url resolving the SWHID to clipboard">
                     <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy permalink
                   </button>

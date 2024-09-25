@@ -139,7 +139,7 @@ export function initMailmapUI() {
            {
              render: (data, type, row) => {
                const html =
-                `<button class="btn btn-default"
+                `<button class="btn btn-secondary"
                          onclick="swh.mailmap.updateMailmap(${row.id})">
                   Edit
                 </button>`;

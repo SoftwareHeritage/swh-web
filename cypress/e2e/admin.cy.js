@@ -36,10 +36,10 @@ describe('Test Admin Login/logout', function() {
     cy.adminLogin();
     cy.visit(this.url);
 
-    cy.get(`.sidebar a[href="${this.Urls.admin_origin_save_requests()}"]`)
+    cy.get(`.app-sidebar a[href="${this.Urls.admin_origin_save_requests()}"]`)
       .should('be.visible');
 
-    cy.get(`.sidebar a[href="${this.Urls.admin_deposit()}"]`)
+    cy.get(`.app-sidebar a[href="${this.Urls.admin_deposit()}"]`)
       .should('be.visible');
 
     logout();
@@ -226,8 +226,9 @@ describe('Test Admin Origin Save', function() {
     cy.get('#swh-save-requests-rejected-tab')
       .click();
 
-    cy.contains('#swh-origin-save-rejected-requests', encodeURI(originUrl))
-      .click();
+    cy.contains('#swh-origin-save-rejected-requests tr', encodeURI(originUrl))
+      .click()
+      .should('have.class', 'selected');
 
     cy.get('#swh-remove-rejected-save-origin-request')
       .click();
@@ -257,8 +258,9 @@ describe('Test Admin Origin Save', function() {
     cy.visit(this.Urls.admin_origin_save_requests());
 
     // admin rejects the save request and adds a rejection note
-    cy.contains('#swh-origin-save-pending-requests', originUrl)
-      .click();
+    cy.contains('#swh-origin-save-pending-requests tr', originUrl)
+      .click()
+      .should('have.class', 'selected');
 
     cy.get('#swh-reject-save-origin-request')
       .click();
@@ -323,8 +325,9 @@ describe('Test Admin Origin Save', function() {
     cy.visit(this.Urls.admin_origin_save_requests());
 
     // admin rejects the save request
-    cy.contains('#swh-origin-save-pending-requests', encodeURI(originUrl))
-      .click();
+    cy.contains('#swh-origin-save-pending-requests tr', encodeURI(originUrl))
+      .click()
+      .should('have.class', 'selected');
 
     cy.get('#swh-reject-save-origin-request')
       .click();

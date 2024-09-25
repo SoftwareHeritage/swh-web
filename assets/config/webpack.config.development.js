@@ -88,13 +88,13 @@ const cssLoaders = [
   {
     loader: 'css-loader',
     options: {
-      sourceMap: !isDevServer
+      sourceMap: true
     }
   },
   {
     loader: 'postcss-loader',
     options: {
-      sourceMap: !isDevServer,
+      sourceMap: true,
       postcssOptions: {
         plugins: [
           // automatically add vendor prefixes to css rules
@@ -283,9 +283,19 @@ module.exports = {
         test: /\.scss$/,
         use: cssLoaders.concat([
           {
+            loader: 'resolve-url-loader',
+            options: {
+              sourceMap: true
+            }
+          },
+          {
             loader: 'sass-loader',
             options: {
-              sourceMap: !isDevServer
+              sourceMap: true,
+              implementation: require('sass'),
+              sassOptions: {
+                quietDeps: true
+              }
             }
           }
         ])
@@ -373,21 +383,6 @@ module.exports = {
     new webpack.DefinePlugin({
       __STATIC__: JSON.stringify(publicPath)
     }),
-    // needed in order to use bootstrap 4.x
-    new webpack.ProvidePlugin({
-      Popper: ['popper.js', 'default'],
-      Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
-      Button: 'exports-loader?Button!bootstrap/js/dist/button',
-      Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',
-      Collapse: 'exports-loader?Collapse!bootstrap/js/dist/collapse',
-      Dropdown: 'exports-loader?Dropdown!bootstrap/js/dist/dropdown',
-      Modal: 'exports-loader?Modal!bootstrap/js/dist/modal',
-      Popover: 'exports-loader?Popover!bootstrap/js/dist/popover',
-      Scrollspy: 'exports-loader?Scrollspy!bootstrap/js/dist/scrollspy',
-      Tab: 'exports-loader?Tab!bootstrap/js/dist/tab',
-      Tooltip: 'exports-loader?Tooltip!bootstrap/js/dist/tooltip',
-      Util: 'exports-loader?Util!bootstrap/js/dist/util'
-    }),
     // needed in order to use pdf.js
     new webpack.IgnorePlugin({resourceRegExp: /^\.\/pdf.worker.js$/}),
     new CopyWebpackPlugin({
@@ -416,8 +411,7 @@ module.exports = {
     }),
     new GenerateWebLabelsPlugin({
       outputType: 'json',
-      exclude: ['mini-css-extract-plugin',
-                'bootstrap-loader'],
+      exclude: ['mini-css-extract-plugin'],
       srcReplace: {
         './node_modules/admin-lte/dist/js/adminlte.min.js':
         './node_modules/admin-lte/dist/js/adminlte.js'
@@ -507,7 +501,7 @@ module.exports = {
                       'build/**/*.css',
                       'build/**/*.scss',
                       'cypress/**/*.css',
-                      'assets/config/*.scss',
+                      'swh/web/**/*.scss',
                       'assets/src/thirdparty/**/*.css',
                       'docs/**/*.css',
                       '.cypress_cache/**/*.css']

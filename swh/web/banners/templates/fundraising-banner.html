@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2021-2023  The Software Heritage developers
+Copyright (C) 2021-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -21,7 +21,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2021-2023  The Software Heritage developers
+Copyright (C) 2021-2024  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -95,7 +95,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
           <img id="swh-fundraising-img"
                src="{% static 'img/swh-donor.png' %}"
                alt="Software Heritage fundraising" />
-          <div class="col-8 text-right align-middle pr-3">
+          <div class="col-8 text-end align-middle pe-3">
             <a target="_blank"
                rel="noopener noreferrer"
                id="swh-fundraising-text"
@@ -109,7 +109,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
               {% endif %}
             </a>
           </div>
-          <div class="col-2 text-right">
+          <div class="col-2 text-end">
             {% if nb_donations != -1 %}
               <div class="progress position-relative" title="{{ goal_percent }}%">
                 <div class="progress-bar"
@@ -130,11 +130,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
               </div>
             {% endif %}
           </div>
-          <div class="col-2 text-left pl-3">
+          <div class="col-2 text-start ps-3">
             <a target="_blank"
                rel="noopener noreferrer"
                id="swh-fundraising-text"
-               class="btn btn-lg btn-primary"
+               class="btn btn-lg "
                role="button"
                href="{{ donation_form_url }}">
               {% if lang == "en" %}
@@ -150,7 +150,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
         {% comment %} small screen layout {% endcomment %}
 
         <div class="row align-items-center d-xl-none">
-          <div class="col-6 text-right align-middle">
+          <div class="col-6 text-end align-middle">
             <a target="_blank"
                rel="noopener noreferrer"
                href="{{ donation_form_url }}">
@@ -166,7 +166,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
           <div class="col-6 text-center">
             <a target="_blank"
                rel="noopener noreferrer"
-               class="btn btn-lg btn-primary"
+               class="btn btn-lg "
                role="button"
                href="{{ donation_form_url }}">
               {% if lang == "en" %}

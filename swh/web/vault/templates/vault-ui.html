@@ -1,7 +1,7 @@
 {% extends "browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2023  The Software Heritage developers
+Copyright (C) 2017-2024  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -20,20 +20,20 @@ See top-level LICENSE file for more information
     Once a cooking task is finished, a link will be made available in order to
     download the associated archive.
   </p>
-  <button type="button" class="btn btn-default btn-sm" id="vault-remove-tasks">
-    Remove selected tasks
-  </button>
+  <button type="button"
+          class="btn btn-secondary btn-sm"
+          id="vault-remove-tasks">Remove selected tasks</button>
   <div class="table-responsive mt-3">
     <table class="table swh-table swh-table-striped swh-vault-table"
            id="vault-cooking-tasks">
       <thead>
         <tr>
           <th>
-            <div class="custom-control custom-checkbox">
+            <div class="form-check">
               <input type="checkbox"
-                     class="custom-control-input"
+                     class="form-check-input"
                      id="vault-tasks-toggle-selection" />
-              <label class="custom-control-label" for="vault-tasks-toggle-selection"></label>
+              <label class="form-check-label" for="vault-tasks-toggle-selection"></label>
             </div>
           </th>
           <th style="width: 300px">Origin</th>
