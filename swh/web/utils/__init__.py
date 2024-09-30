@@ -19,7 +19,6 @@ import docutils.utils
 from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
-import msgpack
 from pymemcache.exceptions import MemcacheServerError
 import requests
 from requests.auth import HTTPBasicAuth
@@ -504,7 +503,7 @@ def django_cache(
 
     def hash_object(obj: Any) -> str:
         return hashlib.md5(
-            msgpack.packb(obj, use_bin_type=True),
+            msgpack_dumps(obj, extra_encoders=extra_encoders),
             usedforsecurity=False,
         ).hexdigest()
 

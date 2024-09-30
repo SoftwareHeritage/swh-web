@@ -13,6 +13,7 @@ import os
 import re
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union
 
+import attr
 import yaml
 from yaml import YAMLError
 
@@ -28,7 +29,7 @@ from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_ali
 from swh.storage.interface import ListOrder, OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
-from swh.web.utils import converters, demangle_url, query
+from swh.web.utils import converters, demangle_url, django_cache, query
 from swh.web.utils.exc import BadInputExc, NotFoundExc
 from swh.web.utils.typing import (
     OriginInfo,
@@ -192,6 +193,10 @@ def lookup_content_license(q):
     return converters.from_swh(lic, hashess={"id"})
 
 
+@django_cache(
+    timeout=24 * 60 * 60,  # one day
+    extra_encoders=[(Origin, "origin", attr.asdict)],
+)
 def _origin_info(origin: Origin, with_visit_types: bool = True) -> OriginInfo:
     origin_dict = origin.to_dict()
     if with_visit_types:

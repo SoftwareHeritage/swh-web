@@ -217,16 +217,18 @@ def test_origin_visit_find_by_date(archive_data):
 
 
 @given(new_origin())
-def test_lookup_origin(archive_data, tests_data, new_origin):
+def test_lookup_origin(archive_data, mocker, new_origin):
     archive_data.origin_add([new_origin])
     visit_types = ["git", "git-checkout"]
-    tests_data["search"].origin_update(
-        [{"url": new_origin.url, "visit_types": visit_types}]
-    )
-
+    search_origin_get = mocker.patch.object(archive.search, "origin_get")
+    search_origin_get.return_value = {"url": new_origin.url, "visit_types": visit_types}
     actual_origin = archive.lookup_origin(new_origin.url)
     expected_origin = OriginInfo(url=new_origin.url, visit_types=visit_types)
     assert actual_origin == expected_origin
+
+    # check call to archive._origin_info was cached
+    archive.lookup_origin(new_origin.url)
+    search_origin_get.assert_called_once()
 
 
 def test_lookup_origin_snapshots(archive_data, origin_with_multiple_visits):
