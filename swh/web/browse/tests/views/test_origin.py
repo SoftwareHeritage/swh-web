@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2023  The Software Heritage developers
+# Copyright (C) 2017-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -1118,3 +1118,17 @@ def test_origin_browse_multiple_visit_types(client, origin_with_multiple_visit_t
         # check correct visit and snapshot are browsed
         assert_contains(resp, format_utc_iso_date(origin_visit["date"]))
         assert_contains(resp, "swh:1:snp:" + origin_visit["snapshot"])
+
+
+def test_citations_ui_activation(client, origin, config_updater):
+    browse_url = reverse(
+        "browse-origin-directory", query_params={"origin_url": origin["url"]}
+    )
+
+    config_updater({"activate_citations_ui": False})
+    resp = check_html_get_response(client, browse_url, status_code=200)
+    assert_not_contains(resp, '<div id="swh-citations"')
+
+    config_updater({"activate_citations_ui": True})
+    resp = check_html_get_response(client, browse_url, status_code=200)
+    assert_contains(resp, '<div id="swh-citations"')

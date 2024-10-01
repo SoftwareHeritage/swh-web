@@ -7,6 +7,7 @@ See top-level LICENSE file for more information
 
 {% load swh_templatetags %}
 
+{{ activate_citations_ui|json_script:"activate_citations_ui" }}
 {% if swhids_info %}
   <div id="swh-identifiers" class="swh-side-tab">
     <a id="swhids-handle"
@@ -141,21 +142,26 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  <div id="swh-citations" class="swh-side-tab">
-    <a id="citations-handle"
-       class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
-       href="#"
-       role="button"
-       aria-expanded="false"
-       aria-label="Expand citations tab">
-      <i class="mdi mdi-book-open-variant-outline mdi-fw" aria-hidden="true"></i>
-      Citations
-    </a>
-    <div id="swh-citations-content"
-         class="swh-side-tab-content"
-         style="display: none">
-      <p>Insert Citations Web UI here !</p>
+  {% if activate_citations_ui %}
+    <div id="swh-citations" class="swh-side-tab">
+      <a id="citations-handle"
+         class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
+         href="#"
+         role="button"
+         aria-expanded="false"
+         aria-label="Expand citations tab">
+        <i class="mdi mdi-book-open-variant-outline mdi-fw" aria-hidden="true"></i>
+        Citations
+      </a>
+      <div id="swh-citations-content"
+           class="swh-side-tab-content"
+           style="display: none">
+        <p>Insert Citations Web UI here !</p>
+      </div>
     </div>
-  </div>
-  <script>swh.webapp.setSwhIdsContext({{ swhids_info|jsonify }});</script>
+  {% endif %}
+  <script>
+    swh.webapp.setSwhIdsContext({{ swhids_info|jsonify }});
+    swh.browse.initSideTabs();
+  </script>
 {% endif %}

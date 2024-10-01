@@ -220,6 +220,7 @@ DEFAULT_CONFIG = {
     "save_code_now_webhook_secret": ("str", ""),
     "inbound_email": ("dict", {"shared_key": "shared_key"}),
     "browse_content_rate_limit": ("dict", {"enabled": True, "rate": "60/m"}),
+    "activate_citations_ui": ("bool", False),
 }
 
 swhweb_config: Dict[str, Any] = {}
