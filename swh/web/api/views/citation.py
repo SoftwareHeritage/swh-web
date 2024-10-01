@@ -30,6 +30,7 @@ def _enrich_citation_response(citation: Citation, request: Request) -> Dict[str,
 @api_route(
     "/raw-intrinsic-metadata/citation/origin/",
     "api-1-raw-intrinsic-citation-origin-get",
+    throttle_scope="swh_api_metadata_citation",
 )
 @api_doc("/raw-intrinsic-metadata/citation/origin/", category="Metadata")
 @format_docstring(
@@ -84,6 +85,7 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
 @api_route(
     "/raw-intrinsic-metadata/citation/swhid/",
     "api-1-raw-intrinsic-citation-swhid-get",
+    throttle_scope="swh_api_metadata_citation",
 )
 @api_doc("/raw-intrinsic-metadata/citation/swhid/", category="Metadata")
 @format_docstring(

@@ -73,6 +73,10 @@
     overflow: auto;
 }
 
+.swh-side-tab i.mdi {
+    pointer-events: none;
+}
+
 #swh-identifiers {
     border: 1px solid #e20026;
 }
@@ -123,4 +127,17 @@ td.swh-branch-date {
 #swh-go-to-origin {
     margin-left: 5px;
     vertical-align: middle;
+}
+
+.citation-format {
+    max-width: 200px;
+}
+
+.swh-citation {
+    white-space: pre-wrap;
+}
+
+.btn-swhid-copy, .btn-swhid-url-copy, .btn-citation-copy {
+    width: 125px;
+    height: 32px;
 }

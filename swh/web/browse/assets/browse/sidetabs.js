@@ -6,8 +6,12 @@
  */
 
 import ClipboardJS from 'clipboard';
+import {handleFetchError} from 'utils/functions';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut';
 import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-coy.css';
+import 'prismjs-bibtex';
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
@@ -39,9 +43,7 @@ export function swhIdContextOptionToggled(event) {
   updateDisplayedSWHID(event.target);
 }
 
-function addLinesInfo() {
-  const swhIdElt = $('#swhid-tab-content').find('.swhid');
-  let currentSwhId = swhIdElt.text().replace(/;\n/g, ';');
+function computeLinesQualifier() {
   const lines = [];
   let linesPart = ';lines=';
   const linesRegexp = new RegExp(/L(\d+)/g);
@@ -56,12 +58,24 @@ function addLinesInfo() {
   if (lines.length > 1) {
     linesPart += '-' + lines[1];
   }
+  if (lines.length > 0) {
+    return linesPart;
+  } else {
+    return null;
+  }
+}
+
+function addLinesInfo() {
+  const swhIdElt = $('#swhid-tab-content').find('.swhid');
+  let currentSwhId = swhIdElt.text().replace(/;\n/g, ';');
+
+  const linesPart = computeLinesQualifier();
 
   const contextOptionCheckBox = $('#swhid-context-option-content');
   if (contextOptionCheckBox.prop('checked')) {
     let swhIdWithContextUrl = contextOptionCheckBox.data('swhid-with-context-url');
     currentSwhId = currentSwhId.replace(/;lines=\d+-*\d*/g, '');
-    if (lines.length > 0) {
+    if (linesPart) {
       currentSwhId += linesPart;
       swhIdWithContextUrl += linesPart;
     }
@@ -111,7 +125,44 @@ function activateCitationsUI() {
   return JSON.parse($('#activate_citations_ui').text());
 }
 
-export function initSideTabs() {
+export async function generateCitationFromSWHID(objectType) {
+  const swhidsContext = swh.webapp.getSwhIdsContext();
+  let qualifiedSWHID = swhidsContext[objectType].swhid_with_context;
+  if (objectType === 'content') {
+    const linesPart = computeLinesQualifier();
+    if (linesPart) {
+      qualifiedSWHID += linesPart;
+    }
+  }
+  const citationFormat = $(`#citation-format-option-${objectType}`).val().toLowerCase();
+  const citationUrl = Urls.api_1_raw_intrinsic_citation_swhid_get() +
+    `?citation_format=${citationFormat}&target_swhid=${qualifiedSWHID}`;
+
+  try {
+    const response = await fetch(citationUrl);
+    handleFetchError(response);
+    const citation = await response.json();
+    const html = Prism.highlight(citation.content, Prism.languages.bibtex, 'bibtex');
+    $(`#citation-tab-${objectType} .swh-citation`).html(html);
+    $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', false);
+    $(`#citation-source-${objectType}`).html(
+      '<a target="_blank" rel="noopener noreferrer" ' +
+      `href="${Urls.browse_swhid(citation.source_swhid)}">Browse citation metadata</a>`);
+  } catch (response) {
+    const errorData = await response.json();
+    $(`#citation-tab-${objectType} .swh-citation`).text(
+      'Software citation could not be generated due to the following reason:\n\n' +
+      errorData.reason);
+    $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', true);
+    $(`#citation-source-${objectType}`).html('');
+  }
+};
+
+export async function generateCitationForObjectType(event) {
+  await generateCitationFromSWHID($(event.target).text().trim());
+};
+
+export async function initSideTabs() {
 
   $(document).ready(() => {
     const toggleButtonText = (button, text) => {
@@ -221,15 +272,29 @@ export function initSideTabs() {
 
     if (activateCitationsUI()) {
 
+      new ClipboardJS('.btn-citation-copy', {
+        text: trigger => {
+          const citation = $(trigger).closest('.citation-ui').find('.swh-citation').text();
+          return citation;
+        }
+      }).on('success', function(e) {
+        toggleButtonText(e.trigger, 'Copied!');
+      });
+
       const tabSlideOptionsCitations = {
         tabLocation: 'right',
         action: null, // required to implement custom behavior when clicking on tab handle
         clickScreenToCloseFilters: [clickScreenToCloseFilter, '.ui-slideouttab-panel', '.modal'],
-        onBeforeOpen: function() {
+        onBeforeOpen: async function() {
           $('#swh-citations').data('opening', true);
           if (!$('#swh-identifiers').data('opening')) {
             // open SWHIDs tab along the citation one
             $('#swh-identifiers').trigger('open');
+          }
+          const currentObjectType = $('#swh-citations-content .nav-link.active').text().trim();
+          const currentObjectCitation = $(`citation-tab-${currentObjectType} pre`).text().trim();
+          if (currentObjectCitation === '') {
+            generateCitationFromSWHID(currentObjectType);
           }
           toggleTabContentDisplay('#swh-citations', true);
           toggleTabContentDisplay('#swh-identifiers', false);

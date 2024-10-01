@@ -156,7 +156,88 @@ See top-level LICENSE file for more information
       <div id="swh-citations-content"
            class="swh-side-tab-content"
            style="display: none">
-        <p>Insert Citations Web UI here !</p>
+        <p class="mb-0">
+          This interface enables to generate software citations, provided
+          that the root directory of browsed objects contains a
+          <a href="https://citation-file-format.github.io/"
+             target="_blank"
+             rel="noopener noreferrer">citation.cff</a> or
+          <a href="https://codemeta.github.io/user-guide/"
+             target="_blank"
+             rel="noopener noreferrer">codemeta.json</a> file.
+          <br />
+          Select below a type of object currently browsed in order to generate citations for them.
+        </p>
+        <ul id="citation-object-types" class="nav nav-pills ml-auto p-2">
+          {% for swhid_info in swhids_info %}
+            {% if forloop.first %}
+              <li class="nav-item">
+                <a class="nav-link active"
+                   href="#citation-tab-{{ swhid_info.object_type.name.lower }}"
+                   data-bs-toggle="tab"
+                   onclick="swh.browse.generateCitationForObjectType(event)">
+                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw"
+                     aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link"
+                   href="#citation-tab-{{ swhid_info.object_type.name.lower }}"
+                   data-bs-toggle="tab"
+                   onclick="swh.browse.generateCitationForObjectType(event)">
+                  <i class="{{ swh_object_icons|key_value:swhid_info.object_type.name.lower }} mdi-fw"
+                     aria-hidden="true"></i>{{ swhid_info.object_type.name.lower }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <div class="tab-content">
+          {% for swhid_info in swhids_info %}
+            <div class="tab-pane {% if forloop.first %}active{% endif %}"
+                 id="citation-tab-{{ swhid_info.object_type.name.lower }}">
+              <div class="card">
+                <div class="card-body citation-ui">
+                  <div id="citation-options-{{ swhid_info.object_type.name.lower }}"
+                       class="row g-3 mb-2"
+                       aria-label="Options for {{ swhid_info.object_type.name.lower }} citation">
+                    <div class="citation-format input-group input-group-sm col">
+                      <label class="input-group-text"
+                             for="citation-format-option-{{ swhid_info.object_type.name.lower }}">
+                        Format
+                      </label>
+                      <select class="form-select form-control citation-format-option"
+                              id="citation-format-option-{{ swhid_info.object_type.name.lower }}"
+                              disabled>
+                        <option>BibTeX</option>
+                      </select>
+                    </div>
+                    <span class="col pt-1"
+                          id="citation-format-description-{{ swhid_info.object_type.name.lower }}">
+                      Generate software citation in BibTex format (requires
+                      <a href="https://ctan.mines-albi.fr/macros/latex/contrib/biblatex-contrib/biblatex-software/software-biblatex.pdf"
+                         target="_blank"
+                         rel="noopener noreferrer">biblatex-software</a> package)
+                    </span>
+                  </div>
+                  <pre class="swh-citation">Generating citation ...</pre>
+                  <div id="citation-source-{{ swhid_info.object_type.name.lower }}"
+                       class="float-start"></div>
+                  <div id="citation-copy-button-{{ swhid_info.object_type.name.lower }}"
+                       class="float-end">
+                    <button type="button"
+                            class="btn btn-secondary btn-sm btn-citation-copy"
+                            title="Copy citation to clipboard"
+                            disabled>
+                      <i class="mdi mdi-content-copy mdi-fw" aria-hidden="true"></i>Copy citation
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   {% endif %}

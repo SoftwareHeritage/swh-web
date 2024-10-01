@@ -8925,6 +8925,18 @@ pretty-bytes@^5.6.0:
   resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-5.6.0.tgz#356256f643804773c82f64723fe78c92c62beaeb"
   integrity sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==
 
+prismjs-bibtex@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/prismjs-bibtex/-/prismjs-bibtex-2.1.0.tgz#ed4184c4330f22ca3abd1e2fc5c671b9ab21bb3c"
+  integrity sha512-08BQ/ivW3490taBizaTNMVBqVnxpkhoFVTyKIpwPZqSt+3egoWKrVsJjeexz41MGNzpZA37klXZ6fFRW+H8r9w==
+  dependencies:
+    prismjs "^1.19"
+
+prismjs@^1.19:
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.29.0.tgz#f113555a8fa9b57c35e637bba27509dcf802dd12"
+  integrity sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==
+
 process-nextick-args@~2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"

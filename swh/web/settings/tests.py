@@ -78,6 +78,10 @@ swh_web_config.update(
                     },
                     "exempted_networks": ["127.0.0.0/8"],
                 },
+                "swh_api_metadata_citation": {
+                    "limiter_rate": {"default": "60/m"},
+                    "exempted_networks": ["127.0.0.0/8"],
+                },
             },
         },
         "keycloak": {

@@ -289,6 +289,17 @@ describe('SWHIDs Tests', function() {
           .should('contain.text', 'Copy permalink');
     }
   });
+});
+
+describe('Citations Tests', function() {
+
+  beforeEach(function() {
+    const originUrl = 'https://git.example.org/repo_with_cff_file';
+    const url = `${this.Urls.browse_origin()}?origin_url=${originUrl}`;
+    cy.visit(url);
+    cy.intercept(this.Urls.api_1_raw_intrinsic_citation_swhid_get() + '**')
+      .as('apiRawIntrinsicCitationGet');
+  });
 
   it('should make citations tab current when clicking on its handle', function() {
     cy.get('#swh-citations .ui-slideouttab-handle')
@@ -329,4 +340,98 @@ describe('SWHIDs Tests', function() {
     cy.get('#swh-citations-content')
       .should('not.be.visible');
   });
+
+  it('should generate BibTex citation when selecting an object type', function() {
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    // citation for directory object type is generated when opening citations tab
+    cy.get('#citation-tab-directory .swh-citation')
+      .should('contain', '@softwareversion{');
+
+    const citationMetadataSWHID = 'swh:1:cnt:a93d22c5d806cd945de928e60e93b52b141c653e;' +
+      'origin=https://git.example.org/repo_with_cff_file;' +
+      'visit=swh:1:snp:eefa4d83d6ffb2b9b293bc3af1345a298d56af54;' +
+      'anchor=swh:1:rev:384d62ee00f4cb3d4fa9f20a342c6f7209c9efe1;' +
+      'path=/citation.cff';
+
+    cy.get('#citation-source-directory a')
+      .should('exist')
+      .should('have.attr', 'href', `/${citationMetadataSWHID}`);
+
+    cy.get('#citation-copy-button-directory .btn-citation-copy')
+      .should('be.enabled');
+
+    // revision object type
+    cy.get(`a[href="#citation-tab-revision"]`)
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-tab-revision .swh-citation')
+      .should('contain', '@softwareversion{');
+
+    cy.get('#citation-source-revision a')
+      .should('exist')
+      .should('have.attr', 'href', `/${citationMetadataSWHID}`);
+
+    cy.get('#citation-copy-button-revision .btn-citation-copy')
+      .should('be.enabled');
+
+    // snapshot object type
+    cy.get(`a[href="#citation-tab-snapshot"]`)
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-tab-snapshot .swh-citation')
+      .should('contain', '@software{');
+
+    cy.get('#citation-source-snapshot a')
+      .should('exist')
+      .should('have.attr', 'href', `/${citationMetadataSWHID}`);
+
+    cy.get('#citation-copy-button-snapshot .btn-citation-copy')
+      .should('be.enabled');
+
+  });
+
+  it('should copy BibTex citation to clipboard', function() {
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-copy-button-directory .btn-citation-copy')
+      .click();
+
+    cy.window().then(win => {
+      win.navigator.clipboard.readText().then(text => {
+        expect(text.startsWith('@softwareversion{')).to.be.true;
+      });
+
+    });
+  });
+
+  it('should add selected lines info when generating citation for content', function() {
+    cy.get('td a')
+      .contains('citation.cff')
+      .click();
+
+    cy.get('.hljs-ln-numbers[data-line-number="1"]')
+      .click()
+      .get('.hljs-ln-numbers[data-line-number="3"]')
+      .click({shiftKey: true});
+
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-tab-content .swh-citation')
+      .should('contain', ';lines=1-3');
+  });
+
 });
