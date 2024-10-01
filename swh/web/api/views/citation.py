@@ -17,7 +17,13 @@ from swh.web.utils.metadata import get_bibtex_from_origin, get_bibtex_from_swhid
     "api-1-raw-intrinsic-citation-origin-get",
 )
 @api_doc("/raw-intrinsic-metadata/citation/origin/", category="Metadata")
-@format_docstring()
+@format_docstring(
+    example_url=(
+        "raw-intrinsic-metadata/citation/origin/?"
+        "citation_format=bibtex&"
+        "origin_url=https://github.com/rdicosmo/parmap"
+    )
+)
 def api_raw_intrinsic_citation_origin_get(request: Request):
     """
     .. http:get:: /api/1/raw-intrinsic-metadata/citation/origin/
@@ -29,7 +35,7 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
         :query string citation_format: the citation expected format (currently bibtex)
         :query string origin_url: the URL of the software origin
 
-        :<json string the software citation in the expected format
+        The response is a JSON string containing the software citation in the expected format.
 
         {common_headers}
 
@@ -42,7 +48,7 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
 
         .. parsed-literal::
 
-            :swh_web_api:`raw-intrinsic-metadata/citation/origin/?citation_format=bibtex&origin_url=https://github.com/rdicosmo/parmap`
+            :swh_web_api:`{example_url}`
     """
     origin_url = request.GET.get("origin_url")
     if origin_url is None:
@@ -61,7 +67,15 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
     "api-1-raw-intrinsic-citation-swhid-get",
 )
 @api_doc("/raw-intrinsic-metadata/citation/swhid/", category="Metadata")
-@format_docstring()
+@format_docstring(
+    example_url=(
+        "raw-intrinsic-metadata/citation/swhid/?"
+        "citation_format=bibtex&"
+        "target_swhid=swh:1:dir:2dc0f462d191524530f5612d2935851505af41dd;"
+        "origin=https://github.com/rdicosmo/parmap;"
+        "visit=swh:1:snp:2128ed4f25f2d7ae7c8b7950a611d69cf4429063"
+    )
+)
 def api_raw_intrinsic_citation_swhid_get(request: Request):
     """
     .. http:get:: /api/1/raw-intrinsic-metadata/citation/swhid/
@@ -73,7 +87,7 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
         :query string target_swhid: the SWHID, with or without qualifiers, of the
          software object to cite
 
-        :<json string the software citation in the expected format
+        The response is a JSON string containing the software citation in the expected format.
 
         {common_headers}
 
@@ -86,7 +100,7 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
 
         .. parsed-literal::
 
-            :swh_web_api:`raw-intrinsic-metadata/citation/swhid/?citation_format=bibtex&target_swhid=swh:1:dir:2dc0f462d191524530f5612d2935851505af41dd;origin=https://github.com/rdicosmo/parmap;visit=swh:1:snp:2128ed4f25f2d7ae7c8b7950a611d69cf4429063`
+            :swh_web_api:`{example_url}`
     """
     target_swhid = request.GET.get("target_swhid", "")
     try:
