@@ -19,7 +19,6 @@ import docutils.utils
 from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
-from pymemcache.exceptions import MemcacheServerError
 import requests
 from requests.auth import HTTPBasicAuth
 import sentry_sdk
@@ -439,8 +438,8 @@ def cache_set(
 
     try:
         cache.set(_compute_final_cache_key(cache_key), payload, timeout=timeout)
-    except MemcacheServerError as mse:
-        sentry_sdk.capture_exception(mse)
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
 
 
 def cache_get(
@@ -459,7 +458,11 @@ def cache_get(
     Returns:
         the cached value or :const:`None` if it does not exist
     """
-    payload = cache.get(_compute_final_cache_key(cache_key))
+    try:
+        payload = cache.get(_compute_final_cache_key(cache_key))
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
+        payload = None
     return (
         msgpack_loads(gzip.decompress(payload), extra_decoders=extra_decoders)
         if payload

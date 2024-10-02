@@ -11,7 +11,6 @@ from urllib.parse import quote
 
 import attr
 import docutils
-from pymemcache.exceptions import MemcacheServerError
 import pytest
 
 from django.test.utils import override_settings
@@ -571,14 +570,27 @@ def test_django_cache_with_extra_encoder_and_decoder(mocker):
     assert spy_cache_set.call_count == 1
 
 
-def test_django_cache_pass_through_on_memcache_error(mocker):
+def test_django_cache_set_pass_through_on_errors(mocker):
     spy_cache_get = mocker.spy(cache, "get")
-    mocker.patch.object(cache, "set").side_effect = MemcacheServerError("Cache error")
+    mocker.patch.object(cache, "set").side_effect = Exception("Cache error")
     cached_add = django_cache()(add)
 
-    # function still returns a value after the memcache server error
+    # function still returns a value
     assert cached_add(1, 1) == 2
 
     # but it should not be in cache
     cache_key = spy_cache_get.mock_calls[0].args[0]
     assert cache.get(cache_key) is None
+
+
+def test_django_cache_get_pass_through_on_errors(mocker):
+    spy_cache_set = mocker.spy(cache, "set")
+    cached_add = django_cache()(add)
+
+    # first call works and has been cached
+    assert cached_add(1, 1) == 2
+    assert len(spy_cache_set.mock_calls) == 1
+    # second call will raise a caching exception while getting the key
+    # but function still returns a value
+    mocker.patch.object(cache, "get").side_effect = Exception("Cache error")
+    assert cached_add(1, 1) == 2
