@@ -3570,10 +3570,10 @@ cssstyle@^4.0.1:
   dependencies:
     rrweb-cssom "^0.7.1"
 
-cypress-accessibility-checker@^3.1.75:
-  version "3.1.75"
-  resolved "https://registry.yarnpkg.com/cypress-accessibility-checker/-/cypress-accessibility-checker-3.1.75.tgz#fb7f68abeb3fb624d5cf93652e74ef73e1f60118"
-  integrity sha512-loubIjZnQ8E5oKQiR0olekBmWVcEj+U33B2clNimDXmQC4tl+41o7C4ZEF/sh3blMniSF2WAf1u2Itv5h4GSsw==
+cypress-accessibility-checker@^3.1.76:
+  version "3.1.76"
+  resolved "https://registry.yarnpkg.com/cypress-accessibility-checker/-/cypress-accessibility-checker-3.1.76.tgz#b165d365c1dce15a019a84d04ce40d8c11b28782"
+  integrity sha512-+PLw2DsmW7K+cJSKbwUFGD+4bDfwCgZWv+mQ2XPCj6A5+ZoF2CfoJnJq3r1KMdUbUjp//X4YHThRWR6E3wR93Q==
   dependencies:
     "@cypress/request" "^3.0.0"
     deep-diff "^1.0.2"
