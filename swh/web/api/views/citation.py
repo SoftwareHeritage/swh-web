@@ -2,14 +2,29 @@
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+from typing import Dict, cast
+
 from django.core.exceptions import ValidationError
 from rest_framework.request import Request
 
 from swh.model.swhids import QualifiedSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.utils import BadInputExc
+from swh.web.utils import BadInputExc, reverse
 from swh.web.utils.metadata import get_bibtex_from_origin, get_bibtex_from_swhid
+from swh.web.utils.typing import Citation
+
+
+def _enrich_citation_response(citation: Citation, request: Request) -> Dict[str, str]:
+    response = cast(Dict[str, str], citation)
+    parsed_swhid = QualifiedSWHID.from_string(citation["source_swhid"])
+    response["source_url"] = reverse(
+        "api-1-content-raw",
+        url_args={"q": f"sha1_git:{parsed_swhid.object_id.hex()}"},
+        request=request,
+    )
+    return response
 
 
 @api_route(
@@ -35,14 +50,19 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
         :query string citation_format: the citation expected format (currently bibtex)
         :query string origin_url: the URL of the software origin
 
-        The response is a JSON string containing the software citation in the expected format.
+        :>json string format: citation format (currently bibtex)
+        :>json string content: formatted string representing the software citation
+            content in the expected format
+        :>json string source_swhid: qualified SWHID for citation metadata source file
+        :>json string source_url: link to raw bytes of citation metadata source file
+
 
         {common_headers}
 
         :statuscode 200: no error
         :statuscode 400: the requested software origin is invalid
         :statuscode 404: the requested software origin cannot be found in the archive
-         or metadata for citation is missing, or citation is empty
+            or metadata for citation is missing, or citation is empty
 
         **Example:**
 
@@ -58,8 +78,7 @@ def api_raw_intrinsic_citation_origin_get(request: Request):
         raise BadInputExc(
             "Invalid citation format: only BibTeX format is currently supported."
         )
-    bibtex = get_bibtex_from_origin(origin_url)
-    return bibtex
+    return _enrich_citation_response(get_bibtex_from_origin(origin_url), request)
 
 
 @api_route(
@@ -87,14 +106,18 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
         :query string target_swhid: the SWHID, with or without qualifiers, of the
          software object to cite
 
-        The response is a JSON string containing the software citation in the expected format.
+        :>json string format: citation format (currently bibtex)
+        :>json string content: formatted string representing the software citation
+            content in the expected format
+        :>json string source_swhid: qualified SWHID for citation metadata source file
+        :>json string source_url: link to raw bytes of citation metadata source file
 
         {common_headers}
 
         :statuscode 200: no error
         :statuscode 400: the requested software origin is invalid
         :statuscode 404: the requested software origin cannot be found in the archive
-         or metadata for citation is missing, or citation is empty
+            or metadata for citation is missing, or citation is empty
 
         **Example:**
 
@@ -112,5 +135,4 @@ def api_raw_intrinsic_citation_swhid_get(request: Request):
         raise BadInputExc(
             "Invalid citation format: only BibTeX format is currently supported."
         )
-    bibtex = get_bibtex_from_swhid(target_swhid)
-    return bibtex
+    return _enrich_citation_response(get_bibtex_from_swhid(target_swhid), request)

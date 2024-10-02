@@ -7,14 +7,16 @@ from swh.web.utils.metadata import get_bibtex_from_origin, get_bibtex_from_swhid
 
 
 def test_get_bibtex_from_origin(origin_with_metadata_file):
-    bibtex = get_bibtex_from_origin(origin_with_metadata_file["url"])
+    citation = get_bibtex_from_origin(origin_with_metadata_file["url"])
+    bibtex = citation["content"]
 
     assert "@software" in bibtex
     assert 'title = "Test Software"' in bibtex
 
 
 def test_get_bibtex_from_swhid(objects_with_metadata_file):
-    bibtex = get_bibtex_from_swhid(str(objects_with_metadata_file[0]))
+    citation = get_bibtex_from_swhid(str(objects_with_metadata_file[0]))
+    bibtex = citation["content"]
 
     assert "@software" in bibtex
     assert 'title = "Test Software"' in bibtex

@@ -283,3 +283,12 @@ class IntrinsicMetadataFile(TypedDict):
     """Intrinsic metadata file id (sha1 git)"""
     content: dict[str, Any]
     """Intrinsic metadata file content"""
+
+
+class Citation(TypedDict):
+    format: str
+    """Citation format (currently bibtex)"""
+    content: str
+    """Formatted citation string content"""
+    source_swhid: str
+    """Qualified SWHID of citation metadata source file"""
