@@ -7,8 +7,6 @@
 Django production settings for swh-web.
 """
 
-import django
-
 from swh.web.config import DEFAULT_CONFIG
 
 from .common import (
@@ -26,20 +24,21 @@ MIDDLEWARE += [
     "swh.web.utils.middlewares.HtmlMinifyMiddleware",
 ]
 
-if swh_web_config.get("throttling", {}).get("cache_uri"):
-    cache_backend = "django.core.cache.backends.memcached.MemcachedCache"
-    if django.VERSION[:2] >= (3, 2):
-        cache_backend = "django.core.cache.backends.memcached.PyMemcacheCache"
+if cache_uri := swh_web_config.get("throttling", {}).get("cache_uri"):
+    memcache_settings = {
+        "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+        "LOCATION": cache_uri,
+        "OPTIONS": {
+            # sets the TCP_NODELAY flag on the connection’s socket
+            "no_delay": True,
+            # memcache/network errors are treated as cache misses
+            "ignore_exc": True,
+        },
+    }
     CACHES.update(
         {
-            "default": {
-                "BACKEND": cache_backend,
-                "LOCATION": swh_web_config["throttling"]["cache_uri"],
-            },
-            "rate-limit": {
-                "BACKEND": cache_backend,
-                "LOCATION": swh_web_config["throttling"]["cache_uri"],
-            },
+            "default": memcache_settings,
+            "rate-limit": memcache_settings,
         }
     )
 
