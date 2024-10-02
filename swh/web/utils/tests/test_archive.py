@@ -1192,8 +1192,8 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
         assert partial_branches["next_branch"] is None
 
 
-def test_lookup_origin_raw_intrinsic_metadata(origin_with_metadata_file):
-    metadata = archive.lookup_origin_raw_intrinsic_metadata(
+def test_lookup_origin_intrinsic_citation_metadata(origin_with_metadata_file):
+    metadata = archive.lookup_origin_intrinsic_citation_metadata(
         origin_with_metadata_file["url"]
     )
 
@@ -1208,7 +1208,7 @@ def test_lookup_origin_raw_intrinsic_metadata(origin_with_metadata_file):
 
 def test_lookup_swhid_raw_intrinsic_metadata(objects_with_metadata_file):
     for object_with_metadata_file in objects_with_metadata_file:
-        metadata = archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+        metadata = archive.lookup_intrinsic_citation_metadata_by_target_swhid(
             str(object_with_metadata_file)
         )
 
@@ -1224,7 +1224,7 @@ def test_lookup_swhid_raw_intrinsic_metadata(objects_with_metadata_file):
 def test_lookup_swhid_raw_intrinsic_metadata_not_found(unknown_core_swhid):
     if unknown_core_swhid.object_type != ObjectType.CONTENT:
         with pytest.raises(NotFoundExc):
-            archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+            archive.lookup_intrinsic_citation_metadata_by_target_swhid(
                 str(unknown_core_swhid)
             )
 
@@ -1232,7 +1232,7 @@ def test_lookup_swhid_raw_intrinsic_metadata_not_found(unknown_core_swhid):
 def test_lookup_swhid_raw_intrinsic_metadata_cnt_unqualified(unknown_core_swhid):
     if unknown_core_swhid.object_type == ObjectType.CONTENT:
         with pytest.raises(BadInputExc) as e:
-            archive.lookup_raw_intrinsic_metadata_by_target_swhid(
+            archive.lookup_intrinsic_citation_metadata_by_target_swhid(
                 str(unknown_core_swhid)
             )
         assert "No root directory can be found for SWHID" in str(e)

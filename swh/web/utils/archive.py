@@ -485,23 +485,24 @@ def lookup_origin_intrinsic_metadata(
     return result
 
 
-def _lookup_directory_raw_intrinsic_metadata(
+def _lookup_directory_intrinsic_citation_metadata(
     directory_id: str,
 ) -> dict[str, dict[str, Any]]:
-    """Get raw intrinsic metadata given a directory id, i.e. original codemeta.json
+    """Get intrinsic citation metadata given a directory id, i.e. original codemeta.json
     and citation.cff found in this directory.
 
     Args:
-        directory_id: hexadecimal representation of a directory id (sha1)
+        directory_id: hexadecimal representation of a directory id (sha1_git)
 
     Returns:
-        raw intrinsic metadata in the form of a dictionary,
-            which key is the type of the metadata file,
-            and which value is a dictionary parsed from the metadata file content
+        intrinsic citation metadata in the form of a dictionary,
+        which key is the type of the metadata file,
+        and which value is a dictionary parsed from the metadata file content
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: when the directory is missing, no metadata could be found
-            or the metadata files could not be decoded.
+        swh.web.utils.exc.NotFoundExc: when the directory is missing
+            or no metadata could be found
+        BadInputExc: when the metadata files could not be decoded
     """
     metadata_files_info = {}
     metadata_file_paths = [
@@ -533,17 +534,17 @@ def _lookup_directory_raw_intrinsic_metadata(
             elif path == "citation.cff":
                 metadata_files[path] = yaml.safe_load(metadata_file_content["data"])
         except (JSONDecodeError, YAMLError):
-            raise NotFoundExc(
+            raise BadInputExc(
                 f"Metadata file {path} (sha1: {metadata_file_id}) could not be decoded."
             )
 
     return metadata_files
 
 
-def lookup_origin_raw_intrinsic_metadata(
+def lookup_origin_intrinsic_citation_metadata(
     origin_url: str, lookup_similar_urls: bool = True
 ) -> dict[str, dict[str, Any]]:
-    """Get raw intrinsic metadata given a software origin, i.e. original codemeta.json
+    """Get intrinsic citation metadata given a software origin, i.e. original codemeta.json
     and citation.cff, for the latest visit snapshot main branch root directory.
 
     Args:
@@ -553,14 +554,13 @@ def lookup_origin_raw_intrinsic_metadata(
 
     Returns:
         raw intrinsic metadata in the form of a dictionary,
-            which key is the type of the metadata file,
-            and which value is a dictionary parsed from the metadata file content
+        which key is the type of the metadata file,
+        and which value is a dictionary parsed from the metadata file content
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory is
-            missing, no metadata could be found or the metadata files could not
-            be decoded.
-        BadInputExc: when the origin does not allow to find metadata.
+            missing or no metadata could be found
+        BadInputExc: when the metadata files could not be decoded
     """
     try:
         origin_similar_url = lookup_origin(
@@ -577,34 +577,34 @@ def lookup_origin_raw_intrinsic_metadata(
             "No root directory for the latest visit snapshot main branch of origin "
             f"{origin_url} found."
         )
-    return _lookup_directory_raw_intrinsic_metadata(directory_id)
+    return _lookup_directory_intrinsic_citation_metadata(directory_id)
 
 
-def lookup_raw_intrinsic_metadata_by_target_swhid(
+def lookup_intrinsic_citation_metadata_by_target_swhid(
     target_swhid: str,
 ) -> dict[str, dict[str, Any]]:
-    """Get raw intrinsic metadata given a SWHID, i.e. original codemeta.json
+    """Get intrinsic citation metadata given a SWHID, i.e. original codemeta.json
     and citation.cff, for the target object.
-    If the target object is of type Snapshot, get metadata from the main branch ('HEAD').
+    If the target object is of type ``Snapshot``, get metadata from the main branch (``HEAD``).
 
     Args:
-        target_swhid: SWHID which can be qualified or not
-            If the target object is of type Content, it must be qualified with an anchor.
+        target_swhid: SWHID which can be qualified or not,
+            if the target object is of type ``Content``, it must be qualified with an anchor.
 
     Returns:
         raw intrinsic metadata in the form of a dictionary,
-            which key is the type of the metadata file,
-            and which value is a dictionary parsed from the metadata file content
+        which key is the type of the metadata file,
+        and which value is a dictionary parsed from the metadata file content
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: when the target object is missing, no
-            metadata could be found or the metadata files could not be decoded.
-        BadInputExc: when the target object does not allow to find metadata.
+        swh.web.utils.exc.NotFoundExc: when the target object is missing
+            or no metadata could be found
+        BadInputExc: when the metadata files could not be decoded
     """
     directory_id = _lookup_swhid_root_directory(target_swhid)
     if directory_id is None:
         raise NotFoundExc(f"No root directory for target SWHID {target_swhid} found.")
-    return _lookup_directory_raw_intrinsic_metadata(directory_id)
+    return _lookup_directory_intrinsic_citation_metadata(directory_id)
 
 
 def lookup_origin_extrinsic_metadata(
