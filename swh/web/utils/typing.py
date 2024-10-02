@@ -4,6 +4,7 @@
 # See top-level LICENSE file for more information
 
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional, TypedDict, TypeVar
 
 from swh.core.api.classes import PagedResult as CorePagedResult
@@ -266,3 +267,19 @@ class OriginExistenceCheckInfo(TypedDict):
     """content length of the artifact"""
     last_modified: Optional[str]
     """Last modification time reported by the server (as iso8601 string)"""
+
+
+class IntrinsicMetadataFiletype(Enum):
+    CODEMETA = "codemeta.json"
+    CFF = "citation.cff"
+
+
+class IntrinsicMetadataFile(TypedDict):
+    type: IntrinsicMetadataFiletype
+    """Intrinsic metadata file type"""
+    name: str
+    """Intrinsic metadata file name"""
+    id: str
+    """Intrinsic metadata file id (sha1 git)"""
+    content: dict[str, Any]
+    """Intrinsic metadata file content"""

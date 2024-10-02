@@ -32,6 +32,8 @@ from swh.web import config
 from swh.web.utils import converters, demangle_url, django_cache, query
 from swh.web.utils.exc import BadInputExc, NotFoundExc
 from swh.web.utils.typing import (
+    IntrinsicMetadataFile,
+    IntrinsicMetadataFiletype,
     OriginInfo,
     OriginMetadataInfo,
     OriginVisitInfo,
@@ -487,34 +489,32 @@ def lookup_origin_intrinsic_metadata(
 
 def _lookup_directory_intrinsic_citation_metadata(
     directory_id: str,
-) -> dict[str, dict[str, Any]]:
-    """Get intrinsic citation metadata given a directory id, i.e. original codemeta.json
+) -> List[IntrinsicMetadataFile]:
+    """Get raw intrinsic metadata given a directory id, respectively original codemeta.json
     and citation.cff found in this directory.
 
     Args:
         directory_id: hexadecimal representation of a directory id (sha1_git)
 
     Returns:
-        intrinsic citation metadata in the form of a dictionary,
-        which key is the type of the metadata file,
-        and which value is a dictionary parsed from the metadata file content
+        list of intrinsic metadata files info
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when the directory is missing
             or no metadata could be found
         BadInputExc: when the metadata files could not be decoded
     """
-    metadata_files_info = {}
+    metadata_files_info = []
     metadata_file_paths = [
         "codemeta.json",
-        "citation.cff",
         "CODEMETA.json",
+        "citation.cff",
         "CITATION.cff",
     ]
     for path in metadata_file_paths:
         try:
             metadata_file_info = lookup_directory_with_path(directory_id, path)
-            metadata_files_info[path.lower()] = metadata_file_info
+            metadata_files_info.append(metadata_file_info)
         except NotFoundExc:
             pass
 
@@ -524,18 +524,34 @@ def _lookup_directory_intrinsic_citation_metadata(
             f" with sha1_git {directory_id} found."
         )
 
-    metadata_files = {}
-    for path, metadata_file_info in metadata_files_info.items():
+    metadata_files = []
+    for metadata_file_info in metadata_files_info:
         metadata_file_id = metadata_file_info["target"]
+        metadata_file_name = metadata_file_info["name"]
+        metadata_file_type = metadata_file_name.lower()
         metadata_file_content = lookup_content_raw(f"sha1_git:{metadata_file_id}")
+        metadata_file_object = IntrinsicMetadataFile(
+            type=metadata_file_type,
+            name=metadata_file_name,
+            id=metadata_file_id,
+            content={},
+        )
+        metadata_files.append(metadata_file_object)
+
         try:
-            if path == "codemeta.json":
-                metadata_files[path] = json.loads(metadata_file_content["data"])
-            elif path == "citation.cff":
-                metadata_files[path] = yaml.safe_load(metadata_file_content["data"])
+            if metadata_file_type == IntrinsicMetadataFiletype.CODEMETA.value:
+                metadata_file_object["content"] = json.loads(
+                    metadata_file_content["data"]
+                )
+            elif metadata_file_type == IntrinsicMetadataFiletype.CFF.value:
+                metadata_file_object["content"] = yaml.safe_load(
+                    metadata_file_content["data"]
+                )
+
         except (JSONDecodeError, YAMLError):
             raise BadInputExc(
-                f"Metadata file {path} (sha1: {metadata_file_id}) could not be decoded."
+                f"Metadata file {metadata_file_name} (sha1_git: {metadata_file_id})"
+                " could not be decoded."
             )
 
     return metadata_files
@@ -543,8 +559,8 @@ def _lookup_directory_intrinsic_citation_metadata(
 
 def lookup_origin_intrinsic_citation_metadata(
     origin_url: str, lookup_similar_urls: bool = True
-) -> dict[str, dict[str, Any]]:
-    """Get intrinsic citation metadata given a software origin, i.e. original codemeta.json
+) -> List[IntrinsicMetadataFile]:
+    """Get raw intrinsic metadata given a software origin, respectively original codemeta.json
     and citation.cff, for the latest visit snapshot main branch root directory.
 
     Args:
@@ -553,9 +569,7 @@ def lookup_origin_intrinsic_citation_metadata(
             without trailing slash in its URL
 
     Returns:
-        raw intrinsic metadata in the form of a dictionary,
-        which key is the type of the metadata file,
-        and which value is a dictionary parsed from the metadata file content
+        list of intrinsic metadata files info
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory is
@@ -582,8 +596,8 @@ def lookup_origin_intrinsic_citation_metadata(
 
 def lookup_intrinsic_citation_metadata_by_target_swhid(
     target_swhid: str,
-) -> dict[str, dict[str, Any]]:
-    """Get intrinsic citation metadata given a SWHID, i.e. original codemeta.json
+) -> List[IntrinsicMetadataFile]:
+    """Get raw intrinsic metadata given a SWHID, respectively original codemeta.json
     and citation.cff, for the target object.
     If the target object is of type ``Snapshot``, get metadata from the main branch (``HEAD``).
 
@@ -592,9 +606,7 @@ def lookup_intrinsic_citation_metadata_by_target_swhid(
             if the target object is of type ``Content``, it must be qualified with an anchor.
 
     Returns:
-        raw intrinsic metadata in the form of a dictionary,
-        which key is the type of the metadata file,
-        and which value is a dictionary parsed from the metadata file content
+        list of intrinsic metadata files info
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when the target object is missing

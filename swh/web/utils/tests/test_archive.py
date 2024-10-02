@@ -1193,32 +1193,44 @@ def test_lookup_snapshot_branch_names_filtering_paginated(
 
 
 def test_lookup_origin_intrinsic_citation_metadata(origin_with_metadata_file):
-    metadata = archive.lookup_origin_intrinsic_citation_metadata(
+    intrinsic_citation_metadata = archive.lookup_origin_intrinsic_citation_metadata(
         origin_with_metadata_file["url"]
     )
 
-    assert (
-        metadata["codemeta.json"]["@context"]
-        == "https://doi.org/10.5063/schema/codemeta-2.0"
-    )
-    assert metadata["codemeta.json"]["type"] == "SoftwareSourceCode"
-    assert metadata["codemeta.json"]["name"] == "Test Software"
-    assert metadata["citation.cff"]["cff-version"] == "1.2.0"
+    assert len(intrinsic_citation_metadata) == 2
+    assert intrinsic_citation_metadata[0]["type"] == "codemeta.json"
+    assert intrinsic_citation_metadata[1]["type"] == "citation.cff"
+
+    codemeta_file = intrinsic_citation_metadata[0]["content"]
+    cff_file = intrinsic_citation_metadata[1]["content"]
+
+    assert codemeta_file["@context"] == "https://doi.org/10.5063/schema/codemeta-2.0"
+    assert codemeta_file["type"] == "SoftwareSourceCode"
+    assert codemeta_file["name"] == "Test Software"
+    assert cff_file["cff-version"] == "1.2.0"
 
 
 def test_lookup_swhid_raw_intrinsic_metadata(objects_with_metadata_file):
     for object_with_metadata_file in objects_with_metadata_file:
-        metadata = archive.lookup_intrinsic_citation_metadata_by_target_swhid(
-            str(object_with_metadata_file)
+        intrinsic_citation_metadata = (
+            archive.lookup_intrinsic_citation_metadata_by_target_swhid(
+                str(object_with_metadata_file)
+            )
         )
 
+        assert len(intrinsic_citation_metadata) == 2
+        assert intrinsic_citation_metadata[0]["type"] == "codemeta.json"
+        assert intrinsic_citation_metadata[1]["type"] == "citation.cff"
+
+        codemeta_file = intrinsic_citation_metadata[0]["content"]
+        cff_file = intrinsic_citation_metadata[1]["content"]
+
         assert (
-            metadata["codemeta.json"]["@context"]
-            == "https://doi.org/10.5063/schema/codemeta-2.0"
+            codemeta_file["@context"] == "https://doi.org/10.5063/schema/codemeta-2.0"
         )
-        assert metadata["codemeta.json"]["type"] == "SoftwareSourceCode"
-        assert metadata["codemeta.json"]["name"] == "Test Software"
-        assert metadata["citation.cff"]["cff-version"] == "1.2.0"
+        assert codemeta_file["type"] == "SoftwareSourceCode"
+        assert codemeta_file["name"] == "Test Software"
+        assert cff_file["cff-version"] == "1.2.0"
 
 
 def test_lookup_swhid_raw_intrinsic_metadata_not_found(unknown_core_swhid):
