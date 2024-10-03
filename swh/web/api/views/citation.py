@@ -12,7 +12,7 @@ from swh.model.swhids import QualifiedSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.utils import BadInputExc, reverse
-from swh.web.utils.metadata import get_bibtex_from_origin, get_bibtex_from_swhid
+from swh.web.utils.citation import get_bibtex_from_origin, get_bibtex_from_swhid
 from swh.web.utils.typing import Citation
 
 

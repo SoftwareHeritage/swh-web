@@ -3,7 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from swh.web.utils.metadata import get_bibtex_from_origin, get_bibtex_from_swhid
+from swh.web.utils.citation import get_bibtex_from_origin, get_bibtex_from_swhid
 
 
 def test_get_bibtex_from_origin(origin_with_metadata_file):
