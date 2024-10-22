@@ -294,7 +294,8 @@ module.exports = {
               sourceMap: true,
               implementation: require('sass'),
               sassOptions: {
-                quietDeps: true
+                quietDeps: true,
+                silenceDeprecations: ['import', 'global-builtin']
               }
             }
           }
