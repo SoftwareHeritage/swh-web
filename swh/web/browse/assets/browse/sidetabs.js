@@ -270,7 +270,7 @@ export async function initSideTabs() {
       updateDisplayedSWHID(elt);
     });
 
-    if (activateCitationsUI()) {
+    if (activateCitationsUI() || swh.webapp.isStaffUser()) {
 
       new ClipboardJS('.btn-citation-copy', {
         text: trigger => {

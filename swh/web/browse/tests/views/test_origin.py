@@ -1132,3 +1132,18 @@ def test_citations_ui_activation(client, origin, config_updater):
     config_updater({"activate_citations_ui": True})
     resp = check_html_get_response(client, browse_url, status_code=200)
     assert_contains(resp, '<div id="swh-citations"')
+
+
+@pytest.mark.django_db
+def test_citations_ui_activation_for_staff(client, origin, staff_user):
+    browse_url = reverse(
+        "browse-origin-directory", query_params={"origin_url": origin["url"]}
+    )
+
+    resp = check_html_get_response(client, browse_url, status_code=200)
+    assert_not_contains(resp, '<div id="swh-citations"')
+
+    client.force_login(staff_user)
+
+    resp = check_html_get_response(client, browse_url, status_code=200)
+    assert_contains(resp, '<div id="swh-citations"')

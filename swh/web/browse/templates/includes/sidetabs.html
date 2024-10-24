@@ -142,7 +142,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  {% if activate_citations_ui %}
+  {% if activate_citations_ui or request.user.is_staff %}
     <div id="swh-citations" class="swh-side-tab">
       <a id="citations-handle"
          class="handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
