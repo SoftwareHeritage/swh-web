@@ -434,4 +434,13 @@ describe('Citations Tests', function() {
       .should('contain', ';lines=1-3');
   });
 
+  it('should not display citations tab if no citation can be generated', function() {
+    cy.visit(`${this.Urls.browse_origin_directory()}?origin_url=${this.origin[0].url}`);
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#swh-citations')
+      .should('not.be.visible');
+  });
+
 });

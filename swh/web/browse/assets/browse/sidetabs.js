@@ -141,6 +141,8 @@ export async function generateCitationFromSWHID(objectType) {
   try {
     const response = await fetch(citationUrl);
     handleFetchError(response);
+    // make Citations tab visible when a citation can be successfully generated
+    $('#swh-citations').removeClass('d-none');
     const citation = await response.json();
     const html = Prism.highlight(citation.content, Prism.languages.bibtex, 'bibtex');
     $(`#citation-tab-${objectType} .swh-citation`).html(html);
@@ -154,7 +156,16 @@ export async function generateCitationFromSWHID(objectType) {
       'Software citation could not be generated due to the following reason:\n\n' +
       errorData.reason);
     $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', true);
-    $(`#citation-source-${objectType}`).html('');
+    if (response.status === 400) {
+      $(`#citation-source-${objectType}`).html(
+        '<a target="_blank" rel="noopener noreferrer" ' +
+        `href="${Urls.browse_swhid(errorData.source_swhid)}">Browse citation metadata</a>`);
+      // make Citations tab visible when a citation cannot be successfully generated
+      // from metadata to give some insights to the user
+      $('#swh-citations').removeClass('d-none');
+    } else {
+      $(`#citation-source-${objectType}`).html('');
+    }
   }
 };
 
@@ -342,6 +353,9 @@ export async function initSideTabs() {
           $('#swh-citations').trigger('open');
         }
       });
+
+      // check if citation can be generated to activate display of Citations Web UI
+      generateCitationFromSWHID(swh.webapp.getBrowsedSwhObjectMetadata().object_type);
     }
 
     updateTabsSize();
