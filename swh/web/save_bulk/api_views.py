@@ -5,7 +5,7 @@
 
 import csv
 import io
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, Set, Tuple, TypedDict
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -35,17 +35,15 @@ SUPPORTED_VISIT_TYPES = {"bzr", "cvs", "hg", "git", "svn", "tarball-directory"}
 
 
 def _register_request_and_origins_in_db(
-    user_id: str, origins: List[Dict[str, str]]
+    user_id: str, origins: Set[Tuple[str, str]]
 ) -> str:
     save_bulk_request = SaveBulkRequest.objects.create(user_id=user_id)
 
     # create new submitted origins in database
     save_bulk_origins = SaveBulkOrigin.objects.bulk_create(
         [
-            SaveBulkOrigin(
-                origin_url=origin["origin_url"], visit_type=origin["visit_type"]
-            )
-            for origin in origins
+            SaveBulkOrigin(origin_url=origin_url, visit_type=visit_type)
+            for origin_url, visit_type in origins
         ],
         update_conflicts=True,
         update_fields=["origin_url", "visit_type"],
@@ -235,9 +233,14 @@ def api_origin_save_bulk(request: Request) -> Response:
 
     # check origin URLs are well formed and visit types are supported
     rejected_origins = []
+    origins = set()
     for origin in sorted(request.data, key=lambda d: d.get("origin_url", "")):
         origin_url = origin.get("origin_url")
         visit_type = origin.get("visit_type")
+        origin_data = (origin_url, visit_type)
+        if origin_data in origins:
+            continue
+        origins.add(origin_data)
         if (not origin_url or not visit_type) or not (
             isinstance(origin_url, str) and isinstance(visit_type, str)
         ):
@@ -276,7 +279,7 @@ def api_origin_save_bulk(request: Request) -> Response:
 
     # register origins data to swh-web database
     save_bulk_request_id = _register_request_and_origins_in_db(
-        user_id=str(request.user.id), origins=request.data
+        user_id=str(request.user.id), origins=origins
     )
 
     # generate URL to be queried by the save-bulk lister

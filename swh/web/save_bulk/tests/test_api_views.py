@@ -250,6 +250,50 @@ def test_save_bulk_post_valid_origins(
     resp = check_http_get_response(api_client, origins_list_url, status_code=200)
 
 
+def test_save_bulk_post_valid_duplicated_origins(
+    api_client,
+    save_bulk_user,
+    swh_scheduler,
+):
+    origins_data = [
+        {
+            "origin_url": "https://git.example.org/user/project",
+            "visit_type": "git",
+        },
+        {
+            "origin_url": "https://svn.example.org/user/project",
+            "visit_type": "svn",
+        },
+    ]
+    api_client.force_login(save_bulk_user)
+    url = reverse("api-1-save-origin-bulk")
+    api_resp = check_api_post_responses(
+        api_client,
+        url,
+        HTTP_CONTENT_TYPE="application/json",
+        data=json.dumps(origins_data + origins_data),
+        status_code=200,
+    )
+
+    assert api_resp.data["status"] == "accepted"
+
+    origins_list_url = reverse(
+        "save-origin-bulk-origins-list",
+        url_args={"request_id": api_resp.data["request_id"]},
+    )
+
+    resp = check_http_get_response(api_client, origins_list_url, status_code=200)
+
+    expected_origins = [
+        {"origin_url": "https://git.example.org/user/project", "visit_type": "git"},
+        {"origin_url": "https://svn.example.org/user/project", "visit_type": "svn"},
+    ]
+
+    assert json.loads(resp.content) == expected_origins
+
+    resp = check_http_get_response(api_client, origins_list_url, status_code=200)
+
+
 def test_save_bulk_post_with_invalid_origins(api_client, save_bulk_user):
     origins_data = [
         {
