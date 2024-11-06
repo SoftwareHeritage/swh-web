@@ -135,6 +135,7 @@ def api_origin_save_bulk(request: Request) -> Response:
           .. code-block:: shell
 
             $ curl -X POST -H "Authorization: Bearer ****" \\
+                -H "Content-Type: text/csv" \\
                 --data-binary @/path/to/origins.csv \\
                 https://archive.softwareheritage.org/api/1/origin/save/bulk/
 
