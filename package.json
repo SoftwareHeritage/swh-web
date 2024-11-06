@@ -126,6 +126,7 @@
     "typeface-alegreya-sans": "^1.1.13",
     "waypoints": "^4.0.1",
     "whatwg-fetch": "^3.6.20",
+    "xml-formatter": "^3.6.3",
     "yarn-deduplicate": "^6.0.2"
   },
   "devDependencies": {

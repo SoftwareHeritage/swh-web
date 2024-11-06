@@ -5,6 +5,8 @@
  * See top-level LICENSE file for more information
  */
 
+import xmlFormat from 'xml-formatter';
+
 import {getHumanReadableDate, genLink} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 
@@ -154,11 +156,14 @@ export function initDepositAdmin(username, isStaff) {
     // Show a modal when the "metadata" button is clicked
     $('#swh-admin-deposit-list tbody').on('click', 'tr button.metadata', function() {
       var row = depositsTable.row(this.parentNode.parentNode).data();
-      var metadata = row.raw_metadata;
+      var metadata = xmlFormat(row.raw_metadata, {indentation: '  ',
+                                                  collapseContent: true,
+                                                  lineSeparator: '\n'});
       var escapedMetadata = $('<div/>').text(metadata).html();
-      swh.webapp.showModalHtml(`Metadata of deposit ${row.id}`,
-                               `<pre style="max-height: 75vh;"><code class="xml">${escapedMetadata}</code></pre>`,
-                               '90%');
+      swh.webapp.showModalHtml(
+        `Metadata of deposit ${row.id}`,
+        `<pre style="max-height: 75vh;"><code class="xml">${escapedMetadata}</code></pre>`,
+        '90%');
       swh.webapp.highlightCode();
     });
 
