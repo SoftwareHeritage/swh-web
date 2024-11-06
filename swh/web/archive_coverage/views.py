@@ -434,7 +434,14 @@ deposited_origins: Dict[str, Any] = {
             "info_url": "https://www.ipol.im",
             "info": "software artifacts associated to the articles IPOL publishes",
             "visit_types": ["deposit"],
-            "search_pattern": "doi.org/10.5201",
+            "search_pattern": "doi.org/10.5201/ipol",
+        },
+        {
+            "type": "zenodo",
+            "info_url": "https://zenodo.org/",
+            "info": "software source code deposited in the Open Science platform Zenodo",
+            "visit_types": ["deposit"],
+            "search_pattern": "doi.org/10.5281/zenodo",
         },
     ],
 }
@@ -482,7 +489,8 @@ def _get_deposits_netloc_counts(cache_counts: bool = False) -> Counter:
         # special treatment for doi.org netloc as it is not specific enough
         # for origins mapping
         if parsed_url.netloc == "doi.org":
-            netloc += "/" + parsed_url.path.split("/")[1]
+            split_path = parsed_url.path.split("/")
+            netloc += "/" + split_path[1] + "/" + split_path[2].split(".")[0]
         return netloc
 
     @django_cache(
