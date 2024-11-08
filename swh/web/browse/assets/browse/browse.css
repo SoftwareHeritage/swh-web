@@ -135,6 +135,7 @@ td.swh-branch-date {
 
 .swh-citation {
     white-space: pre-wrap;
+    max-height: 400px;
 }
 
 .btn-swhid-copy, .btn-swhid-url-copy, .btn-citation-copy {
