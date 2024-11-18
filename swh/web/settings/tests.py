@@ -109,14 +109,19 @@ DATABASES = {
     }
 }
 
+swh_web_config.update(
+    {
+        # use temporary postgresql scheduler backend when running tests
+        "scheduler": {"cls": "temporary"},
+    }
+)
+
 # special configuration for cypress tests
 if not _pytest:
     swh_web_config.update(
         {
             "debug": True,
             "e2e_tests_mode": True,
-            # use temporary postgresql scheduler backend
-            "scheduler": {"cls": "temporary"},
             "deposit": {},
             "activate_citations_ui": True,
         }
