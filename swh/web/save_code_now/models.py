@@ -95,7 +95,7 @@ class SaveOriginRequest(models.Model):
     request_date = models.DateTimeField(auto_now_add=True)
     visit_type = models.CharField(max_length=200, null=False)
     visit_status = models.TextField(choices=VISIT_STATUSES, null=True)
-    origin_url = models.CharField(max_length=200, null=False)
+    origin_url = models.CharField(max_length=4096, null=False)
     status = models.TextField(choices=SAVE_REQUEST_STATUS, default=SAVE_REQUEST_PENDING)
     loading_task_id = models.IntegerField(default=-1)
     visit_date = models.DateTimeField(null=True)
