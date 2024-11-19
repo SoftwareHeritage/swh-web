@@ -27,7 +27,7 @@ class SaveBulkRequest(models.Model):
 
 class SaveBulkOrigin(models.Model):
     id = models.BigAutoField(primary_key=True)
-    origin_url = models.CharField(max_length=200, null=False)
+    origin_url = models.CharField(max_length=4096, null=False)
     visit_type = models.CharField(max_length=30, null=False)
     requests = models.ManyToManyField(SaveBulkRequest)
 
