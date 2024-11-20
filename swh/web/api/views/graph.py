@@ -9,7 +9,9 @@ from urllib.parse import unquote, urlparse, urlunparse
 
 import requests
 
+from django.conf import settings
 from django.http import QueryDict
+from django.http.request import split_domain_port, validate_host
 from django.http.response import StreamingHttpResponse
 from rest_framework.decorators import renderer_classes
 from rest_framework.renderers import JSONRenderer
@@ -22,7 +24,7 @@ from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
-from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAMES, get_config
+from swh.web.config import get_config
 from swh.web.utils import archive, strtobool
 
 API_GRAPH_PERM = "swh.web.api.graph"
@@ -128,7 +130,11 @@ def api_graph(request: Request) -> None:
 def api_graph_proxy(
     request: Request, graph_query: str
 ) -> Union[Response, StreamingHttpResponse]:
-    if request.get_host() not in SWH_WEB_INTERNAL_SERVER_NAMES:
+    domain, port = split_domain_port(request.get_host())
+    if not (domain and validate_host(domain, settings.UNAUTHENTICATED_HOSTS)):
+        # request does not come from an identified allowed host/network (see
+        # 'unauthenticated_api_hosts' config entry), check for proper auth and
+        # permission
         if not bool(request.user and request.user.is_authenticated):
             return Response("Authentication credentials were not provided.", status=401)
         if not request.user.has_perm(API_GRAPH_PERM):

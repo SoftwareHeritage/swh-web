@@ -15,9 +15,22 @@ from django.http.response import StreamingHttpResponse
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import ExtendedObjectType, ExtendedSWHID
 from swh.web.api.views.graph import API_GRAPH_PERM
-from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAMES, get_config
+from swh.web.config import get_config
 from swh.web.tests.helpers import check_http_get_response
 from swh.web.utils import reverse
+
+
+@pytest.fixture(autouse=True)
+def graph_config(config_updater):
+    config_updater(
+        {
+            "graph": {
+                "server_url": "http://example.org/graph/",
+                "max_edges": {"staff": 0, "user": 100000, "anonymous": 1000},
+            },
+            "unauthenticated_api_hosts": ["local.network"],
+        }
+    )
 
 
 def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_mock):
@@ -29,13 +42,25 @@ def test_graph_endpoint_no_authentication_for_vpn_users(api_client, requests_moc
         headers={"Content-Type": "application/json"},
     )
     check_http_get_response(
-        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAMES[0]
+        api_client,
+        url,
+        status_code=200,
+        server_name="localhost",
+    )
+    check_http_get_response(
+        api_client,
+        url,
+        status_code=200,
+        server_name="local.network",
     )
 
 
 def test_graph_endpoint_needs_authentication(api_client):
     url = reverse("api-1-graph", url_args={"graph_query": "stats"})
     check_http_get_response(api_client, url, status_code=401)
+    check_http_get_response(
+        api_client, url, status_code=401, server_name="public.network"
+    )
 
 
 def _authenticate_graph_user(api_client, keycloak_oidc, is_staff=False):
@@ -365,9 +390,7 @@ def test_graph_endpoint_max_edges_settings(api_client, keycloak_oidc, requests_m
 
     # currently unauthenticated user can only use the graph endpoint from
     # Software Heritage VPN
-    check_http_get_response(
-        api_client, url, status_code=200, server_name=SWH_WEB_INTERNAL_SERVER_NAMES[0]
-    )
+    check_http_get_response(api_client, url, status_code=200, server_name="localhost")
     assert (
         f"max_edges={graph_config['max_edges']['anonymous']}"
         in requests_mock.request_history[0].url

@@ -72,6 +72,7 @@ DEFAULT_CONFIG = {
             "timeout": 10,
         },
     ),
+    "unauthenticated_api_hosts": ("list", []),
     "search_config": (
         "dict",
         {

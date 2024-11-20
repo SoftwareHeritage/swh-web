@@ -44,6 +44,9 @@ DEBUG = swh_web_config["debug"]
 DEBUG_PROPAGATE_EXCEPTIONS = swh_web_config["debug"]
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config["allowed_hosts"]
+UNAUTHENTICATED_HOSTS = ["127.0.0.1", "localhost"] + swh_web_config[
+    "unauthenticated_api_hosts"
+]
 
 # Applications definition
 
