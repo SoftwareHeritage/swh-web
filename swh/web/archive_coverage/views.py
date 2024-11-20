@@ -17,14 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.config import scheduler
-from swh.web.utils import (
-    archive,
-    django_cache,
-    get_deposits_list,
-    is_swh_web_development,
-    is_swh_web_production,
-    reverse,
-)
+from swh.web.utils import archive, django_cache, get_deposits_list, reverse
 
 _swh_arch_overview_doc = (
     "https://docs.softwareheritage.org/devel/architecture/overview.html"
@@ -551,8 +544,7 @@ def _search_url(query: str, visit_type: str) -> str:
 @xframe_options_exempt
 @never_cache
 def swh_coverage(request: HttpRequest) -> HttpResponse:
-    use_cache = is_swh_web_production(request)
-    listers_metrics = _get_listers_metrics(use_cache)
+    listers_metrics = _get_listers_metrics(cache_metrics=True)
 
     for origins in listed_origins["origins"]:
         origins["count"] = "0"
@@ -574,7 +566,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 )
             # visit type from legacy nixguix lister
             visit_type_counts["nixguix"] = _get_nixguix_origins_count(
-                manifest_url, cache_count=use_cache
+                manifest_url, cache_count=True
             )
 
             count = sum(visit_type_counts.values())
@@ -634,11 +626,10 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                     search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
 
-    # filter out origin types without archived origins on production and staging
-    if not is_swh_web_development(request):
-        listed_origins["origins"] = list(
-            filter(lambda o: o["count"] != "0", listed_origins["origins"])
-        )
+    # filter out origin types without archived origins
+    listed_origins["origins"] = list(
+        filter(lambda o: o["count"] != "0", listed_origins["origins"])
+    )
 
     for origins in legacy_origins["origins"]:
         origins["search_urls"] = {}
@@ -647,7 +638,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 origins["search_pattern"], visit_type
             )
 
-    deposits_counts = _get_deposits_netloc_counts(use_cache)
+    deposits_counts = _get_deposits_netloc_counts(cache_counts=True)
 
     for origins in deposited_origins["origins"]:
         origins["count"] = "0"

@@ -16,7 +16,7 @@ from django.urls import re_path as url
 from django.views.generic.base import RedirectView
 
 from swh.web.config import get_config
-from swh.web.utils import archive, is_swh_web_production, origin_visit_types
+from swh.web.utils import archive, origin_visit_types
 from swh.web.utils.exc import sentry_capture_exception
 
 swh_web_config = get_config()
@@ -32,7 +32,7 @@ def default_view(request):
     return render(
         request,
         "homepage.html",
-        {"visit_types": origin_visit_types(use_cache=is_swh_web_production(request))},
+        {"visit_types": origin_visit_types(use_cache=True)},
     )
 
 
