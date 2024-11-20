@@ -42,3 +42,6 @@ def register_url_path_converters() -> None:
     """
     if "swhid" not in REGISTERED_CONVERTERS:
         register_converter(SWHIDConverter, "swhid")
+
+
+register_url_path_converters()

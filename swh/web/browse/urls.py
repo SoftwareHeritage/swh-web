@@ -17,7 +17,6 @@ import swh.web.browse.views.release  # noqa
 import swh.web.browse.views.revision  # noqa
 import swh.web.browse.views.snapshot  # noqa
 from swh.web.utils import origin_visit_types, reverse
-from swh.web.utils.url_path_converters import register_url_path_converters
 
 
 def _browse_help_view(request: HttpRequest) -> HttpResponse:
@@ -44,8 +43,6 @@ def _browse_origin_save_view(request: HttpRequest) -> HttpResponse:
 def _browse_swhid_iframe_legacy(request: HttpRequest, swhid: str) -> HttpResponse:
     return redirect(reverse("browse-swhid-iframe", url_args={"swhid": swhid}))
 
-
-register_url_path_converters()
 
 urlpatterns = [
     url("browse/", _browse_search_view),

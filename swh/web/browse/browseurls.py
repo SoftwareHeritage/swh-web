@@ -5,6 +5,9 @@
 
 from typing import List, Optional
 
+# call this early to ensure all the 'swhid' url path converted is registered
+# so any url registration will work as intended
+import swh.web.utils.url_path_converters  # noqa: F401
 from swh.web.utils.urlsindex import UrlsIndex
 
 browse_urls = UrlsIndex()
