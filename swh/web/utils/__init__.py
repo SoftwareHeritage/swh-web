@@ -250,33 +250,6 @@ def get_client_ip(request):
     return ip
 
 
-def is_swh_web_development(request: HttpRequest) -> bool:
-    """Indicate if we are running a development version of swh-web."""
-    site_base_url = request.build_absolute_uri("/")
-    return any(
-        host in site_base_url for host in ("localhost", "127.0.0.1", "testserver")
-    )
-
-
-def is_swh_web_staging(request: HttpRequest) -> bool:
-    """Indicate if we are running a staging version of swh-web."""
-    config = get_config()
-    site_base_url = request.build_absolute_uri("/")
-    return any(
-        server_name in site_base_url for server_name in config["staging_server_names"]
-    )
-
-
-def is_swh_web_production(request: HttpRequest) -> bool:
-    """Indicate if we are running the public production version of swh-web."""
-    config = get_config()
-    site_base_url = request.build_absolute_uri("/")
-    return any(
-        server_name in site_base_url
-        for server_name in config["production_server_names"]
-    )
-
-
 browsers_supported_image_mimes = set(
     [
         "image/gif",
@@ -315,9 +288,6 @@ def context_processor(request):
         "site_base_url": request.build_absolute_uri("/")[:-1],
         "DJANGO_SETTINGS_MODULE": os.environ["DJANGO_SETTINGS_MODULE"],
         "status": config.get("status", {}),
-        "swh_web_dev": is_swh_web_development(request),
-        "swh_web_staging": is_swh_web_staging(request),
-        "swh_web_prod": is_swh_web_production(request),
         "swh_web_version": version("swh.web"),
         "iframe_mode": False,
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
