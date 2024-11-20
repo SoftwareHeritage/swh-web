@@ -607,10 +607,10 @@ def test_api_origin_search_words(api_client):
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
-def test_api_origin_search_visit_type(api_client, mocker, backend):
+def test_api_origin_search_visit_type(api_client, config_updater, backend):
     if backend != "swh-search":
         # equivalent to not configuring search in the config
-        mocker.patch("swh.web.utils.archive.search", None)
+        config_updater({"search": None})
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -638,18 +638,20 @@ def test_api_origin_search_visit_type(api_client, mocker, backend):
     assert rv.data == []
 
 
-def test_api_origin_search_use_ql(api_client, mocker):
+def test_api_origin_search_use_ql(api_client, patch_backend):
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
         "https://github.com/memononen/libtess2",
     }
 
     ORIGINS = [{"url": origin} for origin in expected_origins]
-
-    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
-    mock_archive_search.origin_search.return_value = PagedResult(
-        results=ORIGINS,
-        next_page_token=None,
+    mock_origin_search = patch_backend(
+        "search",
+        "origin_search",
+        return_value=PagedResult(
+            results=ORIGINS,
+            next_page_token=None,
+        ),
     )
 
     query = "origin : 'github.com'"
@@ -662,17 +664,15 @@ def test_api_origin_search_use_ql(api_client, mocker):
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert {origin["url"] for origin in rv.data} == expected_origins
 
-    mock_archive_search.origin_search.assert_called_with(
+    mock_origin_search.assert_called_with(
         query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
     )
 
 
-def test_api_origin_search_ql_syntax_error(api_client, mocker):
-    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
-    mock_archive_search.origin_search.side_effect = SearchQuerySyntaxError(
-        "Invalid syntax"
+def test_api_origin_search_ql_syntax_error(api_client, patch_backend):
+    mock_origin_search = patch_backend(
+        "search", "origin_search", side_effect=SearchQuerySyntaxError("Invalid syntax")
     )
-
     query = "this is not a valid query"
 
     url = reverse(
@@ -686,17 +686,18 @@ def test_api_origin_search_ql_syntax_error(api_client, mocker):
         "reason": "Syntax error in search query: Invalid syntax",
     }
 
-    mock_archive_search.origin_search.assert_called_with(
+    mock_origin_search.assert_called_with(
         query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
     )
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
 @pytest.mark.parametrize("limit", [1, 2, 3, 10])
-def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backend):
+def test_api_origin_search_scroll(
+    api_client, archive_data, mocker, config_updater, limit, backend
+):
     if backend != "swh-search":
-        # equivalent to not configuring search in the config
-        mocker.patch("swh.web.utils.archive.search", None)
+        config_updater({"search": None})
 
     expected_origins = {
         "https://github.com/wcoder/highlightjs-line-numbers.js",
@@ -715,14 +716,15 @@ def test_api_origin_search_scroll(api_client, archive_data, mocker, limit, backe
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-storage"])
-def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, backend):
+def test_api_origin_search_limit(
+    api_client, archive_data, tests_data, config_updater, backend
+):
     if backend == "swh-search":
         tests_data["search"].origin_update(
             [{"url": "http://foobar/{}".format(i)} for i in range(2000)]
         )
     else:
-        # equivalent to not configuring search in the config
-        mocker.patch("swh.web.utils.archive.search", None)
+        config_updater({"search": None})
 
         archive_data.origin_add(
             [Origin(url="http://foobar/{}".format(i)) for i in range(2000)]
@@ -738,11 +740,10 @@ def test_api_origin_search_limit(api_client, archive_data, tests_data, mocker, b
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
-def test_api_origin_metadata_search(api_client, mocker, tests_data, backend):
-    mock_config = mocker.patch("swh.web.utils.archive.config")
-    mock_config.get_config.return_value = {
-        "search_config": {"metadata_backend": backend}
-    }
+def test_api_origin_metadata_search_1(
+    api_client, mocker, tests_data, config_updater, backend
+):
+    config_updater({"search_config": {"metadata_backend": backend}})
 
     url = reverse(
         "api-1-origin-metadata-search", query_params={"fulltext": ORIGIN_METADATA_VALUE}
@@ -787,22 +788,24 @@ def test_api_origin_metadata_search(api_client, mocker, tests_data, backend):
         assert response == expected
 
 
-def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker, tests_data):
+def test_api_origin_metadata_search_not_in_idx_storage(
+    api_client, mocker, tests_data, config_updater
+):
     """Tests the origin search for results present in swh-search but not
     returned by ``origin_intrinsic_metadata_get`` (which happens when results
     come from extrinsic metadata).
     """
-
-    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
+    mock_idx_storage = mocker.MagicMock()
     mock_idx_storage.origin_intrinsic_metadata_get.return_value = []
     mock_idx_storage.origin_intrinsic_metadata_search_fulltext.side_effect = (
         AssertionError("origin_intrinsic_metadata_search_fulltext was called")
     )
-
-    mock_config = mocker.patch("swh.web.utils.archive.config")
-    mock_config.get_config.return_value = {
-        "search_config": {"metadata_backend": "swh-search"}
-    }
+    config_updater(
+        {
+            "search_config": {"metadata_backend": "swh-search"},
+            "indexer_storage": mock_idx_storage,
+        }
+    )
 
     url = reverse(
         "api-1-origin-metadata-search",
@@ -832,18 +835,17 @@ def test_api_origin_metadata_search_not_in_idx_storage(api_client, mocker, tests
     "backend,fields",
     itertools.product(["swh-search", "swh-indexer-storage"], ["url", "url,foobar"]),
 )
-def test_api_origin_metadata_search_url_only(api_client, mocker, backend, fields):
+def test_api_origin_metadata_search_url_only(
+    api_client, patch_backend, config_updater, backend, fields
+):
     """Checks that idx_storage.origin_intrinsic_metadata_get is not called when
     its results are not needed"""
-    mocker.patch(
-        "swh.web.utils.archive.idx_storage.origin_intrinsic_metadata_get",
+    config_updater({"search_config": {"metadata_backend": backend}})
+    patch_backend(
+        "indexer_storage",
+        "origin_intrinsic_metadata_get",
         side_effect=AssertionError("origin_intrinsic_metadata_get was called"),
     )
-
-    mock_config = mocker.patch("swh.web.utils.archive.config")
-    mock_config.get_config.return_value = {
-        "search_config": {"metadata_backend": backend}
-    }
 
     url = reverse(
         "api-1-origin-metadata-search",
@@ -861,19 +863,16 @@ def test_api_origin_metadata_search_url_only(api_client, mocker, backend, fields
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
-def test_api_origin_metadata_search_limit(api_client, mocker, backend):
-    mock_config = mocker.patch("swh.web.utils.archive.config")
-    mock_config.get_config.return_value = {
-        "search_config": {"metadata_backend": backend}
-    }
+def test_api_origin_metadata_search_limit(api_client, mocker, config_updater, backend):
+    config_updater({"search_config": {"metadata_backend": backend}})
 
-    from swh.web.utils import archive
+    from swh.web import config
 
     if backend == "swh-search":
-        spied_search = mocker.spy(archive.search, "origin_search")
+        spied_search = mocker.spy(config.search(), "origin_search")
     else:
         spied_search = mocker.spy(
-            archive.idx_storage, "origin_intrinsic_metadata_search_fulltext"
+            config.indexer_storage(), "origin_intrinsic_metadata_search_fulltext"
         )
 
     def _check_search_call(limit):
@@ -941,16 +940,17 @@ def test_api_origin_extrinsic_metadata(api_client, origin):
 
 
 def test_api_origin_metadata_search_invalid(api_client, mocker):
-    mock_idx_storage = mocker.patch("swh.web.utils.archive.idx_storage")
+    from swh.web import config
+
+    spied_idx_storage = mocker.spy(config, "indexer_storage")
     url = reverse("api-1-origin-metadata-search")
     check_api_get_responses(api_client, url, status_code=400)
-    mock_idx_storage.assert_not_called()
+    spied_idx_storage.assert_not_called()
 
 
 @pytest.mark.parametrize("backend", ["swh-counters", "swh-storage"])
-def test_api_stat_counters(api_client, mocker, backend):
-    mock_config = mocker.patch("swh.web.utils.archive.config")
-    mock_config.get_config.return_value = {"counters_backend": backend}
+def test_api_stat_counters(api_client, config_updater, backend):
+    config_updater({"counters_backend": backend})
 
     url = reverse("api-1-stat-counters")
     rv = check_api_get_responses(api_client, url, status_code=200)

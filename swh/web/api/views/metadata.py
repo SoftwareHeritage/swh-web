@@ -15,6 +15,7 @@ from rest_framework.request import Request
 
 from swh.model import hashutil, swhids
 from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
+from swh.web import config
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.utils import archive, converters, reverse
@@ -127,7 +128,7 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
     else:
         page_token = None
 
-    result_page = archive.storage.raw_extrinsic_metadata_get(
+    result_page = config.storage().raw_extrinsic_metadata_get(
         target=parsed_target,
         authority=authority,
         after=after,
@@ -195,7 +196,7 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
 def api_raw_extrinsic_metadata_get(request: Request, id: str):
     # This is an internal endpoint that should only be accessed via URLs given
     # by /raw-extrinsic-metadata/swhid/; so it is not documented.
-    metadata = archive.storage.raw_extrinsic_metadata_get_by_ids(
+    metadata = config.storage().raw_extrinsic_metadata_get_by_ids(
         [hashutil.hash_to_bytes(id)]
     )
     if not metadata:
@@ -263,7 +264,7 @@ def api_raw_extrinsic_metadata_swhid_authorities(request: Request, target: str):
     except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e}") from None
 
-    authorities = archive.storage.raw_extrinsic_metadata_get_authorities(
+    authorities = config.storage().raw_extrinsic_metadata_get_authorities(
         target=parsed_target
     )
     results = [

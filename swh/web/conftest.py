@@ -1423,3 +1423,23 @@ def config_updater(mocker):
 
     mocker.patch.object(swhweb_config, "swhweb_config", original_config)
     _reload_django_settings()
+
+
+@pytest.fixture
+def patch_backend(mocker):
+    """Fixture to patch a swh.web.config backend instance
+
+    Example:
+
+      def test_xxx(patch_backend):
+        mock = patch_backend("search", "origin_search", return_value=XXX)
+        # ...
+        assert mock.assert_called_once()
+    """
+    from swh.web import config
+
+    def mock_backend(backend, attr, *args, **kw):
+        obj = config.get_config()[backend]
+        return mocker.patch.object(obj, attr, *args, **kw)
+
+    return mock_backend

@@ -6,7 +6,8 @@
  */
 
 const url = '/browse/help/';
-const statusUrl = 'https://status.softwareheritage.org';
+// statusUrl must match what is configured in settings/test.py
+const statusUrl = 'https://status.example.org';
 
 describe('Test top-bar', function() {
   beforeEach(function() {

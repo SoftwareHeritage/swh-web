@@ -94,6 +94,7 @@ def test_api_vault_cook_and_fetch(
 def test_api_vault_cook_notfound(
     api_client,
     mocker,
+    config_updater,
     directory,
     revision,
     release,
@@ -102,15 +103,15 @@ def test_api_vault_cook_notfound(
     unknown_revision,
     fetch_redirect,
 ):
-    mock_vault = mocker.patch("swh.web.utils.archive.vault")
-    mock_vault.cook.side_effect = NotFoundExc("object not found")
-    mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
-    mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
+    mocked_vault = mocker.MagicMock()
+    mocked_vault.cook.side_effect = NotFoundExc("object not found")
+    mocked_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
+    mocked_vault.progress.side_effect = NotFoundExc("cooking request not found")
     if fetch_redirect:
-        mock_vault.download_url.side_effect = NotFoundExc("cooking request not found")
+        mocked_vault.download_url.side_effect = NotFoundExc("cooking request not found")
     else:
-        mock_vault.download_url.return_value = None
-
+        mocked_vault.download_url.return_value = None
+    config_updater({"vault": mocked_vault})
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{directory}"),
         ("gitfast", f"swh:1:rev:{revision}"),
@@ -130,7 +131,7 @@ def test_api_vault_cook_notfound(
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooking of {swhid} was never requested."
-        mock_vault.progress.assert_called_with(bundle_type, swhid)
+        mocked_vault.progress.assert_called_with(bundle_type, swhid)
 
     for bundle_type, swhid in (
         ("flat", f"swh:1:dir:{unknown_directory}"),
@@ -146,7 +147,7 @@ def test_api_vault_cook_notfound(
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"{swhid} not found."
-        mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
+        mocked_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
             f"api-1-vault-download-{bundle_type.replace('_', '-')}",
@@ -157,9 +158,9 @@ def test_api_vault_cook_notfound(
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooked archive for {swhid} not found."
         if fetch_redirect:
-            mock_vault.download_url.assert_called()
+            mocked_vault.download_url.assert_called()
         else:
-            mock_vault.fetch.assert_called_with(bundle_type, swhid)
+            mocked_vault.fetch.assert_called_with(bundle_type, swhid)
 
 
 @pytest.mark.parametrize("bundle_type", ["flat", "gitfast", "git_bare"])
@@ -319,13 +320,20 @@ def test_api_vault_cook_uppercase_hash_legacy(api_client, directory, revision):
 
 
 def test_api_vault_cook_notfound_legacy(
-    api_client, mocker, directory, revision, unknown_directory, unknown_revision
+    api_client,
+    mocker,
+    config_updater,
+    directory,
+    revision,
+    unknown_directory,
+    unknown_revision,
 ):
-    mock_vault = mocker.patch("swh.web.utils.archive.vault")
-    mock_vault.cook.side_effect = NotFoundExc("object not found")
-    mock_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
-    mock_vault.progress.side_effect = NotFoundExc("cooking request not found")
-    mock_vault.download_url.return_value = None
+    mocked_vault = mocker.MagicMock()
+    mocked_vault.cook.side_effect = NotFoundExc("object not found")
+    mocked_vault.fetch.side_effect = NotFoundExc("cooked archive not found")
+    mocked_vault.progress.side_effect = NotFoundExc("cooking request not found")
+    mocked_vault.download_url.return_value = None
+    config_updater({"vault": mocked_vault})
 
     for obj_type, bundle_type, obj_id in (
         ("directory", "flat", directory),
@@ -342,7 +350,7 @@ def test_api_vault_cook_notfound_legacy(
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooking of {swhid} was never requested."
-        mock_vault.progress.assert_called_with(bundle_type, swhid)
+        mocked_vault.progress.assert_called_with(bundle_type, swhid)
 
     for obj_type, bundle_type, obj_id in (
         ("directory", "flat", unknown_directory),
@@ -357,7 +365,7 @@ def test_api_vault_cook_notfound_legacy(
 
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"{swhid} not found."
-        mock_vault.cook.assert_called_with(bundle_type, swhid, email=None)
+        mocked_vault.cook.assert_called_with(bundle_type, swhid, email=None)
 
         fetch_url = reverse(
             f"api-1-vault-download-{obj_type}",
@@ -375,4 +383,4 @@ def test_api_vault_cook_notfound_legacy(
         rv = check_api_get_responses(api_client, redirect_url, status_code=404)
         assert rv.data["exception"] == "NotFoundExc"
         assert rv.data["reason"] == f"Cooked archive for {swhid} not found."
-        mock_vault.fetch.assert_called_with(bundle_type, swhid)
+        mocked_vault.fetch.assert_called_with(bundle_type, swhid)

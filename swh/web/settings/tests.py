@@ -117,6 +117,10 @@ if not _pytest:
             "e2e_tests_mode": True,
             "deposit": {},
             "scheduler": {"cls": "memory"},
+            "status": {
+                "server_url": "https://status.example.org/",
+                "json_path": "1.0/status/123456789",
+            },
         }
     )
 

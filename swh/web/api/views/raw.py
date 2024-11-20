@@ -18,9 +18,9 @@ from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import ObjectType
 from swh.storage.algos.directory import directory_get
 from swh.storage.algos.snapshot import snapshot_get_all_branches
+from swh.web import config
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.utils import archive
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import parse_core_swhid
 
@@ -60,18 +60,20 @@ def api_raw_object(request: Request, swhid: str):
     object_id = parsed_swhid.object_id
     object_type = parsed_swhid.object_type
 
+    storage = config.storage()
+
     def not_found():
         return NotFoundExc(f"Object with id {swhid} not found.")
 
     if object_type == ObjectType.CONTENT:
-        results = archive.storage.content_find({"sha1_git": object_id})
+        results = storage.content_find({"sha1_git": object_id})
         if len(results) == 0:
             raise not_found()
         cnt = results[0]
         # `cnt.with_data()` unfortunately doesn't seem to work.
         if cnt.data is None:
             d = cnt.to_dict()
-            d["data"] = archive.storage.content_get_data({"sha1": cnt.sha1})
+            d["data"] = storage.content_get_data({"sha1": cnt.sha1})
             cnt = model.Content.from_dict(d)
             assert (
                 cnt.data is not None
@@ -79,25 +81,25 @@ def api_raw_object(request: Request, swhid: str):
         result = content_git_object(cnt)
 
     elif object_type == ObjectType.DIRECTORY:
-        dir_ = directory_get(archive.storage, object_id)
+        dir_ = directory_get(storage, object_id)
         if dir_ is None:
             raise not_found()
         result = directory_git_object(dir_)
 
     elif object_type == ObjectType.REVISION:
-        rev = archive.storage.revision_get([object_id])[0]
+        rev = storage.revision_get([object_id])[0]
         if rev is None:
             raise not_found()
         result = revision_git_object(rev)
 
     elif object_type == ObjectType.RELEASE:
-        rel = archive.storage.release_get([object_id])[0]
+        rel = storage.release_get([object_id])[0]
         if rel is None:
             raise not_found()
         result = release_git_object(rel)
 
     elif object_type == ObjectType.SNAPSHOT:
-        snp = snapshot_get_all_branches(archive.storage, object_id)
+        snp = snapshot_get_all_branches(storage, object_id)
         if snp is None:
             raise not_found()
         result = snapshot_git_object(snp)

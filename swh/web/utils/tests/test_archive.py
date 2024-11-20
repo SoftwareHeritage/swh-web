@@ -219,15 +219,18 @@ def test_origin_visit_find_by_date(archive_data):
 
 
 @given(new_origin())
-def test_lookup_origin(archive_data, mocker, new_origin):
+def test_lookup_origin(archive_data, mocker, patch_backend, new_origin):
     # clear the cache otherwise when hypothesis generated twice the same URL,
     # it will fail the test (assert_called_once will raise because the URL is
     # already in cache)
     django_cache.clear()
     archive_data.origin_add([new_origin])
     visit_types = ["git", "git-checkout"]
-    search_origin_get = mocker.patch.object(archive.search, "origin_get")
-    search_origin_get.return_value = {"url": new_origin.url, "visit_types": visit_types}
+    search_origin_get = patch_backend(
+        "search",
+        "origin_get",
+        return_value={"url": new_origin.url, "visit_types": visit_types},
+    )
     actual_origin = archive.lookup_origin(new_origin.url)
     expected_origin = OriginInfo(url=new_origin.url, visit_types=visit_types)
     assert actual_origin == expected_origin
@@ -975,13 +978,16 @@ def test_search_origin(origin):
     ]
 
 
-def test_search_origin_use_ql(mocker, origin):
+def test_search_origin_use_ql(mocker, origin, patch_backend):
     ORIGIN = [{"url": origin["url"]}]
 
-    mock_archive_search = mocker.patch("swh.web.utils.archive.search")
-    mock_archive_search.origin_search.return_value = PagedResult(
-        results=ORIGIN,
-        next_page_token=None,
+    mock_origin_search = patch_backend(
+        "search",
+        "origin_search",
+        return_value=PagedResult(
+            results=ORIGIN,
+            next_page_token=None,
+        ),
     )
 
     query = f"origin = '{origin['url']}'"
@@ -989,7 +995,7 @@ def test_search_origin_use_ql(mocker, origin):
     results = archive.search_origin(url_pattern=query, use_ql=True)[0]
     assert results == ORIGIN
 
-    mock_archive_search.origin_search.assert_called_with(
+    mock_origin_search.assert_called_with(
         query=query, page_token=None, with_visit=False, visit_types=None, limit=50
     )
 

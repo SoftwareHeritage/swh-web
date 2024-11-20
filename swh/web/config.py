@@ -5,16 +5,11 @@
 
 from __future__ import annotations
 
+import importlib
 import os
 from typing import TYPE_CHECKING, Any, Dict
 
 from swh.core import config
-from swh.counters import get_counters
-from swh.indexer.storage import get_indexer_storage
-from swh.scheduler import get_scheduler
-from swh.search import get_search
-from swh.storage import get_storage
-from swh.vault import get_vault
 from swh.web import settings
 
 if TYPE_CHECKING:
@@ -27,53 +22,19 @@ if TYPE_CHECKING:
 
 SETTINGS_DIR = os.path.dirname(settings.__file__)
 
+
+class ConfigurationError(Exception):
+    pass
+
+
 DEFAULT_CONFIG = {
     "allowed_hosts": ("list", []),
-    "storage": (
-        "dict",
-        {
-            "cls": "remote",
-            "url": "http://127.0.0.1:5002/",
-            "timeout": 10,
-        },
-    ),
-    "indexer_storage": (
-        "dict",
-        {
-            "cls": "remote",
-            "url": "http://127.0.0.1:5007/",
-            "timeout": 1,
-        },
-    ),
-    "counters": (
-        "dict",
-        {
-            "cls": "remote",
-            "url": "http://127.0.0.1:5011/",
-            "timeout": 1,
-        },
-    ),
-    "search": (
-        "dict",
-        {
-            "cls": "remote",
-            "url": "http://127.0.0.1:5010/",
-            "timeout": 10,
-        },
-    ),
     "unauthenticated_api_hosts": ("list", []),
     "search_config": (
         "dict",
         {
             "metadata_backend": "swh-search",
         },  # or "swh-search"
-    ),
-    "provenance": (
-        "dict",
-        {
-            "cls": "graph",
-            "url": "granet.internal.softwareheritage.org:50091",
-        },
     ),
     "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
@@ -118,48 +79,12 @@ DEFAULT_CONFIG = {
             },
         },
     ),
-    "vault": (
-        "dict",
-        {
-            "cls": "remote",
-            "url": "http://127.0.0.1:5005/",
-        },
-    ),
     "development_db": ("string", os.path.join(SETTINGS_DIR, "db.sqlite3")),
     "test_db": ("dict", {"name": "swh-web-test"}),
     "production_db": ("dict", {"name": "swh-web"}),
-    "deposit": (
-        "dict",
-        {
-            "private_api_url": "https://deposit.softwareheritage.org/1/private/",
-            "private_api_user": "swhworker",
-            "private_api_password": "some-password",
-        },
-    ),
     "e2e_tests_mode": ("bool", False),
-    "history_counters_url": (
-        "string",
-        (
-            "http://counters1.internal.softwareheritage.org:5011"
-            "/counters_history/history.json"
-        ),
-    ),
     "client_config": ("dict", {}),
     "keycloak": ("dict", {"server_url": "", "realm_name": ""}),
-    "graph": (
-        "dict",
-        {
-            "server_url": "http://graph.internal.softwareheritage.org:5009/graph/",
-            "max_edges": {"staff": 0, "user": 100000, "anonymous": 1000},
-        },
-    ),
-    "status": (
-        "dict",
-        {
-            "server_url": "https://status.softwareheritage.org/",
-            "json_path": "1.0/status/578e5eddcdc0cc7951000520",
-        },
-    ),
     "counters_backend": ("string", "swh-storage"),  # or "swh-counters"
     "instance_name": ("str", "archive-test.softwareheritage.org"),
     "give": ("dict", {"public_key": "", "token": ""}),
@@ -238,47 +163,64 @@ def get_config(config_file: str = "web/web") -> Dict[str, Any]:
         cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
         swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, "log_dir")
-        if swhweb_config.get("search"):
-            swhweb_config["search"] = get_search(**swhweb_config["search"])
-        else:
-            swhweb_config["search"] = None
-        swhweb_config["storage"] = get_storage(**swhweb_config["storage"])
-        swhweb_config["vault"] = get_vault(**swhweb_config["vault"])
-        swhweb_config["indexer_storage"] = get_indexer_storage(
-            **swhweb_config["indexer_storage"]
-        )
-        if swhweb_config.get("scheduler"):
-            swhweb_config["scheduler"] = get_scheduler(**swhweb_config["scheduler"])
-        swhweb_config["counters"] = get_counters(**swhweb_config["counters"])
-
+    for service in (
+        "search",
+        "storage",
+        "vault",
+        "indexer_storage",
+        "scheduler",
+        "counters",
+    ):
+        if isinstance(swhweb_config.get(service), dict):
+            mod = importlib.import_module(f"swh.{service}")
+            getter = getattr(mod, f"get_{service}")
+            swhweb_config[service] = getter(**swhweb_config[service])
     return swhweb_config
 
 
 def search() -> SearchInterface:
     """Return the current application's search."""
-    return get_config()["search"]
+    try:
+        return get_config()["search"]
+    except KeyError:
+        raise ConfigurationError("Missing 'search' configuration")
 
 
 def storage() -> StorageInterface:
     """Return the current application's storage."""
-    return get_config()["storage"]
+    try:
+        return get_config()["storage"]
+    except KeyError:
+        raise ConfigurationError("Missing 'storage' configuration")
 
 
 def vault() -> VaultInterface:
     """Return the current application's vault."""
-    return get_config()["vault"]
+    try:
+        return get_config()["vault"]
+    except KeyError:
+        raise ConfigurationError("Missing 'vault' configuration")
 
 
 def indexer_storage() -> IndexerStorageInterface:
     """Return the current application's indexer storage."""
-    return get_config()["indexer_storage"]
+    try:
+        return get_config()["indexer_storage"]
+    except KeyError:
+        raise ConfigurationError("Missing 'indexer_storage' configuration")
 
 
 def scheduler() -> SchedulerInterface:
     """Return the current application's scheduler."""
-    return get_config()["scheduler"]
+    try:
+        return get_config()["scheduler"]
+    except KeyError:
+        raise ConfigurationError("Missing 'scheduler' configuration")
 
 
 def counters() -> CountersInterface:
     """Return the current application's counters."""
-    return get_config()["counters"]
+    try:
+        return get_config()["counters"]
+    except KeyError:
+        raise ConfigurationError("Missing 'counters' configuration")

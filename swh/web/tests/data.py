@@ -45,7 +45,6 @@ from swh.web.browse.utils import (
     prepare_content_for_display,
     re_encode_content,
 )
-from swh.web.utils import archive
 
 # Module used to initialize data that will be provided as tests input
 
@@ -621,8 +620,3 @@ def override_storages(storage, idx_storage, search, counters):
             "counters": counters,
         }
     )
-
-    archive.storage = storage
-    archive.idx_storage = idx_storage
-    archive.search = search
-    archive.counters = counters
