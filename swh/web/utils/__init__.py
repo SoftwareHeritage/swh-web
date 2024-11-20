@@ -332,6 +332,7 @@ def context_processor(request):
         "top_bar": config.get("top_bar", {}),
         "matomo": config.get("matomo", {}),
         "show_corner_ribbon": config.get("show_corner_ribbon", False),
+        "corner_ribbon_text": config.get("corner_ribbon_text", ""),
         "activate_citations_ui": config.get("activate_citations_ui", False),
         "user_is_ambassador": (
             hasattr(request, "user")

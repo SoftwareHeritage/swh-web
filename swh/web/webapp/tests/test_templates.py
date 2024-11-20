@@ -6,7 +6,6 @@
 from copy import deepcopy
 from datetime import datetime, timezone
 from importlib.metadata import version
-import random
 
 import pytest
 
@@ -16,11 +15,7 @@ from swh.web.auth.utils import (
     ADMIN_LIST_DEPOSIT_PERMISSION,
     get_or_create_django_permission,
 )
-from swh.web.config import (
-    SWH_WEB_SERVER_NAMES,
-    SWH_WEB_STAGING_SERVER_NAMES,
-    get_config,
-)
+from swh.web.config import get_config
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -35,11 +30,6 @@ swh_web_version = version("swh.web")
 
 def test_layout_without_ribbon(client, config_updater):
     url = reverse("swh-web-homepage")
-    resp = check_http_get_response(
-        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAMES[0]
-    )
-    assert_not_contains(resp, "swh-corner-ribbon")
-
     config_updater({"show_corner_ribbon": False})
     resp = check_http_get_response(
         client, url, status_code=200, server_name="localhost"
@@ -47,30 +37,16 @@ def test_layout_without_ribbon(client, config_updater):
     assert_not_contains(resp, "swh-corner-ribbon")
 
 
-def test_layout_with_staging_ribbon(client):
+def test_layout_with_ribbon(client, config_updater):
     url = reverse("swh-web-homepage")
+    config_updater({"show_corner_ribbon": False})
+    config_updater({"corner_ribbon_text": "Staging"})
     resp = check_http_get_response(
-        client,
-        url,
-        status_code=200,
-        server_name=random.choice(SWH_WEB_STAGING_SERVER_NAMES),
+        client, url, status_code=200, server_name="localhost"
     )
     assert_contains(resp, "swh-corner-ribbon")
     assert_contains(resp, "Staging")
     assert_contains(resp, f"v{swh_web_version}")
-
-
-def test_layout_with_development_ribbon(client):
-    url = reverse("swh-web-homepage")
-    resp = check_http_get_response(
-        client,
-        url,
-        status_code=200,
-        server_name="localhost",
-    )
-    assert_contains(resp, "swh-corner-ribbon")
-    assert_contains(resp, "Development")
-    assert_contains(resp, f"v{swh_web_version.split('+')[0]}")
 
 
 def test_layout_with_oidc_auth_enabled(client):

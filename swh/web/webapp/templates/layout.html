@@ -157,19 +157,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
         <div class="app-content">
           <div class="container" id="swh-web-content">
             {% if show_corner_ribbon %}
-              {% if swh_web_staging %}
-                <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-corner-ribbon-banner{% endif %}">
-                  Staging
-                  <br />
-                  v{{ swh_web_version }}
-                </div>
-              {% elif swh_web_dev %}
-                <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-corner-ribbon-banner{% endif %}">
-                  Development
-                  <br />
-                  v{{ swh_web_version|split:"+"|first }}
-                </div>
-              {% endif %}
+              <div class="swh-corner-ribbon {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-corner-ribbon-banner{% endif %}">
+                {{ corner_ribbon_text }}
+                <br />
+                v{{ swh_web_version|split:"+"|first }}
+              </div>
             {% endif %}
             {% block content %}
             {% endblock content %}
