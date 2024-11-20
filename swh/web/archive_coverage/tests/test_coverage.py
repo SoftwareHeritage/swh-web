@@ -21,7 +21,6 @@ from swh.web.archive_coverage.views import (
     legacy_origins,
     listed_origins,
 )
-from swh.web.config import SWH_WEB_SERVER_NAMES
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
@@ -142,9 +141,7 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
         assert_contains(resp, f"<td>{visit_type}</td>")
 
     # check request as in production with cache enabled
-    check_http_get_response(
-        client, url, status_code=200, server_name=SWH_WEB_SERVER_NAMES[0]
-    )
+    check_http_get_response(client, url, status_code=200, server_name="localhost")
 
 
 def test_coverage_view_with_focus(client, mocker, swh_scheduler):
@@ -253,7 +250,7 @@ def test_coverage_view_filter_out_non_visited_origins(
         url,
         status_code=200,
         template_used="archive-coverage.html",
-        server_name=SWH_WEB_SERVER_NAMES[0],
+        server_name="not-web-dev",
     )
 
     for i, origins in enumerate(origins["origins"]):

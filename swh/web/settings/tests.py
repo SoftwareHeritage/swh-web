@@ -109,13 +109,6 @@ DATABASES = {
     }
 }
 
-swh_web_config.update(
-    {
-        # use scheduler memory backend when running tests
-        "scheduler": {"cls": "memory"},
-    }
-)
-
 # special configuration for cypress tests
 if not _pytest:
     swh_web_config.update(
@@ -123,6 +116,7 @@ if not _pytest:
             "debug": True,
             "e2e_tests_mode": True,
             "deposit": {},
+            "scheduler": {"cls": "memory"},
         }
     )
 

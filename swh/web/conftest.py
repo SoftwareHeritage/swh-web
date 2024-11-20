@@ -1181,12 +1181,10 @@ if "PYTEST_XDIST_WORKER" in os.environ:
 
 
 @pytest.fixture
-def swh_scheduler(swh_scheduler):
+def swh_scheduler(swh_scheduler, config_updater):
     from swh.scheduler.model import TaskType
 
-    config = get_config()
-    scheduler = config["scheduler"]
-    config["scheduler"] = swh_scheduler
+    config_updater({"scheduler": swh_scheduler})
     # create load-git and load-hg task types
     for task_type in TASK_TYPES.values():
         # see https://gitlab.softwareheritage.org/swh/devel/swh-scheduler/-/commit/c46ffadf7adf24c7eb3ffce062e8ade3818c79cc  # noqa
@@ -1275,7 +1273,6 @@ def swh_scheduler(swh_scheduler):
     swh_scheduler.add_load_archive_task_type = add_load_archive_task_type
 
     yield swh_scheduler
-    config["scheduler"] = scheduler
     get_scheduler_load_task_types.cache_clear()
 
 

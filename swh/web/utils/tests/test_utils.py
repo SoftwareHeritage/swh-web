@@ -384,7 +384,17 @@ def test_reverse_absolute_uri(request_factory):
     assert url == f"http://{request.META['SERVER_NAME']}/sample/test/view/no/url/args/"
 
 
-def test_get_deposits_list(requests_mock):
+def test_get_deposits_list(requests_mock, config_updater):
+    config_updater(
+        {
+            "deposit": {
+                "private_api_url": "http://deposit.example.org/1/private",
+                "private_api_user": "swhworker",
+                "private_api_password": "some-password",
+            }
+        }
+    )
+
     deposits_data = {
         "count": 2,
         "results": [

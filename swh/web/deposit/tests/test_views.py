@@ -46,7 +46,9 @@ def test_deposit_admin_view_available_for_user_with_permission(client, regular_u
 
 
 @pytest.mark.django_db
-def test_deposit_admin_view_list_deposits(client, staff_user, requests_mock):
+def test_deposit_admin_view_list_deposits(
+    client, staff_user, requests_mock, config_updater
+):
     deposits_data = {
         "data": [
             {
@@ -78,6 +80,16 @@ def test_deposit_admin_view_list_deposits(client, staff_user, requests_mock):
         "recordsFiltered": 645,
         "recordsTotal": 1066,
     }
+
+    config_updater(
+        {
+            "deposit": {
+                "private_api_url": "http://deposit.example.org/1/private",
+                "private_api_user": "swhworker",
+                "private_api_password": "some-password",
+            }
+        }
+    )
 
     config = get_config()["deposit"]
     private_api_url = config["private_api_url"].rstrip("/") + "/"

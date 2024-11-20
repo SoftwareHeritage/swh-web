@@ -136,7 +136,6 @@ DEFAULT_CONFIG = {
             "url": "http://127.0.0.1:5005/",
         },
     ),
-    "scheduler": ("dict", {"cls": "remote", "url": "http://127.0.0.1:5008/"}),
     "development_db": ("string", os.path.join(SETTINGS_DIR, "db.sqlite3")),
     "test_db": ("dict", {"name": "swh-web-test"}),
     "production_db": ("dict", {"name": "swh-web"}),
@@ -261,7 +260,8 @@ def get_config(config_file: str = "web/web") -> Dict[str, Any]:
         swhweb_config["indexer_storage"] = get_indexer_storage(
             **swhweb_config["indexer_storage"]
         )
-        swhweb_config["scheduler"] = get_scheduler(**swhweb_config["scheduler"])
+        if swhweb_config.get("scheduler"):
+            swhweb_config["scheduler"] = get_scheduler(**swhweb_config["scheduler"])
         swhweb_config["counters"] = get_counters(**swhweb_config["counters"])
 
     return swhweb_config
