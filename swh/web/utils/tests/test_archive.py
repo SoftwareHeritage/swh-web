@@ -12,6 +12,8 @@ import random
 from hypothesis import given, settings
 import pytest
 
+from django.core.cache import cache as django_cache
+
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
@@ -218,6 +220,10 @@ def test_origin_visit_find_by_date(archive_data):
 
 @given(new_origin())
 def test_lookup_origin(archive_data, mocker, new_origin):
+    # clear the cache otherwise when hypothesis generated twice the same URL,
+    # it will fail the test (assert_called_once will raise because the URL is
+    # already in cache)
+    django_cache.clear()
     archive_data.origin_add([new_origin])
     visit_types = ["git", "git-checkout"]
     search_origin_get = mocker.patch.object(archive.search, "origin_get")
@@ -225,6 +231,7 @@ def test_lookup_origin(archive_data, mocker, new_origin):
     actual_origin = archive.lookup_origin(new_origin.url)
     expected_origin = OriginInfo(url=new_origin.url, visit_types=visit_types)
     assert actual_origin == expected_origin
+    search_origin_get.assert_called_once()
 
     # check call to archive._origin_info was cached
     archive.lookup_origin(new_origin.url)
