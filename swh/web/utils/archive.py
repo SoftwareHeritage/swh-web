@@ -535,8 +535,8 @@ def _lookup_directory_intrinsic_citation_metadata(
             name=metadata_file_name,
             id=metadata_file_id,
             content={},
+            parsing_error=None,
         )
-        metadata_files.append(metadata_file_object)
 
         try:
             if metadata_file_type == IntrinsicMetadataFiletype.CODEMETA.value:
@@ -547,12 +547,12 @@ def _lookup_directory_intrinsic_citation_metadata(
                 metadata_file_object["content"] = yaml.safe_load(
                     metadata_file_content["data"]
                 )
-
-        except (JSONDecodeError, YAMLError):
-            raise BadInputExc(
+        except (JSONDecodeError, YAMLError) as e:
+            metadata_file_object["parsing_error"] = (
                 f"Metadata file {metadata_file_name} (sha1_git: {metadata_file_id})"
-                " could not be decoded."
+                f" could not be decoded.\n\n{e}"
             )
+        metadata_files.append(metadata_file_object)
 
     return metadata_files
 

@@ -24,7 +24,19 @@ def _enrich_citation_response(citation: Citation, request: Request) -> Dict[str,
         url_args={"q": f"sha1_git:{parsed_swhid.object_id.hex()}"},
         request=request,
     )
-    return response
+    if citation["error"] is None:
+        return response
+    else:
+        exception = BadInputExc(citation["error"])
+        setattr(
+            exception,
+            "extra_error_data",
+            {
+                "source_swhid": response["source_swhid"],
+                "source_url": response["source_url"],
+            },
+        )
+        raise exception
 
 
 @api_route(

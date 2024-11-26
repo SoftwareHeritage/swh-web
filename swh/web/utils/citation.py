@@ -83,14 +83,18 @@ def _get_bibtex_from_intrinsic_citation_metadata(
         format="bibtex",
         content="",
         source_swhid=str(QualifiedSWHID(**source_swhid_params)),
+        error=metadata_file["parsing_error"],
     )
 
-    if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
-        citation["content"] = codemeta_to_bibtex(metadata_file["content"], swhid)
-    elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
-        citation["content"] = cff_to_bibtex(
-            yaml.dump(metadata_file["content"], default_flow_style=False), swhid
-        )
+    try:
+        if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
+            citation["content"] = codemeta_to_bibtex(metadata_file["content"], swhid)
+        elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
+            citation["content"] = cff_to_bibtex(
+                yaml.dump(metadata_file["content"], default_flow_style=False), swhid
+            )
+    except Exception as e:
+        citation["error"] = str(e)
     return citation
 
 
@@ -113,6 +117,7 @@ def get_bibtex_from_origin(
             no metadata could be found or the metadata files could not be decoded
         BadInputExc: when the origin does not allow to find metadata
     """
+
     metadata = lookup_origin_intrinsic_citation_metadata(origin_url)
 
     # compute a target SWHID from latest origin snapshot

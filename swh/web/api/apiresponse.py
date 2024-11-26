@@ -204,6 +204,10 @@ def error_response(
         "exception": exception.__class__.__name__,
         "reason": str(exception),
     }
+    if hasattr(exception, "extra_error_data") and isinstance(
+        exception.extra_error_data, dict
+    ):
+        error_data.update(exception.extra_error_data)
 
     error_code = 500
     if isinstance(exception, BadInputExc):

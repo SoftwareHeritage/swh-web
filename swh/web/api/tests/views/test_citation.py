@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from yaml import YAMLError
+
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import (
     check_api_get_responses,
@@ -76,3 +78,21 @@ def test_api_citation_bibtex_swhid_get(api_client, client, objects_with_metadata
         },
     )
     check_api_citation_response(api_client, client, url, "Test Software")
+
+
+def test_api_citation_bibtex_parsing_error(api_client, origin_with_cff_file, mocker):
+
+    error_message = "Error parsing YAML file"
+    mocker.patch("yaml.safe_load").side_effect = YAMLError(error_message)
+    url = reverse(
+        "api-1-raw-intrinsic-citation-origin-get",
+        query_params={
+            "origin_url": origin_with_cff_file["url"],
+            "citation_format": "bibtex",
+        },
+    )
+    rv = check_api_get_responses(api_client, url, status_code=400)
+    assert "BadInputExc" in rv.data["exception"]
+    assert error_message in rv.data["reason"]
+    assert "source_swhid" in rv.data
+    assert "source_url" in rv.data

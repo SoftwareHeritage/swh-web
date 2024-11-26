@@ -283,6 +283,8 @@ class IntrinsicMetadataFile(TypedDict):
     """Intrinsic metadata file id (sha1 git)"""
     content: dict[str, Any]
     """Intrinsic metadata file content"""
+    parsing_error: Optional[str]
+    """Error message indicating why metadata could not be parsed"""
 
 
 class Citation(TypedDict):
@@ -292,3 +294,5 @@ class Citation(TypedDict):
     """Formatted citation string content"""
     source_swhid: str
     """Qualified SWHID of citation metadata source file"""
+    error: Optional[str]
+    """Error message indicating why citation could not be generated"""
