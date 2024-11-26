@@ -377,6 +377,10 @@ export function isStaffUser() {
   return JSON.parse($('#swh_user_is_staff').text());
 }
 
+export function isAmbassadorUser() {
+  return JSON.parse($('#swh_user_is_ambassador').text());
+}
+
 export function mirrorConfig() {
   return JSON.parse($('#swh_mirror_config').text());
 }

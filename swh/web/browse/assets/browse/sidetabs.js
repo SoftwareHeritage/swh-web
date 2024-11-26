@@ -281,7 +281,7 @@ export async function initSideTabs() {
       updateDisplayedSWHID(elt);
     });
 
-    if (activateCitationsUI() || swh.webapp.isStaffUser()) {
+    if (activateCitationsUI() || swh.webapp.isStaffUser() || swh.webapp.isAmbassadorUser()) {
 
       new ClipboardJS('.btn-citation-copy', {
         text: trigger => {

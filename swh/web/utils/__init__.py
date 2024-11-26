@@ -36,6 +36,7 @@ from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
+    SWH_AMBASSADOR_PERMISSION,
 )
 from swh.web.config import get_config, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
@@ -329,6 +330,10 @@ def context_processor(request):
         "matomo": config.get("matomo", {}),
         "show_corner_ribbon": config.get("show_corner_ribbon", False),
         "activate_citations_ui": config.get("activate_citations_ui", False),
+        "user_is_ambassador": (
+            hasattr(request, "user")
+            and request.user.has_perm(SWH_AMBASSADOR_PERMISSION)
+        ),
     }
 
     if (

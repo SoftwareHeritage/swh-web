@@ -291,18 +291,40 @@ describe('SWHIDs Tests', function() {
   });
 });
 
+function logout() {
+  cy.contains('logout')
+    .click();
+}
+
 describe('Citations Tests', function() {
 
   beforeEach(function() {
     const originUrl = 'https://git.example.org/repo_with_cff_file';
-    const url = `${this.Urls.browse_origin()}?origin_url=${originUrl}`;
-    cy.visit(url);
+    this.url = `${this.Urls.browse_origin()}?origin_url=${originUrl}`;
+    cy.adminLogin();
+    cy.visit(this.url);
     cy.intercept(this.Urls.api_1_raw_intrinsic_citation_swhid_get() + '**')
       .as('apiRawIntrinsicCitationGet');
   });
 
+  it('should not make citations tab available for anonymous user', function() {
+    logout();
+    cy.visit(this.url);
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .should('not.exist');
+  });
+
+  it('should make citations tab available for ambassador user', function() {
+    logout();
+    cy.ambassadorLogin();
+    cy.visit(this.url);
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .should('be.visible');
+  });
+
   it('should make citations tab current when clicking on its handle', function() {
     cy.get('#swh-citations .ui-slideouttab-handle')
+      .should('be.visible')
       .click();
 
     cy.get('#swh-citations-content')

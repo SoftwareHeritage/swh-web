@@ -64,6 +64,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
     <script>swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});</script>
     {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
     {{ request.user.is_staff|json_script:"swh_user_is_staff" }}
+    {{ user_is_ambassador|json_script:"swh_user_is_ambassador" }}
     {{ SWH_MIRROR_CONFIG|json_script:"swh_mirror_config" }}
     {% include "includes/favicon.html" %}
     {% block header %}

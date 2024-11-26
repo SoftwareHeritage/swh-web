@@ -123,7 +123,6 @@ if not _pytest:
             "debug": True,
             "e2e_tests_mode": True,
             "deposit": {},
-            "activate_citations_ui": True,
         }
     )
 
