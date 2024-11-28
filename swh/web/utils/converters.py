@@ -5,13 +5,15 @@
 
 import datetime
 import json
-from typing import Any, Dict, Mapping, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 from django.core.serializers.json import DjangoJSONEncoder
 
 from swh.core.utils import decode_with_escape
 from swh.model import hashutil
 from swh.model.model import (
+    OriginVisit,
+    OriginVisitStatus,
     RawExtrinsicMetadata,
     Release,
     Revision,
@@ -321,17 +323,25 @@ def from_person(person):
     return from_swh(person, bytess={"name", "fullname", "email"})
 
 
-def from_origin_visit(visit: Dict[str, Any]) -> OriginVisitInfo:
+def from_origin_visit(
+    visit: Optional[OriginVisit], visit_status: Optional[OriginVisitStatus] = None
+) -> Optional[OriginVisitInfo]:
     """Convert swh origin_visit to serializable origin_visit dictionary."""
-    ov = from_swh(
-        visit,
+    if visit is None:
+        return None
+    if visit_status is not None:
+        origin_visit = visit_status.to_dict()
+        # override visit status date with visit date
+        origin_visit.update(visit.to_dict())
+    else:
+        origin_visit = visit.to_dict()
+    return from_swh(
+        origin_visit,
         hashess={"target", "snapshot"},
         bytess={"branch"},
         dates={"date"},
         empty_dict={"metadata"},
     )
-
-    return ov
 
 
 def from_snapshot(snapshot):

@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021  The Software Heritage developers
+# Copyright (C) 2015-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,6 +9,8 @@ import hashlib
 from swh.model import hashutil
 from swh.model.model import (
     ObjectType,
+    OriginVisit,
+    OriginVisitStatus,
     Person,
     Release,
     Revision,
@@ -178,35 +180,40 @@ def test_from_origin():
     assert actual_origin == expected_origin
 
 
-def test_from_origin_visit():
-    snap_hash = "b5f0b7f716735ebffe38505c60145c4fd9da6ca3"
+def test_from_origin_visit(snapshot):
+    visit_date = datetime.datetime(2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc)
+    visit_status_date = visit_date + datetime.timedelta(minutes=10)
 
-    for snap in [snap_hash, None]:
+    for snap in [snapshot, None]:
         visit = {
-            "date": {
-                "timestamp": datetime.datetime(
-                    2015, 1, 1, 22, 0, 0, tzinfo=datetime.timezone.utc
-                ).timestamp(),
-                "offset": 0,
-                "negative_utc": False,
-            },
-            "origin": 10,
+            "date": visit_date,
+            "origin": "https://git.example.org/foo",
+            "visit": 100,
+            "type": "git",
+        }
+        visit_status = {
+            "date": visit_status_date,
+            "origin": "https://git.example.org/foo",
             "visit": 100,
             "metadata": None,
             "status": "full",
-            "snapshot": hashutil.hash_to_bytes(snap) if snap else snap,
+            "snapshot": hashutil.hash_to_bytes(snap) if snap else None,
+            "type": "git",
         }
 
         expected_visit = {
-            "date": "2015-01-01T22:00:00+00:00",
-            "origin": 10,
+            "date": visit_date.isoformat(),
+            "origin": "https://git.example.org/foo",
             "visit": 100,
             "metadata": {},
             "status": "full",
-            "snapshot": snap_hash if snap else snap,
+            "snapshot": snap if snap else None,
+            "type": "git",
         }
 
-        actual_visit = converters.from_origin_visit(visit)
+        actual_visit = converters.from_origin_visit(
+            OriginVisit.from_dict(visit), OriginVisitStatus.from_dict(visit_status)
+        )
 
         assert actual_visit == expected_visit
 

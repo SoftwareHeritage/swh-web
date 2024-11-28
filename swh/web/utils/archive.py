@@ -24,7 +24,6 @@ from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import ExtID, Origin, Revision
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.storage.algos import diff, revisions_walker
-from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
 from swh.storage.interface import ListOrder, OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
@@ -1228,7 +1227,9 @@ def lookup_origin_visits(
 
     """
     for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
-        yield converters.from_origin_visit(visit.statuses[-1].to_dict())
+        origin_visit = converters.from_origin_visit(visit.visit, visit.statuses[-1])
+        assert origin_visit
+        yield origin_visit
 
 
 def lookup_origin_visit_latest(
@@ -1261,16 +1262,23 @@ def lookup_origin_visit_latest(
         "url"
     ]
 
-    visit_status = origin_get_latest_visit_status(
-        storage,
+    visit = storage.origin_visit_get_latest(
         origin_url,
         type=type,
         allowed_statuses=allowed_statuses,
         require_snapshot=require_snapshot,
     )
-    return (
-        converters.from_origin_visit(visit_status.to_dict()) if visit_status else None
+    visit_status = (
+        storage.origin_visit_status_get_latest(
+            origin_url,
+            visit.visit,
+            allowed_statuses=allowed_statuses,
+            require_snapshot=require_snapshot,
+        )
+        if visit and visit.visit
+        else None
     )
+    return converters.from_origin_visit(visit, visit_status)
 
 
 def lookup_origin_visit(
@@ -1303,12 +1311,9 @@ def lookup_origin_visit(
             f"Origin {origin_url} or its visit with id {visit_id} not found!"
         )
     visit_status = storage.origin_visit_status_get_latest(origin_url, visit_id)
-    if visit_status:
-        return converters.from_origin_visit(
-            {**visit_status.to_dict(), "type": visit.type}
-        )
-    else:
-        return converters.from_origin_visit(visit.to_dict())
+    origin_visit = converters.from_origin_visit(visit, visit_status)
+    assert origin_visit
+    return origin_visit
 
 
 def origin_visit_find_by_date(
@@ -1331,6 +1336,7 @@ def origin_visit_find_by_date(
 
     """
     visit = storage.origin_visit_find_by_date(origin_url, visit_date, type)
+    visit_status = None
     if greater_or_equal and visit and visit.date < visit_date:
         # when visit is anterior to the provided date, trying to find another one most
         # recent
@@ -1344,24 +1350,15 @@ def origin_visit_find_by_date(
             )
 
         visit_id = visit.visit
-        visit = None
         for next_visit in iter_origin_visits_from(str(visit_id)):
             if next_visit.date >= visit_date and (
                 type is None or next_visit.type == type
             ):
                 visit = next_visit
                 break
-
     if visit and visit.visit:
         visit_status = storage.origin_visit_status_get_latest(origin_url, visit.visit)
-        if visit_status:
-            return converters.from_origin_visit(
-                {**visit_status.to_dict(), "type": visit.type}
-            )
-        else:
-            return converters.from_origin_visit(visit.to_dict())
-    else:
-        return None
+    return converters.from_origin_visit(visit, visit_status)
 
 
 def lookup_snapshot_sizes(

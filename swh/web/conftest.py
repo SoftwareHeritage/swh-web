@@ -38,7 +38,6 @@ from swh.model.hashutil import (
 from swh.model.model import Content, Directory, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
 from swh.scheduler.tests.common import TASK_TYPES
-from swh.storage.algos.origin import origin_get_latest_visit_status
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import (
     snapshot_get_all_branches,
@@ -1010,23 +1009,17 @@ class _ArchiveData:
                 visit_status = self.storage.origin_visit_status_get_latest(
                     origin_url, visit.visit
                 )
-                visits.append(
-                    converters.from_origin_visit(
-                        {**visit_status.to_dict(), "type": visit.type}
-                    )
-                )
+                visits.append(converters.from_origin_visit(visit, visit_status))
             if not next_page_token:
                 break
         return visits
 
-    def origin_visit_get_by(self, origin_url: str, visit_id: int) -> OriginVisitInfo:
+    def origin_visit_get_by(
+        self, origin_url: str, visit_id: int
+    ) -> Optional[OriginVisitInfo]:
         visit = self.storage.origin_visit_get_by(origin_url, visit_id)
-        assert visit is not None
         visit_status = self.storage.origin_visit_status_get_latest(origin_url, visit_id)
-        assert visit_status is not None
-        return converters.from_origin_visit(
-            {**visit_status.to_dict(), "type": visit.type}
-        )
+        return converters.from_origin_visit(visit, visit_status)
 
     def origin_visit_status_get_latest(
         self,
@@ -1035,17 +1028,20 @@ class _ArchiveData:
         allowed_statuses: Optional[List[str]] = None,
         require_snapshot: bool = False,
     ):
-        visit_status = origin_get_latest_visit_status(
-            self.storage,
+        visit = self.storage.origin_visit_get_latest(
             origin_url,
             type=type,
             allowed_statuses=allowed_statuses,
             require_snapshot=require_snapshot,
         )
+        visit_status = self.storage.origin_visit_status_get_latest(
+            origin_url,
+            visit.visit,
+            allowed_statuses=allowed_statuses,
+            require_snapshot=require_snapshot,
+        )
         return (
-            converters.from_origin_visit(visit_status.to_dict())
-            if visit_status
-            else None
+            converters.from_origin_visit(visit, visit_status) if visit_status else None
         )
 
     def snapshot_get(self, snapshot_id):
