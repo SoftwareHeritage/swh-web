@@ -1166,24 +1166,12 @@ def subtest(request):
     return inner
 
 
-if "PYTEST_XDIST_WORKER" in os.environ:
-    # there is concurrency issues when running tests in parallel and using swh_scheduler
-    # fixture based on pytest-postgresql, so use a temporary scheduler backend in that case
-    # as a workaround
-
-    @pytest.fixture
-    def swh_scheduler_class():
-        return "memory"
-
-    @pytest.fixture
-    def swh_scheduler_config():
-        return {}
-
-
 @pytest.fixture
-def swh_scheduler(swh_scheduler, config_updater):
+def swh_scheduler(config_updater):
+    from swh.scheduler import get_scheduler
     from swh.scheduler.model import TaskType
 
+    swh_scheduler = get_scheduler(cls="memory")
     config_updater({"scheduler": swh_scheduler})
     # create load-git and load-hg task types
     for task_type in TASK_TYPES.values():
