@@ -30,7 +30,10 @@ from swh.web.utils import demangle_url, reverse
 
 def _savable_visit_types() -> str:
     docstring = ""
-    if os.environ.get("DJANGO_SETTINGS_MODULE") != "swh.web.settings.tests":
+    if os.environ.get("DJANGO_SETTINGS_MODULE") not in (
+        "swh.web.settings.tests",
+        "swh.web.settings.cypress",
+    ):
         visit_types = sorted(get_savable_visit_types())
         if visit_types:
             for visit_type in visit_types[:-1]:

@@ -7,9 +7,6 @@
 Django tests settings for swh-web.
 """
 
-import os
-import sys
-
 from swh.web.config import get_config
 
 scope1_limiter_rate = 3
@@ -23,12 +20,12 @@ api_raw_object_rate = 5
 
 swh_web_config = get_config()
 
-_pytest = "pytest" in sys.argv[0] or "PYTEST_XDIST_WORKER" in os.environ
-
+# swh_web_config needs to be adapted before importing settings/common: this
+# later does initialization/config steps that depends on the config entries
 swh_web_config.update(
     {
         # enable django DEBUG mode only when running pytest
-        "debug": _pytest,
+        "debug": True,
         "secret_key": "test",
         "history_counters_url": "",
         "throttling": {
@@ -86,7 +83,7 @@ swh_web_config.update(
         },
         "keycloak": {
             # disable keycloak use when not running pytest
-            "server_url": "http://localhost:8080/auth/" if _pytest else "",
+            "server_url": "http://localhost:8080/auth/",
             "realm_name": "SoftwareHeritage",
         },
         # use a stricter browse content views rate limit for the tests
@@ -109,66 +106,8 @@ DATABASES = {
     }
 }
 
-# special configuration for cypress tests
-if not _pytest:
-    swh_web_config.update(
-        {
-            "debug": True,
-            "e2e_tests_mode": True,
-            "deposit": {},
-            "scheduler": {"cls": "memory"},
-            "status": {
-                "server_url": "https://status.example.org/",
-                "json_path": "1.0/status/123456789",
-            },
-        }
-    )
+# silent DEBUG output when running unit tests
+LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
 
-    from django.conf import settings
-
-    from swh.web.tests.data import get_tests_data, override_storages
-
-    # make the webapp fetch data from memory storages
-    test_data = get_tests_data()
-    override_storages(
-        test_data["storage"],
-        test_data["idx_storage"],
-        test_data["search"],
-        test_data["counters"],
-    )
-
-    # use sqlite3 backend for django database
-    build_id = os.environ.get("CYPRESS_PARALLEL_BUILD_ID", "")
-    settings.DATABASES["default"].update(
-        {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": f"swh-web-test{build_id}.sqlite3",
-        }
-    )
-
-    # to prevent "database is locked" error when running cypress tests
-    from django.db.backends.signals import connection_created
-
-    def activate_wal_journal_mode(sender, connection, **kwargs):
-        cursor = connection.cursor()
-        cursor.execute("PRAGMA journal_mode = WAL;")
-
-    connection_created.connect(activate_wal_journal_mode)
-    # ensure logs are displayed in console when settings.DEBUG is False
-    LOGGING["handlers"]["console"]["filters"] = []  # type: ignore
-    # only display logs whose level is >= WARNING when running cypress tests
-    LOGGING["handlers"]["console"]["level"] = "WARNING"  # type: ignore
-
-    # Use HTML minifier with cypress tests, as in production
-    INSTALLED_APPS = INSTALLED_APPS + [
-        "django_minify_html",
-    ]
-    MIDDLEWARE = list(MIDDLEWARE)
-    # MinifyHtmlMiddleware must be before the GZipMiddleware used when running cypress tests
-    MIDDLEWARE.insert(1, "django_minify_html.middleware.MinifyHtmlMiddleware")
-else:
-    # silent DEBUG output when running unit tests
-    LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
-
-LOGIN_URL = "login" if not _pytest else "oidc-login"
-LOGOUT_URL = "logout" if not _pytest else "oidc-logout"
+LOGIN_URL = "oidc-login"
+LOGOUT_URL = "oidc-logout"

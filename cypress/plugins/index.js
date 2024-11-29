@@ -175,7 +175,7 @@ module.exports = (on, config) => {
     processAddForgeNowInboundEmail(emailSrc) {
       try {
         execFileSync('django-admin',
-                     ['process_inbound_email', '--settings=swh.web.settings.tests'],
+                     ['process_inbound_email', '--settings=swh.web.settings.cypress'],
                      {input: emailSrc});
         return true;
       } catch (_) {

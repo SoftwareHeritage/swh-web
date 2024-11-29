@@ -2,6 +2,7 @@ TEST_DIRS := ./swh/web/
 TESTFLAGS += --hypothesis-profile=swh-web-fast
 TESTFULL_FLAGS = --hypothesis-profile=swh-web
 YARN ?= yarn
+SETTINGS_CYPRESS ?= swh.web.settings.cypress
 SETTINGS_TEST ?= swh.web.settings.tests
 SETTINGS_DEV ?= swh.web.settings.development
 SETTINGS_PROD = swh.web.settings.production
@@ -95,7 +96,7 @@ test-full:
 test-frontend-cmd: build-webpack-test add-users-test
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & \
+	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_CYPRESS) & \
 	sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 && \
 	$(YARN) mochawesome && $(YARN) nyc-report"
 
@@ -113,7 +114,7 @@ test-frontend-ui-cmd: add-users-test yarn-install
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
 	$(YARN) start-dev & \
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST) & \
+	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_CYPRESS) & \
 	sleep 10 && $(YARN) run cypress open"
 
 test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1

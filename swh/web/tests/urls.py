@@ -49,7 +49,10 @@ if get_config()["e2e_tests_mode"]:
         ),
     ]
 
-if os.environ.get("DJANGO_SETTINGS_MODULE") == "swh.web.settings.tests":
+if os.environ.get("DJANGO_SETTINGS_MODULE") in (
+    "swh.web.settings.cypress",
+    "swh.web.settings.tests",
+):
     from swh.web.tests.views import add_origin_with_contents
 
     urlpatterns.append(
