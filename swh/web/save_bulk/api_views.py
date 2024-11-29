@@ -26,7 +26,7 @@ from swh.web.auth.utils import API_SAVE_BULK_PERMISSION
 from swh.web.config import get_config, scheduler
 from swh.web.save_bulk.models import SaveBulkOrigin, SaveBulkRequest
 from swh.web.save_code_now.origin_save import validate_origin_url
-from swh.web.utils import reverse
+from swh.web.utils import datetime_to_utc, reverse
 from swh.web.utils.exc import BadInputExc, ForbiddenExc, NotFoundExc, UnauthorizedExc
 
 save_bulk_api_urls = APIUrls()
@@ -514,10 +514,14 @@ def api_origin_save_bulk_request_info(request: Request, request_id: UUID):
                 visit_type=origin.visit_type,
                 status=status,
                 last_scheduling_date=(
-                    last_scheduled.isoformat() if last_scheduled else None
+                    datetime_to_utc(last_scheduled).isoformat()
+                    if last_scheduled
+                    else None
                 ),
                 last_visit_date=(
-                    last_visit_date.isoformat() if last_visit_date else None
+                    datetime_to_utc(last_visit_date).isoformat()
+                    if last_visit_date
+                    else None
                 ),
                 last_visit_status=(
                     last_visit_status.value if last_visit_status else None
