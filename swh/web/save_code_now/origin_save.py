@@ -179,8 +179,14 @@ def get_savable_visit_types_dict(privileged_user: bool = False) -> Dict:
     # filter visit types according to scheduler load task types if available
     try:
         load_task_types = get_scheduler_load_task_types()
+        assert load_task_types, "Empty load task types from scheduler"
         return {k: v for k, v in task_types.items() if v in load_task_types}
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "Could not retrieve load task types from the scheduler. "
+            "Fall back to the default hardcoded list. Error was: %s",
+            exc,
+        )
         return task_types
 
 
