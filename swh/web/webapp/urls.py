@@ -41,12 +41,13 @@ def stat_counters(request):
     url = get_config()["history_counters_url"]
     stat_counters_history = {}
 
-    try:
-        response = requests.get(url, timeout=5)
-        stat_counters_history = json.loads(response.text)
-    except Exception as exc:
-        logger.exception(exc)
-        sentry_capture_exception(exc)
+    if url:
+        try:
+            response = requests.get(url, timeout=5)
+            stat_counters_history = json.loads(response.text)
+        except Exception as exc:
+            logger.exception(exc)
+            sentry_capture_exception(exc)
 
     counters = {
         "stat_counters": stat_counters,
