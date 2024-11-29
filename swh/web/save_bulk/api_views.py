@@ -452,7 +452,9 @@ def api_origin_save_bulk_request_info(request: Request, request_id: UUID):
             (listed_origin.url, listed_origin.visit_type): listed_origin
             for listed_origin in scheduler()
             .get_listed_origins(
-                lister.id, urls=[origin.origin_url for origin in page.object_list]
+                lister.id,
+                urls=[origin.origin_url for origin in page.object_list],
+                limit=per_page,
             )
             .results
         }

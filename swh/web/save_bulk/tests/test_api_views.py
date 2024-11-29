@@ -401,7 +401,7 @@ def test_save_bulk_request_info_invalid_user(api_client, save_bulk_user):
     }
 
 
-NB_SUBMITTED_ORIGINS = 1000
+NB_SUBMITTED_ORIGINS = 2000
 
 
 @pytest.fixture
@@ -506,6 +506,7 @@ def test_save_bulk_request_info_successful_before_lister_processing(
     url = reverse(
         "api-1-save-origin-bulk-request-info",
         url_args={"request_id": request_id},
+        query_params={"per_page": NB_SUBMITTED_ORIGINS},
     )
     resp = check_api_get_responses(api_client, url, status_code=200)
 
@@ -527,7 +528,36 @@ def save_bulk_request_info_user(request):
     return request.getfixturevalue(request.param)
 
 
-def test_save_bulk_request_info_successful_after_lister_processing(
+def test_save_bulk_request_info_successful_after_lister_processing_no_pagination(
+    api_client, save_bulk_request_info_user, save_bulk_request_info_lister_data
+):
+    api_client.force_login(save_bulk_request_info_user)
+    request_id, accepted_origins, rejected_origins = save_bulk_request_info_lister_data
+
+    url = reverse(
+        "api-1-save-origin-bulk-request-info",
+        url_args={"request_id": request_id},
+        query_params={"per_page": NB_SUBMITTED_ORIGINS},
+    )
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    submitted_origins_info = resp.data
+
+    assert len(submitted_origins_info) == len(accepted_origins) + len(rejected_origins)
+
+    assert {
+        origin_info["origin_url"]
+        for origin_info in submitted_origins_info
+        if origin_info["status"] == "accepted"
+    } == {origin["origin_url"] for origin in accepted_origins}
+
+    assert {
+        origin_info["origin_url"]
+        for origin_info in submitted_origins_info
+        if origin_info["status"] == "rejected"
+    } == {origin["origin_url"] for origin in rejected_origins}
+
+
+def test_save_bulk_request_info_successful_after_lister_processing_pagination(
     api_client, save_bulk_request_info_user, save_bulk_request_info_lister_data
 ):
     request_id, accepted_origins, rejected_origins = save_bulk_request_info_lister_data
