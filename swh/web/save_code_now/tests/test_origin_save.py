@@ -113,7 +113,6 @@ def _get_save_origin_task_info_test(
     swh_scheduler,
     task_archived=False,
 ):
-
     task, task_run = _fill_scheduler_db(swh_scheduler, task_archived=task_archived)
 
     sor = SaveOriginRequest.objects.create(
@@ -160,7 +159,6 @@ def _get_save_origin_task_info_test(
 @pytest.mark.django_db
 def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     # create a save request
-
     task, _ = _fill_scheduler_db(swh_scheduler)
 
     SaveOriginRequest.objects.create(
@@ -172,6 +170,7 @@ def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
         loading_task_id=task.id,
     )
 
+    # mock scheduler and archive
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request
@@ -210,6 +209,7 @@ def _get_save_origin_requests(
         swh_scheduler, task_status="next_run_scheduled", task_run_status=load_status
     )
 
+    assert task is not None
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -220,6 +220,7 @@ def _get_save_origin_requests(
         loading_task_id=task.id,
     )
 
+    # mock scheduler and archives
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created
@@ -538,6 +539,7 @@ def test_refresh_in_progress_save_request_statuses(
         task_status="next_run_scheduled",
         task_run_status=SAVE_TASK_SCHEDULED,
     )
+    assert task is not None
 
     # returned visit status
     SaveOriginRequest.objects.create(
@@ -550,6 +552,7 @@ def test_refresh_in_progress_save_request_statuses(
         loading_task_id=task.id,
     )
 
+    # mock scheduler and archives
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created
@@ -635,13 +638,14 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
     """Refresh filters save origins requests and update if changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
+    # returned visit status
 
     task, task_run = _fill_scheduler_db(
         swh_scheduler,
         task_status="next_run_scheduled",
         task_run_status=SAVE_TASK_SCHEDULED,
     )
-
+    assert task is not None
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -652,6 +656,7 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
         loading_task_id=task.id,
     )
 
+    # mock scheduler and archives
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created
