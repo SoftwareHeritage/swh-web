@@ -135,10 +135,270 @@ export function populateRequestBrowseList() {
     });
 }
 
+function isGitHubUrl(url) {
+  let originUrl = new URL(url);
+  let hostname = originUrl.hostname;
+
+  const github = ['github.com', 'www.github.com'];
+  if (github.includes(hostname)) {
+    return true;
+  }
+
+  const github_re = new RegExp('\.github\.(com|io)$');
+  if (github_re.test(url)) {
+    return true;
+  }
+
+  return false;
+}
+
+function isMissingSlash(url) {
+  let originUrl = new URL(url);
+  return originUrl.origin == url;
+}
+
+function RegExpX(re) {
+  return RegExp(re.replace(/\s+|#.*/g, ''));
+}
+
+const bitbucket_pathname_extra_re = RegExpX(`
+  /
+  (
+    (projects|users)
+    (
+      # end of URL path
+    |
+      /
+      (
+        # end of URL path
+      |
+        [^/]+
+        (
+          # end of URL path
+        |
+          /repos/[^/]+/browse
+        )
+      )
+    )
+  |
+    repos
+  |
+    login
+  |
+    getting-started
+  |
+    about
+  |
+    plugins/servlet/search
+  )$`);
+
+const cgit_pathname_extra_re = RegExpX(`
+  /
+  (
+    [^/]+/(refs|log|commit|diff|patch|stats|plain|snapshot)/.*
+  )$`);
+
+const cgit_search_extra_re = RegExpX(`
+  ^
+  (
+    \\?q=[^;&]+
+  )$`);
+
+const gitlab_pathname_extra_re = RegExpX(`
+  /
+  (
+    explore
+    (
+      # end of URL path
+    |
+      /
+      (
+        projects
+        (
+          # end of URL path
+        |
+          /
+          (trending|starred|topics)
+        )
+      |
+        groups
+      |
+        catalog
+      |
+        snippets
+      )
+    )
+  |
+    help
+    (
+      # end of URL path
+    |
+      /
+      (
+        # end of URL path
+      |
+        .*\\.md
+      )
+    )
+  |
+    users/
+    (
+      sign_(in|up)
+    |
+      password/new
+    )
+  |
+    [^/]+/([^/]+/)+(activity|container_registry)
+  |
+    [^/]+/([^/]+/)+-/(tree|commits?|archive|blob|raw|blame|network|wikis|issues?|
+                      activity|project_members|labels|boards|milestones|merge_requests|
+                      branches|tags|starrers|compare|snippets?|pipelines?|jobs?|pipeline_schedules?|
+                      artifacts?|releases?|ml|environments?|incidents?|graphs|value_stream_analytics)/.*
+  )$`);
+
+const gitea_pathname_extra_re = RegExpX(`
+  /
+  (
+    explore
+    (
+      # end of URL path
+    |
+      /
+      (
+        repos
+      |
+        users
+      |
+        organizations
+      |
+        code
+      )
+    )
+  |
+    user/(login|forgot_password)
+  |
+    [^/]+/([^/]+/)+
+    (
+      \\.rss
+    |
+      /
+      (
+        actions|activity|branches|commits?|src|compare|find|forks|issues|packages
+        |projects|pulls|labels|milestones|releases|stars|tags|watchers|wiki
+      )(|/.*)
+    )
+  )$`);
+
+const gitiles_search_extra_re = RegExpX(`
+  ^
+  (
+    \\?format=(TEXT|JSON)
+  )$`);
+
+const gitiles_pathname_extra_re = RegExpX(`
+  /
+  (
+    login/.*
+  |
+    [^/]+/\\+
+    (
+      refs
+    |
+      /refs/(heads|tags)/.*
+    |
+      log
+    |
+      log/refs/(heads|tags)/.*
+    |
+      log/[a-f0-9]{40}(|/.*)
+    |
+      blame/[a-f0-9]{40}/.+
+    |
+      archive/refs/(heads|tags)/.*
+    |
+      archive/[a-f0-9]{40}\\.tar\\.gz
+    |
+      /[a-f0-9]{40}(|/.*|\\^|\\^/.*|\\^!|\\^!/.*)
+    )
+  )$`);
+
+const gitweb_search_extra_re = RegExpX(`
+  (
+    \\?
+    (
+      p=.*
+    |
+      a=project_list[&;].*
+    |
+      a=project_index
+    |
+      a=opml
+    )
+  )$`);
+
+const stagit_pathname_extra_re = RegExpX(`
+  /
+  (
+    [^/]+/log\\.html
+  |
+    [^/]+/files\\.html
+  |
+    [^/]+/refs\\.html
+  |
+    [^/]+/file/.*\\.html
+  |
+    [^/]+/commit/[a-f0-9]{40}\\.html
+  |
+  )$`);
+
+function getUrlExtra(url) {
+  let originUrl = new URL(url);
+  let m = null;
+
+  const forge_type = $('#swh-input-forge-type').val()
+  if (forge_type == 'bitbucket') {
+    m = bitbucket_pathname_extra_re.exec(originUrl.pathname);
+  } else if (forge_type == 'cgit') {
+    m = cgit_pathname_extra_re.exec(originUrl.pathname) ||
+        cgit_search_extra_re.exec(originUrl.search);
+  } else if (['gitlab', 'heptapod'].includes(forge_type)) {
+    m = gitlab_pathname_extra_re.exec(originUrl.pathname);
+  } else if (['gogs', 'gitea', 'forgejo'].includes(forge_type)) {
+    m = gitea_pathname_extra_re.exec(originUrl.pathname);
+  } else if (forge_type == 'gitiles') {
+    m = gitiles_pathname_extra_re.exec(originUrl.pathname) ||
+        gitiles_search_extra_re.exec(originUrl.search);
+  } else if (forge_type == 'gitweb') {
+    m = gitweb_search_extra_re.exec(originUrl.search);
+  } else if (forge_type == 'stagit') {
+    m = stagit_pathname_extra_re.exec(originUrl.pathname);
+  }
+  return m ? m[1] : null;
+}
+
 export function validateForgeUrl(input) {
   let customValidity = '';
   if (!validateUrl(input.value.trim(), ['http:', 'https:'])) {
     customValidity = 'The provided forge URL is not valid.';
+  }
+  if (isGitHubUrl(input.value.trim())) {
+    customValidity = 'The provided forge URL is on GitHub.\nUse Save code now instead.';
+  }
+  if (isMissingSlash(input.value.trim())) {
+    customValidity = 'The provided forge URL was not a canonical URL.\nAdd a forward slash character to the end.';
+  }
+  let extra = getUrlExtra(input.value.trim());
+  if (extra) {
+    customValidity = `
+      The provided forge URL was not a base URL.
+
+      Remove this string from the URL:
+
+      ${extra}
+
+      Remove all user/group/repo names.
+      Remove everything after both of those.`
+      .replace(/^\s+/, '').replace(/\n[ \t]+/g, '\n');
   }
   input.setCustomValidity(customValidity);
 }
