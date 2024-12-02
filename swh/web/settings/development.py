@@ -9,6 +9,17 @@ Django development settings for swh-web.
 
 from django.core.cache import cache
 
+from swh.web.config import get_config
+
+swh_web_config = get_config()
+
+swh_web_config.update(
+    {
+        "show_corner_ribbon": True,
+        "corner_ribbon_text": "Development",
+    }
+)
+
 from .common import *  # noqa
 
 AUTH_PASSWORD_VALIDATORS = []  # disable any pwd validation mechanism

@@ -21,6 +21,7 @@ swh_web_config.update(
         "debug": False,  # debug must be off for cypress tests; we do not want
         # django to generate the debug page instead of a proper 404 or 50x page...
         "e2e_tests_mode": True,
+        "corner_ribbon_text": "Cypress Tests",
         "deposit": {},
         "keycloak": None,
         "scheduler": get_scheduler(cls="memory"),

@@ -39,8 +39,7 @@ def test_layout_without_ribbon(client, config_updater):
 
 def test_layout_with_ribbon(client, config_updater):
     url = reverse("swh-web-homepage")
-    config_updater({"show_corner_ribbon": False})
-    config_updater({"corner_ribbon_text": "Staging"})
+    config_updater({"show_corner_ribbon": True, "corner_ribbon_text": "Staging"})
     resp = check_http_get_response(
         client, url, status_code=200, server_name="localhost"
     )

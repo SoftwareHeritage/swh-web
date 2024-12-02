@@ -14,10 +14,11 @@ from swh.web.utils import reverse
 
 
 @pytest.mark.django_db
-def test_banners_deactivate(client, django_settings):
+def test_banners_deactivate(client, django_settings, config_updater):
     """Check banners feature is deactivated when the swh.web.banners django
     application is not in installed apps."""
 
+    config_updater({"show_corner_ribbon": True, "corner_ribbon_text": "Tests"})
     banners_app = "swh.web.banners"
     if banners_app not in django_settings.SWH_DJANGO_APPS:
         django_settings.SWH_DJANGO_APPS = django_settings.SWH_DJANGO_APPS + [
