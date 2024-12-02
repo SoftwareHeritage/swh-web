@@ -178,6 +178,13 @@ def get_config(config_file: str = "web/web") -> Dict[str, Any]:
     return swhweb_config
 
 
+def oidc_enabled() -> bool:
+    try:
+        return bool(get_config()["keycloak"]["server_url"])
+    except:  # noqa: E722
+        return False
+
+
 def search() -> SearchInterface:
     """Return the current application's search."""
     try:

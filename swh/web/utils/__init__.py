@@ -38,7 +38,7 @@ from swh.web.auth.utils import (
     MAILMAP_ADMIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
 )
-from swh.web.config import get_config, search
+from swh.web.config import get_config, oidc_enabled, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
 
 DATATABLES_MAX_PAGE_SIZE = get_config().get("datatables_max_page_size", 1000)
@@ -282,7 +282,7 @@ def context_processor(request):
         "swh_object_icons": swh_object_icons,
         "available_languages": None,
         "swh_client_config": config["client_config"],
-        "oidc_enabled": bool(config["keycloak"]["server_url"]),
+        "oidc_enabled": oidc_enabled(),
         "browsers_supported_image_mimes": browsers_supported_image_mimes,
         "keycloak": config["keycloak"],
         "site_base_url": request.build_absolute_uri("/")[:-1],

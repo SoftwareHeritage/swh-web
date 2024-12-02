@@ -9,16 +9,14 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path as url
 
-from swh.web.config import get_config
+from swh.web.config import get_config, oidc_enabled
 
 # prevent code execution when building documentation to avoid errors
 # with autodoc processing
 if "SWH_DOC_BUILD" not in os.environ:
     config = get_config()
 
-    oidc_enabled = bool(config["keycloak"]["server_url"])
-
-    if oidc_enabled:
+    if oidc_enabled():
         # use swh-auth views in admin site for login/logout when webapp
         # uses Keycloak for authentication
         from swh.auth.django.views import oidc_login, oidc_logout

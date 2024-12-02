@@ -19,7 +19,7 @@ import warnings
 
 from django.utils import encoding
 
-from swh.web.config import get_config
+from swh.web.config import get_config, oidc_enabled
 
 # Fix django-js-reverse 0.9.1 compatibility with django 4.x
 # TODO: Remove that hack once a new django-js-reverse release
@@ -373,9 +373,7 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-oidc_enabled = bool(get_config()["keycloak"]["server_url"])
-
-if not oidc_enabled:
+if not oidc_enabled():
     LOGIN_URL = "login"
     LOGOUT_URL = "logout"
 else:

@@ -18,15 +18,12 @@ from swh.web.auth.views import (
     oidc_profile_view,
     oidc_revoke_bearer_tokens,
 )
-from swh.web.config import get_config
+from swh.web.config import get_config, oidc_enabled
 
 config = get_config()
-
-oidc_enabled = bool(config["keycloak"]["server_url"])
-
 urlpatterns = []
 
-if not oidc_enabled:
+if not oidc_enabled():
     urlpatterns = [
         url(
             r"^login/$",
@@ -35,7 +32,7 @@ if not oidc_enabled:
         )
     ]
 
-if oidc_enabled or config["e2e_tests_mode"]:
+if oidc_enabled() or config["e2e_tests_mode"]:
     urlpatterns += auth_urlpatterns + [
         url(
             r"^oidc/generate-bearer-token/$",
