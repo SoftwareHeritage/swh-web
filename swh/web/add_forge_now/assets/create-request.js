@@ -149,8 +149,8 @@ function isGitHubUrl(url) {
     return true;
   }
 
-  const githubRe = new RegExp('.github.(com|io)$');
-  if (githubRe.test(url)) {
+  const githubRe = new RegExp('\\.github\\.(com|io)$');
+  if (githubRe.test(hostname)) {
     return true;
   }
 
