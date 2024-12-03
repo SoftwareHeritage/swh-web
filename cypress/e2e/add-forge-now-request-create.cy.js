@@ -336,16 +336,26 @@ describe('Test add-forge-request creation', function() {
 
   });
 
-  it('should not validate form when forge URL is invalid', function() {
-    cy.userLogin();
-    cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'bitbucket.org', 'test', 'test@example.com', 'on', 'test comment');
-    submitForm();
+  const invalidForgeInputData = [
+    ['bitbucket', 'bitbucket.org'], // missing URL scheme
+    ['gitlab', 'https://gitlab.com'], // missing trailing slash
+    ['gitea', 'https://gitea.com/explore/repos'], // not a base URL
+    ['gitlab', 'https://github.com/user/project'] // github repo URL, not a forge
+  ];
 
-    cy.get('#swh-input-forge-url')
-      .then(input => {
-        assert.isFalse(input[0].checkValidity());
-      });
+  invalidForgeInputData.forEach(forgeInputData => {
+    const [forgeType, forgeURL] = forgeInputData;
+    it(`should not validate form for such invalid forge URL: ${forgeURL}`, function() {
+      cy.userLogin();
+      cy.visit(this.addForgeNowUrl);
+      populateForm(forgeType, forgeURL, 'test', 'test@example.com', 'on', 'test comment');
+      submitForm();
+
+      cy.get('#swh-input-forge-url')
+        .then(input => {
+          assert.isFalse(input[0].checkValidity());
+        });
+    });
   });
 
 });
