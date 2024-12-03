@@ -136,16 +136,16 @@ export function populateRequestBrowseList() {
 }
 
 function isGitHubUrl(url) {
-  let originUrl = new URL(url);
-  let hostname = originUrl.hostname;
+  const originUrl = new URL(url);
+  const hostname = originUrl.hostname;
 
   const github = ['github.com', 'www.github.com'];
   if (github.includes(hostname)) {
     return true;
   }
 
-  const github_re = new RegExp('\.github\.(com|io)$');
-  if (github_re.test(url)) {
+  const githubRe = new RegExp('.github.(com|io)$');
+  if (githubRe.test(url)) {
     return true;
   }
 
@@ -153,15 +153,15 @@ function isGitHubUrl(url) {
 }
 
 function isMissingSlash(url) {
-  let originUrl = new URL(url);
-  return originUrl.origin == url;
+  const originUrl = new URL(url);
+  return originUrl.origin === url;
 }
 
 function RegExpX(re) {
   return RegExp(re.replace(/\s+|#.*/g, ''));
 }
 
-const bitbucket_pathname_extra_re = RegExpX(`
+const bitbucketPathnameExtraRe = RegExpX(`
   /
   (
     (projects|users)
@@ -192,19 +192,19 @@ const bitbucket_pathname_extra_re = RegExpX(`
     plugins/servlet/search
   )$`);
 
-const cgit_pathname_extra_re = RegExpX(`
+const cgitPathnameExtraRe = RegExpX(`
   /
   (
     [^/]+/(refs|log|commit|diff|patch|stats|plain|snapshot)/.*
   )$`);
 
-const cgit_search_extra_re = RegExpX(`
+const cgitSearchExtraRe = RegExpX(`
   ^
   (
     \\?q=[^;&]+
   )$`);
 
-const gitlab_pathname_extra_re = RegExpX(`
+const gitlabPathnameExtraRe = RegExpX(`
   /
   (
     explore
@@ -256,7 +256,7 @@ const gitlab_pathname_extra_re = RegExpX(`
                       artifacts?|releases?|ml|environments?|incidents?|graphs|value_stream_analytics)/.*
   )$`);
 
-const gitea_pathname_extra_re = RegExpX(`
+const giteaPathnameExtraRe = RegExpX(`
   /
   (
     explore
@@ -289,13 +289,13 @@ const gitea_pathname_extra_re = RegExpX(`
     )
   )$`);
 
-const gitiles_search_extra_re = RegExpX(`
+const gitilesSearchExtraRe = RegExpX(`
   ^
   (
     \\?format=(TEXT|JSON)
   )$`);
 
-const gitiles_pathname_extra_re = RegExpX(`
+const gitilesPathnameExtraRe = RegExpX(`
   /
   (
     login/.*
@@ -322,7 +322,7 @@ const gitiles_pathname_extra_re = RegExpX(`
     )
   )$`);
 
-const gitweb_search_extra_re = RegExpX(`
+const gitwebSearchExtraRe = RegExpX(`
   (
     \\?
     (
@@ -336,7 +336,7 @@ const gitweb_search_extra_re = RegExpX(`
     )
   )$`);
 
-const stagit_pathname_extra_re = RegExpX(`
+const stagitPathnameExtraRe = RegExpX(`
   /
   (
     [^/]+/log\\.html
@@ -352,26 +352,26 @@ const stagit_pathname_extra_re = RegExpX(`
   )$`);
 
 function getUrlExtra(url) {
-  let originUrl = new URL(url);
+  const originUrl = new URL(url);
   let m = null;
 
-  const forge_type = $('#swh-input-forge-type').val()
-  if (forge_type == 'bitbucket') {
-    m = bitbucket_pathname_extra_re.exec(originUrl.pathname);
-  } else if (forge_type == 'cgit') {
-    m = cgit_pathname_extra_re.exec(originUrl.pathname) ||
-        cgit_search_extra_re.exec(originUrl.search);
-  } else if (['gitlab', 'heptapod'].includes(forge_type)) {
-    m = gitlab_pathname_extra_re.exec(originUrl.pathname);
-  } else if (['gogs', 'gitea', 'forgejo'].includes(forge_type)) {
-    m = gitea_pathname_extra_re.exec(originUrl.pathname);
-  } else if (forge_type == 'gitiles') {
-    m = gitiles_pathname_extra_re.exec(originUrl.pathname) ||
-        gitiles_search_extra_re.exec(originUrl.search);
-  } else if (forge_type == 'gitweb') {
-    m = gitweb_search_extra_re.exec(originUrl.search);
-  } else if (forge_type == 'stagit') {
-    m = stagit_pathname_extra_re.exec(originUrl.pathname);
+  const forgeType = $('#swh-input-forge-type').val();
+  if (forgeType === 'bitbucket') {
+    m = bitbucketPathnameExtraRe.exec(originUrl.pathname);
+  } else if (forgeType === 'cgit') {
+    m = cgitPathnameExtraRe.exec(originUrl.pathname) ||
+        cgitSearchExtraRe.exec(originUrl.search);
+  } else if (['gitlab', 'heptapod'].includes(forgeType)) {
+    m = gitlabPathnameExtraRe.exec(originUrl.pathname);
+  } else if (['gogs', 'gitea', 'forgejo'].includes(forgeType)) {
+    m = giteaPathnameExtraRe.exec(originUrl.pathname);
+  } else if (forgeType === 'gitiles') {
+    m = gitilesPathnameExtraRe.exec(originUrl.pathname) ||
+        gitilesSearchExtraRe.exec(originUrl.search);
+  } else if (forgeType === 'gitweb') {
+    m = gitwebSearchExtraRe.exec(originUrl.search);
+  } else if (forgeType === 'stagit') {
+    m = stagitPathnameExtraRe.exec(originUrl.pathname);
   }
   return m ? m[1] : null;
 }
@@ -387,7 +387,7 @@ export function validateForgeUrl(input) {
   if (isMissingSlash(input.value.trim())) {
     customValidity = 'The provided forge URL was not a canonical URL.\nAdd a forward slash character to the end.';
   }
-  let extra = getUrlExtra(input.value.trim());
+  const extra = getUrlExtra(input.value.trim());
   if (extra) {
     customValidity = `
       The provided forge URL was not a base URL.
