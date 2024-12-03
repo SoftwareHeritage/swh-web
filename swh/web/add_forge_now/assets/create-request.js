@@ -136,7 +136,12 @@ export function populateRequestBrowseList() {
 }
 
 function isGitHubUrl(url) {
-  const originUrl = new URL(url);
+  let originUrl;
+  try {
+    originUrl = new URL(url);
+  } catch (_) {
+    return false;
+  }
   const hostname = originUrl.hostname;
 
   const github = ['github.com', 'www.github.com'];
@@ -153,7 +158,12 @@ function isGitHubUrl(url) {
 }
 
 function isMissingSlash(url) {
-  const originUrl = new URL(url);
+  let originUrl;
+  try {
+    originUrl = new URL(url);
+  } catch (_) {
+    return false;
+  }
   return originUrl.origin === url;
 }
 
@@ -352,9 +362,13 @@ const stagitPathnameExtraRe = RegExpX(`
   )$`);
 
 function getUrlExtra(url) {
-  const originUrl = new URL(url);
+  let originUrl;
+  try {
+    originUrl = new URL(url);
+  } catch (_) {
+    return null;
+  }
   let m = null;
-
   const forgeType = $('#swh-input-forge-type').val();
   if (forgeType === 'bitbucket') {
     m = bitbucketPathnameExtraRe.exec(originUrl.pathname);
