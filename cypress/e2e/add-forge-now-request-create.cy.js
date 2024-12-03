@@ -63,7 +63,7 @@ describe('Browse requests list tests', function() {
     cy.visit(this.addForgeNowUrl);
 
     // create requests for the user 'user'
-    populateForm('gitlab', 'https://gitlab.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitlab', 'https://gitlab.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
 
     // user requests filter checkbox should be in the DOM
@@ -84,9 +84,9 @@ describe('Browse requests list tests', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
 
-    populateForm('gitea', 'https://gitea.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitea', 'https://gitea.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
-    populateForm('cgit', 'https://cgit.org', 'admin', 'admin@example.org', 'on', '');
+    populateForm('cgit', 'https://cgit.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
 
     // user requests filter checkbox should be in the DOM
@@ -129,7 +129,7 @@ describe('Browse requests list tests', function() {
   });
 
   it('should display search link when first forge origin has been loaded', function() {
-    const forgeUrl = 'https://cgit.example.org';
+    const forgeUrl = 'https://cgit.example.org/';
     cy.intercept(this.listAddForgeRequestsUrl + '**', {body: {
       'recordsTotal': 1,
       'draw': 1,
@@ -290,7 +290,7 @@ describe('Test add-forge-request creation', function() {
   it('should update browse list on successful submission', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.com/', 'test', 'test@example.com', 'on', 'test comment');
     submitForm();
 
     cy.visit(this.addForgeNowUrl);
@@ -310,7 +310,7 @@ describe('Test add-forge-request creation', function() {
   it('should show error message on conflict', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'https://gitlab.com', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.com/', 'test', 'test@example.com', 'on', 'test comment');
     submitForm();
 
     submitForm(); // Submitting the same data again
