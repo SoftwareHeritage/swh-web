@@ -1,4 +1,4 @@
-# Copyright (C) 2022 The Software Heritage developers
+# Copyright (C) 2022-2024 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,7 @@ import pytest
 from django.core.exceptions import ValidationError
 
 from swh.web.add_forge_now.apps import APP_LABEL
+from swh.web.add_forge_now.models import RequestStatus
 
 MIGRATION_0001 = "0001_initial"
 MIGRATION_0002 = "0002_authorized_null_comment"
@@ -18,6 +19,7 @@ MIGRATION_0005 = "0005_prepare_inbound_email"
 MIGRATION_0006 = "0006_request_add_new_fields"
 MIGRATION_0007 = "0007_rename_denied_request_status"
 MIGRATION_0008 = "0008_turn_request_forge_url_into_url_field"
+MIGRATION_0009 = "0009_canonicalise_forge_urls"
 
 
 def now() -> datetime:
@@ -246,3 +248,38 @@ def test_add_forge_now_url_validation(migrator):
     )
     with pytest.raises(ValidationError, match="Enter a valid URL."):
         request.clean_fields()
+
+
+def test_add_forge_now_canonicalise_forge_urls(migrator):
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0008))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    forge_data = [
+        ("cgit", "https://cgit.example.org/?q=project"),
+        ("gitlab", "https://gitlab.example.org/explore"),
+        ("gitea", "https://gitea.example.org"),
+        ("stagit", "https://stagit.example.org/"),
+    ]
+
+    for forge_type, forge_url in forge_data:
+        Request(
+            status=RequestStatus.PENDING.name,
+            submitter_name="johndoe",
+            submitter_email="johndoe@example.org",
+            forge_type=forge_type,
+            forge_url=forge_url,
+            forge_contact_email="forge@example.org",
+            forge_contact_name="forge",
+            forge_contact_comment="bar",
+            last_modified_date=datetime.now(timezone.utc),
+        ).save()
+
+    state = migrator.apply_tested_migration((APP_LABEL, MIGRATION_0009))
+    Request = state.apps.get_model(APP_LABEL, "Request")
+
+    assert {request.forge_url for request in Request.objects.all()} == {
+        "https://cgit.example.org/",
+        "https://gitlab.example.org/",
+        "https://gitea.example.org/",
+        "https://stagit.example.org/",
+    }
