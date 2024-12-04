@@ -340,6 +340,7 @@ describe('Test add-forge-request creation', function() {
     ['bitbucket', 'bitbucket.example.org'], // missing URL scheme
     ['gitlab', 'https://gitlab.example.com'], // missing trailing slash
     ['gitea', 'https://gitea.example.com/explore/repos'], // not a base URL
+    ['gitlab', 'https://gitlab.com/user/project'], // gitlab repo URL, not a new forge
     ['gitlab', 'https://github.com/user/project'] // github repo URL, not a forge
   ];
 

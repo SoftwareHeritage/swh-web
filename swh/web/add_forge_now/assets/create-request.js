@@ -157,6 +157,28 @@ function isGitHubUrl(url) {
   return false;
 }
 
+function isGitLabUrl(url) {
+  let originUrl;
+  try {
+    originUrl = new URL(url);
+  } catch (_) {
+    return false;
+  }
+  const hostname = originUrl.hostname;
+
+  const gitlab = ['gitlab.com', 'www.gitlab.com'];
+  if (gitlab.includes(hostname)) {
+    return true;
+  }
+
+  const gitlabRe = new RegExp('(^|\\.)gitlab\\.(com|org|io)$');
+  if (gitlabRe.test(hostname)) {
+    return true;
+  }
+
+  return false;
+}
+
 function isMissingSlash(url) {
   let originUrl;
   try {
@@ -397,6 +419,9 @@ export function validateForgeUrl(input) {
   }
   if (isGitHubUrl(input.value.trim())) {
     customValidity = 'The provided forge URL is on GitHub.\nUse Save code now instead.';
+  }
+  if (isGitLabUrl(input.value.trim())) {
+    customValidity = 'The provided forge URL is on GitLab.\nUse Save code now instead.';
   }
   if (isMissingSlash(input.value.trim())) {
     customValidity = 'The provided forge URL was not a canonical URL.\nAdd a forward slash character to the end.';
