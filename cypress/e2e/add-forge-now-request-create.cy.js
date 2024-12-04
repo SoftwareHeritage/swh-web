@@ -63,7 +63,7 @@ describe('Browse requests list tests', function() {
     cy.visit(this.addForgeNowUrl);
 
     // create requests for the user 'user'
-    populateForm('gitlab', 'https://gitlab.org/', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitlab', 'https://gitlab.example.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
 
     // user requests filter checkbox should be in the DOM
@@ -84,9 +84,9 @@ describe('Browse requests list tests', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
 
-    populateForm('gitea', 'https://gitea.org/', 'admin', 'admin@example.org', 'on', '');
+    populateForm('gitea', 'https://gitea.example.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
-    populateForm('cgit', 'https://cgit.org/', 'admin', 'admin@example.org', 'on', '');
+    populateForm('cgit', 'https://cgit.example.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();
 
     // user requests filter checkbox should be in the DOM
@@ -290,7 +290,7 @@ describe('Test add-forge-request creation', function() {
   it('should update browse list on successful submission', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'https://gitlab.com/', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.example.com/', 'test', 'test@example.com', 'on', 'test comment');
     submitForm();
 
     cy.visit(this.addForgeNowUrl);
@@ -300,7 +300,7 @@ describe('Test add-forge-request creation', function() {
 
     cy.get('#add-forge-request-browse')
       .should('be.visible')
-      .should('contain', 'gitlab.com');
+      .should('contain', 'gitlab.example.com');
 
     cy.get('#add-forge-request-browse')
       .should('be.visible')
@@ -310,7 +310,7 @@ describe('Test add-forge-request creation', function() {
   it('should show error message on conflict', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
-    populateForm('bitbucket', 'https://gitlab.com/', 'test', 'test@example.com', 'on', 'test comment');
+    populateForm('bitbucket', 'https://gitlab.example.com/', 'test', 'test@example.com', 'on', 'test comment');
     submitForm();
 
     submitForm(); // Submitting the same data again
@@ -337,9 +337,9 @@ describe('Test add-forge-request creation', function() {
   });
 
   const invalidForgeInputData = [
-    ['bitbucket', 'bitbucket.org'], // missing URL scheme
-    ['gitlab', 'https://gitlab.com'], // missing trailing slash
-    ['gitea', 'https://gitea.com/explore/repos'], // not a base URL
+    ['bitbucket', 'bitbucket.example.org'], // missing URL scheme
+    ['gitlab', 'https://gitlab.example.com'], // missing trailing slash
+    ['gitea', 'https://gitea.example.com/explore/repos'], // not a base URL
     ['gitlab', 'https://github.com/user/project'] // github repo URL, not a forge
   ];
 
