@@ -255,10 +255,9 @@ def test_add_forge_now_canonicalise_forge_urls(migrator):
     Request = state.apps.get_model(APP_LABEL, "Request")
 
     forge_data = [
-        ("cgit", "https://cgit.example.org/?q=project"),
-        ("gitlab", "https://gitlab.example.org/explore"),
-        ("gitea", "https://gitea.example.org"),
-        ("stagit", "https://stagit.example.org/"),
+        ("gitlab", "https://git.codelinaro.org/explore/"),  # to canonicalise
+        ("gitea", "https://code-repo.d4science.org/explore/repos"),  # to canonicalise
+        ("gitlab", "https://gitlab.example.org/git/"),  # URL must stay the same
     ]
 
     for forge_type, forge_url in forge_data:
@@ -278,8 +277,7 @@ def test_add_forge_now_canonicalise_forge_urls(migrator):
     Request = state.apps.get_model(APP_LABEL, "Request")
 
     assert {request.forge_url for request in Request.objects.all()} == {
-        "https://cgit.example.org/",
-        "https://gitlab.example.org/",
-        "https://gitea.example.org/",
-        "https://stagit.example.org/",
+        "https://git.codelinaro.org/",
+        "https://code-repo.d4science.org/",
+        "https://gitlab.example.org/git/",
     }
