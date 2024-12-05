@@ -1,34 +1,10 @@
-# Copyright (C) 2018-2020  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 
-from htmlmin import minify
-
-from swh.web.utils.exc import handle_view_exception, sentry_capture_exception
-
-
-class HtmlMinifyMiddleware(object):
-    """
-    Django middleware for minifying generated HTML in
-    production mode.
-    """
-
-    def __init__(self, get_response=None):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-        if "text/html" in response.get("Content-Type", ""):
-            try:
-                minified_html = minify(
-                    response.content.decode("utf-8"), convert_charrefs=False
-                )
-                response.content = minified_html.encode("utf-8")
-            except Exception as exc:
-                sentry_capture_exception(exc)
-        return response
+from swh.web.utils.exc import handle_view_exception
 
 
 class ThrottlingHeadersMiddleware(object):

@@ -8,11 +8,11 @@ cryptography
 django
 django-cors-headers
 django-js-reverse
+django-minify-html
 django-ratelimit
 djangorestframework
 django-webpack-loader >= 3
 docutils
-htmlmin
 iso8601
 msgpack
 prometheus-client

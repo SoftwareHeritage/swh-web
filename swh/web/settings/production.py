@@ -12,6 +12,7 @@ from swh.web.config import DEFAULT_CONFIG
 from .common import (
     CACHES,
     DEBUG,
+    INSTALLED_APPS,
     MIDDLEWARE,
     REST_FRAMEWORK,
     SECRET_KEY,
@@ -20,8 +21,12 @@ from .common import (
 )
 from .common import *  # noqa
 
+INSTALLED_APPS += [
+    "django_minify_html",
+]
+
 MIDDLEWARE += [
-    "swh.web.utils.middlewares.HtmlMinifyMiddleware",
+    "django_minify_html.middleware.MinifyHtmlMiddleware",
 ]
 
 if cache_uri := swh_web_config.get("throttling", {}).get("cache_uri"):
