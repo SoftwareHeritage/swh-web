@@ -97,7 +97,7 @@ swh_web_config.update(
 
 from .common import *  # noqa
 
-from .common import LOGGING  # noqa, isort: skip
+from .common import INSTALLED_APPS, LOGGING, MIDDLEWARE  # noqa, isort: skip
 
 
 ALLOWED_HOSTS = ["*"]
@@ -160,6 +160,14 @@ if not _pytest:
     LOGGING["handlers"]["console"]["filters"] = []  # type: ignore
     # only display logs whose level is >= WARNING when running cypress tests
     LOGGING["handlers"]["console"]["level"] = "WARNING"  # type: ignore
+
+    # Use HTML minifier with cypress tests, as in production
+    INSTALLED_APPS = INSTALLED_APPS + [
+        "django_minify_html",
+    ]
+    MIDDLEWARE = list(MIDDLEWARE)
+    # MinifyHtmlMiddleware must be before the GZipMiddleware used when running cypress tests
+    MIDDLEWARE.insert(1, "django_minify_html.middleware.MinifyHtmlMiddleware")
 else:
     # silent DEBUG output when running unit tests
     LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore

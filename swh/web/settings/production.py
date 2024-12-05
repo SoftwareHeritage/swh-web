@@ -21,11 +21,11 @@ from .common import (
 )
 from .common import *  # noqa
 
-INSTALLED_APPS += [
+INSTALLED_APPS = INSTALLED_APPS + [
     "django_minify_html",
 ]
 
-MIDDLEWARE += [
+MIDDLEWARE = MIDDLEWARE + [
     "django_minify_html.middleware.MinifyHtmlMiddleware",
 ]
 
