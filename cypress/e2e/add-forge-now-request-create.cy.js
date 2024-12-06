@@ -19,7 +19,7 @@ function populateForm(type, url, contact, email, consent, comment) {
 }
 
 function submitForm() {
-  cy.get('#requestCreateForm input[type=submit]').click();
+  cy.get('#swh-input-form-submit').click();
   cy.get('#requestCreateForm').then($form => {
     if ($form[0].checkValidity()) {
       cy.wait('@addForgeRequestCreate');

@@ -21,6 +21,6 @@ See top-level LICENSE file for more information
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button class="btn btn-secondary" type="submit">Login</button>
+    <button id="login-submit" class="btn btn-secondary" type="submit">Login</button>
   </form>
 {% endblock content %}

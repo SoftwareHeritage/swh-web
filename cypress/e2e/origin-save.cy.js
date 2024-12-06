@@ -30,7 +30,7 @@ function makeOriginSaveRequest(originType, originUrl) {
     .type(originUrl)
     .get('#swh-input-visit-type')
     .select(originType)
-    .get('#swh-save-origin-form button[type=submit]')
+    .get('#swh-save-origin-form #swh-input-origin-save-submit')
     .click();
 }
 
@@ -650,7 +650,7 @@ describe('Origin Save Tests', function() {
       .get('#swh-input-artifact-version-0')
       .clear()
       .type(artifactVersion)
-      .get('#swh-save-origin-form button[type=submit]')
+      .get('#swh-save-origin-form #swh-input-origin-save-submit')
       .click();
 
     cy.wait('@saveRequest').then(() => {
@@ -728,7 +728,7 @@ describe('Origin Save Tests', function() {
     }).as('saveRequest');
 
     // submit form
-    cy.get('#swh-save-origin-form button[type=submit]')
+    cy.get('#swh-save-origin-form #swh-input-origin-save-submit')
       .click();
 
     // submission should be successful
@@ -808,7 +808,7 @@ describe('Origin Save Tests', function() {
         .type(originUrl);
 
       // submit form
-      cy.get('#swh-save-origin-form button[type=submit]')
+      cy.get('#swh-save-origin-form #swh-input-origin-save-submit')
         .click();
 
       // submission should be successful
