@@ -127,7 +127,7 @@ function activateCitationsUI() {
 
 export async function generateCitationFromSWHID(objectType) {
   const swhidsContext = swh.webapp.getSwhIdsContext();
-  let qualifiedSWHID = swhidsContext[objectType].swhid_with_context;
+  let qualifiedSWHID = swhidsContext[objectType].swhid_with_context_url.slice(1);
   if (objectType === 'content') {
     const linesPart = computeLinesQualifier();
     if (linesPart) {
