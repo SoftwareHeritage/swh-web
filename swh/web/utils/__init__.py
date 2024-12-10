@@ -41,6 +41,9 @@ from swh.web.auth.utils import (
 from swh.web.config import get_config, search
 from swh.web.utils.exc import BadInputExc, sentry_capture_exception
 
+DATATABLES_MAX_PAGE_SIZE = get_config().get("datatables_max_page_size", 1000)
+
+
 swh_object_icons = {
     "alias": "mdi mdi-star",
     "branch": "mdi mdi-source-branch",
@@ -646,3 +649,18 @@ def demangle_url(url: str) -> str:
         pass
     finally:
         return url
+
+
+def datatables_pagination_params(request: HttpRequest) -> Tuple[int, int]:
+    """Datatables paginations parameters.
+
+    Args:
+        request: an HttpRequest to get the length and start query parameters
+
+    Returns:
+        A tuple with the number of results per page and the current page number
+    """
+
+    length = min(int(request.GET.get("length", 10)), DATATABLES_MAX_PAGE_SIZE)
+    page = int(request.GET.get("start", 0)) / length + 1
+    return length, page

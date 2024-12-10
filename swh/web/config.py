@@ -225,6 +225,7 @@ DEFAULT_CONFIG = {
     "inbound_email": ("dict", {"shared_key": "shared_key"}),
     "browse_content_rate_limit": ("dict", {"enabled": True, "rate": "60/m"}),
     "activate_citations_ui": ("bool", False),
+    "datatables_max_page_size": ("int", 1000),
 }
 
 swhweb_config: Dict[str, Any] = {}

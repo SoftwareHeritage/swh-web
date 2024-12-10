@@ -28,7 +28,7 @@ from swh.auth.keycloak import KeycloakError, keycloak_error_message
 from swh.web.auth.models import OIDCUserOfflineTokens
 from swh.web.auth.utils import decrypt_data, encrypt_data
 from swh.web.config import get_config
-from swh.web.utils import reverse
+from swh.web.utils import datatables_pagination_params, reverse
 from swh.web.utils.exc import ForbiddenExc
 
 
@@ -72,8 +72,7 @@ def oidc_list_bearer_tokens(request: HttpRequest) -> HttpResponse:
     tokens = OIDCUserOfflineTokens.objects.filter(user_id=str(request.user.id))
     tokens = tokens.order_by("-creation_date")
 
-    length = int(request.GET["length"])
-    page = int(request.GET["start"]) / length + 1
+    length, page = datatables_pagination_params(request)
 
     paginator = Paginator(tokens, length)
 

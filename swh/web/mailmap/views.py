@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -29,6 +29,7 @@ from swh.web.auth.utils import (
     any_permission_required,
 )
 from swh.web.mailmap.models import UserMailmap, UserMailmapEvent
+from swh.web.utils import datatables_pagination_params
 
 
 class UserMailmapSerializer(serializers.ModelSerializer):
@@ -159,8 +160,7 @@ def profile_list_mailmap_datatables(request: HttpRequest) -> HttpResponse:
     table_data["draw"] = int(request.GET.get("draw", 1))
     table_data["recordsTotal"] = mailmaps.count()
 
-    length = int(request.GET.get("length", 10))
-    page = int(request.GET.get("start", 0)) / length + 1
+    length, page = datatables_pagination_params(request)
 
     if search_value:
         mailmaps = mailmaps.filter(

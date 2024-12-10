@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,6 +19,7 @@ from swh.web.add_forge_now.api_views import (
 from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.add_forge_now.models import RequestHistory
 from swh.web.auth.utils import is_add_forge_now_moderator
+from swh.web.utils import datatables_pagination_params
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -46,8 +47,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
             field_order = "-" + field_order
         add_forge_requests = add_forge_requests.order_by(field_order)
 
-    per_page = int(request.GET.get("length", 10))
-    page_num = int(request.GET.get("start", 0)) // per_page + 1
+    per_page, page_num = datatables_pagination_params(request)
 
     if search_value:
         add_forge_requests = add_forge_requests.filter(

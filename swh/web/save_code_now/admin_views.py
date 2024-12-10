@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2024  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -25,6 +25,7 @@ from swh.web.save_code_now.origin_save import (
     SAVE_REQUEST_REJECTED,
     create_save_origin_request,
 )
+from swh.web.utils import datatables_pagination_params
 
 
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
@@ -54,8 +55,7 @@ def _datatables_origin_urls_response(request, urls_query_set):
     table_data["draw"] = int(request.GET["draw"])
     table_data["recordsTotal"] = urls_query_set.count()
     table_data["recordsFiltered"] = urls_query_set.count()
-    length = int(request.GET["length"])
-    page = int(request.GET["start"]) / length + 1
+    length, page = datatables_pagination_params(request)
     paginator = Paginator(urls_query_set, length)
     urls_query_set = paginator.page(page).object_list
     table_data["data"] = [{"url": u.url} for u in urls_query_set]
