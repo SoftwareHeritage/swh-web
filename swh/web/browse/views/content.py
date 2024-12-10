@@ -388,7 +388,7 @@ def content_display(
             # disable language select dropdown when a notebook is rendered
             available_languages = None
 
-    if path and root_dir and root_dir != path:
+    if path and root_dir and root_dir != path and path != "/":
         dir_info = archive.lookup_directory_with_path(root_dir, path)
         directory_id = dir_info["target"]
     elif root_dir != path:
@@ -424,7 +424,7 @@ def content_display(
         size=content_data.get("length", 0),
         language=content_data.get("language", ""),
         root_directory=root_dir,
-        path=f"/{path}" if path else None,
+        path=f"/{path.lstrip('/')}" if path else None,
         filename=filename or "",
         directory=directory_id,
         revision=None,

@@ -18,6 +18,7 @@ from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
     Directory,
     DirectoryEntry,
+    Origin,
     OriginVisit,
     OriginVisitStatus,
     Release,
@@ -1348,3 +1349,79 @@ def test_browse_content_failed_encoding_detection(
     # content should be rendered even if encoding detection failed
     check_http_get_response(client, url, status_code=200)
     detect.assert_called()
+
+
+def test_browse_content_without_root_dir_info_in_path(
+    archive_data,
+    client,
+    content_text,
+):
+    new_origin = Origin(url="https://git.example.org/test/browse/no/root/dir")
+    root_dir = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"text_file",
+                type="file",
+                target=hash_to_bytes(content_text["sha1_git"]),
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    archive_data.directory_add([root_dir])
+
+    release_name = "v1.0.0"
+    release = Release(
+        name=release_name.encode(),
+        message=f"release {release_name}".encode(),
+        target=root_dir.id,
+        target_type=ReleaseTargetType.DIRECTORY,
+        synthetic=True,
+    )
+    archive_data.release_add([release])
+
+    snapshot = Snapshot(
+        branches={
+            release_name.encode(): SnapshotBranch(
+                target=release.id, target_type=SnapshotTargetType.RELEASE
+            ),
+            b"HEAD": SnapshotBranch(
+                target=release_name.encode(), target_type=SnapshotTargetType.ALIAS
+            ),
+        },
+    )
+
+    archive_data.snapshot_add([snapshot])
+    archive_data.origin_add([new_origin])
+
+    visit_date = now()
+    visit = archive_data.origin_visit_add(
+        [
+            OriginVisit(
+                origin=new_origin.url,
+                date=visit_date,
+                type="git",
+            )
+        ]
+    )[0]
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit.visit,
+        date=visit_date + timedelta(minutes=5),
+        status="full",
+        snapshot=snapshot.id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    url = reverse(
+        "browse-content",
+        url_args={"query_string": f"sha1_git:{content_text['sha1_git']}"},
+        query_params={
+            "path": "/text_file",
+            "origin_url": new_origin.url,
+            "snapshot": snapshot.id.hex(),
+        },
+    )
+
+    check_html_get_response(
+        client, url, status_code=200, template_used="browse-content.html"
+    )
