@@ -52,7 +52,11 @@ def _get_bibtex_from_intrinsic_citation_metadata(
             source_swhid_params["visit"] = swhid.visit
         if swhid.anchor:
             source_swhid_params["anchor"] = swhid.anchor
-        elif swhid.object_type in (ObjectType.RELEASE, ObjectType.REVISION):
+        elif swhid.object_type in (
+            ObjectType.DIRECTORY,
+            ObjectType.RELEASE,
+            ObjectType.REVISION,
+        ):
             source_swhid_params["anchor"] = CoreSWHID(
                 object_type=swhid.object_type, object_id=swhid.object_id
             )
