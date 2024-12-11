@@ -43,7 +43,6 @@ from swh.web.utils.typing import (
 
 _origin_url = "https://gitlab.com/inkscape/inkscape"
 _visit_type = "git"
-_task_id = 1
 
 
 @pytest.mark.django_db
@@ -114,16 +113,17 @@ def _get_save_origin_task_info_test(
     swh_scheduler,
     task_archived=False,
 ):
+
+    task, task_run = _fill_scheduler_db(swh_scheduler, task_archived=task_archived)
+
     sor = SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
         origin_url="https://gitlab.com/inkscape/inkscape",
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=datetime.now(tz=timezone.utc) + timedelta(hours=1),
-        loading_task_id=_task_id,
+        loading_task_id=task.id if task else 0,
     )
-
-    task, task_run = _fill_scheduler_db(swh_scheduler, task_archived=task_archived)
 
     sor_task_info = get_save_origin_task_info(sor.id)
 
@@ -160,17 +160,18 @@ def _get_save_origin_task_info_test(
 @pytest.mark.django_db
 def test_get_save_origin_requests_find_visit_date(mocker, swh_scheduler):
     # create a save request
+
+    task, _ = _fill_scheduler_db(swh_scheduler)
+
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
         origin_url=_origin_url,
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
-        loading_task_id=_task_id,
+        loading_task_id=task.id,
     )
 
-    # mock scheduler and archive
-    _fill_scheduler_db(swh_scheduler)
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request
@@ -204,6 +205,11 @@ def _get_save_origin_requests(
     request_date: Optional[datetime] = None,
 ):
     """Wrapper around the get_origin_save_origin_request call."""
+
+    task, task_run = _fill_scheduler_db(
+        swh_scheduler, task_status="next_run_scheduled", task_run_status=load_status
+    )
+
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -211,13 +217,9 @@ def _get_save_origin_requests(
         origin_url=_origin_url,
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
-        loading_task_id=_task_id,
+        loading_task_id=task.id,
     )
 
-    # mock scheduler and archives
-    _fill_scheduler_db(
-        swh_scheduler, task_status="next_run_scheduled", task_run_status=load_status
-    )
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created
@@ -531,6 +533,12 @@ def test_refresh_in_progress_save_request_statuses(
     date_pivot = date_now - timedelta(days=30)
     visit_started_date = date_now - timedelta(minutes=1)
 
+    task, task_run = _fill_scheduler_db(
+        swh_scheduler,
+        task_status="next_run_scheduled",
+        task_run_status=SAVE_TASK_SCHEDULED,
+    )
+
     # returned visit status
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
@@ -539,15 +547,9 @@ def test_refresh_in_progress_save_request_statuses(
         origin_url=_origin_url,
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
-        loading_task_id=_task_id,
+        loading_task_id=task.id,
     )
 
-    # mock scheduler and archives
-    _fill_scheduler_db(
-        swh_scheduler,
-        task_status="next_run_scheduled",
-        task_run_status=SAVE_TASK_SCHEDULED,
-    )
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created
@@ -633,7 +635,13 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
     """Refresh filters save origins requests and update if changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
-    # returned visit status
+
+    task, task_run = _fill_scheduler_db(
+        swh_scheduler,
+        task_status="next_run_scheduled",
+        task_run_status=SAVE_TASK_SCHEDULED,
+    )
+
     SaveOriginRequest.objects.create(
         request_date=datetime.now(tz=timezone.utc),
         visit_type=_visit_type,
@@ -641,15 +649,9 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
         origin_url=_origin_url,
         status=SAVE_REQUEST_ACCEPTED,
         visit_date=None,
-        loading_task_id=_task_id,
+        loading_task_id=task.id,
     )
 
-    # mock scheduler and archives
-    _fill_scheduler_db(
-        swh_scheduler,
-        task_status="next_run_scheduled",
-        task_run_status=SAVE_TASK_SCHEDULED,
-    )
     mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
     mock_archive.lookup_origin.return_value = {"url": _origin_url}
     # create a visit for the save request with status created

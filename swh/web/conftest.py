@@ -1172,7 +1172,7 @@ if "PYTEST_XDIST_WORKER" in os.environ:
 
     @pytest.fixture
     def swh_scheduler_class():
-        return "temporary"
+        return "memory"
 
     @pytest.fixture
     def swh_scheduler_config():

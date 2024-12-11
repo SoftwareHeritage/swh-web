@@ -585,7 +585,7 @@ def create_save_origin_request(
             )
 
             task = scheduler().create_tasks([task])[0]
-            assert task.id
+            assert task.id is not None
 
             # pending save request has been accepted
             if sor and sor.status != SAVE_REQUEST_ACCEPTED:

@@ -111,8 +111,8 @@ DATABASES = {
 
 swh_web_config.update(
     {
-        # use temporary postgresql scheduler backend when running tests
-        "scheduler": {"cls": "temporary"},
+        # use scheduler memory backend when running tests
+        "scheduler": {"cls": "memory"},
     }
 )
 
