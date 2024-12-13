@@ -38,7 +38,11 @@ def _assert_http_response(
             else response.content
         )
 
-    assert response.status_code == status_code, error_context
+    assert (
+        response.status_code == status_code
+    ), f"Expected status code {status_code} but actual is {response.status_code}" + (
+        f"\n{error_context}" if error_context else ""
+    )
     if content_type != "*/*":
         assert response["Content-Type"].startswith(content_type)
     return response
