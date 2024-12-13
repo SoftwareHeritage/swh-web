@@ -33,6 +33,7 @@ from swh.web.utils import (
 )
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import gen_swhid
+from swh.web.utils.origin_visits import get_origin_visits
 
 
 def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits):
@@ -1184,3 +1185,17 @@ def test_origin_browse_multiple_visit_types_git_default(
     # check correct visit and snapshot are browsed
     assert_contains(resp, format_utc_iso_date(origin_visit["date"]))
     assert_contains(resp, "swh:1:snp:" + origin_visit["snapshot"])
+
+
+def test_origin_with_multiple_visits_browse_snapshots(
+    client, origin_with_multiple_visit_types
+):
+    """Ensure snapshots of origin with multiple visit types can be successfully browsed."""
+    origin_visits = get_origin_visits(origin_with_multiple_visit_types)
+    for origin_visit in origin_visits:
+        url = reverse(
+            "browse-snapshot-directory",
+            url_args={"snapshot_id": origin_visit["snapshot"]},
+            query_params={"origin_url": origin_with_multiple_visit_types},
+        )
+        check_html_get_response(client, url, status_code=200)

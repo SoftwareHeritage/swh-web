@@ -461,7 +461,13 @@ def get_snapshot_context(
         origin_info = archive.lookup_origin(origin_url)
 
         query_params["origin_url"] = origin_info["url"]
-        if len(origin_info["visit_types"]) > 1 and visit_type is None:
+        if (
+            len(origin_info["visit_types"]) > 1
+            and visit_type is None
+            and snapshot_id is None
+            and timestamp is None
+            and visit_id is None
+        ):
             # avoid selecting git-checkout, svn-export or hg-checkout visit types
             # when no visit type is explicitly provided
             for visit_type_to_discard, visit_type_to_fetch in [
