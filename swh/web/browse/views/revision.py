@@ -33,6 +33,7 @@ from swh.web.utils import (
     archive,
     format_utc_iso_date,
     gen_path_info,
+    highlightjs,
     reverse,
     swh_object_icons,
 )
@@ -470,6 +471,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
     swh_objects = [SWHObjectInfo(object_type=ObjectType.REVISION, object_id=sha1_git)]
 
+    available_languages = None
     content = None
     content_size = None
     filename = None
@@ -494,12 +496,23 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             content = content_display_data["content_data"]
             language = content_display_data["language"]
             mimetype = content_display_data["mimetype"]
+            if mimetype and (
+                mimetype.startswith("text/")
+                or (
+                    mimetype.startswith("application/")
+                    and content_data.get("encoding", "") != "binary"
+                )
+            ):
+                available_languages = highlightjs.get_supported_languages()
         if path:
             filename = path_info[-1]["name"]
             query_params["filename"] = filename
             filepath = "/".join(pi["name"] for pi in path_info[:-1])
             extra_context["path"] = f"/{filepath}/" if filepath else "/"
             extra_context["filename"] = filename
+            if filename.endswith(".ipynb"):
+                # disable language select dropdown when a notebook is rendered
+                available_languages = None
 
         top_right_link = {
             "url": reverse(
@@ -610,6 +623,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "error_code": error_info["status_code"],
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
+            "available_languages": available_languages,
         },
         status=error_info["status_code"],
     )
