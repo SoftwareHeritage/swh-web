@@ -20,7 +20,7 @@ require('highlightjs-blade/dist/blade.min');
 require('highlightjs-bqn/dist/bqn.min');
 require('c3/dist/c3.min');
 require('highlightjs-cairo')(hljs);
-require('highlightjs-cedar/dist/hljs-cedar.min');
+require('highlightjs-cedar/dist/hljs-cedar.min.js');
 hljs.registerLanguage('cedar', window.hljsCedar);
 require('highlightjs-chaos/dist/chaos.min');
 require('highlightjs-chapel/dist/chapel.min');
@@ -41,9 +41,11 @@ require('highlightjs-gdscript/dist/gdscript.min');
 require('highlightjs-gf/dist/gf.min');
 require('highlightjs-gsql/dist/gsql.min');
 require('highlightjs-hlsl/dist/hlsl.min');
+require('highlightjs-jsonata/dist/jsonata.min');
 require('highlightjs-jolie/dist/jolie.min');
 require('highlightjs-lang/dist/lang.min');
 hljs.registerLanguage('lean', require('highlightjs-lean'));
+require('highlightjs-liquid/dist/liquid.min');
 require('highlightjs-lookml/dist/lookml.min');
 require('highlightjs-luau/dist/luau.min');
 hljs.registerLanguage('lox', require('highlightjs-lox'));
@@ -61,6 +63,7 @@ hljs.registerLanguage('octave', require('highlightjs-octave').default);
 require('highlightjs-oz/dist/oz.min');
 require('hightlightjs-papyrus/dist/papyrus.min');
 require('highlightjs-phix/src/languages/phix')(hljs);
+require('highlightjs-poweron/dist/poweron.min');
 require('highlightjs-qsharp/dist/qsharp.min');
 require('highlightjs-redbol/dist/redbol.min');
 import('highlightjs-rescript/dist/rescript.min.js');
@@ -73,7 +76,7 @@ hljs.registerLanguage('sdml', global.sdml);
 require('highlightjs-sfz/dist/sfz.min');
 require('highlightjs-solidity/dist/solidity.min');
 require('highlightjs-structured-text/dist/iecst.min');
-require('highlightjs-svelte/dist/svelte.min');
+import('highlight.svelte/dist/svelte.min.js');
 require('highlightjs-terraform')(hljs);
 require('highlight.js-tsql/dist/tsql.min');
 require('highlightjs-unison/dist/unison.min');
@@ -96,12 +99,12 @@ class DumpHighlightjsLanguagesDataPlugin {
     compiler.hooks.done.tap('DumpHighlightjsLanguagesDataPlugin', statsObj => {
       const outputPath = statsObj.compilation.compiler.outputPath;
       const hljsDataFile = path.join(outputPath, 'json/highlightjs-languages.json');
-      const languages = hljs.listLanguages().sort();
+      const languages = hljs.listLanguages().concat(['odin', 'ttcn3']).sort();
       const hljsLanguagesData = {'languages': languages};
       const languageAliases = {};
       for (const language of languages) {
         const languageData = hljs.getLanguage(language);
-        if (!languageData.hasOwnProperty('aliases')) {
+        if (languageData === undefined || !languageData.hasOwnProperty('aliases')) {
           continue;
         }
         for (const alias of languageData.aliases) {
