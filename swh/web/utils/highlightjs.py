@@ -56,6 +56,9 @@ def _hljs_languages_aliases():
         "cbl": "cobol",
         "lkml": "lookml",
         "sdm": "sdml",
+        "pow": "poweron",
+        "ttcn": "ttcn3",
+        "ttcnpp": "ttcn3",
     }
 
 
