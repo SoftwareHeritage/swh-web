@@ -342,7 +342,13 @@ def content_display(
 
     available_languages = None
 
-    if mimetype and "text/" in mimetype:
+    if mimetype and (
+        mimetype.startswith("text/")
+        or (
+            mimetype.startswith("application/")
+            and content_data.get("encoding", "") != "binary"
+        )
+    ):
         available_languages = highlightjs.get_supported_languages()
 
     filename = None
