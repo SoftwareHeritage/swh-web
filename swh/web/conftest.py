@@ -37,6 +37,7 @@ from swh.model.hashutil import (
 )
 from swh.model.model import Content, Directory, Revision
 from swh.model.swhids import CoreSWHID, ObjectType
+from swh.objstorage.interface import objid_from_dict
 from swh.scheduler.tests.common import TASK_TYPES
 from swh.storage.algos.revisions_walker import get_revisions_walker
 from swh.storage.algos.snapshot import (
@@ -1096,7 +1097,7 @@ class _IndexerData:
         self.license_indexer = tests_data["license_indexer"]
 
     def content_add_mimetype(self, cnt_id):
-        self.mimetype_indexer.run([hash_to_bytes(cnt_id)])
+        self.mimetype_indexer.run([objid_from_dict({"sha1": hash_to_bytes(cnt_id)})])
 
     def content_get_mimetype(self, cnt_id):
         mimetype = self.idx_storage.content_mimetype_get([hash_to_bytes(cnt_id)])[
@@ -1105,7 +1106,7 @@ class _IndexerData:
         return converters.from_filetype(mimetype)
 
     def content_add_license(self, cnt_id):
-        self.license_indexer.run([hash_to_bytes(cnt_id)])
+        self.license_indexer.run([objid_from_dict({"sha1": hash_to_bytes(cnt_id)})])
 
     def content_get_license(self, cnt_id):
         cnt_id_bytes = hash_to_bytes(cnt_id)
