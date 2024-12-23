@@ -19,7 +19,7 @@ iso8601
 looseversion
 msgpack
 prometheus-client
-psycopg2
+psycopg
 pybadges >= 2.2.1
 pygments
 pymemcache

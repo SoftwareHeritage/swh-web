@@ -10,15 +10,14 @@ pytest-django
 pytest-mock
 pytest-postgresql
 requests-mock != 1.9.0, != 1.9.1
-swh.core[http] >= 3.0.0
+swh.core[http] >= 4.0.0
 swh.graph >= 5.1.1
 swh.loader.git >= 0.8.0
-swh-scheduler[testing] >= 2.7.0
-swh.storage >= 0.1.1
+swh-scheduler[testing] >= 3.0.0
+swh.storage >= 3.0.0
 types-beautifulsoup4
 types-cryptography
 types-docutils
-types-psycopg2
 types-Pygments
 types-pyyaml
 types-requests

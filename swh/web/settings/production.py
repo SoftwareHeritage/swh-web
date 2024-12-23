@@ -57,16 +57,14 @@ REST_FRAMEWORK["NUM_PROXIES"] = 2
 db_conf = swh_web_config["production_db"]
 if db_conf.get("name", "").startswith("postgresql://"):
     # poor man's support for dsn connection string...
-    import psycopg2
+    import psycopg
 
-    with psycopg2.connect(db_conf.get("name")) as cnx:
-        dsn_dict = cnx.get_dsn_parameters()
-
-    db_conf["name"] = dsn_dict.get("dbname")
-    db_conf["host"] = dsn_dict.get("host")
-    db_conf["port"] = dsn_dict.get("port")
-    db_conf["user"] = dsn_dict.get("user")
-    db_conf["password"] = dsn_dict.get("password")
+    with psycopg.connect(db_conf.get("name")) as cnx:
+        db_conf["name"] = cnx.info.dbname
+        db_conf["host"] = cnx.info.host
+        db_conf["port"] = cnx.info.port
+        db_conf["user"] = cnx.info.user
+        db_conf["password"] = cnx.info.password
 
 
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

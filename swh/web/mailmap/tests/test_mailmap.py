@@ -6,8 +6,6 @@
 import datetime
 import json
 
-import psycopg2
-from psycopg2.extras import execute_values
 import pytest
 
 from swh.model.model import Person
@@ -385,28 +383,29 @@ MAILMAP_KNOWN_PEOPLE = tuple(
 
 
 def init_stub_storage_db(postgresql):
-    if not isinstance(postgresql, psycopg2.extensions.connection):
-        # wrap pytest-postgresql >= 4's psycopg3 connection into a psycopg2 one
-        postgresql = psycopg2.connect(postgresql.info.dsn)
-    cur = postgresql.cursor()
-    cur.execute(
-        """
-        CREATE TABLE person (
-          fullname bytea PRIMARY KEY,
-          name bytea,
-          email bytea,
-          displayname bytea
+    with postgresql.cursor() as cur:
+        cur.execute(
+            """
+            CREATE TABLE person (
+              fullname bytea PRIMARY KEY,
+              name bytea,
+              email bytea,
+              displayname bytea
+            )
+            """
         )
-        """
-    )
-    execute_values(
-        cur,
-        "INSERT INTO person (fullname, name, email) VALUES %s",
-        (p.to_dict() for p in MAILMAP_KNOWN_PEOPLE),
-        template="(%(fullname)s, %(name)s, %(email)s)",
-    )
-    cur.execute("CREATE INDEX ON person (email)")
-    postgresql.commit()
-    cur.close()
+        cur.executemany(
+            "INSERT INTO person (fullname, name, email) VALUES (%s, %s, %s)",
+            [
+                (
+                    d["fullname"],
+                    d["name"],
+                    d["email"],
+                )
+                for d in (p.to_dict() for p in MAILMAP_KNOWN_PEOPLE)
+            ],
+        )
+        cur.execute("CREATE INDEX ON person (email)")
+        postgresql.commit()
 
-    return postgresql.dsn
+    return postgresql.info.dsn

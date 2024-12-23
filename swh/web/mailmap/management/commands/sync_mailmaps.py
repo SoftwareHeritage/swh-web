@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-import psycopg2
-import psycopg2.extensions
-from psycopg2.extras import execute_values
+from typing import Any
+
+import psycopg
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -20,14 +20,14 @@ from swh.web.mailmap.models import UserMailmap
 DISABLE_MAILMAPS_QUERY = """\
 UPDATE person
    SET displayname = NULL
-   FROM (VALUES %s) AS emails (email)
+   FROM (VALUES (%s)) AS emails (email)
    WHERE person.email = emails.email
 """
 
 REFRESH_MAILMAPS_QUERY = """\
 UPDATE person
    SET displayname = displaynames.displayname
-   FROM (VALUES %s) AS displaynames (email, displayname)
+   FROM (VALUES (%s, %s)) AS displaynames (email, displayname)
    WHERE
      person.email = displaynames.email
      AND person.displayname IS DISTINCT FROM displaynames.displayname
@@ -47,24 +47,22 @@ class Command(BaseCommand):
 
     def disable_mailmaps(
         self,
-        storage_db: psycopg2.extensions.connection,
+        storage_db: psycopg.Connection[Any],
         mailmaps: QuerySet[UserMailmap, UserMailmap],
     ):
         """Return the SQL to disable a set of mailmaps"""
 
-        execute_values(
-            storage_db.cursor(),
+        storage_db.cursor().executemany(
             DISABLE_MAILMAPS_QUERY,
             ((mailmap.from_email.encode("utf-8"),) for mailmap in mailmaps),
         )
 
     def refresh_mailmaps(
         self,
-        storage_db: psycopg2.extensions.connection,
+        storage_db: psycopg.Connection[Any],
         mailmaps: QuerySet[UserMailmap, UserMailmap],
     ):
-        execute_values(
-            storage_db.cursor(),
+        storage_db.cursor().executemany(
             REFRESH_MAILMAPS_QUERY,
             (
                 (
@@ -99,7 +97,7 @@ class Command(BaseCommand):
                 )
             )
 
-            with psycopg2.connect(options["storage_dbconn"]) as db:
+            with psycopg.connect(options["storage_dbconn"]) as db:
                 self.disable_mailmaps(db, to_disable.select_for_update())
                 self.refresh_mailmaps(db, to_refresh.select_for_update())
                 if not options["perform"]:
