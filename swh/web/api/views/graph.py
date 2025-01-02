@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from distutils.util import strtobool
 import json
 from typing import Dict, Iterator, Union
 from urllib.parse import unquote, urlparse, urlunparse
@@ -24,7 +23,7 @@ from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import api_route
 from swh.web.api.renderers import PlainTextRenderer
 from swh.web.config import SWH_WEB_INTERNAL_SERVER_NAMES, get_config
-from swh.web.utils import archive
+from swh.web.utils import archive, strtobool
 
 API_GRAPH_PERM = "swh.web.api.graph"
 

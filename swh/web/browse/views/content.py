@@ -4,7 +4,6 @@
 # See top-level LICENSE file for more information
 
 import difflib
-from distutils.util import strtobool
 import io
 import os
 import re
@@ -33,6 +32,7 @@ from swh.web.utils import (
     highlightjs,
     query,
     reverse,
+    strtobool,
     swh_object_icons,
 )
 from swh.web.utils.exc import (
@@ -60,7 +60,7 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
     The url that points to it is
     :http:get:`/browse/content/[(algo_hash):](hash)/raw/`
     """
-    re_encode = bool(strtobool(request.GET.get("re_encode", "false")))
+    re_encode = strtobool(request.GET.get("re_encode", "false"))
     algo, checksum = query.parse_hash(query_string)
     checksum = hash_to_hex(checksum)
     content_data = request_content(query_string, max_size=None, re_encode=re_encode)
@@ -140,11 +140,9 @@ def _contents_diff(
     content_to_size = 0
     content_from_lines = []
     content_to_lines = []
-    force_str = request.GET.get("force", "false")
+    force = strtobool(request.GET.get("force", "false"))
     path = request.GET.get("path", None)
     language = "plaintext"
-
-    force = bool(strtobool(force_str))
 
     if from_query_string == to_query_string:
         diff_str = "File renamed without changes"

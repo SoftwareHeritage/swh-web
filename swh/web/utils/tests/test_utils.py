@@ -36,6 +36,7 @@ from swh.web.utils import (
     reverse,
     rst_to_html,
     shorten_path,
+    strtobool,
 )
 from swh.web.utils.exc import BadInputExc
 
@@ -594,3 +595,18 @@ def test_django_cache_get_pass_through_on_errors(mocker):
     # but function still returns a value
     mocker.patch.object(cache, "get").side_effect = Exception("Cache error")
     assert cached_add(1, 1) == 2
+
+
+@pytest.mark.parametrize("value", ["y", "YES", "t", "True", "on", "1"])
+def test_strtobool_true(value):
+    assert strtobool(value)
+
+
+@pytest.mark.parametrize("value", ["N", "no", "f", "False", "off", "0"])
+def test_strtobool_false(value):
+    assert not strtobool(value)
+
+
+def test_strtobool_exc():
+    with pytest.raises(BadInputExc, match="Invalid truth value vrai"):
+        strtobool("vrai")

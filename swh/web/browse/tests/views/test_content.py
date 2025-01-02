@@ -363,6 +363,20 @@ def test_content_raw_image_with_content_type(client, archive_data, content_image
     )
 
 
+def test_content_raw_re_encode_invalid_param(client, content_text):
+    url = reverse(
+        "browse-content-raw",
+        url_args={"query_string": content_text["sha1"]},
+        query_params={"re_encode": "true'"},
+    )
+
+    check_http_get_response(
+        client,
+        url,
+        status_code=400,
+    )
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("staff_user_logged_in", [False, True])
 def test_content_request_errors(

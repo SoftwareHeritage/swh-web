@@ -664,3 +664,20 @@ def datatables_pagination_params(request: HttpRequest) -> Tuple[int, int]:
     length = min(int(request.GET.get("length", 10)), DATATABLES_MAX_PAGE_SIZE)
     page = int(request.GET.get("start", 0)) / length + 1
     return length, page
+
+
+def strtobool(value: str) -> bool:
+    """Convert a string representation of truth to True or False.
+
+    Port of `distutils.util.strtobool` due to distutils deprecation and to better
+    handle invalid values as BadInputExc exceptions will result in HTTP 400 errors.
+
+    Raises:
+        BadInputExc: ``value`` is not a valid truthy/falsy string
+    """
+    value = value.lower()
+    if value in ["y", "yes", "t", "true", "on", "1"]:
+        return True
+    elif value in ["n", "no", "f", "false", "off", "0"]:
+        return False
+    raise BadInputExc(f"Invalid truth value {value}")

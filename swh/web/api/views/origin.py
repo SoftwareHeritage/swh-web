@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from distutils.util import strtobool
 from functools import partial
 from typing import Dict
 
@@ -18,7 +17,7 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive, origin_visit_types, reverse
+from swh.web.utils import archive, origin_visit_types, reverse, strtobool
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
 
@@ -232,9 +231,9 @@ def api_origin_search(request: Request, url_pattern: str):
         (results, page_token) = api_lookup(
             archive.search_origin,
             url_pattern,
-            bool(strtobool(use_ql)),
+            strtobool(use_ql),
             limit,
-            bool(strtobool(with_visit)),
+            strtobool(with_visit),
             [visit_type] if visit_type else None,
             page_token,
             enrich_fn=enrich_origin_search_result,
@@ -432,11 +431,10 @@ def api_origin_visit_latest(request: Request, origin_url: str):
             :swh_web_api:`origin/https://github.com/hylang/hy/visit/latest/`
     """
 
-    require_snapshot = request.query_params.get("require_snapshot", "false")
     return api_lookup(
         archive.lookup_origin_visit_latest,
         origin_url,
-        bool(strtobool(require_snapshot)),
+        strtobool(request.query_params.get("require_snapshot", "false")),
         type=request.query_params.get("visit_type"),
         lookup_similar_urls=False,
         notfound_msg=("No visit for origin {} found".format(origin_url)),
