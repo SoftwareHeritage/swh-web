@@ -237,6 +237,7 @@ def sentry_capture_exception(exc: Exception) -> None:
             RemoteException,
             TransientRemoteException,
             Ratelimited,
+            UnauthorizedExc,
         ),
     ):
         # ignore noisy exceptions we cannot do anything about
