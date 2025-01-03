@@ -52,7 +52,7 @@ def _datatables_origin_urls_response(request, urls_query_set):
     urls_query_set = urls_query_set.order_by(field_order)
 
     table_data = {}
-    table_data["draw"] = int(request.GET["draw"])
+    table_data["draw"] = int(request.GET.get("draw", 1))
     table_data["recordsTotal"] = urls_query_set.count()
     table_data["recordsFiltered"] = urls_query_set.count()
     length, page = datatables_pagination_params(request)

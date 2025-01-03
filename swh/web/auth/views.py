@@ -83,7 +83,7 @@ def oidc_list_bearer_tokens(request: HttpRequest) -> HttpResponse:
 
     table_data: Dict[str, Any] = {}
     table_data["recordsTotal"] = len(tokens_data)
-    table_data["draw"] = int(request.GET["draw"])
+    table_data["draw"] = int(request.GET.get("draw", 1))
     table_data["data"] = tokens_data
     table_data["recordsFiltered"] = len(tokens_data)
     return JsonResponse(table_data)

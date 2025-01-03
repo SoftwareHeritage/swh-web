@@ -54,7 +54,7 @@ def origin_save_requests_list(request, status):
 
     table_data = {}
     table_data["recordsTotal"] = save_requests.count()
-    table_data["draw"] = int(request.GET["draw"])
+    table_data["draw"] = int(request.GET.get("draw", 1))
 
     search_value = request.GET.get("search[value]")
 

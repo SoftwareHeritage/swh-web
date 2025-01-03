@@ -170,6 +170,12 @@ def test_oidc_list_bearer_tokens(client, keycloak_oidc):
         assert oidc_token.creation_date.isoformat() == tokens_data[i]["creation_date"]
 
 
+@pytest.mark.django_db
+def test_oidc_list_bearer_tokens_without_query_params(client, keycloak_oidc):
+    _generate_and_test_bearer_token(client, keycloak_oidc)
+    check_http_get_response(client, reverse("oidc-list-bearer-tokens"), status_code=200)
+
+
 def test_oidc_get_bearer_token_anonymous_user(client):
     """
     Anonymous user should be refused access with forbidden response.

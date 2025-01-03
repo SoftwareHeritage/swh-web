@@ -172,3 +172,20 @@ def test_admin_origin_save_requests_csv_dump_staff(client, staff_user):
     client.force_login(staff_user)
     url = reverse("admin-origin-save-requests-csv")
     check_http_get_response(client, url, status_code=200)
+
+
+@pytest.mark.django_db
+def test_save_origin_requests_list_without_query_params(client):
+    check_http_get_response(
+        client,
+        reverse("origin-save-requests-list", url_args={"status": "all"}),
+        status_code=200,
+        content_type="application/json",
+    )
+
+
+@pytest.mark.django_db
+def test_admin_origin_save_authorized_urls_without_query_params(client, staff_user):
+    client.force_login(staff_user)
+    url = reverse("admin-origin-save-authorized-urls-list")
+    check_http_get_response(client, url, status_code=200)
