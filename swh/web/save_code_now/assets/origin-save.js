@@ -384,7 +384,7 @@ export function validateSaveOriginUrl(input) {
 
   let customValidity = '';
   if (validUrl) {
-    if (['', 'anonymous', 'guest'].indexOf(originUrl.password) === -1) {
+    if (['', 'anonymous', 'guest', 'password'].indexOf(originUrl.password) === -1) {
       customValidity = 'The origin url contains a password and cannot be accepted for security reasons';
     }
   } else {

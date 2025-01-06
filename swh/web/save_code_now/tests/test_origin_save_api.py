@@ -671,7 +671,7 @@ def test_reject_origin_url_with_password(api_client, swh_scheduler):
         "api-1-save-origin",
         url_args={
             "visit_type": "git",
-            "origin_url": "https://user:password@git.example.org/user/repo",
+            "origin_url": "https://user:pass@git.example.org/user/repo",
         },
     )
     resp = check_api_post_responses(api_client, url, status_code=400)
@@ -703,6 +703,7 @@ def test_accept_origin_url_with_username_but_without_password(
     [
         "https://anonymous:anonymous@git.example.org/user/repo",
         "https://anonymous:@git.example.org/user/repo",
+        "https://anonymous:password@git.example.org/user/repo",
     ],
 )
 def test_accept_origin_url_with_anonymous_credentials(
