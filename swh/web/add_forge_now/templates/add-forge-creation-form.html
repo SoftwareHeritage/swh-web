@@ -114,8 +114,9 @@ See top-level LICENSE file for more information
         </div>
       </form>
       <p>
-        Once an add-forge-request is submitted, its status can be viewed in
-        the <a id="swh-show-forge-add-requests-list" href="#browse-requests">submitted requests list</a>.
+        Once an add-forge-request is submitted, its status can be viewed in the
+        <a id="swh-show-forge-add-requests-list"
+           href="{% url 'forge-add-list' %}">submitted requests list</a>.
         This process involves a moderator approval and might take a few days to handle (it primarily
         depends on the response time from the forge).
       </p>

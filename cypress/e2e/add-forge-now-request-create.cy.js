@@ -293,8 +293,8 @@ describe('Test add-forge-request creation', function() {
     populateForm('bitbucket', 'https://gitlab.example.com/', 'test', 'test@example.com', 'on', 'test comment');
     submitForm();
 
-    cy.visit(this.addForgeNowUrl);
-    cy.get('#swh-add-forge-requests-list-tab').click();
+    // click the link to the list in the form footer
+    cy.get('#swh-show-forge-add-requests-list').click();
 
     cy.wait('@addForgeRequestsList');
 
