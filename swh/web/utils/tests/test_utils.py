@@ -423,7 +423,7 @@ def test_get_deposits_list(requests_mock):
 
     config = get_config()["deposit"]
     private_api_url = config["private_api_url"].rstrip("/") + "/"
-    deposits_list_url = private_api_url + "deposits"
+    deposits_list_url = private_api_url + "deposits/"
 
     basic_auth_payload = (
         config["private_api_user"] + ":" + config["private_api_password"]
