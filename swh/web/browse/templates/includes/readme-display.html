@@ -5,6 +5,7 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load static %}
 {% load swh_templatetags %}
 
 {% if readme_name %}
@@ -12,7 +13,12 @@ See top-level LICENSE file for more information
     <div class="card-header swh-background-gray">
       <h4>{{ readme_name }}</h4>
     </div>
-    <div class="swh-readme card-body"></div>
+    <div class="swh-readme card-body">
+      <div class="text-center">
+        <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner" />
+        <p>Loading {{ readme_name }} ...</p>
+      </div>
+    </div>
   </div>
   {% if readme_html %}
     <script>
