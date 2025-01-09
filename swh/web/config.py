@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import importlib
 import os
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from swh.core import config
 from swh.web import settings
@@ -25,6 +25,14 @@ SETTINGS_DIR = os.path.dirname(settings.__file__)
 
 class ConfigurationError(Exception):
     pass
+
+
+class SWHWebConfig(dict[str, Any]):
+    def __getitem__(self, key: str) -> Any:
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise ConfigurationError(f"Missing '{key}' configuration")
 
 
 DEFAULT_CONFIG = {
@@ -141,10 +149,10 @@ DEFAULT_CONFIG = {
     "datatables_max_page_size": ("int", 1000),
 }
 
-swhweb_config: Dict[str, Any] = {}
+swhweb_config: SWHWebConfig = SWHWebConfig()
 
 
-def get_config(config_file: str = "web/web") -> Dict[str, Any]:
+def get_config(config_file: str = "web/web") -> SWHWebConfig:
     """Read the configuration file `config_file`.
 
     If an environment variable SWH_CONFIG_FILENAME is defined, this
@@ -188,47 +196,29 @@ def oidc_enabled() -> bool:
 
 def search() -> SearchInterface:
     """Return the current application's search."""
-    try:
-        return get_config()["search"]
-    except KeyError:
-        raise ConfigurationError("Missing 'search' configuration")
+    return get_config()["search"]
 
 
 def storage() -> StorageInterface:
     """Return the current application's storage."""
-    try:
-        return get_config()["storage"]
-    except KeyError:
-        raise ConfigurationError("Missing 'storage' configuration")
+    return get_config()["storage"]
 
 
 def vault() -> VaultInterface:
     """Return the current application's vault."""
-    try:
-        return get_config()["vault"]
-    except KeyError:
-        raise ConfigurationError("Missing 'vault' configuration")
+    return get_config()["vault"]
 
 
 def indexer_storage() -> IndexerStorageInterface:
     """Return the current application's indexer storage."""
-    try:
-        return get_config()["indexer_storage"]
-    except KeyError:
-        raise ConfigurationError("Missing 'indexer_storage' configuration")
+    return get_config()["indexer_storage"]
 
 
 def scheduler() -> SchedulerInterface:
     """Return the current application's scheduler."""
-    try:
-        return get_config()["scheduler"]
-    except KeyError:
-        raise ConfigurationError("Missing 'scheduler' configuration")
+    return get_config()["scheduler"]
 
 
 def counters() -> CountersInterface:
     """Return the current application's counters."""
-    try:
-        return get_config()["counters"]
-    except KeyError:
-        raise ConfigurationError("Missing 'counters' configuration")
+    return get_config()["counters"]
