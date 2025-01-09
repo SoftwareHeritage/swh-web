@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,7 +9,6 @@ Django tests settings for cypress e2e tests.
 import os
 
 from django.conf import settings
-from django.db.backends.signals import connection_created
 
 from swh.scheduler import get_scheduler
 from swh.web.config import get_config
@@ -55,17 +54,17 @@ settings.DATABASES["default"].update(
     {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": f"swh-web-test{build_id}.sqlite3",
+        "OPTIONS": {
+            "transaction_mode": "IMMEDIATE",
+            "init_command": (
+                "PRAGMA journal_mode=WAL;"
+                "PRAGMA synchronous=NORMAL;"
+                "PRAGMA cache_size=2000;"
+                "PRAGMA busy_timeout=5000"
+            ),
+        },
     }
 )
-
-
-# to prevent "database is locked" error when running cypress tests
-def activate_wal_journal_mode(sender, connection, **kwargs):
-    cursor = connection.cursor()
-    cursor.execute("PRAGMA journal_mode = WAL;")
-
-
-connection_created.connect(activate_wal_journal_mode)
 
 DEBUG = swh_web_config["debug"]
 DEBUG_PROPAGATE_EXCEPTIONS = swh_web_config["debug"]
