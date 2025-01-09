@@ -8,6 +8,8 @@
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
+from looseversion import LooseVersion2
+
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.html import escape
@@ -311,7 +313,9 @@ def process_snapshot_branches(
             branches[branch_alias]["name"] = branch_alias
 
     ret_branches = list(sorted(branches.values(), key=lambda b: b["name"]))
-    ret_releases = list(reversed(sorted(releases.values(), key=lambda b: b["name"])))
+    ret_releases = list(
+        reversed(sorted(releases.values(), key=lambda b: LooseVersion2(b["name"])))
+    )
 
     return ret_branches, ret_releases, resolved_aliases
 

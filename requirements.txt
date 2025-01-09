@@ -14,6 +14,7 @@ djangorestframework
 django-webpack-loader >= 3
 docutils
 iso8601
+looseversion
 msgpack
 prometheus-client
 psycopg2
