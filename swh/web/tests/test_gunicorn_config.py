@@ -21,7 +21,8 @@ def test_post_fork_default(mocker):
         environment=None,
         integrations=[django_integration],
         debug=False,
-        release=None,
+        release="0.0.0",
+        traces_sample_rate=None,
     )
 
 
@@ -38,6 +39,7 @@ def test_post_fork_with_dsn_env(mocker):
         integrations=[django_integration],
         debug=False,
         release=None,
+        traces_sample_rate=None,
     )
 
 
@@ -56,4 +58,5 @@ def test_post_fork_debug(mocker):
         integrations=[django_integration],
         debug=True,
         release=None,
+        traces_sample_rate=None,
     )

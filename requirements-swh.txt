@@ -1,5 +1,5 @@
 swh.auth[django] >= 0.6.7
-swh.core >= 3.0.1
+swh.core >= 3.7.0
 swh.counters >= 0.5.1
 swh.indexer >= 3.7.0
 swh.model >= 6.16.0
