@@ -172,16 +172,16 @@ def get_config(config_file: str = "web/web") -> SWHWebConfig:
         cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
         swhweb_config.update(cfg)
         config.prepare_folders(swhweb_config, "log_dir")
-    for service in (
-        "search",
-        "storage",
-        "vault",
-        "indexer_storage",
-        "scheduler",
-        "counters",
+    for service, modname in (
+        ("search", "search"),
+        ("storage", "storage"),
+        ("vault", "vault"),
+        ("indexer_storage", "indexer.storage"),
+        ("scheduler", "scheduler"),
+        ("counters", "counters"),
     ):
         if isinstance(swhweb_config.get(service), dict):
-            mod = importlib.import_module(f"swh.{service}")
+            mod = importlib.import_module(f"swh.{modname}")
             getter = getattr(mod, f"get_{service}")
             swhweb_config[service] = getter(**swhweb_config[service])
     return swhweb_config
