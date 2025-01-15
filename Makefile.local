@@ -10,32 +10,24 @@ SETTINGS_PROD = swh.web.settings.production
 yarn-install: package.json
 	$(YARN) install --frozen-lockfile
 
-
-.PHONY: build-webpack-dev
 build-webpack-dev: yarn-install ## Build frontend assets with webpack
 	$(YARN) build-dev
 
-.PHONY: build-webpack-test
 build-webpack-test: yarn-install ## | same with coverage activated
 	$(YARN) build-test
 
-.PHONY: build-webpack-dev-no-verbose
 build-webpack-dev-no-verbose: yarn-install ## | same as above without any output
 	$(YARN) build-dev >/dev/null
 
-.PHONY: build-webpack-prod
 build-webpack-prod: yarn-install ## | build assets minified and with mappings for sentry
 	$(YARN) build
 
-.PHONY: run-migrations-dev
 run-migrations-dev: ## Run django db migration (dev: swh.web.settings.development)
 	python3 swh/web/manage.py migrate --settings=$(SETTINGS_DEV) -v0
 
-.PHONY: run-migrations-prod
 run-migrations-prod: ## | same with prod settings (swh.web.settings.production)
 	django-admin migrate --settings=$(SETTINGS_PROD) -v0
 
-.PHONY: run-migrations-test
 run-migrations-test: ## | same with test settings (swh.web.settings.tests)
 	rm -f swh-web-test*.sqlite3*
 	django-admin migrate --settings=$(SETTINGS_TEST) -v0
@@ -91,7 +83,6 @@ run-mirror-demo: build-webpack-dev add-users-test ## Start django from tests con
 test-full: ## Run all python tests
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
-.PHONY: test-frontend-cmd
 test-frontend-cmd: build-webpack-test add-users-test
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
@@ -105,7 +96,6 @@ test-frontend: test-frontend-cmd ## Run cypress non-slow tests (no GUI)
 test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
 test-frontend-full: test-frontend-cmd ## | same, including slow tests
 
-.PHONY: test-frontend-ui-cmd
 test-frontend-ui-cmd: add-users-test yarn-install
 	# ensure all child processes will be killed when hitting Ctrl-C in terminal
 	# or manually closing the Cypress UI window, killing by PGID seems the only
