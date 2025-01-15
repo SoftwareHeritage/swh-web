@@ -29,12 +29,10 @@ build-webpack-prod: yarn-install ## | build assets minified and with mappings fo
 
 .PHONY: run-migrations-dev
 run-migrations-dev: ## Run django db migration (dev: swh.web.settings.development)
-	python3 swh/web/manage.py rename_app --settings=$(SETTINGS_DEV) swh_web_common swh_web_save_code_now
 	python3 swh/web/manage.py migrate --settings=$(SETTINGS_DEV) -v0
 
 .PHONY: run-migrations-prod
 run-migrations-prod: ## | same with prod settings (swh.web.settings.production)
-	django-admin rename_app --settings=$(SETTINGS_PROD) swh_web_common swh_web_save_code_now
 	django-admin migrate --settings=$(SETTINGS_PROD) -v0
 
 .PHONY: run-migrations-test
@@ -122,15 +120,7 @@ test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
 test-frontend-ui: test-frontend-ui-cmd ## Run cypress non-slow tests in a browser (GUI)
 
 test-frontend-full-ui: export CYPRESS_SKIP_SLOW_TESTS=0
-test-frontend-full-ui: test-frontend-ui-cmd # \ same, including slow tests
-
-
-# Override default rule to make sure DJANGO env var is properly set. It
-# *should* work without any override thanks to the mypy django-stubs plugin,
-# but it currently doesn't; see
-# https://github.com/typeddjango/django-stubs/issues/166
-check-mypy: ## Run mypy (with properly set env vars for django)
-	DJANGO_SETTINGS_MODULE=$(SETTINGS_DEV) $(MYPY) $(MYPYFLAGS) swh
+test-frontend-full-ui: test-frontend-ui-cmd ## | same, including slow tests
 
 
 .PHONY: help
