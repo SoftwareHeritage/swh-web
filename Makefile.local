@@ -3,9 +3,21 @@ TESTFLAGS += --hypothesis-profile=swh-web-fast
 TESTFULL_FLAGS = --hypothesis-profile=swh-web
 YARN ?= yarn
 SETTINGS_CYPRESS ?= swh.web.settings.cypress
-SETTINGS_TEST ?= swh.web.settings.tests
 SETTINGS_DEV ?= swh.web.settings.development
 SETTINGS_PROD = swh.web.settings.production
+
+define run_django_migrations
+	django-admin migrate --settings=$(1) -v0
+endef
+
+define create_django_users
+	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(1)
+	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(1)
+endef
+
+define run_django_server
+	python3 swh/web/manage.py runserver --nostatic --settings=$(1)
+endef
 
 yarn-install: package.json
 	$(YARN) install --frozen-lockfile
@@ -23,26 +35,23 @@ build-webpack-prod: yarn-install ## | build assets minified and with mappings fo
 	$(YARN) build
 
 run-migrations-dev: ## Run django db migration (dev: swh.web.settings.development)
-	python3 swh/web/manage.py migrate --settings=$(SETTINGS_DEV) -v0
+	$(call run_django_migrations,$(SETTINGS_DEV))
 
 run-migrations-prod: ## | same with prod settings (swh.web.settings.production)
-	django-admin migrate --settings=$(SETTINGS_PROD) -v0
+	$(call run_django_migrations,$(SETTINGS_PROD))
 
-run-migrations-test: ## | same with test settings (swh.web.settings.tests)
+run-migrations-cypress: ## | same with cypress settings (swh.web.cypress.tests)
 	rm -f swh-web-test*.sqlite3*
-	django-admin migrate --settings=$(SETTINGS_TEST) -v0
+	$(call run_django_migrations,$(SETTINGS_CYPRESS))
 
-add-users-test: run-migrations-test ## Create default django users (tests settings)
-	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_TEST)
-	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_TEST)
+add-users-cypress: run-migrations-cypress ## Create default django users (cypress settings)
+	$(call create_django_users,$(SETTINGS_CYPRESS))
 
 add-users-dev: run-migrations-dev ## | same, using dev settings
-	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_DEV)
-	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_DEV)
+	$(call create_django_users,$(SETTINGS_DEV))
 
 add-users-prod: run-migrations-prod ## | same, using prod settings
-	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(SETTINGS_PROD)
-	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(SETTINGS_PROD)
+	$(call create_django_users,$(SETTINGS_PROD))
 
 .PHONY: clear-memcached
 clear-memcached: ## Clear locally running memcache (on localhost:1211)
@@ -56,16 +65,16 @@ run-django-webpack-devserver: add-users-dev yarn-install ## Start webpack and dj
 	python3 manage.py runserver --nostatic --settings=$(SETTINGS_DEV) || exit 1"
 
 run-django-webpack-dev: build-webpack-dev add-users-dev ## Build assets & start django from src using dev settings
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
+	$(call run_django_server,$(SETTINGS_DEV))
 
 run-django-webpack-prod: build-webpack-prod add-users-prod clear-memcached ## | same with prod settings
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_PROD)
+	$(call run_django_server,$(SETTINGS_PROD))
 
 run-django-server-dev: add-users-dev ## Start django from src using dev settings
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_DEV)
+	$(call run_django_server,$(SETTINGS_DEV))
 
 run-django-server-prod: add-users-prod clear-memcached ## | same with prod settings
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_PROD)
+	$(call run_django_server,$(SETTINGS_PROD))
 
 run-gunicorn-server: add-users-prod clear-memcached ## Clear memcache and start django from gunicorn (prod settings)
 	DJANGO_SETTINGS_MODULE=$(SETTINGS_PROD) \
@@ -73,20 +82,19 @@ run-gunicorn-server: add-users-prod clear-memcached ## Clear memcache and start 
 	--threads 2 \
 	--workers 2 'django.core.wsgi:get_wsgi_application()'
 
-run-django-webpack-memory-storages: build-webpack-dev add-users-test ## Start django from tests settings (using in-memory storages)
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_TEST)
+run-django-webpack-memory-storages: build-webpack-dev add-users-cypress ## Start django from tests settings (using in-memory storages)
+	$(call run_django_server,$(SETTINGS_CYPRESS))
 
-run-mirror-demo: build-webpack-dev add-users-test ## Start django from tests config using a mirror setup
-	SWH_CONFIG_FILENAME=$$PWD/mirror_demo/config.yml python3 swh/web/manage.py runserver \
-	--nostatic --settings=$(SETTINGS_TEST)
+run-mirror-demo: build-webpack-dev add-users-cypress ## Start django from tests config using a mirror setup
+	SWH_CONFIG_FILENAME=$$PWD/mirror_demo/config.yml $(call run_django_server,$(SETTINGS_DEV))
 
 test-full: ## Run all python tests
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
-test-frontend-cmd: build-webpack-test add-users-test
+test-frontend-cmd: build-webpack-test add-users-cypress
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_CYPRESS) & \
+	$(call run_django_server,$(SETTINGS_CYPRESS)) & \
 	sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 && \
 	$(YARN) mochawesome && $(YARN) nyc-report"
 
@@ -96,14 +104,14 @@ test-frontend: test-frontend-cmd ## Run cypress non-slow tests (no GUI)
 test-frontend-full: export CYPRESS_SKIP_SLOW_TESTS=0
 test-frontend-full: test-frontend-cmd ## | same, including slow tests
 
-test-frontend-ui-cmd: add-users-test yarn-install
+test-frontend-ui-cmd: add-users-cypress yarn-install
 	# ensure all child processes will be killed when hitting Ctrl-C in terminal
 	# or manually closing the Cypress UI window, killing by PGID seems the only
 	# reliable way to do it in that case
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
 	$(YARN) start-dev & \
-	python3 swh/web/manage.py runserver --nostatic --settings=$(SETTINGS_CYPRESS) & \
+	$(call run_django_server,$(SETTINGS_CYPRESS)) & \
 	sleep 10 && $(YARN) run cypress open"
 
 test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=1
