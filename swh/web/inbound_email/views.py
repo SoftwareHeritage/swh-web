@@ -33,6 +33,7 @@ class InboundEmailForm(forms.Form):
 class InboundEmailView(FormMixin, ProcessFormView):
     form_class = InboundEmailForm
     success_url = "/"
+    http_method_names = ["post", "put"]  # no blank (get) InboundEmailForm view
 
     def form_invalid(self, form):
         return HttpResponseBadRequest(
