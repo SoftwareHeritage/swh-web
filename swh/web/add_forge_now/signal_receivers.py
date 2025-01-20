@@ -43,8 +43,6 @@ def handle_inbound_message(sender: Type, **kwargs) -> EmailProcessingStatus:
         except Request.DoesNotExist:
             continue
 
-        request_updated = False
-
         message_plaintext = get_message_plaintext(message)
         if message_plaintext:
             history_text = message_plaintext
@@ -66,12 +64,12 @@ def handle_inbound_message(sender: Type, **kwargs) -> EmailProcessingStatus:
             RequestStatus.WAITING_FOR_FEEDBACK: RequestStatus.FEEDBACK_TO_HANDLE,
         }.get(RequestStatus[request.status])
 
+        request.last_modified_date = history_entry.date
+
         if new_status:
             request.status = history_entry.new_status = new_status.name
-            request_updated = True
 
         history_entry.save()
-        if request_updated:
-            request.save()
+        request.save()
 
     return EmailProcessingStatus.PROCESSED
