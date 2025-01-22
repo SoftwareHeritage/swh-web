@@ -78,7 +78,7 @@ Frontend requirements
 ^^^^^^^^^^^^^^^^^^^^^
 
 To compile the frontend assets, you need to have `nodejs <https://nodejs.org>`_
->= 14.0.0 and `yarn`_ installed. If you are on Debian,
+>= 20 and `yarn`_ installed. If you are on Debian,
 you can easily install an up to date nodejs from the `nodesource
 <https://github.com/nodesource/distributions/blob/master/README.md>`_
 repository.
