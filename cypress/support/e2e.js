@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2023  The Software Heritage developers
+ * Copyright (C) 2019-2024 The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -113,6 +113,17 @@ before(function() {
 
 beforeEach(function() {
   mockCostlyRequests();
+  // intercept xhr failures (e.g. failed internal API calls)
+  cy.intercept('**', request => {
+    request.on('response', function(response) {
+      // expect(response.statusCode).is.lessThan(500); is a bit too verbose
+      const statusCode = response.statusCode;
+      const url = request.url;
+      if (statusCode >= 500) {
+        throw new Error(`${url} returned a ${statusCode} http status code`);
+      }
+    });
+  });
 });
 
 Cypress.Commands.overwrite('type', (originalFn, subject, text, options = {}) => {

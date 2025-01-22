@@ -8,7 +8,12 @@
 describe('Test API tokens UI', function() {
 
   it('should ask for user to login', function() {
-    cy.visit(`${this.Urls.oidc_profile()}#tokens`, {failOnStatusCode: false});
+    // mock keycloak
+    cy.intercept(`${this.Urls.oidc_login()}/**`, {
+      headers: {'content-type': 'text/html'},
+      body: {}
+    });
+    cy.visit(`${this.Urls.oidc_profile()}#tokens`);
     cy.location().should(loc => {
       expect(loc.pathname).to.eq(this.Urls.oidc_login());
     });
@@ -96,7 +101,7 @@ describe('Test API tokens UI', function() {
     const errorMessage = 'Bearer token has expired';
     displayToken(this.Urls, 400, errorMessage);
     cy.get('.modal-body')
-        .should('contain', errorMessage);
+      .should('contain', errorMessage);
   });
 
   function revokeToken(Urls, status) {

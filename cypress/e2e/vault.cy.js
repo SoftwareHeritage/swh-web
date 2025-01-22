@@ -212,6 +212,14 @@ describe('Vault Cooking User Interface Tests', function() {
 
     updateVaultItemList(this.vaultItems);
 
+    // Stub response to the vault API to simulate archive download
+    cy.intercept({url: this.vaultDownloadRevisionUrl}, {
+      body: {},
+      headers: {
+        'Content-Type': 'json'
+      }
+    }).as('fetchCookedArchive');
+
     cy.visit(this.Urls.vault());
 
     cy.contains(`#vault-task-${CSS.escape(this.revision)} button`, 'Download')
