@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,6 +7,7 @@ import functools
 from typing import Dict, List, Literal, Optional
 
 from django.http.response import HttpResponseBase
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 
 from swh.web.api import throttling
@@ -73,6 +74,7 @@ def api_route(
     checksum_args: Optional[List[str]] = None,
     never_cache: bool = False,
     api_urls: APIUrls = api_urls,
+    query_params_serializer: Optional[type[serializers.Serializer]] = None,
 ):
     """
     Decorator to ease the registration of an API endpoint
@@ -81,12 +83,14 @@ def api_route(
     Args:
         url_pattern: the url pattern used by DRF to identify the API route
         view_name: the name of the API view associated to the route used to
-           reverse the url
+            reverse the url
         methods: array of HTTP methods supported by the API route
         throttle_scope: Named scope for rate limiting
         api_version: web API version
         checksum_args: list of view argument names holding checksum values
         never_cache: define if api response must be cached
+        query_params_serializer: an optional DRF serializer to validate the API call
+            query parameters
 
     """
 
@@ -97,9 +101,28 @@ def api_route(
         @api_view(methods)
         @throttling.throttle_scope(throttle_scope)
         @functools.wraps(f)
-        def api_view_f(request, **kwargs):
+        def api_view_f(request, **kwargs) -> HttpResponseBase:
+            """Creates and calls a DRF view from the wrapped function.
+
+            If `query_params_serializer` is set an extra kwarg `validated_query_params`
+            will be added to the view call containing the serializer's `validated_data`.
+
+            Raises:
+                django.core.exceptions.ValidationError: query_params_serializer was
+                    unable to validate the query parameters
+
+            Returns:
+                An HttpResponse
+            """
             # never_cache will be handled in apiresponse module
             request.never_cache = never_cache
+
+            # a DRF serializer has been passed to validate the query parameters
+            if query_params_serializer:
+                serializer = query_params_serializer(data=request.query_params.dict())
+                serializer.is_valid(raise_exception=True)
+                kwargs["validated_query_params"] = serializer.validated_data
+
             response = f(request, **kwargs)
             doc_data = None
             # check if response has been forwarded by api_doc decorator
@@ -107,6 +130,7 @@ def api_route(
                 doc_data = response["doc_data"]
                 response = response["data"]
             # check if HTTP response needs to be created
+            api_response: HttpResponseBase
             if not isinstance(response, HttpResponseBase):
                 api_response = make_api_response(
                     request, data=response, doc_data=doc_data

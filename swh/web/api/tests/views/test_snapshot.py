@@ -1,15 +1,17 @@
-# Copyright (C) 2018-2021  The Software Heritage developers
+# Copyright (C) 2018-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
-
+from http import HTTPStatus
 import random
 
 from hypothesis import given
+import pytest
 
 from swh.model.hashutil import hash_to_hex
-from swh.model.model import Snapshot
+from swh.model.model import Snapshot, TargetType
 from swh.web.api.utils import enrich_snapshot
+from swh.web.api.views.snapshot import SnapshotQuerySerializer
 from swh.web.tests.data import random_sha1
 from swh.web.tests.helpers import check_api_get_responses, check_http_get_response
 from swh.web.tests.strategies import new_snapshot
@@ -154,3 +156,60 @@ def test_api_snapshot_no_pull_request_branches_filtering(
     url = reverse("api-1-snapshot", url_args={"snapshot_id": snapshot["id"]})
     resp = check_api_get_responses(api_client, url, status_code=200)
     assert any([b.startswith("refs/pull/") for b in resp.data["branches"]])
+
+
+@pytest.mark.parametrize(
+    "query_params,expected_error_key",
+    [
+        (
+            {"target_types": "content,an_invalid_target_type"},
+            "target_types",
+        ),
+        (
+            {"branches_count": "500/"},
+            "branches_count",
+        ),
+    ],
+)
+def test_api_snapshot_invalid_params(
+    api_client, archive_data, snapshot, query_params, expected_error_key
+):
+    url = reverse(
+        "api-1-snapshot",
+        url_args={"snapshot_id": snapshot},
+        query_params=query_params,
+    )
+    rv = check_api_get_responses(api_client, url, status_code=HTTPStatus.BAD_REQUEST)
+    assert rv.data["exception"] == "ValidationError"
+    assert expected_error_key in rv.data["reason"]
+
+
+VALID_TARGET_TYPES = [e.value for e in TargetType]
+
+
+@pytest.mark.parametrize(
+    "target_types,expected",
+    [
+        (
+            ",".join(VALID_TARGET_TYPES),
+            VALID_TARGET_TYPES,
+        ),
+        (
+            " content, directory",
+            ["content", "directory"],
+        ),
+        (
+            "alias",
+            ["alias"],
+        ),
+    ],
+)
+def test_api_snapshot_serializer_valid_target_types(target_types, expected):
+    serializer = SnapshotQuerySerializer(data={"target_types": target_types})
+    assert serializer.is_valid()
+    assert serializer.validated_data["target_types"] == expected
+
+
+def test_api_snapshot_serializer_invalid_target_types():
+    serializer = SnapshotQuerySerializer(data={"target_types": "branch"})
+    assert not serializer.is_valid()

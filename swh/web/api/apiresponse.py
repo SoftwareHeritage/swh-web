@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ from django.shortcuts import render
 from django.urls import get_resolver
 from django.utils.cache import add_never_cache_headers
 from django.utils.html import escape
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.utils.encoders import JSONEncoder
@@ -200,6 +200,7 @@ def error_response(
         doc_data: documentation data for HTML response
 
     """
+    error_data: dict[str, Any]
     error_data = {
         "exception": exception.__class__.__name__,
         "reason": str(exception),
@@ -212,6 +213,9 @@ def error_response(
     error_code = 500
     if isinstance(exception, BadInputExc):
         error_code = 400
+    elif isinstance(exception, ValidationError):
+        error_code = 400
+        error_data["reason"] = exception.detail
     elif isinstance(exception, UnauthorizedExc):
         error_code = 401
     elif isinstance(exception, NotFoundExc):
