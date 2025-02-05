@@ -1,0 +1,12 @@
+{% comment %}
+Copyright (C) 2025  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+{% load alter_extras %}
+{{ alteration }}: {% absolute_url alteration.get_admin_url %}
+
+{% if event.author %}From: {{ event.author }}{% endif %}
+
+{{ event.content }}

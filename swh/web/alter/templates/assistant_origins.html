@@ -1,0 +1,78 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+{% block page_title %}
+  {% translate "Search and select origins" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Search and select origins" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% include "includes/steps.html" %}
+  <p>
+    {% blocktranslate trimmed %}
+      Use this search engine to find the repositories concerned by your request to
+      alter the archive.
+    {% endblocktranslate %}
+  </p>
+  <form method="GET" class="form mt-3" id="origins-search-form">
+    {% bootstrap_field_submit search_form.query _("Search") %}
+  </form>
+  {% if search_form.query.value %}
+    <form method="post" class="form mt-3" id="origins-form">
+      {% csrf_token %}
+      <table class="table swh-table swh-table-striped" id="origins-results">
+        <thead>
+          <tr>
+            <th>{% translate "Include" %}</th>
+            <th>{% translate "Origin" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for origin in results %}
+            <tr>
+              <td class="text-center">
+                <input type="checkbox" name="urls" value="{{ origin.url }}" class="mx-auto">
+              </td>
+              <td>
+                <label for="{{ origin.url }}" class="form-check-label pt-0">
+                  <a href="{{ origin.url }}" target="_blank">{{ origin.url }}</a>
+                </label>
+              </td>
+            </tr>
+          {% empty %}
+            <tr {% if search_form.query.value %}class="table-warning"{% endif %}>
+              <td colspan="2" class="text-center">
+                <em>
+                  {% if search_form.query.value %}
+                    {% translate "your search query returned nothing, are you sure your code has been archived by Software Heritage ?" %}
+                  {% else %}
+                    {% translate "please search something first" %}
+                  {% endif %}
+                </em>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </form>
+  {% endif %}
+  <div class="d-flex justify-content-between my-3">
+    <a href="{% url 'alteration-category' %}" class="btn btn-secondary">Back</a>
+    <button type="submit"
+            form="origins-form"
+            class="btn btn-primary"
+            {% if not query or not results %}disabled{% endif %}>Next</button>
+  </div>
+{% endblock content %}

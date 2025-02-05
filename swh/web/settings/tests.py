@@ -92,10 +92,13 @@ swh_web_config.update(
 )
 
 
+from .common import (  # noqa, isort: skip
+    ALTER_SETTINGS,
+    INSTALLED_APPS,
+    LOGGING,
+    MIDDLEWARE,
+)
 from .common import *  # noqa
-
-from .common import INSTALLED_APPS, LOGGING, MIDDLEWARE  # noqa, isort: skip
-
 
 ALLOWED_HOSTS = ["*"]
 

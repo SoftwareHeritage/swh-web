@@ -1,0 +1,116 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block page_title %}
+  {% translate "Choice of archive alteration request category" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Choice of archive alteration request category" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% if form.errors %}
+    {% bootstrap_alert form.errors alert_type="danger" %}
+  {% endif %}
+  {% include "includes/steps.html" %}
+  <p>
+    {% blocktranslate trimmed %}
+      Please specify the reason for your request to alter the archive. This will help
+      determine the necessary steps and the information we may need to collect from you
+      to process your request.
+    {% endblocktranslate %}
+  </p>
+  <form method="POST" class="accordion mt-3" id="categoryAccordion">
+    {% csrf_token %}
+    <div class="accordion-item">
+      <h5 class="accordion-header">
+        <button class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#categoryCopyright"
+                aria-expanded="false"
+                aria-controls="categoryCopyright">
+          {% translate "Copyright / License infringement" %}
+        </button>
+      </h5>
+      <div id="categoryCopyright"
+           class="accordion-collapse collapse"
+           data-bs-parent="#categoryAccordion">
+        <div class="accordion-body">
+          <p>
+            {% blocktranslate trimmed %}
+              If you believe content in the archive may be subject to copyright
+              infringement, you can submit a takedown request.
+            {% endblocktranslate %}
+          </p>
+          {% bootstrap_button _("Copyright archive alteration request") button_type="submit" button_class="btn-primary" name="category" value="copyright" %}
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h5 class="accordion-header">
+        <button class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#categoryPii"
+                aria-expanded="false"
+                aria-controls="categoryPii">
+          {% translate "Personally Identifiable Information (PII)" %}
+        </button>
+      </h5>
+      <div id="categoryPii"
+           class="accordion-collapse collapse"
+           data-bs-parent="#categoryAccordion">
+        <div class="accordion-body">
+          <p>
+            {% blocktranslate trimmed %}
+              Personal data was versioned by mistake in a repository, you changed your
+              name or any other GPDR-related issues; you made a change to your
+              repository and you want to apply it to the archived version: you wish to
+              request a modification of the archive.
+            {% endblocktranslate %}
+          </p>
+          {% bootstrap_button _("PII archive alteration request") button_type="submit" button_class="btn-primary" name="category" value="pii" %}
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h5 class="accordion-header">
+        <button class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#categoryLegal"
+                aria-expanded="false"
+                aria-controls="categoryLegal">{% translate "Other Legal Matters" %}</button>
+      </h5>
+      <div id="categoryLegal"
+           class="accordion-collapse collapse"
+           data-bs-parent="#categoryAccordion">
+        <div class="accordion-body">
+          <p>
+            {% blocktranslate trimmed %}
+              If you have identified other types of illegal content in the archive,
+              such as child sexual abuse material (CSAM) or content that violates
+              anti-terrorism laws, you must first report this content to PHAROS, a
+              French government platform for reporting illegal online content. You can
+              also submit a request to remove this content from the Software Heritage
+              Archive in parallel.
+            {% endblocktranslate %}
+          </p>
+          <a href="https://www.internet-signalement.gouv.fr"
+             class="btn btn-primary"
+             target="_blank">PHAROS</a>
+          {% bootstrap_button _("Legal archive alteration request") button_type="submit" button_class="btn-secondary" name="category" value="legal" %}
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock content %}

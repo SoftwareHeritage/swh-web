@@ -10,9 +10,10 @@ define run_django_migrations
 	django-admin migrate --settings=$(1) -v0
 endef
 
-define create_django_users
+define create_django_fixtures
 	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(1)
 	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(1)
+	cat swh/web/tests/create_test_alter.py | django-admin shell --settings=$(1)
 endef
 
 define run_django_server
@@ -45,13 +46,13 @@ run-migrations-cypress: ## | same with cypress settings (swh.web.cypress.tests)
 	$(call run_django_migrations,$(SETTINGS_CYPRESS))
 
 add-users-cypress: run-migrations-cypress ## Create default django users (cypress settings)
-	$(call create_django_users,$(SETTINGS_CYPRESS))
+	$(call create_django_fixtures,$(SETTINGS_CYPRESS))
 
 add-users-dev: run-migrations-dev ## | same, using dev settings
-	$(call create_django_users,$(SETTINGS_DEV))
+	$(call create_django_fixtures,$(SETTINGS_DEV))
 
 add-users-prod: run-migrations-prod ## | same, using prod settings
-	$(call create_django_users,$(SETTINGS_PROD))
+	$(call create_django_fixtures,$(SETTINGS_PROD))
 
 .PHONY: clear-memcached
 clear-memcached: ## Clear locally running memcache (on localhost:1211)

@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "webpack_loader",
     "django_js_reverse",
     "corsheaders",
+    "django_bootstrap5",
 ] + SWH_DJANGO_APPS
 
 MIDDLEWARE = [
@@ -152,10 +153,13 @@ TEMPLATES = [
             "libraries": {
                 "swh_templatetags": "swh.web.utils.swh_templatetags",
             },
+            "builtins": [
+                "django.templatetags.i18n",
+                "django_bootstrap5.templatetags.django_bootstrap5",
+            ],
         },
     },
 ]
-
 
 DATABASES = {
     "default": {
@@ -423,3 +427,14 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10Mb
 
 # XXX Transitional setting that will be removed in Django 6.0
 FORMS_URLFIELD_ASSUME_HTTPS = True
+
+EMAIL_BACKEND = swh_web_config["email_setup"]["backend"]
+EMAIL_HOST = swh_web_config["email_setup"].get("host")
+EMAIL_PORT = swh_web_config["email_setup"].get("port")
+EMAIL_HOST_USER = swh_web_config["email_setup"].get("username")
+EMAIL_HOST_PASSWORD = swh_web_config["email_setup"].get("password")
+EMAIL_USE_TLS = swh_web_config["email_setup"].get("use_tls", False)
+EMAIL_USE_SSL = swh_web_config["email_setup"].get("use_ssl", False)
+DEFAULT_FROM_EMAIL = swh_web_config["email_setup"].get("default_from_email")
+
+ALTER_SETTINGS = swh_web_config.get("alter_settings", {})

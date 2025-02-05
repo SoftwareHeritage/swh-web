@@ -25,6 +25,10 @@ See top-level LICENSE file for more information
         <span>Terms of use:</span>
         <a href="https://www.softwareheritage.org/legal/bulk-access-terms-of-use/">Archive access</a>,
         <a href="https://www.softwareheritage.org/legal/api-terms-of-use/">API</a>&mdash;
+        {% if "swh.web.alter" in SWH_DJANGO_APPS %}
+          <a href="{% url 'content-policies' %}"
+             data-testid="swh-web-alter-content-policy">Content policy</a>&mdash;
+        {% endif %}
         <a href="https://www.softwareheritage.org/contact/">Contact</a>&mdash;
         {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
           <a href="{% url 'jslicenses' %}" rel="jslicense">JavaScript license information</a>&mdash;

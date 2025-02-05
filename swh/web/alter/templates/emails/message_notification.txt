@@ -1,0 +1,17 @@
+{% comment %}
+Copyright (C) 2025  The Software Heritage developers
+See the AUTHORS file at the top-level directory of this distribution
+License: GNU Affero General Public License version 3, or any later version
+See top-level LICENSE file for more information
+{% endcomment %}
+{% load alter_extras %}
+{% absolute_url alteration.get_absolute_url as url %}
+{% blocktranslate with category=alteration.get_category_display %}Greetings,
+
+You've received a new message regarding your «{{ category }}» archive alteration request. Please follow this link to access it:
+
+{{ url }}
+
+Best regards,
+The SWH team
+{% endblocktranslate %}

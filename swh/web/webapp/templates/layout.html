@@ -11,7 +11,7 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -85,6 +85,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
       </script>
       <!-- End Matomo Code -->
     {% endif %}
+    {% comment %}
+    Handle browsers with JavaScript disabled: if the html element has a `no-js` class
+    it means that JS is disabled. Use noscript tags to provide alternative ways of
+    accessing the information or interacting with the app.
+    Hide elements that don't belong in a JS-free context (e.g. modal buttons) with the
+    `js-only` class.
+    {% endcomment %}
+
+    <script>document.documentElement.classList.remove('no-js');</script>
+    <style>.no-js .js-only { display: none !important;}</style>
   </head>
   <body class="layout-fixed sidebar-expand-lg sidebar-mini {% if sidebar_state == 'expanded' %} sidebar-open {% else %} sidebar-collapse {% endif %}">
     <a id="top"></a>

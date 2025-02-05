@@ -1,0 +1,67 @@
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load i18n %}
+
+<h4>{% translate "Applicable law" %}</h4>
+{% blocktranslate trimmed %}
+  <p>
+    Software Heritage Archive is under the responsibility of <a href="https://inria.fr/en" rel="external">Inria</a>, France's National Institute for Research in Digital Science and Technology. Accordingly, French law is applicable.
+  </p>
+{% endblocktranslate %}
+<h4>{% translate "Takedown notices" %}</h4>
+{% blocktranslate trimmed %}
+  <p>
+    The Software Heritage archive collects publicly available source code, and its development history, from a variety of sources.
+  </p>
+  <p>
+    Software Heritage does not perform any screening of the collected source code and development history, hence illicit content present therein may become part of the Software Heritage archive. In accordance with applicable French law, Software Heritage and Inria shall not be held liable for copyright infringement, provided they offer legitimate rights holders a viable process to request the removal of infringing content.
+  </p>
+  <p>
+    <a href="https://www.softwareheritage.org/legal/content-policy/#takedown-notices"
+       rel="external">Read more about takedown notices</a>
+  </p>
+{% endblocktranslate %}
+<h4>{% translate "Personal data and name changes" %}</h4>
+{% blocktranslate trimmed %}
+  <p>
+    People change their names and/or email addresses for many reasons. In cases covered in the <a href="https://www.softwareheritage.org/legal/content-policy/#personal-data"
+    rel="external">GPDR information notice</a> established by Inria:
+  </p>
+  <ul>
+    <li>
+      If the main location for the source code has been updated, we can archive the updated code and remove what was previously archived. Access to copies of the same files from other source code location can be permanently restricted.
+    </li>
+    <li>
+      When the main source code location cannot be updated we can hide all or part of the archived content and make name replacements on the fly.
+    </li>
+  </ul>
+  <p>
+    Rest assured that we want to preserve the dignity and safety of anyone who changes their name.
+  </p>
+  <p>
+    Any processing of personal data will be carried out in compliance with the obligations related to the application of the GDPR only by accredited persons to do so on the appropriate channels.
+  </p>
+{% endblocktranslate %}
+<h4>{% translate "Unauthorized changes" %}</h4>
+{% blocktranslate trimmed %}
+  <p>
+    Unfortunately, malicious actors may try to exploit our archive alteration tools to manipulate historical records and remove legitimate content from the archive. For example:
+  </p>
+  <ul>
+    <li>
+      Request to remove an open-source version of the software after changing its license to a closed one.
+    </li>
+    <li>Request to delete or modify code written by others without proper authorization.</li>
+  </ul>
+  <p>
+    To mitigate these risks, we have implemented a rigorous process for reviewing and approving all requests for archive changes. This includes verifying the original licensing of the source code, confirming its online availability, and may involve reviewing personal information provided by the requester.
+  </p>
+  <p>
+    We must therefore apply a strict process to handle requests for changes to the archive, by verifying the licenses used to publish the source code, the online availability of the repository and sometimes personal information of the requester to ensure that the request is indeed valid.
+  </p>
+{% endblocktranslate %}

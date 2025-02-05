@@ -5,12 +5,12 @@
 
 from html import unescape
 import shutil
-from typing import Any, Dict, Optional, cast
+from typing import Any, Optional, cast
 
 from bs4 import BeautifulSoup
 
 from django.http.response import HttpResponse, HttpResponseBase, StreamingHttpResponse
-from django.test.client import Client
+from django.test.client import MULTIPART_CONTENT, Client
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 
@@ -88,7 +88,7 @@ def check_http_post_response(
     status_code: int,
     content_type: str = "*/*",
     request_content_type="application/json",
-    data: Optional[Dict[str, Any]] = None,
+    data: dict[str, Any] | Optional[str] = None,
     http_origin: Optional[str] = None,
     **headers,
 ) -> HttpResponseBase:
@@ -189,7 +189,7 @@ def check_api_post_responses(
     api_client: APIClient,
     url: str,
     status_code: int,
-    data: Optional[Dict[str, Any]] = None,
+    data: Optional[dict[str, Any]] = None,
     **headers,
 ) -> Response:
     """Helper function to check Web API responses for POST requests
@@ -252,6 +252,47 @@ def check_html_get_response(
         content_type="text/html",
         http_origin=http_origin,
         server_name=server_name,
+    )
+    if template_used is not None:
+        assert_template_used(response, template_used)
+    return response
+
+
+def check_html_post_response(
+    client: Client,
+    url: str,
+    status_code: int,
+    data: dict[str, Any],
+    template_used: Optional[str] = None,
+    http_origin: Optional[str] = None,
+    server_name: Optional[str] = None,
+    **headers,
+) -> HttpResponseBase:
+    """Helper function to check HTML responses for a POST request.
+
+    Args:
+        client: Django test client
+        url: URL to check responses
+        status_code: expected HTTP status code
+        data: POST data
+        template_used: optional used Django template to check
+
+    Keyword Args:
+        headers: extra kwargs passed to ``client.post``, for example follow=True
+
+    Returns:
+        The HTML response
+    """
+    response = check_http_post_response(
+        client,
+        url,
+        status_code,
+        data=data,
+        content_type="text/html",
+        request_content_type=MULTIPART_CONTENT,
+        http_origin=http_origin,
+        server_name=server_name,
+        **headers,
     )
     if template_used is not None:
         assert_template_used(response, template_used)

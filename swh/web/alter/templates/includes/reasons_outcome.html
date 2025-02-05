@@ -1,0 +1,23 @@
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+<div class="row mt-3 gx-5">
+  <div class="col-sm-6 mb-3 mb-sm-0">
+    <div class="card h-100" id="alteration-reasons">
+      <div class="card-header">{% translate "Reasons" %}</div>
+      <div class="card-body">
+        <div class="card-text">{{ alteration.reasons|linebreaks }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 mb-3 mb-sm-0">
+    <div class="card h-100" id="alteration-expected-outcome">
+      <div class="card-header">{% translate "Expected outcome" %}</div>
+      <div class="card-body">{{ alteration.expected_outcome|linebreaks }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,83 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+{% block page_title %}
+  {% translate "Alteration requests administration" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Alteration requests administration" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  <form method="GET" class="form mt-3">
+    <div class="row">
+      <div class="col-md-2">
+        {% bootstrap_field form.query placeholder="Search" show_label=False success_css_class="" %}
+      </div>
+      <div class="col-md-2 offset-md-8">
+        {% bootstrap_field form.status show_label=False success_css_class="" %}
+      </div>
+    </div>
+  </form>
+  <div class="mt-3">
+    <table class="table swh-table swh-table-striped align-middle">
+      <thead>
+        <tr class="text-nowrap">
+          <th>{% translate "Status" %}</th>
+          <th class="w-100">{% translate "Demand" %}</th>
+          <th>{% translate "Created" %}</th>
+          <th>{% translate "Updated" %}</th>
+          <th>{% translate "Origins" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alteration in page.object_list %}
+          <tr id="alteration-{{ alteration.pk }}">
+            <td>{{ alteration.status|status_badge:alteration.get_status_display }}</td>
+            <td>
+              <a href="{{ alteration.get_admin_url }}">{{ alteration }}</a>
+              <div class="collapse" id="origins-{{ alteration.pk }}">
+                <ul>
+                  {% for origin in alteration.origins.all %}
+                    <li>
+                      <a href="{{ origin.url }}" target="_blank">{{ origin }}</a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </td>
+            <td>{{ alteration.created_at|date:"SHORT_DATE_FORMAT" }}</td>
+            <td>{{ alteration.updated_at|date:"SHORT_DATE_FORMAT" }}</td>
+            <td>
+              <button class="btn btn-light btn-sm"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#origins-{{ alteration.pk }}"
+                      aria-label="{% blocktranslate with count=alteration.origins.count %}{{ count }} origins{% endblocktranslate %}"
+                      aria-expanded="false"
+                      aria-controls="origins-{{ alteration.pk }}">
+                {{ alteration.origins.count }}
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">
+              <em>{% translate "nothing matches" %}</em>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-3">{% bootstrap_pagination page extra=request.GET.urlencode %}</div>
+{% endblock content %}

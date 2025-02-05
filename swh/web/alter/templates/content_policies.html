@@ -1,0 +1,59 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block page_title %}
+  {% translate "Archive Content Policies" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Archive Content Policies" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% blocktranslate asvar alter_msg trimmed %}
+    Please read the entire archive content policy before requesting any alteration to the archive.
+  {% endblocktranslate %}
+  {% bootstrap_messages %}
+  <div class="mt-3">
+    {% bootstrap_alert alter_msg alert_type="info" dismissible=False %}
+    <h4>{% translate "Our mission" %}</h4>
+    {% blocktranslate with swhorg="https://www.softwareheritage.org" trimmed %}
+      <p>
+        <a href="{{ swhorg }}" target="_blank">Software Heritage</a>
+        ambition is to <strong>collect</strong>, <strong>preserve</strong>, and
+        <strong>share</strong> software:
+      </p>
+      <ul>
+        <li>
+          we do not make distinctions and collect all software that is publicly
+          available in source code form
+        </li>
+        <li>
+          we preserve software because it is fragile and we are unfortunately
+          starting to lose it
+        </li>
+        <li>
+          we are building the largest archive of software source code ever assembled
+          and making it accessible to everybody
+        </li>
+      </ul>
+      <p>
+        <a href="{{ swhorg }}/mission/" target="_blank">Read more about our mission</a>
+      </p>
+    {% endblocktranslate %}
+    {% if SWH_MIRROR_CONFIG and SWH_MIRROR_CONFIG.legal_template %}
+      {% include SWH_MIRROR_CONFIG.legal_template %}
+    {% else %}
+      {% include "includes/swh_legal.html" %}
+    {% endif %}
+    <div class="my-3">
+      <a class="btn btn-primary" href="{% url next_step %}" role="button">{% translate "Request an archive data alteration" %}</a>
+    </div>
+  </div>
+{% endblock content %}

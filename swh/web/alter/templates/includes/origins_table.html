@@ -1,0 +1,73 @@
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+<table class="table swh-table swh-table-striped" id="alteration-origins">
+  <thead>
+    <tr class="text-nowrap">
+      <th class="w-100">{% translate "URL" %}</th>
+      <th>{% translate "Status" %}</th>
+      <th>{% translate "Licence" %}</th>
+      <th>{% translate "Online" %}</th>
+      <th>{% translate "Owner" %}</th>
+      <th>{% translate "Updated" %}</th>
+      {% if ALTER_ADMIN_PERMISSION in perms %}
+        <th>
+          <span class="visually-hidden">{% translate "Actions" %}</span>
+        </th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for origin in origins %}
+      <tr itemscope>
+        <td class="text-break">
+          <a href="{{ origin.url }}" target="_blank" itemprop="url">{{ origin.url }}</a>
+          {% if origin.reason %}
+            <p class="mb-0" itemprop="reason">
+              {% blocktranslate with reason=origin.reason|linebreaksbr trimmed %}
+                Reason: {{ reason }}
+              {% endblocktranslate %}
+            </p>
+          {% endif %}
+        </td>
+        <td itemprop="outcome">{{ origin.outcome|outcome_badge:origin.get_outcome_display }}</td>
+        <td itemprop="license">{{ origin.code_license|default:"?" }}</td>
+        <td itemprop="available">{{ origin.available|yesno:"✓,✕,?" }}</td>
+        <td itemprop="ownership">{{ origin.get_ownership_display }}</td>
+        <td itemprop="dateModified">{{ alteration.updated_at|date:"SHORT_DATE_FORMAT" }}</td>
+        {% if ALTER_ADMIN_PERMISSION in perms %}
+          <td>
+            <div class="btn-group" aria-label="Actions for {{ origin }}">
+              <button class="btn btn-light btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#origin-{{ origin.pk }}"
+                      aria-label="{% translate "Edit" %}">
+                <span class="mdi mdi-link-edit"></span>
+              </button>
+              <button class="btn btn-light btn-sm btn-clipboard"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="manual"
+                      data-bs-title="{{ _("Copied Origin URL") }}"
+                      data-url="{{ origin.url }}"
+                      aria-label="{% translate "Copy" %}">
+                <span class="mdi mdi-content-copy"></span>
+              </button>
+            </div>
+          </td>
+        {% endif %}
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="{% if "swh.web.alter" in perms %}7{% else %}6{% endif %}">
+          <em>{% translate "none" %}</em>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

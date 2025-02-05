@@ -196,6 +196,17 @@ See top-level LICENSE file for more information
               </a>
             </li>
           {% endif %}
+          {% if "swh.web.alter" in SWH_DJANGO_APPS and ALTER_ADMIN_PERMISSION in user.get_all_permissions %}
+            <li class="nav-item swh-admin-menu-item swh-alteration-admin-item"
+                title="Alteration administration"
+                role="menuitem">
+              <a href="{% url 'alteration-dashboard' %}"
+                 class="nav-link swh-alteration-admin-link">
+                <i class="nav-icon mdi mdi-24px mdi-eraser"></i>
+                <p>Alteration requests</p>
+              </a>
+            </li>
+          {% endif %}
         </ul>
       </nav>
     {% endif %}

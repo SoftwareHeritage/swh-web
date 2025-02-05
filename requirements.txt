@@ -5,7 +5,9 @@
 chardet
 charset-normalizer
 cryptography
+disposable-email-domains
 django
+django-bootstrap5
 django-cors-headers
 django-js-reverse
 django-minify-html

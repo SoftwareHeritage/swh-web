@@ -1,0 +1,59 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block page_title %}
+  {% translate "Alteration request summary" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Alteration request summary" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% if form.errors %}
+    {% bootstrap_alert form.errors alert_type="danger" %}
+  {% endif %}
+  {% include "includes/steps.html" %}
+  <p>
+    {% blocktranslate trimmed %}
+      Please take the time to review this summary and confirm your intent to send this
+      request.
+    {% endblocktranslate %}
+  </p>
+  <form method="post" class="form mt-3" id="summary-form">
+    <section id="origins-summary">
+      <h4>{% translate "Origins" %}</h4>
+      <ol>
+        {% for origin in request.session.alteration_origins %}<li>{{ origin }}</li>{% endfor %}
+      </ol>
+    </section>
+    <section id="reasons-summary">
+      <h4>{% translate "Reasons" %}</h4>
+      {{ request.session.alteration_reasons|linebreaks }}
+      <h4>{% translate "Expected outcome" %}</h4>
+      {{ request.session.alteration_expected_outcome|linebreaks }}
+    </section>
+    <section id="contact-summary">
+      <h4>{% translate "Contact details" %}</h4>
+      <dl>
+        <dt>{% translate "Email" %}</dt>
+        <dd>
+          {{ request.session.alteration_email }}
+        </dd>
+      </dl>
+    </section>
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <div class="d-flex justify-content-between my-3">
+      <a href="{% url 'alteration-reasons' %}" class="btn btn-secondary">{% translate "Previous" %}</a>
+      {% bootstrap_button _("Send request") button_type="submit" %}
+    </div>
+  </form>
+{% endblock content %}

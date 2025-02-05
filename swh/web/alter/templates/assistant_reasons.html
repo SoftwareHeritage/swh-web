@@ -1,0 +1,36 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% block page_title %}
+  {% translate "Alteration request reasons and expected outcome" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Alteration request reasons and expected outcome" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% if form.errors %}
+    {% bootstrap_alert form.errors alert_type="danger" %}
+  {% endif %}
+  {% include "includes/steps.html" %}
+  {% blocktranslate trimmed %}
+    Please describe the reasons that lead you to request an alteration of the archive.
+    Be as precise as possible so that we can fully understand your request.
+  {% endblocktranslate %}
+  <form method="post" class="form mt-3" id="reasons-form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <div class="d-flex justify-content-between my-3">
+      <a href="{% url 'alteration-origins' %}" class="btn btn-secondary">Previous</a>
+      {% bootstrap_button _("Next") button_type="submit" %}
+    </div>
+  </form>
+{% endblock content %}

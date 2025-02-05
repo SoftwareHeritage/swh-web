@@ -70,6 +70,10 @@ Cypress.Commands.add('addForgeModeratorLogin', () => {
   return loginUser('add-forge-moderator', 'add-forge-moderator');
 });
 
+Cypress.Commands.add('alterSupportLogin', () => {
+  return loginUser('alter-support', 'alter-support');
+});
+
 function mockCostlyRequests() {
   cy.intercept('https://status.softwareheritage.org/**', {
     body: {

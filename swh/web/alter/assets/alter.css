@@ -1,0 +1,16 @@
+/**
+ * Copyright (C) 2025  The Software Heritage developers
+ * See the AUTHORS file at the top-level directory of this distribution
+ * License: GNU Affero General Public License version 3, or any later version
+ * See top-level LICENSE file for more information
+ */
+
+.process-steps i.mdi {
+    font-size: 2rem;
+}
+
+.activity-log {
+    max-height: 80vw;
+    padding-top: 0.75rem;
+    background-color: #fdfdfe;
+}

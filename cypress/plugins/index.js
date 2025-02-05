@@ -8,8 +8,11 @@
 const axios = require('axios');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
+const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const cypressSplit = require('cypress-split');
+
+const emailPath = '/tmp/swh/mails';
 
 let buildId = process.env.CYPRESS_PARALLEL_BUILD_ID;
 if (buildId === undefined) {
@@ -44,7 +47,7 @@ function getDatabase() {
   const db = new sqlite3.Database(`./swh-web-test${buildId}.sqlite3`);
   // to prevent "database is locked" error when running tests
   db.configure('busyTimeout', 20000);
-  db.run('PRAGMA journal_mode = WAL;');
+  db.exec('PRAGMA journal_mode = WAL;');
   return db;
 }
 
@@ -181,6 +184,37 @@ module.exports = (on, config) => {
       } catch (_) {
         return false;
       }
+    },
+    /**
+     * Finds the first email in `emailPath` matching filters
+     * @param {*} param0 an object containing mail filters: subject, recipient
+     * @returns {string} the first matching mail content
+     */
+    findEmail({subject, recipient}) {
+      for (const fileName of fs.readdirSync(emailPath)) {
+        // if multiple emails are sent by django at the same time they are stored in
+        // a single file separated by 80 dashes
+        const messages = fs.readFileSync(path.join(emailPath, fileName), 'utf8');
+        for (const message of messages.split('-'.repeat(79))) {
+          if (message.includes(`Subject: ${subject}`) && message.includes(`To: ${recipient}`)) {
+            return message;
+          }
+        }
+      }
+    },
+    /**
+     * Deletes all files found in `emailPath`
+     * @returns {bool} true
+     */
+    cleanupEmails() {
+      if (!fs.existsSync(emailPath)) {
+        fs.mkdirSync(emailPath, {recursive: true});
+        return true;
+      }
+      fs.readdirSync(emailPath).forEach((fileName) => {
+        fs.unlinkSync(path.join(emailPath, fileName));
+      });
+      return true;
     },
     accessibilityChecker: require('cypress-accessibility-checker/plugin')
   });

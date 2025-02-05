@@ -1,0 +1,69 @@
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+<nav class="process-steps list-group list-group-horizontal mb-3 d-none d-md-flex">
+  <a class="list-group-item list-group-item-action {% if process.email.active %}active{% endif %}"
+     href="{{ process.email.url }}"
+     {% if process.email.active %}aria-current="true"{% endif %}
+     id="alter-step-email">
+    <div class="media flex-sm-column align-items-sm-center flex-xl-row">
+      <i class="mdi mdi-email-check mr-0 mr-xl-3" aria-hidden="true"></i>
+      <div class="media-body">
+        <strong class="d-none d-xl-block">{% translate "Step 1" %}</strong>
+        {% translate "Email" %}
+      </div>
+    </div>
+  </a>
+  <a class="list-group-item list-group-item-action {% if process.category.active %}active{% elif process.category.disabled %}disabled{% endif %}"
+     href="{{ process.category.url }}"
+     {% if process.category.active %}aria-current="true"{% elif process.category.disabled %}aria-disabled="true"{% endif %}
+     id="alter-step-category">
+    <div class="media flex-sm-column align-items-sm-center flex-xl-row">
+      <i class="mdi mdi-shape mr-0 mr-xl-3" aria-hidden="true"></i>
+      <div class="media-body">
+        <strong class="d-none d-xl-block">{% translate "Step 2" %}</strong>
+        {% translate "Category" %}
+      </div>
+    </div>
+  </a>
+  <a class="list-group-item list-group-item-action {% if process.origins.active %}active{% elif process.origins.disabled %}disabled{% endif %}"
+     href="{{ process.origins.url }}"
+     {% if process.origins.active %}aria-current="true"{% elif process.origins.disabled %}aria-disabled="true"{% endif %}
+     id="alter-step-origins">
+    <div class="media flex-sm-column align-items-sm-center flex-xl-row">
+      <i class="mdi mdi-magnify mr-0 mr-xl-3" aria-hidden="true"></i>
+      <div class="media-body">
+        <strong class="d-none d-xl-block">{% translate "Step 3" %}</strong>
+        {% translate "Origins" %}
+      </div>
+    </div>
+  </a>
+  <a class="list-group-item list-group-item-action {% if process.reasons.active %}active{% elif process.reasons.disabled %}disabled{% endif %}"
+     href="{{ process.reasons.url }}"
+     {% if process.reasons.active %}aria-current="true"{% elif process.reasons.disabled %}aria-disabled="true"{% endif %}
+     id="alter-step-reasons">
+    <div class="media flex-sm-column align-items-sm-center flex-xl-row">
+      <i class="mdi mdi-chat-question mr-0 mr-xl-3" aria-hidden="true"></i>
+      <div class="media-body">
+        <strong class="d-none d-xl-block">{% translate "Step 4" %}</strong>
+        {% translate "Reasons" %}
+      </div>
+    </div>
+  </a>
+  <a class="list-group-item list-group-item-action {% if process.summary.active %}active{% elif process.summary.disabled %}disabled{% endif %}"
+     href="{{ process.summary.url }}"
+     {% if process.summary.active %}aria-current="true"{% elif process.summary.disabled %}aria-disabled="true"{% endif %}
+     id="alter-step-summary">
+    <div class="media flex-sm-column align-items-sm-center flex-xl-row">
+      <i class="mdi mdi-file-sign mr-0 mr-xl-3" aria-hidden="true"></i>
+      <div class="media-body">
+        <strong class="d-none d-xl-block">{% translate "Step 5" %}</strong>
+        {% translate "Summary" %}
+      </div>
+    </div>
+  </a>
+</nav>

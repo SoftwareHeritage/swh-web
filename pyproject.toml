@@ -108,6 +108,7 @@ module = [
     "msgpack",
     "pymemcache.*",
     "htmlmin",
+    "django_bootstrap5.*"
 ]
 ignore_missing_imports = true
 

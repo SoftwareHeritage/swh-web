@@ -1,0 +1,37 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+{% block page_title %}
+  {% translate "Alteration request email verification form" %}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{% translate "Alteration request email verification form" %}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% if form.errors %}
+    {% translate "Please fix the errors indicated in the form." as error_message %}
+    {% bootstrap_alert error_message alert_type="danger" %}
+  {% endif %}
+  {% include "includes/steps.html" %}
+  <p>
+    {% blocktranslate trimmed %}
+      Before accessing the alteration request assistant we need to make sure we will be
+      able to contact you through your email address.
+    {% endblocktranslate %}
+  </p>
+  <form method="POST" class="form">
+    {% csrf_token %}
+    {% bootstrap_field_submit form.email _("Send a verification link") %}
+  </form>
+{% endblock content %}

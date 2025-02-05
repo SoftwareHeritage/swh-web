@@ -111,6 +111,7 @@ DEFAULT_CONFIG = {
         "list",
         [
             "swh.web.add_forge_now",
+            "swh.web.alter",
             "swh.web.admin",
             "swh.web.archive_coverage",
             "swh.web.badges",
@@ -147,6 +148,32 @@ DEFAULT_CONFIG = {
     "browse_content_rate_limit": ("dict", {"enabled": True, "rate": "60/m"}),
     "activate_citations_ui": ("bool", False),
     "datatables_max_page_size": ("int", 1000),
+    "email_setup": (
+        "dict",
+        {
+            "backend": "django.core.mail.backends.smtp.EmailBackend",
+            "host": "smtp",
+            "port": 1025,
+            "username": "username",
+            "password": "password",
+            "use_tls": False,
+            "use_ssl": False,
+            "default_from_email": "no-reply@localhost",
+        },
+    ),
+    # when using keycloak as the user backend we use these email aliases to send
+    # notifications, this should be replaced by a proper way of querying emails linked
+    # to an alter role
+    "alter_settings": (
+        "dict",
+        {
+            "support_mail_alias": "alter-support@localhost",
+            "manager_mail_alias": "alter-manager@localhost",
+            "legal_mail_alias": "alter-legal@localhost",
+            "technical_mail_alias": "alter-technical@localhost",
+            "block_disposable_email_domains": False,
+        },
+    ),
 }
 
 swhweb_config: SWHWebConfig = SWHWebConfig()

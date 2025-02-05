@@ -1,0 +1,274 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+{% block page_title %}
+  {{ alteration }}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{{ alteration }} {{ alteration.status|status_badge:alteration.get_status_display }}</h4>
+{% endblock navbar-content %}
+
+{% block content %}
+  {% bootstrap_messages %}
+  {% include "includes/origins_table.html" with origins=alteration.origins.all %}
+  <hr>
+  {% include "includes/reasons_outcome.html" with alteration=alteration %}
+  <hr>
+  <div class="mt-3 mb-3 d-flex justify-content-evenly"
+       id="alteration-actions">
+    <button class="btn btn-secondary"
+            data-testid="alteration-edit-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#alteration-modal">
+      <i class="mdi mdi-file-document-edit" aria-hidden="true"></i>
+      {% translate "Edit request content or status" %}
+    </button>
+    <button class="btn btn-secondary"
+            data-bs-toggle="modal"
+            data-bs-target="#origin-create">
+      <i class="mdi mdi-link-plus" aria-hidden="true"></i> {% translate "Add an origin" %}
+    </button>
+    <button class="btn btn-secondary disabled"
+            data-bs-toggle="tooltip"
+            data-bs-title="{% translate "Only available for requests in the «Executing» state" %}">
+      <i class="mdi mdi-bash" aria-hidden="true"></i>
+      {% translate "Generate alter commands" %}
+    </button>
+    <button class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#message-modal">
+      <i class="mdi mdi-email" aria-hidden="true"></i> {% translate "Send a message" %}
+    </button>
+  </div>
+  <hr>
+  <div class="mt-3 mb-3">
+    {% include "includes/activity_log.html" with events=alteration.events.all %}
+  </div>
+  {% comment %}Origin edit modals{% endcomment %}
+
+  {% for origin_form in origin_forms %}
+    <div class="modal fade"
+         id="origin-{{ origin_form.instance.pk }}"
+         tabindex="-1"
+         aria-labelledby="origin-{{ origin_form.instance.pk }}-label"
+         aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+           style="min-width: 50vw">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-truncate"
+                id="origin-{{ origin_form.instance.pk }}-label">{{ origin_form.instance }}</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="{% translate "Close" %}"></button>
+          </div>
+          <div class="modal-body">
+            <form class="form"
+                  method="post"
+                  action="{% absolute_url origin_form.instance.get_admin_url %}"
+                  id="origin-{{ origin_form.instance.pk }}-form">
+              {% csrf_token %}
+              {% bootstrap_form origin_form %}
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              {% translate "Cancel" %}
+            </button>
+            <button type="submit"
+                    class="btn btn-primary"
+                    form="origin-{{ origin_form.instance.pk }}-form">
+              {% translate "Save changes" %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  {% comment %}Alteration edit modal{% endcomment %}
+
+  <div class="modal fade"
+       id="alteration-modal"
+       tabindex="-1"
+       aria-labelledby="alteration-modal-label"
+       aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+         style="min-width: 50vw">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-truncate" id="alteration-modal-label">
+            {% translate "Edit alteration request" %}
+          </h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="{% translate "Close" %}"></button>
+        </div>
+        <div class="modal-body">
+          <form class="form" method="post" action="" id="alteration-modal-form">
+            {% csrf_token %}
+            {% bootstrap_form alteration_form %}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            {% translate "Cancel" %}
+          </button>
+          <button type="submit" class="btn btn-primary" form="alteration-modal-form">
+            {% translate "Save changes" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% comment %}New message modal{% endcomment %}
+
+  {% blocktranslate asvar message_info trimmed %}
+    A message will send an email notification to the recipient. Requesters will only get a link to check the request page, other roles will get the full content in the message.
+  {% endblocktranslate %}
+  <div class="modal fade"
+       id="message-modal"
+       tabindex="-1"
+       aria-labelledby="message-modal-label"
+       aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+         style="min-width: 50vw">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-truncate" id="message-modal-label">
+            {% translate "Send a message" %}
+          </h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="{% translate "Close" %}"></button>
+        </div>
+        <div class="modal-body">
+          {% bootstrap_alert message_info alert_type="info" dismissible=False %}
+          <form class="form"
+                method="post"
+                id="message-modal-form"
+                action="{% absolute_url 'alteration-message-admin' pk=alteration.pk %}">
+            {% csrf_token %}
+            {% bootstrap_form message_form %}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            {% translate "Cancel" %}
+          </button>
+          <button type="submit" class="btn btn-primary" form="message-modal-form">
+            {% translate "Send" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% comment %}Create origin modal {% endcomment %}
+
+  <div class="modal fade"
+       id="origin-create"
+       tabindex="-1"
+       aria-labelledby="origin-create-label"
+       aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+         style="min-width: 50vw">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-truncate" id="origin-create-label">{{ _("New origin") }}</h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="{% translate "Close" %}"></button>
+        </div>
+        <div class="modal-body">
+          <form class="form"
+                method="post"
+                action="{% url 'alteration-origin-admin-create' alteration_pk=alteration.pk %}"
+                id="origin-create-form">
+            {% csrf_token %}
+            {% bootstrap_form origin_create_form %}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            {% translate "Cancel" %}
+          </button>
+          <button type="submit" class="btn btn-primary" form="origin-create-form">
+            {% translate "Save changes" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% comment %}Event edit modal {% endcomment %}
+
+  {% blocktranslate asvar event_edition_warning trimmed %}
+    Event modification should be used sparingly: to fix a mistake, but not to rewrite the history of request processing. Note that this does not send another notification.
+  {% endblocktranslate %}
+  {% for event_form in event_forms %}
+    <div class="modal fade"
+         id="event-{{ event_form.instance.pk }}-modal"
+         tabindex="-1"
+         aria-labelledby="event-{{ event_form.instance.pk }}-label"
+         aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+           style="min-width: 50vw">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-truncate"
+                id="event-{{ event_form.instance.pk }}-label">{{ event_form.instance }}</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="{% translate "Close" %}"></button>
+          </div>
+          <div class="modal-body">
+            {% bootstrap_alert event_edition_warning alert_type="warning" dismissible=False %}
+            <form class="form"
+                  method="post"
+                  action="{% absolute_url event_form.instance.get_admin_url %}"
+                  id="event-{{ event_form.instance.pk }}-form">
+              {% csrf_token %}
+              {% bootstrap_form event_form %}
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              {% translate "Cancel" %}
+            </button>
+            <button type="submit"
+                    class="btn btn-primary"
+                    form="event-{{ event_form.instance.pk }}-form">
+              {% translate "Save changes" %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  <script>
+    $(".btn-clipboard").on( "click", async(e) => {
+      const btn = $(e.currentTarget);
+      try {
+        await navigator.clipboard.writeText(btn.data("url"));
+        btn.tooltip("show");
+      } catch (error) {
+        console.error('Failed to copy text: ', error);
+      }
+      setTimeout(() => {
+        btn.tooltip("hide");
+      }, 700);
+    });
+  </script>
+{% endblock content %}

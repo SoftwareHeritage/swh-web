@@ -35,6 +35,7 @@ from swh.core.api.serializers import msgpack_dumps, msgpack_loads
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
+    ALTER_ADMIN_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
 )
@@ -293,6 +294,7 @@ def context_processor(request):
         "ADMIN_LIST_DEPOSIT_PERMISSION": ADMIN_LIST_DEPOSIT_PERMISSION,
         "ADD_FORGE_MODERATOR_PERMISSION": ADD_FORGE_MODERATOR_PERMISSION,
         "MAILMAP_ADMIN_PERMISSION": MAILMAP_ADMIN_PERMISSION,
+        "ALTER_ADMIN_PERMISSION": ALTER_ADMIN_PERMISSION,
         "lang": "en",
         "sidebar_state": request.COOKIES.get("sidebar-state", "expanded"),
         "SWH_DJANGO_APPS": settings.SWH_DJANGO_APPS,

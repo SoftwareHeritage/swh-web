@@ -6,6 +6,7 @@
 """
 Django tests settings for cypress e2e tests.
 """
+
 import os
 
 from django.conf import settings
@@ -33,7 +34,7 @@ swh_web_config.update(
 
 from .tests import *  # noqa: F401, F403, E402
 
-from .tests import LOGGING  # noqa, isort: skip
+from .tests import LOGGING, ALTER_SETTINGS  # noqa, isort: skip
 
 # XXX this import below should not be moved before importing .tests otherwise
 # django will complain with an AppRegistryNotReady error...
@@ -78,3 +79,16 @@ LOGGING["loggers"]["django.request"]["level"] = "DEBUG" if DEBUG else "WARNING" 
 
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
+
+# cypress will be reading emails from this folder
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "/tmp/swh/mails"
+
+# This should match cypress' base url
+DEFAULT_URL = f"http://{swh_web_config['host']}:{swh_web_config['port']}"
+
+# This should match values in alter.cy.js
+ALTER_SETTINGS["support_mail_alias"] = "alter-support@example.org"
+ALTER_SETTINGS["manager_mail_alias"] = "alter-manager@example.org"
+ALTER_SETTINGS["legal_mail_alias"] = "alter-legal@example.org"
+ALTER_SETTINGS["technical_mail_alias"] = "alter-technical@@example.org"

@@ -7,9 +7,12 @@
 def test_create_users_test_users_exist(db):
     from .create_test_users import User, users
 
-    for username, (_, _, permissions) in users.items():
+    for username, (_, _, permissions, groups) in users.items():
         user = User.objects.filter(username=username).get()
         assert user is not None
 
         for permission in permissions:
             assert user.has_perm(permission)
+
+        for group in groups:
+            assert user.groups.filter(name=group).exists()

@@ -1,0 +1,168 @@
+{% extends "./alter_common.html" %}
+
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+{% load alter_extras %}
+
+{% block page_title %}
+  {{ alteration.get_category_display }}
+{% endblock page_title %}
+
+{% block navbar-content %}
+  <h4>{{ alteration }} {{ alteration.status|status_badge:alteration.get_status_display }}</h4>
+{% endblock navbar-content %}
+
+{% blocktranslate asvar message_info trimmed %}
+  A message will send an email notification an operator and will be archived in the
+  activity log, please avoid sending personal information through this channel.
+{% endblocktranslate %}
+{% block content %}
+  {% bootstrap_messages %}
+  <p>
+    {% blocktranslate with status=alteration.status|status_badge:alteration.get_status_display trimmed %}
+      This interface allows you to track the progress of your request and interact with
+      software heritage operators. Your request status is: {{ status }}
+    {% endblocktranslate %}
+    {% if alteration.status == "validating" %}
+      which means that we are currently checking the admissibility of your request.
+    {% elif alteration.status == "planning" %}
+      which means that we are currently in the process of determining, origin by origin, the actions to be carried out.
+    {% elif alteration.status == "executing" %}
+      which means that all Origin files have been processed and changes will be made to
+      the archive soon.
+    {% elif alteration.status == "processed" %}
+      which means that the modifications identified for each origin have been applied
+      to the archive.
+    {% endif %}
+  </p>
+  {% include "includes/origins_table.html" with origins=alteration.origins.all %}
+  <hr>
+  <div class="js-only">{% include "includes/reasons_outcome.html" with alteration=alteration %}</div>
+  {% comment %}When JS is blocked we use inline forms instead of modals{% endcomment %}
+
+  <noscript>
+    <h5>{% translate "Edit this archive alteration request" %}</h5>
+    <form class="form" method="post" id="alteration-noscript-form">
+      {% csrf_token %}
+      {% bootstrap_form alteration_form %}
+      <button type="submit" class="btn btn-primary">{% translate "Save" %}</button>
+    </form>
+    <hr>
+    <h5>{% translate "Send a message to an operator" %}</h5>
+    <p>{{ message_info }}</p>
+    <form class="form"
+          method="post"
+          id="message-noscript-form"
+          action="{% absolute_url 'alteration-message' pk=alteration.pk %}">
+      {% csrf_token %}
+      {% bootstrap_form message_form show_label=False %}
+      <button type="submit" class="btn btn-primary">{% translate "Send" %}</button>
+    </form>
+  </noscript>
+  {% comment %}This action bar is only displayed when JS is active{% endcomment %}
+
+  <div class="js-only mt-3 mb-3 d-flex justify-content-evenly"
+       id="alteration-actions">
+    {% if not alteration.is_read_only %}
+      <button class="btn btn-secondary"
+              data-testid="alteration-edit-btn"
+              data-bs-toggle="modal"
+              data-bs-target="#alteration-modal">
+        <i class="mdi mdi-file-document-edit" aria-hidden="true"></i> {% translate "Edit this archive alteration request" %}
+      </button>
+    {% endif %}
+    <button class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#message-modal">
+      <i class="mdi mdi-email" aria-hidden="true"></i> {% translate "Send a message to an operator" %}
+    </button>
+  </div>
+  <hr>
+  <noscript>
+    <h5>{% translate "Activity log" %}</h5>
+  </noscript>
+  <div class="mt-3 mb-3">{% include "includes/activity_log.html" with events=events %}</div>
+  {% comment %}Alteration edit modal{% endcomment %}
+
+  {% if not alteration.is_read_only %}
+    <div class="modal fade"
+         id="alteration-modal"
+         tabindex="-1"
+         aria-labelledby="alteration-modal-label"
+         aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+           style="min-width: 50vw">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-truncate" id="alteration-modal-label">
+              {% translate "Edit this archive alteration request" %}
+            </h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="{% translate "Close" %}"></button>
+          </div>
+          <div class="modal-body">
+            <form class="form" method="post" id="alteration-modal-form">
+              {% csrf_token %}
+              {% bootstrap_form alteration_form %}
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              {% translate "Cancel" %}
+            </button>
+            <button type="submit" class="btn btn-primary" form="alteration-modal-form">
+              {% translate "Save changes" %}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% comment %}Send a message modal{% endcomment %}
+
+  <div class="modal fade"
+       id="message-modal"
+       tabindex="-1"
+       aria-labelledby="message-modal-label"
+       aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-lg-down"
+         style="min-width: 50vw">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-truncate" id="message-modal-label">
+            {% translate "Send a message to an operator" %}
+          </h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="{% translate "Close" %}"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ message_info }}</p>
+          <form class="form"
+                method="post"
+                id="message-modal-form"
+                action="{% absolute_url 'alteration-message' pk=alteration.pk %}">
+            {% csrf_token %}
+            {% bootstrap_form message_form show_label=False %}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            {% translate "Cancel" %}
+          </button>
+          <button type="submit" class="btn btn-primary" form="message-modal-form">
+            {% translate "Send" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,46 @@
+{% comment %}
+# Copyright (C) 2025  The Software Heritage developers
+# See the AUTHORS file at the top-level directory of this distribution
+# License: GNU Affero General Public License version 3, or any later version
+# See top-level LICENSE file for more information
+{% endcomment %}
+
+<ul class="list-group" id="alteration-events">
+  {% for event in events %}
+    <li class="list-group-item {% if event.category != "log" %}list-group-item-light{% endif %}"
+        id="event-{{ event.pk }}"
+        itemscope
+        itemtype="https://schema.org/Message">
+      <div>
+        {% if ALTER_ADMIN_PERMISSION in perms %}
+          <button class="btn btn-secondary btn-sm float-end"
+                  aria-label="{% translate "Edit" %}"
+                  data-bs-toggle="modal"
+                  data-bs-target="#event-{{ event.pk }}-modal">
+            <span class="mdi mdi-pen"></span>
+          </button>
+        {% endif %}
+        <span itemprop="text">{{ event.content|linebreaks }}</span>
+      </div>
+      <div class="d-flex w-100 justify-content-between">
+        <small>
+          {% if event.category == "message" %}
+            <i class="mdi mdi-forum"></i>
+            <span itemprop="genre">{{ event.get_category_display }}</span> by <span itemprop="sender">{{ event.author|default:"system" }}</span> to <span itemprop="recipient">{{ event.get_recipient_display|default:"?" }}</span>
+          {% elif event.category == "log" %}
+            <i class="mdi mdi-calendar-text"></i>
+            <span itemprop="genre">{{ event.get_category_display }}</span> by <span itemprop="sender">{{ event.author|default:"System" }}</span>
+          {% endif %}
+        </small>
+        <small>
+          {% if ALTER_ADMIN_PERMISSION in perms %}
+            <span class="mdi {% if event.internal %}mdi-volume-mute{% else %}mdi-web{% endif %}"
+                  title="{% if event.internal %}{{ _("Internal event") }}{% else %}{{ _("Public event") }}{% endif %}"
+                  itemprop="conditionsOfAccess"></span>
+          {% endif %}
+          <time itemprop="dateCreated" datetime="{{ event.created_at }}">{{ event.created_at|date:"SHORT_DATETIME_FORMAT" }}</time>
+        </small>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
