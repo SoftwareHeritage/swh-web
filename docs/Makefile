@@ -1,2 +1,2 @@
 include Makefile.sphinx
-APIDOC_EXCLUDES += ../assets ../cypress ../static ../swh/*/settings
+APIDOC_EXCLUDES += ../assets ../cypress ../swh/web/static ../swh/*/settings

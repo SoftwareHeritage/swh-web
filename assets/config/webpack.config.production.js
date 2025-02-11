@@ -46,7 +46,7 @@ webpackProdConfig.plugins.push(sentryWebpackPlugin({
   url: 'https://sentry.softwareheritage.org/',
   dryRun: process.env.SENTRY_AUTH_TOKEN === undefined,
   sourcemaps: {
-    assets: ['static/js/**']
+    assets: ['swh/web/static/js/**']
   },
   release: {
     name: shelljs.exec('git describe --abbrev=0', {silent: true}).stdout.slice(1, -1)

@@ -135,14 +135,7 @@ def webpack_stats_mock(session_mocker):
     Mock the function loading the webpack-stats.json to overcome that issue.
     """
     test_dir = os.path.dirname(__file__)
-    # location of the static folder when running tests through tox
-    data_dir = os.path.join(sys.prefix, "share/swh/web")
-
     django_apps_dir = os.path.join(test_dir, "../../swh/web")
-    if not os.path.exists(django_apps_dir):
-        # location of the applications folder when running tests with tox
-        django_apps_dir = os.path.join(data_dir, "swh/web")
-
     bundles = []
     _, apps, _ = next(os.walk(django_apps_dir))
     for app in apps:
