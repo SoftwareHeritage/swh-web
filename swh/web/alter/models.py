@@ -11,12 +11,7 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-
-# FIXME: absolutely **NO IDEA** why mypy complains about validate_domain_name with
-# Django==5.1.1 installed
-# https://docs.djangoproject.com/en/5.1/ref/validators/#validate-domain-name
-# Module "django.core.validators" has no attribute "validate_domain_name"
-from django.core.validators import validate_domain_name, validate_email  # type: ignore
+from django.core.validators import validate_domain_name, validate_email
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
