@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -100,6 +100,17 @@ describe('Test origin-search', function() {
       .should('eq', this.Urls.browse_search()); // Stay in the current page
   });
 
+  it('should not redirect for an origin without any snapshots', function() {
+    cy.get('#swh-origins-url-patterns')
+      // valid origin URL but with null snapshot
+      .type('https://example.org/project/with/null/snapshot');
+    cy.get('.swh-search-icon')
+      .click();
+
+    cy.location('pathname')
+      .should('eq', this.Urls.browse_search()); // Stay in the current page
+  });
+
   it('should remove origin URL with no archived content', function() {
     stubOriginVisitLatestRequests(404);
 
@@ -115,18 +126,6 @@ describe('Test origin-search', function() {
     cy.get('#origin-search-results')
       .should('be.visible')
       .find('tbody tr').should('have.length', 0);
-
-    stubOriginVisitLatestRequests(200, {}, '2');
-
-    cy.get('.swh-search-icon')
-      .click();
-
-    cy.wait('@originVisitLatest2');
-
-    cy.get('#origin-search-results')
-      .should('be.visible')
-      .find('tbody tr').should('have.length', 0);
-
   });
 
   it('should filter origins by visit type', function() {

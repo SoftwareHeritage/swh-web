@@ -818,7 +818,7 @@ def _origin_with_pull_request_branches():
     storage = tests_data["storage"]
     for origin in storage.origin_list(limit=1000).results:
         snapshot = snapshot_get_latest(storage, origin.url)
-        if any([b"refs/pull/" in b for b in snapshot.branches]):
+        if snapshot and any([b"refs/pull/" in b for b in snapshot.branches]):
             origins.append(origin)
     return origins
 

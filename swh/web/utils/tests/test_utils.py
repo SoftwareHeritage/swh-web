@@ -452,7 +452,7 @@ def test_origin_visit_types(mocker, backend):
         assert origin_visit_types() == []
     else:
         # see swh/web/tests/data.py for origins added for tests
-        assert origin_visit_types() == ["git", "git-checkout", "tar"]
+        assert origin_visit_types() == ["git", "git-checkout", "hg", "tar"]
 
 
 def add(x, y):
