@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -45,11 +45,6 @@ def generate_archive_coverage_data(mocker, swh_scheduler):
     """Generate some sample scheduler metrics and some sample deposits
     that will be consumed by the archive coverage view.
     """
-    # mock calls to get nixguix origin counts
-    mock_archive = mocker.patch("swh.web.archive_coverage.views.archive")
-    mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
-    mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
-
     listers = []
     for origins in listed_origins["origins"]:
         # create some instances for each lister
@@ -178,11 +173,6 @@ def test_coverage_view_with_focus(client, mocker, swh_scheduler):
 
 @pytest.fixture
 def archive_coverage_data_with_non_visited_origins(mocker, swh_scheduler):
-    # mock calls to get nixguix origin counts
-    mock_archive = mocker.patch("swh.web.archive_coverage.views.archive")
-    mock_archive.lookup_latest_origin_snapshot.return_value = {"id": "some-snapshot"}
-    mock_archive.lookup_snapshot_sizes.return_value = {"release": 30095}
-
     listers = []
     for i, origins in enumerate(listed_origins["origins"]):
         # create one instances for each lister

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -17,7 +17,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.config import scheduler
-from swh.web.utils import archive, django_cache, get_deposits_list, reverse
+from swh.web.utils import django_cache, get_deposits_list, reverse
 
 _swh_arch_overview_doc = (
     "https://docs.softwareheritage.org/devel/architecture/overview.html"
@@ -506,29 +506,6 @@ def _get_deposits_netloc_counts(cache_counts: bool = False) -> Counter:
     return _get_deposits_netloc_counts_internal()
 
 
-def _get_nixguix_origins_count(origin_url: str, cache_count: bool = False) -> int:
-    """Returns number of archived tarballs for NixOS, aka the number
-    of branches in a dedicated origin in the archive.
-    """
-
-    @django_cache(
-        timeout=_cache_timeout,
-        catch_exception=True,
-        exception_return_value=0,
-        invalidate_cache_pred=lambda m: not cache_count,
-    )
-    def _get_nixguix_origins_count_internal():
-        snapshot = archive.lookup_latest_origin_snapshot(origin_url)
-        if snapshot:
-            snapshot_sizes = archive.lookup_snapshot_sizes(snapshot["id"])
-            nixguix_origins_count = snapshot_sizes["release"]
-        else:
-            nixguix_origins_count = 0
-        return nixguix_origins_count
-
-    return _get_nixguix_origins_count_internal()
-
-
 def _search_url(query: str, visit_type: str) -> str:
     return reverse(
         "browse-search",
@@ -564,10 +541,6 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 visit_type_counts[metrics.visit_type] = (
                     metrics.origins_enabled - metrics.origins_never_visited
                 )
-            # visit type from legacy nixguix lister
-            visit_type_counts["nixguix"] = _get_nixguix_origins_count(
-                manifest_url, cache_count=True
-            )
 
             count = sum(visit_type_counts.values())
             origins["count"] = f"{count:,}"
