@@ -15,6 +15,9 @@ function doSearch(searchText, searchInputElt = '#swh-origins-url-patterns') {
   if (searchText.startsWith('swh:')) {
     cy.intercept('**/api/1/resolve/**')
       .as('swhidResolve');
+  } else {
+    cy.intercept('**/visit/latest/**')
+      .as('checkOriginVisits');
   }
   cy.get(searchInputElt)
     // to avoid sending too much SWHID validation requests
@@ -25,6 +28,8 @@ function doSearch(searchText, searchInputElt = '#swh-origins-url-patterns') {
     .click({force: true});
   if (searchText.startsWith('swh:')) {
     cy.wait('@swhidResolve');
+  } else if (searchText.startsWith('http')) {
+    cy.wait('@checkOriginVisits');
   }
 }
 

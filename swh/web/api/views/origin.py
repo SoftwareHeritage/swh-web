@@ -29,12 +29,15 @@ DOC_RETURN_ORIGIN = """
             :http:get:`/api/1/raw-extrinsic-metadata/swhid/(target)/authorities/`
             to get the list of metadata authorities providing extrinsic metadata
             on this origin (and, indirectly, to the origin's extrinsic metadata itself)
-        :>json boolean has_visits: indicates if Software Heritage made at least one full
-            visit of the origin
 """
 
 
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
+
+DOC_RETURN_ORIGIN_ARRAY_SEARCH = DOC_RETURN_ORIGIN_ARRAY + (
+    "        :>jsonarr boolean has_visits: indicates if Software Heritage made at "
+    "least one full visit of the origin"
+)
 
 DOC_RETURN_ORIGIN += (
     "        :>json array visit_types: set of visit types for that origin"
@@ -181,7 +184,7 @@ def _visit_types() -> str:
 )
 @api_doc("/origin/search/", category="Archive")
 @format_docstring(
-    return_origin_array=DOC_RETURN_ORIGIN_ARRAY, visit_types=_visit_types()
+    return_origin_array=DOC_RETURN_ORIGIN_ARRAY_SEARCH, visit_types=_visit_types()
 )
 def api_origin_search(request: Request, url_pattern: str):
     """
