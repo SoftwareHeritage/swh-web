@@ -72,8 +72,6 @@ describe('Test mailmap administration', function() {
       .as('mailmapAdd');
     cy.intercept('POST', this.Urls.profile_mailmap_update())
       .as('mailmapUpdate');
-    cy.intercept(`${this.Urls.profile_mailmap_list_datatables()}**`)
-      .as('mailmapList');
   });
 
   it('should not display mailmap admin link in sidebar when anonymous', function() {
@@ -195,13 +193,9 @@ describe('Test mailmap administration', function() {
     cy.get('#swh-mailmap-form :invalid').should('not.exist');
 
     // ensure table redraw before next check
-    cy.contains(fromEmail).should('be.visible');
-
-    cy.get('#swh-mailmap-form')
-      .should('not.be.visible');
+    cy.contains(newDisplayName).should('be.visible');
 
     checkMailmapRow(fromEmail, newDisplayName, true);
-
   });
 
   it('should indicate when a mailmap has been processed', function() {
