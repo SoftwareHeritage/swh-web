@@ -238,16 +238,17 @@ def _add_origin(
     visit = OriginVisit(origin=origin_url, date=date, type=visit_type)
     visit = storage.origin_visit_add([visit])[0]
     counters.add("origin_visit", [f"{visit.unique_key()}"])
-    snapshot = Snapshot.from_dict({"branches": snapshot_branches})
-    storage.snapshot_add([snapshot])
-    counters.add("snapshot", [snapshot.id])
+    if snapshot_branches is not None:
+        snapshot = Snapshot.from_dict({"branches": snapshot_branches})
+        storage.snapshot_add([snapshot])
+        counters.add("snapshot", [snapshot.id])
     visit_status = OriginVisitStatus(
         origin=origin_url,
         visit=visit.visit,
         date=date + timedelta(minutes=1),
         type=visit.type,
         status="full",
-        snapshot=snapshot.id,
+        snapshot=snapshot.id if snapshot_branches is not None else None,
     )
     storage.origin_visit_status_add([visit_status])
     counters.add("origin_visit_status", [f"{visit_status.unique_key()}"])
@@ -306,13 +307,22 @@ def _init_tests_data():
             visit_type="tar",
         )
 
-    # origin used in cypress test for origins search
+    # origins used in cypress tests for origins search
     _add_origin(
         storage,
         search,
         counters,
         origin_url="https://example.org/project/download.php?version=2.0",
         visit_type="tar",
+    )
+
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url="https://example.org/project/with/null/snapshot",
+        visit_type="hg",
+        snapshot_branches=None,
     )
 
     sha1s: Set[Sha1] = set()
