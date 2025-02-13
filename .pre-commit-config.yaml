@@ -2,7 +2,7 @@ exclude: "^swh/web/tests/resources/"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         exclude: >
@@ -13,12 +13,12 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/python/black
-    rev: 24.8.0
+    rev: 25.1.0
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
       - id: isort
 
@@ -26,10 +26,10 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
-        additional_dependencies: [flake8-bugbear==24.4.26, flake8-pyproject]
+        additional_dependencies: [flake8-bugbear==24.12.12, flake8-pyproject]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         name: Check source code spelling
@@ -42,7 +42,7 @@ repos:
               swh/web/add_forge_now/migrations/swh-afn-urls-canonicalise.txt
           )$
         args: [-L edn, -L crate, -L THIRDPARTY, -L thirdparty]
-        stages: [commit]
+        stages: [pre-commit]
       - id: codespell
         name: Check commit message spelling
         stages: [commit-msg]

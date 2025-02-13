@@ -4,6 +4,7 @@ djangorestframework-stubs
 django-stubs[compatible-mypy] >= 5.0.2
 django-test-migrations
 hypothesis
+msgpack-types
 pytest >= 8.1
 pytest-django
 pytest-mock

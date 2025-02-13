@@ -105,9 +105,7 @@ plugins = [
 module = [
     "django_js_reverse.*",
     "django_ratelimit.*",
-    "msgpack",
     "pymemcache.*",
-    "htmlmin",
     "django_bootstrap5.*"
 ]
 ignore_missing_imports = true
