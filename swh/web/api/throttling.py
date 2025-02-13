@@ -95,9 +95,9 @@ class SwhWebRateThrottle(ScopedRateThrottle):
     def allow_request(self, request: Request, view: APIView) -> bool:
         # class based view case
         if not self.scope:
-            default_scope = getattr(view, self.scope_attr, None)
+            default_scope = getattr(view, self.scope_attr, "")
             request_allowed = None
-            if default_scope is not None:
+            if default_scope:
                 # check if there is a specific rate limiting associated
                 # to the request type
                 assert request.method is not None
