@@ -727,7 +727,7 @@ _common_readme_names = [
 
 
 def get_readme_to_display(
-    readmes: Dict[str, str]
+    readmes: Dict[str, str],
 ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Process a list of readme files found in a directory

@@ -297,7 +297,7 @@ def from_revision(revision: Union[Dict[str, Any], Revision]) -> Dict[str, Any]:
 
 
 def from_raw_extrinsic_metadata(
-    metadata: Union[Dict[str, Any], RawExtrinsicMetadata]
+    metadata: Union[Dict[str, Any], RawExtrinsicMetadata],
 ) -> Dict[str, Any]:
     """Convert RawExtrinsicMetadata model object to a json serializable dictionary."""
     return from_swh(
