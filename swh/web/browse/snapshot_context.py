@@ -1168,6 +1168,7 @@ def browse_snapshot_log(
         "context-independent revision history": browse_log_link,
         "context-independent snapshot": browse_snp_link,
         "snapshot": snapshot_id,
+        "object_type": "snapshot",
     }
 
     if origin_info and visit_info:
