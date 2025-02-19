@@ -64,12 +64,13 @@ def handle_inbound_message(sender: Type, **kwargs) -> EmailProcessingStatus:
             RequestStatus.WAITING_FOR_FEEDBACK: RequestStatus.FEEDBACK_TO_HANDLE,
         }.get(RequestStatus[request.status])
 
-        request.last_modified_date = history_entry.date
 
         if new_status:
             request.status = history_entry.new_status = new_status.name
 
         history_entry.save()
+        # history_entry must be saved to have history.date set
+        request.last_modified_date = history_entry.date
         request.save()
 
     return EmailProcessingStatus.PROCESSED
