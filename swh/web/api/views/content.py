@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -201,8 +201,8 @@ def api_content_raw(request: Request, q: str):
 
             :swh_web_api:`content/sha1:dc2830a9e72f23c1dfebef4413003221baa5fb62/raw/`
     """
-    content_raw = archive.lookup_content_raw(q)
-    if not content_raw:
+    content = archive.lookup_content(q, with_data=True)
+    if not content:
         raise NotFoundExc("Content %s is not found." % q)
 
     filename = request.query_params.get("filename")
@@ -210,7 +210,7 @@ def api_content_raw(request: Request, q: str):
         filename = "content_%s_raw" % q.replace(":", "_")
 
     return FileResponse(
-        io.BytesIO(content_raw["data"]),  # not copied, as this is never modified
+        io.BytesIO(content["data"]),  # not copied, as this is never modified
         filename=os.path.basename(filename),
         content_type="application/octet-stream",
         as_attachment=True,

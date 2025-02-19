@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -603,28 +603,20 @@ def test_lookup_revision_log_by_notfound(origin):
         )
 
 
-def test_lookup_content_raw_not_found():
-    unknown_content_ = random_content()
-
-    with pytest.raises(NotFoundExc) as e:
-        archive.lookup_content_raw("sha1:" + unknown_content_["sha1"])
-
-    assert e.match(
-        "Content with %s checksum equals to %s not found!"
-        % ("sha1", unknown_content_["sha1"])
+def test_lookup_content_with_data(archive_data, content):
+    actual_content = archive.lookup_content(
+        "sha256:%s" % content["sha256"], with_data=True
     )
-
-
-def test_lookup_content_raw(archive_data, content):
-    actual_content = archive.lookup_content_raw("sha256:%s" % content["sha256"])
 
     expected_content = archive_data.content_get_data(content["sha1"])
 
-    assert actual_content == expected_content
+    assert actual_content["data"] == expected_content["data"]
 
 
-def test_lookup_empty_content_raw(empty_content):
-    content_raw = archive.lookup_content_raw(f"sha1_git:{empty_content['sha1_git']}")
+def test_lookup_empty_content_data(empty_content):
+    content_raw = archive.lookup_content(
+        f"sha1_git:{empty_content['sha1_git']}", with_data=True
+    )
     assert content_raw["data"] == b""
 
 

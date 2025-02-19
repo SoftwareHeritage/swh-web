@@ -1,7 +1,8 @@
-# Copyright (C) 2022-2024  The Software Heritage developers
+# Copyright (C) 2022-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
 
 from django.http import HttpResponse
 from rest_framework.request import Request
@@ -14,13 +15,13 @@ from swh.model.git_objects import (
     revision_git_object,
     snapshot_git_object,
 )
-from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import ObjectType
 from swh.storage.algos.directory import directory_get
 from swh.storage.algos.snapshot import snapshot_get_all_branches
 from swh.web import config
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.utils import archive
 from swh.web.utils.exc import NotFoundExc
 from swh.web.utils.identifiers import parse_core_swhid
 
@@ -66,18 +67,14 @@ def api_raw_object(request: Request, swhid: str):
         return NotFoundExc(f"Object with id {swhid} not found.")
 
     if object_type == ObjectType.CONTENT:
-        results = storage.content_find({"sha1_git": object_id})
-        if len(results) == 0:
+        # fetching content metadata
+        try:
+            cnt_dict = archive.lookup_content(
+                f"sha1_git:{object_id.hex()}", json_convert=False, with_data=True
+            )
+        except NotFoundExc:
             raise not_found()
-        cnt = results[0]
-        # `cnt.with_data()` unfortunately doesn't seem to work.
-        if cnt.data is None:
-            d = cnt.to_dict()
-            d["data"] = storage.content_get_data({"sha1": cnt.sha1})
-            cnt = model.Content.from_dict(d)
-            assert (
-                cnt.data is not None
-            ), f"Content {hash_to_hex(cnt.sha1)} ceased to exist"
+        cnt = model.Content.from_dict(cnt_dict)
         result = content_git_object(cnt)
 
     elif object_type == ObjectType.DIRECTORY:

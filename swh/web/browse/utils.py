@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -184,7 +184,7 @@ def request_content(
 
     if not max_size or content_data["length"] < max_size:
         try:
-            content_raw = archive.lookup_content_raw(query_string)
+            content = archive.lookup_content(query_string, with_data=True)
         except Exception as exc:
             sentry_capture_exception(exc)
             raise NotFoundExc(
@@ -192,7 +192,7 @@ def request_content(
                 "in the archive."
             )
         else:
-            content_data["raw_data"] = content_raw["data"]
+            content_data["raw_data"] = content["data"]
 
             if not filetype:
                 mimetype, encoding = get_mimetype_and_encoding_for_content(

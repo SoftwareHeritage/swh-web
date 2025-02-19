@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -23,6 +23,7 @@ from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import ExtID, Origin, Revision
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
+from swh.objstorage.interface import objid_from_dict
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
 from swh.storage.interface import ListOrder, OriginVisitWithStatuses
@@ -531,7 +532,9 @@ def _lookup_directory_intrinsic_citation_metadata(
         metadata_file_id = metadata_file_info["target"]
         metadata_file_name = metadata_file_info["name"]
         metadata_file_type = metadata_file_name.lower()
-        metadata_file_content = lookup_content_raw(f"sha1_git:{metadata_file_id}")
+        metadata_file_content = lookup_content(
+            f"sha1_git:{metadata_file_id}", with_data=True
+        )
         metadata_file_object = IntrinsicMetadataFile(
             type=metadata_file_type,
             name=metadata_file_name,
@@ -1048,7 +1051,9 @@ def lookup_revision_with_context(
     return converters.from_revision(revision_d)
 
 
-def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
+def lookup_directory_with_revision(
+    sha1_git: str, dir_path: Optional[str] = None, with_data: bool = False
+) -> Dict[str, Any]:
     """Return information on directory pointed by revision with sha1_git.
     If dir_path is not provided, display top level directory.
     Otherwise, display the directory pointed by dir_path (if it exists).
@@ -1096,21 +1101,17 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
             "content": list(map(converters.from_directory_entry, directory_entries)),
         }
     elif entity["type"] == "file":  # content
-        content = _first_element(
-            config.storage().content_find({"sha1_git": entity["target"]})
-        )
-        if not content:
+        try:
+            content = lookup_content(
+                f"sha1_git:{entity['target'].hex()}", with_data=with_data
+            )
+        except NotFoundExc:
             raise NotFoundExc(f"Content not found for revision {sha1_git}")
-        content_d = content.to_dict()
-        if with_data:
-            data = config.storage().content_get_data({"sha1": content.sha1})
-            if data:
-                content_d["data"] = data
         return {
             "type": "file",
             "path": "." if not dir_path else dir_path,
             "revision": sha1_git,
-            "content": converters.from_content(content_d),
+            "content": content,
         }
     elif entity["type"] == "rev":  # revision
         revision = config.storage().revision_get([entity["target"]])[0]
@@ -1124,49 +1125,40 @@ def lookup_directory_with_revision(sha1_git, dir_path=None, with_data=False):
         raise NotImplementedError("Entity of type %s not implemented." % entity["type"])
 
 
-def lookup_content(q: str) -> Dict[str, Any]:
+def lookup_content(
+    q: str, json_convert: bool = True, with_data: bool = False
+) -> Dict[str, Any]:
     """Lookup the content designed by q.
 
     Args:
-        q: The release's sha1 as hexadecimal
+        q: query string of the form <hash_algo:hash>
+        json_convert: whether to convert content metadata in JSON serializable format
+        with_data: whether to fetch and return content bytes
+
+    Returns:
+        a dict holding content metadata and possibly its raw bytes
 
     Raises:
-        swh.web.utils.exc.NotFoundExc: if the requested content is not found
+        swh.web.utils.exc.NotFoundExc: if the requested content or its bytes are not found
 
     """
     algo, hash_ = query.parse_hash(q)
-    c = _first_element(config.storage().content_find({algo: hash_}))  # type: ignore[misc]
-    if not c:
+    content = _first_element(config.storage().content_find({algo: hash_}))  # type: ignore[misc]
+    if not content:
         hhex = hashutil.hash_to_hex(hash_)
         raise NotFoundExc(f"Content with {algo} checksum equals to {hhex} not found!")
-    return converters.from_content(c.to_dict())
-
-
-def lookup_content_raw(q: str) -> Dict[str, Any]:
-    """Lookup the content defined by q.
-
-    Args:
-        q: query string of the form <hash_algo:hash>
-
-    Returns:
-        dict with 'sha1' and 'data' keys.
-        data representing its raw data decoded.
-
-    Raises:
-        swh.web.utils.exc.NotFoundExc: if the requested content is not found or
-        if the content bytes are not available in the storage
-
-    """
-    c = lookup_content(q)
-    content_sha1_bytes = hashutil.hash_to_bytes(c["checksums"]["sha1"])
-    content_data = config.storage().content_get_data({"sha1": content_sha1_bytes})
-    if content_data is None:
-        algo, hash_ = query.parse_hash(q)
-        raise NotFoundExc(
-            f"Bytes of content with {algo} checksum equals "
-            f"to {hashutil.hash_to_hex(hash_)} are not available!"
-        )
-    return converters.from_content({"sha1": content_sha1_bytes, "data": content_data})
+    content_dict = content.to_dict()
+    if with_data:
+        content_data = config.storage().content_get_data(objid_from_dict(content_dict))
+        if content_data is None:
+            algo, hash_ = query.parse_hash(q)
+            raise NotFoundExc(
+                f"Bytes of content with {algo} checksum equals "
+                f"to {hashutil.hash_to_hex(hash_)} are not available!"
+            )
+        else:
+            content_dict["data"] = content_data
+    return converters.from_content(content_dict) if json_convert else content_dict
 
 
 def stat_counters():
