@@ -83,10 +83,10 @@ run-gunicorn-server: add-users-prod clear-memcached ## Clear memcache and start 
 	--threads 2 \
 	--workers 2 'django.core.wsgi:get_wsgi_application()'
 
-run-django-webpack-memory-storages: build-webpack-dev add-users-cypress ## Start django from tests settings (using in-memory storages)
+run-django-webpack-memory-storages: build-webpack-dev add-users-dev ## Start django from tests settings (using in-memory storages)
 	$(call run_django_server,$(SETTINGS_CYPRESS))
 
-run-mirror-demo: build-webpack-dev add-users-cypress ## Start django from tests config using a mirror setup
+run-mirror-demo: build-webpack-dev add-users-dev ## Start django from tests config using a mirror setup
 	SWH_CONFIG_FILENAME=$$PWD/mirror_demo/config.yml $(call run_django_server,$(SETTINGS_DEV))
 
 test-full: ## Run all python tests
