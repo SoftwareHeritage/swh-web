@@ -66,7 +66,7 @@ class SnapshotQuerySerializer(serializers.Serializer):
         min_value=0,
         max_value=snapshot_content_max_size,
     )
-    target_types = TargetTypesField(default="", required=False)
+    target_types = TargetTypesField(default=None, required=False)
 
 
 @api_route(
