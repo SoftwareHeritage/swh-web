@@ -64,7 +64,6 @@ def handle_inbound_message(sender: Type, **kwargs) -> EmailProcessingStatus:
             RequestStatus.WAITING_FOR_FEEDBACK: RequestStatus.FEEDBACK_TO_HANDLE,
         }.get(RequestStatus[request.status])
 
-
         if new_status:
             request.status = history_entry.new_status = new_status.name
 
