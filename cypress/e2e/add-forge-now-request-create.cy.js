@@ -62,6 +62,9 @@ describe('Browse requests list tests', function() {
     cy.user2Login();
     cy.visit(this.addForgeNowUrl);
 
+    // Disable checking if the example GitLab has public repos
+    cy.get('#swh-input-forge-validate').invoke('val', 'off')
+
     // create requests for the user 'user'
     populateForm('gitlab', 'https://gitlab.example.org/', 'admin', 'admin@example.org', 'on', '');
     submitForm();

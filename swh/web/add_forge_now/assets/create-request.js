@@ -7,7 +7,7 @@
 
 import {
   csrfPost, errorMessageFromResponse, genLink, getHumanReadableDate,
-  handleFetchError, validateUrl
+  handleFetchError, validateUrl, textToHTML
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {dataTableCommonConfig} from 'utils/constants';
@@ -20,10 +20,102 @@ const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
   'checked': false
 });
 
+class EmptyGitLabError extends Error { }
+
+function apiErrorGitLabInstance(api, apiIssue, error) {
+  const errorMsg = `
+    GET ${api}
+    ${error}
+
+    Remove all user/group/repo names.
+    Remove everything after both of those.`
+    .replace(/^\s+/, '').replace(/\n[ \t]+/g, '\n');
+  const errorVal = `
+    ${apiIssue}:
+
+    ${errorMsg}`
+    .replace(/^\s+/, '').replace(/\n[ \t]+/g, '\n');
+  const errorTxt = errorMsg.replaceAll('\n\n', '\n');
+  const errorHTML = textToHTML(errorTxt);
+
+  $('#userMessage').text(apiIssue);
+  $('#userMessageDetail').html(errorHTML);
+  $('#userMessage').removeClass('text-bg-info');
+  $('#userMessage').addClass('text-bg-danger');
+  $('#swh-input-forge-url').get(0).setCustomValidity(errorVal);
+  throw error;
+}
+
+function emptyGitLabInstance(apiIssue) {
+  const error = 'GitLab instance has no public projects';
+  $('#userMessage').text(apiIssue);
+  $('#userMessageDetail').text(error);
+  $('#userMessage').removeClass('text-bg-info');
+  $('#userMessage').addClass('text-bg-danger');
+  $('#swh-input-forge-url').get(0).setCustomValidity(error);
+  throw new EmptyGitLabError(error);
+}
+
+function nonEmptyGitLabInstance() {
+  $('#userMessage').text('GitLab instance has public projects');
+  $('#userMessageDetail').empty();
+  $('#userMessage').removeClass('text-bg-info');
+  $('#userMessage').addClass('text-bg-success');
+}
+
+async function validateGitLabContents() {
+  $('#userMessage').text('GitLab instance projects API loading');
+  $('#userMessageDetail').text('Checking available public projects');
+  $('#userMessage').removeClass('text-bg-danger');
+  $('#userMessage').removeClass('text-bg-success');
+  $('#userMessage').addClass('text-bg-info');
+
+  const url = $('#swh-input-forge-url').val().trim();
+  const api = `${url}api/v4/projects?per_page=1`;
+  const apiIssue = 'GitLab instance projects API issue';
+  try {
+    const response = await fetch(api);
+    if (!response.ok) {
+      apiErrorGitLabInstance(api, apiIssue, `HTTP ${response.status} ${response.statusText}`);
+    }
+    const json = await response.json();
+    if (Array.isArray(json)) {
+      if (json.length === 0) {
+        emptyGitLabInstance(apiIssue);
+      } else {
+        nonEmptyGitLabInstance();
+      }
+    } else {
+      apiErrorGitLabInstance(api, apiIssue, 'JSON data is not an array');
+    }
+  } catch (error) {
+    if (error instanceof EmptyGitLabError) {
+      // Not an API error
+      throw error;
+    } else {
+      apiErrorGitLabInstance(api, apiIssue, error);
+    }
+  }
+}
+
+async function validateForgeContents() {
+  const forgeType = $('#swh-input-forge-type').val();
+  if (['gitlab', 'heptapod'].includes(forgeType)) {
+    await validateGitLabContents();
+  }
+}
+
 export function onCreateRequestPageLoad() {
   $(document).ready(() => {
     $('#requestCreateForm').submit(async function(event) {
       event.preventDefault();
+      if ($('#swh-input-forge-validate').val() === 'on') {
+        try {
+          await validateForgeContents();
+        } catch (error) {
+          return;
+        }
+      }
       try {
         const response = await csrfPost($(this).attr('action'),
                                         {'Content-Type': 'application/x-www-form-urlencoded'},

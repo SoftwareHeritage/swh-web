@@ -83,6 +83,12 @@ export function selectText(startNode, endNode) {
   selection.addRange(range);
 }
 
+export function textToHTML(text) {
+  const textArea = document.createElement('textarea');
+  textArea.innerText = text;
+  return textArea.innerHTML;
+}
+
 export function htmlAlert(type, message, closable = false) {
   let closeButton = '';
   let extraClasses = '';
