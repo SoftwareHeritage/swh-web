@@ -45,7 +45,9 @@ try {
   const swhWebPythonModulePath = execSync(
     'python -c "from importlib.metadata import files;' +
     'pth_file = [p for p in files(\'swh.web\') if str(p).endswith(\'.pth\')];' +
-    'print(pth_file[0].read_text()[:-1], end=\'\')"',
+    'swh_web_package_path = pth_file[0].read_text()[:-1];' +
+    'assert swh_web_package_path.startswith(\'/\');' +
+    'print(swh_web_package_path, end=\'\')"',
     {cwd: __dirname, stdio: ['pipe', 'pipe', null]}
   );
   outputPath = path.resolve(swhWebPythonModulePath.toString(), './swh/web/static');
