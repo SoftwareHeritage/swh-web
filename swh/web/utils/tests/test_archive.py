@@ -217,6 +217,17 @@ def test_origin_visit_find_by_date(archive_data):
         )
         assert origin_visit["visit"] == expected_visit
 
+    # Searching for a date greater than the last visit date should
+    # return None
+    assert (
+        archive.origin_visit_find_by_date(
+            new_origin.url,
+            second_visit_date + datetime.timedelta(days=1),
+            greater_or_equal=True,
+        )
+        is None
+    )
+
 
 @given(new_origin())
 def test_lookup_origin(archive_data, mocker, patch_backend, new_origin):

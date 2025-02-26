@@ -1363,6 +1363,8 @@ def origin_visit_find_by_date(
             ):
                 visit = next_visit
                 break
+        else:
+            visit = None
     if visit and visit.visit:
         visit_status = config.storage().origin_visit_status_get_latest(
             origin_url, visit.visit
