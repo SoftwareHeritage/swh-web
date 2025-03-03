@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -437,11 +437,11 @@ def test_api_origins_wrong_input(api_client, archive_data):
     # fail if wrong input
     url = reverse("api-1-origins", query_params={"origin_from": 1})
     rv = check_api_get_responses(api_client, url, status_code=400)
-
-    assert rv.data == {
-        "exception": "BadInputExc",
-        "reason": "Please use the Link header to browse through result",
-    }
+    assert rv.data["exception"] == "ValidationError"
+    assert (
+        str(rv.data["reason"]["origin_from"][0])
+        == "Please use the Link header to browse through result"
+    )
 
 
 def test_api_origins(api_client, archive_data):
@@ -635,7 +635,7 @@ def test_api_origin_search_visit_type(api_client, config_updater, backend):
         query_params={"visit_type": "foo"},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
-    assert rv.data == []
+    assert not rv.data
 
 
 def test_api_origin_search_use_ql(api_client, patch_backend):
@@ -733,10 +733,18 @@ def test_api_origin_search_limit(
     url = reverse(
         "api-1-origin-search",
         url_args={"url_pattern": "foobar"},
-        query_params={"limit": 1050},
+        query_params={"limit": 1050},  # max is 1000
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
     assert len(rv.data) == 1000
+
+    url = reverse(
+        "api-1-origin-search",
+        url_args={"url_pattern": "foobar"},
+        query_params={"limit": 0},  # min is 1
+    )
+    rv = check_api_get_responses(api_client, url, status_code=200)
+    assert len(rv.data) == 1
 
 
 @pytest.mark.parametrize("backend", ["swh-search", "swh-indexer-storage"])
