@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,11 +6,13 @@
 from typing import Optional
 
 from django.http import HttpResponse
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from swh.web.api import utils
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
+from swh.web.api.serializers import SoftLimitsIntegerField
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import archive
 
@@ -157,14 +159,25 @@ def api_revision_directory(
     return result
 
 
+class RevisionLogQuerySerializer(serializers.Serializer):
+    """Revision Log query parameters serializer."""
+
+    limit = SoftLimitsIntegerField(
+        required=False, default=10, min_value=1, max_value=10000
+    )
+
+
 @api_route(
     r"/revision/(?P<sha1_git>[0-9a-f]+)/log/",
     "api-1-revision-log",
     checksum_args=["sha1_git"],
+    query_params_serializer=RevisionLogQuerySerializer,
 )
 @api_doc("/revision/log/", category="Archive")
 @format_docstring(return_revision_array=DOC_RETURN_REVISION_ARRAY)
-def api_revision_log(request: Request, sha1_git: str):
+def api_revision_log(
+    request: Request, sha1_git: str, validated_query_params: dict[str, int]
+):
     """
     .. http:get:: /api/1/revision/(sha1_git)/log/
 
@@ -202,14 +215,12 @@ def api_revision_log(request: Request, sha1_git: str):
 
             :swh_web_api:`revision/e1a315fa3fa734e2a6154ed7b5b9ae0eb8987aad/log/`
     """
-    limit = int(request.query_params.get("limit", "10"))
-    limit = min(limit, 1000)
 
     error_msg = "Revision with sha1_git %s not found." % sha1_git
     revisions = api_lookup(
         archive.lookup_revision_log,
         sha1_git,
-        limit,
+        validated_query_params["limit"],
         notfound_msg=error_msg,
         enrich_fn=utils.enrich_revision,
         request=request,
