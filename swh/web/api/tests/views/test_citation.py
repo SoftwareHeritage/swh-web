@@ -1,10 +1,11 @@
-# Copyright (C) 2024  The Software Heritage developers
+# Copyright (C) 2024-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from yaml import YAMLError
 
+from swh.web.api.views.citation import CitationSWHIDQuerySerializer
 from swh.web.tests.django_asserts import assert_contains
 from swh.web.tests.helpers import (
     check_api_get_responses,
@@ -81,7 +82,6 @@ def test_api_citation_bibtex_swhid_get(api_client, client, objects_with_metadata
 
 
 def test_api_citation_bibtex_parsing_error(api_client, origin_with_cff_file, mocker):
-
     error_message = "Error parsing YAML file"
     mocker.patch("yaml.safe_load").side_effect = YAMLError(error_message)
     url = reverse(
@@ -96,3 +96,19 @@ def test_api_citation_bibtex_parsing_error(api_client, origin_with_cff_file, moc
     assert error_message in rv.data["reason"]
     assert "source_swhid" in rv.data
     assert "source_url" in rv.data
+
+
+def test_api_citation_serializer_invalid_swhid():
+    serializer = CitationSWHIDQuerySerializer(
+        data={"citation_format": "bibtex", "target_swhid": "swh:notaswhid"}
+    )
+    assert not serializer.is_valid()
+    assert "target_swhid" in serializer.errors
+
+
+def test_api_citation_serializer_invalid_format():
+    serializer = CitationSWHIDQuerySerializer(
+        data={"citation_format": "not_bibtex", "origin_url": "http://swh.localhost"}
+    )
+    assert not serializer.is_valid()
+    assert "citation_format" in serializer.errors
