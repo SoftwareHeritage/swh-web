@@ -1,4 +1,4 @@
-# Copyright (C) 2024  The Software Heritage developers
+# Copyright (C) 2024-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -183,10 +183,6 @@ def test_api_extid_target_invalid_parameters(api_client, revision):
     target = CoreSWHID(
         object_type=ObjectType.REVISION, object_id=hash_to_bytes(revision)
     )
-    expected_data = {
-        "exception": "BadInputExc",
-        "reason": "Both extid_type and extid_version query parameters must be provided",
-    }
 
     url = reverse(
         "api-1-extid-target",
@@ -194,7 +190,10 @@ def test_api_extid_target_invalid_parameters(api_client, revision):
         query_params={"extid_type": "foo"},
     )
     resp = check_api_get_responses(api_client, url, status_code=400)
-    assert resp.data == expected_data
+    assert (
+        str(resp.data["reason"]["non_field_errors"][0])
+        == "Both extid_type and extid_version query parameters must be provided"
+    )
 
     url = reverse(
         "api-1-extid-target",
@@ -202,7 +201,10 @@ def test_api_extid_target_invalid_parameters(api_client, revision):
         query_params={"extid_version": 1},
     )
     resp = check_api_get_responses(api_client, url, status_code=400)
-    assert resp.data == expected_data
+    assert (
+        str(resp.data["reason"]["non_field_errors"][0])
+        == "Both extid_type and extid_version query parameters must be provided"
+    )
 
 
 @pytest.mark.parametrize(

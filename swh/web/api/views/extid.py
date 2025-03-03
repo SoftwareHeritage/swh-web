@@ -1,9 +1,8 @@
-# Copyright (C) 2024  The Software Heritage developers
+# Copyright (C) 2024-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
-
-
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from swh.web.api.apidoc import api_doc, format_docstring
@@ -11,16 +10,56 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.utils import enrich_extid
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import archive
-from swh.web.utils.exc import BadInputExc
+
+EXTID_FORMATS = [
+    ("hex", "Hexadecimal"),
+    ("base64url", "Base64 URL"),
+    ("raw", "Raw"),
+]
+
+
+class ExtidTargetQuerySerializer(serializers.Serializer):
+    """Extid Target query parameters serializer."""
+
+    extid_type = serializers.CharField(required=False, max_length=255, default=None)
+    extid_version = serializers.IntegerField(required=False, min_value=0, default=None)
+    extid_format = serializers.ChoiceField(
+        required=False, choices=EXTID_FORMATS, default="hex"
+    )
+
+    def validate(self, data: dict) -> dict:
+        """Validate extid_version and extid_type.
+
+        extid_version is required if extid_type is defined and vice versa.
+
+        Args:
+            data: query parameters
+
+        Raises:
+            serializers.ValidationError: invalid parameters
+
+        Returns:
+            query parameters
+        """
+        extid_version = data["extid_version"]
+        extid_type = data["extid_type"]
+        if (extid_version is not None and extid_type is None) or (
+            extid_version is None and extid_type is not None
+        ):
+            raise serializers.ValidationError(
+                "Both extid_type and extid_version query parameters must be provided"
+            )
+        return data
 
 
 @api_route(
     "/extid/target/<swhid:swhid>/",
     "api-1-extid-target",
+    query_params_serializer=ExtidTargetQuerySerializer,
 )
 @api_doc("/extid/target/", category="External IDentifiers")
 @format_docstring()
-def api_extid_target(request: Request, swhid: str):
+def api_extid_target(request: Request, swhid: str, validated_query_params: dict):
     """
     .. http:get:: /api/1/extid/target/(swhid)/
 
@@ -33,10 +72,10 @@ def api_extid_target(request: Request, swhid: str):
         :param string swhid: a SWHID to check if external identifiers target it
         :query string extid_type: optional external identifier type to use as a filter,
             must be provided if ``extid_version`` parameter is.
-        :query number extid_version: optional version number of external identifier type,
-            must be provided if ``extid_type`` parameter is.
-        :query string extid_format: the format used to encode an extid to an ASCII string,
-            either ``base64url``, ``hex`` or ``raw`` (default to ``hex``).
+        :query number extid_version: optional version number of external identifier
+            type, must be provided if ``extid_type`` parameter is.
+        :query string extid_format: the format used to encode an extid to an ASCII
+            string, either ``base64url``, ``hex`` or ``raw`` (default to ``hex``).
 
         {common_headers}
 
@@ -59,21 +98,17 @@ def api_extid_target(request: Request, swhid: str):
             :swh_web_api:`extid/target/swh:1:rev:6b29add7cb6b5f6045df308c43e4177f1f854a56/?extid_format=hex`
 
     """
-    extid_type = request.GET.get("extid_type")
-    extid_version = request.GET.get("extid_version")
-    if (extid_version is not None and extid_type is None) or (
-        extid_version is None and extid_type is not None
-    ):
-        raise BadInputExc(
-            "Both extid_type and extid_version query parameters must be provided"
-        )
+
+    extid_type = validated_query_params["extid_type"]
+    extid_version = validated_query_params["extid_version"]
+    extid_format = validated_query_params["extid_format"]
 
     return api_lookup(
         archive.lookup_extid_by_target,
         swhid,
         extid_type=extid_type,
-        extid_version=int(extid_version) if extid_version is not None else None,
-        extid_format=request.GET.get("extid_format", "hex"),
+        extid_version=extid_version,
+        extid_format=extid_format,
         enrich_fn=enrich_extid,
         request=request,
     )
