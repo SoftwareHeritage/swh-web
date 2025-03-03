@@ -21,8 +21,8 @@ from swh.core.api.classes import _stream_results
 from swh.model import hashutil
 from swh.model.exceptions import ValidationError
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.model import ExtID, Origin, Revision
-from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
+from swh.model.model import ExtID, MetadataAuthority, Origin, Revision
+from swh.model.swhids import CoreSWHID, ExtendedSWHID, ObjectType, QualifiedSWHID
 from swh.objstorage.interface import objid_from_dict
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
@@ -659,7 +659,9 @@ def lookup_origin_extrinsic_metadata(
 
 def _to_sha1_bin(sha1_hex):
     _, sha1_git_bin = query.parse_hash_with_algorithms_or_throws(
-        sha1_hex, ["sha1"], "Only sha1_git is supported."  # HACK: sha1_git really
+        sha1_hex,
+        ["sha1"],
+        "Only sha1_git is supported.",  # HACK: sha1_git really
     )
     return sha1_git_bin
 
@@ -1997,3 +1999,50 @@ def lookup_extid_by_target(
         raise NotFoundExc(f"ExtID targeting {swhid} not found.")
     else:
         return [_json_extid(extid, extid_format) for extid in raw_extid]
+
+
+def lookup_raw_extrinsic_metadata(
+    target_swhid: ExtendedSWHID,
+    authority: MetadataAuthority,
+    after: Optional[datetime.datetime] = None,
+    page_token: Optional[str] = None,
+    limit: int = 100,
+) -> PagedResult[Dict[str, Any]]:
+    try:
+        CoreSWHID.from_string(str(target_swhid))
+    except ValidationError:
+        # Can be parsed as an extended SWHID, but not as a core SWHID
+        extended_swhid = True
+    else:
+        extended_swhid = False
+
+    page_token_bytes = base64.urlsafe_b64decode(page_token) if page_token else None
+
+    result_page = config.storage().raw_extrinsic_metadata_get(
+        target=target_swhid,
+        authority=authority,
+        after=after,
+        page_token=page_token_bytes,
+        limit=limit,
+    )
+
+    results = []
+
+    for metadata in result_page.results:
+        result = converters.from_raw_extrinsic_metadata(metadata)
+
+        if extended_swhid:
+            # Keep extended SWHIDs away from the public API as much as possible.
+            # (It is part of the URL, but not documented, and only accessed via
+            # the link in the response of api-1-origin)
+            del result["target"]
+
+        results.append(result)
+
+    next_page_token = (
+        base64.urlsafe_b64encode(result_page.next_page_token.encode()).decode()
+        if result_page.next_page_token
+        else None
+    )
+
+    return PagedResult(results=results, next_page_token=next_page_token)

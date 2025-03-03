@@ -302,7 +302,8 @@ def from_raw_extrinsic_metadata(
     """Convert RawExtrinsicMetadata model object to a json serializable dictionary."""
     return from_swh(
         metadata.to_dict() if isinstance(metadata, RawExtrinsicMetadata) else metadata,
-        blacklist={"id", "metadata"},
+        hashess={"id"},
+        blacklist={"metadata"},
         dates={"discovery_date"},
     )
 
