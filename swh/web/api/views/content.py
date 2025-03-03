@@ -9,6 +9,7 @@ import os
 from typing import Optional
 
 from django.http import FileResponse
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from swh.web.api import utils
@@ -17,6 +18,14 @@ from swh.web.api.apiurls import api_route
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import archive
 from swh.web.utils.exc import NotFoundExc
+
+
+class ContentRawQuerySerializer(serializers.Serializer):
+    """Content Raw query parameters serializer."""
+
+    filename = serializers.CharField(
+        required=False, min_length=1, max_length=255, default=""
+    )
 
 
 @api_route(
@@ -172,9 +181,10 @@ def api_content_license(request: Request, q: str):
     r"/content/(?P<q>[0-9a-z_:]*[0-9a-f]+)/raw/",
     "api-1-content-raw",
     checksum_args=["q"],
+    query_params_serializer=ContentRawQuerySerializer,
 )
 @api_doc("/content/raw/", category="Archive")
-def api_content_raw(request: Request, q: str):
+def api_content_raw(request: Request, q: str, validated_query_params: dict[str, str]):
     """
     .. http:get:: /api/1/content/[(hash_type):](hash)/raw/
 
@@ -205,9 +215,9 @@ def api_content_raw(request: Request, q: str):
     if not content:
         raise NotFoundExc("Content %s is not found." % q)
 
-    filename = request.query_params.get("filename")
-    if not filename:
-        filename = "content_%s_raw" % q.replace(":", "_")
+    filename = validated_query_params["filename"] or "content_%s_raw" % q.replace(
+        ":", "_"
+    )
 
     return FileResponse(
         io.BytesIO(content["data"]),  # not copied, as this is never modified
