@@ -106,7 +106,8 @@ module = [
     "django_js_reverse.*",
     "django_ratelimit.*",
     "pymemcache.*",
-    "django_bootstrap5.*"
+    "django_bootstrap5.*",
+    "rfc3987.*"
 ]
 ignore_missing_imports = true
 
