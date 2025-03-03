@@ -1,16 +1,14 @@
-# Copyright (C) 2021-2024  The Software Heritage developers
+# Copyright (C) 2021-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import base64
 import re
-from typing import Dict, Optional
-
-import iso8601
+from typing import Any, Dict
 
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from swh.model import hashutil, swhids
@@ -18,17 +16,76 @@ from swh.model.model import MetadataAuthority, MetadataAuthorityType, Origin
 from swh.web import config
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
-from swh.web.utils import archive, converters, reverse
+from swh.web.api.serializers import SoftLimitsIntegerField
+from swh.web.utils import archive, reverse
 from swh.web.utils.exc import BadInputExc, NotFoundExc
+
+
+class MetadataAuthorityField(serializers.Field):
+    """A DRF field to handle metadata authorities."""
+
+    def to_representation(self, value: MetadataAuthority) -> str:
+        """Serialize value.
+
+        Args:
+            value: a MetadataAuthority
+
+        Returns:
+            A metadata authority identifier, formatted as ``type IRI``
+        """
+        return f"{value.type.value} {value.url}"
+
+    def to_internal_value(self, data: str) -> MetadataAuthority:
+        """From ``type IRI`` to MetadataAuthority.
+
+        Handles serialization and validation of a metadata authority.
+
+        Args:
+            data: A metadata authority identifier, formatted as ``type IRI``
+
+        Raises:
+            serializers.ValidationError: invalid value (missing space, invalid type).
+
+        Returns:
+            A MetadataAuthority
+        """
+        authority = data.strip()
+        if " " not in authority:
+            raise serializers.ValidationError(
+                "The 'authority' query parameter must contain a space."
+            )
+        type_, url = authority.split(" ", 1)
+        type_choices = [e.value for e in MetadataAuthorityType]
+        if type_ not in type_choices:
+            raise serializers.ValidationError(
+                f"Invalid type {type_}, must be one of: {', '.join(type_choices)}"
+            )
+        return MetadataAuthority(MetadataAuthorityType(type_), url)
+
+
+class RawExtrinsicMetadataQuerySerializer(serializers.Serializer):
+    """Raw Extrinsic Metadata query parameters serializer."""
+
+    authority = MetadataAuthorityField(required=True)
+    after = serializers.DateTimeField(required=False, default=None)
+    limit = SoftLimitsIntegerField(
+        required=False, default=100, min_value=1, max_value=10000
+    )
+    page_token = serializers.CharField(required=False, default=None)
 
 
 @api_route(
     "/raw-extrinsic-metadata/swhid/<swhid:target>/",
     "api-1-raw-extrinsic-metadata-swhid",
+    query_params_serializer=RawExtrinsicMetadataQuerySerializer,
 )
 @api_doc("/raw-extrinsic-metadata/swhid/", category="Metadata")
 @format_docstring()
-def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
+def api_raw_extrinsic_metadata_swhid(
+    request: Request,
+    target: str,
+    validated_query_params: dict[str, Any],
+):
     """
     .. http:get:: /api/1/raw-extrinsic-metadata/swhid/(target)
 
@@ -40,7 +97,9 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
             ``<type> <IRI>``. Required.
         :query string after: ISO8601 representation of the minimum timestamp of metadata
             to fetch. Defaults to allowing all metadata.
-        :query int limit: Maximum number of metadata objects to return.
+        :query int limit: Maximum number of metadata objects to return (default to 100).
+        :query string page_token: optional opaque token, used to get the next page of
+            results
 
         {common_headers}
 
@@ -75,65 +134,20 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
         .. parsed-literal::
 
             :swh_web_api:`raw-extrinsic-metadata/swhid/swh:1:dir:a2faa28028657859c16ff506924212b33f0e1307/?authority=forge%20https://pypi.org/`
-    """  # noqa
-    authority_str: Optional[str] = request.query_params.get("authority")
-    after_str: Optional[str] = request.query_params.get("after")
-    limit_str: str = request.query_params.get("limit", "100")
-    page_token_str: Optional[str] = request.query_params.get("page_token")
+    """  # noqa B950
 
-    if authority_str is None:
-        raise BadInputExc("The 'authority' query parameter is required.")
-    if " " not in authority_str.strip():
-        raise BadInputExc("The 'authority' query parameter should contain a space.")
-
-    (authority_type_str, authority_url) = authority_str.split(" ", 1)
-    try:
-        authority_type = MetadataAuthorityType(authority_type_str)
-    except ValueError:
-        raise BadInputExc(
-            f"Invalid 'authority' type, should be one of: "
-            f"{', '.join(member.value for member in MetadataAuthorityType)}"
-        )
-    authority = MetadataAuthority(authority_type, authority_url)
-
-    if after_str:
-        try:
-            after = iso8601.parse_date(after_str)
-        except iso8601.ParseError:
-            raise BadInputExc("Invalid format for 'after' parameter.") from None
-    else:
-        after = None
-
-    try:
-        limit = int(limit_str)
-    except ValueError:
-        raise BadInputExc("'limit' parameter must be an integer.") from None
-    limit = min(limit, 10000)
+    authority = validated_query_params["authority"]
+    after = validated_query_params["after"]
+    page_token = validated_query_params["page_token"]
+    limit = validated_query_params["limit"]
 
     try:
         parsed_target = swhids.ExtendedSWHID.from_string(target)
     except swhids.ValidationError as e:
         raise BadInputExc(f"Invalid target SWHID: {e}") from None
 
-    try:
-        swhids.CoreSWHID.from_string(target)
-    except swhids.ValidationError:
-        # Can be parsed as an extended SWHID, but not as a core SWHID
-        extended_swhid = True
-    else:
-        extended_swhid = False
-
-    if page_token_str is not None:
-        page_token = base64.urlsafe_b64decode(page_token_str)
-    else:
-        page_token = None
-
-    result_page = config.storage().raw_extrinsic_metadata_get(
-        target=parsed_target,
-        authority=authority,
-        after=after,
-        page_token=page_token,
-        limit=limit,
+    result_page = archive.lookup_raw_extrinsic_metadata(
+        parsed_target, authority, after, page_token, limit
     )
 
     filename = None
@@ -148,24 +162,17 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
     results = []
 
     for metadata in result_page.results:
-        result = converters.from_raw_extrinsic_metadata(metadata)
-
-        if extended_swhid:
-            # Keep extended SWHIDs away from the public API as much as possible.
-            # (It is part of the URL, but not documented, and only accessed via
-            # the link in the response of api-1-origin)
-            del result["target"]
-
         # We can't reliably send metadata directly, because it is a bytestring,
         # and we have to return JSON documents.
-        result["metadata_url"] = reverse(
+        metadata["metadata_url"] = reverse(
             "api-1-raw-extrinsic-metadata-get",
-            url_args={"id": hashutil.hash_to_hex(metadata.id)},
+            url_args={"id": metadata["id"]},
             query_params={"filename": filename},
             request=request,
         )
 
-        results.append(result)
+        del metadata["id"]
+        results.append(metadata)
 
     headers: Dict[str, str] = {}
     if result_page.next_page_token is not None:
@@ -173,12 +180,10 @@ def api_raw_extrinsic_metadata_swhid(request: Request, target: str):
             "api-1-raw-extrinsic-metadata-swhid",
             url_args={"target": target},
             query_params=dict(
-                authority=authority_str,
-                after=after_str,
-                limit=limit_str,
-                page_token=base64.urlsafe_b64encode(
-                    result_page.next_page_token.encode()
-                ).decode(),
+                authority=request.query_params["authority"],
+                after=str(after) if after else None,
+                limit=limit,
+                page_token=result_page.next_page_token,
             ),
             request=request,
         )

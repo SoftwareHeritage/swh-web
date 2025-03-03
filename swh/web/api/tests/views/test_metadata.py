@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -112,7 +112,6 @@ def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
         archive_data.metadata_authority_add([authority])
         archive_data.metadata_fetcher_add(list({m.fetcher for m in metadata}))
         archive_data.raw_extrinsic_metadata_add(metadata)
-
         url = reverse(
             "api-1-raw-extrinsic-metadata-swhid",
             url_args={"target": str(metadata0.target)},
