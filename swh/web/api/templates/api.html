@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2015-2024 The Software Heritage developers
+Copyright (C) 2015-2025 The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -55,20 +55,26 @@ See top-level LICENSE file for more information
     </p>
     <h4 id="data-model">Data model</h4>
     <p>
-      The <a href="https://www.softwareheritage.org/">Software Heritage</a> project harvests publicly
+      The <a target="_blank"
+    rel="noopener noreferrer"
+    href="https://www.softwareheritage.org/">Software Heritage</a> project harvests publicly
       available source code by tracking software distribution channels such as version control
       systems, tarball releases, and distribution packages.
     </p>
     <p>
       All retrieved source code and related metadata are stored in the Software Heritage archive, that
-      is conceptually a <a href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle DAG</a>. All nodes
+      is conceptually a <a target="_blank"
+    rel="noopener noreferrer"
+    href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle DAG</a>. All nodes
       in the graph are content-addressable, i.e., their node identifiers are computed by hashing their
       content and, transitively, that of all nodes reachable from them; and no node or edge is ever
       removed from the graph: the Software Heritage archive is an append-only data structure.
     </p>
     <p>
       The following types of objects (i.e., graph nodes) can be found in the Software Heritage archive
-      <small>(for more information see the <a href="https://wiki.softwareheritage.org/index.php?title=Glossary">Software Heritage
+      <small>(for more information see the <a target="_blank"
+    rel="noopener noreferrer"
+    href="https://docs.softwareheritage.org/devel/glossary.html">Software Heritage
         glossary</a>)
       </small>:
     </p>
@@ -114,14 +120,12 @@ See top-level LICENSE file for more information
         objects, without removing previous ones.
       </li>
       <li>
-        <strong>Person</strong>: an entity referenced by a revision as either the author or the
-        committer of the corresponding change. A person is associated to a full name and/or an email
-        address.
+        <strong>Snapshot</strong>: the state of all visible branches during a specific visit of an origin
       </li>
     </ul>
     <h4 id="version">Version</h4>
     <p>
-      The current version of the API is<strong>v1</strong>.
+      The current version of the API is <strong>v1</strong>.
     </p>
     <p>
       <strong>Warning:</strong> this version of the API is not to be considered stable yet.
@@ -264,7 +268,9 @@ Link: &lt;/api/1/origin/1/visits/?last_visit=2&amp;per_page=2&gt;; rel="next",</
       </li>
       <li>
         <code>X-RateLimit-Reset</code>: the time (expressed in
-        <a href="https://en.wikipedia.org/wiki/Unix_time">Unix time</a> seconds) at which the current
+        <a target="_blank"
+           rel="noopener noreferrer"
+           href="https://en.wikipedia.org/wiki/Unix_time">Unix time</a> seconds) at which the current
         rate limiting will expire, resetting to a fresh <code>X-RateLimit-Limit</code>
       </li>
     </ul>
@@ -293,7 +299,9 @@ curl -H "Authorization: Bearer ${TOKEN}" {{ site_base_url }}/api/...</pre>
       <p>
         Authenticated requests can be used to lift rate limiting if the user account has the adequate
         permission.
-        If you are in such a need, please <a href="https://www.softwareheritage.org/contact/">contact us</a>
+        If you are in such a need, please <a target="_blank"
+    rel="noopener noreferrer"
+    href="https://www.softwareheritage.org/contact/">contact us</a>
         and we will review your request.
       </p>
     {% endif %}
