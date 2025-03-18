@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -126,6 +126,7 @@ _visit_type_task = {
     "svn": "load-svn",
     "cvs": "load-cvs",
     "bzr": "load-bzr",
+    "tarball": "load-tarball-directory",
 }
 
 
@@ -527,6 +528,8 @@ def create_save_origin_request(
                     }
                 )
             task_kwargs = dict(**task_kwargs, artifacts=artifacts, snapshot_append=True)
+        elif visit_type == "tarball":
+            task_kwargs["checksums"] = {}
         sor = None
         # get list of previously submitted save requests (most recent first)
         current_sors = list(

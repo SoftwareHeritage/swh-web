@@ -22,8 +22,8 @@ const saveCodeMsg = {
   'csrfError': 'CSRF Failed: Referrer checking failed - no Referrer.'
 };
 
-const anonymousVisitTypes = ['bzr', 'cvs', 'git', 'hg', 'svn'];
-const allVisitTypes = ['archives', 'bzr', 'cvs', 'git', 'hg', 'svn'];
+const anonymousVisitTypes = ['bzr', 'cvs', 'git', 'hg', 'svn', 'tarball'];
+const allVisitTypes = ['archives', 'bzr', 'cvs', 'git', 'hg', 'svn', 'tarball'];
 
 function makeOriginSaveRequest(originType, originUrl) {
   cy.get('#swh-input-origin-url')

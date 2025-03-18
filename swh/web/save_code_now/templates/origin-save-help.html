@@ -1,7 +1,7 @@
 {% extends "./origin-save.html" %}
 
 {% comment %}
-Copyright (C) 2018-2023  The Software Heritage developers
+Copyright (C) 2018-2025  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ See top-level LICENSE file for more information
     <p style="margin-top: 1rem;">A "Save code now" request takes the following parameters:</p>
     <ul>
       <li>
-        <b>Origin type:</b> the type of version control system the software origin is using.
+        <b>Origin type:</b> the type of software origin.
         Currently, the supported types are:
         <ul>
           <li>
@@ -34,12 +34,19 @@ See top-level LICENSE file for more information
               <code>bzr</code>, for origins using <a href="https://bazaar.canonical.com/en/">Bazaar</a>
             </li>
           {% endif %}
+          {% if "tarball" in visit_types %}
+            <li>
+              <code>tarball</code>, for tarball origins
+            </li>
+          {% endif %}
         </ul>
       </li>
       <li>
-        <b>Origin url:</b> the url of the remote repository for the software origin.
+        <b>Origin URL:</b> the URL of the remote repository for the software origin
+        {% if "tarball" in visit_types %}or the URL for downloading a tarball{% endif %}
+        .
         <br />
-        In order to avoid saving errors from Software Heritage, you should provide the clone/checkout url
+        In order to avoid saving errors from Software Heritage, you should provide the clone/checkout URL
         as given by the provider hosting the software origin.
         <br />
         It can easily be found in the
@@ -58,7 +65,7 @@ See top-level LICENSE file for more information
         load its content into the archive as soon as possible
       </li>
       <li>
-        <b>rejected:</b> the provided origin url is blacklisted and no visit will be scheduled
+        <b>rejected:</b> the provided origin URL is blacklisted and no visit will be scheduled
       </li>
       <li>
         put in <b>pending</b> state: a manual review will then be performed in order to determine if the
