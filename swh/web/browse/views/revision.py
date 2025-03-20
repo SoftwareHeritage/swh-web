@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -463,6 +463,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         )
 
     vault_cooking = {
+        "content_context": bool(content_data),
         "directory_context": not bool(content_data),
         "directory_swhid": f"swh:1:dir:{revision['directory']}",
         "revision_context": not bool(content_data),
@@ -514,6 +515,16 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 # disable language select dropdown when a notebook is rendered
                 available_languages = None
 
+            if filepath:
+                dir_id = archive.lookup_directory_with_path(
+                    revision["directory"], filepath
+                )["target"]
+            else:
+                dir_id = revision["directory"]
+            swh_objects.append(
+                SWHObjectInfo(object_type=ObjectType.DIRECTORY, object_id=dir_id)
+            )
+
         top_right_link = {
             "url": reverse(
                 "browse-content-raw",
@@ -526,6 +537,11 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
         swh_objects.append(
             SWHObjectInfo(object_type=ObjectType.CONTENT, object_id=file_info["target"])
+        )
+        vault_cooking["content_download_url"] = reverse(
+            "api-1-content-raw",
+            url_args={"q": f"sha1_git:{file_info['target']}"},
+            query_params={"filename": filename},
         )
     else:
         for d in dirs:

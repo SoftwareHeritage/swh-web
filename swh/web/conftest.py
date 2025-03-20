@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -476,17 +476,21 @@ def directory(tests_data):
     return random.choice(_known_swh_objects(tests_data, "directories"))
 
 
+def _directory_contains_entry_type(tests_data, dir_id, entry_type):
+    return any(
+        [
+            e["type"] == entry_type
+            for e in list(tests_data["storage"].directory_ls(hash_to_bytes(dir_id)))
+        ]
+    )
+
+
 @functools.lru_cache(maxsize=None)
 def _directory_with_entry_type(type_):
     tests_data = get_tests_data()
     return list(
         filter(
-            lambda d: any(
-                [
-                    e["type"] == type_
-                    for e in list(tests_data["storage"].directory_ls(hash_to_bytes(d)))
-                ]
-            ),
+            lambda d: _directory_contains_entry_type(tests_data, d, type_),
             _known_swh_objects(tests_data, "directories"),
         )
     )
@@ -504,6 +508,24 @@ def directory_with_subdirs():
 def directory_with_files():
     """Fixture returning a random directory containing at least one regular file."""
     return random.choice(_directory_with_entry_type("file"))
+
+
+@pytest.fixture(scope="function")
+def revision_with_files_in_target_directory(tests_data):
+    """Fixture returning a random directory containing at least one regular file."""
+    storage = tests_data["storage"]
+    return random.choice(
+        list(
+            filter(
+                lambda r: _directory_contains_entry_type(
+                    tests_data,
+                    storage.revision_get([hash_to_bytes(r)])[0].directory.hex(),
+                    "file",
+                ),
+                _known_swh_objects(tests_data, "revisions"),
+            )
+        )
+    )
 
 
 @pytest.fixture(scope="function")

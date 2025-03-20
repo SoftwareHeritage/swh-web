@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -124,6 +124,7 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             revision = archive.lookup_revision(release["target"])
             rev_directory = revision["directory"]
             vault_cooking = {
+                "content_context": False,
                 "directory_context": True,
                 "directory_swhid": f"swh:1:dir:{rev_directory}",
                 "revision_context": True,
@@ -150,6 +151,7 @@ def release_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             # check directory exists
             archive.lookup_directory(release["target"])
             vault_cooking = {
+                "content_context": False,
                 "directory_context": True,
                 "directory_swhid": f"swh:1:dir:{release['target']}",
                 "revision_context": False,

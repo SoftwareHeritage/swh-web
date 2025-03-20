@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -40,6 +40,15 @@ def test_revision_origin_snapshot_browse(client, archive_data, swh_scheduler, or
 
     revision = random.choice(archive_data.revision_log(revision))["id"]
     _revision_browse_checks(client, archive_data, revision, origin_url=origin["url"])
+
+
+def test_revision_browse_content(
+    client, archive_data, revision_with_files_in_target_directory
+):
+    revision = archive_data.revision_get(revision_with_files_in_target_directory)
+    dir_entries = archive_data.directory_ls(revision["directory"])
+    content = random.choice([entry for entry in dir_entries if entry["type"] == "file"])
+    _revision_browse_checks(client, archive_data, revision["id"], content=content)
 
 
 def test_revision_log_browse(client, archive_data, revision):
@@ -296,17 +305,27 @@ def test_revision_uppercase(client, revision):
 
 
 def _revision_browse_checks(
-    client, archive_data, revision, origin_url=None, snapshot=None
+    client,
+    archive_data,
+    revision,
+    origin_url=None,
+    snapshot=None,
+    content=None,
 ):
     query_params = {}
     if origin_url:
         query_params["origin_url"] = origin_url
     if snapshot:
         query_params["snapshot"] = snapshot["id"]
+    if content:
+        query_params["path"] = content["name"]
 
     url = reverse(
         "browse-revision", url_args={"sha1_git": revision}, query_params=query_params
     )
+
+    if content:
+        del query_params["path"]
 
     revision_data = archive_data.revision_get(revision)
 
@@ -334,7 +353,8 @@ def _revision_browse_checks(
     )
     assert_contains(resp, author_name)
     assert_contains(resp, committer_name)
-    assert_contains(resp, history_url)
+    if content is None:
+        assert_contains(resp, history_url)
 
     for parent in revision_data["parents"]:
         parent_url = reverse(
@@ -352,8 +372,9 @@ def _revision_browse_checks(
     assert_contains(resp, escape(message_lines[0]))
     assert_contains(resp, escape("\n".join(message_lines[1:])))
 
-    assert_contains(resp, "vault-cook-directory")
-    assert_contains(resp, "vault-cook-revision")
+    if content is None:
+        assert_contains(resp, "vault-cook-directory")
+        assert_contains(resp, "vault-cook-revision")
 
     swh_rev_id = gen_swhid(ObjectType.REVISION, revision)
     swh_rev_id_url = reverse("browse-swhid", url_args={"swhid": swh_rev_id})
@@ -398,6 +419,14 @@ def _revision_browse_checks(
     swh_dir_id_url = reverse("browse-swhid", url_args={"swhid": swh_dir_id})
     assert_contains(resp, swh_dir_id)
     assert_contains(resp, swh_dir_id_url)
+
+    if content:
+        content_download_url = reverse(
+            "api-1-content-raw",
+            url_args={"q": f"sha1_git:{content['checksums']['sha1_git']}"},
+            query_params={"filename": content["name"]},
+        )
+        assert_contains(resp, content_download_url)
 
 
 def test_revision_invalid_path(client, archive_data, revision):

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -484,6 +484,19 @@ def content_display(
         content_path = "/".join(bc["name"] for bc in breadcrumbs)
         heading += " - %s" % content_path
 
+    vault_cooking = None
+    if content_checksums and "sha1_git" in content_checksums:
+        vault_cooking = {
+            "directory_context": False,
+            "revision_context": False,
+            "content_context": True,
+            "content_download_url": reverse(
+                "api-1-content-raw",
+                url_args={"q": f"sha1_git:{content_checksums['sha1_git']}"},
+                query_params={"filename": filename},
+            ),
+        }
+
     return render(
         request,
         "browse-content.html",
@@ -507,7 +520,7 @@ def content_display(
                 "text": "Raw File",
             },
             "snapshot_context": snapshot_context,
-            "vault_cooking": None,
+            "vault_cooking": vault_cooking,
             "show_actions": True,
             "swhids_info": swhids_info,
             "error_code": error_info["status_code"],

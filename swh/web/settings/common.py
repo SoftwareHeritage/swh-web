@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -107,17 +107,14 @@ if swh_web_config["serve_assets"]:
 ROOT_URLCONF = "swh.web.urls"
 
 SWH_APP_TEMPLATES = [os.path.join(PROJECT_DIR, "../templates")]
-# Add templates directory from each SWH Django application
-for app in SWH_BASE_DJANGO_APPS + swh_web_config["swh_extra_django_apps"]:
-    try:
-        app_spec = find_spec(app)
-        assert app_spec is not None, f"Django application {app} not found !"
-        assert app_spec.origin is not None
-        SWH_APP_TEMPLATES.append(
-            os.path.join(os.path.dirname(app_spec.origin), "templates")
-        )
-    except ModuleNotFoundError:
-        assert False, f"Django application {app} not found !"
+# Add templates directory from each SWH Django application as even
+# if an app is not enabled, others might need some of its templates
+apps_dir = os.path.join(os.path.dirname(__file__), "../")
+_, apps, _ = next(os.walk(apps_dir))  # type: ignore[assignment]
+for app in apps:
+    app_templates_dir = os.path.join(apps_dir, app, "templates")
+    if os.path.exists(app_templates_dir):
+        SWH_APP_TEMPLATES.append(app_templates_dir)
 
 # for mirror version of swh-web, we need access to the Save Code Now templates
 # even if the django application is not enabled

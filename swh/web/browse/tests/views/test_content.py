@@ -1125,6 +1125,13 @@ def _origin_content_view_test_helper(
 
     assert_not_contains(resp, "swh-metadata-popover")
 
+    content_download_url = reverse(
+        "api-1-content-raw",
+        url_args={"q": f"sha1_git:{content['sha1_git']}"},
+        query_params={"filename": filename},
+    )
+    assert_contains(resp, content_download_url)
+
 
 def _check_origin_link(resp, origin_url):
     browse_origin_url = reverse(

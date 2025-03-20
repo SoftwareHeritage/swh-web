@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2024  The Software Heritage developers
+Copyright (C) 2017-2025  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -238,4 +238,15 @@ See top-level LICENSE file for more information
     </div>
   </div>
   {% include "./vault-common.html" %}
+{% elif vault_cooking.content_context %}
+  {% comment %}
+    Vault cannot cook a content object, in that case offer a direct file download link instead.
+  {% endcomment %}
+
+  <a href="{{ vault_cooking.content_download_url | safe }}"
+     class="btn btn-secondary btn-sm"
+     role="button">
+    <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>
+    Download
+  </a>
 {% endif %}
