@@ -58,7 +58,7 @@ See top-level LICENSE file for more information
         let codeContainer = $('code');
         let content = codeContainer.text();
 
-        swh.webapp.highlightCode(true, 'code', !{{ iframe_mode|jsonify }});
+        swh.webapp.highlightCode(true, '.swh-content code', !{{ iframe_mode|jsonify }});
 
         function updateLanguage(language) {
           codeContainer.text(content);
@@ -71,7 +71,7 @@ See top-level LICENSE file for more information
           const newUrl = window.location.pathname + '?' + urlParams.toString() + window.location.hash;
           window.history.replaceState('', document.title, newUrl);
 
-          swh.webapp.highlightCode(true, 'code', !{{ iframe_mode|jsonify }});
+          swh.webapp.highlightCode(true, '.swh-content code', !{{ iframe_mode|jsonify }});
         }
 
       {% endif %}
