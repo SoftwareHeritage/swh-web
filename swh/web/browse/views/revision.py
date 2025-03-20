@@ -392,7 +392,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         dir_id = revision["directory"]
 
     if dir_id:
-        path = "" if path is None else (path + "/")
+        path = "" if not path else (path + "/")
         dirs, files = get_directory_entries(dir_id)
 
     revision_metadata = RevisionMetadata(
@@ -445,7 +445,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "url": reverse(
                 "browse-revision",
                 url_args={"sha1_git": sha1_git},
-                query_params=query_params,
+                query_params={**query_params, **{"path": ""}},
             ),
         }
     )
@@ -463,9 +463,9 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         )
 
     vault_cooking = {
-        "directory_context": False,
-        "directory_swhid": None,
-        "revision_context": True,
+        "directory_context": not bool(content_data),
+        "directory_swhid": f"swh:1:dir:{revision['directory']}",
+        "revision_context": not bool(content_data),
         "revision_swhid": f"swh:1:rev:{sha1_git}",
     }
 
