@@ -240,7 +240,10 @@ def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs)
         }
 
 
-def test_get_swhids_info_revision_context(archive_data, revision):
+def test_get_swhids_info_revision_context(
+    archive_data, revision_with_files_in_target_directory
+):
+    revision = revision_with_files_in_target_directory
     revision_data = archive_data.revision_get(revision)
     directory = revision_data["directory"]
     dir_content = archive_data.directory_ls(directory)
@@ -765,7 +768,10 @@ def test_resolve_swhid_with_malformed_origin_url(archive_data, directory):
     assert origin_url in resolved_swhid["browse_url"]
 
 
-def test_resolve_dir_entry_swhid_with_anchor_revision(archive_data, revision):
+def test_resolve_dir_entry_swhid_with_anchor_revision(
+    archive_data, revision_with_files_in_target_directory
+):
+    revision = revision_with_files_in_target_directory
     revision_data = archive_data.revision_get(revision)
     directory = revision_data["directory"]
     dir_content = archive_data.directory_ls(directory)
