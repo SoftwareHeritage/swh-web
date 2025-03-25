@@ -244,7 +244,7 @@ describe('SWHIDs Tests', function() {
 
   it('should update tab size according to screen size', function() {
     // use a small viewport size
-    cy.viewport(320, 480);
+    cy.viewport(800, 400);
     cy.visit(url);
     cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
