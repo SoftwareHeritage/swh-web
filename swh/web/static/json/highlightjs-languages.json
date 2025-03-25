@@ -479,6 +479,7 @@
         "shopify": "liquid",
         "sol": "solidity",
         "soql": "apex",
+        "sosl": "apex",
         "spec": "rpm-specfile",
         "specfile": "rpm-specfile",
         "st": "smalltalk",
