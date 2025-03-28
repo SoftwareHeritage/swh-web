@@ -13,7 +13,7 @@ requests-mock != 1.9.0, != 1.9.1
 swh.core[http] >= 4.0.0
 swh.graph >= 5.1.1
 swh.loader.git >= 0.8.0
-swh-scheduler[testing] >= 3.0.0
+swh.scheduler[pytest] >= 3.1.0
 swh.storage >= 3.0.0
 types-beautifulsoup4
 types-cryptography
