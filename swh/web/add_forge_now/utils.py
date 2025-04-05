@@ -19,6 +19,7 @@ def trigger_request_processing_pipeline(id, forge_type, forge_url):
         data = {
             "token": pipeline_token,
             "ref": "main",
+            "name": f"AFNR#{id} {lister_type} {instance_name}",
             "variables[LISTER_TYPE]": lister_type,
             "variables[INSTANCE_NAME]": instance_name,
             "variables[REQUEST_ID]": request_id,

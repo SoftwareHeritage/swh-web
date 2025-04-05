@@ -699,12 +699,16 @@ def test_add_forge_request_update_gitlab_pipeline_trigger(
     assert sent_request.url == trigger_url
     assert sent_request.headers["Content-Type"] == "application/x-www-form-urlencoded"
 
+    id = request["id"]
+    lister_type = ADD_FORGE_DATA_FORGE1["forge_type"]
+    instance_name = urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc
     expected_form_data = {
         "token": token,
         "ref": "main",
-        "variables[LISTER_TYPE]": ADD_FORGE_DATA_FORGE1["forge_type"],
-        "variables[INSTANCE_NAME]": urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc,
-        "variables[REQUEST_ID]": request["id"],
+        "name": f"AFNR#{id} {lister_type} {instance_name}",
+        "variables[LISTER_TYPE]": lister_type,
+        "variables[INSTANCE_NAME]": instance_name,
+        "variables[REQUEST_ID]": id,
     }
 
     assert requests_mock.request_history[0].body == urlencode(expected_form_data)
