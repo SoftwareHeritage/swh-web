@@ -2,12 +2,7 @@ const {defineConfig} = require('cypress');
 
 module.exports = defineConfig({
   projectId: 'swh-web',
-
-  // workaround performance regression in Cypress 14
-  // https://github.com/cypress-io/cypress/issues/30980
-  video: true,
-  videosFolder: '/tmp/cypress/videos/',
-
+  video: false,
   viewportWidth: 1920,
   viewportHeight: 1080,
   defaultCommandTimeout: 20000,

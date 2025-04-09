@@ -114,7 +114,7 @@ td.swh-branch-date {
 }
 
 .chosen-container-active {
-    box-shadow: 0 0 0 0.2rem rgba(226 0 38 / 25%);
+    box-shadow: 0 0 0 0.2rem rgb(226 0 38 / 25%);
     z-index: 10;
 }
 
