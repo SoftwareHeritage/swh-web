@@ -238,9 +238,10 @@ def _get_content_from_request(request: HttpRequest) -> Dict[str, Any]:
         browse_context="content",
         visit_type=request.GET.get("visit_type"),
     )
-    root_directory = snapshot_context["root_directory"]
-    assert root_directory is not None  # to keep mypy happy
-    return archive.lookup_directory_with_path(root_directory, path)
+    if root_directory := snapshot_context["root_directory"]:
+        return archive.lookup_directory_with_path(root_directory, path)
+    # this should only happen in staging due to a partial storage
+    raise NotFoundExc(f"Missing root directory for {snapshot}")
 
 
 @browse_route(
