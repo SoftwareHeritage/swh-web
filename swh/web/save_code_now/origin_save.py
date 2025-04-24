@@ -390,7 +390,11 @@ def _update_save_request_info(
             save_request
         )
 
-        if not loading_task_status:  # fallback when not provided
+        if not loading_task_status or loading_task_status == SAVE_TASK_RUNNING:
+            # if loading task status could not be inferred from the visit status
+            # or if task status is 'running', we need to get real task status
+            # from scheduler database as celery worker could have been killed
+            # in flight without having set the final origin visit status
             loading_task_status = _compute_task_loading_status(task, task_run)
 
         if visit_date != save_request.visit_date:

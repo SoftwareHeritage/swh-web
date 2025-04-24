@@ -15,7 +15,6 @@ from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_TASK_FAILED,
     SAVE_TASK_RUNNING,
-    SAVE_TASK_SCHEDULED,
     SAVE_TASK_SUCCEEDED,
     VISIT_STATUS_CREATED,
     VISIT_STATUS_FULL,
@@ -427,7 +426,7 @@ def test_get_save_origin_requests_no_visit_date_found(
     sors = _get_save_origin_requests(
         mocker,
         swh_scheduler,
-        load_status="scheduled",
+        load_status="started",
         visit_status=visit_status,
     )
     # check no visit date has been found
@@ -526,9 +525,7 @@ def test_get_visit_info_incomplete_visit_still_successful(
 
 
 @pytest.mark.django_db
-def test_refresh_in_progress_save_request_statuses(
-    mocker, swh_scheduler, api_client, archive_data
-):
+def test_refresh_in_progress_save_request_statuses(mocker, swh_scheduler):
     """Refresh a pending save origins requests and update if the status changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
@@ -537,7 +534,7 @@ def test_refresh_in_progress_save_request_statuses(
     task, task_run = _fill_scheduler_db(
         swh_scheduler,
         task_status="next_run_scheduled",
-        task_run_status=SAVE_TASK_SCHEDULED,
+        task_run_status="started",
     )
     assert task is not None
 
@@ -634,7 +631,7 @@ def test_refresh_in_progress_save_request_statuses(
 
 
 @pytest.mark.django_db
-def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archive_data):
+def test_refresh_save_request_statuses(mocker, swh_scheduler):
     """Refresh filters save origins requests and update if changes"""
     date_now = datetime.now(tz=timezone.utc)
     date_pivot = date_now - timedelta(days=30)
@@ -643,7 +640,7 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
     task, task_run = _fill_scheduler_db(
         swh_scheduler,
         task_status="next_run_scheduled",
-        task_run_status=SAVE_TASK_SCHEDULED,
+        task_run_status="started",
     )
     assert task is not None
     SaveOriginRequest.objects.create(
@@ -732,3 +729,55 @@ def test_refresh_save_request_statuses(mocker, swh_scheduler, api_client, archiv
     # This time, nothing left to update
     sors = refresh_save_origin_request_statuses()
     assert len(sors) == 0
+
+
+@pytest.mark.django_db
+def test_refresh_save_request_when_worker_lost(mocker, swh_scheduler):
+    """Check save request status is set to failed when the celery worker
+    exited prematurely."""
+
+    # simulate a running save request
+    task, task_run = _fill_scheduler_db(
+        swh_scheduler,
+        task_status="next_run_scheduled",
+        task_run_status="started",
+    )
+    assert task is not None
+    SaveOriginRequest.objects.create(
+        request_date=datetime.now(tz=timezone.utc),
+        visit_type=_visit_type,
+        visit_status=VISIT_STATUS_ONGOING,
+        origin_url=_origin_url,
+        status=SAVE_REQUEST_ACCEPTED,
+        visit_date=None,
+        loading_task_id=task.id,
+    )
+
+    # mock scheduler and archives
+    mock_archive = mocker.patch("swh.web.save_code_now.origin_save.archive")
+    mock_archive.lookup_origin.return_value = {"url": _origin_url}
+    # create a visit for the save request with status 'running'
+    visit_date = datetime.now(tz=timezone.utc).isoformat()
+    visit_info = OriginVisitInfo(
+        date=visit_date,
+        formatted_date="",
+        metadata={},
+        origin=_origin_url,
+        snapshot="",  # make mypy happy
+        status=VISIT_STATUS_ONGOING,
+        type=_visit_type,
+        url="",
+        visit=34,
+    )
+    mock_archive.origin_visit_find_by_date.return_value = visit_info
+
+    # save task should be marked as running
+    sors = refresh_save_origin_request_statuses()
+    assert sors[0]["save_task_status"] == SAVE_TASK_RUNNING
+
+    # simulate lost of celery worker
+    swh_scheduler.end_task_run(task_run.backend_id, "failed")
+
+    # save task should be marked as failed
+    sors = refresh_save_origin_request_statuses()
+    assert sors[0]["save_task_status"] == SAVE_TASK_FAILED
