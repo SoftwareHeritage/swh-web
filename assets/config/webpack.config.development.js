@@ -156,6 +156,9 @@ module.exports = {
       publicPath: devServerPublicPath,
       stats: 'errors-only'
     },
+    setupMiddlewares: (middlewares) => {
+      return middlewares.filter(middleware => middleware.name !== 'cross-origin-header-check');
+    },
     host: '0.0.0.0',
     port: devServerPort,
     // enable to serve static assets not managed by webpack
