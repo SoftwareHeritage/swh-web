@@ -133,6 +133,7 @@ def check_save_request_status(
     visit_date=None,
     visit_status=None,
     snapshot_id=None,
+    error_msg=None,
 ):
     if expected_task_status != SAVE_TASK_NOT_CREATED:
         task = swh_scheduler.search_tasks()[0]
@@ -143,7 +144,12 @@ def check_save_request_status(
 
     if scheduler_task_run_status is not None:
         swh_scheduler.start_task_run(backend_id)
-        task_run = swh_scheduler.end_task_run(backend_id, scheduler_task_run_status)
+        metadata = {}
+        if error_msg:
+            metadata["error"] = error_msg
+        task_run = swh_scheduler.end_task_run(
+            backend_id, scheduler_task_run_status, metadata
+        )
 
     url = reverse(
         "api-1-save-origin", url_args={"visit_type": "git", "origin_url": origin_url}
@@ -167,6 +173,10 @@ def check_save_request_status(
         url_args={"request_id": save_request_data["id"]},
         request=response.wsgi_request,
     )
+
+    if error_msg:
+        assert save_request_data["metadata"] == {"error": error_msg}
+
     check_api_get_responses(
         api_client, save_request_data["request_url"], status_code=200
     )
@@ -296,6 +306,7 @@ def test_save_request_failed(api_client, mocker, swh_scheduler):
         scheduler_task_status="disabled",
         scheduler_task_run_status="failed",
         visit_status=VISIT_STATUS_FAILED,
+        error_msg="Something went wrong",
     )
 
 

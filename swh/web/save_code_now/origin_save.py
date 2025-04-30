@@ -434,6 +434,8 @@ def _update_save_request_info(
     sr_dict = save_request.to_dict()
     if task:
         sr_dict["next_run"] = task.next_run
+    if task_run:
+        sr_dict["metadata"] = task_run.metadata
 
     return sr_dict
 

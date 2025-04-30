@@ -256,6 +256,8 @@ class SaveOriginRequestInfo(TypedDict, total=False):
     """SWHID of snapshot associated to the visit"""
     next_run: Optional[datetime]
     """Date and time from which the request is executed"""
+    metadata: Optional[Dict[str, Any]]
+    """Optional metadata related to the request"""
 
 
 class OriginExistenceCheckInfo(TypedDict):
