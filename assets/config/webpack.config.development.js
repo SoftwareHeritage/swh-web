@@ -232,10 +232,8 @@ module.exports = {
                 }]
               ],
               plugins: [
-              // use babel transform-runtime plugin in order to use aync/await syntax
-                ['@babel/plugin-transform-runtime', {
-                  'regenerator': true
-                }],
+                // use babel transform-runtime plugin in order to use aync/await syntax
+                '@babel/plugin-transform-runtime',
                 // use other babel plugins to benefit from advanced js features (es2017)
                 '@babel/plugin-syntax-dynamic-import'
               ],
