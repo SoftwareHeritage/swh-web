@@ -801,7 +801,10 @@ def test_lookup_directory_through_revision_ok(archive_data, revision):
     ) == (revision, archive.lookup_directory_with_revision(revision, dir_entry["name"]))
 
 
-def test_lookup_directory_through_revision_ok_with_data(archive_data, revision):
+def test_lookup_directory_through_revision_ok_with_data(
+    archive_data, revision_with_files_in_target_directory
+):
+    revision = revision_with_files_in_target_directory
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
         e
