@@ -77,7 +77,7 @@ def test_api_provenance_whereis(api_client, provenance_user):
     content_swhid = "swh:1:cnt:0000000000000000000000000000000000000001"
     expected_provenance_swhid = (
         "swh:1:cnt:0000000000000000000000000000000000000001;"
-        "origin=https://example.com/swh/graph2;"
+        "origin=https://example.com/swh/graph;"
         "anchor=swh:1:rel:0000000000000000000000000000000000000010"
     )
 
@@ -129,7 +129,7 @@ def test_api_provenance_whereare(api_client, provenance_user):
     expected_provenance_swhids = [
         (
             "swh:1:cnt:0000000000000000000000000000000000000001;"
-            "origin=https://example.com/swh/graph2;"
+            "origin=https://example.com/swh/graph;"
             "anchor=swh:1:rel:0000000000000000000000000000000000000010"
         ),
         (
