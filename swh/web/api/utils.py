@@ -347,12 +347,13 @@ def enrich_origin_visit(
             url_args={"origin_url": ov["origin"], "visit_id": ov["visit"]},
             request=request,
         )
-    snapshot = ov["snapshot"]
+    snapshot = ov.get("snapshot")
     if snapshot:
         ov["snapshot_url"] = reverse(
             "api-1-snapshot", url_args={"snapshot_id": snapshot}, request=request
         )
     else:
+        ov["snapshot"] = None
         ov["snapshot_url"] = None
     return ov
 

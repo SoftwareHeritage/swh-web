@@ -1228,7 +1228,9 @@ def lookup_origin_visits(
 
     """
     for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
-        origin_visit = converters.from_origin_visit(visit.visit, visit.statuses[-1])
+        origin_visit = converters.from_origin_visit(
+            visit.visit, visit.statuses[-1] if visit.statuses else None
+        )
         assert origin_visit
         yield origin_visit
 

@@ -181,7 +181,7 @@ def get_origin_visit(
         raise NotFoundExc(f"No visits associated to origin with url {origin_url}!")
 
     if snapshot_id:
-        visits = [v for v in visits if v["snapshot"] == snapshot_id]
+        visits = [v for v in visits if v.get("snapshot") == snapshot_id]
         if len(visits) == 0:
             raise NotFoundExc(
                 (

@@ -74,9 +74,10 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(
     }
 
 
+@pytest.mark.parametrize("visits_have_statuses", [True, False])
 @given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
+    api_client, subtest, visits_have_statuses, new_origin, visit_dates, new_snapshots
 ):
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
@@ -90,18 +91,22 @@ def test_api_lookup_origin_visits(
                         origin=new_origin.url,
                         date=visit_date,
                         type="git",
+                        # cassandra/memory storage automatically adds a "created" visit
+                        # status if visit id is None
+                        visit=None if visits_have_statuses else (i + 1),
                     )
                 ]
             )[0]
-            archive_data.snapshot_add([new_snapshots[i]])
-            visit_status = OriginVisitStatus(
-                origin=new_origin.url,
-                visit=origin_visit.visit,
-                date=now(),
-                status="full",
-                snapshot=new_snapshots[i].id,
-            )
-            archive_data.origin_visit_status_add([visit_status])
+            if visits_have_statuses:
+                archive_data.snapshot_add([new_snapshots[i]])
+                visit_status = OriginVisitStatus(
+                    origin=new_origin.url,
+                    visit=origin_visit.visit,
+                    date=now(),
+                    status="full",
+                    snapshot=new_snapshots[i].id,
+                )
+                archive_data.origin_visit_status_add([visit_status])
 
         all_visits = list(reversed(get_origin_visits(new_origin.url)))
 
@@ -124,6 +129,10 @@ def test_api_lookup_origin_visits(
                     with_origin_visit_link=True,
                     request=rv.wsgi_request,
                 )
+                if visits_have_statuses:
+                    assert expected_visits[i]["snapshot"] is not None
+                else:
+                    assert expected_visits[i]["snapshot"] is None
 
             assert rv.data == expected_visits
 
