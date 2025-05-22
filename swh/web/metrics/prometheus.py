@@ -8,6 +8,8 @@ from itertools import product
 from prometheus_client import Gauge
 from prometheus_client.registry import CollectorRegistry
 
+from django.db.models import Count, DurationField, ExpressionWrapper, F, Sum
+
 from swh.web.save_code_now.models import (
     SAVE_REQUEST_ACCEPTED,
     SAVE_REQUEST_PENDING,
@@ -118,30 +120,48 @@ def compute_save_requests_metrics() -> None:
     for labels in product(duration_load_task_statuses, visit_types):
         _accepted_save_requests_delay_gauge.labels(*labels).set(0)
 
-    for sor in SaveOriginRequest.objects.all():
-        if sor.status == SAVE_REQUEST_ACCEPTED:
-            _accepted_save_requests_gauge.labels(
-                load_task_status=sor.loading_task_status,
-                visit_type=sor.visit_type,
-            ).inc()
-
+    counts = (
+        SaveOriginRequest.objects.values(
+            "status",
+            "loading_task_status",
+            "visit_type",
+            "from_webhook",
+            "webhook_origin",
+        )
+        .order_by()
+        .annotate(Count("id"))
+    )
+    for count in counts:
         _submitted_save_requests_gauge.labels(
-            status=sor.status, visit_type=sor.visit_type
-        ).inc()
-
-        if sor.from_webhook:
+            status=count["status"],
+            visit_type=count["visit_type"],
+        ).inc(count["id__count"])
+        if count["status"] == "accepted":
+            _accepted_save_requests_gauge.labels(
+                load_task_status=count["loading_task_status"],
+                visit_type=count["visit_type"],
+            ).inc(count["id__count"])
+        if count["from_webhook"]:
             _submitted_save_requests_from_webhooks_gauge.labels(
-                status=sor.status,
-                webhook_origin=sor.webhook_origin,
-            ).inc()
+                status=count["status"],
+                webhook_origin=count["webhook_origin"],
+            ).inc(count["id__count"])
 
-        if (
-            sor.loading_task_status in (SAVE_TASK_SUCCEEDED, SAVE_TASK_FAILED)
-            and sor.visit_date is not None
-            and sor.request_date is not None
-        ):
-            delay = sor.visit_date.timestamp() - sor.request_date.timestamp()
-            _accepted_save_requests_delay_gauge.labels(
-                load_task_status=sor.loading_task_status,
-                visit_type=sor.visit_type,
-            ).inc(delay)
+    accepted_save_requests_delays = (
+        SaveOriginRequest.objects.values("loading_task_status", "visit_type")
+        .filter(visit_date__gt=F("request_date"))
+        .filter(loading_task_status__in=[SAVE_TASK_SUCCEEDED, SAVE_TASK_FAILED])
+        .order_by()
+        .annotate(
+            delay=Sum(
+                ExpressionWrapper(
+                    F("visit_date") - F("request_date"), output_field=DurationField()
+                )
+            )
+        )
+    )
+    for accepted_save_requests_delay in accepted_save_requests_delays:
+        _accepted_save_requests_delay_gauge.labels(
+            load_task_status=accepted_save_requests_delay["loading_task_status"],
+            visit_type=accepted_save_requests_delay["visit_type"],
+        ).inc(accepted_save_requests_delay["delay"].total_seconds())
