@@ -72,7 +72,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     def visit_emphasis(self, node: docutils.nodes.emphasis) -> str:
         return f"*{self._default_visit(node)}*"
 
-    def visit_strong(self, node: docutils.nodes.emphasis) -> str:
+    def visit_strong(self, node: docutils.nodes.strong) -> str:
         return f"**{self._default_visit(node)}**"
 
     def visit_reference(self, node: docutils.nodes.reference) -> str:
@@ -83,7 +83,7 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         else:
             return text
 
-    def visit_target(self, node: docutils.nodes.reference) -> str:
+    def visit_target(self, node: docutils.nodes.target) -> str:
         return ""
 
     def visit_literal(self, node: docutils.nodes.literal) -> str:
