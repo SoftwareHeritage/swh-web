@@ -54,7 +54,10 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     test_contents_dir = os.path.join(os.path.dirname(__file__), data_path).encode(
         "utf-8"
     )
-    directory = from_disk.Directory.from_disk(path=test_contents_dir)
+    directory = from_disk.Directory.from_disk(
+        path=test_contents_dir,
+        max_content_length=None,
+    )
 
     contents = []
     for name, obj in directory.items():
@@ -212,7 +215,10 @@ def add_origin_with_contents(request):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "w") as f:
                 f.write(content["data"])
-        directory = from_disk.Directory.from_disk(path=tmpdir.encode())
+        directory = from_disk.Directory.from_disk(
+            path=tmpdir.encode(),
+            max_content_length=None,
+        )
         contents, _, directories = from_disk.iter_directory(directory)
         storage.content_add(contents)
         storage.directory_add(directories)
