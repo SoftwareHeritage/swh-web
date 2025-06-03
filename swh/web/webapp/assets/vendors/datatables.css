@@ -52,3 +52,7 @@
 table.dataTable.fixedHeader-floating, table.dataTable.fixedHeader-locked {
     margin-top: 30px !important;
 }
+
+div.dt-container {
+    position: inherit !important;
+}

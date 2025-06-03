@@ -38,7 +38,7 @@ describe('Test API tokens UI', function() {
     initTokensPage(this.Urls, []);
 
     cy.contains('Generate new token')
-      .click({force: true});
+      .click();
 
     cy.get('.modal-dialog')
       .should('be.visible');
