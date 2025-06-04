@@ -76,7 +76,9 @@ hljs.registerLanguage('sdml', global.sdml);
 require('highlightjs-sfz/dist/sfz.min');
 require('highlightjs-solidity/dist/solidity.min');
 require('highlightjs-structured-text/dist/iecst.min');
-import('highlight.svelte/dist/svelte.min.js');
+import('highlight.svelte').then(svelte => {
+  hljs.registerLanguage('svelte', svelte.default);
+});
 require('highlightjs-terraform')(hljs);
 require('highlight.js-tsql/dist/tsql.min');
 require('highlightjs-unison/dist/unison.min');

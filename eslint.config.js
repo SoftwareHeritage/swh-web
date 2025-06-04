@@ -29,7 +29,7 @@ module.exports = [
     languageOptions: {
       globals: {
         ...globals.node,
-        ...cypress.environments.globals.globals,
+        ...cypress.configs.globals.languageOptions.globals,
         document: false,
         navigator: false,
         window: false,
