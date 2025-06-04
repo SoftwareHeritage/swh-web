@@ -7,7 +7,6 @@
     "build-test": "NODE_ENV=test webpack --config assets/config/webpack.config.development.js --color",
     "start-dev": "NODE_ENV=development webpack serve --config assets/config/webpack.config.development.js --color",
     "build": "NODE_ENV=production webpack --config assets/config/webpack.config.production.js --color",
-    "mochawesome": "mochawesome-merge cypress/mochawesome/results/*.json > cypress/mochawesome/mochawesome.json && marge -o cypress/mochawesome/report cypress/mochawesome/mochawesome.json",
     "eslint": "eslint --no-warn-ignored --fix assets/** swh/web/**/assets/** cypress/e2e/** cypress/plugins/** cypress/support/**",
     "preinstall": "npm -v || (SWH_WEB=$PWD && cd /tmp && yarn add npm && cd node_modules/npm && yarn link && cd $SWH_WEB && yarn link npm)",
     "nyc-report": "nyc report --reporter=lcov"
@@ -176,9 +175,6 @@
     "mini-css-extract-plugin": "^2.9.2",
     "mocha": "^11.5.0",
     "mocha-junit-reporter": "^2.2.1",
-    "mochawesome": "^7.1.3",
-    "mochawesome-merge": "^4.3.0",
-    "mochawesome-report-generator": "^6.2.0",
     "nyc": "^17.1.0",
     "postcss": "^8.5.4",
     "postcss-loader": "^8.1.1",

@@ -10,14 +10,7 @@ module.exports = defineConfig({
   numTestsKeptInMemory: 500,
   reporter: 'cypress-multi-reporters',
   reporterOptions: {
-    reporterEnabled: 'mochawesome, mocha-junit-reporter',
-    mochawesomeReporterOptions: {
-      reportDir: 'cypress/mochawesome/results',
-      quiet: true,
-      overwrite: false,
-      html: false,
-      json: true
-    },
+    reporterEnabled: 'mocha-junit-reporter',
     mochaJunitReporterReporterOptions: {
       mochaFile: 'cypress/junit/results/results-[hash].xml'
     }

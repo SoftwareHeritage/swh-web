@@ -97,7 +97,7 @@ test-frontend-cmd: build-webpack-test add-users-cypress
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
 	$(call run_django_server,$(SETTINGS_CYPRESS)) & \
 	sleep 10 && $(YARN) run cypress run --config numTestsKeptInMemory=0 && \
-	$(YARN) mochawesome && $(YARN) nyc-report"
+	$(YARN) nyc-report"
 
 test-frontend: export CYPRESS_SKIP_SLOW_TESTS=1
 test-frontend: test-frontend-cmd ## Run cypress non-slow tests (no GUI)
