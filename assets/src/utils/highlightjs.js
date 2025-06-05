@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,6 +13,7 @@ import 'highlight.js';
 // add highlighting support for languages not included in highlight.js package
 import 'highlightjs-4d/dist/4d.min';
 import 'highlightjs-sap-abap/dist/abap.min';
+import 'highlightjs-aiken/dist/aiken.min';
 import 'highlightjs-alan/dist/alan.min';
 import 'highlightjs-apex/dist/apex.min';
 import '@ballerina/highlightjs-ballerina/dist/ballerina.min';
@@ -38,6 +39,7 @@ import 'highlightjs-func/dist/func.min';
 import 'highlightjs-func/dist/tlb.min';
 import 'highlightjs-gdscript/dist/gdscript.min';
 import 'highlightjs-gf/dist/gf.min';
+import * as hljsDefineGleam from '@gleam-lang/highlight.js-gleam';
 import 'highlightjs-gsql/dist/gsql.min';
 import 'highlightjs-hlsl/dist/hlsl.min';
 import 'highlightjs-jolie/dist/jolie.min';
@@ -49,6 +51,7 @@ import 'highlightjs-lookml/dist/lookml.min';
 import 'highlightjs-luau/dist/luau.min';
 import {default as hljsDefineLox} from 'highlightjs-lox';
 import 'highlightjs-macaulay2/dist/macaulay2.min';
+import 'highlightjs-magik/dist/magik.min';
 import 'highlightjs-mint/dist/mint.min';
 import 'script-loader!highlightjs-mirc/mirc';
 import 'mirth/dist/mirth.min';
@@ -64,6 +67,7 @@ import 'highlightjs-oz/dist/oz.min';
 import 'hightlightjs-papyrus/dist/papyrus.min';
 import 'highlightjs-phix/src/languages/phix';
 import 'highlightjs-poweron/dist/poweron.min';
+import 'highlightjs-prisma/dist/prisma.min';
 import 'highlightjs-qsharp/dist/qsharp.min';
 import 'highlightjs-redbol/dist/redbol.min';
 import 'highlightjs-rescript/dist/rescript.min';
@@ -81,6 +85,7 @@ import 'highlight.js-tsql/dist/tsql.min';
 import {default as hljsDefineTTCN3} from 'highlightjs-ttcn3';
 import 'highlightjs-unison/dist/unison.min';
 import 'highlightjs-vba/dist/vba.min';
+import 'highlightjs-voltscript/dist/voltscript.min';
 import 'highlightjs-wgsl/dist/wgsl.min';
 import 'highlightjs-xsharp/dist/xsharp.min';
 import 'highlightjs-zenscript/dist/zenscript.min';
@@ -107,6 +112,7 @@ hljs.lineNumbersElementSync = function(elt) {
 hljs.registerLanguage('cairo', cairo);
 hljs.registerLanguage('candid', candid);
 hljs.registerLanguage('cedar', window.hljsCedar);
+hljs.registerLanguage('gleam', hljsDefineGleam);
 hljs.registerLanguage('lean', hljsDefineLean);
 hljs.registerLanguage('lox', hljsDefineLox);
 hljs.registerLanguage('mirc', window.hljsDefineMIRC);

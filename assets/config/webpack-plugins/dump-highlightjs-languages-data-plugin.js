@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2024  The Software Heritage developers
+ * Copyright (C) 2020-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,6 +13,7 @@ global.hljs = require('highlight.js');
 global.window = {};
 require('highlightjs-4d/dist/4d.min');
 require('highlightjs-sap-abap/dist/abap.min');
+require('highlightjs-aiken/dist/aiken.min');
 require('highlightjs-alan/dist/alan.min');
 require('highlightjs-apex/dist/apex.min');
 require('@ballerina/highlightjs-ballerina/dist/ballerina.min');
@@ -39,6 +40,7 @@ import('highlightjs-func/dist/func.min.js');
 import('highlightjs-func/dist/tlb.min.js');
 require('highlightjs-gdscript/dist/gdscript.min');
 require('highlightjs-gf/dist/gf.min');
+hljs.registerLanguage('gleam', require('@gleam-lang/highlight.js-gleam'));
 require('highlightjs-gsql/dist/gsql.min');
 require('highlightjs-hlsl/dist/hlsl.min');
 require('highlightjs-jsonata/dist/jsonata.min');
@@ -50,6 +52,7 @@ require('highlightjs-lookml/dist/lookml.min');
 require('highlightjs-luau/dist/luau.min');
 hljs.registerLanguage('lox', require('highlightjs-lox'));
 require('highlightjs-macaulay2/dist/macaulay2.min');
+require('highlightjs-magik/dist/magik.min');
 import('highlightjs-mint/dist/mint.min.js');
 require('highlightjs-mirc/mirc')(hljs);
 require('mirth/dist/mirth.min');
@@ -64,6 +67,7 @@ require('highlightjs-oz/dist/oz.min');
 require('hightlightjs-papyrus/dist/papyrus.min');
 require('highlightjs-phix/src/languages/phix')(hljs);
 require('highlightjs-poweron/dist/poweron.min');
+require('highlightjs-prisma/dist/prisma.min');
 require('highlightjs-qsharp/dist/qsharp.min');
 require('highlightjs-redbol/dist/redbol.min');
 import('highlightjs-rescript/dist/rescript.min.js');
@@ -83,6 +87,7 @@ require('highlightjs-terraform')(hljs);
 require('highlight.js-tsql/dist/tsql.min');
 require('highlightjs-unison/dist/unison.min');
 require('highlightjs-vba/dist/vba.min');
+require('highlightjs-voltscript/dist/voltscript.min');
 require('highlightjs-wgsl/dist/wgsl.min');
 require('highlightjs-xsharp/dist/xsharp.min');
 require('highlightjs-zenscript/dist/zenscript.min');

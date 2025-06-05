@@ -1450,6 +1450,11 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
+"@gleam-lang/highlight.js-gleam@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@gleam-lang/highlight.js-gleam/-/highlight.js-gleam-1.5.0.tgz#ab9e43b88b2541a697bcf4d67711c7c4a28adcb3"
+  integrity sha512-rKKpXnfmHVTPuHEogMVvN4DflzKtX6kBXqu1GsVDb0uDf/bvO8Z2VnC0XWUMuKNlxa+poKIjY6geyxTaVZiMFA==
+
 "@highlightjs/cdn-assets@^11.11.1":
   version "11.11.1"
   resolved "https://registry.yarnpkg.com/@highlightjs/cdn-assets/-/cdn-assets-11.11.1.tgz#136984ae467865e22080b3a4b65398a086e1ae7b"
@@ -6317,6 +6322,10 @@ highlightjs-4d@^1.0.6:
   resolved "https://registry.yarnpkg.com/highlightjs-4d/-/highlightjs-4d-1.0.6.tgz#2546a7c9711b139ddddc70d3a91d740d316ec9a9"
   integrity sha512-CLLwv21UNx4T7lXL6+cjMMGUOvLwupCc9qPVrZNEHofsuWmvQTGmA0A2lmNNk1vgoWeTitaV7vsmOq58HDT6SQ==
 
+"highlightjs-aiken@github:yHSJ/highlightjs-aiken":
+  version "0.0.1"
+  resolved "https://codeload.github.com/yHSJ/highlightjs-aiken/tar.gz/2741585ff4789293adc18b125e9487afa34a1565"
+
 highlightjs-alan@^0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/highlightjs-alan/-/highlightjs-alan-0.0.2.tgz#c9f764356feea1d71501d25c395b1452506cb461"
@@ -6481,6 +6490,10 @@ highlightjs-macaulay2@^0.4.0:
   dependencies:
     highlight.js "^11.11.1"
 
+"highlightjs-magik@github:sebastiaanspeck/highlightjs-magik":
+  version "0.0.1"
+  resolved "https://codeload.github.com/sebastiaanspeck/highlightjs-magik/tar.gz/7bd98fd63b1fda86385e24dbebd3fec5add8dd34"
+
 "highlightjs-mint@github:mint-lang/highlightjs-mint#a0aedf13807107a9e167ff1e26fff89171de1e97":
   version "0.1.0"
   resolved "https://codeload.github.com/mint-lang/highlightjs-mint/tar.gz/a0aedf13807107a9e167ff1e26fff89171de1e97"
@@ -6539,6 +6552,10 @@ highlightjs-oz@^0.0.3:
 "highlightjs-poweron@github:libum-llc/highlightjs-poweron":
   version "0.0.1"
   resolved "https://codeload.github.com/libum-llc/highlightjs-poweron/tar.gz/a3524c8fd0a156f3376d7a6353ea986d1f269a1e"
+
+"highlightjs-prisma@github:witch-factory/highlightjs-prisma":
+  version "0.1.0"
+  resolved "https://codeload.github.com/witch-factory/highlightjs-prisma/tar.gz/0158ef7710759845657353236536c9e8fd623dd9"
 
 highlightjs-qsharp@^1.0.2:
   version "1.0.2"
@@ -6620,6 +6637,10 @@ highlightjs-vba@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/highlightjs-vba/-/highlightjs-vba-0.2.1.tgz#7503d5e7be805c5884f5ad06455488c520c9725f"
   integrity sha512-GBYOjoF8Lk+LFmC4aSvjfwQEFwf/ckdNbAqnO2YYiH6ariHQh1LZ4IUD039DCx7Y3R0ZfhmYnQxrczUJJoTBfQ==
+
+"highlightjs-voltscript@github:HCL-TECH-SOFTWARE/highlightjs-voltscript":
+  version "1.0.0"
+  resolved "https://codeload.github.com/HCL-TECH-SOFTWARE/highlightjs-voltscript/tar.gz/4139376a52118e4878b421336e03f8792a0b328b"
 
 "highlightjs-wgsl@github:highlightjs/highlightjs-wgsl":
   version "0.1.0"
