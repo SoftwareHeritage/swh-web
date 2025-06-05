@@ -126,10 +126,10 @@ function activateCitationsUI() {
 }
 
 export async function generateCitationFromSWHID(objectType) {
-  if (!objectType) {
+  const swhidsContext = swh.webapp.getSwhIdsContext();
+  if (!objectType || !swhidsContext.hasOwnProperty(objectType)) {
     return;
   }
-  const swhidsContext = swh.webapp.getSwhIdsContext();
   let qualifiedSWHID = swhidsContext[objectType].swhid;
   if (swhidsContext[objectType].swhid_with_context_url) {
     qualifiedSWHID = swhidsContext[objectType].swhid_with_context_url.slice(1);
