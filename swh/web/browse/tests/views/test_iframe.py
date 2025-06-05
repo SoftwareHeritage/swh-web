@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -64,7 +64,7 @@ def test_iframe_object_not_found(client, unknown_directory):
 
 
 def test_swhid_iframe_unknown_error(client, mocker, content_swhid):
-    mocker.patch("swh.web.browse.views.iframe.get_qualified_swhid").side_effect = (
+    mocker.patch("swh.web.browse.views.iframe.get_snapshot_context").side_effect = (
         Exception("Error")
     )
     url = reverse("browse-swhid-iframe", url_args={"swhid": str(content_swhid)})
@@ -123,4 +123,15 @@ def test_iframe_legacy_url_redirection(client, directory_swhid):
 
     assert resp["Location"] == reverse(
         "browse-swhid-iframe", url_args={"swhid": str(directory_core_swhid)}
+    )
+
+
+def test_swhid_iframe_invalid_focus_swhid(client, content_swhid):
+    url = reverse(
+        "browse-swhid-iframe",
+        url_args={"swhid": str(content_swhid)},
+        query_params={"focus_swhid": "foo"},
+    )
+    check_html_get_response(
+        client, url, status_code=200, template_used="browse-iframe.html"
     )
