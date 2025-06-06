@@ -131,6 +131,11 @@ def api_save_origin(
         sending a GET request to the ``/api/1/origin/save/(request_id)/``
         endpoint.
 
+        .. warning::
+
+            If the origin URL has query parameters, the ``?`` character must
+            be percent encoded to ``%3F`` or the request will fail.
+
         :param string visit_type: the type of visit to perform
             (currently the supported types are {visit_types})
         :param string origin_url: the url of the origin to save
@@ -187,7 +192,7 @@ def api_save_origin(
     # requote origin URL unquoted by django when parsing URL arguments and handle
     # case where the "://" character sequence was mangled into ":/" by HTTP clients
     if origin_url is not None:
-        origin_url = quote(origin_url, safe=":/@%+")
+        origin_url = quote(origin_url, safe=":/@%+?&=")
         origin_url = demangle_url(origin_url)
 
     data = request.data or {}

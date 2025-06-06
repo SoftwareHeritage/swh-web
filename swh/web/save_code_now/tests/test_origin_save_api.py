@@ -783,3 +783,39 @@ def test_create_save_request_origin_url_no_plus_quote(api_client):
     resp = check_api_post_responses(api_client, url, status_code=200)
 
     assert resp.data["origin_url"] == origin_url
+
+
+def test_create_save_request_origin_url_with_query_parameter_ko(
+    api_client, swh_scheduler
+):
+    origin_url = "https://example.org/user/project?format=zip"
+
+    # not using reverse as it automatically percent-encode special characters
+    url = f"/api/1/origin/save/git/url/{origin_url}/"
+
+    # as the ? was not percent-encoded, django wrongly attempts to redirect to
+    # truncated URL /api/1/origin/save/git/url/https://example.org/user/project/
+    # as trailing slash is missing
+    with pytest.raises(
+        RuntimeError,
+        match="You called this URL via POST, but the URL doesn't end in a slash",
+    ):
+        check_api_post_response(api_client, url, status_code=200)
+
+
+def test_create_save_request_origin_url_with_query_parameter_ok(
+    api_client, swh_scheduler
+):
+    origin_url = "https://example.org/user/project?format=zip"
+
+    # compute correct URL with special characters percent-encoded
+    url = reverse(
+        "api-1-save-origin",
+        url_args={"visit_type": "git", "origin_url": origin_url},
+    )
+    assert "%3Fformat" in url
+
+    # request should succeed
+    resp = check_api_post_responses(api_client, url, status_code=200)
+    # origin URL in response data should be unquoted
+    assert resp.data["origin_url"] == origin_url
