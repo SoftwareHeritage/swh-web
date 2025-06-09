@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -201,7 +201,7 @@ export function initOriginSaveAdmin() {
 
 export async function addAuthorizedOriginUrl() {
   const originUrl = $('#swh-authorized-url-prefix').val();
-  const addOriginUrl = Urls.admin_origin_save_add_authorized_url(encodeURI(originUrl));
+  const addOriginUrl = Urls.admin_origin_save_add_authorized_url(encodeURIComponent(originUrl));
   try {
     const response = await csrfPost(addOriginUrl);
     handleFetchError(response);
@@ -219,7 +219,7 @@ export async function addAuthorizedOriginUrl() {
 export async function removeAuthorizedOriginUrl() {
   const originUrl = $('#swh-authorized-origin-urls tr.selected').text();
   if (originUrl) {
-    const removeOriginUrl = Urls.admin_origin_save_remove_authorized_url(encodeURI(originUrl));
+    const removeOriginUrl = Urls.admin_origin_save_remove_authorized_url(encodeURIComponent(originUrl));
     try {
       const response = await csrfPost(removeOriginUrl);
       handleFetchError(response);
@@ -230,7 +230,7 @@ export async function removeAuthorizedOriginUrl() {
 
 export async function addUnauthorizedOriginUrl() {
   const originUrl = $('#swh-unauthorized-url-prefix').val();
-  const addOriginUrl = Urls.admin_origin_save_add_unauthorized_url(encodeURI(originUrl));
+  const addOriginUrl = Urls.admin_origin_save_add_unauthorized_url(encodeURIComponent(originUrl));
   try {
     const response = await csrfPost(addOriginUrl);
     handleFetchError(response);
@@ -248,7 +248,7 @@ export async function addUnauthorizedOriginUrl() {
 export async function removeUnauthorizedOriginUrl() {
   const originUrl = $('#swh-unauthorized-origin-urls tr.selected').text();
   if (originUrl) {
-    const removeOriginUrl = Urls.admin_origin_save_remove_unauthorized_url(encodeURI(originUrl));
+    const removeOriginUrl = Urls.admin_origin_save_remove_unauthorized_url(encodeURIComponent(originUrl));
     try {
       const response = await csrfPost(removeOriginUrl);
       handleFetchError(response);
@@ -262,7 +262,8 @@ export function acceptOriginSaveRequest() {
   if (selectedRow.length) {
     const acceptOriginSaveRequestCallback = async() => {
       const rowData = selectedRow.data();
-      const acceptSaveRequestUrl = Urls.admin_origin_save_request_accept(rowData['visit_type'], encodeURI(rowData['origin_url']));
+      const acceptSaveRequestUrl =
+        Urls.admin_origin_save_request_accept(rowData['visit_type'], encodeURIComponent(rowData['origin_url']));
       await csrfPost(acceptSaveRequestUrl);
       pendingSaveRequestsTable.ajax.reload(null, false);
       // ensure to remove notification icon in sidebar admin menu when
@@ -312,7 +313,7 @@ export function rejectOriginSaveRequest() {
     const rejectOriginSaveRequestCallback = async() => {
       $('#swh-web-modal-html').modal('hide');
       const rejectSaveRequestUrl = Urls.admin_origin_save_request_reject(
-        rowData['visit_type'], encodeURI(rowData['origin_url']));
+        rowData['visit_type'], encodeURIComponent(rowData['origin_url']));
       await csrfPost(rejectSaveRequestUrl, {},
                      JSON.stringify({note: $('#swh-rejection-text').val()}));
       pendingSaveRequestsTable.ajax.reload(null, false);

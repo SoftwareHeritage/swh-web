@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -241,7 +241,7 @@ describe('Test Admin Origin Save', function() {
     const originUrl = `https://example.org/${Date.now()}`;
     const rejectionNote = 'The provided URL does not target a git repository.';
 
-    const rejectUrl = this.Urls.admin_origin_save_request_reject('git', encodeURI(originUrl));
+    const rejectUrl = this.Urls.admin_origin_save_request_reject('git', encodeURIComponent(originUrl));
     cy.intercept('POST', rejectUrl).as('rejectSaveRequest');
 
     // anonymous user creates a request put in pending state
@@ -290,7 +290,7 @@ describe('Test Admin Origin Save', function() {
     cy.get('#swh-origin-save-requests-list-tab')
       .click();
 
-    cy.contains('#swh-origin-save-requests tr', originUrl);
+    cy.contains('#swh-origin-save-requests tr', encodeURI(originUrl));
     cy.get('.swh-save-request-info')
       .eq(0)
       .click();
@@ -303,46 +303,47 @@ describe('Test Admin Origin Save', function() {
     removeSaveRequestFromDatabase(this.Urls, originUrl);
   });
 
-  it(`should reject a save code now request with space in origin URL`, function() {
-    const originUrl = 'https://example.org/john doe/project';
+  [{charName: 'space', char: ' '}, {charName: 'question mark', char: '?'}].forEach(data => {
+    it(`should reject a save code now request with ${data.charName} in origin URL`, function() {
+      const originUrl = `https://example.org/johndoe${data.char}project`;
 
-    // it seems cypress has issue waiting for a request with percent escaped URL argument
-    // so we use a wildcard instead
-    const rejectUrl = this.Urls.admin_origin_save_request_reject('git', '').slice(0, -1) + '**';
-    cy.intercept('POST', rejectUrl).as('rejectSaveRequest');
+      // it seems cypress has issue waiting for a request with percent escaped URL argument
+      // so we use a wildcard instead
+      const rejectUrl = this.Urls.admin_origin_save_request_reject('git', '').slice(0, -1) + '**';
+      cy.intercept('POST', rejectUrl).as('rejectSaveRequest');
 
-    // anonymous user creates a request put in pending state
-    cy.visit(this.Urls.origin_save());
+      // anonymous user creates a request put in pending state
+      cy.visit(this.Urls.origin_save());
 
-    cy.get('#swh-input-origin-url')
-      .type(originUrl);
+      cy.get('#swh-input-origin-url')
+        .type(originUrl);
 
-    cy.get('#swh-input-origin-save-submit')
-      .click();
+      cy.get('#swh-input-origin-save-submit')
+        .click();
 
-    // admin user logs in and visits save code now admin page
-    cy.adminLogin();
-    cy.visit(this.Urls.admin_origin_save_requests());
+      // admin user logs in and visits save code now admin page
+      cy.adminLogin();
+      cy.visit(this.Urls.admin_origin_save_requests());
 
-    // admin rejects the save request
-    cy.contains('#swh-origin-save-pending-requests tr', encodeURI(originUrl))
-      .click()
-      .should('have.class', 'selected');
+      // admin rejects the save request
+      cy.contains('#swh-origin-save-pending-requests tr', encodeURI(originUrl))
+        .click()
+        .should('have.class', 'selected');
 
-    cy.get('#swh-reject-save-origin-request')
-      .click();
+      cy.get('#swh-reject-save-origin-request')
+        .click();
 
-    cy.get('#swh-rejection-submit')
-      .click();
+      cy.get('#swh-rejection-submit')
+        .click();
 
-    cy.get('#swh-web-modal-confirm-ok-btn')
-      .click();
+      cy.get('#swh-web-modal-confirm-ok-btn')
+        .click();
 
-    cy.wait('@rejectSaveRequest');
+      cy.wait('@rejectSaveRequest');
 
-    // remove rejected request from swh-web database to avoid side effects
-    // in tests located in origin-save.spec.js
-    removeSaveRequestFromDatabase(this.Urls, originUrl);
+      // remove rejected request from swh-web database to avoid side effects
+      // in tests located in origin-save.spec.js
+      removeSaveRequestFromDatabase(this.Urls, originUrl);
+    });
   });
-
 });
