@@ -1,11 +1,12 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
  */
 
 let url;
+let saveOriginUrl;
 const origin = {
   type: 'git',
   url: 'https://git.example.org/user/repo'
@@ -112,9 +113,16 @@ function loadSaveRequestsListPage() {
 }
 
 describe('Origin Save Tests', function() {
+
   before(function() {
     url = this.Urls.origin_save();
-    this.originSaveUrl = this.Urls.api_1_save_origin(origin.type, origin.url);
+    saveOriginUrl = (originType, originUrl) => {
+      let originSaveUrl = this.Urls.api_1_save_origin();
+      originSaveUrl += `?visit_type=${originType}`;
+      originSaveUrl += `&origin_url=${encodeURIComponent(originUrl)}`;
+      return originSaveUrl;
+    };
+    this.originSaveUrl = saveOriginUrl(origin.type, origin.url);
   });
 
   beforeEach(function() {
@@ -159,7 +167,7 @@ describe('Origin Save Tests', function() {
 
   it('should validate gitlab subproject url', function() {
     const gitlabSubProjectUrl = 'https://gitlab.com/user/project/sub/';
-    const originSaveUrl = this.Urls.api_1_save_origin('git', gitlabSubProjectUrl);
+    const originSaveUrl = saveOriginUrl('git', gitlabSubProjectUrl);
 
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
@@ -175,7 +183,7 @@ describe('Origin Save Tests', function() {
 
   it('should validate project url with _ in username', function() {
     const gitlabSubProjectUrl = 'https://gitlab.com/user_name/project.git';
-    const originSaveUrl = this.Urls.api_1_save_origin('git', gitlabSubProjectUrl);
+    const originSaveUrl = saveOriginUrl('git', gitlabSubProjectUrl);
 
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
@@ -191,7 +199,7 @@ describe('Origin Save Tests', function() {
 
   it('should validate git repo url starting with https://git.code.sf.net/u/', function() {
     const sfUserGirProjectUrl = 'https://git.code.sf.net/u/username/project.git';
-    const originSaveUrl = this.Urls.api_1_save_origin('git', sfUserGirProjectUrl);
+    const originSaveUrl = saveOriginUrl('git', sfUserGirProjectUrl);
 
     stubSaveRequest({requestUrl: originSaveUrl,
                      saveRequestStatus: 'accepted',
@@ -478,7 +486,7 @@ describe('Origin Save Tests', function() {
     const goodVisitType = 'git';
     cy.intercept('/save/requests/list/**', {fixture: 'origin-save'})
       .as('saveRequestsList');
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin(badVisitType, originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl(badVisitType, originUrl),
                      visitType: badVisitType,
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
@@ -510,7 +518,7 @@ describe('Origin Save Tests', function() {
     cy.userLogin();
     cy.visit(url);
     const originUrl = 'https://git.example.org/account/repo';
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: origin.url,
                      saveTaskStatus: 'pending'});
@@ -631,7 +639,7 @@ describe('Origin Save Tests', function() {
     const artifactUrl = 'https://github.com/chromium/chromium/archive/refs/tags/104.0.5106.1.tar.gz';
     const artifactVersion = '104.0.5106.1';
     stubSaveRequest({
-      requestUrl: this.Urls.api_1_save_origin('archives', originUrl),
+      requestUrl: saveOriginUrl('archives', originUrl),
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
       saveTaskStatus: 'pending'
@@ -709,7 +717,7 @@ describe('Origin Save Tests', function() {
       .type(artifact2Version);
 
     // setup request interceptor to check POST data and stub response
-    cy.intercept('POST', this.Urls.api_1_save_origin('archives', originUrl), (req) => {
+    cy.intercept('POST', saveOriginUrl('archives', originUrl), (req) => {
       expect(req.body).to.deep.equal({
         archives_data: [
           {artifact_url: artifactUrl, artifact_version: artifactVersion},
@@ -784,7 +792,7 @@ describe('Origin Save Tests', function() {
     }).as('ghWebApiRequest');
 
     // stub save request creation with canonical URL of github repo
-    cy.intercept('POST', this.Urls.api_1_save_origin('git', canonicalOriginUrl), (req) => {
+    cy.intercept('POST', saveOriginUrl('git', canonicalOriginUrl), (req) => {
       req.reply(genOriginSaveResponse({
         visitType: 'git',
         saveRequestStatus: 'accepted',
@@ -858,7 +866,7 @@ describe('Origin Save Tests', function() {
 
     const originUrl = 'https://user@git.example.org/user/repo';
 
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
                      saveTaskStatus: 'pending'});
@@ -878,7 +886,7 @@ describe('Origin Save Tests', function() {
 
     const originUrl = 'https://anonymous:anonymous@git.example.org/user/repo';
 
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
                      saveTaskStatus: 'pending'});
@@ -898,7 +906,7 @@ describe('Origin Save Tests', function() {
 
     const originUrl = 'https://anonymous:password@git.example.org/user/repo';
 
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
                      saveTaskStatus: 'pending'});
@@ -918,7 +926,7 @@ describe('Origin Save Tests', function() {
 
     const originUrl = 'https://anonymous:@git.example.org/user/repo';
 
-    stubSaveRequest({requestUrl: this.Urls.api_1_save_origin('git', originUrl),
+    stubSaveRequest({requestUrl: saveOriginUrl('git', originUrl),
                      saveRequestStatus: 'accepted',
                      originUrl: originUrl,
                      saveTaskStatus: 'pending'});
@@ -962,7 +970,7 @@ describe('Origin Save Tests', function() {
     cy.visit(url);
 
     const originUrl = 'https://example.org/user/repo name';
-    const requestUrl = this.Urls.api_1_save_origin('git', encodeURI(originUrl));
+    const requestUrl = saveOriginUrl('git', originUrl);
 
     cy.intercept('POST', requestUrl).as('saveRequest');
 
@@ -978,7 +986,7 @@ describe('Origin Save Tests', function() {
     cy.visit(url);
 
     const originUrl = 'https://example.org/user/repo%20name';
-    const requestUrl = this.Urls.api_1_save_origin('git', originUrl);
+    const requestUrl = saveOriginUrl('git', originUrl);
 
     cy.intercept('POST', requestUrl).as('saveRequest');
 

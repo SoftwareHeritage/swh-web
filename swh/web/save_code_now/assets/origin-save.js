@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -20,7 +20,9 @@ async function originSaveRequest(
   acceptedCallback, pendingCallback, errorCallback
 ) {
   // Actually trigger the origin save request
-  const addSaveOriginRequestUrl = Urls.api_1_save_origin(originType, originUrl);
+  let addSaveOriginRequestUrl = Urls.api_1_save_origin();
+  addSaveOriginRequestUrl += `?visit_type=${originType}`;
+  addSaveOriginRequestUrl += `&origin_url=${encodeURIComponent(originUrl)}`;
   $('.swh-processing-save-request').css('display', 'block');
   let headers = {};
   let body = null;
