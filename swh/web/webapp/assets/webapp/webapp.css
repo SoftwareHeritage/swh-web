@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -675,13 +675,22 @@ a.toggle-col.col-hidden {
     border: 1px solid #c3d6fa;
 }
 
-.admonition.warning, .admonition.note {
+.admonition.important {
+    background: hsl(28.5deg 74% 90%);
+    border: 1px solid hsl(28.5deg 74% 50%);
+}
+
+.admonition.warning,
+.admonition.note,
+.admonition.important {
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 1rem;
 }
 
-.admonition.warning p, .admonition.note p {
+.admonition.warning p,
+.admonition.note p,
+.admonition.important p {
     margin-bottom: 0;
 }
 
@@ -704,6 +713,11 @@ a.toggle-col.col-hidden {
 
 .admonition.note .admonition-title::before {
     content: "\f02fc";
+    font-family: "Material Design Icons";
+}
+
+.admonition.important .admonition-title::before {
+    content: "\f0238";
     font-family: "Material Design Icons";
 }
 

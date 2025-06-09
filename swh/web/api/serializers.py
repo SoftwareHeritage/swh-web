@@ -2,6 +2,8 @@
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
+
+
 import rfc3987
 
 from rest_framework import serializers
@@ -80,7 +82,8 @@ class IRIField(serializers.CharField):
         Returns:
             an URI
         """
-        data = super().to_internal_value(data)
+        # white spaces must be escaped in an IRI
+        data = super().to_internal_value(data).replace(" ", "%20")
         try:
             rfc3987.parse(data, rule="IRI")
         except ValueError as e:

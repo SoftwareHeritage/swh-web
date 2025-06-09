@@ -1,19 +1,21 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import os
-from typing import Optional, cast
+from typing import Dict, Optional, cast
 from urllib.parse import quote
 
 from django.conf import settings
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import CoreSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import APIUrls, api_route
+from swh.web.api.serializers import IRIField
 from swh.web.auth.utils import (
     API_SAVE_ORIGIN_PERMISSION,
     SWH_AMBASSADOR_PERMISSION,
@@ -66,6 +68,39 @@ def _webhook_info_doc() -> str:
 save_code_now_api_urls = APIUrls()
 
 
+class OriginSaveQuerySerializer(serializers.Serializer):
+    """Origin citation query parameters serializer."""
+
+    visit_type = serializers.ChoiceField(
+        required=True, choices=get_savable_visit_types(privileged_user=True)
+    )
+    origin_url = IRIField(required=True)
+
+    def validate(self, data: dict) -> dict:
+        """Validate visit_type and origin_url.
+
+        visit_type is required if origin_url is defined and vice versa.
+
+        Args:
+            data: query parameters
+
+        Raises:
+            serializers.ValidationError: invalid parameters
+
+        Returns:
+            query parameters
+        """
+        visit_type = data["visit_type"]
+        origin_url = data["origin_url"]
+        if (visit_type is not None and origin_url is None) or (
+            visit_type is None and origin_url is not None
+        ):
+            raise serializers.ValidationError(
+                "Both visit_type and origin_url query parameters must be provided"
+            )
+        return data
+
+
 @api_route(
     r"/origin/save/(?P<visit_type>.+?)/url/(?P<origin_url>.+)/",
     "api-1-save-origin",
@@ -82,6 +117,15 @@ save_code_now_api_urls = APIUrls()
     never_cache=True,
     api_urls=save_code_now_api_urls,
 )
+@api_route(
+    r"/origin/save/",
+    "api-1-save-origin",
+    methods=["GET", "POST"],
+    throttle_scope="swh_save_origin",
+    never_cache=True,
+    api_urls=save_code_now_api_urls,
+    query_params_serializer=OriginSaveQuerySerializer,
+)
 @api_doc("/origin/save/", category="Request archival")
 @format_docstring(
     visit_types=_savable_visit_types(), webhook_info_doc=_webhook_info_doc()
@@ -91,10 +135,13 @@ def api_save_origin(
     visit_type: Optional[str] = None,
     origin_url: Optional[str] = None,
     request_id: int = 0,
+    validated_query_params: Optional[Dict[str, str]] = None,
 ):
     """
     .. http:get:: /api/1/origin/save/(visit_type)/url/(origin_url)/
     .. http:post:: /api/1/origin/save/(visit_type)/url/(origin_url)/
+    .. http:get:: /api/1/origin/save/?visit_type=(visit_type)&origin_url=(origin_url)
+    .. http:post:: /api/1/origin/save/?visit_type=(visit_type)&origin_url=(origin_url)
     .. http:get:: /api/1/origin/save/(request_id)/
 
         Request the saving of a software origin into the archive
@@ -131,15 +178,23 @@ def api_save_origin(
         sending a GET request to the ``/api/1/origin/save/(request_id)/``
         endpoint.
 
-        .. warning::
+        .. important::
 
-            If the origin URL has query parameters, the ``?`` character must
-            be percent encoded to ``%3F`` or the request will fail.
+            If the origin URL contains special characters like a white space
+            or a question mark (meaning the URL has query parameters), you
+            should rather pass the `percent encoded
+            <https://www.w3schools.com/tags/ref_urlencode.ASP>`_ ``origin_url``
+            and ``visit_type`` values through query parameters instead of URL
+            arguments.
 
         :param string visit_type: the type of visit to perform
             (currently the supported types are {visit_types})
         :param string origin_url: the url of the origin to save
         :param number request_id: a save request identifier
+
+        :query string visit_type: the type of visit to perform
+            (currently the supported types are {visit_types})
+        :query string origin_url: the url of the origin to save
 
         {common_headers}
 
@@ -189,11 +244,14 @@ def api_save_origin(
         )
         return sor
 
-    # requote origin URL unquoted by django when parsing URL arguments and handle
-    # case where the "://" character sequence was mangled into ":/" by HTTP clients
     if origin_url is not None:
+        # requote origin URL unquoted by django when parsing URL arguments and handle
+        # case where the "://" character sequence was mangled into ":/" by HTTP clients
         origin_url = quote(origin_url, safe=":/@%+?&=")
         origin_url = demangle_url(origin_url)
+    elif validated_query_params:
+        origin_url = validated_query_params["origin_url"]
+        visit_type = validated_query_params["visit_type"]
 
     data = request.data or {}
     if request.method == "POST":

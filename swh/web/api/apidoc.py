@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -223,6 +223,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
     def visit_note(self, node: docutils.nodes.note) -> str:
         text = self._default_visit(node)
         return "\n\n.. note::\n%s\n" % textwrap.indent(text, "\t")
+
+    def visit_important(self, node: docutils.nodes.important) -> str:
+        text = self._default_visit(node)
+        return "\n\n.. important::\n%s\n" % textwrap.indent(text, "\t")
 
     def visit_Text(self, node: docutils.nodes.Text) -> str:
         """Leaf node"""
