@@ -357,15 +357,27 @@ export function initOriginSave() {
 
 }
 
+const tarballExtensions =
+  ['.jar', '.tar', '.tar.bz2', '.tar.gz', '.tar.lz', '.tar.xz', '.tar.zst', '.zip'];
+
 function updateVisitType() {
   const originUrl = $('#swh-input-origin-url').val().trim();
   $(this).val(originUrl);
   $('#swh-input-visit-type option').each(function() {
     const val = $(this).val();
-    if (val && originUrl.includes(val)) {
+    if (val && val !== 'tarball' && originUrl.includes(val)) {
       $(this).prop('selected', true);
       // origin URL input need to be validated once new visit type set
       validateSaveOriginUrl($('#swh-input-origin-url')[0]);
+    } else if (val === 'tarball') {
+      for (const ext of tarballExtensions) {
+        if (originUrl.includes(ext)) {
+          $(this).prop('selected', true);
+          // origin URL input need to be validated once new visit type set
+          validateSaveOriginUrl($('#swh-input-origin-url')[0]);
+          break;
+        }
+      }
     }
   });
 }

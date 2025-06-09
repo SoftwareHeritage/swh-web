@@ -990,4 +990,14 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should select tarball visit type when pasting an origin URL containing archive extensions', function() {
+    const originUrl = 'https://example.org/downloads/project-v1.0.0.tar.gz';
+    cy.visit(url);
+    cy.get('#swh-input-origin-url')
+      .type(originUrl);
+
+    cy.get('#swh-input-visit-type')
+      .should('have.value', 'tarball');
+  });
+
 });
