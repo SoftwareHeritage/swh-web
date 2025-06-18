@@ -62,6 +62,7 @@ from swh.web.settings import tests as tests_settings
 from swh.web.tests.data import (
     ORIGIN_WITH_CFF_FILE,
     ORIGIN_WITH_METADATA_FILES,
+    ORIGIN_WITH_QUOTED_SPACE_IN_URL,
     get_tests_data,
     override_storages,
     random_content,
@@ -849,6 +850,11 @@ def origin_with_pull_request_branches():
 @pytest.fixture
 def origin_with_multiple_visit_types(archive_data, tests_data):
     return "https://example.org/project/multiple/visit/types"
+
+
+@pytest.fixture
+def origin_with_quoted_space_in_url():
+    return ORIGIN_WITH_QUOTED_SPACE_IN_URL
 
 
 @functools.lru_cache(maxsize=None)

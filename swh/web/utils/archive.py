@@ -231,6 +231,11 @@ def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginIn
     if origin_url != demangled_url:
         origin_urls.append(demangled_url)
 
+    if " " in origin_url:
+        # space character was possibly unquoted by django so add quoted versions
+        # of origin URLs to ensure origin can be found in the storage
+        origin_urls.extend([url.replace(" ", "%20") for url in origin_urls])
+
     for url in origin_urls:
         origins = config.storage().origin_get([url])
         if origins and origins[0]:

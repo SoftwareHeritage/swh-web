@@ -423,6 +423,18 @@ def test_api_lookup_origin_visit_latest_visit_type_filter(
             assert rv.data == expected_visit
 
 
+def test_api_lookup_origin_visit_latest_origin_url_with_quoted_space(
+    api_client, archive_data, origin_with_quoted_space_in_url
+):
+    url = f"/api/1/origin/{origin_with_quoted_space_in_url}/visit/latest/"
+
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    assert resp.data["origin"] == origin_with_quoted_space_in_url
+
+    resp = check_api_get_responses(api_client, resp.data["origin_url"], status_code=200)
+    assert resp.data["url"] == origin_with_quoted_space_in_url
+
+
 def test_api_lookup_origin_visit_not_found(api_client, origin):
     all_visits = list(reversed(get_origin_visits(origin["url"])))
 

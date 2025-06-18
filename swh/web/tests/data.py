@@ -116,6 +116,7 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
 # input data for tests
 ORIGIN_WITH_METADATA_FILES = "https://git.example.org/repo_with_metadata_file"
 ORIGIN_WITH_CFF_FILE = "https://git.example.org/repo_with_cff_file"
+ORIGIN_WITH_QUOTED_SPACE_IN_URL = "https://git.example.org/john%20doe/project"
 _TEST_ORIGINS = [
     {
         "type": "git",
@@ -323,6 +324,14 @@ def _init_tests_data():
         origin_url="https://example.org/project/with/null/snapshot",
         visit_type="hg",
         snapshot_branches=None,
+    )
+
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url=ORIGIN_WITH_QUOTED_SPACE_IN_URL,
+        visit_type="git",
     )
 
     sha1s: Set[Sha1] = set()
