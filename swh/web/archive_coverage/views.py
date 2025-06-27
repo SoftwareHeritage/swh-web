@@ -394,6 +394,16 @@ legacy_origins: Dict[str, Any] = {
             "visit_types": ["git", "hg", "svn"],
             "search_pattern": "googlecode.com",
         },
+        {
+            "type": "osdn",
+            "info_url": "https://en.wikipedia.org/wiki/OSDN",
+            "info": (
+                "public repositories from the former Open Source Development Network "
+                "hosting service"
+            ),
+            "visit_types": ["cvs", "git", "hg", "svn"],
+            "search_pattern": "osdn.net",
+        },
     ],
 }
 
