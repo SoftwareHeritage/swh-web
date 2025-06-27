@@ -376,7 +376,6 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["git"],
             "search_pattern": "https://gitorious.org",
-            "count": "122,014",
         },
         {
             "type": "googlecode",
@@ -387,7 +386,6 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["git", "hg", "svn"],
             "search_pattern": "googlecode.com",
-            "count": "790,026",
         },
         {
             "type": "bitbucket-hg",
@@ -395,7 +393,6 @@ legacy_origins: Dict[str, Any] = {
             "info": "public mercurial repositories from Bitbucket",
             "search_pattern": "https://bitbucket.org/",
             "visit_types": ["hg"],
-            "count": "336,795",
         },
     ],
 }
@@ -593,11 +590,18 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
     )
 
     for origins in legacy_origins["origins"]:
-        origins["search_urls"] = {}
+        origins["instances"] = {origins["type"]: {}}
+        total_count = 0
         for visit_type in origins["visit_types"]:
-            origins["search_urls"][visit_type] = _search_url(
-                origins["search_pattern"], visit_type
+            count = _get_origins_count(
+                origins["search_pattern"], visit_type=visit_type, cache_counts=True
             )
+            total_count += count
+            origins["instances"][origins["type"]][visit_type] = {
+                "count": f"{count:,}",
+                "search_url": _search_url(origins["search_pattern"], visit_type),
+            }
+        origins["count"] = f"{total_count:,}"
 
     for origins in deposited_origins["origins"]:
         origins["count"] = (
