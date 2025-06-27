@@ -369,6 +369,13 @@ legacy_origins: Dict[str, Any] = {
     ),
     "origins": [
         {
+            "type": "bitbucket-hg",
+            "info_url": "https://bitbucket.org",
+            "info": "public mercurial repositories from Bitbucket",
+            "search_pattern": "https://bitbucket.org/",
+            "visit_types": ["hg"],
+        },
+        {
             "type": "gitorious",
             "info_url": "https://en.wikipedia.org/wiki/Gitorious",
             "info": (
@@ -386,13 +393,6 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["git", "hg", "svn"],
             "search_pattern": "googlecode.com",
-        },
-        {
-            "type": "bitbucket-hg",
-            "info_url": "https://bitbucket.org",
-            "info": "public mercurial repositories from Bitbucket",
-            "search_pattern": "https://bitbucket.org/",
-            "visit_types": ["hg"],
         },
     ],
 }
