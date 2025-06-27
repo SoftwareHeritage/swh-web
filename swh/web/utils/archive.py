@@ -462,6 +462,67 @@ def search_origin_metadata(
     return results
 
 
+def count_origins(
+    url_pattern: str,
+    with_visit: bool = False,
+    visit_types: Optional[List[str]] = None,
+) -> int:
+    """Count origins whose urls contain a provided string pattern.
+
+    Args:
+        url_pattern: the string pattern to search for in origin urls
+        with_visit: Whether origins with no visit are to be filtered out
+        visit_types: Only origins having any of the provided visit types
+            (e.g. git, svn, pypi) will be returned
+
+    Returns:
+        The number of found origins.
+    """
+    search = config.search()
+    if search:
+        search_result = search.origin_search(
+            url_pattern=url_pattern,
+            with_visit=with_visit,
+            visit_types=visit_types,
+            limit=1,
+        )
+        origins_count = search_result.total_results or 0
+    else:
+        # Fallback to swh-storage if swh-search is not configured
+        search_words = [re.escape(word) for word in url_pattern.split()]
+        if len(search_words) >= 7:
+            url_pattern = ".*".join(search_words)
+        else:
+            pattern_parts = []
+            for permut in itertools.permutations(search_words):
+                pattern_parts.append(".*".join(permut))
+            url_pattern = "|".join(pattern_parts)
+
+        page_result = config.storage().origin_search(
+            url_pattern,
+            with_visit=with_visit,
+            visit_types=visit_types,
+            regexp=True,
+            limit=10000,
+        )
+        origins_count = len(page_result.results)
+
+        page_token = page_result.next_page_token
+        while page_token:
+            page_result = config.storage().origin_search(
+                url_pattern,
+                page_token=page_token,
+                with_visit=with_visit,
+                visit_types=visit_types,
+                regexp=True,
+                limit=10000,
+            )
+            origins_count += len(page_result.results)
+            page_token = page_result.next_page_token
+
+    return origins_count
+
+
 def lookup_origin_intrinsic_metadata(
     origin_url: str, lookup_similar_urls: bool = True
 ) -> list[Dict[str, Any]]:

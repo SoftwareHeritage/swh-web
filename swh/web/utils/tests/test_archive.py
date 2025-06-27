@@ -984,6 +984,13 @@ def test_search_origin(origin):
     ]
 
 
+@pytest.mark.parametrize("search_backend", ["swh-search", "swh-storage"])
+def test_count_origins(origin, mocker, search_backend):
+    if search_backend == "swh-storage":
+        mocker.patch.object(archive.config, "search").return_value = None
+    assert archive.count_origins(url_pattern=origin["url"]) == 1
+
+
 def test_search_origin_use_ql(mocker, origin, patch_backend):
     ORIGIN = [{"url": origin["url"]}]
 
