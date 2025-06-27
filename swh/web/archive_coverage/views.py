@@ -3,7 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from collections import Counter, defaultdict
+from collections import defaultdict
+import copy
 from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
 
@@ -17,7 +18,8 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.config import scheduler
-from swh.web.utils import django_cache, get_deposits_list, reverse
+from swh.web.utils import django_cache, reverse
+from swh.web.utils.archive import count_origins
 
 _swh_arch_overview_doc = (
     "https://docs.softwareheritage.org/devel/architecture/overview.html"
@@ -473,37 +475,21 @@ def _get_listers_metrics(
     return _get_listers_metrics_internal()
 
 
-def _get_deposits_netloc_counts(cache_counts: bool = False) -> Counter:
-    """Return deposit counts per origin url network location."""
-
-    def _process_origin_url(origin_url):
-        parsed_url = urlparse(origin_url)
-        netloc = parsed_url.netloc
-        # special treatment for doi.org netloc as it is not specific enough
-        # for origins mapping
-        if parsed_url.netloc == "doi.org":
-            split_path = parsed_url.path.split("/")
-            netloc += "/" + split_path[1] + "/" + split_path[2].split(".")[0]
-        return netloc
+def _get_origins_count(
+    url_pattern: str, visit_type: str, cache_counts: bool = False
+) -> int:
+    """Return origin counts per origin url pattern and visit type."""
 
     @django_cache(
         timeout=_cache_timeout,
         catch_exception=True,
-        exception_return_value=Counter(),
+        exception_return_value=0,
         invalidate_cache_pred=lambda m: not cache_counts,
     )
-    def _get_deposits_netloc_counts_internal():
-        netlocs = []
-        deposits = get_deposits_list()
-        netlocs = [
-            _process_origin_url(d["origin_url"])
-            for d in deposits
-            if d["status"] == "done"
-        ]
-        deposits_netloc_counts = Counter(netlocs)
-        return deposits_netloc_counts
+    def _get_origins_count_internal(url_pattern: str, visit_type: str) -> int:
+        return count_origins(url_pattern, with_visit=True, visit_types=[visit_type])
 
-    return _get_deposits_netloc_counts_internal()
+    return _get_origins_count_internal(url_pattern, visit_type)
 
 
 def _search_url(query: str, visit_type: str) -> str:
@@ -599,9 +585,11 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                     search_url = _search_url(search_pattern, visit_type)
                 visit_types[visit_type]["search_url"] = search_url
 
+    # use a light copy to avoid side effects when running tests
+    listed_origins_filtered = copy.copy(listed_origins)
     # filter out origin types without archived origins
-    listed_origins["origins"] = list(
-        filter(lambda o: o["count"] != "0", listed_origins["origins"])
+    listed_origins_filtered["origins"] = list(
+        filter(lambda o: o["count"] != "0", listed_origins_filtered["origins"])
     )
 
     for origins in legacy_origins["origins"]:
@@ -611,12 +599,10 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 origins["search_pattern"], visit_type
             )
 
-    deposits_counts = _get_deposits_netloc_counts(cache_counts=True)
-
     for origins in deposited_origins["origins"]:
-        origins["count"] = "0"
-        if origins["search_pattern"] in deposits_counts:
-            origins["count"] = f"{deposits_counts[origins['search_pattern']]:,}"
+        origins["count"] = (
+            f"{_get_origins_count(origins['search_pattern'], 'deposit', cache_counts=True):,}"
+        )
         origins["search_urls"] = {
             "deposit": _search_url(origins["search_pattern"], "deposit")
         }
@@ -631,7 +617,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         "archive-coverage.html",
         {
             "origins": {
-                "Regular crawling": listed_origins,
+                "Regular crawling": listed_origins_filtered,
                 "Discontinued hosting": legacy_origins,
                 "On demand archival": deposited_origins,
             },

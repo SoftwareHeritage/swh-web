@@ -27,6 +27,11 @@ from swh.web.utils import reverse
 from swh.web.utils.swh_templatetags import static_path_exists
 
 
+@pytest.fixture(autouse=True)
+def count_origins_mocker(mocker):
+    mocker.patch("swh.web.utils.archive.count_origins").return_value = randint(10, 100)
+
+
 def test_coverage_view_no_metrics(client, swh_scheduler):
     """
     Check coverage view can be rendered when scheduler metrics and deposits
@@ -96,8 +101,6 @@ def generate_archive_coverage_data(mocker, swh_scheduler):
                     "status": "done",
                 }
             )
-    get_deposits_list = mocker.patch("swh.web.archive_coverage.views.get_deposits_list")
-    get_deposits_list.return_value = deposits
 
 
 def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
@@ -216,10 +219,6 @@ def archive_coverage_data_with_non_visited_origins(mocker, swh_scheduler):
 
     # compute scheduler metrics
     swh_scheduler.update_metrics()
-
-    # set deposit origins as empty
-    get_deposits_list = mocker.patch("swh.web.archive_coverage.views.get_deposits_list")
-    get_deposits_list.return_value = []
 
 
 def test_coverage_view_filter_out_non_visited_origins(

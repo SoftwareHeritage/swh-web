@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -19,8 +19,6 @@ import docutils.utils
 from docutils.utils import SystemMessage
 from docutils.writers.html5_polyglot import HTMLTranslator, Writer
 from iso8601 import ParseError, parse_date
-import requests
-from requests.auth import HTTPBasicAuth
 import sentry_sdk
 
 from django.conf import settings
@@ -520,53 +518,6 @@ def django_cache(
         return wrapper
 
     return inner
-
-
-def _deposits_list_url(
-    deposits_list_base_url: str, page_size: int, page: int, username: Optional[str]
-) -> str:
-    params = {"page_size": str(page_size), "page": page}
-    if username is not None:
-        params["username"] = username
-    return f"{deposits_list_base_url}?{urllib.parse.urlencode(params)}"
-
-
-def get_deposits_list(username: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Return the list of software deposits using swh-deposit API"""
-    config = get_config()["deposit"]
-    if "private_api_url" not in config:
-        return []
-    private_api_url = config["private_api_url"].rstrip("/") + "/"
-    deposits_list_base_url = private_api_url + "deposits/"
-    deposits_list_auth = HTTPBasicAuth(
-        config["private_api_user"], config["private_api_password"]
-    )
-
-    page = 1
-    page_size = 1000
-    deposits = []
-
-    while True:
-        deposits_list_url = _deposits_list_url(
-            deposits_list_base_url, page_size=page_size, page=page, username=username
-        )
-        deposits_data = (
-            requests.get(
-                deposits_list_url,
-                auth=deposits_list_auth,
-                timeout=30,
-            )
-            .json()
-            .get("results", [])
-        )
-
-        deposits += deposits_data
-        page += 1
-
-        if len(deposits_data) < page_size:
-            break
-
-    return deposits
 
 
 _origin_visit_types_cache_timeout = 24 * 60 * 60  # 24 hours
