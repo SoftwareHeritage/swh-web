@@ -46,3 +46,9 @@ import '@sentry/browser';
 
 // ensure datatables jquery plugin is properly initialized
 $.fn.dataTable = dataTable;
+
+// remove skip links added by adminlte as swh-web implements its own
+// and it makes cypress accessibility tests failing
+setTimeout(() => {
+  $('.skip-link').remove();
+}, 100);

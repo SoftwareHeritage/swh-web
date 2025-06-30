@@ -105,7 +105,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
         {% if "swh.web.banners" in SWH_DJANGO_APPS %}
           <div class="swh-banner">{% include "downtime-banner.html" %}</div>
         {% endif %}
-        <ul class="navbar-nav flex-row">
+        <ul class="navbar-nav flex-row" role="list">
           <li class="nav-item">
             <a class="nav-link swh-push-menu"
                data-lte-toggle="sidebar"
@@ -179,13 +179,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
           </div>
         </div>
         {% include "includes/global-modals.html" %}
+        <div id="back-to-top">
+          <a href="#top">
+            <img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" />
+          </a>
+        </div>
       </main>
       {% include "./includes/footer.html" %}
-      <div id="back-to-top">
-        <a href="#top">
-          <img alt="back to top" src="{% static 'img/arrow-up-small.png' %}" />
-        </a>
-      </div>
     </div>
     <script>
       swh.webapp.setContainerFullWidth();

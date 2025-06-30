@@ -25,7 +25,7 @@ describe('Accessibility compliance tests', function() {
   pagesToCheck.forEach(page => {
     it(`should pass IBM accessibility checks on page '${page.name}'`, function() {
       cy.visit(page.path);
-      const label = page.name.replaceAll(' ', '_');
+      const label = page.name.replaceAll(' ', '_') + '-' + Math.random().toString();
       cy.getCompliance(label).then(report => {
         const nbViolations = report.summary.counts.violation;
         let errMsg = '';
