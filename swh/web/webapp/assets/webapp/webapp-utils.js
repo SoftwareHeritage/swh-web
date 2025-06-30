@@ -137,6 +137,7 @@ $(document).ready(() => {
       $(event.target).addClass('was-validated');
     }
   });
+
 });
 
 export function initPage(page) {
