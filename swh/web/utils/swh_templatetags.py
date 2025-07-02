@@ -64,7 +64,9 @@ def urlize_header_links(text):
 
     """
     ret = re.sub(
-        r'<(http[^<>]+)>; rel="([^,]+)"', r'<<a href="\1">\1</a>>; rel="\2"\n', text
+        r'<(http[^<>]+)>; rel="([^,]+)"',
+        r'<<a href="\1">\1</a>>; rel="\2"\n',
+        str(text),
     ).replace("\n,", "\n")
     return ret[:-1]
 

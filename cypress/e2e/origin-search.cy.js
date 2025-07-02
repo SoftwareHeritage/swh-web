@@ -289,6 +289,10 @@ describe('Test origin-search', function() {
 
     cy.get('tbody tr td.swh-origin-visit-type')
       .should('exist');
+
+    cy.get('#swh-origin-search-total-results')
+      .invoke('text')
+      .should('match', /[0-9,]+ origins found/);
   }
 
   it('should search all origins when no pattern is provided', function() {

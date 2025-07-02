@@ -164,6 +164,16 @@ async function searchOrigins(searchUrl) {
         linkNext = parsedLink;
       }
     }
+    if (response.headers.has('X-Total-Count')) {
+      let totalResults = response.headers.get('X-Total-Count');
+      totalResults = new Intl.NumberFormat('en-IN', {maximumSignificantDigits: 3})
+        .format(totalResults);
+      let text = '';
+      if (totalResults) {
+        text = `${totalResults} origins found`;
+      }
+      $('#swh-origin-search-total-results').text(text);
+    }
     // prevLinks is updated by the caller, which is the one to know if
     // we're going forward or backward in the pages.
 
