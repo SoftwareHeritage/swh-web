@@ -546,10 +546,7 @@ def test_enrich_origin_search_result(api_request_factory, origin):
         request=request,
     )
 
-    origin_search_result_data = (
-        [{"url": origin["url"]}],
-        None,
-    )
+    origin_search_result_data = ([{"url": origin["url"]}], None, 1)
 
     enriched_origin_search_result = (
         [
@@ -560,6 +557,7 @@ def test_enrich_origin_search_result(api_request_factory, origin):
             }
         ],
         None,
+        1,
     )
 
     assert (

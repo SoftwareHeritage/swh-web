@@ -539,6 +539,7 @@ def test_api_origin_search(api_client):
         query_params={"limit": 1},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
+    assert rv.headers["X-Total-Count"] == "2"
     assert len(rv.data) == 1
     assert {origin["url"] for origin in rv.data} <= expected_origins
     assert rv.data == [
@@ -556,6 +557,7 @@ def test_api_origin_search(api_client):
         query_params={"limit": 2},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
+    assert rv.headers["X-Total-Count"] == "2"
     assert {origin["url"] for origin in rv.data} == expected_origins
     assert rv.data == [
         enrich_origin(
@@ -572,6 +574,7 @@ def test_api_origin_search(api_client):
         query_params={"limit": 10},
     )
     rv = check_api_get_responses(api_client, url, status_code=200)
+    assert rv.headers["X-Total-Count"] == "2"
     assert {origin["url"] for origin in rv.data} == expected_origins
     assert rv.data == [
         enrich_origin(

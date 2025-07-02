@@ -225,7 +225,7 @@ def assistant_origins(request: HttpRequest) -> HttpResponse:
         if search_form.is_valid():
             # TODO handle pagination w/ page_token or set the limit parameter to
             # something higher than 50 ?
-            results, __ = search_origin(
+            results, __, _a = search_origin(
                 search_form.cleaned_data["query"], with_visit=True
             )
         else:

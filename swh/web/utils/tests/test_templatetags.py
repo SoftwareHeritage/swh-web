@@ -48,7 +48,7 @@ def test_urlize_header_links(next_link, prev_link):
     assert (
         link_header
         == compute_link_header(
-            {"headers": {"link-next": next_link, "link-prev": prev_link}}, options={}
+            {"headers": {"link-next": next_link, "link-prev": prev_link}}
         )["Link"]
     )
 

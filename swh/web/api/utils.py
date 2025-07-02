@@ -303,9 +303,9 @@ def enrich_origin(
 
 
 def enrich_origin_search_result(
-    origin_search_result: Tuple[List[Dict[str, Any]], Optional[str]],
+    origin_search_result: Tuple[List[Dict[str, Any]], Optional[str], Optional[int]],
     request: Optional[HttpRequest] = None,
-) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+) -> Tuple[List[Dict[str, Any]], Optional[str], Optional[int]]:
     """Enrich origin search result with additional links
 
     Args:
@@ -315,8 +315,12 @@ def enrich_origin_search_result(
     Returns:
         An enriched origin search result filled with additional urls
     """
-    origins, page_token = origin_search_result
-    return [enrich_origin(origin, request=request) for origin in origins], page_token
+    origins, page_token, total_results = origin_search_result
+    return (
+        [enrich_origin(origin, request=request) for origin in origins],
+        page_token,
+        total_results,
+    )
 
 
 def enrich_origin_visit(

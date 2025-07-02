@@ -36,9 +36,8 @@ def test_compute_link_header():
         "headers": {"link-next": next_link, "link-prev": prev_link},
         "results": [1, 2, 3],
     }
-    options = {}
 
-    headers = compute_link_header(rv, options)
+    headers = compute_link_header(rv)
 
     assert headers == {
         "Link": (f'<{next_link}>; rel="next",' f'<{prev_link}>; rel="previous"')
@@ -47,20 +46,20 @@ def test_compute_link_header():
 
 def test_compute_link_header_nothing_changed():
     rv = {}
-    options = {}
-
-    headers = compute_link_header(rv, options)
-
+    headers = compute_link_header(rv)
     assert headers == {}
 
 
 def test_compute_link_header_nothing_changed_2():
     rv = {"headers": {}}
-    options = {}
-
-    headers = compute_link_header(rv, options)
-
+    headers = compute_link_header(rv)
     assert headers == {}
+
+
+def test_compute_link_header_keep_other_headers():
+    rv = {"headers": {"Content-Type": "application/json", "Content-length": "100"}}
+    headers = compute_link_header(rv)
+    assert headers == rv["headers"]
 
 
 def test_transform_only_return_results_1():

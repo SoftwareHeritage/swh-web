@@ -233,7 +233,7 @@ def test_origins_search(client, mocker, _session_step1):
     url = reverse("alteration-origins", query_params={"query": "username"})
     mocker.patch(
         "swh.web.alter.views.search_origin",
-        return_value=(["http://example.org/username/repo"], None),
+        return_value=(["http://example.org/username/repo"], None, None),
     )
     response = check_html_get_response(
         client,

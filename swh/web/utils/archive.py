@@ -312,7 +312,7 @@ def search_origin(
     with_visit: bool = False,
     visit_types: Optional[List[str]] = None,
     page_token: Optional[str] = None,
-) -> Tuple[List[OriginInfo], Optional[str]]:
+) -> Tuple[List[OriginInfo], Optional[str], Optional[int]]:
     """Search for origins whose urls contain a provided string pattern
     or match a provided regular expression.
 
@@ -354,6 +354,7 @@ def search_origin(
             converters.from_origin(ori_dict) for ori_dict in search_result.results
         ]
         next_page_token = search_result.next_page_token
+        total_results = search_result.total_results
     else:
         # Fallback to swh-storage if swh-search is not configured
         search_words = [re.escape(word) for word in url_pattern.split()]
@@ -375,8 +376,9 @@ def search_origin(
         )
         origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]
         next_page_token = page_result.next_page_token
+        total_results = None
 
-    return (origins, next_page_token)
+    return (origins, next_page_token, total_results)
 
 
 def search_origin_metadata(

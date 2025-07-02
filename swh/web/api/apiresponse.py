@@ -36,21 +36,19 @@ from swh.web.utils.exc import (
 logger = logging.getLogger("django")
 
 
-def compute_link_header(rv: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+def compute_link_header(rv: Dict[str, Any]) -> Dict[str, Any]:
     """Add Link header in returned value results.
 
     Args:
         request: a DRF Request object
-        rv (dict): dictionary with keys:
+        rv: dictionary with keys:
 
             - headers: potential headers with 'link-next' and 'link-prev'
               keys
             - results: containing the result to return
 
-        options (dict): the initial dict to update with result if any
-
     Returns:
-        dict: dictionary with optional keys 'link-next' and 'link-prev'
+        Headers with computed Link header
 
     """
     link_headers = []
@@ -61,17 +59,15 @@ def compute_link_header(rv: Dict[str, Any], options: Dict[str, Any]) -> Dict[str
     rv_headers = rv["headers"]
 
     if "link-next" in rv_headers:
-        link_headers.append('<%s>; rel="next"' % rv_headers["link-next"])
+        link_headers.append(f'<{rv_headers.pop("link-next")}>; rel="next"')
     if "link-prev" in rv_headers:
-        link_headers.append('<%s>; rel="previous"' % rv_headers["link-prev"])
+        link_headers.append(f'<{rv_headers.pop("link-prev")}>; rel="previous"')
 
     if link_headers:
         link_header_str = ",".join(link_headers)
-        headers = options.get("headers", {})
-        headers.update({"Link": link_header_str})
-        return headers
+        rv_headers.update({"Link": link_header_str})
 
-    return {}
+    return rv_headers
 
 
 def filter_by_fields(request: Request, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -128,7 +124,7 @@ def make_api_response(
     """
     options = options or {}
     if data:
-        options["headers"] = compute_link_header(data, options)
+        options["headers"] = compute_link_header(data)
         data = transform(data)
         data = filter_by_fields(request, data)
     doc_data = doc_data or {}

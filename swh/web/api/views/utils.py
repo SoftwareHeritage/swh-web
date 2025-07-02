@@ -17,8 +17,8 @@ from swh.web.utils.exc import NotFoundExc
 EnrichFunction = Callable[[Dict[str, str], Optional[HttpRequest]], Dict[str, str]]
 
 EnrichFunctionSearchResult = Callable[
-    [Tuple[List[Dict[str, Any]], Optional[str]], Optional[HttpRequest]],
-    Tuple[List[Dict[str, Any]], Optional[str]],
+    [Tuple[List[Dict[str, Any]], Optional[str], Optional[int]], Optional[HttpRequest]],
+    Tuple[List[Dict[str, Any]], Optional[str], Optional[int]],
 ]
 
 

@@ -240,8 +240,7 @@ def api_origin_search(
     .. http:get:: /api/1/origin/search/(url_pattern)/
 
         Search for software origins whose urls contain a provided string
-        pattern or match a provided regular expression.
-        The search is performed in a case insensitive way.
+        pattern. The search is performed in a case insensitive way.
 
         .. warning::
 
@@ -263,6 +262,8 @@ def api_origin_search(
 
         {common_headers}
         {resheader_link}
+        :resheader X-Total-Count: the total number of origins whose URL
+            contains the provided string pattern
 
         :statuscode 200: no error
 
@@ -272,8 +273,6 @@ def api_origin_search(
 
             :swh_web_api:`origin/search/python/?limit=2`
     """
-    result = {}
-
     with_visit = validated_query_params["with_visit"]
     visit_type = validated_query_params["visit_type"]
     use_ql = validated_query_params["use_ql"]
@@ -281,7 +280,7 @@ def api_origin_search(
     limit = validated_query_params["limit"]
 
     try:
-        (results, page_token) = api_lookup(
+        (results, page_token, total_results) = api_lookup(
             archive.search_origin,
             url_pattern,
             use_ql,
@@ -295,22 +294,19 @@ def api_origin_search(
     except SearchQuerySyntaxError as e:
         raise BadInputExc(f"Syntax error in search query: {e.args[0]}")
 
+    headers = {"X-Total-Count": total_results}
     if page_token is not None:
         query_params = {k: v for (k, v) in request.GET.dict().items()}
         query_params["page_token"] = page_token
 
-        result["headers"] = {
-            "link-next": reverse(
-                "api-1-origin-search",
-                url_args={"url_pattern": url_pattern},
-                query_params=query_params,
-                request=request,
-            )
-        }
+        headers["link-next"] = reverse(
+            "api-1-origin-search",
+            url_args={"url_pattern": url_pattern},
+            query_params=query_params,
+            request=request,
+        )
 
-    result.update({"results": results})
-
-    return result
+    return {"results": results, "headers": headers}
 
 
 class OriginMetadataSearchQuerySerializer(serializers.Serializer):
