@@ -300,7 +300,6 @@ def api_origin_save_bulk(request: Request) -> Response:
         "list-save-bulk",
         url=origins_list_url,
         instance=save_bulk_request_id,
-        per_page=10,
     )
 
     scheduler().create_tasks([task])
