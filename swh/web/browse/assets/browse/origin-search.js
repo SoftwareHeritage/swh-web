@@ -166,8 +166,7 @@ async function searchOrigins(searchUrl) {
     }
     if (response.headers.has('X-Total-Count')) {
       let totalResults = response.headers.get('X-Total-Count');
-      totalResults = new Intl.NumberFormat('en-IN', {maximumSignificantDigits: 3})
-        .format(totalResults);
+      totalResults = new Intl.NumberFormat('en-US').format(totalResults);
       let text = '';
       if (totalResults) {
         text = `${totalResults} origins found`;
