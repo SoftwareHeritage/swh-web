@@ -130,7 +130,7 @@ See top-level LICENSE file for more information
             <li class="nav-item swh-admin-menu-item swh-origin-manage-item"
                 title="Users administration"
                 role="menuitem">
-              <a href="{% if oidc_enabled %}{{ keycloak.server_url }}admin/master/console/#/realms/{{ keycloak.realm_name }}/users{% else %}{% url 'admin:index' %}auth/user{% endif %}"
+              <a href="{% if oidc_enabled %}{{ keycloak.server_url }}admin/master/console/#/realms/{{ keycloak.realm_name }}/users{% else %}{% url 'admin:index' %}auth/user/{% endif %}"
                  class="nav-link swh-admin-manage-link"
                  target="_blank"
                  rel="noopener noreferrer">
