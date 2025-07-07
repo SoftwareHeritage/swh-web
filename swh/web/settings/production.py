@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@
 Django production settings for swh-web.
 """
 
-from swh.web.config import DEFAULT_CONFIG
+from swh.web.config import DEFAULT_CONFIG, oidc_enabled
 
 from .common import (
     CACHES,
@@ -21,9 +21,7 @@ from .common import (
 )
 from .common import *  # noqa
 
-INSTALLED_APPS = INSTALLED_APPS + [
-    "django_minify_html",
-]
+INSTALLED_APPS.append("django_minify_html")
 
 MIDDLEWARE = MIDDLEWARE + [
     "django_minify_html.middleware.MinifyHtmlMiddleware",
@@ -89,3 +87,9 @@ if SECRET_KEY == DEFAULT_CONFIG["secret_key"][-1]:
 
 browse_content_rate_limit = swh_web_config.get("browse_content_rate_limit", {})
 RATELIMIT_ENABLE = browse_content_rate_limit.get("enabled", True)
+
+if oidc_enabled():
+    # disable django admin logs as keycloak user id overflows the
+    # user id integer column in webapp database
+    INSTALLED_APPS.append("django_admin_logs")
+    DJANGO_ADMIN_LOGS_ENABLED = False

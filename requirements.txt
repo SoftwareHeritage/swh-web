@@ -7,6 +7,7 @@ charset-normalizer
 cryptography
 disposable-email-domains
 django
+django-admin-logs
 django-bootstrap5
 django-cors-headers
 django-js-reverse
