@@ -96,6 +96,16 @@
     color: black;
 }
 
+#swh-identifiers .handle:hover {
+    background-color: #c30024 !important;
+    border: 1px solid #c30024 !important;
+}
+
+#swh-citations .handle:hover {
+    border: 1px solid #d25c1c !important;
+    background-color: #d25c1c !important;
+}
+
 .swh-empty-snapshot {
     white-space: pre-line;
 }

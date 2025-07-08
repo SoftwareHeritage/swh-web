@@ -97,6 +97,8 @@ describe('SWHIDs Tests', function() {
       .should('have.class', 'ui-slideouttab-ready');
     cy.get('#swh-identifiers-content')
       .should('have.css', 'display', 'none');
+    cy.get('.tab-handle-arrow')
+      .should('have.class', 'mdi-chevron-up');
 
     cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
@@ -105,6 +107,8 @@ describe('SWHIDs Tests', function() {
       .should('have.class', 'ui-slideouttab-open');
     cy.get('#swh-identifiers-content')
       .should('have.css', 'display', 'block');
+    cy.get('.tab-handle-arrow')
+      .should('have.class', 'mdi-chevron-down');
 
     cy.get('#swh-identifiers .ui-slideouttab-handle')
       .click();
@@ -113,6 +117,8 @@ describe('SWHIDs Tests', function() {
       .should('not.have.class', 'ui-slideouttab-open');
     cy.get('#swh-identifiers-content')
       .should('have.css', 'display', 'none');
+    cy.get('.tab-handle-arrow')
+      .should('have.class', 'mdi-chevron-up');
 
   });
 

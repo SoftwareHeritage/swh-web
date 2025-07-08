@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -92,7 +92,7 @@ function updateTabsSize() {
   const top = window.innerHeight >= 700 ? 250 : 35;
   $('.swh-side-tab').css('top', top + 'px');
   // move citations tab handle below the permalinks one
-  $('#swh-citations .handle').css('top', '105px');
+  $('#swh-citations .handle').css('top', '128px');
 
   // backup current display states for tab contents
   const currentSWHIDsDisplay = $('#swh-identifiers-content').css('display');
@@ -244,6 +244,11 @@ export async function initSideTabs() {
         $('#swh-identifiers').data('opening', false);
         $('#swhids-handle').attr('aria-expanded', 'true');
         $('#swhids-handle').attr('aria-label', 'Collapse permalinks tab');
+        $('#swhids-handle').attr('title', 'Collapse permalinks tab');
+        $('#citations-handle').attr('aria-label', 'Display citations tab');
+        $('#citations-handle').attr('title', 'Display citations tab');
+        $('.tab-handle-arrow').removeClass('mdi-chevron-up');
+        $('.tab-handle-arrow').addClass('mdi-chevron-down');
       },
       onBeforeClose: function() {
         $('#swh-identifiers').data('closing', true);
@@ -257,6 +262,9 @@ export async function initSideTabs() {
         $('#swh-identifiers').data('closing', false);
         $('#swhids-handle').attr('aria-expanded', 'false');
         $('#swhids-handle').attr('aria-label', 'Expand permalinks tab');
+        $('#swhids-handle').attr('title', 'Expand permalinks tab');
+        $('.tab-handle-arrow').removeClass('mdi-chevron-down');
+        $('.tab-handle-arrow').addClass('mdi-chevron-up');
         $('#swhids-handle').css('padding-bottom', '0.1em');
         setTimeout(() => {
           // ensure elements in closed SWHIDs tab are not keyboard focusable
@@ -275,6 +283,10 @@ export async function initSideTabs() {
           // display SWHIDs tab content if not visible
           toggleTabContentDisplay('#swh-identifiers', true);
           toggleTabContentDisplay('#swh-citations', false);
+          $('#citations-handle').attr('aria-label', 'Display citations tab');
+          $('#citations-handle').attr('title', 'Display citations tab');
+          $('#swhids-handle').attr('aria-label', 'Collapse permalinks tab');
+          $('#swhids-handle').attr('title', 'Collapse permalinks tab');
         } else {
           $('#swh-identifiers').trigger('close');
         }
@@ -322,6 +334,9 @@ export async function initSideTabs() {
           $('#swh-citations').data('opening', false);
           $('#citations-handle').attr('aria-expanded', 'true');
           $('#citations-handle').attr('aria-label', 'Collapse citations tab');
+          $('#citations-handle').attr('title', 'Collapse citations tab');
+          $('#swhids-handle').attr('aria-label', 'Display permalinks tab');
+          $('#swhids-handle').attr('title', 'Display permalinks tab');
         },
         onBeforeClose: function() {
           $('#swh-citations').data('closing', true);
@@ -335,6 +350,7 @@ export async function initSideTabs() {
           $('#swh-citations').data('closing', false);
           $('#citations-handle').attr('aria-expanded', 'false');
           $('#citations-handle').attr('aria-label', 'Expand citations tab');
+          $('#citations-handle').attr('title', 'Expand citations tab');
           $('#citations-handle').css('padding-bottom', '0.1em');
           setTimeout(() => {
             // ensure elements in closed citations tab are not keyboard focusable
@@ -353,6 +369,10 @@ export async function initSideTabs() {
             // display citation tab content if not visible
             toggleTabContentDisplay('#swh-identifiers', false);
             toggleTabContentDisplay('#swh-citations', true);
+            $('#swhids-handle').attr('aria-label', 'Display permalinks tab');
+            $('#swhids-handle').attr('title', 'Display permalinks tab');
+            $('#citations-handle').attr('aria-label', 'Collapse citations tab');
+            $('#citations-handle').attr('title', 'Collapse citations tab');
           } else {
             $('#swh-citations').trigger('close');
           }
