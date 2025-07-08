@@ -41,9 +41,6 @@ import 'typeface-alegreya';
 import 'typeface-alegreya-sans';
 import '@mdi/font/css/materialdesignicons.css';
 
-// monitoring
-import '@sentry/browser';
-
 // ensure datatables jquery plugin is properly initialized
 $.fn.dataTable = dataTable;
 
