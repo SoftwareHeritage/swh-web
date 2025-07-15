@@ -56,7 +56,7 @@
   {% comment %}Origin edit modals{% endcomment %}
 
   {% for origin_form in origin_forms %}
-    <div class="modal fade"
+    <div class="modal fade d-none"
          id="origin-{{ origin_form.instance.pk }}"
          tabindex="-1"
          aria-labelledby="origin-{{ origin_form.instance.pk }}-label"
@@ -97,7 +97,7 @@
   {% endfor %}
   {% comment %}Alteration edit modal{% endcomment %}
 
-  <div class="modal fade"
+  <div class="modal fade d-none"
        id="alteration-modal"
        tabindex="-1"
        aria-labelledby="alteration-modal-label"
@@ -136,7 +136,7 @@
   {% blocktranslate asvar message_info trimmed %}
     A message will send an email notification to the recipient. Requesters will only get a link to check the request page, other roles will get the full content in the message.
   {% endblocktranslate %}
-  <div class="modal fade"
+  <div class="modal fade d-none"
        id="message-modal"
        tabindex="-1"
        aria-labelledby="message-modal-label"
@@ -176,7 +176,7 @@
   </div>
   {% comment %}Create origin modal {% endcomment %}
 
-  <div class="modal fade"
+  <div class="modal fade d-none"
        id="origin-create"
        tabindex="-1"
        aria-labelledby="origin-create-label"
@@ -217,7 +217,7 @@
     Event modification should be used sparingly: to fix a mistake, but not to rewrite the history of request processing. Note that this does not send another notification.
   {% endblocktranslate %}
   {% for event_form in event_forms %}
-    <div class="modal fade"
+    <div class="modal fade d-none"
          id="event-{{ event_form.instance.pk }}-modal"
          tabindex="-1"
          aria-labelledby="event-{{ event_form.instance.pk }}-label"

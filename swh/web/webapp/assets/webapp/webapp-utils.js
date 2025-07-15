@@ -138,6 +138,16 @@ $(document).ready(() => {
     }
   });
 
+  // modals in DOM are forced to not be displayed by default to avoid
+  // issues when animations are disabled, we need to set some event
+  // handlers forcing their display/hiding to restore expected behavior
+  $('.modal.fade').on('show.bs.modal', event => {
+    $(event.target).removeClass('d-none');
+  });
+  $('.modal.fade').on('hidden.bs.modal', event => {
+    $(event.target).addClass('d-none');
+  });
+
 });
 
 export function initPage(page) {

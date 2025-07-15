@@ -90,7 +90,7 @@
   {% comment %}Alteration edit modal{% endcomment %}
 
   {% if not alteration.is_read_only %}
-    <div class="modal fade"
+    <div class="modal fade d-none"
          id="alteration-modal"
          tabindex="-1"
          aria-labelledby="alteration-modal-label"
@@ -127,7 +127,7 @@
   {% endif %}
   {% comment %}Send a message modal{% endcomment %}
 
-  <div class="modal fade"
+  <div class="modal fade d-none"
        id="message-modal"
        tabindex="-1"
        aria-labelledby="message-modal-label"
