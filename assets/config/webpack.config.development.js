@@ -502,7 +502,7 @@ module.exports = {
       configType: 'flat',
       overrideConfigFile: path.join(repoRootPath, 'eslint.config.js'),
       cache: true,
-      emitWarning: true
+      failOnError: !isDevServer
     }),
     // lint swh-web stylesheets
     new StylelintPlugin({
