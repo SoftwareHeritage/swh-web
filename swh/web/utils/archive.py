@@ -560,12 +560,17 @@ def lookup_origin_intrinsic_metadata(
 
 def _lookup_directory_intrinsic_citation_metadata(
     directory_id: str,
+    max_top_level_dir_recurse: int = 3,
 ) -> List[IntrinsicMetadataFile]:
     """Get raw intrinsic metadata given a directory id, respectively original codemeta.json
     and citation.cff found in this directory.
 
+    If the directory only contains a single directory, that function will recurse.
+
     Args:
         directory_id: hexadecimal representation of a directory id (sha1_git)
+        max_top_level_dir_recurse: the maximum number of recursion to
+            perform in case of top level directories to traverse
 
     Returns:
         list of intrinsic metadata files info
@@ -590,6 +595,13 @@ def _lookup_directory_intrinsic_citation_metadata(
             pass
 
     if not metadata_files_info:
+        if max_top_level_dir_recurse > 0:
+            dir_entries = list(lookup_directory(directory_id))
+            if len(dir_entries) == 1 and dir_entries[0]["type"] == "dir":
+                # handle top level directory edge case
+                return _lookup_directory_intrinsic_citation_metadata(
+                    dir_entries[0]["target"], max_top_level_dir_recurse - 1
+                )
         raise NotFoundExc(
             f"No metadata file ({', '.join(metadata_file_paths)}) in directory"
             f" with sha1_git {directory_id} found."
