@@ -78,7 +78,11 @@ See top-level LICENSE file for more information
                     {% if "swh.web.badges" in SWH_DJANGO_APPS %}
                       <div class="swh-badges">
                         {% if snapshot_context and snapshot_context.origin_info %}
-                          <img class="swh-badge swh-badge-origin" alt="origin badge" src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}" onclick="swh.badges.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')" title="Click to display badge integration info" />
+                          <img class="swh-badge swh-badge-origin"
+                               alt="origin badge"
+                               src="{% url 'swh-badge' 'origin' snapshot_context.origin_info.url %}"
+                               onclick="swh.badges.showBadgeInfoModal('origin', '{{ snapshot_context.origin_info.url|urlencode:"/?:@&" }}')"
+                               title="Click to display badge integration info" />
                         {% endif %}
                         {% if swhid_info.object_id %}
                           <img class="swh-badge swh-badge-{{ swhid_info.object_type.name.lower }}"
