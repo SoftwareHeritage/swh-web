@@ -219,6 +219,7 @@ class RevisionMetadata(SWHObjectInfo, SWHObjectInfoMetadata):
     synthetic: bool
     type: str
     snapshot: Optional[str]
+    root_directory: Optional[str]
 
 
 TResult = TypeVar("TResult")

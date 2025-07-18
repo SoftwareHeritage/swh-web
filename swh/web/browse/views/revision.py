@@ -454,6 +454,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         type=revision["type"],
         snapshot=snapshot_id,
         origin_url=origin_url,
+        root_directory=snapshot_context["root_directory"] if snapshot_context else None,
     )
 
     message_lines = ["None"]
@@ -542,9 +543,6 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             filepath = "/".join(pi["name"] for pi in path_info[:-1])
             extra_context["path"] = f"/{filepath}/" if filepath else "/"
             extra_context["filename"] = filename
-            if filename.endswith(".ipynb"):
-                # disable language select dropdown when a notebook is rendered
-                available_languages = None
 
             if filepath:
                 dir_id = archive.lookup_directory_with_path(

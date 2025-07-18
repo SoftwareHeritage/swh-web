@@ -389,10 +389,6 @@ def content_display(
                 breadcrumbs.append({"name": pi["name"], "url": dir_url})
         breadcrumbs.append({"name": filename, "url": ""})
 
-        if filename.endswith(".ipynb"):
-            # disable language select dropdown when a notebook is rendered
-            available_languages = None
-
     if path and root_dir and root_dir != path and path != "/":
         dir_info = archive.lookup_directory_with_path(root_dir, path)
         directory_id = dir_info["target"]

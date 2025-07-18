@@ -61,6 +61,7 @@ def _hljs_languages_aliases():
         "ttcnpp": "ttcn3",
         "rkt": "lisp",
         "ak": "aiken",
+        "ipynb": "json",
     }
 
 

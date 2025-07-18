@@ -4076,6 +4076,11 @@ css-tree@~2.2.0:
     mdn-data "2.0.28"
     source-map-js "^1.0.1"
 
+css-url-parser@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/css-url-parser/-/css-url-parser-1.1.4.tgz#a0cd4fefada38eeb26da6036d9af0b5e42edb65e"
+  integrity sha512-gIpYB7ZqfIsd+/kJ8CE4pesAbIUEaZM+30Ylfl7rr0zJONslIchmi3utzY64qHIOhD/wXDrcSo7jU2VDqG7GiQ==
+
 css-what@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-6.1.0.tgz#fb5effcf76f1ddea2c81bdfaa4de44e79bac70f4"
@@ -4170,6 +4175,11 @@ cypress-hmr-restarter@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/cypress-hmr-restarter/-/cypress-hmr-restarter-2.1.1.tgz#1bf55e710b4ae12e09e0b2a2127c0eca5a7038c4"
   integrity sha512-UxzRGnw15vptbUDerROUJRVcmrODdr5hyplzCtIyxxxRMYnx9jdpfEJLhPSR+EdFHKu3Fizabzfv/QhsPTAxlg==
+
+cypress-iframe@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/cypress-iframe/-/cypress-iframe-1.0.1.tgz#2a286cfd47a240aa9af0ad9f339f4c6f942089f8"
+  integrity sha512-Ne+xkZmWMhfq3x6wbfzK/SzsVTCrJru3R3cLXsoSAZyfUtJDamXyaIieHXeea3pQDXF4wE2w4iUuvCYHhoD31g==
 
 cypress-multi-reporters@^2.0.5:
   version "2.0.5"

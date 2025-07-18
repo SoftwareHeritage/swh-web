@@ -395,3 +395,7 @@ export function isAmbassadorUser() {
 export function mirrorConfig() {
   return JSON.parse($('#swh_mirror_config').text());
 }
+
+export function resizeIframe() {
+  iframeResize.apply(null, arguments);
+}

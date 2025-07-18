@@ -13,7 +13,11 @@ from django.utils.html import format_html
 from swh.model.swhids import ObjectType
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
-from swh.web.browse.utils import get_directory_entries, get_readme_to_display
+from swh.web.browse.utils import (
+    get_directory_entries,
+    get_readme_to_display,
+    request_content,
+)
 from swh.web.utils import archive, gen_path_info, reverse, swh_object_icons
 from swh.web.utils.exc import (
     NotFoundExc,
@@ -298,27 +302,35 @@ def directory_browse_legacy(
 
 
 @browse_route(
-    r"directory/resolve/content-path/(?P<sha1_git>[0-9a-f]+)/",
-    view_name="browse-directory-resolve-content-path",
+    r"directory/content/(?P<sha1_git>[0-9a-f]+)/path/(?P<path>.+)/?",
+    view_name="browse-directory-get-content-at-path",
     checksum_args=["sha1_git"],
 )
 def _directory_resolve_content_path(
-    request: HttpRequest, sha1_git: str
+    request: HttpRequest, sha1_git: str, path: str
 ) -> HttpResponse:
     """
-    Internal endpoint redirecting to data url for a specific file path
+    Internal endpoint to get raw data for a specific file path
     relative to a root directory.
+
+    It enables to load static assets like images or CSS files
+    when rendering HTML or markdown directly from the archive.
     """
     try:
-        path = os.path.normpath(request.GET.get("path", ""))
+        path = os.path.normpath(path)
         if not path.startswith("../"):
             dir_info = archive.lookup_directory_with_path(sha1_git, path)
             if dir_info["type"] == "file":
                 sha1 = dir_info["checksums"]["sha1"]
-                data_url = reverse(
-                    "browse-content-raw", url_args={"query_string": sha1}
-                )
-                return redirect(data_url)
+                content_data = request_content(sha1, max_size=None, re_encode=False)
+                response = HttpResponse(content=content_data["raw_data"], status=200)
+                mime_type = content_data["mimetype"]
+                if path.endswith(".css"):
+                    mime_type = "text/css"
+                if mime_type.startswith("image/svg") or path.lower().endswith(".svg"):
+                    mime_type = "image/svg+xml"
+                response["Content-Type"] = mime_type
+                return response
     except Exception as exc:
         sentry_capture_exception(exc)
     return HttpResponse(status=404)

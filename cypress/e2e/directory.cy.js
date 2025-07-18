@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2023  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -118,32 +118,64 @@ describe('Directory Tests', function() {
         expect(resp.status).to.eq(200);
         let url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}`;
         cy.visit(url);
-        cy.get('#readme-panel > .card-body')
-          .should('be.visible');
-        let contentUrl = this.Urls.browse_origin_directory() +
-          `?origin_url=${encodeURIComponent(originUrl)}` +
-          `&path=${encodeURIComponent('files/foo')}`;
-        cy.get('#section + p a')
-          .should('have.attr', 'href', contentUrl);
-        let directoryUrl = this.Urls.browse_origin_directory() +
-          `?origin_url=${encodeURIComponent(originUrl)}&path=files`;
-        cy.get('#subsection + p a')
-          .should('have.attr', 'href', directoryUrl);
+        cy.location().then(loc => {
+          cy.get('#readme-panel > .card-body')
+            .should('be.visible');
+          let contentUrl = loc.origin + this.Urls.browse_origin_directory() +
+            `?origin_url=${encodeURIComponent(originUrl)}` +
+            `&path=${encodeURIComponent('files/foo')}`;
+          cy.get('#section + p a')
+            .should('have.attr', 'href', contentUrl);
+          let directoryUrl = loc.origin + this.Urls.browse_origin_directory() +
+            `?origin_url=${encodeURIComponent(originUrl)}&path=files`;
+          cy.get('#subsection + p a')
+            .should('have.attr', 'href', directoryUrl);
 
-        url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}&path=bar`;
-        cy.visit(url);
-        cy.get('#readme-panel > .card-body')
-          .should('be.visible');
-        contentUrl = this.Urls.browse_origin_directory() +
-          `?origin_url=${encodeURIComponent(originUrl)}` +
-          `&path=${encodeURIComponent('files/foo')}`;
-        cy.get('#section + p a')
-          .should('have.attr', 'href', contentUrl);
-        directoryUrl = this.Urls.browse_origin_directory() +
-          `?origin_url=${encodeURIComponent(originUrl)}`;
-        cy.get('#subsection + p a')
-          .should('have.attr', 'href', directoryUrl);
+          url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}&path=bar`;
+          cy.visit(url);
+          cy.get('#readme-panel > .card-body')
+            .should('be.visible');
+          contentUrl = loc.origin + this.Urls.browse_origin_directory() +
+            `?origin_url=${encodeURIComponent(originUrl)}` +
+            `&path=${encodeURIComponent('files/foo')}`;
+          cy.get('#section + p a')
+            .should('have.attr', 'href', contentUrl);
+          directoryUrl = loc.origin + this.Urls.browse_origin_directory() +
+            `?origin_url=${encodeURIComponent(originUrl)}`;
+          cy.get('#subsection + p a')
+            .should('have.attr', 'href', directoryUrl);
+        });
       });
   });
 
+  it('should strip style tag in markdown readme rendering', function() {
+    const mainReadme = `
+# README
+
+<style>
+  body {
+    background-color: red;
+  }
+</style>
+`;
+
+    const originUrl = 'https://git.example.org/md-readme-strip-style-tags';
+    const contents = [{'path': 'README.md', 'data': mainReadme}];
+
+    cy.request('POST',
+               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+               contents)
+      .then((resp) => {
+        expect(resp.status).to.eq(200);
+        const url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}`;
+        cy.visit(url);
+        cy.get('#readme-panel > .card-body')
+          .should('be.visible');
+        cy.get('.card-body h1')
+          .should('be.visible')
+          .and('contain', 'README');
+        cy.get('body')
+          .should('not.have.css', 'background-color', 'rgb(255, 0, 0)');
+      });
+  });
 });

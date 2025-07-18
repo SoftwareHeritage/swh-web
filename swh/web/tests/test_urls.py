@@ -12,7 +12,10 @@ def test_swh_web_urls_have_trailing_slash():
     urls = set(
         value[1]
         for key, value in get_resolver().reverse_dict.items()
-        if type(key) is str and key not in ("browse-swhid", "favicon-no-trailing-slash")
+        if type(key) is str
+        and key not in ("browse-swhid", "favicon-no-trailing-slash")
+        and key
+        and not key.startswith("browse-directory-get-content-at-path")
     )
     for url in urls:
         if url != "$":

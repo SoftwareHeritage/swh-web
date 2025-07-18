@@ -1,10 +1,11 @@
-# Copyright (C) 2017-2021  The Software Heritage developers
+# Copyright (C) 2017-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import json
 import re
+from typing import Optional
 
 from django import template
 from django.contrib.staticfiles.finders import find
@@ -168,3 +169,19 @@ def static_path_exists(path: str) -> bool:
         Whether the path exists.
     """
     return bool(find(path))
+
+
+@register.filter
+def is_markdown(filename: Optional[str]) -> bool:
+    """Django template filter to check if a filename is a
+    markdown file.
+    """
+    return filename is not None and filename.lower().endswith((".md", ".markdown"))
+
+
+@register.filter
+def is_notebook(filename: Optional[str]) -> bool:
+    """Django template filter to check if a filename is a
+    jupyter notebook.
+    """
+    return filename is not None and filename.lower().endswith(".ipynb")

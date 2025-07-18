@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -6,6 +6,7 @@
 # Implement some special endpoints used to provide input tests data
 # when executing end to end tests with cypress
 
+import base64
 import json
 import os
 import tempfile
@@ -213,8 +214,13 @@ def add_origin_with_contents(request):
         for content in contents:
             path = os.path.join(tmpdir, content["path"])
             os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "w") as f:
-                f.write(content["data"])
+            if content["data"].startswith("base64:"):
+                binary_data = base64.b64decode(content["data"][7:])
+                with open(path, "wb") as f:
+                    f.write(binary_data)
+            else:
+                with open(path, "w") as f:
+                    f.write(content["data"])
         directory = from_disk.Directory.from_disk(
             path=tmpdir.encode(),
             max_content_length=None,
