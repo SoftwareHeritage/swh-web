@@ -108,7 +108,7 @@ def model_to_dict(instance, fields=None, exclude=None):
 def test_content_policies_unverified_email(client):
     response = check_html_get_response(
         client,
-        reverse("content-policies"),
+        reverse("content-policy"),
         status_code=200,
         template_used="content_policies.html",
     )
@@ -123,7 +123,7 @@ def test_content_policies_verified_email(client):
     session.save()
     response = check_html_get_response(
         client,
-        reverse("content-policies"),
+        reverse("content-policy"),
         status_code=200,
         template_used="content_policies.html",
     )

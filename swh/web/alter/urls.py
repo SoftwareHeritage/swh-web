@@ -25,7 +25,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path("content-policies/", content_policies, name="content-policies"),
+    path("content-policy/", content_policies, name="content-policy"),
     path("alteration/email/", assistant_email, name="alteration-email"),
     path(
         "alteration/email/verification/<str:value>/",

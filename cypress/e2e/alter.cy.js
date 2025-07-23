@@ -24,7 +24,7 @@ const defaultOrigins = [
   'https://many.origins/45'
 ];
 // content policies
-const step0Url = '/content-policies/';
+const step0Url = '/content-policy/';
 // email validation
 const step1Url = '/alteration/email/';
 // category selection
@@ -71,7 +71,7 @@ function fillEmail(address) {
  * @param {string} address an email address
  */
 function confirmEmail(address) {
-  cy.task('findEmail', {subject: 'Please confirm your email address', recipient: address}).then((message) => {
+  cy.task('findEmail', { subject: 'Please confirm your email address', recipient: address }).then((message) => {
     cy.visit(extractUrls(message)[0]);
   });
 }
@@ -153,7 +153,7 @@ describe('Archive alteration request, requester side tests', () => {
     cy.get('#id_email').type(copyrightAlterationEmail + '{enter}');
     cy.location('pathname').should('be.equal', accessUrl);
     cy.get('div.alert-info').contains('If your email address matches').should('be.visible');
-    cy.task('findEmail', {subject: 'Access to your alteration request', recipient: copyrightAlterationEmail}).then((message) => {
+    cy.task('findEmail', { subject: 'Access to your alteration request', recipient: copyrightAlterationEmail }).then((message) => {
       expect(message).to.contain('link will give you access');
       const urls = extractUrls(message);
       expect(urls).to.have.lengthOf(1);
@@ -252,7 +252,7 @@ describe('Archive alteration request, requester side tests', () => {
       cy.get('[itemprop=recipient]').should('contain', 'Support');
     });
     // an email to support is sent with the whole message
-    cy.task('findEmail', {subject: `New message on ${copyrightAlterationTitle}`, recipient: adminEmailAddress}).then((message) => {
+    cy.task('findEmail', { subject: `New message on ${copyrightAlterationTitle}`, recipient: adminEmailAddress }).then((message) => {
       expect(message).to.contain(messageContent);
       expect(message).to.contain('From: Requester');
       const urls = extractUrls(message);
@@ -416,7 +416,7 @@ describe('Archive alteration request assistant tests', () => {
     checkOrigins(defaultOrigins);
     fillReasons('random reasons', 'random outcome');
     confirmSummary();
-    cy.task('findEmail', {subject: 'Confirmation of your archive alteration request', recipient: emailAddress}).then((message) => {
+    cy.task('findEmail', { subject: 'Confirmation of your archive alteration request', recipient: emailAddress }).then((message) => {
       expect(message).to.contain('We have received your alteration request');
       defaultOrigins.forEach((url) => {
         expect(message).to.contain(url);
@@ -438,7 +438,7 @@ describe('Archive alteration request assistant tests', () => {
     checkOrigins(defaultOrigins);
     fillReasons('random reasons', 'random outcome');
     confirmSummary();
-    cy.task('findEmail', {subject: 'New archive alteration request', recipient: adminEmailAddress}).then((message) => {
+    cy.task('findEmail', { subject: 'New archive alteration request', recipient: adminEmailAddress }).then((message) => {
       expect(message).to.contain('Other legal matters');
       defaultOrigins.forEach((url) => {
         expect(message).to.contain(url);
@@ -652,7 +652,7 @@ describe('Archive alteration request, admin side tests', () => {
       cy.get('[itemprop=conditionsOfAccess][title="Internal event"]').should('be.visible');
     });
     // an email to legal is sent with the whole message
-    cy.task('findEmail', {subject: `New message on ${copyrightAlterationTitle}`, recipient: legalEmailAddress}).then((message) => {
+    cy.task('findEmail', { subject: `New message on ${copyrightAlterationTitle}`, recipient: legalEmailAddress }).then((message) => {
       expect(message).to.contain(messageContent);
       const urls = extractUrls(message);
       // and a link to the alteration request
@@ -688,7 +688,7 @@ describe('Archive alteration request, admin side tests', () => {
       cy.get('[itemprop=conditionsOfAccess][title="Public event"]').should('be.visible');
     });
     // an email to the request is sent without the whole message
-    cy.task('findEmail', {subject: 'New message notification', recipient: copyrightAlterationEmail}).then((message) => {
+    cy.task('findEmail', { subject: 'New message notification', recipient: copyrightAlterationEmail }).then((message) => {
       expect(message).to.not.contain(messageContent);
       expect(message).to.contain('a new message');
       const urls = extractUrls(message);
