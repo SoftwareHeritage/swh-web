@@ -10,11 +10,11 @@
 {% load alter_extras %}
 
 {% block page_title %}
-  {% translate "Alteration request email verification form" %}
+  {% translate "Archive change request: email verification" %}
 {% endblock page_title %}
 
 {% block navbar-content %}
-  <h4>{% translate "Alteration request email verification form" %}</h4>
+  <h4>{% translate "Archive change request: email verification" %}</h4>
 {% endblock navbar-content %}
 
 {% block content %}
@@ -26,8 +26,7 @@
   {% include "includes/steps.html" %}
   <p>
     {% blocktranslate trimmed %}
-      Before accessing the alteration request assistant we need to make sure we will be
-      able to contact you through your email address.
+      Verify your email to access the change request assistant.
     {% endblocktranslate %}
   </p>
   <form method="POST" class="form">

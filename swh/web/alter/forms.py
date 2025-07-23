@@ -114,12 +114,12 @@ class OriginSelectForm(forms.Form):
 INITIALS_REASONS = {
     "copyright": {
         "reasons": _(
-            "The code available in the repos in under the xxx license which does "
+            "The code available in the repos is under the xxx license which does "
             "not allow..."
         ),
         "expected_outcome": _(
-            "Please remove archived content for repos ... and block them from being "
-            "archived again"
+            "Example: Please remove archived content for repos ... and prevent future "
+            "archiving."
         ),
     },
     "pii": {
@@ -128,8 +128,8 @@ INITIALS_REASONS = {
             "shows the old content and I need you to delete it."
         ),
         "expected_outcome": _(
-            "Please remove archived content for repos ... and re-archive the current "
-            "version."
+            "Example:  Please remove archived content for repos ... and re-archive the "
+            "current version."
         ),
     },
     "legal": {
@@ -138,9 +138,9 @@ INITIALS_REASONS = {
             "kind of content]"
         ),
         "expected_outcome": _(
-            "I've submitted a takedown request to the legal authorities but meanwhile"
-            "please mask the origins so the content is not publicly available on SWH "
-            "anymore"
+            "Example: I've submitted a takedown request to the legal authorities but "
+            "meanwhile please mask the origins so the content is not publicly "
+            "available on SWH anymore"
         ),
     },
 }
@@ -150,18 +150,18 @@ class ReasonsForm(forms.Form):
     """Alteration request's reasons and expected outcome."""
 
     reasons = forms.CharField(
-        label=_("Reasons why the archive content should be altered"),
+        label=_("Reasons why Archive content should be changed"),
         help_text=_(
-            "Please describe as clearly as possible the reasons for your request"
+            "Please describe as clearly as possible the reasons for your request."
         ),
         widget=forms.Textarea,
         required=True,
     )
     expected_outcome = forms.CharField(
-        label=_("Expected outcome of your request"),
+        label=_("What result are you looking for?"),
         help_text=_(
-            "You can specify your expectations regarding the archive alteration "
-            "mechanisms described in the content policies page."
+            "You can specify your expectations regarding the Archive change "
+            "mechanisms outlined in the content policy page."
         ),
         widget=forms.Textarea,
         required=True,
@@ -173,9 +173,9 @@ class ConfirmationForm(forms.Form):
 
     confirm = forms.BooleanField(
         label=_(
-            "I hereby confirm that the information provided in this summary "
-            "is accurate, correct and complete; I am not making this request "
-            "with any unethical or fraudulent intent"
+            "I confirm that the information provided in this summary is accurate, "
+            "correct, and complete. I attest that this request is made without "
+            "unethical or fraudulent intent."
         ),
         required=True,
     )

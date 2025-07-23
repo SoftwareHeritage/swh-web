@@ -8,16 +8,16 @@
 {% endcomment %}
 
 {% block page_title %}
-  {% translate "Archive Content Policies" %}
+  {% translate "Archive content policy" %}
 {% endblock page_title %}
 
 {% block navbar-content %}
-  <h4>{% translate "Archive Content Policies" %}</h4>
+  <h4>{% translate "Archive content policy" %}</h4>
 {% endblock navbar-content %}
 
 {% block content %}
   {% blocktranslate asvar alter_msg trimmed %}
-    Please read the entire archive content policy before requesting any alteration to the archive.
+    Please read the entire Archive content policy before asking for any changes to the Archive.
   {% endblocktranslate %}
   {% bootstrap_messages %}
   <div class="mt-3">
@@ -25,22 +25,15 @@
     <h4>{% translate "Our mission" %}</h4>
     {% blocktranslate with swhorg="https://www.softwareheritage.org" trimmed %}
       <p>
-        <a href="{{ swhorg }}" target="_blank">Software Heritage</a>
+        <a href="{{ swhorg }}" target="_blank">Software Heritage</a>’s
         ambition is to <strong>collect</strong>, <strong>preserve</strong>, and
         <strong>share</strong> software:
       </p>
       <ul>
+        <li>We collect all publicly available software in source code form, without exception.</li>
+        <li>We preserve software because it's fragile and can easily disappear.</li>
         <li>
-          we do not make distinctions and collect all software that is publicly
-          available in source code form
-        </li>
-        <li>
-          we preserve software because it is fragile and we are unfortunately
-          starting to lose it
-        </li>
-        <li>
-          we are building the largest archive of software source code ever assembled
-          and making it accessible to everybody
+          We're building the largest Archive of software source code ever assembled, making it accessible to everyone.
         </li>
       </ul>
       <p>
@@ -53,7 +46,7 @@
       {% include "includes/swh_legal.html" %}
     {% endif %}
     <div class="my-3">
-      <a class="btn btn-primary" href="{% url next_step %}" role="button">{% translate "Request an archive data alteration" %}</a>
+      <a class="btn btn-primary" href="{% url next_step %}" role="button">{% translate "Request an Archive change" %}</a>
     </div>
   </div>
 {% endblock content %}

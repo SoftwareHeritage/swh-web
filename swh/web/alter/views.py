@@ -144,8 +144,8 @@ def assistant_email_verification(request: HttpRequest, value: str) -> HttpRespon
     messages.success(
         request,
         _(
-            "Thanks, your email address %(email)s has been verified, you now have "
-            "access to the alteration request form."
+            "Thanks! Your email address %(email)s is verified, you can now "
+            "access the change request form."
         )
         % {"email": token.email},
     )

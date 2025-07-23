@@ -8,11 +8,11 @@
 {% endcomment %}
 
 {% block page_title %}
-  {% translate "Choice of archive alteration request category" %}
+  {% translate "Choose request category" %}
 {% endblock page_title %}
 
 {% block navbar-content %}
-  <h4>{% translate "Choice of archive alteration request category" %}</h4>
+  <h4>{% translate "Choose request category" %}</h4>
 {% endblock navbar-content %}
 
 {% block content %}
@@ -23,9 +23,7 @@
   {% include "includes/steps.html" %}
   <p>
     {% blocktranslate trimmed %}
-      Please specify the reason for your request to alter the archive. This will help
-      determine the necessary steps and the information we may need to collect from you
-      to process your request.
+      Please tell us why you're requesting a change to the Archive. We'll use this to determine next steps and any information we may need.
     {% endblocktranslate %}
   </p>
   <form method="POST" class="accordion mt-3" id="categoryAccordion">
@@ -47,11 +45,10 @@
         <div class="accordion-body">
           <p>
             {% blocktranslate trimmed %}
-              If you believe content in the archive may be subject to copyright
-              infringement, you can submit a takedown request.
+              To report potential copyright infringement in the Archive, please submit a takedown request.
             {% endblocktranslate %}
           </p>
-          {% bootstrap_button _("Copyright archive alteration request") button_type="submit" button_class="btn-primary" name="category" value="copyright" %}
+          {% bootstrap_button _("Submit copyright change request") button_type="submit" button_class="btn-primary" name="category" value="copyright" %}
         </div>
       </div>
     </div>
@@ -63,22 +60,27 @@
                 data-bs-target="#categoryPii"
                 aria-expanded="false"
                 aria-controls="categoryPii">
-          {% translate "Personally Identifiable Information (PII)" %}
+          {% translate "Personally identifiable information (PII)" %}
         </button>
       </h5>
       <div id="categoryPii"
            class="accordion-collapse collapse"
            data-bs-parent="#categoryAccordion">
         <div class="accordion-body">
-          <p>
-            {% blocktranslate trimmed %}
-              Personal data was versioned by mistake in a repository, you changed your
-              name or any other GPDR-related issues; you made a change to your
-              repository and you want to apply it to the archived version: you wish to
-              request a modification of the archive.
-            {% endblocktranslate %}
-          </p>
-          {% bootstrap_button _("PII archive alteration request") button_type="submit" button_class="btn-primary" name="category" value="pii" %}
+          <p>{% translate "You can request a modification to the archive if:" %}</p>
+          <ul>
+            <li>
+              {% blocktranslate trimmed %}
+                Personal data was mistakenly versioned in a repository, or you have GDPR-related issues (like a name change).
+              {% endblocktranslate %}
+            </li>
+            <li>
+              {% blocktranslate trimmed %}
+                You've made a change to your repository and want to apply it to the archived version.
+              {% endblocktranslate %}
+            </li>
+          </ul>
+          {% bootstrap_button _("Request personal data change") button_type="submit" button_class="btn-primary" name="category" value="pii" %}
         </div>
       </div>
     </div>
@@ -89,7 +91,7 @@
                 data-bs-toggle="collapse"
                 data-bs-target="#categoryLegal"
                 aria-expanded="false"
-                aria-controls="categoryLegal">{% translate "Other Legal Matters" %}</button>
+                aria-controls="categoryLegal">{% translate "Other legal matters" %}</button>
       </h5>
       <div id="categoryLegal"
            class="accordion-collapse collapse"

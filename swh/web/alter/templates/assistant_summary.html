@@ -8,11 +8,11 @@
 {% endcomment %}
 
 {% block page_title %}
-  {% translate "Alteration request summary" %}
+  {% translate "Summary of your request" %}
 {% endblock page_title %}
 
 {% block navbar-content %}
-  <h4>{% translate "Alteration request summary" %}</h4>
+  <h4>{% translate "Summary of your request" %}</h4>
 {% endblock navbar-content %}
 
 {% block content %}
@@ -23,8 +23,7 @@
   {% include "includes/steps.html" %}
   <p>
     {% blocktranslate trimmed %}
-      Please take the time to review this summary and confirm your intent to send this
-      request.
+      Please review this summary carefully and confirm you're ready to send this request.
     {% endblocktranslate %}
   </p>
   <form method="post" class="form mt-3" id="summary-form">
