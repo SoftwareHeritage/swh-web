@@ -263,7 +263,7 @@ def prepare_content_for_display(
     if mime_type.startswith("image/svg"):
         mime_type = "image/svg+xml"
 
-    if mime_type.startswith("text/") or mime_type.startswith("application/"):
+    if mime_type.startswith(("text/", "application/", "message/")):
         processed_content = content_data.decode("utf-8", errors="replace")
 
     return {

@@ -342,7 +342,7 @@ def content_display(
     available_languages = None
 
     if mimetype and (
-        mimetype.startswith("text/")
+        mimetype.startswith(("text/", "message/"))
         or (
             mimetype.startswith("application/")
             and content_data.get("encoding", "") != "binary"

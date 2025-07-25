@@ -75,6 +75,7 @@ _mime_type_to_hljs_language = {
     "text/x-msdos-batch": "dos",
     "text/x-lisp": "lisp",
     "text/x-shellscript": "bash",
+    "message/rfc822": "http",
 }
 
 # dictionary mapping filenames to hljs languages
