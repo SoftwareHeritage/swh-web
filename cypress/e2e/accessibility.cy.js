@@ -13,9 +13,9 @@ const pagesToCheck = [
   {name: 'content-policy', path: '/content-policy/'}
 ];
 
-describe('Accessibility compliance tests', function () {
+describe('Accessibility compliance tests', function() {
 
-  beforeEach(function () {
+  beforeEach(function() {
     cy.intercept('/coverage', (req) => {
       // override the previously-declared stub to just continue the request instead of stubbing
       req.continue();
@@ -23,7 +23,7 @@ describe('Accessibility compliance tests', function () {
   });
 
   pagesToCheck.forEach(page => {
-    it(`should pass IBM accessibility checks on page '${page.name}'`, function () {
+    it(`should pass IBM accessibility checks on page '${page.name}'`, function() {
       cy.visit(page.path);
       const label = page.name.replaceAll(' ', '_') + '-' + Math.random().toString();
       cy.getCompliance(label).then(report => {
@@ -41,15 +41,15 @@ describe('Accessibility compliance tests', function () {
       });
     });
 
-    it(`should pass Axe accessibility checks on page '${page.name}'`, function () {
+    it(`should pass Axe accessibility checks on page '${page.name}'`, function() {
       cy.visit(page.path);
       cy.injectAxe();
-      cy.checkA11y(null, { includedImpacts: ['serious', 'critical'] });
+      cy.checkA11y(null, {includedImpacts: ['serious', 'critical']});
     });
 
   });
 
-  it('should materialize skip navigation link when getting focused', function () {
+  it('should materialize skip navigation link when getting focused', function() {
     // homepage set focus on search input by default so we use another page for this test
     cy.visit('/save');
     // skip link not visible by default
