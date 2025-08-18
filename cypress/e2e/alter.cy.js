@@ -296,7 +296,7 @@ describe('Archive alteration request assistant tests', () => {
     fillEmail('test@swh');
     cy.location('pathname').should('be.equal', step1Url);
     cy.get('div.alert-danger').contains('fix the errors').should('be.visible');
-    cy.get('input#id_email').siblings('div.invalid-feedback').contains('valid email').should('be.visible');
+    cy.get('.invalid-feedback').should('be.visible').and('contain', 'valid email');
   });
 
   it('should redirect email confirmation', () => {
@@ -473,7 +473,7 @@ describe('Archive alteration request assistant tests', () => {
     fillEmail(blockedEmailAddress);
     cy.location('pathname').should('be.equal', step1Url);
     cy.get('div.alert-danger').contains('fix the errors').should('be.visible');
-    cy.get('input#id_email').siblings('div.invalid-feedback').contains('blocked by Software Heritage').should('be.visible');
+    cy.get('.invalid-feedback').should('be.visible').and('contain', 'blocked by Software Heritage');
   });
 
   it('should reject expired email confirmation tokens', () => {
