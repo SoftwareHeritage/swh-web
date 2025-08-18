@@ -16,6 +16,6 @@
 }
 
 #swh-bearer-token {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     white-space: break-spaces;
 }
