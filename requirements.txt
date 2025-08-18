@@ -3,7 +3,7 @@
 # dependency lines, see https://pip.readthedocs.org/en/1.1/requirements.html
 
 chardet
-charset-normalizer
+charset-normalizer >= 3.4.3
 cryptography
 disposable-email-domains
 django
