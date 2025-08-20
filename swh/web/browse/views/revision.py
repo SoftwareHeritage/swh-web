@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from collections import deque
+import dataclasses
 import hashlib
 import json
 import textwrap
@@ -15,6 +17,7 @@ from django.utils.safestring import mark_safe
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType
+from swh.storage.algos.revisions_walker import State
 from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
@@ -31,6 +34,8 @@ from swh.web.browse.utils import (
 )
 from swh.web.utils import (
     archive,
+    cache_get,
+    cache_set,
     format_utc_iso_date,
     gen_path_info,
     highlightjs,
@@ -227,8 +232,26 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     per_page = int(request.GET.get("per_page", NB_LOG_ENTRIES))
     offset = int(request.GET.get("offset", 0))
     revs_ordering = request.GET.get("revs_ordering", "committer_date")
-    session_key = "rev_%s_log_ordering_%s" % (sha1_git, revs_ordering)
-    rev_log_session = request.session.get(session_key, None)
+    cache_key = f"rev_{sha1_git}_log_ordering_{revs_ordering}"
+    rev_log_session = cache_get(
+        cache_key,
+        extra_decoders={
+            "rev_walker_state": lambda d: State(
+                done=d["done"],
+                last_rev=d["last_rev"],
+                num_revs=d["num_revs"],
+                missing_revs=d["missing_revs"],
+                revs_to_visit=(
+                    list(map(tuple, d["revs_to_visit"]))
+                    if revs_ordering == "committer_date"
+                    else d["revs_to_visit"]
+                ),
+            ),
+            "set": set,
+            "deque": deque,
+        },
+    )
+
     rev_log = []
     revs_walker_state = None
     if rev_log_session:
@@ -245,14 +268,22 @@ def revision_log_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
 
         rev_log += [rev["id"] for rev in revs_walker]
         revs_walker_state = revs_walker.export_state()
+        cache_set(
+            cache_key,
+            {
+                "rev_log": rev_log,
+                "revs_walker_state": revs_walker_state,
+            },
+            timeout=60 * 60,  # one hour
+            extra_encoders=[
+                (State, "rev_walker_state", dataclasses.asdict),
+                (set, "set", list),
+                (deque, "deque", list),
+            ],
+        )
 
     revs = rev_log[offset : offset + per_page]
     revision_log = archive.lookup_revision_multiple(revs)
-
-    request.session[session_key] = {
-        "rev_log": rev_log,
-        "revs_walker_state": revs_walker_state,
-    }
 
     revs_ordering = request.GET.get("revs_ordering", "")
 

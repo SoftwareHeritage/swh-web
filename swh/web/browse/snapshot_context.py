@@ -1,11 +1,12 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 # Utility module for browsing the archive in a snapshot context.
 
-from collections import defaultdict
+from collections import defaultdict, deque
+import dataclasses
 from typing import Any, Dict, List, Optional, Tuple
 
 from looseversion import LooseVersion2
@@ -17,6 +18,7 @@ from django.utils.html import escape
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Snapshot
 from swh.model.swhids import CoreSWHID, ObjectType
+from swh.storage.algos.revisions_walker import State
 from swh.web.browse.utils import (
     format_log_entries,
     gen_release_link,
@@ -30,6 +32,8 @@ from swh.web.browse.utils import (
 from swh.web.config import get_config
 from swh.web.utils import (
     archive,
+    cache_get,
+    cache_set,
     django_cache,
     format_utc_iso_date,
     gen_path_info,
@@ -1099,8 +1103,25 @@ def browse_snapshot_log(
     per_page = int(request.GET.get("per_page", PER_PAGE))
     offset = int(request.GET.get("offset", 0))
     revs_ordering = request.GET.get("revs_ordering", "committer_date")
-    session_key = "rev_%s_log_ordering_%s" % (revision_id, revs_ordering)
-    rev_log_session = request.session.get(session_key, None)
+    cache_key = f"rev_{revision_id}_log_ordering_{revs_ordering}"
+    rev_log_session = cache_get(
+        cache_key,
+        extra_decoders={
+            "rev_walker_state": lambda d: State(
+                done=d["done"],
+                last_rev=d["last_rev"],
+                num_revs=d["num_revs"],
+                missing_revs=d["missing_revs"],
+                revs_to_visit=(
+                    list(map(tuple, d["revs_to_visit"]))
+                    if revs_ordering == "committer_date"
+                    else d["revs_to_visit"]
+                ),
+            ),
+            "set": set,
+            "deque": deque,
+        },
+    )
     rev_log = []
     revs_walker_state = None
     if rev_log_session:
@@ -1116,14 +1137,22 @@ def browse_snapshot_log(
         )
         rev_log += [rev["id"] for rev in revs_walker]
         revs_walker_state = revs_walker.export_state()
+        cache_set(
+            cache_key,
+            {
+                "rev_log": rev_log,
+                "revs_walker_state": revs_walker_state,
+            },
+            timeout=60 * 60,  # one hour
+            extra_encoders=[
+                (State, "rev_walker_state", dataclasses.asdict),
+                (set, "set", list),
+                (deque, "deque", list),
+            ],
+        )
 
     revs = rev_log[offset : offset + per_page]
     revision_log = archive.lookup_revision_multiple(revs)
-
-    request.session[session_key] = {
-        "rev_log": rev_log,
-        "revs_walker_state": revs_walker_state,
-    }
 
     origin_info = snapshot_context["origin_info"]
     visit_info = snapshot_context["visit_info"]
