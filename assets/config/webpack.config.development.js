@@ -391,7 +391,7 @@ module.exports = {
     new RobotstxtPlugin({
       policy: [{
         userAgent: '*',
-        disallow: '/api/'
+        disallow: ['/api/', '/browse/snapshot/*/log/', '/browse/revision/*/log/']
       }]
     }),
     // for extracting all stylesheets in separate css files
