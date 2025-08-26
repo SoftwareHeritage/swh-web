@@ -338,7 +338,7 @@ LOGGING = {
             "level": "INFO",
         },
         "urllib3": {
-            "level": "INFO",
+            "level": "DEBUG" if DEBUG else "INFO",
         },
     },
 }
