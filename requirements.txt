@@ -29,3 +29,5 @@ pyyaml
 requests
 rfc3987
 sentry-sdk
+# for pybadges still using the imghdr module removed in Python 3.13
+standard-imghdr ; python_version > "3.12"
