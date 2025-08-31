@@ -98,7 +98,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                         <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
                         <div class="text-center" style="font-size: 120%">
                           {% if "count" in origins and origins.count %}
-                            {{ origins.count }} origins
+                            {{ origins.count|intcomma }} origins
                           {% else %}
                             <br />
                           {% endif %}
@@ -127,7 +127,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                                     <tr id="{{ origins.type }}-{{ visit_type }}">
                                       <td>{{ instance }}</td>
                                       <td>{{ visit_type }}</td>
-                                      <td>{{ data.count }}</td>
+                                      <td>{{ data.count|intcomma }}</td>
                                       <td>
                                         {% if data.search_url %}
                                           <a href="{{ data.search_url }}"

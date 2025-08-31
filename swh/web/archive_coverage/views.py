@@ -15,8 +15,11 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
+from rest_framework.request import Request
 
 from swh.scheduler.model import SchedulerMetrics
+from swh.web.api.apidoc import api_doc, format_docstring
+from swh.web.api.apiurls import api_route
 from swh.web.config import scheduler
 from swh.web.utils import django_cache, reverse
 from swh.web.utils.archive import count_origins
@@ -499,25 +502,36 @@ def _get_origins_count(
     return _get_origins_count_internal(url_pattern, visit_type)
 
 
-def _search_url(query: str, visit_type: str) -> str:
-    return reverse(
-        "browse-search",
-        query_params={
-            "q": query,
-            "visit_type": visit_type,
-            "with_visit": "true",
-            "with_content": "true",
-        },
-    )
+def _search_url(query: str, visit_type: str, api_urls: bool) -> str:
+    if api_urls:
+        return reverse(
+            "api-1-origin-search",
+            url_args={
+                "url_pattern": query,
+            },
+            query_params={
+                "visit_type": visit_type,
+                "with_visit": "true",
+                "with_content": "true",
+            },
+        )
+    else:
+        return reverse(
+            "browse-search",
+            query_params={
+                "q": query,
+                "visit_type": visit_type,
+                "with_visit": "true",
+                "with_content": "true",
+            },
+        )
 
 
-@xframe_options_exempt
-@never_cache
-def swh_coverage(request: HttpRequest) -> HttpResponse:
+def refresh_listed_origins() -> None:
     listers_metrics = _get_listers_metrics(cache_metrics=True)
 
     for origins in listed_origins["origins"]:
-        origins["count"] = "0"
+        origins["count"] = 0
         origins["instances"] = {}
         origins_type = origins["type"]
 
@@ -536,9 +550,9 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 )
 
             count = sum(visit_type_counts.values())
-            origins["count"] = f"{count:,}"
+            origins["count"] = count
             origins["instances"][lister_instance] = {
-                key: {"count": f"{value:,}"}
+                key: {"count": value}
                 for key, value in visit_type_counts.items()
                 if value > 0
             }
@@ -557,7 +571,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         )
         count_visited = count_total - count_never_visited
 
-        origins["count"] = f"{count_visited:,}"
+        origins["count"] = count_visited
         origins["instances"] = defaultdict(dict)
         for instance, metrics in listers_metrics[origins_type]:
             instance_count = metrics.origins_enabled - metrics.origins_never_visited
@@ -566,7 +580,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 continue
 
             origins["instances"][instance].update(
-                {metrics.visit_type: {"count": f"{instance_count:,}"}}
+                {metrics.visit_type: {"count": instance_count}}
             )
             origins["visit_types"] = list(
                 set(origins["instances"][instance].keys())
@@ -576,7 +590,12 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         # defaultdict cannot be iterated in django template
         origins["instances"] = dict(sorted(origins["instances"].items()))
 
-    for origins in listed_origins["origins"]:
+
+def get_listed_origins(api_urls: bool):
+    refresh_listed_origins()
+    listed_origins_with_urls = copy.deepcopy(listed_origins)
+
+    for origins in listed_origins_with_urls["origins"]:
         instances = origins["instances"]
         nb_instances = len(instances)
         for instance_name, visit_types in instances.items():
@@ -589,17 +608,16 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                 else:
                     search_pattern = origins["search_pattern"]["default"]
                 if search_pattern:
-                    search_url = _search_url(search_pattern, visit_type)
+                    search_url = _search_url(search_pattern, visit_type, api_urls)
                 visit_types[visit_type]["search_url"] = search_url
 
-    # use a light copy to avoid side effects when running tests
-    listed_origins_filtered = copy.copy(listed_origins)
-    # filter out origin types without archived origins
-    listed_origins_filtered["origins"] = list(
-        filter(lambda o: o["count"] != "0", listed_origins_filtered["origins"])
-    )
+    return listed_origins_with_urls
 
-    for origins in legacy_origins["origins"]:
+
+def get_legacy_origins(api_urls: bool):
+    legacy_origins_with_urls = copy.deepcopy(legacy_origins)
+
+    for origins in legacy_origins_with_urls["origins"]:
         origins["instances"] = {origins["type"]: {}}
         total_count = 0
         for visit_type in origins["visit_types"]:
@@ -608,33 +626,86 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
             )
             total_count += count
             origins["instances"][origins["type"]][visit_type] = {
-                "count": f"{count:,}",
-                "search_url": _search_url(origins["search_pattern"], visit_type),
+                "count": count,
+                "search_url": _search_url(
+                    origins["search_pattern"], visit_type, api_urls
+                ),
             }
-        origins["count"] = f"{total_count:,}"
+        origins["count"] = total_count
 
-    for origins in deposited_origins["origins"]:
-        origins["count"] = (
-            f"{_get_origins_count(origins['search_pattern'], 'deposit', cache_counts=True):,}"
+    return legacy_origins_with_urls
+
+
+def get_deposited_origins(api_urls: bool):
+    deposited_origins_with_urls = copy.deepcopy(deposited_origins)
+
+    for origins in deposited_origins_with_urls["origins"]:
+        origins["count"] = _get_origins_count(
+            origins["search_pattern"], "deposit", cache_counts=True
         )
         origins["search_urls"] = {
-            "deposit": _search_url(origins["search_pattern"], "deposit")
+            "deposit": _search_url(origins["search_pattern"], "deposit", api_urls)
         }
+    return deposited_origins_with_urls
 
+
+@xframe_options_exempt
+@never_cache
+def swh_coverage(request: HttpRequest) -> HttpResponse:
     focus = []
     focus_param = request.GET.get("focus")
     if focus_param:
         focus = focus_param.split(",")
+
+    listed_origins = get_listed_origins(api_urls=False)
+    legacy_origins = get_legacy_origins(api_urls=False)
+    deposited_origins = get_deposited_origins(api_urls=False)
+
+    # filter out origin types without archived origins
+    listed_origins["origins"] = list(
+        filter(lambda o: o["count"] != 0, listed_origins["origins"])
+    )
 
     return render(
         request,
         "archive-coverage.html",
         {
             "origins": {
-                "Regular crawling": listed_origins_filtered,
+                "Recurring crawling": listed_origins,
                 "Discontinued hosting": legacy_origins,
                 "On demand archival": deposited_origins,
             },
             "focus": focus,
         },
     )
+
+
+@api_route(r"/stat/coverage/", "api-1-stat-coverage")
+@api_doc("/stat/coverage/", category="Miscellaneous", noargs=True)
+@format_docstring()
+def api_stats(request: Request):
+    """
+    .. http:get:: /api/1/stat/coverage/
+
+        Get statistics about what origins are covered by the archive.
+
+        {common_headers}
+
+        :statuscode 200: no error
+
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`stat/coverage/`
+    """
+
+    listed_origins = get_listed_origins(api_urls=True)
+    legacy_origins = get_legacy_origins(api_urls=True)
+    deposited_origins = get_deposited_origins(api_urls=True)
+
+    return {
+        "listed": listed_origins,
+        "legacy": legacy_origins,
+        "deposited": deposited_origins,
+    }
