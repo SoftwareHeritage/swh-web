@@ -121,7 +121,7 @@
     "jquery": "^3.7.1",
     "js-cookie": "^3.0.5",
     "js-year-calendar": "^2.0.0",
-    "mathjax": "3.2.2",
+    "mathjax": "^4.0.0",
     "mirth": "github:highlightjs/highlightjs-mirth",
     "notebookjs": "^0.8.3",
     "object-fit-images": "^3.2.4",

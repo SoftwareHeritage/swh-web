@@ -81,8 +81,8 @@ fs.readdirSync(appsDir).forEach(app => {
 
 const mathjaxExtensionsLicenses = {};
 
-const mathjaxTexExtensionsPath = path.join(nodeModules, 'mathjax/es5/input/tex/extensions');
-const mathjaxMMLExtensionsPath = path.join(nodeModules, 'mathjax/es5/input/mml/extensions');
+const mathjaxTexExtensionsPath = path.join(nodeModules, 'mathjax/input/tex/extensions');
+const mathjaxMMLExtensionsPath = path.join(nodeModules, 'mathjax/input/mml/extensions');
 
 for (const mathjaxExtData of [
   {'extsType': 'tex', 'extsPath': mathjaxTexExtensionsPath},
@@ -91,11 +91,10 @@ for (const mathjaxExtData of [
     if (extension.endsWith('.js')) {
       mathjaxExtensionsLicenses[`js/mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`] = [
         {
-          'id': `mathjax/es5/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
-          'path': `./node_modules/mathjax/es5/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
+          'id': `mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
+          'path': `./node_modules/mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
           'spdxLicenseExpression': 'Apache-2.0',
           'licenseFilePath': './node_modules/mathjax/LICENSE'
-
         }
       ];
     }
@@ -372,7 +371,7 @@ module.exports = {
       }
     ],
     // tell webpack to not parse already minified files to speedup build process
-    noParse: [path.resolve(nodeModules, 'mathjax/es5/tex-mml-chtml.js')]
+    noParse: [path.resolve(nodeModules, 'mathjax/tex-mml-chtml.js')]
   },
   // webpack plugins
   plugins: [
@@ -414,20 +413,20 @@ module.exports = {
           to: path.resolve(outputPath, 'js/pdf.worker.min.js')
         },
         {
-          from: path.resolve(nodeModules, 'mathjax/es5/output/chtml/fonts/woff-v2/**'),
+          from: path.resolve(nodeModules, '@mathjax/mathjax-newcm-font/chtml/woff2/**'),
           to: path.resolve(outputPath, 'fonts/[name][ext]')
         },
         {
-          from: path.resolve(nodeModules, 'mathjax/es5/input/tex/extensions/'),
+          from: path.resolve(nodeModules, 'mathjax/input/tex/extensions/'),
           to: path.resolve(outputPath, 'js/mathjax/input/tex/extensions/')
         },
         {
-          from: path.resolve(nodeModules, 'mathjax/es5/input/mml/extensions/'),
+          from: path.resolve(nodeModules, 'mathjax/input/mml/extensions/'),
           to: path.resolve(outputPath, 'js/mathjax/input/mml/extensions/')
         },
         {
-          from: path.resolve(nodeModules, 'mathjax/es5/sre/mathmaps/'),
-          to: path.resolve(outputPath, 'js/mathjax/sre/mathmaps/')
+          from: path.resolve(nodeModules, 'mathjax/sre/'),
+          to: path.resolve(outputPath, 'js/mathjax/sre/')
         }
       ]
     }),
