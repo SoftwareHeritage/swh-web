@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2022  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const cypressSplit = require('cypress-split');
+const webpackPreprocessor = require('@cypress/webpack-batteries-included-preprocessor');
 
 const emailPath = '/tmp/swh/mails';
 
@@ -51,6 +52,14 @@ function getDatabase() {
   return db;
 }
 
+function getWebpackOptions() {
+  const options = webpackPreprocessor.getFullWebpackOptions();
+  options.resolve.fallback.util = require.resolve('util');
+  options.resolve.fallback.http = require.resolve('stream-http');
+  options.resolve.fallback.https = require.resolve('https-browserify');
+  return options;
+}
+
 module.exports = (on, config) => {
   require('@cypress/code-coverage/task')(on, config);
   cypressSplit(on, config);
@@ -67,6 +76,9 @@ module.exports = (on, config) => {
         });
     });
   });
+  on('file:preprocessor', webpackPreprocessor({
+    webpackOptions: getWebpackOptions()
+  }));
   on('task', {
     getSwhTestsData: async() => {
       if (!global.swhTestsData) {
