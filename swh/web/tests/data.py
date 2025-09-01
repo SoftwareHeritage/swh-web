@@ -403,6 +403,7 @@ def _init_tests_data():
                     )
             elif target_type == "release":
                 release = storage.release_get([branch_data.target])[0]
+                counters.add("person", (release.author.fullname,))
                 origin_revisions.add(release.target)
                 releases.add(hash_to_hex(branch_data.target))
                 swhids.append(
@@ -416,8 +417,11 @@ def _init_tests_data():
                     )
                 )
 
-        for rev_log in storage.revision_shortlog(origin_revisions):
-            rev_id = rev_log[0]
+        for rev in storage.revision_log(origin_revisions):
+            counters.add(
+                "person", (rev["author"]["fullname"], rev["committer"]["fullname"])
+            )
+            rev_id = rev["id"]
             revisions.add(rev_id)
 
         for rev in storage.revision_get(sorted(origin_revisions)):
