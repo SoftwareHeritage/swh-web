@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -51,7 +51,7 @@ function escapeLaTeX(text) {
     // some escaping sequences when converting md to html.
     // So we use the following escaping hacks to keep them in the html
     // output and avoid MathJax typesetting errors.
-    let escapedText = mathText.replace('\\\\', '\\\\\\\\');
+    let escapedText = mathText.replace(/\\\\/g, '\\\\\\\\');
     for (const specialLaTexChar of ['{', '}', '#', '%', '&', '_']) {
       escapedText = escapedText.replace(new RegExp(`\\\\${specialLaTexChar}`, 'g'),
                                         `\\\\${specialLaTexChar}`);
@@ -129,6 +129,11 @@ export async function renderNotebook(nbJsonUrl, domElt) {
   const rendered = swh.webapp.filterXSS(notebook.render());
   // insert rendered notebook in the DOM
   $(domElt).append(rendered);
+  // fix invalid double escaping done by notebookjs
+  $(domElt).find('pre').each((i, pre) => {
+    pre.innerHTML = pre.innerHTML.replace(/&amp;lt;/g, '&lt;');
+    pre.innerHTML = pre.innerHTML.replace(/&amp;gt;/g, '&gt;');
+  });
   // set light red background color for stderr output cells
   $('pre.nb-stderr').parent().css('background', '#fdd');
   // load MathJax library for math typesetting
