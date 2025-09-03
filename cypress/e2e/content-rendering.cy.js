@@ -90,7 +90,7 @@ describe('HTML rendering tests', function() {
         // all script tags should have been removed except those injected by SWH
         cy.iframe('.swh-html-content')
           .find('script')
-          .should('have.length', 2)
+          .should('have.length', 3)
           .and('have.class', 'swh-iframe-script');
 
         // check CSS have been successfully applied

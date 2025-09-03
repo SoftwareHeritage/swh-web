@@ -30,10 +30,16 @@ function escapeLaTeX(text) {
   const inlineMath = /\$(.+?)\$|\\\\\((.+?)\\\\\)/g;
   const latexEnvironment = /\\begin\{([a-z]*\*?)\}(.+?)\\end\{\1\}/msg;
 
+  const blockMathToInline = [];
+
   const mathTextFound = [];
   let bm;
   while ((bm = blockMath.exec(text)) !== null) {
     mathTextFound.push(bm[1]);
+    if (!bm[1].startsWith('\n')) {
+      // not a block and should be inlined
+      blockMathToInline.push(bm[1]);
+    }
   }
 
   let im;
@@ -60,15 +66,21 @@ function escapeLaTeX(text) {
     // some html escaping is also needed
     escapedText = escapeHTML(escapedText);
 
-    // hack to prevent showdown to replace _ characters
+    // hack to prevent showdown to replace _ or * characters
     // by html em tags as it will break some math typesetting
     // (setting the literalMidWordUnderscores option is not
     // enough as iy only works for _ characters contained in words)
     escapedText = escapedText.replace(/_/g, '{@}underscore{@}');
+    escapedText = escapedText.replace(/\*/g, '{@}star{@}');
 
     if (mathText !== escapedText) {
       text = text.replace(mathText, escapedText);
     }
+  }
+
+  // fix math that should be rendered inline
+  for (const blockToInline of blockMathToInline) {
+    text = text.replace(`$$${blockToInline}$$`, `$${blockToInline}$`);
   }
 
   return text;
@@ -88,8 +100,9 @@ function renderMarkdownSync(showdown, text) {
   // render markdown
   let rendered = converter.makeHtml(text);
 
-  // restore underscores in rendered HTML (see escapeLaTeX function)
+  // restore underscores and stars in rendered HTML (see escapeLaTeX function)
   rendered = rendered.replace(/{@}underscore{@}/g, '_');
+  rendered = rendered.replace(/{@}star{@}/g, '*');
 
   return rendered;
 }
