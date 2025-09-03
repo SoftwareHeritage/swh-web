@@ -40,8 +40,12 @@ export function errorMessageFromResponse(errorData, defaultMessage) {
   return errorMessage ? `Error: ${errorMessage}` : defaultMessage;
 }
 
-export function staticAsset(asset) {
-  return `${__STATIC__}${asset}`;
+export function staticAsset(asset, origin) {
+  let url = `${__STATIC__}${asset}`;
+  if (url.startsWith('/') && origin) {
+    url = origin + url;
+  }
+  return url;
 }
 
 export function csrfPost(url, headers = {}, body = null) {

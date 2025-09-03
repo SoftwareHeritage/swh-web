@@ -7,11 +7,10 @@
 
 import {staticAsset} from 'utils/functions';
 
-export async function typesetMath() {
-
+export async function typesetMath(origin) {
   window.MathJax = {
     chtml: {
-      fontURL: staticAsset('fonts')
+      fontURL: staticAsset('fonts', origin)
     },
     tex: {
       tags: 'ams',
@@ -23,7 +22,7 @@ export async function typesetMath() {
     },
     loader: {
       paths: {
-        mathjax: staticAsset('js/mathjax')
+        mathjax: staticAsset('js/mathjax', origin)
       }
     }
   };

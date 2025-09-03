@@ -303,6 +303,7 @@ describe('Markdown rendering tests', function() {
         // request html preview
         cy.get('#preview-switch-label')
           .click();
+        // check mathjax gets loaded
         cy.wait('@loadMathjax');
         // check markdown rendering
         cy.iframe('.swh-html-content')

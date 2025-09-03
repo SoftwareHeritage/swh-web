@@ -77,7 +77,7 @@ async function initHtmlPreview() {
   for (let c = 0; c < links.length; c++) {
     links[c].addEventListener('click', linkClicked);
   }
-  swh.mathjax.typesetMath();
+  swh.mathjax.typesetMath('${window.location.origin}');
 </script>`;
   if (isNotebook(filename)) {
     swh.webapp.renderNotebook(contentUrl, '.swh-ipynb');
