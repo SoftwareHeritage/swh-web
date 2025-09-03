@@ -210,6 +210,7 @@ describe('HTML rendering tests', function() {
     const originUrl = 'https://git.example.org/html-page-css-file-backround-image';
     checkHtmlRendering(this.Urls, originUrl, indexHtml, this.swhLogoBase64, styleCss);
   });
+
 });
 
 describe('Image rendering tests', function() {
@@ -273,4 +274,45 @@ describe('Jupyter notebook rendering test', function() {
     });
   });
 
+});
+
+describe('Markdown rendering tests', function() {
+  it(`should render a markdown file with math`, function() {
+
+    const markdown = `
+# This is a matrix
+
+\\begin{pmatrix}
+  0 & 1 \\\\\\
+  1 & 0
+\\end{pmatrix}
+`;
+
+    const originUrl = 'https://git.example.org/markdown-math';
+    cy.request('POST',
+               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+               [{path: 'math.md', data: markdown}])
+      .then((resp) => {
+        expect(resp.status).to.eq(200);
+        const url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}&path=math.md`;
+
+        cy.intercept(/.*static\/js\/mathjax-library.*/)
+          .as('loadMathjax');
+
+        cy.visit(url);
+        // request html preview
+        cy.get('#preview-switch-label')
+          .click();
+        cy.wait('@loadMathjax');
+        // check markdown rendering
+        cy.iframe('.swh-html-content')
+          .find('h1')
+          .should('have.text', 'This is a matrix');
+        // check math rendering
+        cy.iframe('.swh-html-content')
+          .find('mjx-math')
+          .should('be.visible')
+          .and('not.be.empty');
+      });
+  });
 });

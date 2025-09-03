@@ -28,5 +28,5 @@ export async function typesetMath() {
     }
   };
 
-  await import(/* webpackChunkName: "mathjax" */ 'utils/mathjax');
+  await import(/* webpackChunkName: "mathjax-library" */ 'utils/mathjax');
 }

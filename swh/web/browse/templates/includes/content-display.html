@@ -89,6 +89,7 @@ See top-level LICENSE file for more information
         // forward clicked links to parent page
         const iframeScripts =
           `<script class="swh-iframe-script" async src="/static/jssources/@iframe-resizer/child/index.umd.js"><\/script>
+           <script class="swh-iframe-script" src="{{ mathjax_js_library }}"><\/script>
            <script class="swh-iframe-script">
             function linkClicked(event) {
               event.preventDefault();
@@ -102,6 +103,7 @@ See top-level LICENSE file for more information
             for (let c = 0; c < links.length; c++) {
               links[c].addEventListener('click', linkClicked);
             }
+            swh.mathjax.typesetMath();
            <\/script>`;
         // handle links clicked in iframe to allow navigation between pages
         $(window).on('message', event => {
@@ -133,10 +135,11 @@ See top-level LICENSE file for more information
               .then(response => response.text())
               .then(async data => {
                 {% if filename|is_markdown %}
-                const sanitizedHtml = await swh.webapp.renderMarkdown(null, {{ top_right_link.url|jsonify }}, true);
+                const html = await swh.webapp.renderMarkdownWithMath(data);
                 {% else %}
-                const sanitizedHtml = swh.webapp.filterXSS(data, true);
+                const html = data;
                 {% endif %}
+                const sanitizedHtml = swh.webapp.filterXSS(html, true);
                 $('.swh-html-content').attr('srcdoc',
                   '<div data-iframe-size>' + sanitizedHtml + '<\/div>' + iframeScripts);
                 swh.webapp.resizeIframe(

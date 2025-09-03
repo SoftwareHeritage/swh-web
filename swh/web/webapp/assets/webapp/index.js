@@ -15,7 +15,6 @@ import './webapp.css';
 // utility js modules
 export * from './code-highlighting';
 export * from './history-counters';
-export * from './math-typesetting';
 export * from './notebook-rendering';
 export * from './pdf-rendering';
 export * from './readme-rendering';

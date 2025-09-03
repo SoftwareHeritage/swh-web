@@ -74,30 +74,38 @@ function escapeLaTeX(text) {
   return text;
 }
 
+function renderMarkdownSync(showdown, text) {
+  const converter = new showdown.Converter({
+    tables: true,
+    simplifiedAutoLink: true,
+    rawHeaderId: true,
+    literalMidWordUnderscores: true
+  });
+
+  // some LaTeX escaping is required to get correct math typesetting
+  text = escapeLaTeX(text);
+
+  // render markdown
+  let rendered = converter.makeHtml(text);
+
+  // restore underscores in rendered HTML (see escapeLaTeX function)
+  rendered = rendered.replace(/{@}underscore{@}/g, '_');
+
+  return rendered;
+}
+
+export async function renderMarkdownWithMath(text) {
+  const showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
+  return renderMarkdownSync(showdown, text);
+}
+
 export async function renderNotebook(nbJsonUrl, domElt) {
 
   const showdown = await import(/* webpackChunkName: "showdown" */ 'utils/showdown');
-
   await import(/* webpackChunkName: "highlightjs" */ 'utils/highlightjs');
 
   function renderMarkdown(text) {
-    const converter = new showdown.Converter({
-      tables: true,
-      simplifiedAutoLink: true,
-      rawHeaderId: true,
-      literalMidWordUnderscores: true
-    });
-
-    // some LaTeX escaping is required to get correct math typesetting
-    text = escapeLaTeX(text);
-
-    // render markdown
-    let rendered = converter.makeHtml(text);
-
-    // restore underscores in rendered HTML (see escapeLaTeX function)
-    rendered = rendered.replace(/{@}underscore{@}/g, '_');
-
-    return rendered;
+    return renderMarkdownSync(showdown, text);
   }
 
   function highlightCode(text, preElt, codeElt, lang) {
@@ -137,5 +145,5 @@ export async function renderNotebook(nbJsonUrl, domElt) {
   // set light red background color for stderr output cells
   $('pre.nb-stderr').parent().css('background', '#fdd');
   // load MathJax library for math typesetting
-  swh.webapp.typesetMath();
+  swh.mathjax.typesetMath();
 }

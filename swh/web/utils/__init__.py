@@ -8,6 +8,7 @@ import functools
 import gzip
 import hashlib
 from importlib.metadata import version
+import json
 import os
 import re
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
@@ -262,6 +263,24 @@ browsers_supported_image_mimes = set(
 )
 
 
+@functools.lru_cache()
+def webpack_stats() -> Dict[str, Any]:
+    stats_path = os.path.join(settings.STATIC_DIR, "webpack-stats.json")
+    if os.path.exists(stats_path):
+        with open(stats_path, "r") as stats:
+            return json.load(stats)
+    return {}
+
+
+@functools.lru_cache()
+def mathjax_js_library() -> str:
+    stats = webpack_stats()
+    for key, val in stats.get("assets", {}).items():
+        if key.startswith("js/mathjax.") and key.endswith(".js"):
+            return val["publicPath"]
+    return ""
+
+
 def context_processor(request):
     """
     Django context processor used to inject variables
@@ -308,6 +327,7 @@ def context_processor(request):
             hasattr(request, "user")
             and request.user.has_perm(SWH_AMBASSADOR_PERMISSION)
         ),
+        "mathjax_js_library": mathjax_js_library(),
     }
 
     if (
