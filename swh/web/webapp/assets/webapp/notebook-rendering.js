@@ -30,16 +30,10 @@ function escapeLaTeX(text) {
   const inlineMath = /\$(.+?)\$|\\\\\((.+?)\\\\\)/g;
   const latexEnvironment = /\\begin\{([a-z]*\*?)\}(.+?)\\end\{\1\}/msg;
 
-  const blockMathToInline = [];
-
   const mathTextFound = [];
   let bm;
   while ((bm = blockMath.exec(text)) !== null) {
     mathTextFound.push(bm[1]);
-    if (!bm[1].startsWith('\n')) {
-      // not a block and should be inlined
-      blockMathToInline.push(bm[1]);
-    }
   }
 
   let im;
@@ -79,9 +73,26 @@ function escapeLaTeX(text) {
   }
 
   // fix math that should be rendered inline
-  for (const blockToInline of blockMathToInline) {
-    text = text.replace(`$$${blockToInline}$$`, `$${blockToInline}$`);
+  function replacer(match, p1, p2, offset, string) {
+    const endIndex = offset + match.length;
+    console.log(endIndex, text.length);
+    const prevLineBreakPos = text.lastIndexOf('\n', offset);
+    const nextLineBreakPos = text.indexOf('\n', endIndex);
+    const textBeforeOnLine = text.slice(prevLineBreakPos, offset).trim();
+    const textAfterOnLine = text.slice(endIndex, nextLineBreakPos).trim();
+    if (!match.startsWith('\n') && // no line break after $$
+        (textBeforeOnLine || // characters before $$
+         textAfterOnLine || // characters after $$
+         // $$ <math> $$ not on a single line
+         ((offset > 0 && text[offset - 1] !== '\n') &&
+          (endIndex < text.length - 1 && text[endIndex] !== '\n')))) {
+      // not a block and should be inlined
+      return match.slice(1, -1);
+    }
+    return match;
   }
+
+  text = text.replace(blockMath, replacer);
 
   return text;
 }

@@ -292,6 +292,49 @@ describe('Markdown rendering tests', function() {
     cy.request('POST',
                `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
                [{path: 'math.md', data: markdown}])
+        .then((resp) => {
+          expect(resp.status).to.eq(200);
+          const url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}&path=math.md`;
+
+          cy.intercept(/.*static\/js\/mathjax-library.*/)
+            .as('loadMathjax');
+
+          cy.visit(url);
+          // request html preview
+          cy.get('#preview-switch-label')
+            .click();
+          // check mathjax gets loaded
+          cy.wait('@loadMathjax');
+          // check markdown rendering
+          cy.iframe('.swh-html-content')
+            .find('h1')
+            .should('have.text', 'This is a matrix');
+          // check math rendering
+          cy.iframe('.swh-html-content')
+            .find('mjx-math')
+            .should('be.visible')
+            .and('not.be.empty');
+        });
+  });
+
+  it(`should render a markdown file with math and fix math to inline`, function() {
+
+    const markdown = `
+$$a$$ and $$b$$ must be inlined as of $$c$$.
+
+$$d$$
+
+$$
+e
+$$
+
+ $$f$$
+`;
+
+    const originUrl = 'https://git.example.org/markdown-math-inlining';
+    cy.request('POST',
+               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+               [{path: 'math.md', data: markdown}])
       .then((resp) => {
         expect(resp.status).to.eq(200);
         const url = `${this.Urls.browse_origin_directory()}?origin_url=${originUrl}&path=math.md`;
@@ -305,15 +348,19 @@ describe('Markdown rendering tests', function() {
           .click();
         // check mathjax gets loaded
         cy.wait('@loadMathjax');
-        // check markdown rendering
-        cy.iframe('.swh-html-content')
-          .find('h1')
-          .should('have.text', 'This is a matrix');
-        // check math rendering
-        cy.iframe('.swh-html-content')
-          .find('mjx-math')
-          .should('be.visible')
-          .and('not.be.empty');
+
+        for (const c of ['a', 'b', 'c']) {
+          cy.iframe('.swh-html-content')
+            .find(`mjx-math[data-latex="${c}"]`)
+            .parent('mjx-container')
+            .should('have.css', 'text-align', 'start');
+        }
+
+        for (const c of ['d', ' e ', 'f']) {
+          cy.iframe('.swh-html-content')
+            .find(`mjx-math[data-latex="${c}"]`)
+            .parent('mjx-container').should('have.css', 'text-align', 'center');
+        }
       });
   });
 });
