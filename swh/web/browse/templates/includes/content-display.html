@@ -58,7 +58,8 @@ See top-level LICENSE file for more information
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
       {% elif filename|is_markdown or "text/html" == mimetype %}
-        <iframe class="swh-html-content swh-preview-content"
+        <iframe sandbox="allow-scripts allow-same-origin"
+                class="swh-html-content swh-preview-content"
                 style="width: 100%;
                        height: 100vh">
         </iframe>
