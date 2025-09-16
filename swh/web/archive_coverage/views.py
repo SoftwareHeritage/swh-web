@@ -6,7 +6,6 @@
 from collections import defaultdict
 import copy
 from typing import Any, Dict, List, Tuple
-from urllib.parse import urlparse
 
 import attr
 
@@ -202,9 +201,9 @@ listed_origins: Dict[str, Any] = {
             "type": "guix",
             "info_url": "https://guix.gnu.org",
             "info": "source code tarballs used to build the Guix package collection",
+            "main_instance": "guix.gnu.org",
             "search_pattern": {
                 "default": "",
-                "nixguix": "https://guix.gnu.org/sources.json",
             },
         },
         {
@@ -255,10 +254,12 @@ listed_origins: Dict[str, Any] = {
         {
             "type": "nixos",
             "info_url": "https://nixos.org",
-            "info": "source code tarballs used to build the Nix package collection",
+            "info": "source code tarballs and patches used to build the Nix package collection",
+            "main_instance": "nixpkgs-swh.nixos.org",
             "search_pattern": {
                 "default": "",
-                "nixguix": "https://nix-community.github.io/nixpkgs-swh/sources-unstable.json",
+                "content": "https://cache.nixos.org",
+                "tarball-directory": "https://cache.nixos.org",
             },
         },
         {
@@ -523,25 +524,26 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
 
         # special processing for nixos/guix origins
         if origins_type in ("nixos", "guix"):
-            manifest_url = origins["search_pattern"]["nixguix"]
-            lister_instance = urlparse(manifest_url).netloc
+            main_instance = origins["main_instance"]
             visit_data = listers_metrics.get("nixguix", [])
-            visit_type_counts = {}
+            visit_type_counts: Dict[str, Dict[str, Dict[str, str]]] = defaultdict(dict)
             # visit types from new nixguix lister
+            count = 0
             for instance, metrics in visit_data:
-                if instance != lister_instance:
+                if instance != main_instance:
                     continue
-                visit_type_counts[metrics.visit_type] = (
+                instance_type_count = (
                     metrics.origins_enabled - metrics.origins_never_visited
                 )
+                if instance_type_count > 0:
+                    visit_type_counts[instance][metrics.visit_type] = {
+                        "count": f"{instance_type_count:,}"
+                    }
 
-            count = sum(visit_type_counts.values())
+                count += instance_type_count
+
             origins["count"] = f"{count:,}"
-            origins["instances"][lister_instance] = {
-                key: {"count": f"{value:,}"}
-                for key, value in visit_type_counts.items()
-                if value > 0
-            }
+            origins["instances"] = dict(visit_type_counts)
 
         if origins_type not in listers_metrics:
             continue
