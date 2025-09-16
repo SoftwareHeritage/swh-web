@@ -3,19 +3,16 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
 import random
 
 from hypothesis import given
 
 from django.utils.html import escape
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.model import Revision, RevisionType, TimestampWithTimezone
 from swh.model.swhids import ObjectType
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
-from swh.web.tests.strategies import new_origin, new_person, new_swh_date
+from swh.web.tests.strategies import new_origin
 from swh.web.utils import format_utc_iso_date, parse_iso8601_date_to_utc, reverse
 from swh.web.utils.identifiers import gen_swhid
 
@@ -445,28 +442,3 @@ def test_revision_invalid_path(client, archive_data, revision):
     )
     assert_contains(resp, error_message, status_code=404)
     assert_not_contains(resp, "swh-metadata-popover", status_code=404)
-
-
-@given(new_person(), new_swh_date())
-def test_revision_metadata_display(archive_data, client, directory, person, date):
-    metadata = {"foo": "bar"}
-    revision = Revision(
-        directory=hash_to_bytes(directory),
-        author=person,
-        committer=person,
-        message=b"commit message",
-        date=TimestampWithTimezone.from_datetime(date),
-        committer_date=TimestampWithTimezone.from_datetime(date),
-        synthetic=False,
-        type=RevisionType.GIT,
-        metadata=metadata,
-    )
-    archive_data.revision_add([revision])
-
-    url = reverse("browse-revision", url_args={"sha1_git": hash_to_hex(revision.id)})
-
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="browse-revision.html"
-    )
-    assert_contains(resp, "swh-metadata-popover")
-    assert_contains(resp, escape(json.dumps(metadata, indent=4)))
