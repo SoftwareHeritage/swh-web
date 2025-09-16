@@ -306,9 +306,9 @@ def _get_visit_info_for_save_request(
     origin = save_request.origin_url
     ovs = archive.origin_visit_find_by_date(origin, save_request.request_date)
     if ovs:
-        visit_date = parse_iso8601_date_to_utc(ovs["date"])
-        visit_status = ovs["status"]
-        snapshot_id = ovs["snapshot"]
+        visit_date = parse_iso8601_date_to_utc(ovs["date"]) if "date" in ovs else None
+        visit_status = ovs.get("status")
+        snapshot_id = ovs.get("snapshot")
     return visit_date, visit_status, snapshot_id
 
 
