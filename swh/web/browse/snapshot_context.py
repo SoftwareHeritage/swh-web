@@ -496,7 +496,7 @@ def get_snapshot_context(
 
         formatted_date = format_utc_iso_date(visit_info["date"])
         visit_info["formatted_date"] = formatted_date
-        snapshot_id = visit_info["snapshot"]
+        snapshot_id = visit_info.get("snapshot")
 
         if not snapshot_id:
             raise NotFoundExc(
