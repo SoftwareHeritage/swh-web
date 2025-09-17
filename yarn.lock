@@ -1567,6 +1567,16 @@
   resolved "https://registry.yarnpkg.com/@mdi/font/-/font-7.4.47.tgz#2ae522867da3a5c88b738d54b403eb91471903af"
   integrity sha512-43MtGpd585SNzHZPcYowu/84Vz2a2g31TvPMTm9uTiCSWzaheQySUcSyUH/46fPnuPQWof2yd0pGBtzee/IQWw==
 
+"@myriaddreamin/highlighter-typst@^0.6.1-rc3":
+  version "0.6.1-rc3"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/highlighter-typst/-/highlighter-typst-0.6.1-rc3.tgz#9fca4be21881e8370ee051eab33b9dd9d50d80eb"
+  integrity sha512-3Puocf1HlhkGi61y77bkTEde19CwJXGFacoRZCwsuKre06rBT7ju1qc1OnVvoWATCWw6/YYBSmbgAhmHvSxFwQ==
+
+"@myriaddreamin/typst-ts-parser@^0.6.1-rc3":
+  version "0.6.1-rc3"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/typst-ts-parser/-/typst-ts-parser-0.6.1-rc3.tgz#115e47b7d91e457e1cfc1c7d5b21c1b875c92c4f"
+  integrity sha512-zzQJRAEvzivd2PsQDM6KoB/knaZBT5m0if47uq3ZlTlCn05tmKxZLe+jPcFPfH68a86waIEXsrNhaa3mj9147Q==
+
 "@napi-rs/canvas-android-arm64@0.1.80":
   version "0.1.80"
   resolved "https://registry.yarnpkg.com/@napi-rs/canvas-android-arm64/-/canvas-android-arm64-0.1.80.tgz#2779ca5c8aaeb46c85eb72d29f1eb34efd46fb45"
@@ -4734,9 +4744,9 @@ env-paths@^2.2.0, env-paths@^2.2.1:
   integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
 envinfo@^7.14.0:
-  version "7.16.1"
-  resolved "https://registry.yarnpkg.com/envinfo/-/envinfo-7.16.1.tgz#69a0e2a7c1bd1306ab5902f7d709f81b967fdb81"
-  integrity sha512-IugkinfKJlINIece0m1tAtjn4LGNP3APqchokVe090oSI5E3mixxKuc34ZiDHO17MTPODwjHWEt7QdC8Y+xtyQ==
+  version "7.17.0"
+  resolved "https://registry.yarnpkg.com/envinfo/-/envinfo-7.17.0.tgz#4a9cb6fe0c91e27b5be5fcca61f681894f88db14"
+  integrity sha512-GpfViocsFM7viwClFgxK26OtjMlKN67GCR5v6ASFkotxtpBWd9d+vNy+AH7F2E1TUkMDZ8P/dDPZX71/NG8xnQ==
 
 err-code@^2.0.2:
   version "2.0.3"
@@ -6065,6 +6075,11 @@ highlightjs-4d@^1.0.6:
   resolved "https://registry.yarnpkg.com/highlightjs-4d/-/highlightjs-4d-1.0.6.tgz#2546a7c9711b139ddddc70d3a91d740d316ec9a9"
   integrity sha512-CLLwv21UNx4T7lXL6+cjMMGUOvLwupCc9qPVrZNEHofsuWmvQTGmA0A2lmNNk1vgoWeTitaV7vsmOq58HDT6SQ==
 
+highlightjs-abc@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-abc/-/highlightjs-abc-1.1.0.tgz#fc84694d2757ec3a5ebb8a42b327f840f18b398c"
+  integrity sha512-IC2b0ziTHan0ChP3qdoIXgEgI5QM/9KiafUsCEduvOPDZX3yESs8NTzXPA1GGxGMEpGFs5Qe4JoPGDCjzEBJLQ==
+
 "highlightjs-aiken@github:yHSJ/highlightjs-aiken":
   version "0.0.1"
   resolved "https://codeload.github.com/yHSJ/highlightjs-aiken/tar.gz/2741585ff4789293adc18b125e9487afa34a1565"
@@ -6080,6 +6095,10 @@ highlightjs-apex@^1.5.0:
   integrity sha512-UxZ1R+UEuN/w63SRoN847RHRW/SJA5RBniWDtatajGYCrYXgrr9sboLmf1LFYolC4GM0vOyUFTvA6tB2YlHEnw==
   dependencies:
     "@highlightjs/cdn-assets" "^11.11.1"
+
+"highlightjs-bicep@github:Azure/bicep":
+  version "0.0.0"
+  resolved "https://codeload.github.com/Azure/bicep/tar.gz/180d3d5a1deeb881a00d2fd28cd8d366a24ebc01"
 
 highlightjs-blade@^0.1.0:
   version "0.1.0"
@@ -6190,6 +6209,10 @@ highlightjs-jolie@^0.1.8:
 "highlightjs-jsonata@github:DevDimov/highlightjs-jsonata":
   version "1.0.0"
   resolved "https://codeload.github.com/DevDimov/highlightjs-jsonata/tar.gz/c017432e166ff2469e362b3cc6d52dbf8591d983"
+
+"highlightjs-l4@github:legalese/highlightjs-l4":
+  version "1.0.0"
+  resolved "https://codeload.github.com/legalese/highlightjs-l4/tar.gz/ee304e29dcc2d625a2a96066e17b3f89cf1c3376"
 
 "highlightjs-lang@github:highlightjs/highlightjs-lang":
   version "1.0.1"
@@ -10396,9 +10419,9 @@ stylelint-config-recommended@^17.0.0:
   integrity sha512-WaMSdEiPfZTSFVoYmJbxorJfA610O0tlYuU2aEwY33UQhSPgFbClrVJYWvy3jGJx+XW37O+LyNLiZOEXhKhJmA==
 
 stylelint-config-standard@^39.0.0:
-  version "39.0.0"
-  resolved "https://registry.yarnpkg.com/stylelint-config-standard/-/stylelint-config-standard-39.0.0.tgz#9635554a9c42e7e89dadc024afac372d18e3e776"
-  integrity sha512-JabShWORb8Bmc1A47ZyJstran60P3yUdI1zWMpGYPeFiC6xzHXJMkpKAd8EjIhq3HPUplIWWMDJ/xu0AiPd+kA==
+  version "39.0.1"
+  resolved "https://registry.yarnpkg.com/stylelint-config-standard/-/stylelint-config-standard-39.0.1.tgz#dcd1c28400added09e566e85ffe8d480ae2531a2"
+  integrity sha512-b7Fja59EYHRNOTa3aXiuWnhUWXFU2Nfg6h61bLfAb5GS5fX3LMUD0U5t4S8N/4tpHQg3Acs2UVPR9jy2l1g/3A==
   dependencies:
     stylelint-config-recommended "^17.0.0"
 

@@ -13,10 +13,12 @@ import 'highlight.js';
 // add highlighting support for languages not included in highlight.js package
 import 'highlightjs-4d/dist/4d.min';
 import 'highlightjs-sap-abap/dist/abap.min';
+import 'highlightjs-abc/dist/abc.min';
 import 'highlightjs-aiken/dist/aiken.min';
 import 'highlightjs-alan/dist/alan.min';
 import 'highlightjs-apex/dist/apex.min';
 import '@ballerina/highlightjs-ballerina/dist/ballerina.min';
+import bicep from 'highlightjs-bicep/src/highlightjs/dist/bicep.es.min';
 import 'highlightjs-blade/dist/blade.min';
 import 'highlightjs-bqn/dist/bqn.min';
 import 'c3/dist/c3.min';
@@ -44,6 +46,7 @@ import 'highlightjs-gsql/dist/gsql.min';
 import 'highlightjs-hlsl/dist/hlsl.min';
 import 'highlightjs-jolie/dist/jolie.min';
 import 'highlightjs-jsonata/dist/jsonata.min';
+import 'highlightjs-l4/dist/l4.min';
 import 'highlightjs-lang/dist/lang.min';
 import * as hljsDefineLean from 'highlightjs-lean';
 import 'highlightjs-liquid/dist/liquid.min';
@@ -83,6 +86,7 @@ import {default as svelte} from 'highlight.svelte';
 import 'script-loader!highlightjs-terraform';
 import 'highlight.js-tsql/dist/tsql.min';
 import {default as hljsDefineTTCN3} from 'highlightjs-ttcn3';
+import '@myriaddreamin/highlighter-typst/dist/esm/contrib/hljs/typst-lite.bundle.js';
 import 'highlightjs-unison/dist/unison.min';
 import 'highlightjs-vba/dist/vba.min';
 import 'highlightjs-voltscript/dist/voltscript.min';
@@ -109,6 +113,7 @@ hljs.lineNumbersElementSync = function(elt) {
   $('.hljs-ln').attr('role', 'presentation');
 };
 
+hljs.registerLanguage('bicep', bicep);
 hljs.registerLanguage('cairo', cairo);
 hljs.registerLanguage('candid', candid);
 hljs.registerLanguage('cedar', window.hljsCedar);
@@ -127,3 +132,6 @@ hljs.registerLanguage('sdml', window.sdml);
 hljs.registerLanguage('svelte', svelte);
 hljs.registerLanguage('terraform', window.hljsDefineTerraform);
 hljs.registerLanguage('ttcn3', hljsDefineTTCN3);
+window.$typst$parserModule.then(() => {
+  hljs.registerLanguage('typst', window.hljsTypst());
+});

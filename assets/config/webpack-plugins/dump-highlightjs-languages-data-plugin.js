@@ -13,10 +13,12 @@ global.hljs = require('highlight.js');
 global.window = {};
 require('highlightjs-4d/dist/4d.min');
 require('highlightjs-sap-abap/dist/abap.min');
+require('highlightjs-abc/dist/abc.min');
 require('highlightjs-aiken/dist/aiken.min');
 require('highlightjs-alan/dist/alan.min');
 require('highlightjs-apex/dist/apex.min');
 require('@ballerina/highlightjs-ballerina/dist/ballerina.min');
+require('highlightjs-bicep/src/highlightjs/dist/bicep.min');
 require('highlightjs-blade/dist/blade.min');
 require('highlightjs-bqn/dist/bqn.min');
 require('c3/dist/c3.min');
@@ -45,6 +47,7 @@ require('highlightjs-gsql/dist/gsql.min');
 require('highlightjs-hlsl/dist/hlsl.min');
 require('highlightjs-jsonata/dist/jsonata.min');
 require('highlightjs-jolie/dist/jolie.min');
+require('highlightjs-l4/dist/l4.min');
 require('highlightjs-lang/dist/lang.min');
 hljs.registerLanguage('lean', require('highlightjs-lean'));
 require('highlightjs-liquid/dist/liquid.min');
@@ -106,7 +109,7 @@ class DumpHighlightjsLanguagesDataPlugin {
     compiler.hooks.done.tap('DumpHighlightjsLanguagesDataPlugin', statsObj => {
       const outputPath = statsObj.compilation.compiler.outputPath;
       const hljsDataFile = path.join(outputPath, 'json/highlightjs-languages.json');
-      const languages = hljs.listLanguages().concat(['odin', 'ttcn3']).sort();
+      const languages = hljs.listLanguages().concat(['odin', 'ttcn3', 'typst']).sort();
       const hljsLanguagesData = {'languages': languages};
       const languageAliases = {};
       for (const language of languages) {

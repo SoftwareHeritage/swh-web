@@ -62,6 +62,7 @@ def _hljs_languages_aliases():
         "rkt": "lisp",
         "ak": "aiken",
         "ipynb": "json",
+        "typ": "typst",
     }
 
 
