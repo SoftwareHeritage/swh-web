@@ -399,7 +399,7 @@ def rst_to_html(rst: str, raw_enabled: bool = False) -> str:
     """
     settings = {
         "initial_header_level": 2,
-        "halt_level": 4,
+        "halt_level": 3,
         "traceback": True,
         "file_insertion_enabled": False,
         "raw_enabled": raw_enabled,
