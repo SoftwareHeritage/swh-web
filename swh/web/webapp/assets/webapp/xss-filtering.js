@@ -104,6 +104,9 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
       if (path.startsWith('/')) {
         path = path.slice(1);
       }
+      const pathSplit = path.split('#');
+      path = pathSplit[0];
+      const anchor = pathSplit[1];
       const dirLink = $('.swh-path a').last();
       if (dirLink.length) {
         const dirUrl = new URL(dirLink.attr('href'), window.location);
@@ -118,6 +121,9 @@ DOMPurify.addHook('uponSanitizeAttribute', function(node, data) {
           dirUrl.searchParams.set('path', newPath);
         } else {
           dirUrl.searchParams.delete('path');
+        }
+        if (anchor) {
+          dirUrl.hash = '#' + anchor;
         }
         data.attrValue = dirUrl.toString();
       }
