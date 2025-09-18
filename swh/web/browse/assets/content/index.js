@@ -56,7 +56,17 @@ export function switchToPreview() {
 }
 
 let filename, mimetype, contentUrl, mathjaxLibrary;
+let iframeResizer;
 let previewInit = false;
+
+function moveToAnchorInIframe(anchor, scrollAdjustTimeout = 10) {
+  iframeResizer.moveToAnchor(anchor);
+  setTimeout(() => {
+    // adjust scrolling to top level bar
+    window.scrollBy(0, -35);
+  }, scrollAdjustTimeout);
+}
+
 async function initHtmlPreview() {
   const iframeResizeLibrary = '/static/jssources/@iframe-resizer/child/index.umd.js';
   // scripts executed in the iframe rendering html to automatically resize it and
@@ -69,7 +79,7 @@ async function initHtmlPreview() {
     event.preventDefault();
     let hrefVal = event.target.href;
     if (!hrefVal && event.target.parentElement) {
-    hrefVal = event.target.parentElement.href;
+      hrefVal = event.target.parentElement.href;
     }
     parent.postMessage({eventType: 'link', href: hrefVal}, '*');
   }
@@ -82,6 +92,7 @@ async function initHtmlPreview() {
   if (isNotebook(filename)) {
     swh.webapp.renderNotebook(contentUrl, '.swh-ipynb');
   } else if (isMarkdown(filename) || mimetype === 'text/html') {
+
     const response = await fetch(contentUrl);
     const data = await response.text();
     let html = data;
@@ -89,11 +100,20 @@ async function initHtmlPreview() {
       html = await swh.webapp.renderMarkdownWithMath(data);
     }
     const sanitizedHtml = swh.webapp.filterXSS(html, true);
+
     $('.swh-html-content').attr(
       'srcdoc', '<div data-iframe-size>' + sanitizedHtml + '</div>' + iframeScripts);
-    swh.webapp.resizeIframe(
-      {license: 'GPLv3', waitForLoad: true, heightCalculationMethod: 'taggedElement'},
-      '.swh-html-content');
+    iframeResizer = swh.webapp.resizeIframe({
+      license: 'GPLv3',
+      waitForLoad: true,
+      heightCalculationMethod: 'taggedElement',
+      onResized: () => {
+        const anchor = window.location.hash;
+        if (anchor) {
+          moveToAnchorInIframe(anchor.slice(1), 200);
+        }
+      }
+    }, '.swh-html-content');
   }
   previewInit = true;
 }
@@ -114,8 +134,14 @@ export async function renderContent(
       event = event.originalEvent;
       if (event && event.data && event.data.hasOwnProperty('eventType')) {
         if (event.data.eventType === 'link') {
+          const parentUrl = new URL(window.location.href);
           const url = new URL(event.data.href);
-          if (url.origin === window.location.origin) {
+          if (parentUrl.origin === url.origin &&
+              parentUrl.searchParams.get('path') === url.searchParams.get('path') &&
+              url.hash) {
+            // anchor in displayed document clicked
+            moveToAnchorInIframe(url.hash.slice(1));
+          } else if (url.origin === parentUrl.origin) {
             // follow relative link by reloading page
             url.searchParams.set('show_preview', 'true');
             window.location = url.toString();

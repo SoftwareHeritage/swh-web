@@ -397,5 +397,5 @@ export function mirrorConfig() {
 }
 
 export function resizeIframe() {
-  iframeResize.apply(null, arguments);
+  return iframeResize.apply(null, arguments)[0].iframeResizer;
 }
