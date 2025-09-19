@@ -15,11 +15,11 @@ function isNotebook(filename) {
   return filename && filename.toLowerCase().endsWith('.ipynb');
 }
 
+let rawContent;
+
 export function updateLanguage(language, enableLinesSelection) {
   const codeContainer = $('code');
-  const content = codeContainer.text();
-
-  codeContainer.text(content);
+  codeContainer.text(rawContent);
   codeContainer.removeClass();
   codeContainer.addClass(language);
 
@@ -145,6 +145,8 @@ export async function renderContent(
       switchToPreview();
     }
   }
+
+  rawContent = $('code').text();
 
   // highlight code
   swh.webapp.highlightCode(true, '.swh-content code', enableLinesSelection);
