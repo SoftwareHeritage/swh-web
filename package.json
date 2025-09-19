@@ -38,7 +38,7 @@
     "datatables.net": "^2.3.4",
     "datatables.net-bs5": "^2.3.4",
     "datatables.net-fixedheader-bs5": "^4.0.3",
-    "dompurify": "^3.2.6",
+    "dompurify": "^3.2.7",
     "email-validator": "^2.0.4",
     "global": "^4.4.0",
     "hex-rgb": "^5.0.0",
@@ -135,7 +135,7 @@
     "typeface-alegreya-sans": "^1.1.13",
     "waypoints": "^4.0.1",
     "whatwg-fetch": "^3.6.20",
-    "xml-formatter": "^3.6.6",
+    "xml-formatter": "^3.6.7",
     "yarn-deduplicate": "^6.0.2"
   },
   "devDependencies": {
@@ -162,7 +162,7 @@
     "cypress-hmr-restarter": "^2.1.1",
     "cypress-iframe": "^1.0.1",
     "cypress-multi-reporters": "^2.0.5",
-    "cypress-split": "^1.24.22",
+    "cypress-split": "^1.24.23",
     "ejs": "^3.1.10",
     "ejs-compiled-loader": "^3.1.0",
     "eslint": "^9.35.0",
