@@ -261,17 +261,15 @@ def _origin_visits_browse(
             if visit["date"] == origin_visits[i - 1]["date"]:
                 query_params = {"origin_url": origin_url, "visit_id": visit["visit"]}
 
-        snapshot = visit["snapshot"] if visit["snapshot"] else ""
-
         visit["url"] = reverse(
             "browse-origin-directory",
             query_params=query_params,
         )
-        if not snapshot:
-            visit["snapshot"] = ""
         visit["date"] = parse_iso8601_date_to_utc(visit["date"]).timestamp()
+        if not visit.get("snapshot"):
+            visit["snapshot"] = ""
 
-    heading = "Origin visits - %s" % origin_url
+    heading = f"Origin visits - {origin_url}"
 
     return render(
         request,
