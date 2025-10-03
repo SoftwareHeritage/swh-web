@@ -1270,7 +1270,10 @@ def stat_counters():
 
 
 def _lookup_origin_visits(
-    origin_url: str, last_visit: Optional[int] = None, limit: int = 10
+    origin_url: str,
+    last_visit: Optional[int] = None,
+    limit: int = 10,
+    desc_order: bool = False,
 ) -> Iterator[OriginVisitWithStatuses]:
     """Yields the origin origins' visits.
 
@@ -1290,13 +1293,19 @@ def _lookup_origin_visits(
     else:
         page_token = None
     visit_page = config.storage().origin_visit_get_with_statuses(
-        origin_url, page_token=page_token, limit=limit
+        origin_url,
+        page_token=page_token,
+        limit=limit,
+        order=ListOrder.DESC if desc_order else ListOrder.ASC,
     )
     yield from visit_page.results
 
 
 def lookup_origin_visits(
-    origin: str, last_visit: Optional[int] = None, per_page: int = 10
+    origin: str,
+    last_visit: Optional[int] = None,
+    per_page: int = 10,
+    desc_order: bool = False,
 ) -> Iterator[OriginVisitInfo]:
     """Yields the origin origins' visits.
 
@@ -1307,7 +1316,9 @@ def lookup_origin_visits(
        Dictionaries of origin_visit for that origin
 
     """
-    for visit in _lookup_origin_visits(origin, last_visit=last_visit, limit=per_page):
+    for visit in _lookup_origin_visits(
+        origin, last_visit=last_visit, limit=per_page, desc_order=desc_order
+    ):
         origin_visit = converters.from_origin_visit(
             visit.visit, visit.statuses[-1] if visit.statuses else None
         )

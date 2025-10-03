@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -14,6 +14,7 @@ def get_origin_visits(
     origin_url: str,
     lookup_similar_urls: bool = True,
     visit_type: Optional[str] = None,
+    limit: Optional[int] = None,
 ) -> List[OriginVisitInfo]:
     """Function that returns the list of visits for a swh origin.
     That list is put in cache in order to speedup the navigation
@@ -26,6 +27,8 @@ def get_origin_visits(
         origin_url: URL of origin
         lookup_similar_urls: if :const:`True`, lookup origin with and
             without trailing slash in its URL
+        visit_type: filter visits by type
+        limit: retrieve recent visits up to that limit if provided
 
     Returns:
         A list of dict describing the origin visits
@@ -52,13 +55,15 @@ def get_origin_visits(
     cache_entry_id = "origin_visits_%s" % origin_url
     cache_entry = cache_get(cache_entry_id)
 
-    last_visit = 0
+    last_visit = None
     origin_visits = []
     new_visits = []
     per_page = archive.MAX_LIMIT
+    if limit is not None and limit < per_page:
+        per_page = limit
     if cache_entry:
         origin_visits = cache_entry
-        last_visit = cache_entry[-1]["visit"]
+        last_visit = origin_visits[-1]["visit"]
         new_visits = list(
             archive.lookup_origin_visits(
                 origin_url, last_visit=last_visit, per_page=per_page
@@ -66,12 +71,32 @@ def get_origin_visits(
         )
         last_visit += len(new_visits)
         if not new_visits:
+            if limit is not None and len(origin_visits) > limit:
+                origin_visits = origin_visits[-limit:]
             last_snp = archive.lookup_latest_origin_snapshot(origin_url)
-            if not last_snp or last_snp["id"] == cache_entry[-1]["snapshot"]:
-                return _filter_visits_by_type(cache_entry, visit_type=visit_type)
+            if not last_snp or last_snp["id"] == origin_visits[-1]["snapshot"]:
+                return _filter_visits_by_type(origin_visits, visit_type=visit_type)
+    else:
+        # retrieve visits from the most recent to the oldest
+        while True and (limit is None or len(new_visits) < limit):
+            visits = list(
+                archive.lookup_origin_visits(
+                    origin_url,
+                    last_visit=last_visit,
+                    per_page=per_page,
+                    desc_order=True,
+                )
+            )
+            new_visits += visits
+            if len(visits) < per_page:
+                break
+            last_visit = visits[-1]["visit"]
+
+    if new_visits:
+        last_visit = new_visits[0]["visit"]
 
     # get new visits that we did not retrieve yet
-    while 1:
+    while True and (limit is None or len(new_visits) < limit):
         visits = list(
             archive.lookup_origin_visits(
                 origin_url, last_visit=last_visit, per_page=per_page
@@ -80,7 +105,7 @@ def get_origin_visits(
         new_visits += visits
         if len(visits) < per_page:
             break
-        last_visit += per_page
+        last_visit = visits[-1]["visit"]
 
     def _visit_sort_key(visit):
         ts = parse_iso8601_date_to_utc(visit["date"]).timestamp()
@@ -88,6 +113,9 @@ def get_origin_visits(
 
     # cache entry is already sorted with oldest visits
     origin_visits += sorted(new_visits, key=lambda v: _visit_sort_key(v))
+
+    if limit is not None and len(origin_visits) > limit:
+        origin_visits = origin_visits[-limit:]
 
     cache_set(cache_entry_id, origin_visits)
 

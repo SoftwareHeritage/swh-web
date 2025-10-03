@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2024 The Software Heritage developers
+# Copyright (C) 2021-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -234,6 +234,9 @@ def origin_releases_browse_legacy(
     return redirect_to_new_route(request, "browse-snapshot-releases")
 
 
+MAX_VISITS = 10000
+
+
 def _origin_visits_browse(
     request: HttpRequest, origin_url: Optional[str]
 ) -> HttpResponse:
@@ -243,7 +246,11 @@ def _origin_visits_browse(
     origin_info = archive.lookup_origin(origin_url)
     origin_visits = cast(
         List[Dict[str, Any]],
-        get_origin_visits(origin_info["url"], visit_type=request.GET.get("visit_type")),
+        get_origin_visits(
+            origin_info["url"],
+            visit_type=request.GET.get("visit_type"),
+            limit=MAX_VISITS,
+        ),
     )
 
     snapshot_context = get_snapshot_context(
@@ -283,6 +290,8 @@ def _origin_visits_browse(
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions": False,
+            "partial_visits": origin_visits[0]["visit"] != 1,
+            "max_visits": MAX_VISITS,
         },
     )
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -9,7 +9,7 @@ from hypothesis import given, settings
 import iso8601
 import pytest
 
-from swh.model.model import OriginVisit, OriginVisitStatus
+from swh.model.model import Origin, OriginVisit, OriginVisitStatus
 from swh.storage.utils import now
 from swh.web.tests.strategies import new_origin, new_snapshots
 from swh.web.utils.exc import NotFoundExc
@@ -254,3 +254,38 @@ def test_get_origin_visit_latest_snapshot(mocker, origin_with_multiple_visits):
     )
     assert visit == first_visit
     assert mock_get_origin_visits.called
+
+
+def test_get_origin_visits_with_limit(archive_data):
+    origin_url = "https//example.org/origin-visits-with-limit-test"
+    archive_data.origin_add([Origin(url=origin_url)])
+    # create 6 visits
+    for i in range(6):
+        visit_date = now() + timedelta(days=i * 10)
+        visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=origin_url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        visit_status = OriginVisitStatus(
+            origin=origin_url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full",
+            snapshot=None,
+        )
+        archive_data.origin_visit_status_add([visit_status])
+
+    visits = get_origin_visits(origin_url)
+    assert len(visits) == 6
+    assert visits[0]["visit"] == 1
+    assert visits[-1]["visit"] == 6
+
+    visits = get_origin_visits(origin_url, limit=2)
+    assert len(visits) == 2
+    assert visits[0]["visit"] == 5
+    assert visits[-1]["visit"] == 6
