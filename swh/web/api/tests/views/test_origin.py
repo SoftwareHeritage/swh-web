@@ -32,10 +32,10 @@ from swh.web.utils.origin_visits import get_origin_visits
 
 
 def test_api_lookup_origin_visits_raise_error(api_client, origin, mocker):
-    mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
+    lookup_origin_visits = mocker.patch("swh.web.utils.archive.lookup_origin_visits")
     err_msg = "voluntary error to check the bad request middleware."
 
-    mock_get_origin_visits.side_effect = BadInputExc(err_msg)
+    lookup_origin_visits.side_effect = BadInputExc(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=400)
@@ -45,10 +45,10 @@ def test_api_lookup_origin_visits_raise_error(api_client, origin, mocker):
 def test_api_lookup_origin_visits_raise_swh_storage_error_db(
     api_client, origin, mocker
 ):
-    mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
+    lookup_origin_visits = mocker.patch("swh.web.utils.archive.lookup_origin_visits")
     err_msg = "Storage exploded! Will be back online shortly!"
 
-    mock_get_origin_visits.side_effect = StorageDBError(err_msg)
+    lookup_origin_visits.side_effect = StorageDBError(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=503)
@@ -61,10 +61,10 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_db(
 def test_api_lookup_origin_visits_raise_swh_storage_error_api(
     api_client, origin, mocker
 ):
-    mock_get_origin_visits = mocker.patch("swh.web.api.views.origin.get_origin_visits")
+    lookup_origin_visits = mocker.patch("swh.web.utils.archive.lookup_origin_visits")
     err_msg = "Storage API dropped dead! Will resurrect asap!"
 
-    mock_get_origin_visits.side_effect = StorageAPIError(err_msg)
+    lookup_origin_visits.side_effect = StorageAPIError(err_msg)
 
     url = reverse("api-1-origin-visits", url_args={"origin_url": origin["url"]})
     rv = check_api_get_responses(api_client, url, status_code=503)

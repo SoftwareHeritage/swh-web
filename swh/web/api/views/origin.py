@@ -21,7 +21,6 @@ from swh.web.api.utils import (
 from swh.web.api.views.utils import api_lookup
 from swh.web.utils import archive, origin_visit_types, reverse
 from swh.web.utils.exc import BadInputExc
-from swh.web.utils.origin_visits import get_origin_visits
 
 DOC_RETURN_ORIGIN = """
         :>json string origin_visits_url: link to in order to get information
@@ -425,28 +424,20 @@ def api_origin_visits(request: Request, origin_url: str, validated_query_params:
 
     """
 
+    # raise NotFound if origin does not exist in archive
+    archive.lookup_origin(origin_url, lookup_similar_urls=False)
+
     per_page = validated_query_params["per_page"]
     last_visit = validated_query_params["last_visit"]
 
     result = {}
 
-    def _lookup_origin_visits(origin_url, last_visit=last_visit, per_page=per_page):
-        all_visits = get_origin_visits(origin_url, lookup_similar_urls=False)
-        all_visits.reverse()
-        visits = []
-        if not last_visit:
-            visits = all_visits[:per_page]
-        else:
-            for i, v in enumerate(all_visits):
-                if v["visit"] == last_visit:
-                    visits = all_visits[i + 1 : i + 1 + per_page]
-                    break
-        for v in visits:
-            yield v
-
     results = api_lookup(
-        _lookup_origin_visits,
+        archive.lookup_origin_visits,
         origin_url,
+        last_visit,
+        per_page,
+        True,
         notfound_msg=f"No origin {origin_url} found",
         enrich_fn=partial(
             enrich_origin_visit, with_origin_link=False, with_origin_visit_link=True
