@@ -38,7 +38,7 @@ require('highlightjs-flix/dist/flix.min');
 import('highlightjs-func/dist/fift.min.js');
 import('highlightjs-func/dist/func.min.js');
 import('highlightjs-func/dist/tlb.min.js');
-require('highlightjs-gdscript/dist/gdscript.min');
+hljs.registerLanguage('gdscript', require('highlightjs-gdscript/dist/gdscript.min'));
 require('highlightjs-gf/dist/gf.min');
 hljs.registerLanguage('gleam', require('@gleam-lang/highlight.js-gleam'));
 require('highlightjs-gsql/dist/gsql.min');

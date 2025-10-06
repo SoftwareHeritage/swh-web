@@ -37,7 +37,7 @@ import 'highlightjs-flix/dist/flix.min';
 import 'highlightjs-func/dist/fift.min';
 import 'highlightjs-func/dist/func.min';
 import 'highlightjs-func/dist/tlb.min';
-import 'highlightjs-gdscript/dist/gdscript.min';
+import * as hljsDefineGDScript from 'highlightjs-gdscript/dist/gdscript.min';
 import 'highlightjs-gf/dist/gf.min';
 import * as hljsDefineGleam from '@gleam-lang/highlight.js-gleam';
 import 'highlightjs-gsql/dist/gsql.min';
@@ -112,6 +112,7 @@ hljs.lineNumbersElementSync = function(elt) {
 hljs.registerLanguage('cairo', cairo);
 hljs.registerLanguage('candid', candid);
 hljs.registerLanguage('cedar', window.hljsCedar);
+hljs.registerLanguage('gdscript', hljsDefineGDScript);
 hljs.registerLanguage('gleam', hljsDefineGleam);
 hljs.registerLanguage('lean', hljsDefineLean);
 hljs.registerLanguage('lox', hljsDefineLox);
