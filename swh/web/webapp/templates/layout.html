@@ -138,26 +138,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                     {% if "partner_url" in SWH_MIRROR_CONFIG %}</a>{% endif %}
                 {% endwith %}
               {% endif %}
-              {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
-                <form class="form-horizontal d-none d-md-flex input-group swh-search-navbar needs-validation"
-                      id="swh-origins-search-top">
-                  <input class="form-control"
-                         placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
-                         type="text"
-                         id="swh-origins-search-top-input"
-                         oninput="swh.webapp.validateSWHIDInput(this)"
-                         required />
-                  <button class="btn btn-primary"
-                          id="swh-origins-search-submit"
-                          type="submit"
-                          aria-label="Search software origins">
-                    <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
-                  </button>
-                </form>
-              {% endif %}
             </div>
           </li>
         </ul>
+        {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
+          <form class="form-horizontal d-none d-md-flex swh-search-navbar needs-validation"
+                id="swh-origins-search-top"
+                novalidate>
+            <div class="input-group">
+              <input class="form-control"
+                     placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
+                     type="text"
+                     id="swh-origins-search-top-input"
+                     oninput="swh.webapp.validateSWHIDInput(this)"
+                     aria-label="Enter a SWHID to resolve or keyword(s) to search for in origin URLs"
+                     autofocus />
+              <button class="btn btn-primary"
+                      id="swh-origins-search-submit"
+                      type="submit"
+                      aria-label="Search software origins">
+                <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
+              </button>
+            </div>
+          </form>
+        {% endif %}
       </header>
       {% include "./includes/sidebar.html" %}
       <main class="app-main">
