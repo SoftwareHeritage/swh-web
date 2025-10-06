@@ -457,6 +457,10 @@ module.exports = {
         './node_modules/highlightjs-never/dist/never.min.js': {
           'spdxLicenseExpression': 'MIT',
           'licenseFilePath': './node_modules/highlightjs-never/LICENSE'
+        },
+        './node_modules/highlightjs-bicep/src/highlightjs/dist/bicep.es.min.js': {
+          'spdxLicenseExpression': 'MIT',
+          'licenseFilePath': './node_modules/highlightjs-bicep/LICENSE'
         }
       },
       additionalScripts: Object.assign(
