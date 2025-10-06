@@ -203,6 +203,7 @@ export async function initSideTabs() {
       }
     }).on('success', function(e) {
       toggleButtonText(e.trigger, 'Copied!');
+      e.clearSelection();
     });
 
     new ClipboardJS('.btn-swhid-url-copy', {
@@ -212,6 +213,7 @@ export async function initSideTabs() {
       }
     }).on('success', function(e) {
       toggleButtonText(e.trigger, 'Copied!');
+      e.clearSelection();
     });
 
     // prevent automatic closing of SWHIDs tab during guided tour
