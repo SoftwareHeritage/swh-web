@@ -49,7 +49,7 @@ module.exports = [
     'spdx_ids': ['EPL-1.0']
   },
   {
-    'name': 'Expat License',
+    'name': 'MIT License',
     'url': 'http://www.jclark.com/xml/copying.txt',
     'magnet_link': 'magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt',
     'spdx_ids': ['MIT']
