@@ -154,7 +154,7 @@ def test_recipient_matches_casemapping():
 )
 def test_recipient_matches_real_world(filename: str, recipient: str, extension: str):
     with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
-        message = email.message_from_binary_file(f, policy=email.policy.default)  # type: ignore[arg-type]
+        message = email.message_from_binary_file(f, policy=email.policy.default)
 
     assert isinstance(message, EmailMessage)
 
@@ -400,7 +400,7 @@ def test_get_message_plaintext(
     filename: str, expected_parts: List[str], expected_absent: List[str]
 ):
     with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
-        message = email.message_from_binary_file(f, policy=email.policy.default)  # type: ignore[arg-type]
+        message = email.message_from_binary_file(f, policy=email.policy.default)
 
     assert isinstance(message, EmailMessage)
 

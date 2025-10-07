@@ -20,7 +20,7 @@ class MessageHandler:
     def __init__(self, raw_message: bytes, sender: Optional[Type] = None):
         try:
             self.message = email.message_from_bytes(
-                raw_message, policy=email.policy.default  # type: ignore[arg-type]
+                raw_message, policy=email.policy.default
             )
         except Exception as exc:
             sentry_capture_exception(exc)
