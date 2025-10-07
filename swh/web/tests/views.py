@@ -39,7 +39,7 @@ _content_code_data_filenames: Dict[str, Dict[str, str]] = {}
 _content_other_data_exts: Dict[str, Dict[str, str]] = {}
 
 
-def _init_content_tests_data(data_path, data_dict, ext_key):
+def _init_content_tests_data(data_path, ext_key):
     """
     Helper function to read the content of a directory, store it
     into a test archive and add some files metadata (sha1 and/or
@@ -48,7 +48,6 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
     Args:
         data_path (str): path to a directory relative to the tests
             folder of swh-web
-        data_dict (dict): the dict that will store files metadata
         ext_key (bool): whether to use file extensions or filenames
             as dict keys
     """
@@ -60,6 +59,7 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
         max_content_length=None,
     )
 
+    data_dict = {}
     contents = []
     for name, obj in directory.items():
         if obj.object_type == "content":
@@ -78,6 +78,7 @@ def _init_content_tests_data(data_path, data_dict, ext_key):
 
     storage = get_tests_data()["storage"]
     storage.content_add(contents)
+    return data_dict
 
 
 def _init_content_code_data_exts():
@@ -87,8 +88,8 @@ def _init_content_code_data_exts():
     """
     global _content_code_data_exts
     if not _content_code_data_exts:
-        _init_content_tests_data(
-            "resources/contents/code/extensions", _content_code_data_exts, True
+        _content_code_data_exts = _init_content_tests_data(
+            "resources/contents/code/extensions", True
         )
 
 
@@ -99,8 +100,8 @@ def _init_content_other_data_exts():
     """
     global _content_other_data_exts
     if not _content_other_data_exts:
-        _init_content_tests_data(
-            "resources/contents/other/extensions", _content_other_data_exts, True
+        _content_other_data_exts = _init_content_tests_data(
+            "resources/contents/other/extensions", True
         )
 
 
@@ -111,8 +112,8 @@ def _init_content_code_data_filenames():
     """
     global _content_code_data_filenames
     if not _content_code_data_filenames:
-        _init_content_tests_data(
-            "resources/contents/code/filenames", _content_code_data_filenames, False
+        _content_code_data_filenames = _init_content_tests_data(
+            "resources/contents/code/filenames", False
         )
 
 
