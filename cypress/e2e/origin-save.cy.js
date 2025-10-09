@@ -998,6 +998,22 @@ describe('Origin Save Tests', function() {
     });
   });
 
+  it('should accept git origin URL without path', function() {
+    cy.visit(url);
+
+    const originUrl = 'https://git.example.org/';
+    const requestUrl = saveOriginUrl('git', originUrl);
+
+    cy.intercept('POST', requestUrl).as('saveRequest');
+
+    makeOriginSaveRequest('git', originUrl);
+
+    cy.wait('@saveRequest').then(() => {
+      // request is in pending state as it needs to be accepted
+      checkAlertVisible('warning', saveCodeMsg['warning']);
+    });
+  });
+
   it('should select tarball visit type when pasting an origin URL containing archive extensions', function() {
     const originUrl = 'https://example.org/downloads/project-v1.0.0.tar.gz';
     cy.visit(url);

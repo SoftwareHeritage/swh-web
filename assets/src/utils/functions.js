@@ -67,7 +67,7 @@ export function isGitRepoUrl(url, pathPrefix = '/') {
     return false;
   }
   const re = new RegExp('[\\w\\.-]+\\/?(?!=.git)(?:\\.git\\/?)?$');
-  return re.test(url.pathname.slice(pathPrefix.length));
+  return re.test(url.pathname.slice(pathPrefix.length)) || url.pathname === '/';
 };
 
 export function removeUrlFragment() {
