@@ -359,8 +359,10 @@ export function initOriginSave() {
 
 }
 
-const tarballExtensions =
-  ['.jar', '.tar', '.tar.bz2', '.tar.gz', '.tar.lz', '.tar.xz', '.tar.zst', '.zip'];
+const tarballExtensions = [
+  '.jar', '.tar', '.tar.bz2', '.tbz', '.tbz2', '.tar.gz', '.tgz', '.tar.lz',
+  '.tar.xz', '.tar.zst', '.zip'
+];
 
 function updateVisitType() {
   const originUrl = $('#swh-input-origin-url').val().trim();
