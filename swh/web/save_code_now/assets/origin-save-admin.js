@@ -73,6 +73,7 @@ export function initOriginSaveAdmin() {
           if (type === 'display') {
             let html = '';
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
+            const parsedURL = new URL(sanitizedURL);
             if (row.save_task_status === 'succeeded') {
               let browseOriginUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(sanitizedURL)}`;
               if (row.visit_date) {
@@ -82,8 +83,10 @@ export function initOriginSaveAdmin() {
             } else {
               html += sanitizedURL;
             }
-            html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
-              '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+            if (parsedURL.protocol.startsWith('http')) {
+              html += `&nbsp;<a href="${sanitizedURL}" target="_blank" rel="noopener noreferrer">` +
+                '<i class="mdi mdi-open-in-new" aria-hidden="true"></i></a>';
+            }
             return html;
           }
           return data;
