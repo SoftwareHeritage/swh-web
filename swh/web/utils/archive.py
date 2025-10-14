@@ -1523,7 +1523,7 @@ def lookup_snapshot(
         A dict filled with the snapshot content.
     """
     snapshot_id_bin = _to_sha1_bin(snapshot_id)
-    if config.storage().snapshot_missing([snapshot_id_bin]):
+    if list(config.storage().snapshot_missing([snapshot_id_bin])):
         raise NotFoundExc(f"Snapshot with id {snapshot_id} not found!")
 
     partial_branches = config.storage().snapshot_get_branches(
