@@ -181,15 +181,17 @@ async function checkVaultCookingTasks() {
   });
   try {
     const responses = await Promise.all(cookingTaskRequests);
-    handleFetchErrors(responses);
+    handleFetchErrors(responses, [404]);
     const cookingTasks = await Promise.all(responses.map(r => r.json()));
 
     const table = $('#vault-cooking-tasks tbody');
     for (let i = 0; i < cookingTasks.length; ++i) {
       const cookingTask = tasks[cookingTasks[i].swhid];
-      cookingTask.status = cookingTasks[i].status;
-      cookingTask.fetch_url = cookingTasks[i].fetch_url;
-      cookingTask.progress_message = cookingTasks[i].progress_message;
+      if (cookingTask) {
+        cookingTask.status = cookingTasks[i].status;
+        cookingTask.fetch_url = cookingTasks[i].fetch_url;
+        cookingTask.progress_message = cookingTasks[i].progress_message;
+      }
     }
     for (let i = 0; i < vaultCookingTasks.length; ++i) {
       const cookingTask = vaultCookingTasks[i];

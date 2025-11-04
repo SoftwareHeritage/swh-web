@@ -9,16 +9,16 @@
 
 import Cookies from 'js-cookie';
 
-export function handleFetchError(response) {
-  if (!response.ok) {
+export function handleFetchError(response, noRaiseForStatuses = []) {
+  if (!response.ok && $.inArray(response.status, noRaiseForStatuses)) {
     throw response;
   }
   return response;
 }
 
-export function handleFetchErrors(responses) {
+export function handleFetchErrors(responses, noRaiseForStatuses = []) {
   for (let i = 0; i < responses.length; ++i) {
-    if (!responses[i].ok) {
+    if (!responses[i].ok && $.inArray(responses[i].status, noRaiseForStatuses)) {
       throw responses[i];
     }
   }
