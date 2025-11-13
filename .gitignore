@@ -13,6 +13,7 @@ docs/dev-info.md
 .directory
 node_modules/
 swh/web/static/*.*
+!swh/web/static/security.txt
 swh/web/static/js/
 swh/web/static/css/
 swh/web/static/fonts/

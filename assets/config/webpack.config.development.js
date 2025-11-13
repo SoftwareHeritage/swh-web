@@ -379,7 +379,9 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['**/*', '!xml', '!xml/*', '!img', '!img/*',
                                      '!img/logos', '!img/logos/*', '!img/icons',
-                                     '!img/icons/*', '!json', '!json/*']
+                                     '!img/icons/*', '!json', '!json/*',
+                                     '!security.txt'
+                                    ]
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
