@@ -66,11 +66,19 @@ repos:
         stages: [pre-push]
         language: python
         additional_dependencies: [twine, build]
+
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.39.1
+    hooks:
       - id: eslint
-        name: eslint
-        entry: node_modules/.bin/eslint
-        language: system
-        types: [javascript]
+        additional_dependencies:
+          - eslint@9.39.1
+          - '@eslint/compat@1.4.0'
+          - eslint-plugin-cypress@5.2.0
+          - eslint-plugin-import@2.32.0
+          - eslint-plugin-node@11.1.0
+          - eslint-plugin-promise@7.2.1
+          - eslint-plugin-standard@5.0.0
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.36.4
