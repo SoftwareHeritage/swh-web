@@ -73,7 +73,7 @@ repos:
       - id: eslint
         additional_dependencies:
           - eslint@9.39.1
-          - '@eslint/compat@1.4.0'
+          - '@eslint/compat@2.0.0'
           - eslint-plugin-cypress@5.2.0
           - eslint-plugin-import@2.32.0
           - eslint-plugin-node@11.1.0
