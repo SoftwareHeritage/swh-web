@@ -56,9 +56,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
     </script>
-    <script>SWH_CONFIG = {{swh_client_config|jsonify}};</script>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
-    <script>swh.webapp.setSwhObjectIcons({{ swh_object_icons|jsonify }});</script>
+    {{ swh_object_icons|swh_json_script:"swh_object_icons" }}
+    <script>swh.webapp.setSwhObjectIcons(swh.webapp.parseJsonScript('swh_object_icons'));</script>
     {{ request.user.is_authenticated|json_script:"swh_user_logged_in" }}
     {{ request.user.is_staff|json_script:"swh_user_is_staff" }}
     {{ user_is_ambassador|json_script:"swh_user_is_ambassador" }}
@@ -187,13 +187,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
       </main>
       {% include "./includes/footer.html" %}
     </div>
-    <script>
-      swh.webapp.setContainerFullWidth();
-      {% if "server_url" in status and "json_path" in status %}
-        var statusServerURL = {{ status.server_url|jsonify }};
-        var statusJsonPath = {{ status.json_path|jsonify }};
-        swh.webapp.initStatusWidget(statusServerURL + statusJsonPath);
-      {% endif %}
-    </script>
+    {% if "server_url" in status and "json_path" in status %}
+      {{ status.server_url|swh_json_script:"status_server_url" }}
+      {{ status.json_path|swh_json_script:"status_json_path" }}
+      <script>
+        swh.webapp.setContainerFullWidth();
+        swh.webapp.initStatusWidget(
+          swh.webapp.parseJsonScript('status_server_url') +
+          swh.webapp.parseJsonScript('status_json_path')
+        );
+      </script>
+    {% endif %}
   </body>
 </html>

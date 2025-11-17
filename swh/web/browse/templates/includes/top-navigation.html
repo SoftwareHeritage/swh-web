@@ -148,6 +148,7 @@ See top-level LICENSE file for more information
   </div>
 </div>
 {% include "./sidetabs.html" %}
+{{ iframe_mode|swh_json_script:"iframe_mode" }}
 <script>
   var snapshotContext = false;
   var branch = false;
@@ -161,7 +162,7 @@ See top-level LICENSE file for more information
       $(".chosen-search-input").attr("aria-label", "Search language to highlight");
     });
     $(".chosen-select").chosen().change(function(event, params) {
-      swh.content.updateLanguage(params.selected, !{{ iframe_mode|jsonify }});
+      swh.content.updateLanguage(params.selected, !swh.webapp.parseJsonScript('iframe_mode'));
     });
   {% endif %}
   swh.browse.initSnapshotNavigation(snapshotContext, branch !== "None");

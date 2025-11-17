@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2024  The Software Heritage developers
+Copyright (C) 2017-2025  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -57,4 +57,5 @@ See top-level LICENSE file for more information
     </div>
   {% endif %}
 {% endif %}
-<script>swh.webapp.setBrowsedSwhObjectMetadata({{ swh_object_metadata|jsonify }})</script>
+{{ swh_object_metadata|swh_json_script:"swh_object_metadata" }}
+<script>swh.webapp.setBrowsedSwhObjectMetadata(swh.webapp.parseJsonScript('swh_object_metadata'))</script>

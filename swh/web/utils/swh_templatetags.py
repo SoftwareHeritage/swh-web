@@ -3,13 +3,12 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import json
 import re
 from typing import Optional
 
 from django import template
 from django.contrib.staticfiles.finders import find
-from django.utils.safestring import mark_safe
+from django.utils.html import json_script
 
 from swh.web.save_code_now.origin_save import get_savable_visit_types
 from swh.web.utils import rst_to_html
@@ -72,19 +71,15 @@ def urlize_header_links(text):
     return ret[:-1]
 
 
-@register.filter
-def jsonify(obj):
-    """Utility function for converting a django template variable
-    to JSON in order to use it in script tags.
+@register.filter(safe=True)
+def swh_json_script(value, element_id):
+    """Safely outputs a Python object as JSON, wrapped in a <script> tag,
+    ready for use with JavaScript.
 
-    Args
-        obj: Any django template context variable
-
-    Returns:
-        JSON representation of the variable.
-
+    Same as ``json_script`` template filter from django but using a custom
+    JSON encoder.
     """
-    return mark_safe(json.dumps(obj, cls=SWHDjangoJSONEncoder))
+    return json_script(value, element_id, encoder=SWHDjangoJSONEncoder)
 
 
 @register.filter

@@ -89,9 +89,9 @@ See top-level LICENSE file for more information
     <h5>List</h5>
     <div id="swh-visits-list"></div>
   </div>
+  {{ origin_visits|swh_json_script:"origin_visits" }}
   <script>
     // all origin visits
-    var visits = {{ origin_visits|jsonify }};
-    swh.origin_visits.initVisitsReporting(visits);
+    swh.origin_visits.initVisitsReporting(swh.webapp.parseJsonScript('origin_visits'));
   </script>
 {% endblock swh-browse-content %}

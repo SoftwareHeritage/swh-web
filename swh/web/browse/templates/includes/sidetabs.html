@@ -245,8 +245,9 @@ See top-level LICENSE file for more information
       </div>
     </div>
   {% endif %}
+  {{ swhids_info|swh_json_script:"swhids_info" }}
   <script>
-    swh.webapp.setSwhIdsContext({{ swhids_info|jsonify }});
+    swh.webapp.setSwhIdsContext(swh.webapp.parseJsonScript('swhids_info'));
     swh.browse.initSideTabs();
   </script>
 {% endif %}

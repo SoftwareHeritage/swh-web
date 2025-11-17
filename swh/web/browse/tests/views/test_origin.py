@@ -51,7 +51,9 @@ def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits)
         browse_dir_url = reverse(
             "browse-origin-directory",
             query_params={"origin_url": origin_url, "timestamp": vdate},
-        )
+        ).replace(
+            "&", "\\u0026"
+        )  # & character was escaped by the swh_json_script template filter
         assert_contains(resp, browse_dir_url)
 
     _check_origin_link(resp, origin_url)

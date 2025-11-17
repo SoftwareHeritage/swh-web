@@ -82,13 +82,18 @@ See top-level LICENSE file for more information
     </div>
     {% if not iframe_mode %}</div>{% endif %}
   {% if content %}
+    {{ filename|swh_json_script:"filename" }}
+    {{ mimetype|swh_json_script:"mimetype" }}
+    {{ top_right_link.url|swh_json_script:"content_url" }}
+    {{ mathjax_js_library|swh_json_script:"mathjax_js_library" }}
+    {{ iframe_mode|swh_json_script:"iframe_mode" }}
     <script>
       swh.content.renderContent(
-        {{ filename|jsonify }},
-        {{ mimetype|jsonify }},
-        {{ top_right_link.url|jsonify }},
-        {{ mathjax_js_library|jsonify }},
-        !{{ iframe_mode|jsonify }}
+        swh.webapp.parseJsonScript('filename'),
+        swh.webapp.parseJsonScript('mimetype'),
+        swh.webapp.parseJsonScript('content_url'),
+        swh.webapp.parseJsonScript('mathjax_js_library'),
+        !swh.webapp.parseJsonScript('iframe_mode')
       );
     </script>
   {% endif %}

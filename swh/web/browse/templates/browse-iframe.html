@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2021-2024  The Software Heritage developers
+Copyright (C) 2021-2025  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -26,7 +26,7 @@ See top-level LICENSE file for more information
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-Copyright (C) 2021-2023  The Software Heritage developers
+Copyright (C) 2021-2025  The Software Heritage developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -176,13 +176,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
     {% if "swh.web.jslicenses" in SWH_DJANGO_APPS %}
       <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>
     {% endif %}
-    {% if object_type == "cnt" %}
+    {% if object_type == "cnt" and lines %}
+      {{ lines|swh_json_script:"lines" }}
       <script>
+        const lines = swh.webapp.parseJsonScript('lines');
         setTimeout(function() {
-          {% if lines %}
-            swh.webapp.scrollToLine(swh.webapp.highlightLine({{ lines.0|jsonify }}), 100);
-            swh.webapp.highlightLines({{ lines.0|jsonify }}, {{ lines.1|jsonify }});
-          {% endif %}
+          swh.webapp.scrollToLine(swh.webapp.highlightLine(lines[0]), 100);
+          if (lines[1]) {
+            swh.webapp.highlightLines(lines[0], lines[1]);
+          }
         }, 500);
       </script>
     {% endif %}

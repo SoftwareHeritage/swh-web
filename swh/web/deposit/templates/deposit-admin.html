@@ -59,8 +59,13 @@ See top-level LICENSE file for more information
     </thead>
   </table>
   <p id="swh-admin-deposit-list-error"></p>
+  {{ request.user.username|swh_json_script:"username" }}
+  {{ request.user.is_staff|swh_json_script:"user_is_staff" }}
   <script>
     swh.webapp.initPage('deposit-admin');
-    swh.deposit.initDepositAdmin({{ request.user.username|jsonify }}, {{ request.user.is_staff|jsonify }});
+    swh.deposit.initDepositAdmin(
+      swh.webapp.parseJsonScript('username'),
+      swh.webapp.parseJsonScript('user_is_staff')
+    );
   </script>
 {% endblock content %}
