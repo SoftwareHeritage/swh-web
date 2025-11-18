@@ -152,3 +152,8 @@ td.swh-branch-date {
     width: 125px;
     height: 32px;
 }
+
+.btn-swh-copy-badge-code {
+    width: 128px;
+    height: 32px;
+}

@@ -403,3 +403,16 @@ export function resizeIframe() {
 export function parseJsonScript(scriptElementId) {
   return JSON.parse($(`#${scriptElementId}`).text());
 }
+
+export function toggleButtonText(button, text) {
+  const currentLabel = button.innerHTML;
+
+  if (currentLabel === text) {
+    return;
+  }
+
+  button.innerHTML = text;
+  setTimeout(function() {
+    button.innerHTML = currentLabel;
+  }, 1000);
+};

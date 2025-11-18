@@ -183,26 +183,13 @@ export async function generateCitationForObjectType(event) {
 export async function initSideTabs() {
 
   $(document).ready(() => {
-    const toggleButtonText = (button, text) => {
-      const currentLabel = button.innerHTML;
-
-      if (currentLabel === text) {
-        return;
-      }
-
-      button.innerHTML = text;
-      setTimeout(function() {
-        button.innerHTML = currentLabel;
-      }, 1000);
-    };
-
     new ClipboardJS('.btn-swhid-copy', {
       text: trigger => {
         const swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
         return swhId.replace(/;\n/g, ';');
       }
     }).on('success', function(e) {
-      toggleButtonText(e.trigger, 'Copied!');
+      swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       e.clearSelection();
     });
 
@@ -212,7 +199,7 @@ export async function initSideTabs() {
         return window.location.origin + swhIdUrl;
       }
     }).on('success', function(e) {
-      toggleButtonText(e.trigger, 'Copied!');
+      swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       e.clearSelection();
     });
 
@@ -310,7 +297,7 @@ export async function initSideTabs() {
           return citation;
         }
       }).on('success', function(e) {
-        toggleButtonText(e.trigger, 'Copied!');
+        swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       });
 
       const tabSlideOptionsCitations = {
