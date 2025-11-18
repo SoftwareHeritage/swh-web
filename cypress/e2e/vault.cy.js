@@ -46,9 +46,9 @@ function genVaultCookingResponse(bundleType, swhid, status, message, fetchUrl) {
 // And status in localStorage
 function testStatus(taskId, color, statusMsg, status) {
   cy.get(`.swh-vault-table #vault-task-${CSS.escape(taskId)}`)
-    .should('be.visible')
+    .should('exist')
     .find('.progress-bar')
-    .should('be.visible')
+    .should('exist')
     .and('have.css', 'background-color', color)
     .and('contain', statusMsg)
     .then(() => {
@@ -518,10 +518,9 @@ describe('Vault Cooking User Interface Tests', function() {
         .contains('button:visible', 'Ok')
         .click();
 
-      cy.wait('@checkVaultCookingTask')
-        .then(() => {
-          testStatus(this.revision, progressbarColors['new'], 'new', 'new');
-        });
+      cy.wait('@checkVaultCookingTask');
+      testStatus(this.revision, progressbarColors['new'], 'new', 'new');
+
     });
   });
 

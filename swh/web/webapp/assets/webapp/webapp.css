@@ -18,6 +18,14 @@ body {
     overflow-y: clip;
 }
 
+/* Prevent scrolling of background when modal is opened */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+
 /* The Alegreya font used in swh-web ships some ligatures producing
 confusing text rendering, for instance the ligatures for `~` and some
 characters like e, y, u, ... so disable font common ligatures */

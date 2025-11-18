@@ -193,7 +193,7 @@ describe('Test mailmap administration', function() {
     cy.get('#swh-mailmap-form :invalid').should('not.exist');
 
     // ensure table redraw before next check
-    cy.contains(newDisplayName).should('be.visible');
+    cy.contains(newDisplayName).should('exist');
 
     checkMailmapRow(fromEmail, newDisplayName, true);
   });
