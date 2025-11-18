@@ -107,7 +107,8 @@ module = [
     "django_ratelimit.*",
     "pymemcache.*",
     "django_bootstrap5.*",
-    "rfc3987.*"
+    "rfc3987.*",
+    "pybadges2.*",
 ]
 ignore_missing_imports = true
 
