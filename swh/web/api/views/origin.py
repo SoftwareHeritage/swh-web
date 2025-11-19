@@ -578,7 +578,7 @@ def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
     """
     .. http:get:: /api/1/origin/(origin_url)/intrinsic-metadata
 
-        This route is deprecated; use http:get:/api/1/intrinsic-metadata/origin/ instead
+        This route is deprecated; use :http:get:`/api/1/intrinsic-metadata/origin/` instead
 
         Get intrinsic metadata of a software origin (as a JSON-LD/CodeMeta dictionary).
     """
@@ -590,7 +590,7 @@ def api_origin_intrinsic_metadata_legacy(request: Request, origin_url: str):
         enrich_fn=enrich_origin,
         request=request,
     )
-    return response[0]
+    return response[0] if response else None
 
 
 class OriginUrlQuerySerializer(serializers.Serializer):
