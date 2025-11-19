@@ -92,12 +92,13 @@ See top-level LICENSE file for more information
                                title="Click to display badge integration info" />
                         {% endif %}
                         {% if swhid_info.object_type.name.lower == "content" or swhid_info.object_type.name.lower == "directory" %}
-                          <a class="ms-auto float-end"
-                             style="cursor: pointer"
-                             role="button"
-                             onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
-                            Iframe embedding
-                          </a>
+                          <button type="button"
+                                  class="btn btn-secondary btn-sm ms-auto float-end mb-2"
+                                  title="Display info about how to embed source code archived by Software Heritage in external websites using an iframe"
+                                  onclick="swh.browse.showIframeInfoModal('{{ swhid_info.object_type.name.lower }}', $(this).closest('.swhid-ui').find('.swhid').text())">
+                            <i class="mdi mdi-application-brackets-outline mdi-fw"
+                               aria-hidden="true"></i>Iframe embedding
+                          </button>
                         {% endif %}
                       </div>
                     {% endif %}
