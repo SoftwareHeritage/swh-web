@@ -20,10 +20,6 @@ from swh.web.config import scheduler
 from swh.web.utils import django_cache, reverse
 from swh.web.utils.archive import count_origins
 
-_swh_arch_overview_doc = (
-    "https://docs.softwareheritage.org/devel/architecture/overview.html"
-)
-
 # Current coverage list of the archive in a high level overview fashion,
 # categorized as follow:
 #   - listed origins: origins discovered using a swh lister
@@ -35,7 +31,7 @@ _swh_arch_overview_doc = (
 listed_origins: Dict[str, Any] = {
     "info": (
         "These software origins get continuously discovered and archived using "
-        f'the <a href="{_swh_arch_overview_doc}#listers" target="_blank" '
+        'the <a href="https://docs.softwareheritage.org/user/listers.html" target="_blank" '
         'rel="noopener noreferrer">listers</a> implemented by Software Heritage.'
     ),
     "origins": [
@@ -411,8 +407,9 @@ legacy_origins: Dict[str, Any] = {
 deposited_origins: Dict[str, Any] = {
     "info": (
         "These origins are directly pushed into the archive by trusted partners "
-        f'using the <a href="{_swh_arch_overview_doc}#deposit" target="_blank" '
-        'rel="noopener noreferrer">deposit</a> service of Software Heritage.'
+        "using the "
+        '<a href="https://docs.softwareheritage.org/devel/architecture/overview.html#deposit" '
+        'target="_blank" rel="noopener noreferrer">deposit</a> service of Software Heritage.'
     ),
     "origins": [
         {
