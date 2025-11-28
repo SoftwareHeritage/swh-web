@@ -1,4 +1,4 @@
-# Copyright (C) 2024  The Software Heritage developers
+# Copyright (C) 2024-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -90,15 +90,18 @@ def _get_bibtex_from_intrinsic_citation_metadata(
         error=metadata_file["parsing_error"],
     )
 
-    try:
-        if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
-            citation["content"] = codemeta_to_bibtex(metadata_file["content"], swhid)
-        elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
-            citation["content"] = cff_to_bibtex(
-                yaml.dump(metadata_file["content"], default_flow_style=False), swhid
-            )
-    except Exception as e:
-        citation["error"] = str(e)
+    if citation["error"] is None:
+        try:
+            if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
+                citation["content"] = codemeta_to_bibtex(
+                    metadata_file["content"], swhid
+                )
+            elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
+                citation["content"] = cff_to_bibtex(
+                    yaml.dump(metadata_file["content"], default_flow_style=False), swhid
+                )
+        except Exception as e:
+            citation["error"] = str(e)
     return citation
 
 
