@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024  The Software Heritage developers
+# Copyright (C) 2020-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -249,36 +249,6 @@ def parse_core_swhid(swhid: str) -> CoreSWHID:
         raise BadInputExc(f"Error when parsing identifier: {' '.join(ve.messages)}")
     except ValueError as e:
         raise BadInputExc(f"Error when parsing identifier: {e}")
-
-
-def group_swhids(
-    swhids: Iterable[CoreSWHID],
-) -> Dict[ObjectType, List[bytes]]:
-    """
-    Groups many SoftWare Hash IDentifiers into a dictionary depending on their type.
-
-    Args:
-        swhids: an iterable of SoftWare Hash IDentifier objects
-
-    Returns:
-        A dictionary with:
-            keys: object types
-            values: object hashes
-    """
-    swhids_by_type: Dict[ObjectType, List[bytes]] = {
-        ObjectType.CONTENT: [],
-        ObjectType.DIRECTORY: [],
-        ObjectType.REVISION: [],
-        ObjectType.RELEASE: [],
-        ObjectType.SNAPSHOT: [],
-    }
-
-    for obj_swhid in swhids:
-        obj_id = obj_swhid.object_id
-        obj_type = obj_swhid.object_type
-        swhids_by_type[obj_type].append(hash_to_bytes(obj_id))
-
-    return swhids_by_type
 
 
 def get_swhids_info(

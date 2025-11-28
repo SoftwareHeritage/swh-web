@@ -26,6 +26,7 @@ from swh.model.swhids import CoreSWHID, ExtendedSWHID, ObjectType, QualifiedSWHI
 from swh.objstorage.interface import objid_from_dict
 from swh.storage.algos import diff, revisions_walker
 from swh.storage.algos.snapshot import snapshot_get_latest, snapshot_resolve_alias
+from swh.storage.algos.swhid import known_swhids
 from swh.storage.interface import ListOrder, OriginVisitWithStatuses
 from swh.vault.exc import NotFoundExc as VaultNotFoundExc
 from swh.web import config
@@ -1954,37 +1955,15 @@ def lookup_object(object_type: ObjectType, object_id: str) -> Dict[str, Any]:
         raise ValueError(f"Unexpected object type variant: {object_type}")
 
 
-def lookup_missing_hashes(grouped_swhids: Dict[ObjectType, List[bytes]]) -> Set[str]:
-    """Lookup missing SoftWare Hash IDentifiers using batch processing.
+def lookup_known_swhids(swhids: Iterable[CoreSWHID]) -> Set[str]:
+    """Lookup SoftWare Hash IDentifiers that are present in the archive.
 
     Args:
-        A dictionary with:
-        keys: object types
-        values: object hashes
+        swhids: list of SWHIDs to check presence in the archive
     Returns:
-        A set(hexadecimal) of the hashes not found in the storage
+        A set of string SWHIDs found in the archive
     """
-    missing_hashes = []
-
-    for obj_type, obj_ids in grouped_swhids.items():
-        if obj_type == ObjectType.CONTENT:
-            missing_hashes.append(
-                config.storage().content_missing_per_sha1_git(obj_ids)
-            )
-        elif obj_type == ObjectType.DIRECTORY:
-            missing_hashes.append(config.storage().directory_missing(obj_ids))
-        elif obj_type == ObjectType.REVISION:
-            missing_hashes.append(config.storage().revision_missing(obj_ids))
-        elif obj_type == ObjectType.RELEASE:
-            missing_hashes.append(config.storage().release_missing(obj_ids))
-        elif obj_type == ObjectType.SNAPSHOT:
-            missing_hashes.append(config.storage().snapshot_missing(obj_ids))
-
-    missing = set(
-        map(lambda x: hashutil.hash_to_hex(x), itertools.chain(*missing_hashes))
-    )
-
-    return missing
+    return {str(swhid) for swhid in known_swhids(config.storage(), swhids)}
 
 
 def lookup_origins_by_sha1s(sha1s: List[str]) -> Iterator[Optional[OriginInfo]]:

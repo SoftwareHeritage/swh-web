@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024  The Software Heritage developers
+# Copyright (C) 2020-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -36,7 +36,6 @@ from swh.web.utils.identifiers import (
     gen_swhid,
     get_qualified_swhid,
     get_swhids_info,
-    group_swhids,
     parse_object_type,
     resolve_swhid,
 )
@@ -140,26 +139,6 @@ def test_get_swhid_with_unquoted_white_spaces(content):
 
     assert swhid_parsed.path == b"/test/foo bar/baz"
     assert "path=/test/foo%20bar/baz" in str(swhid_parsed)
-
-
-def test_group_swhids(content, directory, release, revision, snapshot):
-    swhids = []
-    expected = {}
-    for obj_type, obj_id in (
-        (ObjectType.CONTENT, content["sha1_git"]),
-        (ObjectType.DIRECTORY, directory),
-        (ObjectType.RELEASE, release),
-        (ObjectType.REVISION, revision),
-        (ObjectType.SNAPSHOT, snapshot),
-    ):
-        swhid = gen_swhid(obj_type, obj_id)
-        swhid = get_qualified_swhid(swhid)
-        swhids.append(swhid)
-        expected[obj_type] = [hash_to_bytes(obj_id)]
-
-    swhid_groups = group_swhids(swhids)
-
-    assert swhid_groups == expected
 
 
 def test_get_swhids_info_directory_context(archive_data, directory_with_subdirs):

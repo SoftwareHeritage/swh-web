@@ -1,19 +1,16 @@
-# Copyright (C) 2018-2022  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-from typing import Dict, Set
-
 from rest_framework.request import Request
 
-from swh.model.hashutil import hash_to_bytes, hash_to_hex
-from swh.model.swhids import ObjectType
+from swh.model.hashutil import hash_to_hex
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.utils import archive
 from swh.web.utils.exc import LargePayloadExc
-from swh.web.utils.identifiers import group_swhids, parse_core_swhid, resolve_swhid
+from swh.web.utils.identifiers import parse_core_swhid, resolve_swhid
 
 
 @api_route(r"/resolve/(?P<swhid>.+)/", "api-1-resolve-swhid")
@@ -108,19 +105,6 @@ def api_swhid_known(request: Request):
         )
 
     swhids = [parse_core_swhid(swhid) for swhid in request.data]
+    known_swhids = archive.lookup_known_swhids(swhids)
 
-    response = {str(swhid): {"known": False} for swhid in swhids}
-
-    # group swhids by their type
-    swhids_by_type = group_swhids(swhids)
-    # search for hashes not present in the storage
-    missing_hashes: Dict[ObjectType, Set[bytes]] = {
-        k: set(map(hash_to_bytes, archive.lookup_missing_hashes({k: v})))
-        for k, v in swhids_by_type.items()
-    }
-
-    for swhid in swhids:
-        if swhid.object_id not in missing_hashes[swhid.object_type]:
-            response[str(swhid)]["known"] = True
-
-    return response
+    return {swhid: {"known": swhid in known_swhids} for swhid in map(str, swhids)}

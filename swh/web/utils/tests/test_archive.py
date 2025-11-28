@@ -27,7 +27,7 @@ from swh.model.model import (
     SnapshotBranch,
     SnapshotTargetType,
 )
-from swh.model.swhids import ObjectType
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.storage.utils import now
 from swh.web.tests.data import random_content, random_sha1
 from swh.web.tests.strategies import new_origin, new_revision, visit_dates
@@ -892,48 +892,54 @@ def test_lookup_invalid_objects(invalid_sha1):
     assert e.match("Invalid checksum")
 
 
-def test_lookup_missing_hashes_non_present():
-    missing_cnt = random_sha1()
-    missing_dir = random_sha1()
-    missing_rev = random_sha1()
-    missing_rel = random_sha1()
-    missing_snp = random_sha1()
-
-    grouped_swhids = {
-        ObjectType.CONTENT: [hash_to_bytes(missing_cnt)],
-        ObjectType.DIRECTORY: [hash_to_bytes(missing_dir)],
-        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
-        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
-        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
+def test_lookup_known_swhids_non_present():
+    swhids = {
+        CoreSWHID(
+            object_type=ObjectType.CONTENT, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.REVISION, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.RELEASE, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.SNAPSHOT, object_id=hash_to_bytes(random_sha1())
+        ),
     }
 
-    actual_result = archive.lookup_missing_hashes(grouped_swhids)
+    assert archive.lookup_known_swhids(swhids) == set()
 
-    assert actual_result == {
-        missing_cnt,
-        missing_dir,
-        missing_rev,
-        missing_rel,
-        missing_snp,
+
+def test_lookup_known_swhids_some_present(content, directory):
+    content_swhid = CoreSWHID(
+        object_type=ObjectType.CONTENT, object_id=hash_to_bytes(content["sha1_git"])
+    )
+    directory_swhid = CoreSWHID(
+        object_type=ObjectType.DIRECTORY, object_id=hash_to_bytes(directory)
+    )
+
+    swhids = {
+        content_swhid,
+        directory_swhid,
+        CoreSWHID(
+            object_type=ObjectType.REVISION, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.RELEASE, object_id=hash_to_bytes(random_sha1())
+        ),
+        CoreSWHID(
+            object_type=ObjectType.SNAPSHOT, object_id=hash_to_bytes(random_sha1())
+        ),
     }
 
-
-def test_lookup_missing_hashes_some_present(content, directory):
-    missing_rev = random_sha1()
-    missing_rel = random_sha1()
-    missing_snp = random_sha1()
-
-    grouped_swhids = {
-        ObjectType.CONTENT: [hash_to_bytes(content["sha1_git"])],
-        ObjectType.DIRECTORY: [hash_to_bytes(directory)],
-        ObjectType.REVISION: [hash_to_bytes(missing_rev)],
-        ObjectType.RELEASE: [hash_to_bytes(missing_rel)],
-        ObjectType.SNAPSHOT: [hash_to_bytes(missing_snp)],
+    assert archive.lookup_known_swhids(swhids) == {
+        str(content_swhid),
+        str(directory_swhid),
     }
-
-    actual_result = archive.lookup_missing_hashes(grouped_swhids)
-
-    assert actual_result == {missing_rev, missing_rel, missing_snp}
 
 
 def test_lookup_origin_extra_trailing_slash(origin):
