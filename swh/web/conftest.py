@@ -63,6 +63,7 @@ from swh.web.tests.data import (
     ORIGIN_WITH_CFF_FILE,
     ORIGIN_WITH_METADATA_FILES,
     ORIGIN_WITH_QUOTED_SPACE_IN_URL,
+    ORIGIN_WITH_UNKNOWN_CODEMETA_CONTEXT,
     get_tests_data,
     override_storages,
     random_content,
@@ -695,28 +696,34 @@ def revision_with_submodules():
     }
 
 
-@pytest.fixture(scope="function")
-def origin_with_metadata_file():
-    """Fixture returning the origin with raw intrinsic metadata (codemeta.json
-    and citation.cff file) ingested into the test archive."""
+def _get_origin(origin_url):
     origins = _known_swh_objects(get_tests_data(), "origins")
     return next(
         filtered_origin
         for filtered_origin in origins
-        if filtered_origin["url"] == ORIGIN_WITH_METADATA_FILES
+        if filtered_origin["url"] == origin_url
     )
+
+
+@pytest.fixture(scope="function")
+def origin_with_metadata_file():
+    """Fixture returning the origin with raw intrinsic metadata (codemeta.json
+    and citation.cff file) ingested into the test archive."""
+    return _get_origin(ORIGIN_WITH_METADATA_FILES)
 
 
 @pytest.fixture(scope="function")
 def origin_with_cff_file():
     """Fixture returning the origin with raw intrinsic metadata (codemeta.json
     and citation.cff file) ingested into the test archive."""
-    origins = _known_swh_objects(get_tests_data(), "origins")
-    return next(
-        filtered_origin
-        for filtered_origin in origins
-        if filtered_origin["url"] == ORIGIN_WITH_CFF_FILE
-    )
+    return _get_origin(ORIGIN_WITH_CFF_FILE)
+
+
+@pytest.fixture(scope="function")
+def origin_url_with_unknown_codemeta_context():
+    """Fixture returning the origin with raw intrinsic metadata (codemeta.json
+    and citation.cff file) ingested into the test archive."""
+    return ORIGIN_WITH_UNKNOWN_CODEMETA_CONTEXT
 
 
 @pytest.fixture(scope="function")

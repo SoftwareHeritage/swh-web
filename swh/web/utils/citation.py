@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from swh.indexer.bibtex import cff_to_bibtex, codemeta_to_bibtex
+from swh.indexer.bibtex import BibTeXCitationError, cff_to_bibtex, codemeta_to_bibtex
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -88,14 +88,26 @@ def _get_bibtex_from_intrinsic_citation_metadata(
         content="",
         source_swhid=str(QualifiedSWHID(**source_swhid_params)),
         error=metadata_file["parsing_error"],
+        warning=None,
     )
 
     if citation["error"] is None:
         try:
             if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
-                citation["content"] = codemeta_to_bibtex(
-                    metadata_file["content"], swhid
-                )
+                try:
+                    citation["content"] = codemeta_to_bibtex(
+                        metadata_file["content"], swhid
+                    )
+                except BibTeXCitationError as bce:
+                    citation["content"] = codemeta_to_bibtex(
+                        metadata_file["content"], swhid, force_codemeta_context=True
+                    )
+                    citation["warning"] = (
+                        "An error occurred when parsing the codemeta.json file but it was "
+                        "mitigated by overriding the JSON-LD context to the CodeMeta v3.0 one "
+                        "and executing parsing again.\n\n"
+                        "Details about the mitigated error can be found below:\n\n"
+                    ) + str(bce)
             elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
                 citation["content"] = cff_to_bibtex(
                     yaml.dump(metadata_file["content"], default_flow_style=False), swhid

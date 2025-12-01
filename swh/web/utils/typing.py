@@ -299,3 +299,5 @@ class Citation(TypedDict):
     """Qualified SWHID of citation metadata source file"""
     error: Optional[str]
     """Error message indicating why citation could not be generated"""
+    warning: Optional[str]
+    """Warning message indicating citation was generated but with some limitation"""

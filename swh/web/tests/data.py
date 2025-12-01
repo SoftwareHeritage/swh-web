@@ -1,10 +1,11 @@
-# Copyright (C) 2018-2023  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 from copy import deepcopy
 from datetime import timedelta
+import json
 import os
 from pathlib import Path
 import random
@@ -23,10 +24,12 @@ from swh.indexer.storage.model import (
     OriginIntrinsicMetadataRow,
 )
 from swh.loader.git.loader import GitLoader
+from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import DEFAULT_ALGORITHMS, hash_to_bytes, hash_to_hex
 from swh.model.model import (
     Content,
     Directory,
+    DirectoryEntry,
     Origin,
     OriginVisit,
     OriginVisitStatus,
@@ -116,6 +119,7 @@ _TEST_LICENSE_INDEXER_CONFIG = merge_configs(
 # input data for tests
 ORIGIN_WITH_METADATA_FILES = "https://git.example.org/repo_with_metadata_file"
 ORIGIN_WITH_CFF_FILE = "https://git.example.org/repo_with_cff_file"
+ORIGIN_WITH_UNKNOWN_CODEMETA_CONTEXT = "https://example.org/codemeta/unknown/context"
 ORIGIN_WITH_QUOTED_SPACE_IN_URL = "https://git.example.org/john%20doe/project"
 _TEST_ORIGINS = [
     {
@@ -255,6 +259,42 @@ def _add_origin(
     counters.add("origin_visit_status", [f"{visit_status.unique_key()}"])
 
 
+def _add_origin_with_unknown_codemeta_context(storage, search, counters):
+    codemeta = {
+        "@context": "https://example.org/codemeta/3.0",
+        "author": {"name": "Jane Doe"},
+        "name": "Example Software",
+        "url": "http://example.org/",
+        "datePublished": "2023-10-10",
+    }
+
+    content = Content.from_data(json.dumps(codemeta).encode())
+    storage.content_add([content])
+
+    directory = Directory(
+        entries=(
+            DirectoryEntry(
+                name=b"codemeta.json",
+                type="file",
+                target=content.sha1_git,
+                perms=DentryPerms.content,
+            ),
+        )
+    )
+    storage.directory_add([directory])
+
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url=ORIGIN_WITH_UNKNOWN_CODEMETA_CONTEXT,
+        visit_type="tar",
+        snapshot_branches={
+            b"HEAD": {"target_type": "directory", "target": directory.id}
+        },
+    )
+
+
 # Tests data initialization
 def _init_tests_data():
     # To hold reference to the memory storage
@@ -333,6 +373,8 @@ def _init_tests_data():
         origin_url=ORIGIN_WITH_QUOTED_SPACE_IN_URL,
         visit_type="git",
     )
+
+    _add_origin_with_unknown_codemeta_context(storage, search, counters)
 
     sha1s: Set[Sha1] = set()
     directories = set()
