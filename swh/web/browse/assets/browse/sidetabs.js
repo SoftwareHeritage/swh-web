@@ -83,6 +83,9 @@ function addLinesInfo() {
     swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
     swhIdElt.attr('href', swhIdWithContextUrl);
   }
+  if (activateCitationsUI() || swh.webapp.isStaffUser() || swh.webapp.isAmbassadorUser()) {
+    generateCitationFromSWHID('content');
+  }
 }
 
 function updateTabsSize() {
@@ -157,6 +160,25 @@ export async function generateCitationFromSWHID(objectType) {
     $(`#citation-source-${objectType}`).html(
       '<a target="_blank" rel="noopener noreferrer" ' +
       `href="${Urls.browse_swhid(citation.source_swhid)}">Browse citation metadata</a>`);
+    if (citation.warning) {
+      $(`#swh-citation-warning-switch-${objectType}`).removeClass('d-none');
+      $(`#swh-citation-warning-${objectType}`).text(citation.warning);
+      $(`#swh-citation-warning-switch-${objectType}`).on('click', e => {
+        if ($(`#swh-citation-warning-${objectType}`).hasClass('d-none')) {
+          $(`#swh-citation-warning-${objectType}`).removeClass('d-none');
+          $(`#swh-citation-${objectType}`).addClass('d-none');
+          $(`#swh-citation-warning-switch-${objectType}`).html(
+            '<i class="mdi mdi-book-open-variant-outline mdi-fw" aria-hidden="true"></i>Display citation'
+          );
+        } else {
+          $(`#swh-citation-warning-${objectType}`).addClass('d-none');
+          $(`#swh-citation-${objectType}`).removeClass('d-none');
+          $(`#swh-citation-warning-switch-${objectType}`).html(
+            '<i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>Display warning'
+          );
+        }
+      });
+    }
   } catch (response) {
     const errorData = await response.json();
     $(`#citation-tab-${objectType} .swh-citation`).text(
@@ -311,7 +333,7 @@ export async function initSideTabs() {
             $('#swh-identifiers').trigger('open');
           }
           const currentObjectType = $('#swh-citations-content .nav-link.active').text().trim();
-          const currentObjectCitation = $(`citation-tab-${currentObjectType} pre`).text().trim();
+          const currentObjectCitation = $(`#swh-citation-${currentObjectType}`).text().trim();
           if (currentObjectCitation === '') {
             generateCitationFromSWHID(currentObjectType);
           }

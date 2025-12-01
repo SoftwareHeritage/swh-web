@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2025  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -373,8 +373,6 @@ describe('Citations Tests', function() {
     cy.get('#swh-citations .ui-slideouttab-handle')
       .click();
 
-    cy.wait('@apiRawIntrinsicCitationGet');
-
     // citation for directory object type is generated when opening citations tab
     cy.get('#citation-tab-directory .swh-citation')
       .should('contain', '@softwareversion{');
@@ -430,8 +428,6 @@ describe('Citations Tests', function() {
     cy.get('#swh-citations .ui-slideouttab-handle')
       .click();
 
-    cy.wait('@apiRawIntrinsicCitationGet');
-
     cy.get('#citation-copy-button-directory .btn-citation-copy')
       .click();
 
@@ -453,10 +449,10 @@ describe('Citations Tests', function() {
       .get('.hljs-ln-numbers[data-line-number="3"]')
       .click({shiftKey: true});
 
+    cy.wait('@apiRawIntrinsicCitationGet');
+
     cy.get('#swh-citations .ui-slideouttab-handle')
       .click();
-
-    cy.wait('@apiRawIntrinsicCitationGet');
 
     cy.get('#citation-tab-content .swh-citation')
       .should('contain', ';lines=1-3');
@@ -469,6 +465,32 @@ describe('Citations Tests', function() {
 
     cy.get('#swh-citations')
       .should('not.be.visible');
+  });
+
+  it('should offer to display warning when citation generation was mitigated by SWH', function() {
+    cy.visit(`${this.Urls.browse_origin_directory()}?origin_url=https://example.org/codemeta/unknown/context`);
+
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    // button to display warnings should be visible
+    cy.get('#swh-citation-warning-switch-directory')
+      .should('be.visible')
+      .click();
+
+    // warning should be visible after clicking on button
+    cy.get('#swh-citation-warning-directory')
+      .should('be.visible')
+      .should('contain', 'Unknown context URL');
+
+    // switch back to citation
+    cy.get('#swh-citation-warning-switch-directory')
+      .click();
+
+    // citation should be visible after clicking on button
+    cy.get('#swh-citation-directory')
+      .should('be.visible')
+      .contains('@softwareversion{');
   });
 
 });

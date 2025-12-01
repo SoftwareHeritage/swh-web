@@ -218,15 +218,28 @@ See top-level LICENSE file for more information
                         <option>BibTeX</option>
                       </select>
                     </div>
-                    <span class="col pt-1"
+                    <span class="col pt-1 d-none d-md-block"
                           id="citation-format-description-{{ swhid_info.object_type.name.lower }}">
                       Generate software citation in BibTex format (requires
                       <a href="https://ctan.mines-albi.fr/macros/latex/contrib/biblatex-contrib/biblatex-software/software-biblatex.pdf"
                          target="_blank"
                          rel="noopener noreferrer">biblatex-software</a> package)
                     </span>
+                    <div class="col-2 pt-1 d-none d-md-block">
+                      <button type="button"
+                              id="swh-citation-warning-switch-{{ swhid_info.object_type.name.lower }}"
+                              class="btn btn-secondary btn-sm float-end d-none"
+                              title="Show warning related to citation generation"
+                              style="width: 123px">
+                        <i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>Display warning
+                      </button>
+                    </div>
                   </div>
-                  <pre class="swh-citation">Generating citation ...</pre>
+                  <pre id="swh-citation-{{ swhid_info.object_type.name.lower }}"
+                       class="swh-citation">Generating citation ...</pre>
+                  <pre id="swh-citation-warning-{{ swhid_info.object_type.name.lower }}"
+                       class="d-none"
+                       style="white-space: pre-wrap"></pre>
                   <div id="citation-source-{{ swhid_info.object_type.name.lower }}"
                        class="float-start"></div>
                   <div id="citation-copy-button-{{ swhid_info.object_type.name.lower }}"
