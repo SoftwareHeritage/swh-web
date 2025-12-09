@@ -25,7 +25,7 @@ from swh.web.save_code_now.origin_save import (
     SAVE_REQUEST_REJECTED,
     create_save_origin_request,
 )
-from swh.web.utils import datatables_pagination_params
+from swh.web.utils import datatables_order_params, datatables_pagination_params
 
 
 @staff_member_required(view_func=None, login_url=settings.LOGIN_URL)
@@ -43,13 +43,9 @@ def _datatables_origin_urls_response(request, urls_query_set):
     if search_value:
         urls_query_set = urls_query_set.filter(url__icontains=search_value)
 
-    column_order = request.GET.get("order[0][column]")
-    field_order = request.GET.get(f"columns[{column_order}][name]", "id")
-    order_dir = request.GET.get("order[0][dir]", "desc")
-    if order_dir == "desc":
-        field_order = "-" + field_order
+    field_order = datatables_order_params(request, "id", "desc")
 
-    urls_query_set = urls_query_set.order_by(field_order)
+    urls_query_set = urls_query_set.order_by(*field_order)
 
     table_data = {}
     table_data["draw"] = int(request.GET.get("draw", 1))

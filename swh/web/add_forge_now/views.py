@@ -19,7 +19,7 @@ from swh.web.add_forge_now.api_views import (
 from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.add_forge_now.models import RequestHistory
 from swh.web.auth.utils import is_add_forge_now_moderator
-from swh.web.utils import datatables_pagination_params
+from swh.web.utils import datatables_order_params, datatables_pagination_params
 
 
 def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
@@ -38,14 +38,9 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
 
     search_value = request.GET.get("search[value]")
 
-    column_order = request.GET.get("order[0][column]")
-    field_order = request.GET.get(f"columns[{column_order}][name]", "id")
-    order_dir = request.GET.get("order[0][dir]", "desc")
+    field_order = datatables_order_params(request, "id", "desc")
 
-    if field_order:
-        if order_dir == "desc":
-            field_order = "-" + field_order
-        add_forge_requests = add_forge_requests.order_by(field_order)
+    add_forge_requests = add_forge_requests.order_by(*field_order)
 
     per_page, page_num = datatables_pagination_params(request)
 

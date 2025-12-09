@@ -15,7 +15,7 @@ from swh.web.save_code_now.origin_save import (
     get_savable_visit_types,
     get_save_origin_task_info,
 )
-from swh.web.utils import datatables_pagination_params
+from swh.web.utils import datatables_order_params, datatables_pagination_params
 
 
 def origin_save_help_view(request):
@@ -58,13 +58,9 @@ def origin_save_requests_list(request, status):
 
     search_value = request.GET.get("search[value]")
 
-    column_order = request.GET.get("order[0][column]")
-    field_order = request.GET.get(f"columns[{column_order}][name]", "id")
-    order_dir = request.GET.get("order[0][dir]", "desc")
-    if order_dir == "desc":
-        field_order = "-" + field_order
+    field_order = datatables_order_params(request, "id", "desc")
 
-    save_requests = save_requests.order_by(field_order)
+    save_requests = save_requests.order_by(*field_order)
 
     length, page = datatables_pagination_params(request)
 

@@ -595,6 +595,49 @@ def demangle_url(url: str) -> str:
         return url
 
 
+def datatables_order_params(
+    request: HttpRequest,
+    default_name: Optional[str] = None,
+    default_dir: Optional[str] = None,
+) -> List[str]:
+    """Datatables order parameters.
+
+    Args:
+        request: an HttpRequest to get the ordering parameters
+
+    Returns:
+        A list of the translated ordering parameters
+    """
+
+    def order_str(d, n):
+        return f"-{n}" if d == "desc" else n
+
+    order = []
+    order_item = 0
+
+    order_column: Optional[str]
+    order_name: Optional[str]
+    order_dir: Optional[str]
+
+    while True:
+        order_column = f"order[{order_item}][column]"
+        order_column = request.GET.get(order_column)
+        order_column = f"columns[{order_column}][name]"
+        order_column = request.GET.get(order_column)
+        order_name = f"order[{order_item}][name]"
+        order_name = request.GET.get(order_name, order_column)
+        order_dir = f"order[{order_item}][dir]"
+        order_dir = request.GET.get(order_dir, default_dir)
+        if order_name:
+            order.append(order_str(order_dir, order_name))
+        else:
+            break
+        order_item += 1
+    if not order and default_name:
+        order.append(order_str(default_dir, default_name))
+    return order
+
+
 def datatables_pagination_params(request: HttpRequest) -> Tuple[int, int]:
     """Datatables paginations parameters.
 

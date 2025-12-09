@@ -29,7 +29,7 @@ from swh.web.auth.utils import (
     any_permission_required,
 )
 from swh.web.mailmap.models import UserMailmap, UserMailmapEvent
-from swh.web.utils import datatables_pagination_params
+from swh.web.utils import datatables_order_params, datatables_pagination_params
 
 
 class UserMailmapSerializer(serializers.ModelSerializer):
@@ -148,13 +148,9 @@ def profile_list_mailmap_datatables(request: HttpRequest) -> HttpResponse:
 
     search_value = request.GET.get("search[value]", "")
 
-    column_order = request.GET.get("order[0][column]")
-    field_order = request.GET.get(f"columns[{column_order}][name]", "from_email")
-    order_dir = request.GET.get("order[0][dir]", "asc")
-    if order_dir == "desc":
-        field_order = "-" + field_order
+    field_order = datatables_order_params(request, "from_email", "asc")
 
-    mailmaps = mailmaps.order_by(field_order)
+    mailmaps = mailmaps.order_by(*field_order)
 
     table_data: Dict[str, Any] = {}
     table_data["draw"] = int(request.GET.get("draw", 1))
