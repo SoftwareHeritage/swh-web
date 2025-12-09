@@ -37,6 +37,8 @@ if "swh.web.save_code_now" in settings.SWH_DJANGO_APPS:
 admin.site.site_header = "swh-web management"
 admin.site.site_title = "Software Heritage Web Application management"
 
-urlpatterns = [
-    url("manage/", admin.site.urls),
-]
+admin_urls = url("manage/", admin.site.urls)
+# to prevent noisy tracebacks in debug mode when a redirection is performed
+setattr(admin_urls, "name", "manage")
+
+urlpatterns = [admin_urls]
