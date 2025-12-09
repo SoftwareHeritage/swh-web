@@ -9,6 +9,7 @@ import objectFitImages from 'object-fit-images';
 import {selectText} from 'utils/functions';
 import Cookies from 'js-cookie';
 import iframeResize from '@iframe-resizer/parent';
+import {BREAKPOINT_SM} from 'utils/constants';
 
 $(document).ready(() => {
   // redirect to last browse page if any when clicking on the 'Browse' entry
@@ -55,6 +56,10 @@ $(document).ready(() => {
 
   // ensure correct sidebar state when loading a page
   setTimeout(() => {
+    if (window.innerWidth < BREAKPOINT_SM) {
+      body.removeClass('sidebar-open');
+      body.addClass('sidebar-collapse');
+    }
     updateSidebarState();
   });
 
