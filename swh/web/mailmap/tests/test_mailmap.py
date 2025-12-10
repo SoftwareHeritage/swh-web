@@ -300,8 +300,9 @@ def test_mailmap_list_datatables_ordering(client, mailmap_admin, sort_direction)
                 "length": MM_PER_PAGE,
                 "start": i * MM_PER_PAGE,
                 "order[0][column]": 2,
-                "order[0][dir]": sort_direction,
+                "order[0][name]": "display_name",
                 "columns[2][name]": "display_name",
+                "order[0][dir]": sort_direction,
             },
         )
 

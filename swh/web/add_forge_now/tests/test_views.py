@@ -141,8 +141,9 @@ def test_add_forge_request_list_datatables_ordering(
                     "length": length,
                     "start": i * length,
                     "order[0][column]": 2,
-                    "order[0][dir]": direction,
+                    "order[0][name]": order_field,
                     "columns[2][name]": order_field,
+                    "order[0][dir]": direction,
                 },
             )
 
