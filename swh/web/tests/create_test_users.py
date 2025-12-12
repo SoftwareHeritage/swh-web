@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2024 The Software Heritage developers
+# Copyright (C) 2021-2025 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -17,7 +17,19 @@ from swh.web.auth.utils import (
     get_or_create_django_permission,
 )
 
+admin_username = "admin"
+admin_password = "admin"
+admin_email = "admin@swh-web.org"
+
 User = get_user_model()
+
+# create admin user
+try:
+    user = User.objects.filter(username=admin_username).get()
+except User.DoesNotExist:
+    user = User.objects.create_superuser(admin_username, admin_email, admin_password)
+
+assert user.is_staff is True
 
 # username: (password, email, permissions, groups)
 users: Dict[str, Tuple[str, str, List[str], List[str]]] = {

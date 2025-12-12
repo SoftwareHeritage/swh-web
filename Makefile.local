@@ -11,7 +11,6 @@ define run_django_migrations
 endef
 
 define create_django_fixtures
-	cat swh/web/tests/create_test_admin.py | django-admin shell --settings=$(1)
 	cat swh/web/tests/create_test_users.py | django-admin shell --settings=$(1)
 	cat swh/web/tests/create_test_alter.py | django-admin shell --settings=$(1)
 endef
