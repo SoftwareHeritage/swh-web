@@ -3,7 +3,6 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
-import os
 from typing import Dict, Optional, cast
 from urllib.parse import quote
 
@@ -23,25 +22,10 @@ from swh.web.auth.utils import (
 )
 from swh.web.save_code_now.origin_save import (
     create_save_origin_request,
-    get_savable_visit_types,
     get_save_origin_request,
     get_save_origin_requests,
 )
 from swh.web.utils import demangle_url, reverse
-
-
-def _savable_visit_types() -> str:
-    docstring = ""
-    if os.environ.get("DJANGO_SETTINGS_MODULE") not in (
-        "swh.web.settings.tests",
-        "swh.web.settings.cypress",
-    ):
-        visit_types = sorted(get_savable_visit_types())
-        if visit_types:
-            for visit_type in visit_types[:-1]:
-                docstring += f"**{visit_type}**, "
-            docstring += f"and **{visit_types[-1]}**"
-    return docstring
 
 
 def _webhook_info_doc() -> str:
@@ -72,7 +56,7 @@ class OriginSaveQuerySerializer(serializers.Serializer):
     """Origin citation query parameters serializer."""
 
     visit_type = serializers.ChoiceField(
-        required=True, choices=get_savable_visit_types(privileged_user=True)
+        required=True, choices=["archives", "bzr", "cvs", "git", "hg", "svn", "tarball"]
     )
     origin_url = IRIField(required=True)
 
@@ -127,9 +111,7 @@ class OriginSaveQuerySerializer(serializers.Serializer):
     query_params_serializer=OriginSaveQuerySerializer,
 )
 @api_doc("/origin/save/", category="Request archival")
-@format_docstring(
-    visit_types=_savable_visit_types(), webhook_info_doc=_webhook_info_doc()
-)
+@format_docstring(webhook_info_doc=_webhook_info_doc())
 def api_save_origin(
     request: Request,
     visit_type: Optional[str] = None,
@@ -188,12 +170,14 @@ def api_save_origin(
             arguments.
 
         :param string visit_type: the type of visit to perform
-            (currently the supported types are {visit_types})
+            (currently the supported types are **bzr**, **cvs**, **git**, **hg**,
+            **svn**, and **tarball**)
         :param string origin_url: the url of the origin to save
         :param number request_id: a save request identifier
 
         :query string visit_type: the type of visit to perform
-            (currently the supported types are {visit_types})
+            (currently the supported types are **bzr**, **cvs**, **git**, **hg**,
+            **svn**, and **tarball**)
         :query string origin_url: the url of the origin to save
 
         {common_headers}

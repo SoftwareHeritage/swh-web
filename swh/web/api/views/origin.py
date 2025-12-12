@@ -19,7 +19,7 @@ from swh.web.api.utils import (
     enrich_origin_visit,
 )
 from swh.web.api.views.utils import api_lookup
-from swh.web.utils import archive, origin_visit_types, reverse
+from swh.web.utils import archive, reverse
 from swh.web.utils.exc import BadInputExc
 
 DOC_RETURN_ORIGIN = """
@@ -190,20 +190,6 @@ def api_origin(request: Request, origin_url: str):
     )
 
 
-def _visit_types() -> str:
-    docstring = ""
-    # available visit types are queried using swh-search so we do it in a try
-    # block in case of failure (for instance in docker environment when
-    # elasticsearch service is not available)
-    try:
-        visit_types = [f"**{visit_type}**" for visit_type in origin_visit_types()]
-        docstring = ", ".join(visit_types[:-1]) + f", and {visit_types[-1]}"
-    except Exception:
-        docstring = "???"
-        pass
-    return docstring
-
-
 class OriginSearchQuerySerializer(serializers.Serializer):
     """Origin search query parameters serializer."""
 
@@ -228,7 +214,7 @@ class OriginSearchQuerySerializer(serializers.Serializer):
 )
 @api_doc("/origin/search/", category="Archive")
 @format_docstring(
-    return_origin_array=DOC_RETURN_ORIGIN_ARRAY_SEARCH, visit_types=_visit_types()
+    return_origin_array=DOC_RETURN_ORIGIN_ARRAY_SEARCH,
 )
 def api_origin_search(
     request: Request,
@@ -255,7 +241,7 @@ def api_origin_search(
         :query boolean with_visit: if true, only return origins with at least
             one visit by Software heritage
         :query string visit_type: if provided, only return origins with that
-            specific visit type (currently the supported types are {visit_types})
+            specific visit type (see search page for the supported visit types)
 
         {return_origin_array}
 
