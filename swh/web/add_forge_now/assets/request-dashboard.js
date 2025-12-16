@@ -62,7 +62,7 @@ async function populateRequestDetails(requestId, nextStatusesFor) {
     // Setting data for the email, now adding static data
     const mods = 'Software Heritage Archival Moderators <archival@softwareheritage.org>';
     const emailTo = `${forgeRequest.forge_contact_name} <${forgeRequest.forge_contact_email}>`;
-    const emailCc = forgeRequest.inbound_email_address;
+    const emailCc = `Software Heritage AFNR#${forgeRequest.id} <${forgeRequest.inbound_email_address}>`;
     const emailReply = `${emailCc}, ${mods}, ${emailTo}`;
     $('#contactForgeAdmin').attr('emailTo', emailTo);
     $('#contactForgeAdmin').attr('emailCc', emailCc);
