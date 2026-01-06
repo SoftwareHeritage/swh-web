@@ -828,6 +828,44 @@ describe('Origin Save Tests', function() {
 
   });
 
+  it('should submit github URL not normalized if github API is not available', function() {
+    const ownerRepo = 'BIC-MNI/mni_autoreg';
+    const originUrl = 'https://github.com/BiC-MnI/MnI_AuToReG.git';
+
+    // stub call to github Web API fetching canonical repo URL
+    cy.intercept(`https://api.github.com/repos/${ownerRepo.toLowerCase()}`, {forceNetworkError: true})
+      .as('ghWebApiRequest');
+
+    // stub save request creation with canonical URL of github repo
+    cy.intercept('POST', saveOriginUrl('git', originUrl), (req) => {
+      req.reply(genOriginSaveResponse({
+        visitType: 'git',
+        saveRequestStatus: 'accepted',
+        originUrl: originUrl,
+        saveRequestDate: new Date(),
+        saveTaskStatus: 'pending',
+        visitDate: null,
+        visitStatus: null
+      }));
+    }).as('saveRequest');
+
+    // enter non canonical URL of github repo
+    cy.get('#swh-input-origin-url')
+      .clear()
+      .type(originUrl);
+
+    // submit form
+    cy.get('#swh-save-origin-form #swh-input-origin-save-submit')
+      .click();
+
+    // submission should be successful
+    cy.wait('@ghWebApiRequest')
+      .wait('@saveRequest').then(() => {
+        checkAlertVisible('success', saveCodeMsg['success']);
+      });
+
+  });
+
   it('should switch tabs when playing with browser history', function() {
     cy.intercept('/save/requests/list/**', {fixture: 'origin-save'});
     cy.intercept('/save/task/info/**', {fixture: 'save-task-info'});

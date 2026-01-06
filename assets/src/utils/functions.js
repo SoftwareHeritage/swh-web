@@ -138,10 +138,14 @@ export async function isArchivedOrigin(originPath, visitType) {
 }
 
 async function getCanonicalGithubOriginURL(ownerRepo) {
-  const ghApiResponse = await fetch(`https://api.github.com/repos/${ownerRepo}`);
-  if (ghApiResponse.ok && ghApiResponse.status === 200) {
-    const ghApiResponseData = await ghApiResponse.json();
-    return ghApiResponseData.html_url;
+  try {
+    const ghApiResponse = await fetch(`https://api.github.com/repos/${ownerRepo}`);
+    if (ghApiResponse.ok && ghApiResponse.status === 200) {
+      const ghApiResponseData = await ghApiResponse.json();
+      return ghApiResponseData.html_url;
+    }
+  } catch (_) {
+    return null;
   }
 }
 
