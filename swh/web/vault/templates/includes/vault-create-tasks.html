@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -9,7 +9,7 @@ See top-level LICENSE file for more information
 
 {% if vault_cooking.directory_context or vault_cooking.revision_context %}
   {% if user.is_authenticated and user.is_staff or "swh.vault.git_bare.ui" in user.get_all_permissions %}
-    <div class="btn-group">
+    <div class="btn-group js-only">
       <button class="btn btn-secondary btn-sm dropdown-toggle swh-vault-download"
               type="button"
               data-bs-toggle="dropdown">
@@ -38,7 +38,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   {% else %}
-    <button class="btn btn-secondary btn-sm swh-vault-download"
+    <button class="btn btn-secondary btn-sm swh-vault-download js-only"
             type="button"
             onclick="swh.vault.vaultRequest('directory', '{{ vault_cooking.directory_swhid }}')">
       <i class="mdi mdi-download mdi-fw" aria-hidden="true"></i>
@@ -47,7 +47,7 @@ See top-level LICENSE file for more information
   {% endif %}
   <!-- modals related to the creation of vault cooking tasks -->
   <!-- they will be reparented in the script below in order to be able to display them -->
-  <div class="modal fade d-none"
+  <div class="modal fade d-none js-only"
        id="vault-cook-directory-modal"
        tabindex="-1"
        role="dialog"
@@ -92,7 +92,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  <div class="modal fade d-none"
+  <div class="modal fade d-none js-only"
        id="vault-download-directory-modal"
        tabindex="-1"
        role="dialog"
@@ -129,7 +129,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  <div class="modal fade d-none"
+  <div class="modal fade d-none js-only"
        id="vault-cook-revision-modal"
        tabindex="-1"
        role="dialog"
@@ -174,7 +174,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  <div class="modal fade d-none"
+  <div class="modal fade d-none js-only"
        id="vault-download-revision-modal"
        tabindex="-1"
        role="dialog"
@@ -211,7 +211,7 @@ See top-level LICENSE file for more information
       </div>
     </div>
   </div>
-  <div class="modal fade d-none"
+  <div class="modal fade d-none js-only"
        id="invalid-email-modal"
        tabindex="-1"
        role="dialog"

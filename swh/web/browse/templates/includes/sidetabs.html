@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -9,7 +9,7 @@ See top-level LICENSE file for more information
 
 {{ activate_citations_ui|json_script:"activate_citations_ui" }}
 {% if swhids_info %}
-  <div id="swh-identifiers" class="swh-side-tab">
+  <div id="swh-identifiers" class="swh-side-tab js-only">
     <button id="swhids-handle"
             class="btn btn-secondary handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
             aria-expanded="false"
@@ -148,7 +148,7 @@ See top-level LICENSE file for more information
     </div>
   </div>
   {% if activate_citations_ui or request.user.is_staff or user_is_ambassador %}
-    <div id="swh-citations" class="swh-side-tab d-none">
+    <div id="swh-citations" class="swh-side-tab d-none js-only">
       <button id="citations-handle"
               class="btn btn-secondary handle ui-slideouttab-handle ui-slideouttab-handle-rounded"
               aria-expanded="false"

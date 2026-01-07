@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -15,7 +15,7 @@ See top-level LICENSE file for more information
     <div class="card">
       <div class="swh-content-filename card-header swh-background-gray swh-heading-color">
         {% if filename %}{{ filename }}{% endif %}
-        <div class="ms-auto float-end swh-preview-code-switch d-none">
+        <div class="ms-auto float-end swh-preview-code-switch d-none js-only">
           <div class="btn-group" role="group">
             <input type="radio"
                    class="btn-check"
@@ -40,7 +40,7 @@ See top-level LICENSE file for more information
         </div>
       </div>
     {% endif %}
-    <div class="swh-content">
+    <div class="swh-content js-only">
       {% if content_size > max_content_size %}
         Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
       {% elif "application/pdf" == mimetype %}
@@ -79,22 +79,41 @@ See top-level LICENSE file for more information
       {% else %}
         {% include "includes/http-error.html" %}
       {% endif %}
+      {% if content %}
+        {{ filename|swh_json_script:"filename" }}
+        {{ mimetype|swh_json_script:"mimetype" }}
+        {{ top_right_link.url|swh_json_script:"content_url" }}
+        {{ mathjax_js_library|swh_json_script:"mathjax_js_library" }}
+        {{ iframe_mode|swh_json_script:"iframe_mode" }}
+        <script>
+          swh.content.renderContent(
+            swh.webapp.parseJsonScript('filename'),
+            swh.webapp.parseJsonScript('mimetype'),
+            swh.webapp.parseJsonScript('content_url'),
+            swh.webapp.parseJsonScript('mathjax_js_library'),
+            !swh.webapp.parseJsonScript('iframe_mode')
+          );
+        </script>
+      {% endif %}
     </div>
+    <noscript>
+      {% if content_size > max_content_size %}
+        Content is too large to be displayed (size is greater than {{ max_content_size|filesizeformat }}).
+      {% elif "inode/x-empty" == mimetype %}
+        <i>File is empty</i>
+      {% elif mimetype in browsers_supported_image_mimes and content %}
+        <img src="data:{{ mimetype }};base64,{{ content }}" alt="image" />
+      {% elif "text/" in mimetype or "application/" in mimetype or "message/" in mimetype and encoding != "binary" %}
+        <iframe src="{% url 'browse-content-highlight' 'sha1_git:'|add:sha1_git %}?filename={{ filename }}"
+                id="swh-code-highlight-iframe"
+                style="width: 100%;
+                       height: {{ no_script_iframe_height }}">
+        </iframe>
+      {% elif content %}
+        Content with mime type {{ mimetype }} and encoding {{ encoding }} cannot be displayed.
+      {% else %}
+        {% include "includes/http-error.html" %}
+      {% endif %}
+    </noscript>
     {% if not iframe_mode %}</div>{% endif %}
-  {% if content %}
-    {{ filename|swh_json_script:"filename" }}
-    {{ mimetype|swh_json_script:"mimetype" }}
-    {{ top_right_link.url|swh_json_script:"content_url" }}
-    {{ mathjax_js_library|swh_json_script:"mathjax_js_library" }}
-    {{ iframe_mode|swh_json_script:"iframe_mode" }}
-    <script>
-      swh.content.renderContent(
-        swh.webapp.parseJsonScript('filename'),
-        swh.webapp.parseJsonScript('mimetype'),
-        swh.webapp.parseJsonScript('content_url'),
-        swh.webapp.parseJsonScript('mathjax_js_library'),
-        !swh.webapp.parseJsonScript('iframe_mode')
-      );
-    </script>
-  {% endif %}
 {% endif %}

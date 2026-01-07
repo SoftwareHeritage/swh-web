@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2025  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -13,7 +13,9 @@ from django_ratelimit.decorators import ratelimit
 
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.defaultfilters import filesizeformat
 from django.utils.html import format_html
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.model.hashutil import hash_to_hex
 from swh.model.swhids import ObjectType
@@ -22,6 +24,7 @@ from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
     prepare_content_for_display,
+    pygments_iframe_height_for_content,
     request_content,
 )
 from swh.web.config import get_config
@@ -100,6 +103,61 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
         )
 
     return response
+
+
+@browse_route(
+    r"content/(?P<query_string>[0-9a-z_:]*[0-9a-f]+)/highlight/",
+    view_name="browse-content-highlight",
+    checksum_args=["query_string"],
+)
+@xframe_options_exempt
+@ratelimit(key="user_or_ip", rate=browse_content_rate_limit.get("rate", "60/m"))
+def content_highlight(request: HttpRequest, query_string: str) -> HttpResponse:
+    """Django view that produces an highlighted HTML display of a content identified
+    by its hash value.
+    """
+    from pygments import highlight
+    from pygments.formatters import HtmlFormatter
+    from pygments.lexer import Lexer
+    from pygments.lexers import guess_lexer, guess_lexer_for_filename
+    from pygments.lexers.special import TextLexer
+
+    content_data = request_content(query_string, re_encode=True)
+    mimetype = content_data["mimetype"]
+    encoding = content_data["encoding"]
+    if content_data["raw_data"] is None:
+        raise BadInputExc(
+            "Content is too large to be highlighted "
+            f"(size is greater than {filesizeformat(content_data['length'])})"
+        )
+    elif (
+        "text/" not in mimetype
+        and "application/" not in mimetype
+        and "message/" not in mimetype
+        or encoding == "binary"
+    ):
+        raise BadInputExc(
+            f"Content with mime type {mimetype} and encoding {encoding} cannot be displayed"
+        )
+
+    content = content_data["raw_data"].decode()
+    filename = request.GET.get("filename", None)
+
+    lexer: Lexer = TextLexer()
+    try:
+        if filename:
+            lexer = guess_lexer_for_filename(filename, content)
+        else:
+            lexer = guess_lexer(content)
+    except Exception:
+        pass
+
+    formatter = HtmlFormatter(linenos=True, style="trac")
+
+    return HttpResponse(
+        f"<style>{formatter.get_style_defs('.highlight')}</style>"
+        + highlight(content, lexer, formatter)
+    )
 
 
 _auto_diff_size_limit = 20000
@@ -499,6 +557,7 @@ def content_display(
         "browse-content.html",
         {
             "heading": heading,
+            "sha1_git": content_checksums.get("sha1_git"),
             "swh_object_id": swhids_info[0]["swhid"] if swhids_info else "",
             "swh_object_name": "Content",
             "swh_object_metadata": content_metadata,
@@ -523,6 +582,7 @@ def content_display(
             "error_code": error_info["status_code"],
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
+            "no_script_iframe_height": pygments_iframe_height_for_content(content),
         },
         status=error_info["status_code"],
     )

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -98,9 +98,11 @@ module.exports = (on, config) => {
           url: 'https://github.com/memononen/libtess2',
           type: 'git',
           content: [{
-            path: 'Source/tess.h'
+            path: 'Source/tess.h',
+            sha1Git: '30fda27bc2833697ebb7df1fa4be4ce6a6f4c27d'
           }, {
-            path: 'premake4.lua'
+            path: 'premake4.lua',
+            sha1Git: '69533c9ced466499003812edfb4e3d82558a5594'
           }],
           directory: [{
             path: 'Source',
@@ -112,7 +114,8 @@ module.exports = (on, config) => {
           url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
           type: 'git',
           content: [{
-            path: 'src/highlightjs-line-numbers.js'
+            path: 'src/highlightjs-line-numbers.js',
+            sha1Git: 'b2613ff021265c651e06a8ce3845bf03d033172d'
           }],
           directory: [],
           revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972'],

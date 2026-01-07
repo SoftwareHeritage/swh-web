@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2024  The Software Heritage developers
+Copyright (C) 2024-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -55,7 +55,7 @@ See top-level LICENSE file for more information
           </a>
         </li>
         {% if "swh.web.vault" in SWH_DJANGO_APPS %}
-          <li class="nav-item swh-menu-item swh-vault-item"
+          <li class="nav-item swh-menu-item swh-vault-item js-only"
               title="Download archived software from the Vault"
               role="menuitem">
             <a href="{% url 'vault' %}" class="nav-link swh-vault-link">
@@ -107,7 +107,7 @@ See top-level LICENSE file for more information
             {% endif %}
           </li>
         {% endif %}
-        <li class="nav-item swh-menu-item swh-help-item"
+        <li class="nav-item swh-menu-item swh-help-item js-only"
             title="How to browse the archive ?"
             role="menuitem">
           <a href="#"
@@ -120,8 +120,8 @@ See top-level LICENSE file for more information
       </ul>
     </nav>
     {% if user.is_authenticated %}
-      <h6 class="nav-header">Administration</h6>
-      <nav class="mt-2" aria-label="Administration">
+      <h6 class="nav-header js-only">Administration</h6>
+      <nav class="mt-2 js-only" aria-label="Administration">
         <ul class="nav sidebar-menu flex-column"
             data-widget="treeview"
             role="menu"

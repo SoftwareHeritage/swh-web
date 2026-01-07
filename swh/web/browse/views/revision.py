@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2025  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -30,6 +30,7 @@ from swh.web.browse.utils import (
     get_readme_to_display,
     get_revision_log_url,
     prepare_content_for_display,
+    pygments_iframe_height_for_content,
     request_content,
 )
 from swh.web.utils import (
@@ -407,6 +408,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         snapshot_context = get_snapshot_context(snapshot_id)
 
     error_info: Dict[str, Any] = {"status_code": 200, "description": None}
+    extra_template_variables = {}
 
     if path:
         try:
@@ -416,6 +418,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             else:
                 query_string = "sha1_git:" + file_info["target"]
                 content_data = request_content(query_string)
+                extra_template_variables["sha1_git"] = file_info["target"]
         except NotFoundExc as e:
             error_info["status_code"] = 404
             error_info["description"] = f"NotFoundExc: {str(e)}"
@@ -537,6 +540,9 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
                 )
             ):
                 available_languages = highlightjs.get_supported_languages()
+            extra_template_variables["no_script_iframe_height"] = (
+                pygments_iframe_height_for_content(content)
+            )
         if path:
             filename = path_info[-1]["name"]
             query_params["filename"] = filename
@@ -669,6 +675,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
             "available_languages": available_languages,
+            **extra_template_variables,
         },
         status=error_info["status_code"],
     )

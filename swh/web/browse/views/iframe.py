@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2025  The Software Heritage developers
+# Copyright (C) 2021-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,6 +18,7 @@ from swh.web.browse.utils import (
     content_display_max_size,
     get_directory_entries,
     prepare_content_for_display,
+    pygments_iframe_height_for_content,
     request_content,
 )
 from swh.web.utils import archive, gen_path_info, reverse
@@ -201,6 +202,7 @@ def swhid_iframe(request, swhid: str):
     snapshot_context = None
     swhids_info_extra_context = {}
     archive_link = None
+    extra_template_variables = {}
 
     try:
         parsed_focus_swhid = get_qualified_swhid(focus_swhid)
@@ -239,6 +241,11 @@ def swhid_iframe(request, swhid: str):
                     object_id=parsed_swhid.object_id.hex(),
                 )
             )
+            content = view_data["content"]
+            extra_template_variables = {
+                "sha1_git": parsed_swhid.object_id.hex(),
+                "no_script_iframe_height": pygments_iframe_height_for_content(content),
+            }
 
         elif parsed_swhid and parsed_swhid.object_type == ObjectType.DIRECTORY:
             view_data = _get_directory_rendering_data(
@@ -342,6 +349,7 @@ def swhid_iframe(request, swhid: str):
             "swhids_info": get_swhids_info(
                 swh_objects, snapshot_context, swhids_info_extra_context
             ),
+            **extra_template_variables,
         },
         status=error_info["status_code"],
     )

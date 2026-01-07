@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -8,7 +8,7 @@ See top-level LICENSE file for more information
 {% load swh_templatetags %}
 
 {% if 'metadata' in swh_object_metadata and swh_object_metadata.metadata != '{}' %}
-  <button id="swh-metadata-bs-toggler"
+  <button id="swh-metadata-bs-toggler js-only"
           class="btn btn-secondary btn-sm swh-popover-toggler"
           data-bs-toggle="popover"
           data-popover-content="#swh-metadata-popover">
@@ -28,7 +28,7 @@ See top-level LICENSE file for more information
 {% endif %}
 {% if user.is_staff or "swh.web.ui.metadata.display" in user.get_all_permissions %}
   {% if swhids_info %}
-    <div class="btn-group">
+    <div class="btn-group js-only">
       <button class="btn btn-secondary btn-sm dropdown-toggle"
               type="button"
               data-bs-toggle="dropdown">

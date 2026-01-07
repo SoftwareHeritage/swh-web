@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -87,6 +87,21 @@ describe('Code highlighting tests', function() {
       .click()
       .get('.hljs-ln-line')
       .should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
+  });
+
+  it('should highlight source code with pygments when javascript is disabled', function() {
+    const filename = origin.content[0].path.split('/').slice(-1);
+    cy.intercept(this.Urls.browse_content_highlight(
+      'sha1_git:' + origin.content[0].sha1Git) + `?filename=${filename}`
+    ).as('contentHighlight');
+    cy.visit(url, {script: false});
+    cy.wait('@contentHighlight');
+    cy.iframe('#swh-code-highlight-iframe')
+      .find('.highlight td.linenos')
+      .should('be.visible');
+    cy.iframe('#swh-code-highlight-iframe')
+      .find('.highlight td.code')
+      .should('be.visible');
   });
 
 });

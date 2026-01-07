@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -135,7 +135,7 @@ See top-level LICENSE file for more information
       {% endif %}
       {% if available_languages %}
         <select data-placeholder="Select Language"
-                class="language-select chosen-select">
+                class="language-select chosen-select js-only">
           <option value=""></option>
           {% for lang in available_languages %}<option value="{{ lang }}">{{ lang }}</option>{% endfor %}
         </select>
