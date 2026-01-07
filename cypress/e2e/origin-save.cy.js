@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -1060,6 +1060,17 @@ describe('Origin Save Tests', function() {
 
     cy.get('#swh-input-visit-type')
       .should('have.value', 'tarball');
+  });
+
+  it('should submit a save code now request without javascript enabled', function() {
+    const originUrl = 'https://example.org/downloads/project-v1.0.0.tar.gz';
+    cy.visit(url, {script: false});
+    cy.intercept('POST', '/save/').as('saveRequest');
+    makeOriginSaveRequest('tarball', originUrl);
+    cy.wait('@saveRequest').then(() => {
+      // request is in pending state as it needs to be accepted
+      checkAlertVisible('warning', saveCodeMsg['warning']);
+    });
   });
 
 });

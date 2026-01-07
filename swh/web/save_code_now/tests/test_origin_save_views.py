@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021  The Software Heritage developers
+# Copyright (C) 2019-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -12,7 +12,7 @@ from swh.auth.django.utils import oidc_user_from_profile
 from swh.web.save_code_now.models import SaveOriginRequest
 from swh.web.save_code_now.origin_save import SAVE_REQUEST_ACCEPTED, SAVE_TASK_SUCCEEDED
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.helpers import check_http_get_response
+from swh.web.tests.helpers import check_html_post_response, check_http_get_response
 from swh.web.utils import reverse
 
 VISIT_TYPES = ("git", "svn", "hg", "cvs", "bzr")
@@ -192,3 +192,29 @@ def test_admin_origin_save_authorized_urls_without_query_params(client, staff_us
     client.force_login(staff_user)
     url = reverse("admin-origin-save-authorized-urls-list")
     check_http_get_response(client, url, status_code=200)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "anonymous", [False, True], ids=["anonymous user", "staff user"]
+)
+def test_origin_save_view_create_save_request(
+    client, staff_user, swh_scheduler, anonymous
+):
+    origin_url = "https://git.example.org/user/test_project"
+    if not anonymous:
+        client.force_login(staff_user)
+    url = reverse("origin-save")
+    resp = check_html_post_response(
+        client,
+        url,
+        data={"origin_url": origin_url, "visit_type": "git"},
+        status_code=200,
+        template_used="origin-save-help.html",
+    )
+    if not anonymous:
+        assert_contains(resp, 'The "save code now" request has been accepted')
+    else:
+        assert_contains(
+            resp, 'The "save code now" request has been put in pending state'
+        )

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025 The Software Heritage developers
+ * Copyright (C) 2019-2026 The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -135,4 +135,20 @@ Cypress.Commands.overwrite('type', (originalFn, subject, text, options = {}) => 
   options.delay = options.delay || 0;
   options.force = options.force || true;
   return originalFn(subject, text, options);
+});
+
+// Override visit command to allow disabling javascript,
+// adapted from https://github.com/cypress-io/cypress/issues/1611
+Cypress.Commands.overwrite('visit', (orig, url, options = {}) => {
+  const parentDocument = cy.state('window').parent.document;
+  // get iframe where tested page is rendered
+  const iframe = parentDocument.querySelector('.aut-iframe');
+  if (options.script === false) {
+    // set sandbox attribute to disable javascript
+    iframe.sandbox = 'allow-forms allow-same-origin';
+  } else {
+    // In case it was added by a visit before, the attribute has to be removed from the iframe
+    iframe.removeAttribute('sandbox');
+  }
+  return orig(url, options);
 });

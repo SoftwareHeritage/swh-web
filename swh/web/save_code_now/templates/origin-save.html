@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2018-2024  The Software Heritage developers
+Copyright (C) 2018-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -27,7 +27,11 @@ See top-level LICENSE file for more information
     You can contribute to extend the content of the Software Heritage archive by submitting an origin
     save request. To do so, fill the required info in the form below:
   </p>
-  <form id="swh-save-origin-form" class="needs-validation mb-3" novalidate>
+  <form id="swh-save-origin-form"
+        class="needs-validation mb-3"
+        action="{% url 'origin-save' %}"
+        method="POST"
+        novalidate>
     {% csrf_token %}
     <div class="row gx-3">
       <div class="col-md-1"></div>
@@ -35,6 +39,7 @@ See top-level LICENSE file for more information
         <label for="swh-input-visit-type" class="form-label">Origin type</label>
         <select id="swh-input-visit-type"
                 class="form-select form-control"
+                name="visit_type"
                 required
                 onchange="swh.save_code_now.maybeRequireExtraInputs();">
           {% for visit_type in visit_types %}
@@ -49,6 +54,7 @@ See top-level LICENSE file for more information
                class="form-control"
                id="swh-input-origin-url"
                oninput="swh.save_code_now.validateSaveOriginUrl(this)"
+               name="origin_url"
                value="{{ origin_url }}"
                required />
         <div class="invalid-feedback d-none">
@@ -83,14 +89,18 @@ See top-level LICENSE file for more information
     <img src="{% static 'img/swh-spinner.gif' %}" alt="swh spinner" />
     <p>Processing "save code now" request ...</p>
   </div>
-  <div id="swh-origin-save-request-status"></div>
+  <div id="swh-origin-save-request-status">
+    {% if submit_status %}
+      {% bootstrap_alert submit_status alert_type=alert_level dismissible=False %}
+    {% endif %}
+  </div>
   <ul class="nav nav-tabs" style="padding-left: 5px;">
     <li class="nav-item">
       <a class="nav-link {% if request.resolver_match.view_name == 'origin-save' %}active{% endif %}"
          href="{% url 'origin-save' %}"
          id="swh-origin-save-request-help-tab">Help</a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item js-only">
       <a class="nav-link {% if request.resolver_match.view_name == 'origin-save-list' %}active{% endif %}"
          href="{% url 'origin-save-list' %}"
          id="swh-origin-save-requests-list-tab">Browse save requests</a>
