@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -178,24 +178,12 @@ export function initHomePage() {
     // in the homepage
     if (Object.keys(swh.webapp.mirrorConfig()).length === 0) {
       iframeResize({license: 'GPLv3', heightCalculationMethod: 'taggedElement'}, '.swh-coverage-iframe');
-      const response = await fetch(Urls.stat_counters());
-      const data = await response.json();
 
-      if (data.stat_counters && !$.isEmptyObject(data.stat_counters)) {
-        for (const objectType of ['content', 'revision', 'origin', 'directory', 'person', 'release']) {
-          const count = data.stat_counters[objectType];
-          if (count !== undefined) {
-            $(`#swh-${objectType}-count`).html(count.toLocaleString());
-          } else {
-            $(`#swh-${objectType}-count`).closest('.swh-counter-container').hide();
-          }
-        }
-      } else {
-        $('.swh-counter').html('0');
-      }
-      if (data.stat_counters_history && !$.isEmptyObject(data.stat_counters_history)) {
+      const statCountersHistory = parseJsonScript('stat_counters_history');
+
+      if (statCountersHistory && !$.isEmptyObject(statCountersHistory)) {
         for (const objectType of ['content', 'revision', 'origin']) {
-          const history = data.stat_counters_history[objectType];
+          const history = statCountersHistory[objectType];
           if (history) {
             swh.webapp.drawHistoryCounterGraph(`#swh-${objectType}-count-history`, history);
           } else {
