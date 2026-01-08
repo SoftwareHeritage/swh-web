@@ -43,7 +43,10 @@ See top-level LICENSE file for more information
                 required
                 onchange="swh.save_code_now.maybeRequireExtraInputs();">
           {% for visit_type in visit_types %}
-            <option value="{{ visit_type }}">{{ visit_type }}</option>
+            <option value="{{ visit_type }}"
+                    {% if 'visit_type' in request.GET and request.GET.visit_type == visit_type %}selected{% endif %}>
+              {{ visit_type }}
+            </option>
           {% endfor %}
         </select>
         <div class="invalid-feedback d-none">The origin type must be specified</div>

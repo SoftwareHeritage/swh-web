@@ -25,7 +25,8 @@ from swh.web.utils import datatables_order_params, datatables_pagination_params,
 
 @ratelimit(key="user_or_ip", rate="60/m", method="POST", block=False)
 def origin_save_help_view(request):
-    origin_url = ""
+    visit_type = request.POST.get("visit_type")
+    origin_url = request.POST.get("origin_url")
     submit_status = ""
     alert_level = ""
     if request.method == "POST":
@@ -37,8 +38,6 @@ def origin_save_help_view(request):
             )
 
         else:
-            visit_type = request.POST.get("visit_type")
-            origin_url = request.POST.get("origin_url")
             try:
                 sor = create_save_origin_request(
                     visit_type,
