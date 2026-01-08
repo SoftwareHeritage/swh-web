@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -88,6 +88,27 @@ describe('Visits tests', function() {
 
         cy.get('.popover')
           .should('not.exist');
+      });
+  });
+
+  it('should display visits info and list of visits when javascript is disabled', function() {
+    cy.visit(`${this.Urls.browse_origin_visits()}?origin_url=${origin.url}&no_js=on`, {script: false});
+    cy.get('#swh-first-full-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+      });
+    cy.get('#swh-last-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+      });
+    cy.get('#swh-last-full-visit > .swh-visit-full')
+      .then(($el) => {
+        checkTimeLink($el);
+      });
+    cy.get('.swh-visits-list-row .swh-visit-full')
+      .should('be.visible')
+      .each(($el) => {
+        checkTimeLink($el);
       });
   });
 

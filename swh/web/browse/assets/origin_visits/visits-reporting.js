@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -9,31 +9,10 @@ import {createVisitsHistogram} from './visits-histogram';
 import {updateCalendar} from './visits-calendar';
 import './visits-reporting.css';
 
-// will hold all visits
-let allVisits;
 // will hold filtered visits to display
 let filteredVisits;
 // will hold currently displayed year
 let currentYear;
-
-// function to gather full visits
-function filterFullVisits(differentSnapshots) {
-  const filteredVisits = [];
-  for (let i = 0; i < allVisits.length; ++i) {
-    if (allVisits[i].status !== 'full') continue;
-    if (!differentSnapshots) {
-      filteredVisits.push(allVisits[i]);
-    } else if (filteredVisits.length === 0) {
-      filteredVisits.push(allVisits[i]);
-    } else {
-      const lastVisit = filteredVisits[filteredVisits.length - 1];
-      if (allVisits[i].snapshot !== lastVisit.snapshot) {
-        filteredVisits.push(allVisits[i]);
-      }
-    }
-  }
-  return filteredVisits;
-}
 
 // function to update the visits list view based on the selected year
 function updateVisitsList(year) {
@@ -87,25 +66,6 @@ function updateDisplayedVisits() {
   updateVisitsList(currentYear);
 }
 
-// callback when the user only wants to see full visits pointing
-// to different snapshots (default)
-export function showFullVisitsDifferentSnapshots(event) {
-  filteredVisits = filterFullVisits(true);
-  updateDisplayedVisits();
-}
-
-// callback when the user only wants to see full visits
-export function showFullVisits(event) {
-  filteredVisits = filterFullVisits(false);
-  updateDisplayedVisits();
-}
-
-// callback when the user wants to see all visits (including partial, ongoing and failed ones)
-export function showAllVisits(event) {
-  filteredVisits = allVisits;
-  updateDisplayedVisits();
-}
-
 // bootstrap 5 popovers on calendar days have display issues after dynamically updating calendar
 // so we refresh the page instead when changing visits filter
 export function reloadPage() {
@@ -114,44 +74,14 @@ export function reloadPage() {
 
 export function initVisitsReporting(visits) {
   $(document).ready(() => {
-    allVisits = visits;
+    filteredVisits = visits;
     // process input visits
-    let firstFullVisit;
-    allVisits.forEach((v, i) => {
+    filteredVisits.forEach((v, i) => {
       // Turn Unix epoch into Javascript Date object
       v.date = new Date(Math.floor(v.date * 1000));
-      const visitLink = '<a class="swh-visit-icon swh-visit-' + v.status + '" href="' + v.url + '">' + v.formatted_date + '</a>';
-      if (v.status === 'full') {
-        if (!firstFullVisit) {
-          firstFullVisit = v;
-          $('#swh-first-full-visit').append($(visitLink));
-          if (allVisits.length === 1) {
-            $('#swh-last-full-visit')[0].innerHTML = visitLink;
-          }
-        } else {
-          $('#swh-last-full-visit')[0].innerHTML = visitLink;
-        }
-      } else if (!v.status) {
-        v.status = 'undefined';
-      }
-      if (i === allVisits.length - 1) {
-        $('#swh-last-visit').append($(visitLink));
-      }
     });
 
-    if (!firstFullVisit) {
-      $('#swh-full-visits-different-snapshots').prop('disabled', true);
-      $('#swh-full-visits').prop('disabled', true);
-    }
-
-    if ($('#swh-full-visits').prop('checked')) {
-      showFullVisits();
-    } else if ($('#swh-all-visits').prop('checked')) {
-      showAllVisits();
-    } else {
-      // display full visits pointing to different snapshots by default
-      showFullVisitsDifferentSnapshots();
-    }
+    updateDisplayedVisits();
   });
 
 }

@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2025 The Software Heritage developers
+# Copyright (C) 2021-2026 The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -237,6 +237,25 @@ def origin_releases_browse_legacy(
 MAX_VISITS = 10000
 
 
+def _filter_visits(origin_visits, visits):
+    if visits == "all":
+        return origin_visits
+    else:
+        full_visits = []
+        snasphots = set()
+        for origin_visit in origin_visits:
+            if origin_visit["status"] == "full":
+                if (
+                    visits == "full_with_different_snaphots"
+                    and origin_visit["snapshot"] not in snasphots
+                ):
+                    full_visits.append(origin_visit)
+                else:
+                    full_visits.append(origin_visit)
+            snasphots.add(origin_visit["snapshot"])
+        return full_visits
+
+
 def _origin_visits_browse(
     request: HttpRequest, origin_url: Optional[str]
 ) -> HttpResponse:
@@ -257,6 +276,13 @@ def _origin_visits_browse(
         origin_url=origin_url, visit_type=request.GET.get("visit_type")
     )
 
+    visits = request.GET.get("visits", "all")
+    first_full_visit = None
+    last_full_visit = None
+    last_visit = None
+
+    total_nb_visits = len(origin_visits)
+    origin_visits = _filter_visits(origin_visits, visits)
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")
         visit["formatted_date"] = format_utc_iso_date(visit["date"])
@@ -275,6 +301,12 @@ def _origin_visits_browse(
         visit["date"] = parse_iso8601_date_to_utc(visit["date"]).timestamp()
         if not visit.get("snapshot"):
             visit["snapshot"] = ""
+        if visit["status"] == "full":
+            if first_full_visit is None:
+                first_full_visit = last_full_visit = visit
+            else:
+                last_full_visit = visit
+        last_visit = visit
 
     heading = f"Origin visits - {origin_url}"
 
@@ -292,6 +324,10 @@ def _origin_visits_browse(
             "show_actions": False,
             "partial_visits": origin_visits[0]["visit"] != 1,
             "max_visits": MAX_VISITS,
+            "total_nb_visits": total_nb_visits,
+            "first_full_visit": first_full_visit,
+            "last_full_visit": last_full_visit,
+            "last_visit": last_visit,
         },
     )
 

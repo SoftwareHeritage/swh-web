@@ -1,7 +1,7 @@
 {% extends "./browse.html" %}
 
 {% comment %}
-Copyright (C) 2017-2025  The Software Heritage developers
+Copyright (C) 2017-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -13,6 +13,12 @@ See top-level LICENSE file for more information
 
 {% block header %}
   {{ block.super }}
+  <noscript>
+    {% if 'no_js' not in request.GET %}
+      <meta http-equiv="refresh"
+            content="0; url={{ request.build_absolute_uri }}&no_js=on" />
+    {% endif %}
+  </noscript>
   {% render_bundle 'origin_visits' %}
   {% if "swh.web.save_code_now" in SWH_DJANGO_APPS %}
     {% render_bundle 'save_code_now' %}
@@ -30,44 +36,59 @@ See top-level LICENSE file for more information
     <div class="float-end">{% include "includes/take-new-snapshot.html" %}</div>
     <ul>
       <li class="d-inline-block">
-        <b>Total number of visits: </b>{{ origin_visits|length }}
+        <b>Total number of visits: </b>{{ total_nb_visits }}
         <i class="mdi mdi-fw" aria-hidden="true"></i>
       </li>
       <li class="d-inline-block">
-        <b>Last full visit: </b><span style="margin-left: 20px;" id="swh-last-full-visit"></span>
+        <b>Last full visit: </b>
+        <span style="margin-left: 20px;" id="swh-last-full-visit">
+          <a class="swh-visit-icon swh-visit-{{ last_full_visit.status }}"
+             href="{{ last_full_visit.url }}">{{ last_full_visit.formatted_date }}</a>
+        </span>
         <i class="mdi mdi-fw" aria-hidden="true"></i>
       </li>
       <li class="d-inline-block">
-        <b>First full visit: </b><span style="margin-left: 20px;" id="swh-first-full-visit"></span>
+        <b>First full visit: </b>
+        <span style="margin-left: 20px;" id="swh-first-full-visit">
+          <a class="swh-visit-icon swh-visit-{{ first_full_visit.status }}"
+             href="{{ first_full_visit.url }}">{{ first_full_visit.formatted_date }}</a>
+        </span>
         <i class="mdi mdi-fw" aria-hidden="true"></i>
       </li>
       <li class="d-inline-block">
-        <b>Last visit: </b><span style="margin-left: 20px;" id="swh-last-visit"></span>
+        <b>Last visit: </b>
+        <span style="margin-left: 20px;" id="swh-last-visit">
+          <a class="swh-visit-icon swh-visit-{{ last_visit.status }}"
+             href="{{ last_visit.url }}">{{ last_visit.formatted_date }}</a>
+        </span>
         <i class="mdi mdi-fw" aria-hidden="true"></i>
       </li>
     </ul>
     <h4>History</h4>
-    <form class="text-center">
+    <form class="text-center" action="{{ request.build_absolute_uri }}">
+      <input type="hidden" name="origin_url" value="{{ request.GET.origin_url }}">
+      {% if 'visit_type' in request.GET %}
+        <input type="hidden" name="visit_type" value="{{ request.GET.visit_type }}">
+      {% endif %}
       <div class="form-check form-check-inline">
         <input class="form-check-input"
                type="radio"
                id="swh-all-visits"
-               name="swh-visits"
-               value="option3"
-               checked />
-        <label class="form-check-label font-weight-normal"
-               for="swh-all-visits"
-               onclick="swh.origin_visits.reloadPage(event)">Show all visits</label>
+               name="visits"
+               value="all"
+               {% if 'visits' not in request.GET or request.GET.visits == 'all' %}checked{% endif %} />
+        <label class="form-check-label font-weight-normal" for="swh-all-visits">Show all visits</label>
       </div>
       <div class="form-check form-check-inline">
         <input class="form-check-input"
                type="radio"
                id="swh-full-visits-different-snapshots"
-               name="swh-visits"
-               value="option1" />
+               name="visits"
+               value="full_with_different_snaphots"
+               {% if 'visits' in request.GET and request.GET.visits == 'full_with_different_snaphots' %}checked{% endif %}
+               {% if first_full_visit is None %}disabled{% endif %} />
         <label class="form-check-label font-weight-normal"
-               for="swh-full-visits-different-snapshots"
-               onclick="swh.origin_visits.reloadPage(event)">
+               for="swh-full-visits-different-snapshots">
           Show full visits with different snapshots
         </label>
       </div>
@@ -75,19 +96,45 @@ See top-level LICENSE file for more information
         <input class="form-check-input"
                type="radio"
                id="swh-full-visits"
-               name="swh-visits"
-               value="option2" />
-        <label class="form-check-label font-weight-normal"
-               for="swh-full-visits"
-               onclick="swh.origin_visits.reloadPage(event)">Show all full visits</label>
+               name="visits"
+               value="full"
+               {% if 'visits' in request.GET and request.GET.visits == 'full' %}checked{% endif %}
+               {% if first_full_visit is None %}disabled{% endif %} />
+        <label class="form-check-label font-weight-normal" for="swh-full-visits">
+          Show all full visits
+        </label>
+      </div>
+      <div class="form-check form-check-inline">
+        <button class="btn btn-secondary btn-sm" type="submit">
+          <i class="mdi mdi-calendar-refresh mdi-fw" aria-hidden="true"></i>
+          Refresh visits
+        </button>
       </div>
     </form>
-    <h5>Timeline</h5>
-    <div id="swh-visits-timeline" class="d3-wrapper"></div>
-    <h5>Calendar</h5>
-    <div id="swh-visits-calendar"></div>
+    <h5 class="js-only">Timeline</h5>
+    <div id="swh-visits-timeline" class="d3-wrapper js-only"></div>
+    <h5 class="js-only">Calendar</h5>
+    <div class="js-only" id="swh-visits-calendar"></div>
     <h5>List</h5>
-    <div id="swh-visits-list"></div>
+    <div id="swh-visits-list">
+      {% if 'no_js' in request.GET %}
+        <noscript>
+          <div class="swh-visits-list-row">
+            {% for visit in origin_visits reversed %}
+              {% if forloop.counter0 > 0 and forloop.counter0|divisibleby:4 %}
+              </div>
+              <div class="swh-visits-list-row">
+              {% endif %}
+              <div class="swh-visits-list-column" style="width: 25%;">
+                <a class="swh-visit-icon swh-visit-{{ visit.status }}"
+                   title="{{ visit.status }}"
+                   href="{{ visit.url }}">{{ visit.formatted_date }}</a>
+              </div>
+            {% endfor %}
+          </div>
+        </noscript>
+      {% endif %}
+    </div>
   </div>
   {{ origin_visits|swh_json_script:"origin_visits" }}
   <script>
