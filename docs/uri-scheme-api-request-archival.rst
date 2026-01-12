@@ -21,6 +21,8 @@ Request archival
 
 .. autosimple:: swh.web.save_origin_webhooks.bitbucket.api_origin_save_webhook_bitbucket
 
+.. autosimple:: swh.web.save_origin_webhooks.forgejo.api_origin_save_webhook_forgejo
+
 .. autosimple:: swh.web.save_origin_webhooks.gitea.api_origin_save_webhook_gitea
 
 .. autosimple:: swh.web.save_origin_webhooks.github.api_origin_save_webhook_github

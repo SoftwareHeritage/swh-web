@@ -76,6 +76,7 @@ def add_forge_request_list_datatables(request: HttpRequest) -> HttpResponse:
 FORGE_TYPES: List[str] = [
     "bitbucket",
     "cgit",
+    "forgejo",
     "gitea",
     "gitiles",
     "gitlab",

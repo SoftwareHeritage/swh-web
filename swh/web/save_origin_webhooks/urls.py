@@ -6,6 +6,7 @@
 
 # register Web API endpoints
 import swh.web.save_origin_webhooks.bitbucket  # noqa
+import swh.web.save_origin_webhooks.forgejo  # noqa
 import swh.web.save_origin_webhooks.gitea  # noqa
 import swh.web.save_origin_webhooks.github  # noqa
 import swh.web.save_origin_webhooks.gitlab  # noqa

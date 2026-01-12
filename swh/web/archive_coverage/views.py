@@ -138,6 +138,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "forgejo",
+            "info_url": "https://forgejo.org/",
+            "info": "public repositories from Forgejo instances",
+            "search_pattern": {
+                "default": "forgejo",
+            },
+        },
+        {
             "type": "gitea",
             "info_url": "https://about.gitea.com/",
             "info": "public repositories from Gitea instances",
