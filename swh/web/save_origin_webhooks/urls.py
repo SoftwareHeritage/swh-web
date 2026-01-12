@@ -9,6 +9,7 @@ import swh.web.save_origin_webhooks.bitbucket  # noqa
 import swh.web.save_origin_webhooks.gitea  # noqa
 import swh.web.save_origin_webhooks.github  # noqa
 import swh.web.save_origin_webhooks.gitlab  # noqa
+import swh.web.save_origin_webhooks.gogs  # noqa
 import swh.web.save_origin_webhooks.sourceforge  # noqa
 
 from swh.web.save_origin_webhooks.generic_receiver import (  # isort: skip

@@ -27,4 +27,6 @@ Request archival
 
 .. autosimple:: swh.web.save_origin_webhooks.gitlab.api_origin_save_webhook_gitlab
 
+.. autosimple:: swh.web.save_origin_webhooks.gogs.api_origin_save_webhook_gogs
+
 .. autosimple:: swh.web.save_origin_webhooks.sourceforge.api_origin_save_webhook_sourceforge
