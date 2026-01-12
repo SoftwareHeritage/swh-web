@@ -139,7 +139,7 @@ listed_origins: Dict[str, Any] = {
         },
         {
             "type": "gitea",
-            "info_url": "https://gitea.io",
+            "info_url": "https://about.gitea.com/",
             "info": "public repositories from Gitea instances",
             "search_pattern": {
                 "default": "gitea",

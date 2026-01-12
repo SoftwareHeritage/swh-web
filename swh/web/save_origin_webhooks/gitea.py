@@ -12,7 +12,7 @@ from swh.web.save_origin_webhooks.generic_receiver import OriginSaveWebhookRecei
 
 class GiteaOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
     FORGE_TYPE = "Gitea"
-    WEBHOOK_GUIDE_URL = "https://docs.gitea.io/en-us/webhooks/"
+    WEBHOOK_GUIDE_URL = "https://docs.gitea.com/next/usage/webhooks"
     REPO_TYPES = "git"
 
     def is_forge_request(self, request: Request) -> bool:

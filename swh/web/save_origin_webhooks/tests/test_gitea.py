@@ -23,7 +23,7 @@ from .utils import (
 
 @pytest.fixture(autouse=True)
 def gitea_origins_allowed():
-    SaveAuthorizedOrigin.objects.create(url="https://try.gitea.io/")
+    SaveAuthorizedOrigin.objects.create(url="https://demo.gitea.com/")
 
 
 @pytest.mark.django_db
@@ -35,7 +35,7 @@ def test_origin_save_gitea_webhook_receiver(api_client, swh_scheduler, datadir):
                 "X-Gitea-Event": "push",
             },
             payload=json.load(payload),
-            expected_origin_url="https://try.gitea.io/johndoe/webhook-test.git",
+            expected_origin_url="https://demo.gitea.com/johndoe/webhook-test.git",
             expected_visit_type="git",
             api_client=api_client,
             swh_scheduler=swh_scheduler,
@@ -109,7 +109,7 @@ def test_origin_save_gitea_webhook_receiver_private_repo(api_client, datadir):
             },
             payload=payload,
             api_client=api_client,
-            expected_origin_url="https://try.gitea.io/johndoe/webhook-test.git",
+            expected_origin_url="https://demo.gitea.com/johndoe/webhook-test.git",
         )
 
 
