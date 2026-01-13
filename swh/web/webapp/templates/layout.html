@@ -148,6 +148,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
         {% if request.resolver_match.url_name != 'swh-web-homepage' and request.resolver_match.url_name != 'browse-search' %}
           <form class="form-horizontal d-none d-md-flex swh-search-navbar needs-validation"
                 id="swh-origins-search-top"
+                action="{% url 'browse-search' %}"
                 novalidate>
             <div class="input-group">
               <input class="form-control"
@@ -155,6 +156,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                      type="text"
                      id="swh-origins-search-top-input"
                      oninput="swh.webapp.validateSWHIDInput(this)"
+                     name="q"
                      aria-label="Enter a SWHID to resolve or keyword(s) to search for in origin URLs" />
               <button class="btn btn-primary"
                       id="swh-origins-search-submit"
@@ -163,6 +165,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses />.
                 <i class="swh-search-icon mdi mdi-24px mdi-magnify" aria-hidden="true"></i>
               </button>
             </div>
+            <noscript>
+              <input type="hidden" name="with_visit" value="on" />
+              <input type="hidden" name="with_content" value="on" />
+              <input type="hidden" name="no_js" value="on" />
+            </noscript>
           </form>
         {% endif %}
       </header>

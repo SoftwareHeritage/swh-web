@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2020-2024  The Software Heritage developers
+Copyright (C) 2020-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -7,14 +7,17 @@ See top-level LICENSE file for more information
 
 <form class="form-horizontal needs-validation"
       id="swh-search-origins"
+      action="{% url 'browse-search' %}"
       novalidate>
   <div class="input-group">
     <input class="form-control"
-           placeholder="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
+           placeholder="Enter a SWHID to resolve or keyword(s) to search for in origin urls"
            type="text"
+           {% if 'q' in request.GET %}value="{{ request.GET.q }}"{% endif %}
+           name="q"
            id="swh-origins-url-patterns"
            oninput="swh.webapp.validateSWHIDInput(this)"
-           aria-label="Enter a SWHID to resolve or string pattern(s) to search for in origin urls"
+           aria-label="Enter a SWHID to resolve or keyword(s) to search for in origin urls"
            autofocus />
     <button class="btn btn-primary"
             type="submit"
@@ -28,10 +31,18 @@ See top-level LICENSE file for more information
       <label for="swh-search-visit-type"
              class="input-group-text"
              style="font-weight: inherit">visit type</label>
-      <select id="swh-search-visit-type" class="form-select form-control">
-        <option selected value="any">any</option>
+      <select id="swh-search-visit-type"
+              class="form-select form-control"
+              name="visit_type">
+        <option value="any"
+                {% if 'visit_type' in request.GET and request.GET.visit_type == 'any' %}selected{% endif %}>
+          any
+        </option>
         {% for visit_type in visit_types %}
-          <option value="{{ visit_type }}">{{ visit_type }}</option>
+          <option value="{{ visit_type }}"
+                  {% if 'visit_type' in request.GET and request.GET.visit_type == visit_type %}selected{% endif %}>
+            {{ visit_type }}
+          </option>
         {% endfor %}
       </select>
     </div>
@@ -39,36 +50,38 @@ See top-level LICENSE file for more information
   <div class="row">
     <div class="form-check swhid-option">
       <input class="form-check-input"
-             value="option-origins-with-visit"
              type="checkbox"
              id="swh-search-origins-with-visit"
-             checked />
+             name="with_visit"
+             {% if 'with_visit' not in request.GET or request.GET.with_visit == 'on' %}checked{% endif %} />
       <label class="form-check-label font-weight-normal"
              for="swh-search-origins-with-visit">only show origins visited at least once</label>
     </div>
     <div class="form-check swhid-option">
       <input class="form-check-input"
-             value="option-filter-empty-visits"
              type="checkbox"
              id="swh-filter-empty-visits"
-             checked />
+             name="with_content"
+             {% if 'with_content' not in request.GET or request.GET.with_content == 'on' %}checked{% endif %} />
       <label class="form-check-label font-weight-normal"
              for="swh-filter-empty-visits">filter out origins with no archived content</label>
     </div>
     <div class="form-check swhid-option">
       <input class="form-check-input"
-             value="option-filter-empty-visits"
              type="checkbox"
-             id="swh-search-origin-metadata" />
+             name="search_in_metadata"
+             id="swh-search-origin-metadata"
+             {% if 'search_in_metadata' in request.GET and request.GET.search_in_metadata == 'on' %}checked{% endif %} />
       <label class="form-check-label font-weight-normal"
              for="swh-search-origin-metadata">search in metadata (instead of URL)</label>
     </div>
     {% if user.is_authenticated and user.is_staff or "swh.web.search_ql" in user.get_all_permissions %}
       <div class="form-check swhid-option">
         <input class="form-check-input"
-               value="option-use-ql"
                type="checkbox"
-               id="swh-search-use-ql" />
+               name="use_ql"
+               id="swh-search-use-ql"
+               {% if 'use_ql' in request.GET and request.GET.use_ql == 'on' %}checked{% endif %} />
         <label class="form-check-label font-weight-normal" for="swh-search-use-ql">
           search using the
           <a target="_blank"
@@ -80,5 +93,8 @@ See top-level LICENSE file for more information
       </div>
     {% endif %}
   </div>
+  <noscript>
+    <input type="hidden" name="no_js" value="on" />
+  </noscript>
 </form>
 <script>swh.browse.initOriginSearch();</script>

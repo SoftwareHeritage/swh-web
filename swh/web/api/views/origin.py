@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025 The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -35,9 +35,18 @@ DOC_RETURN_ORIGIN = """
 
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
 
-DOC_RETURN_ORIGIN_ARRAY_SEARCH = DOC_RETURN_ORIGIN_ARRAY + (
-    "        :>jsonarr boolean has_visits: indicates if Software Heritage made at "
-    "least one full visit of the origin"
+DOC_RETURN_ORIGIN_ARRAY_SEARCH = (
+    DOC_RETURN_ORIGIN_ARRAY
+    + """
+        :>jsonarr boolean has_visits: indicates if Software Heritage made at
+            least one full visit of the origin
+        :>jsonarr int nb_visits: the total number of visits for the origin
+        :>jsonarr string last_visit_date: ISO8601/RFC3339 representation of
+            the last visit date (in UTC)
+        :>jsonarr string last_eventful_visit_date: ISO8601/RFC3339 representation of
+            the last eventful_visit date (in UTC)
+        :>jsonarr string snapshot_id: identifier of the last snapshot for the origin
+"""
 )
 
 DOC_RETURN_ORIGIN += (
@@ -202,6 +211,7 @@ class OriginSearchQuerySerializer(serializers.Serializer):
     )
     page_token = serializers.CharField(default=None, required=False)
     with_visit = serializers.BooleanField(required=False, default=False)
+    with_content = serializers.BooleanField(required=False, default=False)
     # can't force a choice in values from origin_visit_types as the list might be empty
     visit_type = serializers.CharField(required=False, default=None)
 
@@ -259,6 +269,7 @@ def api_origin_search(
             :swh_web_api:`origin/search/python/?limit=2`
     """
     with_visit = validated_query_params["with_visit"]
+    with_content = validated_query_params["with_content"]
     visit_type = validated_query_params["visit_type"]
     use_ql = validated_query_params["use_ql"]
     page_token = validated_query_params["page_token"]
@@ -271,6 +282,7 @@ def api_origin_search(
             use_ql,
             limit,
             with_visit,
+            with_content,
             [visit_type] if visit_type else None,
             page_token,
             enrich_fn=enrich_origin_search_result,

@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -235,9 +235,7 @@ def _add_origin(
     storage, search, counters, origin_url, visit_type="git", snapshot_branches={}
 ):
     storage.origin_add([Origin(url=origin_url)])
-    search.origin_update(
-        [{"url": origin_url, "has_visits": True, "visit_types": [visit_type]}]
-    )
+
     counters.add("origin", [origin_url])
     date = now()
     visit = OriginVisit(origin=origin_url, date=date, type=visit_type)
@@ -257,6 +255,18 @@ def _add_origin(
     )
     storage.origin_visit_status_add([visit_status])
     counters.add("origin_visit_status", [f"{visit_status.unique_key()}"])
+    search.origin_update(
+        [
+            {
+                "url": origin_url,
+                "has_visits": True,
+                "visit_types": [visit_type],
+                "snapshot_id": (
+                    snapshot.id.hex() if snapshot_branches is not None else None
+                ),
+            }
+        ]
+    )
 
 
 def _add_origin_with_unknown_codemeta_context(storage, search, counters):
@@ -336,7 +346,14 @@ def _init_tests_data():
         ori = storage.origin_get([origin["url"]])[0]
         origin.update(ori.to_dict())  # add an 'id' key if enabled
         search.origin_update(
-            [{"url": origin["url"], "has_visits": True, "visit_types": ["git"]}]
+            [
+                {
+                    "url": origin["url"],
+                    "has_visits": True,
+                    "visit_types": ["git"],
+                    "snapshot_id": loader.snapshot.id.hex(),
+                }
+            ]
         )
 
     for i in range(250):
@@ -347,34 +364,6 @@ def _init_tests_data():
             origin_url=f"https://many.origins/{i + 1}",
             visit_type="tar",
         )
-
-    # origins used in cypress tests for origins search
-    _add_origin(
-        storage,
-        search,
-        counters,
-        origin_url="https://example.org/project/download.php?version=2.0",
-        visit_type="tar",
-    )
-
-    _add_origin(
-        storage,
-        search,
-        counters,
-        origin_url="https://example.org/project/with/null/snapshot",
-        visit_type="hg",
-        snapshot_branches=None,
-    )
-
-    _add_origin(
-        storage,
-        search,
-        counters,
-        origin_url=ORIGIN_WITH_QUOTED_SPACE_IN_URL,
-        visit_type="git",
-    )
-
-    _add_origin_with_unknown_codemeta_context(storage, search, counters)
 
     sha1s: Set[Sha1] = set()
     directories = set()
@@ -552,6 +541,40 @@ def _init_tests_data():
     # Add empty content to the test archive
     storage.content_add([Content.from_data(data=b"")])
 
+    # origins used in cypress tests for origins search
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url="https://example.org/project/download.php?version=2.0",
+        visit_type="tar",
+        snapshot_branches={
+            b"refs/heads/master": {
+                "target_type": "revision",
+                "target": next(iter(revisions)),
+            }
+        },
+    )
+
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url="https://example.org/project/with/null/snapshot",
+        visit_type="hg",
+        snapshot_branches=None,
+    )
+
+    _add_origin(
+        storage,
+        search,
+        counters,
+        origin_url=ORIGIN_WITH_QUOTED_SPACE_IN_URL,
+        visit_type="git",
+    )
+
+    _add_origin_with_unknown_codemeta_context(storage, search, counters)
+
     # Add fake git origin with pull request branches
     _add_origin(
         storage,
@@ -598,7 +621,14 @@ def _init_tests_data():
         )
         storage.origin_visit_status_add([visit_status])
     search.origin_update(
-        [{"url": origin.url, "visit_types": visit_types, "has_visits": True}]
+        [
+            {
+                "url": origin.url,
+                "visit_types": visit_types,
+                "has_visits": True,
+                "snapshot_id": snapshots_list[i],
+            }
+        ]
     )
 
     counters.add("revision", revisions)

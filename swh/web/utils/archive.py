@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -197,9 +197,11 @@ def lookup_content_license(q):
 )
 def _origin_info(origin: Origin, with_visit_types: bool = True) -> OriginInfo:
     origin_dict = origin.to_dict()
-    if with_visit_types:
+    visit_types = []
+    if with_visit_types and config.search():
         origin_data = config.search().origin_get(origin.url) or {}
-        origin_dict["visit_types"] = list(origin_data.get("visit_types", []))
+        visit_types = list(origin_data.get("visit_types", []))
+    origin_dict["visit_types"] = visit_types
     return converters.from_origin(origin_dict)
 
 
@@ -311,6 +313,7 @@ def search_origin(
     use_ql: bool = False,
     limit: int = 50,
     with_visit: bool = False,
+    with_content: bool = False,
     visit_types: Optional[List[str]] = None,
     page_token: Optional[str] = None,
 ) -> Tuple[List[OriginInfo], Optional[str], Optional[int]]:
@@ -340,6 +343,7 @@ def search_origin(
                 query=url_pattern,
                 page_token=page_token,
                 with_visit=with_visit,
+                without_empty_snapshot=with_content,
                 visit_types=visit_types,
                 limit=limit,
             )
@@ -348,6 +352,7 @@ def search_origin(
                 url_pattern=url_pattern,
                 page_token=page_token,
                 with_visit=with_visit,
+                without_empty_snapshot=with_content,
                 visit_types=visit_types,
                 limit=limit,
             )
@@ -375,7 +380,15 @@ def search_origin(
             visit_types=visit_types,
             regexp=True,
         )
-        origins = [converters.from_origin(ori.to_dict()) for ori in page_result.results]
+
+        origin_visit_types = ["???"]
+        if visit_types and len(visit_types) == 1:
+            origin_visit_types = visit_types
+
+        origins = [
+            converters.from_origin({**ori.to_dict(), "visit_types": origin_visit_types})
+            for ori in page_result.results
+        ]
         next_page_token = page_result.next_page_token
         total_results = None
 

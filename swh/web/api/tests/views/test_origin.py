@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025 The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -668,7 +668,12 @@ def test_api_origin_search_use_ql(api_client, patch_backend):
     assert {origin["url"] for origin in rv.data} == expected_origins
 
     mock_origin_search.assert_called_with(
-        query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
+        query=query,
+        page_token=None,
+        with_visit=False,
+        without_empty_snapshot=False,
+        visit_types=["git"],
+        limit=70,
     )
 
 
@@ -690,7 +695,12 @@ def test_api_origin_search_ql_syntax_error(api_client, patch_backend):
     }
 
     mock_origin_search.assert_called_with(
-        query=query, page_token=None, with_visit=False, visit_types=["git"], limit=70
+        query=query,
+        page_token=None,
+        with_visit=False,
+        without_empty_snapshot=False,
+        visit_types=["git"],
+        limit=70,
     )
 
 

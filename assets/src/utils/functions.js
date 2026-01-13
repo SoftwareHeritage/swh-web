@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -128,7 +128,7 @@ export async function isArchivedOrigin(originPath, visitType) {
     // Not a valid URL, return immediately
     return false;
   } else {
-    let url = `${Urls.api_1_origin_visit_latest(originPath)}?require_snapshot=true`;
+    let url = `${Urls.api_1_origin_visit_latest(originPath.replace('?', '%3F'))}?require_snapshot=true`;
     if (visitType && visitType !== 'any') {
       url += `&visit_type=${visitType}`;
     }

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024  The Software Heritage developers
+# Copyright (C) 2020-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,11 +11,23 @@ from swh.core.api.classes import PagedResult as CorePagedResult
 from swh.model.swhids import ObjectType
 
 
-class OriginInfo(TypedDict):
+class OriginInfo(TypedDict, total=False):
     url: str
     """URL of the origin"""
     visit_types: List[str]
     """Visit types associated to the origin"""
+
+    # the fields below are only available when using swh-search
+    # as search backend
+
+    nb_visits: int
+    """Total number of visits for the origin"""
+    snapshot_id: Optional[str]
+    """Last snapshot identifier for the origin"""
+    last_visit_date: Optional[str]
+    """Last visit date of the origin"""
+    last_eventful_visit_date: Optional[str]
+    """Last evenful visit date of the origin"""
 
 
 class OriginMetadataInfo(OriginInfo):

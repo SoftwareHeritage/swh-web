@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -46,13 +46,6 @@ function searchShouldShowNotFound(searchText, msg) {
       .should('be.visible')
       .and('contain', msg);
   }
-}
-
-function stubOriginVisitLatestRequests(status = 200, response = {type: 'tar'}, aliasSuffix = '') {
-  cy.intercept({url: '**/visit/latest/**'}, {
-    body: response,
-    statusCode: status
-  }).as(`originVisitLatest${aliasSuffix}`);
 }
 
 describe('Test origin-search', function() {
@@ -117,7 +110,6 @@ describe('Test origin-search', function() {
   });
 
   it('should remove origin URL with no archived content', function() {
-    stubOriginVisitLatestRequests(404);
 
     // Using a non full origin URL here
     // This is because T3354 redirects to the origin in case of a valid, archived URL
@@ -126,15 +118,12 @@ describe('Test origin-search', function() {
     cy.get('.swh-search-icon')
       .click();
 
-    cy.wait('@originVisitLatest');
-
     cy.get('#origin-search-results')
       .should('be.visible')
       .find('tbody tr').should('have.length', 0);
   });
 
   it('should filter origins by visit type', function() {
-    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
     cy.get('#swh-origins-url-patterns')
       .type('http');
 
@@ -145,12 +134,8 @@ describe('Test origin-search', function() {
       cy.get('.swh-search-icon')
         .click();
 
-      cy.wait('@checkOriginVisits');
-
       cy.get('#origin-search-results')
         .should('be.visible');
-
-      cy.wait('@checkOriginVisits');
 
       cy.get('tbody tr td.swh-origin-visit-type').then(elts => {
         for (const elt of elts) {
@@ -278,16 +263,18 @@ describe('Test origin-search', function() {
 
   });
 
-  function checkSearchHasResults() {
+  function checkSearchHasResults(noJs = false) {
+    let tableId = '#origin-search-results';
+    if (noJs) {
+      tableId += '-no-js';
+    }
     cy.get('.swh-search-icon')
         .click();
 
-    cy.wait('@checkOriginVisits');
-
-    cy.get('#origin-search-results')
+    cy.get(tableId)
         .should('be.visible');
 
-    cy.get('tbody tr td.swh-origin-visit-type')
+    cy.get(`${tableId} tbody tr td.swh-origin-visit-type`)
       .should('exist');
 
     cy.get('#swh-origin-search-total-results')
@@ -296,8 +283,6 @@ describe('Test origin-search', function() {
   }
 
   it('should search all origins when no pattern is provided', function() {
-    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
-
     // with default filters
     checkSearchHasResults();
 
@@ -310,9 +295,21 @@ describe('Test origin-search', function() {
 
   });
 
-  it('should search all origins for a visit type', function() {
-    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
+  it('should search origins when javascript is disabled', function() {
+    cy.visit(url, {script: false});
+    // with default filters
+    checkSearchHasResults(true);
 
+    // remove filters
+    cy.get('#swh-search-origins-with-visit')
+      .uncheck({force: true})
+      .get('#swh-filter-empty-visits')
+      .uncheck({force: true});
+    checkSearchHasResults(true);
+
+  });
+
+  it('should search all origins for a visit type', function() {
     for (const visitType of ['git', 'tar']) {
       cy.get('#swh-search-visit-type')
         .select(visitType);
@@ -329,7 +326,6 @@ describe('Test origin-search', function() {
 
   it('should display all visit types for an origin when visit type filter is disabled', function() {
     const searchPattern = 'project/multiple/visit/types';
-    cy.intercept('**/visit/latest/**').as('checkOriginVisits');
     cy.get('#swh-origins-url-patterns')
       .type(searchPattern);
     cy.get('.swh-search-icon')
@@ -370,23 +366,26 @@ describe('Test origin-search', function() {
   it('should encode ? in origin URL provided as argument in latest visit URL queried by XHR', function() {
     // origin added in tests data by Python
     const originUrl = 'https://example.org/project/download.php?version=2.0';
-    cy.intercept(`**/api/1/origin/${originUrl.replace('?', '%3F')}/visit/latest/**`)
+    cy.intercept(`**/api/1/origin/${originUrl.slice(0, -1).replace('?', '%3F')}/visit/latest/**`)
       .as('checkOriginVisit');
 
-    doSearch(originUrl);
+    doSearch(originUrl.slice(0, -1));
 
     cy.wait('@checkOriginVisit');
 
     cy.get('.swh-search-result-entry')
             .should('have.length', 1);
 
-    cy.get('.swh-search-result-entry#origin-0 .swh-origin-visit-type')
-            .should('have.text', 'tar');
+    cy.get('.swh-search-result-entry .swh-origin-visit-type')
+      .first()
+      .should('have.text', 'tar');
 
-    cy.get('.swh-search-result-entry#origin-0 td a')
-            .should('have.text', originUrl);
+    cy.get('.swh-search-result-entry td a')
+      .first()
+      .should('have.text', originUrl);
 
-    cy.get('.swh-search-result-entry#origin-0 .swh-visit-status')
+    cy.get('.swh-search-result-entry .swh-visit-status')
+      .first()
       .should('have.text', 'Archived');
 
   });
@@ -407,7 +406,8 @@ describe('Test origin-search', function() {
           cy.get('.swh-search-result-entry')
             .should('have.length', 1);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://github.com/memononen/libtess2');
 
           cy.get('#origins-prev-results-button')
@@ -418,7 +418,6 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate forward when there are many results', function() {
-      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck({force: true})
@@ -429,14 +428,15 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/1');
-          cy.get('.swh-search-result-entry#origin-99 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/100');
 
           cy.get('#origins-prev-results-button')
@@ -447,14 +447,15 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/101');
-          cy.get('.swh-search-result-entry#origin-99 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/200');
 
           cy.get('#origins-prev-results-button')
@@ -465,14 +466,15 @@ describe('Test origin-search', function() {
           // Get third (and last) page of results
           cy.get('#origins-next-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 50);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/201');
-          cy.get('.swh-search-result-entry#origin-49 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/250');
 
           cy.get('#origins-prev-results-button')
@@ -483,7 +485,6 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate backward from a middle page', function() {
-      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck({force: true})
@@ -494,7 +495,6 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
-          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('have.class', 'disabled');
@@ -504,7 +504,6 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('not.have.class', 'disabled');
@@ -514,14 +513,15 @@ describe('Test origin-search', function() {
           // Get first page of results again
           cy.get('#origins-prev-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/1');
-          cy.get('.swh-search-result-entry#origin-99 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/100');
 
           cy.get('#origins-prev-results-button')
@@ -532,7 +532,6 @@ describe('Test origin-search', function() {
     });
 
     it('should paginate backward from the last page', function() {
-      stubOriginVisitLatestRequests();
       // Setup search
       cy.get('#swh-search-origins-with-visit')
         .uncheck({force: true})
@@ -543,7 +542,6 @@ describe('Test origin-search', function() {
 
           // Get first page of results
           doSearch(searchText);
-          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('have.class', 'disabled');
@@ -553,7 +551,6 @@ describe('Test origin-search', function() {
           // Get second page of results
           cy.get('#origins-next-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('#origins-prev-results-button')
             .should('not.have.class', 'disabled');
@@ -572,14 +569,15 @@ describe('Test origin-search', function() {
           // Get second page of results again
           cy.get('#origins-prev-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/101');
-          cy.get('.swh-search-result-entry#origin-99 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/200');
 
           cy.get('#origins-prev-results-button')
@@ -590,14 +588,15 @@ describe('Test origin-search', function() {
           // Get first page of results again
           cy.get('#origins-prev-results-button a')
             .click();
-          cy.wait('@originVisitLatest');
 
           cy.get('.swh-search-result-entry')
             .should('have.length', 100);
 
-          cy.get('.swh-search-result-entry#origin-0 td a')
+          cy.get('.swh-search-result-entry td a')
+            .first()
             .should('have.text', 'https://many.origins/1');
-          cy.get('.swh-search-result-entry#origin-99 td a')
+          cy.get('.swh-search-result-entry td a')
+            .last()
             .should('have.text', 'https://many.origins/100');
 
           cy.get('#origins-prev-results-button')

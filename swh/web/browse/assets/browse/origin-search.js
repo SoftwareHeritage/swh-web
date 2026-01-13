@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -35,63 +35,35 @@ async function populateOriginSearchResultsTable(origins) {
     $('#swh-no-result').hide();
     clearOriginSearchResultsTable();
     const table = $('#origin-search-results tbody');
-    const promises = [];
-    let i = 0;
     for (const origin of origins) {
       let visitTypes = origin.visit_types;
-      if (visitTypes.includes(visitType)) {
+      if (visitTypes && visitTypes.includes(visitType)) {
         visitTypes = [visitType];
+      } else if (!visitTypes) {
+        visitTypes = ['???'];
       }
       for (const oVisitType of visitTypes) {
         let browseUrl = `${Urls.browse_origin()}?origin_url=${encodeURIComponent(origin.url)}`;
-        if (visitTypes.length > 1 || visitType !== 'any') {
+        if (oVisitType !== '???') {
           browseUrl += `&visit_type=${oVisitType}`;
         }
-        let tableRow =
-          `<tr id="origin-${i}" class="swh-search-result-entry swh-tr-hover-highlight">`;
-        tableRow +=
-          `<td id="visit-type-origin-${i}" class="swh-origin-visit-type" style="width: 120px;">` +
-          '<i title="Checking software origin type" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
-          'Checking</td>';
-        tableRow +=
-          '<td style="white-space: nowrap;">' +
-          `<a href="${browseUrl}">${origin.url}</a></td>`;
-        tableRow +=
-          `<td class="swh-visit-status" id="visit-status-origin-${i}">` +
-          '<i title="Checking archiving status" class="mdi mdi-sync mdi-spin mdi-fw"></i>' +
-          'Checking</td>';
+        let tableRow = '<tr class="swh-search-result-entry swh-tr-hover-highlight">';
+        tableRow += `<td class="swh-origin-visit-type" style="width: 120px;">${oVisitType}</td>`;
+        tableRow += `<td style="white-space: nowrap;"><a href="${browseUrl}">${origin.url}</a></td>`;
+        let archivingStatus = '???';
+        if (origin.hasOwnProperty('snapshot_id') && origin.snapshot_id !== null) {
+          archivingStatus = '<i title="Software origin has been archived by Software Heritage" ' +
+          'class="mdi mdi-check-bold mdi-fw"></i>Archived';
+        } else if (origin.hasOwnProperty('snapshot_id') && origin.snapshot_id == null) {
+          archivingStatus = '<i title="Software origin archival by Software Heritage is pending" ' +
+          'class="mdi mdi-close-thick mdi-fw"></i>Pending archival';
+        }
+        tableRow += `<td class="swh-visit-status">${archivingStatus}</td>`;
         tableRow += '</tr>';
         table.append(tableRow);
-        // get async latest visit snapshot and update visit status icon
-        let latestSnapshotUrl = Urls.api_1_origin_visit_latest(origin.url.replace('?', '%3F'));
-        latestSnapshotUrl += '?require_snapshot=true';
-        if (visitTypes.length > 1 || visitType !== 'any') {
-          latestSnapshotUrl += `&visit_type=${oVisitType}`;
-        }
-        promises.push(fetch(latestSnapshotUrl));
-        i = i + 1;
       }
     }
-    const responses = await Promise.all(promises);
-    const responsesData = await Promise.all(responses.map(r => r.json()));
-    for (let i = 0; i < responses.length; ++i) {
-      const response = responses[i];
-      const data = responsesData[i];
-      if (response.status !== 404 && data.type) {
-        $(`#visit-type-origin-${i}`).html(data.type);
-        $(`#visit-status-origin-${i}`).html(
-          '<i title="Software origin has been archived by Software Heritage" ' +
-          'class="mdi mdi-check-bold mdi-fw"></i>Archived');
-      } else {
-        $(`#visit-type-origin-${i}`).html('unknown');
-        $(`#visit-status-origin-${i}`).html(
-          '<i title="Software origin archival by Software Heritage is pending" ' +
-          'class="mdi mdi-close-thick mdi-fw"></i>Pending archival');
-        if ($('#swh-filter-empty-visits').prop('checked')) {
-          $(`#origin-${i}`).remove();
-        }
-      }
-    }
+
     fixTableRowsStyle();
   } else {
     $('#swh-origin-search-results').hide();
@@ -129,16 +101,18 @@ function searchOriginsFirst(searchQueryText, limit) {
     baseSearchUrl.searchParams.append('fulltext', searchQueryText);
   } else {
     const useSearchQL = $('#swh-search-use-ql').prop('checked');
-    baseSearchUrl = new URL(Urls.api_1_origin_search(searchQueryText), window.location);
+    baseSearchUrl = new URL(Urls.api_1_origin_search(searchQueryText.replace('?', '%3F')), window.location);
     baseSearchUrl.searchParams.append('use_ql', useSearchQL ?? false);
   }
 
-  // As we only use the 'url' field of results, tell the server not to send metadata
-  baseSearchUrl.searchParams.append('fields', 'url,visit_types');
+  // Return only relevant fields
+  baseSearchUrl.searchParams.append('fields', 'url,visit_types,snapshot_id');
 
   const withVisit = $('#swh-search-origins-with-visit').prop('checked');
+  const withContent = $('#swh-filter-empty-visits').prop('checked');
   baseSearchUrl.searchParams.append('limit', limit);
   baseSearchUrl.searchParams.append('with_visit', withVisit);
+  baseSearchUrl.searchParams.append('with_content', withContent);
   const visitType = $('#swh-search-visit-type').val();
   if (visitType !== 'any') {
     baseSearchUrl.searchParams.append('visit_type', visitType);
@@ -166,12 +140,14 @@ async function searchOrigins(searchUrl) {
     }
     if (response.headers.has('X-Total-Count')) {
       let totalResults = response.headers.get('X-Total-Count');
-      totalResults = new Intl.NumberFormat('en-US').format(totalResults);
-      let text = '';
-      if (totalResults) {
-        text = `${totalResults} origins found`;
+      if (totalResults != null) {
+        totalResults = new Intl.NumberFormat('en-US').format(totalResults);
+        let text = '';
+        if (totalResults) {
+          text = `${totalResults} origins found`;
+        }
+        $('#swh-origin-search-total-results').text(text);
       }
-      $('#swh-origin-search-total-results').text(text);
     }
     // prevLinks is updated by the caller, which is the one to know if
     // we're going forward or backward in the pages.

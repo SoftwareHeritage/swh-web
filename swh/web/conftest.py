@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -852,6 +852,23 @@ def origin_with_pull_request_branches():
     into the test archive.
     """
     return random.choice(_origin_with_pull_request_branches())
+
+
+@functools.lru_cache(maxsize=None)
+def _origins_with_non_empty_snapshot():
+    tests_data = get_tests_data()
+    origins = []
+    storage = tests_data["storage"]
+    for origin in storage.origin_list(limit=1000).results:
+        snapshot = snapshot_get_latest(storage, origin.url)
+        if snapshot and snapshot.branches:
+            origins.append(origin)
+    return origins
+
+
+@pytest.fixture
+def origins_with_non_empty_snapshot():
+    return _origins_with_non_empty_snapshot()
 
 
 @pytest.fixture
