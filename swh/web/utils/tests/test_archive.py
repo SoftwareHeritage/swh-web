@@ -461,7 +461,10 @@ def test_lookup_directory_with_revision_without_path(archive_data, revision):
     assert actual_directory_entries["content"] == expected_directory_entries
 
 
-def test_lookup_directory_with_revision_with_path(archive_data, revision):
+def test_lookup_directory_with_revision_with_path(
+    archive_data, revision_with_files_in_target_directory
+):
+    revision = revision_with_files_in_target_directory
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
         e
@@ -487,8 +490,9 @@ def test_lookup_directory_with_revision_with_path(archive_data, revision):
 
 
 def test_lookup_directory_with_revision_with_path_to_file_and_data(
-    archive_data, revision
+    archive_data, revision_with_files_in_target_directory
 ):
+    revision = revision_with_files_in_target_directory
     rev_data = archive_data.revision_get(revision)
     dir_entries = [
         e
