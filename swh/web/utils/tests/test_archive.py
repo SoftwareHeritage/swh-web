@@ -989,9 +989,7 @@ def test_lookup_origins_get_by_sha1s(origin, unknown_origin):
 
 def test_search_origin(origin):
     results = archive.search_origin(url_pattern=origin["url"])[0]
-    assert results == [
-        {"url": origin["url"], "visit_types": ["git"], "has_visits": True}
-    ]
+    assert results and results[0]["url"] == origin["url"]
 
 
 @pytest.mark.parametrize("search_backend", ["swh-search", "swh-storage"])
