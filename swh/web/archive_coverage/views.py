@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,17 +7,15 @@ from collections import defaultdict
 import copy
 from typing import Any, Dict, List, Tuple
 
-import attr
-
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import cache_page
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from swh.scheduler.model import SchedulerMetrics
 from swh.web.config import scheduler
-from swh.web.utils import django_cache, reverse
+from swh.web.utils import reverse
 from swh.web.utils.archive import count_origins
 
 # Current coverage list of the archive in a high level overview fashion,
@@ -454,55 +452,20 @@ deposited_origins: Dict[str, Any] = {
     ],
 }
 
-_cache_timeout = 60 * 60  # one hour
 
-
-def _get_listers_metrics(
-    cache_metrics: bool = False,
-) -> Dict[str, List[Tuple[str, SchedulerMetrics]]]:
+def get_listers_metrics() -> Dict[str, List[Tuple[str, SchedulerMetrics]]]:
     """Returns scheduler metrics in the following mapping:
     Dict[lister_name, List[Tuple[instance_name, SchedulerMetrics]]]
     as a lister instance has one SchedulerMetrics object per visit type.
     """
+    listers_metrics = defaultdict(list)
+    listers = scheduler().get_listers()
+    scheduler_metrics = scheduler().get_metrics()
+    for lister in listers:
+        for metrics in filter(lambda m: m.lister_id == lister.id, scheduler_metrics):
+            listers_metrics[lister.name].append((lister.instance_name, metrics))
 
-    @django_cache(
-        timeout=_cache_timeout,
-        catch_exception=True,
-        exception_return_value={},
-        invalidate_cache_pred=lambda m: not cache_metrics,
-        extra_encoders=[(SchedulerMetrics, "scheduler_metrics", attr.asdict)],
-        extra_decoders={"scheduler_metrics": lambda d: SchedulerMetrics(**d)},
-    )
-    def _get_listers_metrics_internal():
-        listers_metrics = defaultdict(list)
-        listers = scheduler().get_listers()
-        scheduler_metrics = scheduler().get_metrics()
-        for lister in listers:
-            for metrics in filter(
-                lambda m: m.lister_id == lister.id, scheduler_metrics
-            ):
-                listers_metrics[lister.name].append((lister.instance_name, metrics))
-
-        return listers_metrics
-
-    return _get_listers_metrics_internal()
-
-
-def _get_origins_count(
-    url_pattern: str, visit_type: str, cache_counts: bool = False
-) -> int:
-    """Return origin counts per origin url pattern and visit type."""
-
-    @django_cache(
-        timeout=_cache_timeout,
-        catch_exception=True,
-        exception_return_value=0,
-        invalidate_cache_pred=lambda m: not cache_counts,
-    )
-    def _get_origins_count_internal(url_pattern: str, visit_type: str) -> int:
-        return count_origins(url_pattern, with_visit=True, visit_types=[visit_type])
-
-    return _get_origins_count_internal(url_pattern, visit_type)
+    return listers_metrics
 
 
 def _search_url(query: str, visit_type: str) -> str:
@@ -518,9 +481,9 @@ def _search_url(query: str, visit_type: str) -> str:
 
 
 @xframe_options_exempt
-@never_cache
+@cache_page(24 * 60 * 60)  # one day
 def swh_coverage(request: HttpRequest) -> HttpResponse:
-    listers_metrics = _get_listers_metrics(cache_metrics=True)
+    listers_metrics = get_listers_metrics()
 
     for origins in listed_origins["origins"]:
         origins["count"] = "0"
@@ -610,8 +573,8 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         origins["instances"] = {origins["type"]: {}}
         total_count = 0
         for visit_type in origins["visit_types"]:
-            count = _get_origins_count(
-                origins["search_pattern"], visit_type=visit_type, cache_counts=True
+            count = count_origins(
+                origins["search_pattern"], with_visit=True, visit_types=[visit_type]
             )
             total_count += count
             origins["instances"][origins["type"]][visit_type] = {
@@ -621,9 +584,10 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         origins["count"] = f"{total_count:,}"
 
     for origins in deposited_origins["origins"]:
-        origins["count"] = (
-            f"{_get_origins_count(origins['search_pattern'], 'deposit', cache_counts=True):,}"
+        origins_count = count_origins(
+            origins["search_pattern"], with_visit=True, visit_types=["deposit"]
         )
+        origins["count"] = f"{origins_count:,}"
         origins["search_urls"] = {
             "deposit": _search_url(origins["search_pattern"], "deposit")
         }
