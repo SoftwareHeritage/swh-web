@@ -1,7 +1,7 @@
 {% extends "./add-forge-common.html" %}
 
 {% comment %}
-Copyright (C) 2022-2024  The Software Heritage developers
+Copyright (C) 2022-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -18,7 +18,7 @@ See top-level LICENSE file for more information
       </p>
     {% else %}
       <form method="POST"
-            action="{% url 'api-1-add-forge-request-create' %}"
+            action="{% url 'forge-add-create' %}"
             id="requestCreateForm"
             class="collapse show">
         {% csrf_token %}
@@ -95,7 +95,7 @@ See top-level LICENSE file for more information
             <small class="form-text text-black-50">Optionally, leave a comment to the moderator regarding your request.</small>
           </div>
         </div>
-        <div class="row">
+        <div class="row pb-3">
           <div class="col-md-12">
             <input id="swh-input-form-submit"
                    type="submit"
@@ -105,12 +105,17 @@ See top-level LICENSE file for more information
         </div>
         <div class="row">
           <div class="col-md-12">
-            <h3 class="text-center">
+            <h3 class="text-center js-only">
               <span id="userMessage" class="badge"></span>
             </h3>
-            <p class="text-center">
+            <p class="text-center js-only">
               <span id="userMessageDetail"></span>
             </p>
+            <noscript>
+              {% if submit_status %}
+                {% bootstrap_alert submit_status alert_type=alert_level dismissible=False %}
+              {% endif %}
+            </noscript>
           </div>
         </div>
       </form>

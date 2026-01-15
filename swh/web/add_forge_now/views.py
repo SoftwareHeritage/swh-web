@@ -1,20 +1,27 @@
-# Copyright (C) 2022-2024  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
 from typing import Any, Dict, List
 
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 
 from swh.web.add_forge_now.api_views import (
+    AddForgeNowRequestActorRole,
+    AddForgeNowRequestForm,
+    AddForgeNowRequestHistory,
     AddForgeNowRequestPublicSerializer,
     AddForgeNowRequestSerializer,
+    AddForgeNowRequestStatus,
 )
 from swh.web.add_forge_now.models import Request as AddForgeRequest
 from swh.web.add_forge_now.models import RequestHistory
@@ -90,19 +97,87 @@ FORGE_TYPES: List[str] = [
 def create_request_create(request):
     """View to create a new 'add_forge_now' request."""
 
+    submit_status = ""
+    alert_level = ""
+    status_code = 200
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden(
+                "You must be authenticated to update a new add-forge request"
+            )
+        add_forge_request = AddForgeRequest()
+        form = AddForgeNowRequestForm(request.POST, instance=add_forge_request)
+
+        if form.errors:
+            status_code = 400
+            alert_level = "danger"
+            submit_status = json.dumps(form.errors)
+        else:
+            try:
+                existing_request = AddForgeRequest.objects.get(
+                    forge_url=add_forge_request.forge_url
+                )
+            except ObjectDoesNotExist:
+                pass
+            else:
+                status_code = 409
+                submit_status = (
+                    f"Request for forge already exists (id {existing_request.id})"
+                )
+                alert_level = "danger"
+
+            if not submit_status:
+                assert isinstance(request.user, User)
+                add_forge_request.submitter_name = request.user.username
+                add_forge_request.submitter_email = request.user.email
+
+                form.save()
+
+                request_history = AddForgeNowRequestHistory()
+                request_history.request = add_forge_request
+                request_history.new_status = AddForgeNowRequestStatus.PENDING.name
+                request_history.actor = request.user.username
+                request_history.actor_role = AddForgeNowRequestActorRole.SUBMITTER.name
+                request_history.save()
+
+                add_forge_request.last_modified_date = request_history.date
+                add_forge_request.save()
+
+                submit_status = "Your request has been submitted"
+                alert_level = "success"
+
     return render(
         request,
         "add-forge-creation-form.html",
-        {"forge_types": FORGE_TYPES},
+        {
+            "forge_types": FORGE_TYPES,
+            "submit_status": submit_status,
+            "alert_level": alert_level,
+        },
+        status=status_code,
     )
 
 
 def create_request_list(request):
     """View to list existing 'add_forge_now' requests."""
 
+    user_requests = []
+
+    if request.user.is_authenticated and "no_js" in request.GET:
+        user_requests = AddForgeRequest.objects.filter(
+            submitter_name=request.user.username
+        ).order_by("-submission_date")
+
     return render(
         request,
         "add-forge-list.html",
+        {
+            "user_requests": [
+                AddForgeNowRequestPublicSerializer(user_request).data
+                for user_request in user_requests
+            ]
+        },
     )
 
 

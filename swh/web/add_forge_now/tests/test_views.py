@@ -1,13 +1,15 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import json
+from urllib.parse import urlencode
 
 import pytest
 
-from swh.web.tests.helpers import check_http_get_response
+from swh.web.tests.django_asserts import assert_contains
+from swh.web.tests.helpers import check_http_get_response, check_http_post_response
 from swh.web.utils import reverse
 
 from .test_api_views import create_add_forge_request
@@ -217,3 +219,66 @@ def test_add_forge_request_list_datatables_user_requests(
 
     page_forge_type = [request["forge_type"] for request in data["data"]]
     assert page_forge_type == ["gitea"] * NB_FORGES_PER_TYPE
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_add_forge_now_request_anonymous_user(client):
+    url = reverse("forge-add-create")
+    check_http_post_response(client, url, status_code=403)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_add_forge_now_request_missing_form_data(client, regular_user):
+    client.force_login(regular_user)
+    url = reverse("forge-add-create")
+    resp = check_http_post_response(
+        client,
+        url,
+        request_content_type="application/x-www-form-urlencoded",
+        data=urlencode({"forge_type": "foo"}),
+        status_code=400,
+    )
+    assert_contains(resp, "This field is required", count=3, status_code=400)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_add_forge_now_request_invalid_form_data(client, regular_user):
+    client.force_login(regular_user)
+    url = reverse("forge-add-create")
+    resp = check_http_post_response(
+        client,
+        url,
+        request_content_type="application/x-www-form-urlencoded",
+        data=urlencode(
+            {
+                "forge_type": "gitlab",
+                "forge_url": "bar",
+                "forge_contact_email": "baz",
+                "forge_contact_name": "foo",
+            }
+        ),
+        status_code=400,
+    )
+    assert_contains(resp, "Enter a valid URL", status_code=400)
+    assert_contains(resp, "Enter a valid email", status_code=400)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_create_add_forge_now_request_valid(client, regular_user):
+    client.force_login(regular_user)
+    url = reverse("forge-add-create")
+    resp = check_http_post_response(
+        client,
+        url,
+        request_content_type="application/x-www-form-urlencoded",
+        data=urlencode(
+            {
+                "forge_type": "gitlab",
+                "forge_url": "https://gitlab.example.org",
+                "forge_contact_email": "jonhdoe@example.org",
+                "forge_contact_name": "John Doe",
+            }
+        ),
+        status_code=200,
+    )
+    assert_contains(resp, "Your request has been submitted")

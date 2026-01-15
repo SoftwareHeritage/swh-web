@@ -117,7 +117,7 @@ export function onCreateRequestPageLoad() {
         }
       }
       try {
-        const response = await csrfPost($(this).attr('action'),
+        const response = await csrfPost(Urls.api_1_add_forge_request_create(),
                                         {'Content-Type': 'application/x-www-form-urlencoded'},
                                         $(this).serialize());
         handleFetchError(response);

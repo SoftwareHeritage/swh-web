@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022-2024  The Software Heritage developers
+ * Copyright (C) 2022-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -18,7 +18,14 @@ function populateForm(type, url, contact, email, consent, comment) {
   cy.get('#swh-input-consent-check').click({force: consent === 'on'});
 }
 
-function submitForm() {
+function submitForm(testEnv, noJs = false) {
+  if (noJs) {
+    cy.intercept('POST', testEnv.Urls.forge_add_create() + '**')
+      .as('addForgeRequestCreate');
+  } else {
+    cy.intercept('POST', testEnv.Urls.api_1_add_forge_request_create() + '**')
+      .as('addForgeRequestCreate');
+  }
   cy.get('#swh-input-form-submit').click();
   cy.get('#requestCreateForm').then($form => {
     if ($form[0].checkValidity()) {
@@ -29,10 +36,8 @@ function submitForm() {
 
 function initTest(testEnv) {
   testEnv.addForgeNowUrl = testEnv.Urls.forge_add_create();
-  testEnv.addForgeNowRequestCreateUrl = testEnv.Urls.api_1_add_forge_request_create();
+  testEnv.addForgeRequestsListUrl = testEnv.Urls.forge_add_list();
   testEnv.listAddForgeRequestsUrl = testEnv.Urls.add_forge_request_list_datatables();
-  cy.intercept('POST', testEnv.addForgeNowRequestCreateUrl + '**')
-      .as('addForgeRequestCreate');
   cy.intercept(testEnv.listAddForgeRequestsUrl + '**')
       .as('addForgeRequestsList');
 }
@@ -67,7 +72,7 @@ describe('Browse requests list tests', function() {
 
     // create requests for the user 'user'
     populateForm('gitlab', 'https://gitlab.example.org/', 'admin', 'admin@example.org', 'on', '');
-    submitForm();
+    submitForm(this);
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
@@ -88,9 +93,9 @@ describe('Browse requests list tests', function() {
     cy.visit(this.addForgeNowUrl);
 
     populateForm('gitea', 'https://gitea.example.org/', 'admin', 'admin@example.org', 'on', '');
-    submitForm();
+    submitForm(this);
     populateForm('cgit', 'https://cgit.example.org/', 'admin', 'admin@example.org', 'on', '');
-    submitForm();
+    submitForm(this);
 
     // user requests filter checkbox should be in the DOM
     cy.get('#swh-add-forge-requests-list-tab').click();
@@ -294,7 +299,7 @@ describe('Test add-forge-request creation', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'https://gitlab.example.com/', 'test', 'test@example.com', 'on', 'test comment');
-    submitForm();
+    submitForm(this);
 
     // click the link to the list in the form footer
     cy.get('#swh-show-forge-add-requests-list').click();
@@ -314,9 +319,9 @@ describe('Test add-forge-request creation', function() {
     cy.userLogin();
     cy.visit(this.addForgeNowUrl);
     populateForm('bitbucket', 'https://gitlab.example.com/', 'test', 'test@example.com', 'on', 'test comment');
-    submitForm();
+    submitForm(this);
 
-    submitForm(); // Submitting the same data again
+    submitForm(this); // Submitting the same data again
 
     cy.get('#userMessage')
       .should('have.class', 'text-bg-danger')
@@ -331,7 +336,7 @@ describe('Test add-forge-request creation', function() {
     populateForm(
       'bitbucket', '', 'test', 'test@example.com', 'off', 'comment'
     );
-    submitForm();
+    submitForm(this);
 
     cy.get('#requestCreateForm').then(
       $form => expect($form[0].checkValidity()).to.be.false
@@ -353,13 +358,33 @@ describe('Test add-forge-request creation', function() {
       cy.userLogin();
       cy.visit(this.addForgeNowUrl);
       populateForm(forgeType, forgeURL, 'test', 'test@example.com', 'on', 'test comment');
-      submitForm();
+      submitForm(this);
 
       cy.get('#swh-input-forge-url')
         .then(input => {
           assert.isFalse(input[0].checkValidity());
         });
     });
+  });
+
+  it('should submit and list add forge now request without javascript', function() {
+    cy.userLogin();
+    cy.visit(this.addForgeNowUrl, {script: false});
+    populateForm('gitlab', 'https://gitlab.example.com/no-js/', 'test', 'test@example.com', 'on', 'test comment');
+    submitForm(this, true);
+
+    cy.get('.alert-success')
+      .should('contain', 'Your request has been submitted');
+
+    cy.visit(this.addForgeRequestsListUrl + '?no_js=on', {script: false});
+
+    cy.get('#add-forge-request-browse-no-js')
+      .should('be.visible')
+      .should('contain', 'gitlab.example.com');
+
+    cy.get('#add-forge-request-browse-no-js')
+      .should('be.visible')
+      .should('contain', 'PENDING');
   });
 
 });
