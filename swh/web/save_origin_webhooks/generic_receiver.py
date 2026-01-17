@@ -53,7 +53,7 @@ class OriginSaveWebhookReceiver(abc.ABC):
 
             The expected content type for the webhook payload must be ``application/json``.
 
-            Please not that to avoid abusing the archival service offered by Software Heritage
+            Please note that to avoid abusing the archival service offered by Software Heritage
             at most **one request per hour is created** so the effective loading of the
             repository into the archive might be delayed.
 
