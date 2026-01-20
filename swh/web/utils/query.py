@@ -76,7 +76,7 @@ def parse_hash_with_algorithms_or_throws(q, accepted_algo, error_msg):
         A pair (hash_algorithm, byte hash value)
 
     Raises:
-        BadInputExc when the inputs is invalid or does not
+        BadInputExc when the input is invalid or does not
         validate the accepted algorithms.
 
     """

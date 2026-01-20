@@ -239,7 +239,7 @@ def prepare_content_for_display(
 
     Returns:
         A dict containing the content bytes (possibly different from the one
-        provided as parameter if it is an image) under the key 'content_data
+        provided as parameter if it is an image) under the key 'content_data'
         and the corresponding highlightjs language class under the
         key 'language'.
     """

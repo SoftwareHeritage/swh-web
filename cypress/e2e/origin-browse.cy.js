@@ -97,7 +97,7 @@ describe('Test browse branches', function() {
 
   it('should search inside the branches', function() {
     cy.get('#swh-branch-search-string').type('mas');
-    cy.get('#swh-branch-serach-button').click();
+    cy.get('#swh-branch-search-button').click();
 
     cy.location('search')
       .should('include', 'name_include=mas');
@@ -109,7 +109,7 @@ describe('Test browse branches', function() {
 
   it('should show all the branches for empty search', function() {
     cy.get('#swh-branch-search-string').clear();
-    cy.get('#swh-branch-serach-button').click();
+    cy.get('#swh-branch-search-button').click();
 
     cy.location('search')
       .should('include', 'name_include=');
@@ -138,7 +138,7 @@ describe('Test browse releases', function() {
 
   it('should search inside the releases', function() {
     cy.get('#swh-branch-search-string').type('v2.4');
-    cy.get('#swh-branch-serach-button').click();
+    cy.get('#swh-branch-search-button').click();
 
     cy.location('search')
       .should('include', 'name_include=v2.4');
@@ -150,7 +150,7 @@ describe('Test browse releases', function() {
 
   it('should show all the releases for empty search', function() {
     cy.get('#swh-branch-search-string').clear();
-    cy.get('#swh-branch-serach-button').click();
+    cy.get('#swh-branch-search-button').click();
 
     cy.location('search')
       .should('include', 'name_include=');

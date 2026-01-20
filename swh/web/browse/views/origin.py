@@ -78,7 +78,7 @@ def origin_directory_browse_legacy(
 )
 def origin_content_browse(request: HttpRequest) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/content` instead
+    This route is deprecated; use :http:get:`/browse/content` instead
 
     Django view that produces an HTML display of a content
     associated to an origin for a given visit.
@@ -102,7 +102,7 @@ def origin_content_browse_legacy(
     timestamp: Optional[str] = None,
 ) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/content` instead
+    This route is deprecated; use :http:get:`/browse/content` instead
 
     Django view that produces an HTML display of a content
     associated to an origin for a given visit.
@@ -121,7 +121,7 @@ def origin_content_browse_legacy(
 )
 def origin_log_browse(request: HttpRequest) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/snapshot/log` instead
+    This route is deprecated; use :http:get:`/browse/snapshot/log` instead
 
     Django view that produces an HTML display of revisions history (aka
     the commit log) associated to a software origin.
@@ -140,7 +140,7 @@ def origin_log_browse_legacy(
     request: HttpRequest, origin_url: str, timestamp: Optional[str] = None
 ) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/snapshot/log` instead
+    This route is deprecated; use :http:get:`/browse/snapshot/log` instead
 
     Django view that produces an HTML display of revisions history (aka
     the commit log) associated to a software origin.

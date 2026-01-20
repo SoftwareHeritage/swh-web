@@ -10,7 +10,7 @@ Context-independent browsing
 ----------------------------
 
 Context-independent URLs provide information about objects (e.g.,
-revisions, directories, contents, person, ...), independently of the
+revisions, directories, contents, persons, ...), independently of the
 contexts where they have been found (e.g., specific repositories,
 branches, commits, ...).
 

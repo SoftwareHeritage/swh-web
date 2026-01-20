@@ -55,7 +55,7 @@ def api_lookup(
 
 
     Raises:
-        NotFoundExp or whatever `lookup_fn` raises.
+        NotFoundExc or whatever `lookup_fn` raises.
 
     """
 

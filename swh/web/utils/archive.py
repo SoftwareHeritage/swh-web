@@ -224,7 +224,7 @@ def lookup_origin(origin_url: str, lookup_similar_urls: bool = True) -> OriginIn
         if origin_url.endswith("/"):
             origin_urls.append(origin_url[:-1])
         # handle case when user provided an origin url without a trailing
-        # slash while the url in storage have it (e.g. Debian source package)
+        # slash while the url in storage has it (e.g. Debian source package)
         else:
             origin_urls.append(f"{origin_url}/")
 
