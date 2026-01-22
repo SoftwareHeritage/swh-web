@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -66,9 +66,9 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
   const monthExtent = [new Date(Date.UTC(startYear, 0, 1)), new Date(Date.UTC(endYear, 0, 1))];
 
   // create months bins based on setup extent
-  const monthBins = d3.timeMonths(d3.timeMonth.offset(monthExtent[0], -1), monthExtent[1]);
+  const monthBins = d3.utcMonths(d3.utcMonth.offset(monthExtent[0], -1), monthExtent[1]);
   // create years bins based on setup extent
-  const yearBins = d3.timeYears(monthExtent[0], monthExtent[1]);
+  const yearBins = d3.utcYears(monthExtent[0], monthExtent[1]);
 
   // set x scale domain
   x.domain(d3.extent(monthBins));
@@ -158,7 +158,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('height', height)
     .attr('width', d => {
       const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
+      const yearWidth = x(d3.utcYear.offset(date, 1)) - x(date);
       return yearWidth;
     })
     // mouse event callbacks used to show rectangle years
@@ -269,7 +269,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('height', height)
     .attr('width', d => {
       const date = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
+      const yearWidth = x(d3.utcYear.offset(date, 1)) - x(date);
       return yearWidth;
     });
 
@@ -279,7 +279,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('transform', 'translate(0,' + height + ')')
     .call(
       d3.axisBottom(x)
-        .ticks(d3.timeYear.every(1))
+        .ticks(d3.utcYear.every(1))
         .tickFormat(d => {
           const year = d.getUTCFullYear();
           if (year >= startYear) {
@@ -297,8 +297,8 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
     .attr('transform', d => {
       const year = d.getUTCFullYear();
       const date = new Date(Date.UTC(year, 0, 1));
-      const yearWidth = x(d3.timeYear.offset(date, 1)) - x(date);
-      return 'translate(' + -yearWidth / 2 + ', 0)';
+      const yearWidth = x(d3.utcYear.offset(date, 1)) - x(date);
+      return 'translate(' + yearWidth / 2 + ', 0)';
     });
 
   // add y axis for the number of visits
