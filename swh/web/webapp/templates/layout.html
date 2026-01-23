@@ -35,6 +35,7 @@ See top-level LICENSE file for more information
     {% render_bundle 'webapp' %}
     {% render_bundle 'guided_tour' %}
     <script>
+<!-- djlint:off -->
 /*
 @licstart  The following is the entire license notice for the JavaScript code in this page.
 
@@ -55,6 +56,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 @licend  The above is the entire license notice for the JavaScript code in this page.
 */
+<!-- djlint:on -->
     </script>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
     {{ swh_object_icons|swh_json_script:"swh_object_icons" }}
