@@ -34,7 +34,7 @@ describe('Test File Rendering', function() {
 
   it('should show correct path', function() {
     // Array containing names of all the ancestor directories of the file
-    const filePathArr = origin.content[0].path.slice(1, -1).split('/');
+    const filePathArr = origin.content[0].path.split('/');
 
     filePathArr.forEach(dirName => {
       cy.get('.swh-browse-bread-crumbs')
