@@ -35,8 +35,8 @@ Those applications are powered by:
   * assets dependencies management and retrieval through
     `yarn <https://yarnpkg.com>`_
 
-  * linting of custom javascript code (through `eslint <https://eslint.org/)>`_
-    and stylesheets (through `stylelint <https://stylelint.io/)>`_
+  * linting of custom javascript code (through `eslint <https://eslint.org/>`_
+    and stylesheets (through `stylelint <https://stylelint.io/>`_
 
   * use of `es6 <http://es6-features.org>`_ syntax and advanced javascript
     feature like `async/await <https://javascript.info/async-await>`_ or
@@ -45,7 +45,7 @@ Those applications are powered by:
     polyfills provider)
 
   * assets minification (using `terser <https://github.com/terser-js/terser>`_
-    and `cssnano <http://cssnano.co/)>`_ but also dead code elimination for
+    and `cssnano <http://cssnano.co/>`_ but also dead code elimination for
     production use
 
 
@@ -100,7 +100,7 @@ directory of swh-web in order to build and/or execute the web applications
 under various configurations:
 
 * **run-django-webpack-devserver**: Compile and serve not optimized (without
-  mignification and dead code elimination) frontend static assets using
+  minification and dead code elimination) frontend static assets using
   `webpack-dev-server <https://github.com/webpack/webpack-dev-server>`_ and run
   django server with development settings. This is the recommended target to
   use when developing ``swh-web`` as it enables automatic reloading of backend
@@ -171,11 +171,11 @@ Yarn targets
 Below is a list of available yarn targets in order to only execute the frontend
 static assets compilation (no web server will be executed):
 
-* **build-dev**: compile not optimized (without mignification and dead code
+* **build-dev**: compile not optimized (without minification and dead code
   elimination) frontend static assets and store the results in the
   `swh/web/static` folder.
 
-* **build**: compile optimized (with mignification and dead code elimination)
+* **build**: compile optimized (with minification and dead code elimination)
   frontend static assets and store the results in the `swh/web/static` folder.
 
 **The build target must be executed prior performing the Debian packaging of

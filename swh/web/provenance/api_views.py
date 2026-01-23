@@ -58,8 +58,8 @@ def api_provenance_whereis(request: Request, target: str):
         .. note::
 
             The quality of the result is not guaranteed whatsoever. Since the
-            definition of "best" likely vary from one usage to the next, this API
-            will evolve in the futur when this notion get better defined.
+            definition of "best" likely varies from one usage to the next, this API
+            will evolve in the future when this notion gets better defined.
 
         .. warning::
 

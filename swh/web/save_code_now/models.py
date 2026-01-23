@@ -121,7 +121,7 @@ class SaveOriginRequest(models.Model):
         """Map the request save model object to a json serializable dict.
 
         Returns:
-            The corresponding SaveOriginRequetsInfo json serializable dict.
+            The corresponding SaveOriginRequestInfo json serializable dict.
 
         """
         visit_date = self.visit_date

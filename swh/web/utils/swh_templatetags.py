@@ -55,7 +55,7 @@ def urlize_links_and_mails(text):
 def urlize_header_links(text):
     """Utility function for decorating headers links in browsable api.
 
-    Args
+    Args:
         text: Text whose content contains Link header value
 
     Returns:

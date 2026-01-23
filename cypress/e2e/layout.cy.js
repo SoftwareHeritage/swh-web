@@ -14,7 +14,7 @@ describe('Test top-bar', function() {
     cy.clearLocalStorage();
     cy.visit(url);
   });
-  it('should should contain all navigation links', function() {
+  it('should contain all navigation links', function() {
     cy.get('.swh-top-bar a')
       .should('have.length.of.at.least', 4)
       .and('be.visible')

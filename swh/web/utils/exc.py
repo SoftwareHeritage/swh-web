@@ -44,7 +44,7 @@ class BadInputExc(ValueError):
 
 
 class NotFoundExc(exceptions.ObjectDoesNotExist):
-    """Good request to the api but no result were found.
+    """Good request to the api but no results were found.
 
     Example: Asking a content with the right identifier format but
     that content does not exist.

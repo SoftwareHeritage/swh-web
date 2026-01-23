@@ -7,8 +7,8 @@
 
 import {csrfPost, getHumanReadableDate, handleFetchError} from 'utils/functions';
 import requestHistoryItem from './add-request-history-item.ejs';
-import initialEmailTempate from './forge-admin-email.ejs';
-import successEmailTempate from './forge-success-email.ejs';
+import initialEmailTemplate from './forge-admin-email.ejs';
+import successEmailTemplate from './forge-success-email.ejs';
 
 let forgeRequest;
 
@@ -124,10 +124,10 @@ function contactForgeAdmin(event) {
   // select email template according to the status:
   let emailText = '';
   if (forgeRequest.status === 'PENDING') {
-    emailText = encodeURIComponent(initialEmailTempate({'forgeUrl': forgeRequest.forge_url, 'forgeAdmin': forgeRequest.forge_contact_name}).trim().replace(/\n/g, '\r\n'));
+    emailText = encodeURIComponent(initialEmailTemplate({'forgeUrl': forgeRequest.forge_url, 'forgeAdmin': forgeRequest.forge_contact_name}).trim().replace(/\n/g, '\r\n'));
   }
   if (forgeRequest.status === 'FIRST_ORIGIN_LOADED') {
-    emailText = encodeURIComponent(successEmailTempate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));
+    emailText = encodeURIComponent(successEmailTemplate({'forgeUrl': encodeURIComponent(forgeRequest.forge_url)}).trim().replace(/\n/g, '\r\n'));
   }
   const w = window.open('', '_blank', '', true);
   w.location.href = `mailto:${mailTo}?Cc=${mailCc}&Reply-To=${mailReply}&Mail-Reply-To=${mailReply}&Mail-Followup-To=${mailReply}&Subject=${subject}&body=${emailText}`;

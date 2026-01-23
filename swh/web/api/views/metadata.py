@@ -112,19 +112,19 @@ def api_raw_extrinsic_metadata_swhid(
         :>jsonarr object fetcher: tool used to fetch the metadata
         :>jsonarr string format: short identifier of the format of the metadata
         :>jsonarr string metadata_url: link to download the metadata "blob" itself
-        :>jsonarr string origin: URL of the origin in which context's
+        :>jsonarr string origin: URL of the origin in which context
             the metadata is valid, if any
-        :>jsonarr int visit: identifier of the visit in which context's
+        :>jsonarr int visit: identifier of the visit in which context
             the metadata is valid, if any
-        :>jsonarr string snapshot: SWHID of the snapshot in which context's
+        :>jsonarr string snapshot: SWHID of the snapshot in which context
             the metadata is valid, if any
-        :>jsonarr string release: SWHID of the release in which context's
+        :>jsonarr string release: SWHID of the release in which context
             the metadata is valid, if any
-        :>jsonarr string revision: SWHID of the revision in which context's
+        :>jsonarr string revision: SWHID of the revision in which context
             the metadata is valid, if any
-        :>jsonarr string path: SWHID of the path in which context's
+        :>jsonarr string path: SWHID of the path in which context
             is valid if any, relative to a release or revision as anchor
-        :>jsonarr string directory: SWHID of the directory in which context's
+        :>jsonarr string directory: SWHID of the directory in which context
             the metadata is valid, if any
 
         :statuscode 200: no error

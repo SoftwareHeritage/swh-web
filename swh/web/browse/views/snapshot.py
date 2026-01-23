@@ -99,7 +99,7 @@ def snapshot_directory_browse_legacy(
 )
 def snapshot_content_browse(request: HttpRequest, snapshot_id: str) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/content` instead
+    This route is deprecated; use :http:get:`/browse/content/` instead
 
     Django view that produces an HTML display of a content
     collected in a snapshot.
@@ -119,7 +119,7 @@ def snapshot_content_browse_legacy(
     request: HttpRequest, snapshot_id: str, path: str
 ) -> HttpResponse:
     """
-    This route is deprecated; use http:get:`/browse/content` instead
+    This route is deprecated; use :http:get:`/browse/content/` instead
 
     Django view that produces an HTML display of a content
     collected in a snapshot.

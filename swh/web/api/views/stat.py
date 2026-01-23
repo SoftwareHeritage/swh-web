@@ -35,7 +35,7 @@ def api_stats(request: Request):
         :>json number revision: current number of revision objects
             (aka commits) in the archive
         :>json number skipped_content: current number of content objects
-            (aka files) which where not inserted in the archive
+            (aka files) which were not inserted in the archive
         :>json number snapshot: current number of snapshot objects
             (aka set of named branches) in the archive
 

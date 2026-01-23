@@ -95,7 +95,7 @@ def _get_directory_rendering_data(
     return {"dirs": dirs, "files": files}
 
 
-def _get_breacrumbs_data(
+def _get_breadcrumbs_data(
     swhid: QualifiedSWHID,
     focus_swhid: QualifiedSWHID,
     path: str,
@@ -268,7 +268,7 @@ def swhid_iframe(request, swhid: str):
 
         swhids_info_extra_context["path"] = path
         if parsed_swhid and view_data:
-            breadcrumbs, root_dir = _get_breacrumbs_data(
+            breadcrumbs, root_dir = _get_breadcrumbs_data(
                 parsed_swhid, parsed_focus_swhid, path, snapshot_context
             )
 
