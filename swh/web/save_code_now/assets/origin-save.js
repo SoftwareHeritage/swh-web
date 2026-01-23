@@ -286,7 +286,7 @@ export function initOriginSave() {
 
     const saveRequestUnknownErrorAlert = htmlAlert(
       'danger',
-      'An unexpected error happened when submitting the "save code now request".',
+      'An unexpected error happened when submitting the "save code now" request.',
       true
     );
 

@@ -342,7 +342,7 @@ describe('Archive alteration request assistant tests', () => {
     searchOrigins('a.non.existing.origin');
     cy.location('pathname').should('be.equal', step3Url);
     cy.get('#id_query').should('have.value', 'a.non.existing.origin');
-    cy.get('table#origins-results').find('tr.table-warning').contains('are you sure your code has been archived').should('be.visible');
+    cy.get('table#origins-results').find('tr.table-warning').contains('Are you sure your code has been archived').should('be.visible');
     cy.get('button[form=origins-form][type=submit]').should('be.disabled');
     // a search that returns results but submit without checking anything
     searchOrigins('http');
