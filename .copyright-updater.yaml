@@ -1,0 +1,3 @@
+pattern: Copyright (C) {years}  The Software Heritage developers
+
+ignore_commits_before: 2026-01-24

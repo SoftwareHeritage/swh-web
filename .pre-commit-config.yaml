@@ -96,3 +96,23 @@ repos:
         name: Django templates linter
         args:
           - --quiet
+
+  - repo: https://github.com/nanoufo/copyright-hook
+    rev: v1.1.0
+    hooks:
+      - id: update-copyright
+        args: [--required]
+        files: ^.*\.(py|css|js|html|ejs)$
+        exclude: >
+          (?x)^(
+            .*__init__.py|
+            docs/conf.py|
+            .*/migrations/.*|
+            mirror_demo/templates/mirror-footer.html|
+            mirror_demo/templates/mirror-homepage.html|
+            assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.*|
+            cypress.config.js|
+            nyc.config.js|
+            eslint.config.js|
+            conftest.py
+          )$
