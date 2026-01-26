@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -34,8 +34,8 @@ def api_lookup(
     Capture a redundant behavior of:
         - looking up the backend with a criteria (be it an identifier or
           checksum) passed to the function lookup_fn
-        - if nothing is found, raise an NotFoundExc exception with error
-          message notfound_msg.
+        - if nothing is found, raise :class:`swh.web.utils.exc.NotFoundExc`
+          exception with error message ``notfound_msg``.
         - Otherwise if something is returned:
             - either as list, map or generator, map the enrich_fn function to
               it and return the resulting data structure as list.
@@ -47,7 +47,7 @@ def api_lookup(
           \*args.
         - \*args: supplementary arguments to pass to lookup_fn.
         - notfound_msg: if nothing matching the criteria is found,
-          raise NotFoundExc with this error message.
+          raise :class:`swh.web.utils.exc.NotFoundExc` with this error message.
         - enrich_fn: Function to use to enrich the result returned by
           lookup_fn. Default to the identity function if not provided.
         - request: Input HTTP request that will be provided as parameter
@@ -55,7 +55,8 @@ def api_lookup(
 
 
     Raises:
-        NotFoundExc or whatever `lookup_fn` raises.
+        swh.web.utils.exc.NotFoundExc: when a requested object is not found
+            or whatever ``lookup_fn`` raises.
 
     """
 
