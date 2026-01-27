@@ -46,7 +46,8 @@ module.exports = [
         __STATIC__: false,
         Image: false,
         nb: false,
-        MathJax: false
+        MathJax: false,
+        globalThis: false
       },
 
       parser: babelParser,
