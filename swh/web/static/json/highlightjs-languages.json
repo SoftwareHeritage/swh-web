@@ -403,6 +403,8 @@
         "lox": "lox",
         "ls": "livescript",
         "m": "mercury",
+        "m2": "macaulay2",
+        "macaulay2": "macaulay2",
         "magik": "magik",
         "mak": "makefile",
         "make": "makefile",
