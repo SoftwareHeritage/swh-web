@@ -99,6 +99,7 @@ def origin_save_list_view(request):
                 privileged_user(request, permissions=[SWH_AMBASSADOR_PERMISSION])
             ),
             "origin_url": request.GET.get("origin_url", ""),
+            "submit_status": "",
         },
     )
 
