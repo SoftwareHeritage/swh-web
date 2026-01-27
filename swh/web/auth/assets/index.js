@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2024  The Software Heritage developers
+ * Copyright (C) 2020-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -124,7 +124,7 @@ export function applyTokenAction(action, tokenId) {
       actionData[action].infoText, actionData[action].buttonText);
 
     swh.webapp.showModalHtml(actionData[action].modalTitle, tokenFormHtml);
-    $(`#swh-token-form`).submit(event => {
+    $(`#swh-token-form`).on('submit', event => {
       event.preventDefault();
       event.stopPropagation();
       actionData[action].submitCallback(tokenId);
@@ -135,7 +135,7 @@ export function applyTokenAction(action, tokenId) {
 }
 
 export function initProfilePage() {
-  $(document).ready(() => {
+  $(() => {
     apiTokensTable = $('#swh-bearer-tokens-table')
       .on('error.dt', (e, settings, techNote, message) => {
         $('#swh-origin-save-request-list-error').text(

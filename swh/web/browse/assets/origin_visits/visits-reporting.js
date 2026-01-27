@@ -73,7 +73,7 @@ export function reloadPage() {
 }
 
 export function initVisitsReporting(visits) {
-  $(document).ready(() => {
+  $(() => {
     filteredVisits = visits;
     // process input visits
     filteredVisits.forEach((v, i) => {

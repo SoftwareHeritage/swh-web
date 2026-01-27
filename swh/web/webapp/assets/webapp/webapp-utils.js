@@ -11,10 +11,10 @@ import Cookies from 'js-cookie';
 import iframeResize from '@iframe-resizer/parent';
 import {BREAKPOINT_SM} from 'utils/constants';
 
-$(document).ready(() => {
+$(() => {
   // redirect to last browse page if any when clicking on the 'Browse' entry
   // in the sidebar
-  $(`.swh-browse-link`).click(event => {
+  $(`.swh-browse-link`).on('click', event => {
     const lastBrowsePage = sessionStorage.getItem('last-browse-page');
     if (lastBrowsePage) {
       event.preventDefault();
@@ -85,7 +85,7 @@ $(document).ready(() => {
   }
 
   // click handler to set focus on code block for copy
-  $(document).click(e => {
+  $(document).on('click', e => {
     selectedCode = getCodeOrPreEltUnderPointer(e);
   });
 
@@ -103,13 +103,13 @@ $(document).ready(() => {
 
   // select the whole text of focused code block when user
   // double clicks or hits Ctrl+A
-  $(document).dblclick(e => {
+  $(document).on('dblclick', e => {
     if ((e.ctrlKey || e.metaKey)) {
       selectCode(e, getCodeOrPreEltUnderPointer(e));
     }
   });
 
-  $(document).keydown(e => {
+  $(document).on('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
       selectCode(e, selectedCode);
     }
@@ -119,7 +119,7 @@ $(document).ready(() => {
   let scrollThreshold = 0;
   scrollThreshold += $('.swh-top-bar').height() || 0;
   scrollThreshold += $('.navbar').height() || 0;
-  $(window).scroll(() => {
+  $(window).on('scroll', () => {
     if ($(window).scrollTop() > scrollThreshold) {
       $('#back-to-top').css('display', 'block');
     } else {
@@ -128,7 +128,7 @@ $(document).ready(() => {
   });
 
   // navbar search form submission callback
-  $('#swh-origins-search-top').submit(event => {
+  $('#swh-origins-search-top').on('submit', event => {
     event.preventDefault();
     if (event.target.checkValidity()) {
       $(event.target).removeClass('was-validated');
@@ -157,7 +157,7 @@ $(document).ready(() => {
 
 export function initPage(page) {
 
-  $(document).ready(() => {
+  $(() => {
     // set relevant sidebar link to page active
     $(`.swh-${page}-item`).addClass('active');
     $(`.swh-${page}-link`).addClass('active');
@@ -173,7 +173,7 @@ export function initPage(page) {
 }
 
 export function initHomePage() {
-  $(document).ready(async() => {
+  $(async() => {
     // mirror version of swh-web does not have coverage widget and counters
     // in the homepage
     if (Object.keys(swh.webapp.mirrorConfig()).length === 0) {
@@ -209,10 +209,10 @@ export function showModalMessage(title, message) {
 export function showModalConfirm(title, message, callback) {
   $('#swh-web-modal-confirm .modal-title').text(title);
   $('#swh-web-modal-confirm .modal-content p').text(message);
-  $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').bind('click', () => {
+  $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').on('click', () => {
     callback();
     $('#swh-web-modal-confirm').modal('hide');
-    $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').unbind('click');
+    $('#swh-web-modal-confirm #swh-web-modal-confirm-ok-btn').off('click');
   });
   $('#swh-web-modal-confirm').modal('show');
 }

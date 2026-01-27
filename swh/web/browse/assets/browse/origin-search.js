@@ -206,8 +206,8 @@ async function doSearch() {
 }
 
 export function initOriginSearch() {
-  $(document).ready(() => {
-    $('#swh-search-origins').submit(event => {
+  $(() => {
+    $('#swh-search-origins').on('submit', event => {
       event.preventDefault();
       if (event.target.checkValidity()) {
         $(event.target).removeClass('was-validated');
@@ -241,7 +241,7 @@ export function initOriginSearch() {
       }
     });
 
-    $('#origins-next-results-button').click(event => {
+    $('#origins-next-results-button').on('click', event => {
       if ($('#origins-next-results-button').hasClass('disabled') || inSearch) {
         return;
       }
@@ -251,7 +251,7 @@ export function initOriginSearch() {
       event.preventDefault();
     });
 
-    $('#origins-prev-results-button').click(event => {
+    $('#origins-prev-results-button').on('click', event => {
       if ($('#origins-prev-results-button').hasClass('disabled') || inSearch) {
         return;
       }

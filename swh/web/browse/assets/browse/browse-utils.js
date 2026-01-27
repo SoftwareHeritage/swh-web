@@ -7,14 +7,14 @@
 
 import {BREAKPOINT_SM} from 'utils/constants';
 
-$(document).ready(() => {
+$(() => {
 
   $('.dropdown-submenu a.dropdown-item').on('click', e => {
     $(e.target).next('div').toggle();
     if ($(e.target).next('div').css('display') !== 'none') {
-      $(e.target).focus();
+      $(e.target).trigger('focus');
     } else {
-      $(e.target).blur();
+      $(e.target).trigger('blur');
     }
     e.stopPropagation();
     e.preventDefault();
@@ -63,7 +63,7 @@ $(document).ready(() => {
     $('.swh-popover-toggler').popover('hide');
   });
 
-  $('#swh-branch-search-form').submit(function(e) {
+  $('#swh-branch-search-form').on('submit', function(e) {
     var searchParams = new URLSearchParams(window.location.search);
     searchParams.set('name_include',
                      $('#swh-branch-search-string').val().trim());

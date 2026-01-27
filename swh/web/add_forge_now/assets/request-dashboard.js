@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022-2024  The Software Heritage developers
+ * Copyright (C) 2022-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,14 +13,14 @@ import successEmailTemplate from './forge-success-email.ejs';
 let forgeRequest;
 
 export function onRequestDashboardLoad(requestId, nextStatusesFor) {
-  $(document).ready(() => {
+  $(() => {
     populateRequestDetails(requestId, nextStatusesFor);
 
-    $('#contactForgeAdmin').click((event) => {
+    $('#contactForgeAdmin').on('click', (event) => {
       contactForgeAdmin(event);
     });
 
-    $('#updateRequestForm').submit(async function(event) {
+    $('#updateRequestForm').on('submit', async function(event) {
       event.preventDefault();
       try {
         const response = await csrfPost($(this).attr('action'),

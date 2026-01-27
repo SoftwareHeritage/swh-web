@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -118,7 +118,7 @@ export async function renderOrgData(domElt, orgDocData) {
 }
 
 export function renderOrg(domElt, orgDocUrl) {
-  $(document).ready(async() => {
+  $(async() => {
     try {
       const response = await fetch(orgDocUrl);
       handleFetchError(response);
@@ -132,7 +132,7 @@ export function renderOrg(domElt, orgDocUrl) {
 }
 
 export function renderTxt(domElt, txtDocUrl) {
-  $(document).ready(async() => {
+  $(async() => {
     try {
       const response = await fetch(txtDocUrl);
       handleFetchError(response);

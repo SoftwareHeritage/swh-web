@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -28,7 +28,7 @@ function enableRowSelection(tableSel) {
 }
 
 export function initOriginSaveAdmin() {
-  $(document).ready(() => {
+  $(() => {
 
     $.fn.dataTable.ext.errMode = 'throw';
 
@@ -179,15 +179,15 @@ export function initOriginSaveAdmin() {
       rejectedSaveRequestsTable.draw();
     });
 
-    $('#swh-save-requests-pending-tab').click(() => {
+    $('#swh-save-requests-pending-tab').on('click', () => {
       pendingSaveRequestsTable.ajax.reload(null, false);
     });
 
-    $('#swh-save-requests-accepted-tab').click(() => {
+    $('#swh-save-requests-accepted-tab').on('click', () => {
       acceptedSaveRequestsTable.ajax.reload(null, false);
     });
 
-    $('#swh-save-requests-rejected-tab').click(() => {
+    $('#swh-save-requests-rejected-tab').on('click', () => {
       rejectedSaveRequestsTable.ajax.reload(null, false);
     });
 

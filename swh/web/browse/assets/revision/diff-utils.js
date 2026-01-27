@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -719,7 +719,7 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
     }
   });
 
-  $(document).ready(() => {
+  $(() => {
 
     if (revisionMessageBody.length > 0) {
       $('#swh-revision-message').addClass('in');
@@ -728,14 +728,14 @@ export async function initRevisionDiff(revisionMessageBody, diffRevisionUrl) {
     }
 
     // callback when the user requests to scroll on a specific diff or back to top
-    $('#swh-revision-changes-list a[href^="#"], #back-to-top a[href^="#"]').click(e => {
+    $('#swh-revision-changes-list a[href^="#"], #back-to-top a[href^="#"]').on('click', e => {
       const href = $.attr(e.currentTarget, 'href');
       scrollToDiffPanel(href);
       return false;
     });
 
     // click callback for highlighting diff lines
-    $('body').click(evt => {
+    $('body').on('click', evt => {
 
       if (currentTabName !== 'Changes') {
         return;

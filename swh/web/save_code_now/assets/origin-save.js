@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -125,7 +125,7 @@ const csvExportButton = `
 
 export function initOriginSave() {
 
-  $(document).ready(() => {
+  $(() => {
 
     $.fn.dataTable.ext.errMode = 'none';
 
@@ -292,7 +292,7 @@ export function initOriginSave() {
 
     updateVisitType();
 
-    $('#swh-save-origin-form').submit(async event => {
+    $('#swh-save-origin-form').on('submit', async event => {
       event.preventDefault();
       event.stopPropagation();
       $('.alert').alert('close');
@@ -439,8 +439,8 @@ export function initTakeNewSnapshot() {
     true
   );
 
-  $(document).ready(() => {
-    $('#swh-take-new-snapshot-form').submit(event => {
+  $(() => {
+    $('#swh-take-new-snapshot-form').on('submit', event => {
       event.preventDefault();
       event.stopPropagation();
 

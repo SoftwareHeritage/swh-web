@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2024  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -24,7 +24,7 @@ function genSwhLink(data, type, linkText = '') {
 
 export function initDepositAdmin(username, isStaff) {
   let depositsTable;
-  $(document).ready(() => {
+  $(() => {
     $.fn.dataTable.ext.errMode = 'none';
     depositsTable = $('#swh-admin-deposit-list')
       .on('error.dt', (e, settings, techNote, message) => {
@@ -168,7 +168,7 @@ export function initDepositAdmin(username, isStaff) {
     });
 
     // Adding exclusion pattern update behavior, when typing, update search
-    $('#swh-admin-deposit-list-exclude-filter').keyup(function() {
+    $('#swh-admin-deposit-list-exclude-filter').on('keyup', function() {
       depositsTable.draw();
     });
 

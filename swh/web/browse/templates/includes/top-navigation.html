@@ -161,7 +161,7 @@ See top-level LICENSE file for more information
     setTimeout(function() {
       $(".chosen-search-input").attr("aria-label", "Search language to highlight");
     });
-    $(".chosen-select").chosen().change(function(event, params) {
+    $(".chosen-select").chosen().on("change", function(event, params) {
       swh.content.updateLanguage(params.selected, !swh.webapp.parseJsonScript('iframe_mode'));
     });
   {% endif %}

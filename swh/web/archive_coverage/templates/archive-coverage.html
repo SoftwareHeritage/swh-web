@@ -1,5 +1,5 @@
 {% comment %}
-Copyright (C) 2015-2024  The Software Heritage developers
+Copyright (C) 2015-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -183,7 +183,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <a href="{% url 'jslicenses' %}" rel="jslicense" style="display: none;">JavaScript license information</a>
     {% endif %}
     <script>
-      $(document).ready(function() {
+      $(function() {
         if (window.frameElement === null) {
           // do not render full width page if not embedded in an iframe
           $("#swh-coverage-content").removeClass("container-fluid");

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2021  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -78,7 +78,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code',
     }
   }
 
-  $(document).ready(() => {
+  $(() => {
     // highlight code and add line numbers
     $(selector).each((i, elt) => {
       $(elt).removeAttr('data-highlighted');
@@ -98,7 +98,7 @@ export async function highlightCode(showLineNumbers = true, selector = 'code',
     // click handler to dynamically highlight line(s)
     // when the user clicks on a line number (lines range
     // can also be highlighted while holding the shift key)
-    $('.swh-content').click(evt => {
+    $('.swh-content').on('click', evt => {
       if (evt.target.classList.contains('hljs-ln-n')) {
         const line = parseInt($(evt.target).data('line-number'));
         if (evt.shiftKey && firstHighlightedLine && line > firstHighlightedLine) {
