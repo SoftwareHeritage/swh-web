@@ -7,7 +7,7 @@ import difflib
 import io
 import os
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from django_ratelimit.decorators import ratelimit
 
@@ -163,6 +163,36 @@ def content_highlight(request: HttpRequest, query_string: str) -> HttpResponse:
 _auto_diff_size_limit = 20000
 
 
+def _fetch_content_for_diff(
+    query_string: str, path: Optional[str]
+) -> Tuple[bytes, int, str, bool]:
+    if query_string:
+        text_diff = True
+        content_from = request_content(query_string, max_size=None)
+        content_from_display_data = prepare_content_for_display(
+            content_from["raw_data"], content_from["mimetype"], path
+        )
+        language = content_from_display_data["language"]
+        content_from_size = content_from["length"]
+        if (
+            not (
+                content_from["mimetype"].startswith("text/")
+                or content_from["mimetype"] == "inode/x-empty"
+            )
+            or content_from["encoding"] == "binary"
+        ):
+            text_diff = False
+        return content_from["raw_data"], content_from_size, language, text_diff
+    return b"", 0, "", False
+
+
+def _split_content_lines_for_diff(content: bytes) -> List[str]:
+    content_lines = content.decode("utf-8").splitlines(True)
+    if content_lines and content_lines[-1][-1] != "\n":
+        content_lines[-1] += "[swh-no-nl-marker]\n"
+    return content_lines
+
+
 @browse_route(
     r"content/(?P<from_query_string>.*)/diff/(?P<to_query_string>.*)/",
     view_name="diff-contents",
@@ -191,7 +221,6 @@ def _contents_diff(
         A JSON object containing the unified diff.
 
     """
-    diff_data = {}
     content_from = None
     content_to = None
     content_from_size = 0
@@ -206,38 +235,14 @@ def _contents_diff(
         diff_str = "File renamed without changes"
     else:
         try:
-            text_diff = True
-            if from_query_string:
-                content_from = request_content(from_query_string, max_size=None)
-                content_from_display_data = prepare_content_for_display(
-                    content_from["raw_data"], content_from["mimetype"], path
-                )
-                language = content_from_display_data["language"]
-                content_from_size = content_from["length"]
-                if (
-                    not (
-                        content_from["mimetype"].startswith("text/")
-                        or content_from["mimetype"] == "inode/x-empty"
-                    )
-                    or content_from["encoding"] == "binary"
-                ):
-                    text_diff = False
+            content_from, content_from_size, language, text_diff = (
+                _fetch_content_for_diff(from_query_string, path)
+            )
 
             if text_diff and to_query_string:
-                content_to = request_content(to_query_string, max_size=None)
-                content_to_display_data = prepare_content_for_display(
-                    content_to["raw_data"], content_to["mimetype"], path
+                content_to, content_to_size, language, text_diff = (
+                    _fetch_content_for_diff(to_query_string, path)
                 )
-                language = content_to_display_data["language"]
-                content_to_size = content_to["length"]
-                if (
-                    not (
-                        content_to["mimetype"].startswith("text/")
-                        or content_to["mimetype"] == "inode/x-empty"
-                    )
-                    or content_to["encoding"] == "binary"
-                ):
-                    text_diff = False
 
             diff_size = abs(content_to_size - content_from_size)
 
@@ -248,19 +253,10 @@ def _contents_diff(
                 diff_str = "Large diffs are not automatically computed"
                 language = "plaintext"
             else:
-                if content_from:
-                    content_from_lines = (
-                        content_from["raw_data"].decode("utf-8").splitlines(True)
-                    )
-                    if content_from_lines and content_from_lines[-1][-1] != "\n":
-                        content_from_lines[-1] += "[swh-no-nl-marker]\n"
 
+                content_from_lines = _split_content_lines_for_diff(content_from)
                 if content_to:
-                    content_to_lines = (
-                        content_to["raw_data"].decode("utf-8").splitlines(True)
-                    )
-                    if content_to_lines and content_to_lines[-1][-1] != "\n":
-                        content_to_lines[-1] += "[swh-no-nl-marker]\n"
+                    content_to_lines = _split_content_lines_for_diff(content_to)
 
                 diff_lines = difflib.unified_diff(content_from_lines, content_to_lines)
                 diff_str = "".join(list(diff_lines)[2:])
@@ -268,9 +264,7 @@ def _contents_diff(
             sentry_capture_exception(exc)
             diff_str = str(exc)
 
-    diff_data["diff_str"] = diff_str
-    diff_data["language"] = language
-    return JsonResponse(diff_data)
+    return JsonResponse({"diff_str": diff_str, "language": language})
 
 
 def _get_content_from_request(request: HttpRequest) -> Dict[str, Any]:

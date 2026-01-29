@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2025  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -16,6 +16,7 @@ from django.utils.html import escape
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
+    Content,
     Directory,
     DirectoryEntry,
     Origin,
@@ -1445,4 +1446,46 @@ def test_browse_content_without_root_dir_info_in_path(
 
     check_html_get_response(
         client, url, status_code=200, template_used="browse-content.html"
+    )
+
+
+def test_browse_contents_diff(client, archive_data):
+    content_from = Content.from_data(
+        b"""\
+import os
+
+print("number of CPUs: ", os.cpu_count())
+"""
+    )
+
+    content_to = Content.from_data(
+        b"""\
+import os
+
+print("number of CPUs: ", os.cpu_count())
+print("load average: ", os.getloadavg())
+"""
+    )
+
+    archive_data.content_add([content_from, content_to])
+
+    url = reverse(
+        "diff-contents",
+        url_args={
+            "from_query_string": f"sha1_git:{content_from.sha1_git.hex()}",
+            "to_query_string": f"sha1_git:{content_to.sha1_git.hex()}",
+        },
+    )
+
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert (
+        resp.json()["diff_str"]
+        == """\
+@@ -1,3 +1,4 @@
+ import os
+ 
+ print("number of CPUs: ", os.cpu_count())
++print("load average: ", os.getloadavg())
+"""  # noqa
     )
