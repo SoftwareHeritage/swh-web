@@ -173,13 +173,7 @@ def _fetch_content_for_diff(
         )
         language = content_from_display_data["language"]
         content_from_size = content_from["length"]
-        if (
-            not (
-                content_from["mimetype"].startswith("text/")
-                or content_from["mimetype"] == "inode/x-empty"
-            )
-            or content_from["encoding"] == "binary"
-        ):
+        if not is_textual_content(content_from["mimetype"], content_from["encoding"]):
             text_diff = False
         return content_from["raw_data"], content_from_size, language, text_diff
     return b"", 0, "", False

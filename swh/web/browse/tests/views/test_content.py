@@ -1531,3 +1531,46 @@ print("load average: ", os.getloadavg())
 +print("load average: ", os.getloadavg())
 """  # noqa
     )
+
+
+def test_browse_json_contents_diff(client, archive_data):
+    content_from = Content.from_data(
+        b"""\
+{
+    "key": "foo"
+}
+"""
+    )
+
+    content_to = Content.from_data(
+        b"""\
+{
+    "key": "foo",
+    "value": "bar"
+}
+"""
+    )
+
+    archive_data.content_add([content_from, content_to])
+
+    url = reverse(
+        "diff-contents",
+        url_args={
+            "from_query_string": f"sha1_git:{content_from.sha1_git.hex()}",
+            "to_query_string": f"sha1_git:{content_to.sha1_git.hex()}",
+        },
+    )
+
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert (
+        resp.json()["diff_str"]
+        == """\
+@@ -1,3 +1,4 @@
+ {
+-    "key": "foo"
++    "key": "foo",
++    "value": "bar"
+ }
+"""
+    )
