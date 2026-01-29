@@ -258,19 +258,6 @@ module.exports = {
           }
         }]
       },
-      // expose highlightjs to the global context as hljs when importing it
-      {
-        test: require.resolve('highlight.js'),
-        use: [{
-          loader: 'expose-loader',
-          options: {
-            exposes: {
-              globalName: 'hljs',
-              override: true
-            }
-          }
-        }]
-      },
       // css import configuration:
       //  - first process it with postcss
       //  - then extract it to a dedicated file associated to each bundle

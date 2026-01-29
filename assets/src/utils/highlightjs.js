@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2025  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -7,8 +7,8 @@
 
 // highlightjs chunk that will be lazily loaded
 
-// main highlight.js package
-import 'highlight.js';
+// main highlight.js package exposed to the global scope for plugins
+import './hljs';
 
 // add highlighting support for languages not included in highlight.js package
 import 'highlightjs-4d/dist/4d.min';

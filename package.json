@@ -180,7 +180,6 @@
     "eslint-plugin-standard": "^5.0.0",
     "eslint-webpack-plugin": "^5.0.2",
     "exports-loader": "^5.0.0",
-    "expose-loader": "^5.0.1",
     "https-browserify": "^1.0.0",
     "imports-loader": "^5.0.0",
     "istanbul-lib-coverage": "^3.2.2",
