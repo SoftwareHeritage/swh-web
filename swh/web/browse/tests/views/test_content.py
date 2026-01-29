@@ -1489,3 +1489,45 @@ print("load average: ", os.getloadavg())
 +print("load average: ", os.getloadavg())
 """  # noqa
     )
+
+
+def test_browse_contents_diff_remove_form_feeds(client, archive_data):
+    content_from = Content.from_data(
+        b"""\
+import os
+\f
+print("number of CPUs: ", os.cpu_count())
+"""
+    )
+
+    content_to = Content.from_data(
+        b"""\
+import os
+\f
+print("number of CPUs: ", os.cpu_count())
+print("load average: ", os.getloadavg())
+"""
+    )
+
+    archive_data.content_add([content_from, content_to])
+
+    url = reverse(
+        "diff-contents",
+        url_args={
+            "from_query_string": f"sha1_git:{content_from.sha1_git.hex()}",
+            "to_query_string": f"sha1_git:{content_to.sha1_git.hex()}",
+        },
+    )
+
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert (
+        resp.json()["diff_str"]
+        == """\
+@@ -1,3 +1,4 @@
+ import os
+ 
+ print("number of CPUs: ", os.cpu_count())
++print("load average: ", os.getloadavg())
+"""  # noqa
+    )

@@ -187,7 +187,12 @@ def _fetch_content_for_diff(
 
 
 def _split_content_lines_for_diff(content: bytes) -> List[str]:
-    content_lines = content.decode("utf-8").splitlines(True)
+    content_lines = (
+        content.decode("utf-8")
+        # remove non printable characters considered as line boundaries by splitlines
+        # as those lead to invalid line numbers in the computed diff
+        .translate(str.maketrans("", "", "\f\v")).splitlines(True)
+    )
     if content_lines and content_lines[-1][-1] != "\n":
         content_lines[-1] += "[swh-no-nl-marker]\n"
     return content_lines
