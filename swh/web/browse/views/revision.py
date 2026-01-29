@@ -29,6 +29,7 @@ from swh.web.browse.utils import (
     get_directory_entries,
     get_readme_to_display,
     get_revision_log_url,
+    is_textual_content,
     prepare_content_for_display,
     pygments_iframe_height_for_content,
     request_content,
@@ -517,6 +518,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
     readme_url = None
     readme_html = None
     readmes = {}
+    textual_content = False
 
     extra_context = dict(revision_metadata)
     extra_context["path"] = f"/{path}" if path else None
@@ -527,19 +529,19 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
         mimetype = content_data["mimetype"]
         if content_data["raw_data"]:
             content_display_data = prepare_content_for_display(
-                content_data["raw_data"], content_data["mimetype"], path
+                content_data["raw_data"],
+                content_data["mimetype"],
+                content_data["encoding"],
+                path,
             )
             content = content_display_data["content_data"]
             language = content_display_data["language"]
             mimetype = content_display_data["mimetype"]
-            if mimetype and (
-                mimetype.startswith("text/")
-                or (
-                    mimetype.startswith("application/")
-                    and content_data.get("encoding", "") != "binary"
-                )
+            if mimetype and is_textual_content(
+                content_data["mimetype"], content_data["encoding"]
             ):
                 available_languages = highlightjs.get_supported_languages()
+                textual_content = True
             extra_template_variables["no_script_iframe_height"] = (
                 pygments_iframe_height_for_content(content)
             )
@@ -675,6 +677,7 @@ def revision_browse(request: HttpRequest, sha1_git: str) -> HttpResponse:
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
             "available_languages": available_languages,
+            "textual_content": textual_content,
             **extra_template_variables,
         },
         status=error_info["status_code"],

@@ -519,7 +519,9 @@ def _init_tests_data():
         mimetype, encoding = get_mimetype_and_encoding_for_content(cnt_data)
         _, _, cnt_data = re_encode_content(mimetype, encoding, cnt_data)
 
-        content_display_data = prepare_content_for_display(cnt_data, mimetype, path)
+        content_display_data = prepare_content_for_display(
+            cnt_data, mimetype, encoding, path
+        )
 
         content_metadata.update(
             {

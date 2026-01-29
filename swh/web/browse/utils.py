@@ -220,7 +220,7 @@ def request_content(
 
 
 def prepare_content_for_display(
-    content_data: bytes, mime_type: str, path: Optional[str]
+    content_data: bytes, mime_type: str, encoding: str, path: Optional[str]
 ) -> Dict[str, Any]:
     """Function that prepares a content for HTML display.
 
@@ -235,6 +235,7 @@ def prepare_content_for_display(
     Args:
         content_data: raw bytes of the content
         mime_type: mime type of the content
+        encoding: encoding of the content
         path: path of the content including filename
 
     Returns:
@@ -263,7 +264,7 @@ def prepare_content_for_display(
     if mime_type.startswith("image/svg"):
         mime_type = "image/svg+xml"
 
-    if mime_type.startswith(("text/", "application/", "message/")):
+    if is_textual_content(mime_type, encoding):
         processed_content = content_data.decode("utf-8", errors="replace")
 
     return {
@@ -808,4 +809,12 @@ def pygments_iframe_height_for_content(content: Optional[str]) -> str:
         str((content.count("\n") + 1) * 15) + "px"
         if isinstance(content, str)
         else "50vh"
+    )
+
+
+def is_textual_content(mime_type: str, encoding: str) -> bool:
+    """Heuristic checking if a content is textual based on its mime type and encoding"""
+    return (
+        mime_type.startswith(("text/", "application/", "message/"))
+        and encoding != "binary"
     )

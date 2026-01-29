@@ -70,7 +70,7 @@ See top-level LICENSE file for more information
         <i>File is empty</i>
       {% elif mimetype in browsers_supported_image_mimes and content %}
         <img src="data:{{ mimetype }};base64,{{ content }}" alt="image" />
-      {% elif "text/" in mimetype or "application/" in mimetype or "message/" in mimetype and encoding != "binary" %}
+      {% elif textual_content %}
         <div class="highlightjs">
           <pre><code class="{{ language }}">{{ content }}</code></pre>
         </div>
@@ -103,7 +103,7 @@ See top-level LICENSE file for more information
         <i>File is empty</i>
       {% elif mimetype in browsers_supported_image_mimes and content %}
         <img src="data:{{ mimetype }};base64,{{ content }}" alt="image" />
-      {% elif "text/" in mimetype or "application/" in mimetype or "message/" in mimetype and encoding != "binary" %}
+      {% elif textual_content %}
         <iframe src="{% url 'browse-content-highlight' 'sha1_git:'|add:sha1_git %}?filename={{ filename }}"
                 id="swh-code-highlight-iframe"
                 style="width: 100%;

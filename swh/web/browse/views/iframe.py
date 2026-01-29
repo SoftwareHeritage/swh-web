@@ -17,6 +17,7 @@ from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
     get_directory_entries,
+    is_textual_content,
     prepare_content_for_display,
     pygments_iframe_height_for_content,
     request_content,
@@ -32,13 +33,20 @@ def _get_content_rendering_data(cnt_swhid: QualifiedSWHID, path: str) -> Dict[st
     content = None
     language = None
     mimetype = None
+    textual_content = False
     if content_data.get("raw_data") is not None:
         content_display_data = prepare_content_for_display(
-            content_data["raw_data"], content_data["mimetype"], path
+            content_data["raw_data"],
+            content_data["mimetype"],
+            content_data["encoding"],
+            path,
         )
         content = content_display_data["content_data"]
         language = content_display_data["language"]
         mimetype = content_display_data["mimetype"]
+        textual_content = is_textual_content(
+            content_data["mimetype"], content_data["encoding"]
+        )
 
     return {
         "content": content,
@@ -48,6 +56,7 @@ def _get_content_rendering_data(cnt_swhid: QualifiedSWHID, path: str) -> Dict[st
         "encoding": content_data.get("encoding"),
         "mimetype": mimetype,
         "language": language,
+        "textual_content": textual_content,
     }
 
 

@@ -23,6 +23,7 @@ from swh.web.browse.browseurls import browse_route
 from swh.web.browse.snapshot_context import get_snapshot_context
 from swh.web.browse.utils import (
     content_display_max_size,
+    is_textual_content,
     prepare_content_for_display,
     pygments_iframe_height_for_content,
     request_content,
@@ -76,7 +77,7 @@ def content_raw(request: HttpRequest, query_string: str) -> FileResponse:
     as_attachment = True
 
     if (
-        content_data["mimetype"].startswith("text/")
+        is_textual_content(content_data["mimetype"], content_data["encoding"])
         or content_data["mimetype"] == "inode/x-empty"
     ):
         content_type = "text/plain"
@@ -130,12 +131,7 @@ def content_highlight(request: HttpRequest, query_string: str) -> HttpResponse:
             "Content is too large to be highlighted "
             f"(size is greater than {filesizeformat(content_data['length'])})"
         )
-    elif (
-        "text/" not in mimetype
-        and "application/" not in mimetype
-        and "message/" not in mimetype
-        or encoding == "binary"
-    ):
+    elif not is_textual_content(mimetype, encoding):
         raise BadInputExc(
             f"Content with mime type {mimetype} and encoding {encoding} cannot be displayed"
         )
@@ -170,7 +166,10 @@ def _fetch_content_for_diff(
         text_diff = True
         content_from = request_content(query_string, max_size=None)
         content_from_display_data = prepare_content_for_display(
-            content_from["raw_data"], content_from["mimetype"], path
+            content_from["raw_data"],
+            content_from["mimetype"],
+            content_from["encoding"],
+            path,
         )
         language = content_from_display_data["language"]
         content_from_size = content_from["length"]
@@ -386,7 +385,10 @@ def content_display(
     mimetype = None
     if content_data.get("raw_data") is not None:
         content_display_data = prepare_content_for_display(
-            content_data["raw_data"], content_data["mimetype"], path
+            content_data["raw_data"],
+            content_data["mimetype"],
+            content_data["encoding"],
+            path,
         )
         content = content_display_data["content_data"]
         language = content_display_data["language"]
@@ -398,13 +400,9 @@ def content_display(
 
     available_languages = None
 
-    if mimetype and (
-        mimetype.startswith(("text/", "message/"))
-        or (
-            mimetype.startswith("application/")
-            and content_data.get("encoding", "") != "binary"
-        )
-    ):
+    textual_content = False
+    if mimetype and is_textual_content(mimetype, content_data["encoding"]):
+        textual_content = True
         available_languages = highlightjs.get_supported_languages()
 
     filename = None
@@ -582,6 +580,7 @@ def content_display(
             "error_message": http_status_code_message.get(error_info["status_code"]),
             "error_description": error_info["description"],
             "no_script_iframe_height": pygments_iframe_height_for_content(content),
+            "textual_content": textual_content,
         },
         status=error_info["status_code"],
     )

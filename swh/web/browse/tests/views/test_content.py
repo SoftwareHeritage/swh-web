@@ -714,7 +714,7 @@ def _process_content_for_display(archive_data, content):
     )
 
     content_display = prepare_content_for_display(
-        content_data, mime_type, content["path"]
+        content_data, mime_type, encoding, content["path"]
     )
 
     assert type(content_display["content_data"]) is str
