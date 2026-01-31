@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -701,12 +701,14 @@ def test_add_forge_request_update_gitlab_pipeline_trigger(
 
     id = request["id"]
     lister_type = ADD_FORGE_DATA_FORGE1["forge_type"]
+    forge_url = ADD_FORGE_DATA_FORGE1["forge_url"]
     instance_name = urlparse(ADD_FORGE_DATA_FORGE1["forge_url"]).netloc
     expected_form_data = {
         "token": token,
         "ref": "main",
         "name": f"AFNR#{id} {lister_type} {instance_name}",
         "variables[LISTER_TYPE]": lister_type,
+        "variables[FORGE_URL]": forge_url,
         "variables[INSTANCE_NAME]": instance_name,
         "variables[REQUEST_ID]": id,
     }

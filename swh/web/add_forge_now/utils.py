@@ -1,4 +1,4 @@
-# Copyright (C) 2023-2025  The Software Heritage developers
+# Copyright (C) 2023-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -26,6 +26,7 @@ def trigger_request_processing_pipeline(id, forge_type, forge_url):
             "ref": "main",
             "name": f"AFNR#{id} {lister_type} {instance_name}",
             "variables[LISTER_TYPE]": lister_type,
+            "variables[FORGE_URL]": forge_url,
             "variables[INSTANCE_NAME]": instance_name,
             "variables[REQUEST_ID]": request_id,
         }
