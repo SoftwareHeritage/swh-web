@@ -1,8 +1,9 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import datetime
 from typing import List, Optional
 
 from swh.web.utils import archive, cache_get, cache_set, parse_iso8601_date_to_utc
@@ -107,12 +108,10 @@ def get_origin_visits(
             break
         last_visit = visits[-1]["visit"]
 
-    def _visit_sort_key(visit):
-        ts = parse_iso8601_date_to_utc(visit["date"]).timestamp()
-        return ts + (float(visit["visit"]) / 10e3)
-
     # cache entry is already sorted with oldest visits
-    origin_visits += sorted(new_visits, key=lambda v: _visit_sort_key(v))
+    origin_visits += sorted(
+        new_visits, key=lambda v: (datetime.fromisoformat(v["date"]), v["visit"])
+    )
 
     if limit is not None and len(origin_visits) > limit:
         origin_visits = origin_visits[-limit:]
