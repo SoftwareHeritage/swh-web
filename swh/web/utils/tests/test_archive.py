@@ -12,8 +12,6 @@ import random
 from hypothesis import given, settings
 import pytest
 
-from django.core.cache import cache as django_cache
-
 from swh.model.from_disk import DentryPerms
 from swh.model.hashutil import hash_to_bytes, hash_to_hex
 from swh.model.model import (
@@ -230,7 +228,7 @@ def test_origin_visit_find_by_date(archive_data):
 
 
 @given(new_origin())
-def test_lookup_origin(archive_data, mocker, patch_backend, new_origin):
+def test_lookup_origin(archive_data, mocker, patch_backend, django_cache, new_origin):
     # clear the cache otherwise when hypothesis generated twice the same URL,
     # it will fail the test (assert_called_once will raise because the URL is
     # already in cache)

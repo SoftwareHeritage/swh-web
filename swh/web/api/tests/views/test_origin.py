@@ -82,7 +82,8 @@ def test_api_lookup_origin_visits(
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
     @subtest
-    def test_inner(archive_data):
+    def test_inner(archive_data, django_cache):
+        django_cache.clear()
         archive_data.origin_add([new_origin])
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(
@@ -144,7 +145,8 @@ def test_api_lookup_origin_visits_by_id(
     # ensure archive_data fixture will be reset between each hypothesis
     # example test run
     @subtest
-    def test_inner(archive_data):
+    def test_inner(archive_data, django_cache):
+        django_cache.clear()
         archive_data.origin_add([new_origin])
         for i, visit_date in enumerate(visit_dates):
             origin_visit = archive_data.origin_visit_add(

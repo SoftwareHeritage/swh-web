@@ -210,10 +210,15 @@ def pytest_terminal_summary(terminalreporter, *args):
         terminalreporter.line(content)
 
 
+@pytest.fixture
+def django_cache():
+    return cache
+
+
 # Clear Django cache before each test
 @pytest.fixture(autouse=True)
-def django_cache_cleared():
-    cache.clear()
+def django_cache_cleared(django_cache):
+    django_cache.clear()
 
 
 # Alias rf fixture from pytest-django
