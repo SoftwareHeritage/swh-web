@@ -15,8 +15,8 @@ module.exports = defineConfig({
       mochaFile: 'cypress/junit/results/results-[hash].xml'
     }
   },
-  env: {
-    SKIP_SLOW_TESTS: 1
+  expose: {
+    skipSlowTests: true
   },
   retries: {
     runMode: 4

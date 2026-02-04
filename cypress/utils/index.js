@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2022  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -45,4 +45,4 @@ export function random(start, end) {
   return Math.floor(Math.random() * range) + start;
 }
 
-export const describeSlowTests = Cypress.env('SKIP_SLOW_TESTS') === 1 ? describe.skip : describe;
+export const describeSlowTests = Cypress.expose('skipSlowTests') ? describe.skip : describe;
