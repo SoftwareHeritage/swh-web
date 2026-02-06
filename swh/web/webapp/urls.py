@@ -5,6 +5,7 @@
 
 import json
 import logging
+from typing import Any, Dict
 
 from django_js_reverse.views import urls_js
 import requests
@@ -28,17 +29,18 @@ logger = logging.getLogger(__name__)
 
 
 @django_cache()
-def _stat_counters():
-    stat_counters = archive.stat_counters()
-    url = get_config()["history_counters_url"]
+def _stat_counters() -> Dict[str, Any]:
+    stat_counters = {}
     stat_counters_history = {}
-
-    if url:
-        try:
+    try:
+        stat_counters = archive.stat_counters()
+        url = get_config()["history_counters_url"]
+        if url:
             response = requests.get(url, timeout=5)
             stat_counters_history = json.loads(response.text)
-        except Exception as exc:
-            sentry_capture_exception(exc)
+
+    except Exception as exc:
+        sentry_capture_exception(exc)
 
     return {
         "stat_counters": stat_counters,

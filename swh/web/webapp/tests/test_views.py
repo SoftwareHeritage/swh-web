@@ -9,6 +9,7 @@ from pathlib import Path
 from django.templatetags.static import static
 from django.utils import timezone
 
+from swh.web import config
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
@@ -18,6 +19,17 @@ from swh.web.webapp.urls import SWH_FAVICON
 def test_homepage_view(client):
     url = reverse("swh-web-homepage")
     check_html_get_response(client, url, status_code=200, template_used="homepage.html")
+
+
+def test_homepage_view_no_counters_config(client, mocker):
+    updated_config = dict(config.get_config())
+    updated_config.pop("counters")
+    mocker.patch.object(config, "swhweb_config", updated_config)
+    url = reverse("swh-web-homepage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="homepage.html"
+    )
+    assert_not_contains(resp, "swh-counter")
 
 
 def test_homepage_view_no_counters(client, mocker):
