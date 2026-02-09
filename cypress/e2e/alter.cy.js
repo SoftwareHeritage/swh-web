@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024  The Software Heritage developers
+ * Copyright (C) 2024-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -573,7 +573,12 @@ describe('Archive alteration request, admin side tests', () => {
     cy.get('div.alert-success').contains(`Origin ${newOrigin}`).should('be.visible');
     cy.get('ul#alteration-events li').contains(newOrigin).should('be.visible');
     cy.get('table#alteration-origins tbody tr').last().within(() => {
-      cy.get('[itemprop=url]').should('contain', newOrigin);
+      cy.get('[itemprop=archive-url]').invoke('attr', 'href').then(href => {
+        expect(href).to.contain(`?origin_url=${newOrigin}`);
+      });
+      cy.get('[itemprop=origin-url]').invoke('attr', 'href').then(href => {
+        expect(href).to.equal(newOrigin);
+      });
       cy.get('[itemprop=available]').should('contain', '✓');
       cy.get('[itemprop=outcome]').should('contain', 'Takedown');
     });
