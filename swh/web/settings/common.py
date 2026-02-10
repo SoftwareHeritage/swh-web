@@ -420,3 +420,9 @@ EMAIL_USE_SSL = swh_web_config["email_setup"].get("use_ssl", False)
 DEFAULT_FROM_EMAIL = swh_web_config["email_setup"].get("default_from_email")
 
 ALTER_SETTINGS = swh_web_config.get("alter_settings", {})
+
+BOOTSTRAP5 = {
+    "field_renderers": {
+        "default": "swh.web.utils.bootstrap.CustomValidationClassFieldRenderer",
+    },
+}
