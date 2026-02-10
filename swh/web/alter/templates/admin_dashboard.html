@@ -1,7 +1,7 @@
 {% extends "./alter_common.html" %}
 
 {% comment %}
-# Copyright (C) 2025  The Software Heritage developers
+# Copyright (C) 2025-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -18,7 +18,7 @@
 {% endblock navbar-content %}
 
 {% block content %}
-  <form method="GET" class="form mt-3">
+  <form method="get" class="form mt-3">
     <div class="row">
       <div class="col-md-2">
         {% bootstrap_field form.query placeholder="Search" show_label=False success_css_class="" %}
@@ -80,4 +80,5 @@
     </table>
   </div>
   <div class="mt-3">{% bootstrap_pagination page extra=request.GET.urlencode %}</div>
+  <script>swh.alter.initDashboardFilters();</script>
 {% endblock content %}

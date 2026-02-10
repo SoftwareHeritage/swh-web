@@ -507,9 +507,11 @@ describe('Archive alteration request, admin side tests', () => {
     cy.get('table.table tbody tr').its('length').should('be.gt', 1);
     fillInput('#id_query', 'user1@domain.local{enter}');
     cy.get('table.table tbody tr').its('length').should('be.equal', 1);
-    cy.get('.form-select').select('planning');
-    fillInput('#id_query', '{enter}');
-    cy.get('table.table tbody tr').its('length').should('be.equal', 1);
+    // form is submitted on change
+    cy.get('.form-select').select('validating');
+    cy.location().should((loc) => {
+      expect(loc.search).to.eq('?query=user1%40domain.local&status=validating');
+    });
   });
 
   it('should allow admin to view an alteration', () => {
