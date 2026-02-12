@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -613,9 +613,9 @@ def create_save_origin_request(
                     origin_url=origin_url,
                     status=save_request_status,
                     loading_task_id=task.id,
-                    user_ids=f'"{user_id}"' if user_id else None,
+                    user_ids=f'"{user_id}"' if user_id else "",
                     from_webhook=from_webhook,
-                    webhook_origin=webhook_origin,
+                    webhook_origin=webhook_origin or "",
                 )
 
     # save request must be manually reviewed for acceptation
@@ -638,9 +638,9 @@ def create_save_origin_request(
                 visit_type=visit_type,
                 origin_url=origin_url,
                 status=save_request_status,
-                user_ids=f'"{user_id}"' if user_id else None,
+                user_ids=f'"{user_id}"' if user_id else "",
                 from_webhook=from_webhook,
-                webhook_origin=webhook_origin,
+                webhook_origin=webhook_origin or "",
             )
     # origin cannot be saved as its url is blacklisted,
     # log the request to the database anyway
@@ -649,9 +649,9 @@ def create_save_origin_request(
             visit_type=visit_type,
             origin_url=origin_url,
             status=save_request_status,
-            user_ids=f'"{user_id}"' if user_id else None,
+            user_ids=f'"{user_id}"' if user_id else "",
             from_webhook=from_webhook,
-            webhook_origin=webhook_origin,
+            webhook_origin=webhook_origin or "",
         )
 
     if save_request_status == SAVE_REQUEST_REJECTED:

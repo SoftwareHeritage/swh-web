@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -103,13 +103,13 @@ class SaveOriginRequest(models.Model):
         choices=SAVE_TASK_STATUS, default=SAVE_TASK_NOT_CREATED
     )
     # store ids of users that submitted the request as string list
-    user_ids = models.TextField(null=True)
-    note = models.TextField(null=True)
+    user_ids = models.TextField(blank=True, default="")
+    note = models.TextField(blank=True, default="")
     from_webhook = models.BooleanField(default=False)
-    webhook_origin = models.CharField(max_length=200, null=True)
+    webhook_origin = models.CharField(max_length=200, blank=True, default="")
     # if None, no try to retrieve the snapshot has been performed
     # if empty string, try to retrieve the snapshot has been performed but none was found
-    snapshot_swhid = models.CharField(max_length=200, null=True)
+    snapshot_swhid = models.CharField(max_length=200, blank=True, default="")
 
     class Meta:
         app_label = "swh_web_save_code_now"
