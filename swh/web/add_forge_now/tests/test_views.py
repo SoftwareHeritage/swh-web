@@ -9,7 +9,11 @@ from urllib.parse import urlencode
 import pytest
 
 from swh.web.tests.django_asserts import assert_contains
-from swh.web.tests.helpers import check_http_get_response, check_http_post_response
+from swh.web.tests.helpers import (
+    check_html_get_response,
+    check_http_get_response,
+    check_http_post_response,
+)
 from swh.web.utils import reverse
 
 from .test_api_views import create_add_forge_request
@@ -282,3 +286,24 @@ def test_create_add_forge_now_request_valid(client, regular_user):
         status_code=200,
     )
     assert_contains(resp, "Your request has been submitted")
+
+
+@pytest.mark.django_db(transaction=True)
+def test_add_forge_request_admin_dashboard(
+    client, admin_user, regular_user, regular_user2
+):
+    requests = create_add_forge_requests(client, regular_user, regular_user2)
+
+    request_id = requests[0]["id"]
+    url = reverse(
+        "add-forge-now-request-dashboard", url_args={"request_id": request_id}
+    )
+
+    client.force_login(admin_user)
+    resp = check_html_get_response(client, url, status_code=200)
+    request_edit_url = request_edit_url = reverse(
+        "admin:swh_web_add_forge_now_request_change",
+        url_args={"object_id": request_id},
+    )
+    assert_contains(resp, request_edit_url)
+    check_html_get_response(client, request_edit_url, status_code=200)

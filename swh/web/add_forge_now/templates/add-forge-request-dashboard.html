@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2022-2025  The Software Heritage developers
+Copyright (C) 2022-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -110,11 +110,22 @@ See top-level LICENSE file for more information
         </p>
         <hr />
         <div>
-          <button class="btn btn-link"
-                  id="contactForgeAdmin"
-                  emailSubject=""
-                  emailTo=""
-                  emailCc="">Send message to the forge</button>
+          <a class="btn btn-secondary me-3"
+             type="button"
+             id="contactForgeAdmin"
+             emailSubject=""
+             emailTo=""
+             emailCc="">
+            <i class="mdi mdi-email-outline mdi-fw"></i>Send message to the forge
+          </a>
+          {% if request_edit_url %}
+            <a class="btn btn-secondary"
+               id="editRequestDetails"
+               type="button"
+               href="{{ request_edit_url }}">
+              <i class="mdi mdi-database-edit-outline mdi-fw"></i>Edit request details
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022  The Software Heritage developers
+# Copyright (C) 2020-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,6 +28,8 @@ MAILMAP_ADMIN_PERMISSION = "swh.web.admin.mailmap"
 API_SAVE_BULK_PERMISSION = "swh.web.api.save_bulk"
 ALTER_ADMIN_PERMISSION = "swh.web.admin.alter"
 API_PROVENANCE_PERMISSION = "swh.web.api.provenance"
+ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION = "swh_web_add_forge_now.change_request"
+ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION = "swh_web_add_forge_now.view_request"
 
 WEBAPP_PERMISSIONS = [
     SWH_AMBASSADOR_PERMISSION,
@@ -38,6 +40,8 @@ WEBAPP_PERMISSIONS = [
     MAILMAP_ADMIN_PERMISSION,
     ALTER_ADMIN_PERMISSION,
     API_PROVENANCE_PERMISSION,
+    ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION,
+    ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION,
 ]
 
 
