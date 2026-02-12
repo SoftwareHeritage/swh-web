@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -133,7 +133,7 @@ def check_created_save_request_status(
         assert response.data["save_request_status"] == expected_request_status
         assert response.data["save_task_status"] == expected_task_status
         assert response.data["from_webhook"] is False
-        assert response.data["webhook_origin"] is None
+        assert response.data["webhook_origin"] == ""
         assert "id" in response.data
         assert response.data["request_url"] == reverse(
             "api-1-save-origin",
@@ -192,7 +192,7 @@ def check_save_request_status(
     assert save_request_data["save_task_status"] == expected_task_status
     assert save_request_data["visit_status"] == visit_status
     assert save_request_data["from_webhook"] is False
-    assert save_request_data["webhook_origin"] is None
+    assert save_request_data["webhook_origin"] == ""
     assert "id" in save_request_data
     assert save_request_data["request_url"] == reverse(
         "api-1-save-origin",
@@ -737,7 +737,7 @@ def test_create_save_request_anonymous_user_no_user_id(
 
     sor = SaveOriginRequest.objects.get(origin_url=origin_url)
 
-    assert sor.user_ids is None
+    assert sor.user_ids == ""
 
 
 @pytest.mark.parametrize(
@@ -861,7 +861,7 @@ def test_create_save_request_mangled_origin_url(api_client, swh_scheduler):
 
     sor = SaveOriginRequest.objects.get(origin_url=origin_url)
 
-    assert sor.user_ids is None
+    assert sor.user_ids == ""
 
 
 @pytest.mark.parametrize(

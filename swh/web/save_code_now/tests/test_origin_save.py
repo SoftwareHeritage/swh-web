@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2024  The Software Heritage developers
+# Copyright (C) 2019-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -276,7 +276,7 @@ def test_from_save_origin_request_to_save_request_info_dict(visit_date, snapshot
         loading_task_id=sor.loading_task_id,
         note=note,
         from_webhook=False,
-        webhook_origin=None,
+        webhook_origin="",
         snapshot_swhid=snapshot_swhid,
     )
 

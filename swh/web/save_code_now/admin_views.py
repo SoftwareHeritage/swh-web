@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2024  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -161,7 +161,7 @@ def admin_origin_save_request_reject(request, visit_type, origin_url):
     else:
         status_code = 200
         sor.status = SAVE_REQUEST_REJECTED
-        sor.note = json.loads(request.body).get("note")
+        sor.note = json.loads(request.body).get("note", "")
         sor.save()
     return HttpResponse(status=status_code)
 

@@ -415,7 +415,7 @@ def _update_save_request_info(
     # Try to get snapshot identifier associated to the save request
     if (
         save_request.visit_status in (VISIT_STATUS_PARTIAL, VISIT_STATUS_FULL)
-        and save_request.snapshot_swhid is None
+        and not save_request.snapshot_swhid
     ):
         _, _, snapshot_id = _get_visit_info_for_save_request(save_request)
 
@@ -843,7 +843,7 @@ def get_save_origin_task_info(save_request_id: int) -> Dict[str, Any]:
         return {}
 
     task_info: Dict[str, Any] = {}
-    if save_request.note is not None:
+    if save_request.note:
         task_info["note"] = save_request.note
 
     try:

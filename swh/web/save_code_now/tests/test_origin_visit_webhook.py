@@ -1,4 +1,4 @@
-# Copyright (C) 2023-2024  The Software Heritage developers
+# Copyright (C) 2023-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -138,7 +138,7 @@ def test_save_origin_visit_webhook(
 
     save_request = SaveOriginRequest.objects.first()
     assert save_request.loading_task_status == SAVE_TASK_PENDING
-    assert save_request.snapshot_swhid is None
+    assert save_request.snapshot_swhid == ""
 
     # simulate loading task scheduling and execution
     task_id = resp.data["loading_task_id"]
@@ -176,7 +176,7 @@ def test_save_origin_visit_webhook(
     # check save request status was updated
     save_request = SaveOriginRequest.objects.first()
     assert save_request.loading_task_status == SAVE_TASK_RUNNING
-    assert save_request.snapshot_swhid is None
+    assert save_request.snapshot_swhid == ""
 
     # simulate end of loading task execution
     swh_scheduler.end_task_run(backend_id, "eventful")
