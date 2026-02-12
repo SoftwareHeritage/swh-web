@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ from django_ratelimit.exceptions import Ratelimited
 import sentry_sdk
 
 from django.core import exceptions
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.http.response import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
@@ -289,7 +289,6 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     was raised inside a swh-web browse view.
     """
     sentry_capture_exception(exc)
-
     error_description = format_html("{}: {}", type(exc).__name__, str(exc))
     if get_config()["debug"]:
         traceback_str = traceback.format_exc()
@@ -301,12 +300,12 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
         http_response = HttpResponseBadRequest
     elif isinstance(exc, UnauthorizedExc):
         http_response = HttpResponseUnauthorized
-    elif isinstance(exc, ForbiddenExc):
-        http_response = HttpResponseForbidden
-    elif isinstance(exc, NotFoundExc):
-        http_response = HttpResponseNotFound
     elif isinstance(exc, Ratelimited):
         http_response = HttpResponseTooManyRequests
+    elif isinstance(exc, exceptions.PermissionDenied):
+        http_response = HttpResponseForbidden
+    elif isinstance(exc, (Http404, NotFoundExc)):
+        http_response = HttpResponseNotFound
     elif isinstance(exc, MaskedObjectException):
         return _generate_masked_object_page(request, exc)
 
