@@ -289,11 +289,6 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     was raised inside a swh-web browse view.
     """
     sentry_capture_exception(exc)
-    error_description = format_html("{}: {}", type(exc).__name__, str(exc))
-    if get_config()["debug"]:
-        traceback_str = traceback.format_exc()
-        logger.error(traceback_str)
-        error_description = escape(traceback_str)
 
     http_response: type[HttpResponse] = HttpResponseServerError
     if isinstance(exc, BadInputExc):
@@ -308,6 +303,14 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
         http_response = HttpResponseNotFound
     elif isinstance(exc, MaskedObjectException):
         return _generate_masked_object_page(request, exc)
+
+    error_description = format_html("{}: {}", type(exc).__name__, str(exc))
+    if get_config()["debug"]:
+        traceback_str = traceback.format_exc()
+        logger.error(traceback_str)
+        error_description = escape(traceback_str)
+    elif http_response.status_code == 500:
+        logger.exception(exc)
 
     resp = _generate_error_page(request, error_description, http_response)
     if get_config()["debug"]:

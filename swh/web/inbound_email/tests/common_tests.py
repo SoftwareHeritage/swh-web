@@ -1,4 +1,4 @@
-# Copyright (C) 2024  The Software Heritage developers
+# Copyright (C) 2024-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -132,7 +132,7 @@ def test_signal_receiver_exception(caplog, receive_inbound_message):
             for record in caplog.records
         )
 
-        assert re.match("Failed receiver.*exception_raised", output)
+        assert re.search("Failed receiver.*exception_raised", output)
         assert "following exception" in output
         assert "ValueError" in output
         assert "I'm broken" in output
