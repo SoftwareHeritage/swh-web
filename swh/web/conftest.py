@@ -1476,16 +1476,29 @@ def _reload_django_settings():
 def config_updater(mocker):
     """Temporarily modify swh-web configuration and reload django settings."""
     original_config = swhweb_config.get_config()
+    modules_to_patch = [
+        module
+        for _, module in filter(
+            lambda m: m[0].startswith("swh.web.") and hasattr(m[1], "get_config"),
+            sys.modules.items(),
+        )
+    ]
 
     def update_config(new_config):
         patched_config = dict(original_config)
         patched_config.update(new_config)
-        mocker.patch.object(swhweb_config, "swhweb_config", patched_config)
+        mocker.patch.object(swhweb_config, "swhweb_config", dict(patched_config))
         _reload_django_settings()
+        for module in modules_to_patch:
+            mocker.patch.object(module, "get_config").return_value = dict(
+                patched_config
+            )
 
     yield update_config
 
     mocker.patch.object(swhweb_config, "swhweb_config", original_config)
+    for module in modules_to_patch:
+        mocker.patch.object(module, "get_config").return_value = original_config
     _reload_django_settings()
 
 
