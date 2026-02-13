@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2025  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -62,13 +62,9 @@ def test_origin_visits_browse(client, archive_data, origin_with_multiple_visits)
 
 
 def test_origin_visits_browse_too_many_visits(
-    client, archive_data, origin_with_multiple_visits, mocker
+    client, origin_with_multiple_visits, config_updater
 ):
-
-    from swh.web.browse.views import origin
-
-    mocker.patch.object(origin, "MAX_VISITS", 1)
-
+    config_updater({"browse_max_visits": 1})
     origin_url = origin_with_multiple_visits["url"]
     url = reverse("browse-origin-visits", query_params={"origin_url": origin_url})
 

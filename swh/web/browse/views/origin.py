@@ -13,6 +13,7 @@ from swh.web.browse.snapshot_context import (
     browse_snapshot_directory,
     get_snapshot_context,
 )
+from swh.web.config import get_config
 from swh.web.utils import (
     archive,
     format_utc_iso_date,
@@ -234,9 +235,6 @@ def origin_releases_browse_legacy(
     return redirect_to_new_route(request, "browse-snapshot-releases")
 
 
-MAX_VISITS = 10000
-
-
 def _filter_visits(origin_visits, visits):
     if visits == "all":
         return origin_visits
@@ -262,13 +260,14 @@ def _origin_visits_browse(
     if origin_url is None:
         raise BadInputExc("An origin URL must be provided as query parameter.")
 
+    max_visits = get_config().get("browse_max_visits", 10000)
     origin_info = archive.lookup_origin(origin_url)
     origin_visits = cast(
         List[Dict[str, Any]],
         get_origin_visits(
             origin_info["url"],
             visit_type=request.GET.get("visit_type"),
-            limit=MAX_VISITS,
+            limit=max_visits,
         ),
     )
 
@@ -323,7 +322,7 @@ def _origin_visits_browse(
             "vault_cooking": None,
             "show_actions": False,
             "partial_visits": origin_visits[0]["visit"] != 1,
-            "max_visits": MAX_VISITS,
+            "max_visits": max_visits,
             "total_nb_visits": total_nb_visits,
             "first_full_visit": first_full_visit,
             "last_full_visit": last_full_visit,
