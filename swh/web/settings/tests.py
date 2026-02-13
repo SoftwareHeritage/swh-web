@@ -113,6 +113,11 @@ DATABASES = {
 LOGGING["handlers"]["console"]["level"] = "INFO"  # type: ignore
 # to ensure django logs are captured by the caplog pytest fixture
 LOGGING["loggers"]["django"]["propagate"] = True  # type: ignore
+# discard logs of custom git loader used in tests
+LOGGING["loggers"]["swh.web.tests.data.GitLoaderFromArchive"] = {  # type: ignore
+    "handlers": ["null"],
+    "propagate": False,
+}
 
 LOGIN_URL = "oidc-login"
 LOGOUT_URL = "oidc-logout"

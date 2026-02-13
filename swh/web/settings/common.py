@@ -253,81 +253,34 @@ REST_FRAMEWORK: Dict[str, Any] = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "filters": {
-        "require_debug_false": {
-            "()": "django.utils.log.RequireDebugFalse",
-        },
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-    },
     "formatters": {
         "request": {
             "format": "[%(asctime)s] [%(levelname)s] %(request)s %(status_code)s",
             "datefmt": "%d/%b/%Y %H:%M:%S",
         },
         "simple": {
-            "format": "[%(asctime)s] [%(levelname)s] %(message)s",
-            "datefmt": "%d/%b/%Y %H:%M:%S",
-        },
-        "verbose": {
-            "format": (
-                "[%(asctime)s] [%(levelname)s] %(name)s.%(funcName)s:%(lineno)s "
-                "- %(message)s"
-            ),
+            "format": "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
             "datefmt": "%d/%b/%Y %H:%M:%S",
         },
     },
     "handlers": {
         "console": {
             "level": "DEBUG",
-            "filters": ["require_debug_true"],
             "class": "logging.StreamHandler",
             "formatter": "simple",
-        },
-        "file": {
-            "level": "WARNING",
-            "filters": ["require_debug_false"],
-            "class": "logging.FileHandler",
-            "filename": os.path.join(swh_web_config["log_dir"], "swh-web.log"),
-            "formatter": "simple",
-        },
-        "file_request": {
-            "level": "WARNING",
-            "filters": ["require_debug_false"],
-            "class": "logging.FileHandler",
-            "filename": os.path.join(swh_web_config["log_dir"], "swh-web.log"),
-            "formatter": "request",
-        },
-        "console_verbose": {
-            "level": "DEBUG",
-            "filters": ["require_debug_true"],
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-        "file_verbose": {
-            "level": "WARNING",
-            "filters": ["require_debug_false"],
-            "class": "logging.FileHandler",
-            "filename": os.path.join(swh_web_config["log_dir"], "swh-web.log"),
-            "formatter": "verbose",
         },
         "null": {
             "class": "logging.NullHandler",
         },
     },
     "loggers": {
-        "": {
-            "handlers": ["console_verbose", "file_verbose"],
-            "level": "DEBUG" if DEBUG else "WARNING",
-        },
         "django": {
             "handlers": ["console"],
             "level": "DEBUG" if DEBUG else "WARNING",
             "propagate": False,
         },
         "django.request": {
-            "handlers": ["file_request"],
+            "handlers": ["console"],
             "level": "DEBUG" if DEBUG else "WARNING",
             "propagate": False,
         },
@@ -337,6 +290,10 @@ LOGGING = {
         },
         "swh.core.statsd": {
             "level": "INFO",
+        },
+        "swh.web": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "WARNING",
         },
         "urllib3": {
             "level": "DEBUG" if DEBUG else "INFO",

@@ -44,7 +44,6 @@ DEFAULT_CONFIG = {
             "metadata_backend": "swh-search",
         },  # or "swh-search"
     ),
-    "log_dir": ("string", "/tmp/swh/log"),
     "debug": ("bool", False),
     "serve_assets": ("bool", False),
     "host": ("string", "127.0.0.1"),
@@ -199,7 +198,6 @@ def get_config(config_file: str = "web/web") -> SWHWebConfig:
             config_file = config_filename
         cfg = config.load_named_config(config_file, DEFAULT_CONFIG)
         swhweb_config.update(cfg)
-        config.prepare_folders(swhweb_config, "log_dir")
     for service, modname in (
         ("search", "search"),
         ("storage", "storage"),
