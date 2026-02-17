@@ -79,6 +79,8 @@ run-django-server-prod: add-users-prod clear-memcached ## | same with prod setti
 run-gunicorn-server: add-users-prod clear-memcached ## Clear memcache and start django from gunicorn (prod settings)
 	DJANGO_SETTINGS_MODULE=$(SETTINGS_PROD) \
 	gunicorn --bind 127.0.0.1:5004 \
+	--access-logfile /dev/stdout \
+	--access-logformat "%(t)s %(r)s %(s)s %(b)s %(M)s" \
 	--threads 2 \
 	--workers 2 'django.core.wsgi:get_wsgi_application()'
 
