@@ -39,7 +39,7 @@ repos:
               cypress/integration/directory.spec.js|
               yarn.lock|
               package.json|
-              swh/web/browse/tests/data/content_iso-8859-7_encoded|
+              swh/web/browse/tests/data/content_windows-1253_encoded|
               swh/web/add_forge_now/migrations/swh-afn-urls-canonicalise.txt
           )$
         args: [-L edn, -L crate, -L THIRDPARTY, -L thirdparty]

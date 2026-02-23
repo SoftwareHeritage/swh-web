@@ -111,11 +111,11 @@ def test_re_encode_content_for_shift_jis_encoding():
 
 
 def test_re_encode_content_chardet_fallback(datadir):
-    with open(os.path.join(datadir, "content_iso-8859-7_encoded"), "rb") as f:
+    with open(os.path.join(datadir, "content_windows-1253_encoded"), "rb") as f:
         content = f.read()
         mime_type, encoding = get_mimetype_and_encoding_for_content(content)
         _, encoding, _ = re_encode_content(mime_type, encoding, content)
-        assert encoding == "ISO-8859-7"
+        assert encoding == "WINDOWS-1253"
 
 
 @pytest.mark.parametrize(
