@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2025  The Software Heritage developers
+ * Copyright (C) 2020-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -82,7 +82,7 @@ require('highlightjs-sdml/src/language/sdml');
 hljs.registerLanguage('sdml', global.sdml);
 require('highlightjs-sfz/dist/sfz.min');
 require('highlightjs-solidity/dist/solidity.min');
-require('highlightjs-structured-text/dist/iecst.min');
+hljs.registerLanguage('iecst', require('highlightjs-structured-text/dist/iecst.min'));
 import('highlight.svelte').then(svelte => {
   hljs.registerLanguage('svelte', svelte.default);
 });

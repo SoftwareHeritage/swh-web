@@ -23,6 +23,7 @@ const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
 class EmptyGitLabError extends Error { }
 
 function apiErrorGitLabInstance(api, apiIssue, error) {
+  /* eslint-disable indent */
   const errorMsg = `
     GET ${api}
     ${error}
@@ -35,6 +36,7 @@ function apiErrorGitLabInstance(api, apiIssue, error) {
 
     ${errorMsg}`
     .replace(/^\s+/, '').replace(/\n[ \t]+/g, '\n');
+  /* eslint-enable indent */
   const errorTxt = errorMsg.replaceAll('\n\n', '\n');
   const errorHTML = textToHTML(errorTxt);
 
@@ -520,6 +522,7 @@ export function validateForgeUrl(input) {
   }
   const extra = getUrlExtra(input.value.trim());
   if (extra) {
+    /* eslint-disable indent */
     customValidity = `
       The provided forge URL was not a base URL.
 
@@ -530,6 +533,7 @@ export function validateForgeUrl(input) {
       Remove all user/group/repo names.
       Remove everything after both of those.`
       .replace(/^\s+/, '').replace(/\n[ \t]+/g, '\n');
+      /* eslint-enable indent */
   }
   input.setCustomValidity(customValidity);
 }
