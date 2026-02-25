@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -111,8 +111,7 @@ describe('Directory Tests', function() {
                       {'path': 'files/foo', 'data': 'foo'},
                       {'path': 'bar/README.md', 'data': barReadme}];
 
-    cy.request('POST',
-               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+    cy.request('POST', `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
                contents)
       .then((resp) => {
         expect(resp.status).to.eq(200);
@@ -162,8 +161,7 @@ describe('Directory Tests', function() {
     const originUrl = 'https://git.example.org/md-readme-strip-style-tags';
     const contents = [{'path': 'README.md', 'data': mainReadme}];
 
-    cy.request('POST',
-               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+    cy.request('POST', `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
                contents)
       .then((resp) => {
         expect(resp.status).to.eq(200);

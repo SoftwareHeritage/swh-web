@@ -139,7 +139,8 @@ module.exports = [
         ObjectExpression: 'first',
         ImportDeclaration: 'first',
         flatTernaryExpressions: false,
-        ignoreComments: false
+        ignoreComments: false,
+        ignoredNodes: ['TemplateLiteral > *']
       }],
 
       'key-spacing': ['error', {

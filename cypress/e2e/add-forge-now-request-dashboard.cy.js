@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022-2024  The Software Heritage developers
+ * Copyright (C) 2022-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -153,8 +153,9 @@ describe('Test add forge now request dashboard load', function() {
     const invalidRequestId = requestId + 10;
     const url = this.Urls.add_forge_now_request_dashboard(invalidRequestId);
 
-    cy.intercept(`${this.Urls.api_1_add_forge_request_get(invalidRequestId)}**`,
-                 {statusCode: 400}).as('forgeAddInvalidRequest');
+    cy.intercept(
+      `${this.Urls.api_1_add_forge_request_get(invalidRequestId)}**`,
+       {statusCode: 400}).as('forgeAddInvalidRequest');
 
     cy.visit(url);
     cy.wait('@forgeAddInvalidRequest');
@@ -295,8 +296,7 @@ describe('Test add forge now request update', function() {
   });
 
   it('should show an error on API failure', function() {
-    cy.intercept('POST',
-                 `${this.Urls.api_1_add_forge_request_update(requestId)}**`,
+    cy.intercept('POST', `${this.Urls.api_1_add_forge_request_update(requestId)}**`,
                  {forceNetworkError: true})
       .as('updateFailedRequest');
     cy.get('#updateComment').type('This is an update comment');

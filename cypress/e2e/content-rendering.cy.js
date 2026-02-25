@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -45,9 +45,7 @@ describe('HTML rendering tests', function() {
                       {'path': 'img/swh-logo.png', 'data': `base64:${logo}`},
                       {'path': 'css/style.css', 'data': css}];
 
-    cy.request('POST',
-               `${Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
-               contents)
+    cy.request('POST', `${Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`, contents)
       .then((resp) => {
         expect(resp.status).to.eq(200);
         const url = `${Urls.browse_origin_directory()}?origin_url=${originUrl}&path=index.html`;
@@ -289,8 +287,7 @@ describe('Markdown rendering tests', function() {
 `;
 
     const originUrl = 'https://git.example.org/markdown-math';
-    cy.request('POST',
-               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+    cy.request('POST', `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
                [{path: 'math.md', data: markdown}])
         .then((resp) => {
           expect(resp.status).to.eq(200);
@@ -332,8 +329,7 @@ $$
 `;
 
     const originUrl = 'https://git.example.org/markdown-math-inlining';
-    cy.request('POST',
-               `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
+    cy.request('POST', `${this.Urls.tests_add_origin_with_contents()}?origin_url=${originUrl}`,
                [{path: 'math.md', data: markdown}])
       .then((resp) => {
         expect(resp.status).to.eq(200);

@@ -69,13 +69,13 @@ repos:
         additional_dependencies: [twine, build]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.39.1
+    rev: v10.0.2
     hooks:
       - id: eslint
         additional_dependencies:
-          - eslint@9.39.1
-          - '@eslint/compat@2.0.0'
-          - eslint-plugin-cypress@5.2.0
+          - eslint@10.0.2
+          - '@eslint/compat@2.0.2'
+          - eslint-plugin-cypress@6.1.0
           - eslint-plugin-import@2.32.0
           - eslint-plugin-node@11.1.0
           - eslint-plugin-promise@7.2.1
