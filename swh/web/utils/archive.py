@@ -782,7 +782,7 @@ def directory_exists(sha1_git: str) -> bool:
         return True
 
 
-def lookup_directory(sha1_git):
+def lookup_directory(sha1_git: str) -> Iterable[Dict[str, Any]]:
     """Return information about the directory with id sha1_git.
 
     Args:
