@@ -1572,3 +1572,27 @@ def test_browse_json_contents_diff(client, archive_data):
  }
 """
     )
+
+
+def test_browse_contents_diff_for_added_content(client, archive_data):
+    new_content = Content.from_data(b"foo\n")
+
+    archive_data.content_add([new_content])
+
+    url = reverse(
+        "diff-contents",
+        url_args={
+            "from_query_string": "",
+            "to_query_string": f"sha1_git:{new_content.sha1_git.hex()}",
+        },
+    )
+
+    resp = check_http_get_response(client, url, status_code=200)
+
+    assert (
+        resp.json()["diff_str"]
+        == """\
+@@ -0,0 +1 @@
++foo
+"""
+    )

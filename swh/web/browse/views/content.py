@@ -228,23 +228,22 @@ def _contents_diff(
     force = strtobool(request.GET.get("force", "false"))
     path = request.GET.get("path", None)
     language = "plaintext"
-
     if from_query_string == to_query_string:
         diff_str = "File renamed without changes"
     else:
         try:
-            content_from, content_from_size, language, text_diff = (
+            content_from, content_from_size, language, text_diff_from = (
                 _fetch_content_for_diff(from_query_string, path)
             )
 
-            if text_diff and to_query_string:
-                content_to, content_to_size, language, text_diff = (
+            if to_query_string:
+                content_to, content_to_size, language, text_diff_to = (
                     _fetch_content_for_diff(to_query_string, path)
                 )
 
             diff_size = abs(content_to_size - content_from_size)
 
-            if not text_diff:
+            if not text_diff_from and not text_diff_to:
                 diff_str = "Diffs are not generated for non textual content"
                 language = "plaintext"
             elif not force and diff_size > _auto_diff_size_limit:
