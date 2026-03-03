@@ -1,4 +1,4 @@
-# Copyright (C) 2024-2025  The Software Heritage developers
+# Copyright (C) 2024-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,9 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from swh.indexer.bibtex import BibTeXCitationError, cff_to_bibtex, codemeta_to_bibtex
+from swh.indexer.citation import CitationFormat, codemeta_to_citation
+from swh.indexer.citation.exceptions import CitationError
+from swh.indexer.metadata_mapping.cff import CffMapping
 from swh.model.hashutil import hash_to_bytes
 from swh.model.swhids import CoreSWHID, ObjectType, QualifiedSWHID
 from swh.web.browse.snapshot_context import get_snapshot_context
@@ -26,7 +28,8 @@ from swh.web.utils.typing import (
 )
 
 
-def _get_bibtex_from_intrinsic_citation_metadata(
+def _get_citation_from_intrinsic_citation_metadata(
+    format: CitationFormat,
     raw_intrinsic_metadata: List[IntrinsicMetadataFile],
     swhid: Optional[QualifiedSWHID] = None,
 ) -> Citation:
@@ -84,44 +87,59 @@ def _get_bibtex_from_intrinsic_citation_metadata(
         source_swhid_params["path"] = "/" + metadata_file["name"]
 
     citation = Citation(
-        format="bibtex",
+        format=format.name.lower(),
         content="",
         source_swhid=str(QualifiedSWHID(**source_swhid_params)),
         error=metadata_file["parsing_error"],
         warning=None,
     )
 
+    metadata_file_content: Dict[str, Any] = {}
+
     if citation["error"] is None:
+        # Convert CFF to CodeMeta
         try:
-            if metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
-                try:
-                    citation["content"] = codemeta_to_bibtex(
-                        metadata_file["content"], swhid
-                    )
-                except BibTeXCitationError as bce:
-                    citation["content"] = codemeta_to_bibtex(
-                        metadata_file["content"], swhid, force_codemeta_context=True
-                    )
-                    citation["warning"] = (
-                        "An error occurred when parsing the codemeta.json file but it was "
-                        "mitigated by overriding the JSON-LD context to the CodeMeta v3.0 one "
-                        "and executing parsing again.\n\n"
-                        "Details about the mitigated error can be found below:\n\n"
-                    ) + str(bce)
-            elif metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
-                citation["content"] = cff_to_bibtex(
-                    yaml.dump(metadata_file["content"], default_flow_style=False), swhid
+            if metadata_file_origin_type == IntrinsicMetadataFiletype.CFF.value:
+                cff_to_codemeta = CffMapping().translate(
+                    raw_content=yaml.dump(
+                        metadata_file["content"], default_flow_style=False
+                    ).encode("utf-8")
                 )
+                metadata_file_content = (
+                    {} if cff_to_codemeta is None else cff_to_codemeta
+                )
+            elif metadata_file_origin_type == IntrinsicMetadataFiletype.CODEMETA.value:
+                metadata_file_content = metadata_file["content"]
         except Exception as e:
             citation["error"] = str(e)
+
+        # Convert CodeMeta to the requested format
+        try:
+            citation["content"] = codemeta_to_citation(
+                metadata_file_content, format, swhid
+            )
+        except CitationError as e:
+            citation["content"] = codemeta_to_citation(
+                metadata_file_content, format, swhid, force_codemeta_context=True
+            )
+            citation["warning"] = (
+                "An error occurred when parsing the codemeta.json file but it was "
+                "mitigated by overriding the JSON-LD context to the CodeMeta v3.0 one "
+                "and executing parsing again.\n\n"
+                "Details about the mitigated error can be found below:\n\n"
+            ) + str(e)
+        except Exception as e:
+            citation["error"] = str(e)
+
     return citation
 
 
-def get_bibtex_from_origin(
+def get_citation_from_origin(
+    format: CitationFormat,
     origin_url: str,
 ) -> Citation:
     """
-    Get citation in BibTeX format given a software origin, from found intrinsic citation
+    Get citation in the requested format given a software origin, from found intrinsic citation
     metadata in the repository, i.e. original codemeta.json and citation.cff, for the
     latest visit snapshot main branch root directory.
 
@@ -129,7 +147,7 @@ def get_bibtex_from_origin(
         origin_url: origin url
 
     Returns:
-        the software citation in BibTeX format
+        the software citation in the requested format
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory is missing,
@@ -166,14 +184,17 @@ def get_bibtex_from_origin(
         if swhid_with_context:
             target_swhid = QualifiedSWHID.from_string(swhid_with_context)
 
-    return _get_bibtex_from_intrinsic_citation_metadata(metadata, target_swhid)
+    return _get_citation_from_intrinsic_citation_metadata(
+        format, metadata, target_swhid
+    )
 
 
-def get_bibtex_from_swhid(
+def get_citation_from_swhid(
+    format: CitationFormat,
     target_swhid: str,
 ) -> Citation:
     """
-    Get citation in BibTeX format given a SWHID, from found intrinsic citation
+    Get citation in requested format given a SWHID, from found intrinsic citation
     metadata in the repository, i.e. original codemeta.json and citation.cff, for the
     target object.
 
@@ -182,7 +203,7 @@ def get_bibtex_from_swhid(
             of type Content, it must be qualified with an anchor
 
     Returns:
-        the software citation in BibTeX format
+        the software citation in the requested format
 
     Raises:
         swh.web.utils.exc.NotFoundExc: when snapshot, branch or directory is missing,
@@ -191,4 +212,6 @@ def get_bibtex_from_swhid(
     """
     metadata = lookup_intrinsic_citation_metadata_by_target_swhid(target_swhid)
     parsed_swhid = QualifiedSWHID.from_string(target_swhid)
-    return _get_bibtex_from_intrinsic_citation_metadata(metadata, parsed_swhid)
+    return _get_citation_from_intrinsic_citation_metadata(
+        format, metadata, parsed_swhid
+    )

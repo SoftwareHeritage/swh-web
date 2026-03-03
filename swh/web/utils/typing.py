@@ -304,7 +304,7 @@ class IntrinsicMetadataFile(TypedDict):
 
 class Citation(TypedDict):
     format: str
-    """Citation format (currently bibtex)"""
+    """Citation format"""
     content: str
     """Formatted citation string content"""
     source_swhid: str

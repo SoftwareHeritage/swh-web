@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -491,6 +491,72 @@ describe('Citations Tests', function() {
     cy.get('#swh-citation-directory')
       .should('be.visible')
       .contains('@softwareversion{');
+  });
+
+  it('should update citation content when changing format', function() {
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    cy.get('#citation-tab-directory .swh-citation')
+      .should('contain', '@softwareversion{');
+
+    // switch to CSL-JSON format
+    cy.get('#citation-format-option-directory')
+      .select('CSL');
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-tab-directory .swh-citation')
+      .should('not.contain', '@softwareversion{')
+      .should('contain', '"id"');
+
+    // switch back to bibtex
+    cy.get('#citation-format-option-directory')
+      .select('BIBTEX');
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    cy.get('#citation-tab-directory .swh-citation')
+      .should('contain', '@softwareversion{');
+  });
+
+  it('should persist citation format when switching between object type tabs', function() {
+    cy.get('#swh-citations .ui-slideouttab-handle')
+      .click();
+
+    // switch to CSL-JSON format
+    cy.get('#citation-format-option-directory')
+      .select('CSL');
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    // switch to revision nav-item
+    cy.get('a[href="#citation-tab-revision"]')
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    // format should still be CSL-JSON
+    cy.get('#citation-format-option-revision')
+      .should('have.value', 'CSL');
+
+    cy.get('#citation-tab-revision .swh-citation')
+      .should('not.contain', '@softwareversion{')
+      .should('contain', '"id"');
+
+    // switch to snapshot nav-item
+    cy.get('a[href="#citation-tab-snapshot"]')
+      .click();
+
+    cy.wait('@apiRawIntrinsicCitationGet');
+
+    // format should still be CSL-JSON
+    cy.get('#citation-format-option-snapshot')
+      .should('have.value', 'CSL');
+
+    cy.get('#citation-tab-snapshot .swh-citation')
+      .should('not.contain', '@software{')
+      .should('contain', '"id"');
   });
 
 });

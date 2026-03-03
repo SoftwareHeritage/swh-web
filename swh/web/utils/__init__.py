@@ -31,6 +31,7 @@ from django.urls import resolve
 from django.urls import reverse as django_reverse
 
 from swh.core.api.serializers import msgpack_dumps, msgpack_loads
+from swh.indexer.citation import CitationFormat
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
@@ -323,6 +324,7 @@ def context_processor(request):
         "show_corner_ribbon": config.get("show_corner_ribbon", False),
         "corner_ribbon_text": config.get("corner_ribbon_text", ""),
         "activate_citations_ui": config.get("activate_citations_ui", False),
+        "citation_formats": list(CitationFormat),
         "user_is_ambassador": (
             hasattr(request, "user")
             and request.user.has_perm(SWH_AMBASSADOR_PERMISSION)

@@ -213,14 +213,16 @@ See top-level LICENSE file for more information
                         Format
                       </label>
                       <select class="form-select form-control citation-format-option"
-                              id="citation-format-option-{{ swhid_info.object_type.name.lower }}"
-                              disabled>
-                        <option>BibTeX</option>
+                              id="citation-format-option-{{ swhid_info.object_type.name.lower }}">
+                        {% for format in citation_formats %}
+                          <option value={{ format.name }}>{{ format.value }}
+                          </option>
+                        {% endfor %}
                       </select>
                     </div>
                     <span class="col pt-1 d-none d-md-block"
                           id="citation-format-description-{{ swhid_info.object_type.name.lower }}">
-                      Generate software citation in BibTex format (requires
+                      (requires
                       <a href="https://ctan.mines-albi.fr/macros/latex/contrib/biblatex-contrib/biblatex-software/software-biblatex.pdf"
                          target="_blank"
                          rel="noopener noreferrer">biblatex-software</a> package)
@@ -261,7 +263,7 @@ See top-level LICENSE file for more information
   {% endif %}
   {{ swhids_info|swh_json_script:"swhids_info" }}
   <script>
-    swh.webapp.setSwhIdsContext(swh.webapp.parseJsonScript('swhids_info'));
-    swh.browse.initSideTabs();
+      swh.webapp.setSwhIdsContext(swh.webapp.parseJsonScript('swhids_info'));
+      swh.browse.initSideTabs();
   </script>
 {% endif %}

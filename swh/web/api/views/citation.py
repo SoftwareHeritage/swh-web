@@ -1,4 +1,4 @@
-# Copyright (C) 2024-2025  The Software Heritage developers
+# Copyright (C) 2024-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -8,28 +8,31 @@ from typing import Dict, cast
 from rest_framework import serializers
 from rest_framework.request import Request
 
+from swh.indexer.citation import CitationFormat
 from swh.model.swhids import QualifiedSWHID
 from swh.web.api.apidoc import api_doc, format_docstring
 from swh.web.api.apiurls import api_route
 from swh.web.api.serializers import IRIField, SWHIDField
 from swh.web.utils import BadInputExc, reverse
-from swh.web.utils.citation import get_bibtex_from_origin, get_bibtex_from_swhid
+from swh.web.utils.citation import get_citation_from_origin, get_citation_from_swhid
 from swh.web.utils.typing import Citation
-
-CITATION_FORMATS = [("bibtex", "BibTeX")]
 
 
 class CitationOriginQuerySerializer(serializers.Serializer):
     """Origin citation query parameters serializer."""
 
-    citation_format = serializers.ChoiceField(required=True, choices=CITATION_FORMATS)
+    citation_format = serializers.ChoiceField(
+        required=True, choices=[format.name.lower() for format in CitationFormat]
+    )
     origin_url = IRIField(required=True)
 
 
 class CitationSWHIDQuerySerializer(serializers.Serializer):
     """SWHID citation query parameters serializer."""
 
-    citation_format = serializers.ChoiceField(required=True, choices=CITATION_FORMATS)
+    citation_format = serializers.ChoiceField(
+        required=True, choices=[format.name.lower() for format in CitationFormat]
+    )
     target_swhid = SWHIDField(required=True)
 
 
@@ -68,7 +71,8 @@ def _enrich_citation_response(citation: Citation, request: Request) -> Dict[str,
         "raw-intrinsic-metadata/citation/origin/?"
         "citation_format=bibtex&"
         "origin_url=https://github.com/rdicosmo/parmap"
-    )
+    ),
+    citation_formats=", ".join([format.name.lower() for format in CitationFormat]),
 )
 def api_raw_intrinsic_citation_origin_get(
     request: Request, validated_query_params: dict[str, str]
@@ -76,14 +80,14 @@ def api_raw_intrinsic_citation_origin_get(
     """
     .. http:get:: /api/1/raw-intrinsic-metadata/citation/origin/
 
-        Get a software citation, given a format (only currently supported format is BibTeX)
-        and a software origin. This citation will refer to the latest visit snapshot
-        version of the main branch of the software repository.
+        Get a software citation, given a format and a software origin.
+        This citation will refer to the latest visit snapshot version of the
+        main branch of the software repository.
 
-        :query string citation_format: the citation expected format (currently bibtex)
+        :query string citation_format: the citation expected format ({citation_formats})
         :query string origin_url: the URL of the software origin
 
-        :>json string format: citation format (currently bibtex)
+        :>json string format: citation format ({citation_formats})
         :>json string content: formatted string representing the software citation
             content in the expected format
         :>json string source_swhid: qualified SWHID for citation metadata source file
@@ -103,7 +107,13 @@ def api_raw_intrinsic_citation_origin_get(
             :swh_web_api:`{example_url}`
     """
     origin_url = validated_query_params["origin_url"]
-    return _enrich_citation_response(get_bibtex_from_origin(origin_url), request)
+    return _enrich_citation_response(
+        get_citation_from_origin(
+            CitationFormat[validated_query_params["citation_format"].upper()],
+            origin_url,
+        ),
+        request,
+    )
 
 
 @api_route(
@@ -120,7 +130,8 @@ def api_raw_intrinsic_citation_origin_get(
         "target_swhid=swh:1:dir:2dc0f462d191524530f5612d2935851505af41dd;"
         "origin=https://github.com/rdicosmo/parmap;"
         "visit=swh:1:snp:2128ed4f25f2d7ae7c8b7950a611d69cf4429063"
-    )
+    ),
+    citation_formats=", ".join([format.name.lower() for format in CitationFormat]),
 )
 def api_raw_intrinsic_citation_swhid_get(
     request: Request, validated_query_params: dict[str, str]
@@ -128,14 +139,13 @@ def api_raw_intrinsic_citation_swhid_get(
     """
     .. http:get:: /api/1/raw-intrinsic-metadata/citation/swhid/
 
-        Get a software citation, given an object SWHID and a format (only currently
-        supported format is BibTeX).
+        Get a software citation, given an object SWHID and a format.
 
-        :query string citation_format: the citation expected format (currently bibtex)
+        :query string citation_format: the citation expected format ({citation_formats})
         :query string target_swhid: the SWHID, with or without qualifiers, of the
          software object to cite
 
-        :>json string format: citation format (currently bibtex)
+        :>json string format: citation format ({citation_formats})
         :>json string content: formatted string representing the software citation
             content in the expected format
         :>json string source_swhid: qualified SWHID for citation metadata source file
@@ -155,4 +165,10 @@ def api_raw_intrinsic_citation_swhid_get(
             :swh_web_api:`{example_url}`
     """
     target_swhid = validated_query_params["target_swhid"]
-    return _enrich_citation_response(get_bibtex_from_swhid(target_swhid), request)
+    return _enrich_citation_response(
+        get_citation_from_swhid(
+            CitationFormat[validated_query_params["citation_format"].upper()],
+            target_swhid,
+        ),
+        request,
+    )

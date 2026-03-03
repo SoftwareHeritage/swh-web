@@ -12,6 +12,7 @@ import 'thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.css';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-coy.css';
 import 'prismjs-bibtex';
+import 'prismjs/components/prism-json';
 
 export function swhIdObjectTypeToggled(event) {
   event.preventDefault();
@@ -41,6 +42,9 @@ function updateDisplayedSWHID(contextOptionCheckBox) {
 export function swhIdContextOptionToggled(event) {
   event.stopPropagation();
   updateDisplayedSWHID(event.target);
+  if (activateCitationsUI() || swh.webapp.isStaffUser() || swh.webapp.isAmbassadorUser()) {
+    generateCitationFromSWHID(swh.webapp.getBrowsedSwhObjectMetadata().object_type);
+  }
 }
 
 function computeLinesQualifier() {
@@ -82,9 +86,6 @@ function addLinesInfo() {
 
     swhIdElt.text(currentSwhId.replace(/;/g, ';\n'));
     swhIdElt.attr('href', swhIdWithContextUrl);
-  }
-  if (activateCitationsUI() || swh.webapp.isStaffUser() || swh.webapp.isAmbassadorUser()) {
-    generateCitationFromSWHID('content');
   }
 }
 
@@ -148,13 +149,29 @@ export async function generateCitationFromSWHID(objectType) {
   const citationUrl = Urls.api_1_raw_intrinsic_citation_swhid_get() +
     `?citation_format=${citationFormat}&target_swhid=${qualifiedSWHID}`;
 
+  $(`#swh-citation-${objectType}`).html(
+  `<div class="d-flex">
+    <div class="spinner-border spinner-border-sm" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>`);
+  $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', true);
+
   try {
     const response = await fetch(citationUrl);
     handleFetchError(response);
     // make Citations tab visible when a citation can be successfully generated
     $('#swh-citations').removeClass('d-none');
+    $(`#citation-format-description-${objectType}`)
+    .toggleClass('d-none', citationFormat !== 'bibtex')
+    .toggleClass('d-md-block', citationFormat === 'bibtex');
     const citation = await response.json();
-    const html = Prism.highlight(citation.content, Prism.languages.bibtex, 'bibtex');
+    const CITATION_FORMAT_TO_PRISM = {
+      'bibtex': {language: Prism.languages.bibtex, name: 'bibtex'},
+      'csl': {language: Prism.languages.json, name: 'json'}
+    };
+    const prism = CITATION_FORMAT_TO_PRISM[citationFormat] ?? {language: Prism.languages.plain, name: 'plain'};
+    const html = Prism.highlight(citation.content, prism.language, prism.name);
     $(`#citation-tab-${objectType} .swh-citation`).html(html);
     $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', false);
     $(`#citation-source-${objectType}`).html(
@@ -183,7 +200,7 @@ export async function generateCitationFromSWHID(objectType) {
     const errorData = await response.json();
     $(`#citation-tab-${objectType} .swh-citation`).text(
       'Software citation could not be generated due to the following reason:\n\n' +
-      errorData.reason);
+      JSON.stringify(errorData.reason, null, 2));
     $(`#citation-tab-${objectType} .btn-citation-copy`).attr('disabled', true);
     if (response.status === 400) {
       $(`#citation-source-${objectType}`).html(
@@ -398,14 +415,32 @@ export async function initSideTabs() {
 
     updateTabsSize();
 
+    $('.citation-format-option').on('change', function() {
+      $('.citation-format-option').val($(this).val());
+      generateCitationFromSWHID($('#swh-citations-content .nav-link.active').text().trim());
+    });
+
+    let currentLinesQualifier = computeLinesQualifier();
+
+    function addLinesInfoAndUpdateCitation() {
+      addLinesInfo();
+      const newLinesQualifier = computeLinesQualifier();
+      if (newLinesQualifier !== currentLinesQualifier) {
+        currentLinesQualifier = newLinesQualifier;
+        if (activateCitationsUI() || swh.webapp.isStaffUser() || swh.webapp.isAmbassadorUser()) {
+          generateCitationFromSWHID('content');
+        }
+      }
+    }
+
     // highlighted code lines changed
     $(window).on('hashchange', () => {
-      addLinesInfo();
+      addLinesInfoAndUpdateCitation();
     });
 
     // highlighted code lines removed
     $('body').on('click', () => {
-      addLinesInfo();
+      addLinesInfoAndUpdateCitation();
     });
 
     $(window).on('resize', () => {
