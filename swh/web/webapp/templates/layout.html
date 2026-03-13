@@ -99,7 +99,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       }
     </style>
   </head>
-  <body class="layout-fixed sidebar-expand-lg sidebar-mini {% if sidebar_state == 'expanded' %} sidebar-open {% else %} sidebar-collapse {% endif %}">
+  <body class="layout-fixed sidebar-expand-lg sidebar-mini sidebar-without-hover {% if sidebar_state == 'expanded' %} sidebar-open {% else %} sidebar-collapse {% endif %}">
     <a id="top"></a>
     <div class="app-wrapper link-opacity-75">
       <header class="app-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-navbar-banner{% endif %}"

@@ -30,11 +30,15 @@ $(() => {
         !mainSideBar.hasClass('swh-sidebar-collapsed')) {
       mainSideBar.addClass('swh-sidebar-collapsed');
       Cookies.set('sidebar-state', 'collapsed');
+      body.addClass('sidebar-collapse');
+      body.removeClass('sidebar-open');
       $('.swh-push-menu').attr('aria-expanded', 'false');
       $('.swh-push-menu').attr('aria-label', 'Expand sidebar');
     } else if (!body.hasClass('sidebar-collapse')) {
       mainSideBar.removeClass('swh-sidebar-collapsed');
       Cookies.set('sidebar-state', 'expanded');
+      body.addClass('sidebar-open');
+      body.removeClass('sidebar-collapse');
       $('.swh-push-menu').attr('aria-expanded', 'true');
       $('.swh-push-menu').attr('aria-label', 'Collapse sidebar');
     }
