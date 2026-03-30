@@ -249,6 +249,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "hgweb",
+            "info_url": "https://www.mercurial-scm.org/help/topics/hgweb",
+            "info": "public repositories from multiple hgweb instances",
+            "search_pattern": {
+                "default": "hgweb",
+            },
+        },
+        {
             "type": "launchpad",
             "info_url": "https://launchpad.net",
             "logo": "img/logos/launchpad.png",

@@ -504,6 +504,20 @@ const grokmirrorPathnameExtraRe = RegExpX(`
     manifest(\\.js(\\.gz)?)?
   )$`);
 
+const hgwebPathnameExtraRe = RegExpX(`
+  /
+  (
+    archive/tip\\.(tar\\.(bz2|gz)|zip)
+  |
+    (atom-log|bookmarks|branches|tags)
+  |
+    help(/[a-z]+)?
+  |
+    (file|graph|rev|shortlog)/(tip|[a-f0-9]{12})(\\?revcount=\\d+)?
+  |
+    \\?sort=(contact|description|lastchange|name)
+  )$`);
+
 const stagitPathnameExtraRe = RegExpX(`
   /
   (
@@ -546,6 +560,8 @@ function getUrlExtra(url) {
     m = gitwebSearchExtraRe.exec(originUrl.search);
   } else if (forgeType === 'grokmirror') {
     m = grokmirrorPathnameExtraRe.exec(originUrl.pathname);
+  } else if (forgeType === 'hgweb') {
+    m = hgwebPathnameExtraRe.exec(originUrl.pathname);
   } else if (forgeType === 'stagit') {
     m = stagitPathnameExtraRe.exec(originUrl.pathname);
   }

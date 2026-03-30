@@ -92,6 +92,7 @@ FORGE_TYPES: List[str] = [
     "gogs",
     "grokmirror",
     "heptapod",
+    "hgweb",
     "stagit",
 ]
 
