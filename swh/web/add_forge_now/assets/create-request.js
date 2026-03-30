@@ -498,6 +498,12 @@ const gitwebSearchExtraRe = RegExpX(`
     )
   )$`);
 
+const grokmirrorPathnameExtraRe = RegExpX(`
+  /
+  (
+    manifest(\\.js(\\.gz)?)?
+  )$`);
+
 const stagitPathnameExtraRe = RegExpX(`
   /
   (
@@ -538,6 +544,8 @@ function getUrlExtra(url) {
         gitilesSearchExtraRe.exec(originUrl.search);
   } else if (forgeType === 'gitweb') {
     m = gitwebSearchExtraRe.exec(originUrl.search);
+  } else if (forgeType === 'grokmirror') {
+    m = grokmirrorPathnameExtraRe.exec(originUrl.pathname);
   } else if (forgeType === 'stagit') {
     m = stagitPathnameExtraRe.exec(originUrl.pathname);
   }

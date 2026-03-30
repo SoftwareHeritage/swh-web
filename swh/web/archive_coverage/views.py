@@ -225,6 +225,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "grokmirror",
+            "info_url": "https://git.kernel.org/pub/scm/utils/grokmirror/grokmirror.git/about/",
+            "info": "public repositories from Grokmirror instances",
+            "search_pattern": {
+                "default": "grokmirror",
+            },
+        },
+        {
             "type": "hackage",
             "info_url": "https://hackage.haskell.org",
             "info": "source packages from The Haskell Package Repository",
