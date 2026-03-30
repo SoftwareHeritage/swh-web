@@ -568,7 +568,6 @@ const stagitPathnameExtraRe = RegExpX(`
     [^/]+/file/.*\\.html
   |
     [^/]+/commit/[a-f0-9]{40}\\.html
-  |
   )$`);
 
 function getUrlExtra(url) {
