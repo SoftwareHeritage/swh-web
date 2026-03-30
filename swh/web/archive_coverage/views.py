@@ -62,7 +62,7 @@ listed_origins: Dict[str, Any] = {
             "info_url": "https://bitbucket.org",
             "info": "public repositories from Bitbucket",
             "search_pattern": {
-                "default": "https://bitbucket.org/",
+                "default": "bitbucket",
             },
         },
         {

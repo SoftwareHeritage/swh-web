@@ -273,6 +273,28 @@ function isGitLabUrl(url) {
   return false;
 }
 
+function isBitbucketUrl(url) {
+  let originUrl;
+  try {
+    originUrl = new URL(url);
+  } catch (_) {
+    return false;
+  }
+  const hostname = originUrl.hostname;
+
+  const bitbucket = ['bitbucket.org', 'www.bitbucket.org'];
+  if (bitbucket.includes(hostname)) {
+    return true;
+  }
+
+  const bitbucketRe = new RegExp('(^|\\.)bitbucket\\.(com|org|io)$');
+  if (bitbucketRe.test(hostname)) {
+    return true;
+  }
+
+  return false;
+}
+
 function isMissingSlash(url) {
   let originUrl;
   try {
@@ -307,7 +329,7 @@ const bitbucketPathnameExtraRe = RegExpX(`
       )
     )
   |
-    repos
+    repos(\\?.*)?
   |
     login
   |
@@ -516,6 +538,9 @@ export function validateForgeUrl(input) {
   }
   if (isGitLabUrl(input.value.trim())) {
     customValidity = 'The provided forge URL is on GitLab.\nUse Save code now instead.';
+  }
+  if (isBitbucketUrl(input.value.trim())) {
+    customValidity = 'The provided forge URL is on Bitbucket.\nUse Save code now instead.';
   }
   if (isMissingSlash(input.value.trim())) {
     customValidity = 'The provided forge URL was not a canonical URL.\nAdd a forward slash character to the end.';
