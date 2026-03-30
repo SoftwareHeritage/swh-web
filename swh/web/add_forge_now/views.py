@@ -84,6 +84,7 @@ FORGE_TYPES: List[str] = [
     "bitbucket",
     "cgit",
     "forgejo",
+    "gerrit",
     "gitea",
     "gitiles",
     "gitlab",

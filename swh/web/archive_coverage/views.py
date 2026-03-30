@@ -144,6 +144,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "gerrit",
+            "info_url": "https://www.gerritcodereview.com/",
+            "info": "public repositories from Gerrit instances",
+            "search_pattern": {
+                "default": "gerrit",
+            },
+        },
+        {
             "type": "gitea",
             "info_url": "https://about.gitea.com/",
             "info": "public repositories from Gitea instances",

@@ -352,6 +352,20 @@ const cgitSearchExtraRe = RegExpX(`
     \\?q=[^;&]+
   )$`);
 
+const gerritPathnameExtraRe = RegExpX(`
+  /
+  (
+    changes/.*
+  |
+    c/gerrit/\\+/\\d+.*
+  |
+    (q|login)/.*
+  |
+    Documentation/.*\\.html
+  |
+    admin/repos($|/.+)
+  )$`);
+
 const gitlabPathnameExtraRe = RegExpX(`
   /
   (
@@ -513,6 +527,8 @@ function getUrlExtra(url) {
   } else if (forgeType === 'cgit') {
     m = cgitPathnameExtraRe.exec(originUrl.pathname) ||
         cgitSearchExtraRe.exec(originUrl.search);
+  } else if (forgeType === 'gerrit') {
+    m = gerritPathnameExtraRe.exec(originUrl.pathname);
   } else if (['gitlab', 'heptapod'].includes(forgeType)) {
     m = gitlabPathnameExtraRe.exec(originUrl.pathname);
   } else if (['gogs', 'gitea', 'forgejo'].includes(forgeType)) {
