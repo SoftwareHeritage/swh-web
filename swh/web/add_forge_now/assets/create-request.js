@@ -518,6 +518,44 @@ const hgwebPathnameExtraRe = RegExpX(`
     \\?sort=(contact|description|lastchange|name)
   )$`);
 
+const pagurePathnameExtraRe = RegExpX(`
+  /
+  (
+    (about|ssh_info|new_issue)
+  |
+    \\?(page=\\d+)?sorting=[^&]+
+  |
+    (users|groups|browse/projects/)(\\?(page=\\d+)?(&sorting=[^&]+)?)?
+  |
+    login/(\\?next=[^&]+)?
+  |
+    projects/[^/]+/%2A
+  |
+    branches\\?branchname=[^&]+
+  |
+    c/[a-f0-9]{40}\\?branch=[^&]+
+  |
+    commits/.*
+  |
+    (issues|pull-requests)(\\?.*)?
+  |
+    (forks|releases|stargazers/|stats)
+  |
+    (blob|raw)/[^/]+/.+
+  |
+    (blame|history)/[^?]+\\?identifier=[^&]+
+  |
+    tree/[^/]+(/.+)?
+  |
+    user/[^/]+
+  |
+    roadmap([/?].*)?
+  |
+    (issue|pull-request)/\\d+
+  |
+    fork/.*
+  )$`);
+
 const stagitPathnameExtraRe = RegExpX(`
   /
   (
@@ -562,6 +600,8 @@ function getUrlExtra(url) {
     m = grokmirrorPathnameExtraRe.exec(originUrl.pathname);
   } else if (forgeType === 'hgweb') {
     m = hgwebPathnameExtraRe.exec(originUrl.pathname);
+  } else if (forgeType === 'pagure') {
+    m = pagurePathnameExtraRe.exec(originUrl.pathname);
   } else if (forgeType === 'stagit') {
     m = stagitPathnameExtraRe.exec(originUrl.pathname);
   }

@@ -317,7 +317,7 @@ listed_origins: Dict[str, Any] = {
             "info_url": "https://pagure.io/pagure",
             "info": "public repositories from multiple Pagure instances",
             "search_pattern": {
-                "default": "",
+                "default": "pagure",
             },
         },
         {
