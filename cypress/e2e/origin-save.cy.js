@@ -106,8 +106,8 @@ function genOriginSaveResponse({
 function loadSaveRequestsListPage() {
   // click on tab to visit requests list page
   cy.get('#swh-origin-save-requests-list-tab').click();
-  // two XHR requests are sent by datatables when initializing requests table
-  cy.wait(['@saveRequestsList', '@saveRequestsList']);
+  // XHR request sent by datatables when initializing requests table
+  cy.wait('@saveRequestsList');
   // ensure datatable got rendered
   cy.wait(100);
 }
@@ -341,7 +341,7 @@ describe('Origin Save Tests', function() {
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
-      'draw': 2,
+      'draw': 1,
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };
@@ -368,7 +368,7 @@ describe('Origin Save Tests', function() {
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
-      'draw': 2,
+      'draw': 1,
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };
@@ -397,7 +397,7 @@ describe('Origin Save Tests', function() {
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
-      'draw': 2,
+      'draw': 1,
       'recordsFiltered': 1,
       'data': [saveRequestData]
     };

@@ -262,8 +262,6 @@ export function initOriginSave() {
     if (window.location.pathname === Urls.origin_save() && window.location.hash === '#requests') {
       // Keep old URLs to the save list working
       window.location = Urls.origin_save_list();
-    } else if ($('#swh-origin-save-requests')) {
-      saveRequestsTable.draw();
     }
 
     const saveRequestAcceptedAlert = htmlAlert(
