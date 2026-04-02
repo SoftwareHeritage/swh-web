@@ -206,6 +206,9 @@ export function dtUpdateSettings(init) {
 function dtAddEvents(dt) {
 }
 
+function dtRemoveEvents(dt) {
+}
+
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
   // Display link. It's up to the caller to sanitize sanitizedUrl first.
   if (type === 'display' && sanitizedUrl) {
