@@ -260,6 +260,7 @@ function dtAddEvents(dt) {
   dt.on('page.dt', dtSavePageParam);
   dt.on('length.dt', dtSaveLengthParam);
   dt.on('order.dt', dtSaveSortingParams);
+  $(window).on('popstate', dtLoadParams);
 }
 
 function dtRemoveEvents(dt) {
@@ -267,6 +268,7 @@ function dtRemoveEvents(dt) {
   dt.off('page.dt', dtSavePageParam);
   dt.off('length.dt', dtSaveLengthParam);
   dt.off('order.dt', dtSaveSortingParams);
+  $(window).off('popstate', dtLoadParams);
 }
 
 function dtSaveSearchParam(e, settings) {
@@ -342,6 +344,16 @@ function dtSaveSortingParams(e, settings, ordersObj) {
 
   // Save the new URL with updated parameters
   dtSaveParams(url);
+}
+
+function dtLoadParams(e) {
+  $(':focus').blur(); // Otherwise old values are retained
+  $.fn.dataTable.tables({api: true}).iterator('table', function(table, i) {
+    dtRemoveEvents(this);
+    const init = dtUpdateSettings({...this.init()});
+    this.draw('full-hold');
+    dtAddEvents(this);
+  });
 }
 
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
