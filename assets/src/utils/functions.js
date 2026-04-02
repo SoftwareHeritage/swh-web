@@ -194,6 +194,11 @@ export function getHumanReadableDate(data) {
 }
 
 export function dtUpdateSettings(init) {
+  init.realInitComplete = init.initComplete ?? init.fnInitComplete;
+  init.initComplete = function(settings, json) {
+    init.realInitComplete?.(settings, json);
+  };
+
   return init;
 }
 
