@@ -257,16 +257,33 @@ export function dtUpdateSettings(init) {
 
 function dtAddEvents(dt) {
   dt.on('search.dt', dtSaveSearchParam);
+  dt.on('page.dt', dtSavePageParam);
+  dt.on('length.dt', dtSaveLengthParam);
 }
 
 function dtRemoveEvents(dt) {
   dt.off('search.dt', dtSaveSearchParam);
+  dt.off('page.dt', dtSavePageParam);
+  dt.off('length.dt', dtSaveLengthParam);
 }
 
 function dtSaveSearchParam(e, settings) {
   const url = new URL(window.location.href);
   dtUpdateParam(url, e, 'search', e.dt.search());
   dtUpdateParam(url, e, 'page', undefined);
+  dtSaveParams(url);
+}
+
+function dtSavePageParam(e, settings) {
+  const url = new URL(window.location.href);
+  dtUpdateParam(url, e, 'page', e.dt.page() + 1);
+  dtSaveParams(url);
+}
+
+function dtSaveLengthParam(e, settings, length) {
+  const url = new URL(window.location.href);
+  dtUpdateParam(url, e, 'length', length);
+  dtUpdateParam(url, e, 'page', e.dt.page() + 1);
   dtSaveParams(url);
 }
 
