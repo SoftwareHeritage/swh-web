@@ -259,12 +259,14 @@ function dtAddEvents(dt) {
   dt.on('search.dt', dtSaveSearchParam);
   dt.on('page.dt', dtSavePageParam);
   dt.on('length.dt', dtSaveLengthParam);
+  dt.on('order.dt', dtSaveSortingParams);
 }
 
 function dtRemoveEvents(dt) {
   dt.off('search.dt', dtSaveSearchParam);
   dt.off('page.dt', dtSavePageParam);
   dt.off('length.dt', dtSaveLengthParam);
+  dt.off('order.dt', dtSaveSortingParams);
 }
 
 function dtSaveSearchParam(e, settings) {
@@ -301,6 +303,45 @@ function dtSaveParams(url) {
   if (window.location.href !== url.href) {
     history.pushState(undefined, '', url.href);
   }
+}
+
+function dtSaveSortingParams(e, settings, ordersObj) {
+  const orders = e.dt.order();
+  const columns = e.dt.init().columns;
+  const prefix = e.dt.init().urlParamPrefix;
+  const sortPrefix = `${prefix}sort`;
+  const dirPrefix = `${prefix}dir`;
+  const sortPrefix_ = `${sortPrefix}_`;
+  const dirPrefix_ = `${dirPrefix}_`;
+  const url = new URL(window.location.href);
+
+  // Remove existing order parameters
+  url.searchParams.delete(sortPrefix);
+  url.searchParams.delete(dirPrefix);
+  Array.from(url.searchParams.keys())
+  .filter((k) => k.startsWith(sortPrefix_) || k.startsWith(dirPrefix_))
+  .forEach((k) => url.searchParams.delete(k));
+
+  // Add new order parameters
+  const short = orders.length === 1;
+  orders.forEach(([col, dir], i) => {
+    const column = columns[col];
+    if (column !== undefined) {
+      const sort = column.urlParam ?? column.name;
+      if (sort !== undefined) {
+        const sortParam = short ? sortPrefix : `${sortPrefix_}${i + 1}`;
+        const dirParam = short ? dirPrefix : `${dirPrefix_}${i + 1}`;
+        url.searchParams.set(sortParam, sort);
+        url.searchParams.set(dirParam, dir);
+      }
+    }
+  });
+
+  // Reordering resets the current page
+  dtUpdateParam(url, e, 'page', undefined);
+
+  // Save the new URL with updated parameters
+  dtSaveParams(url);
 }
 
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
