@@ -203,6 +203,16 @@ export function dtUpdateSettings(init) {
 
   init.search = {search: getParam('search') ?? ''};
 
+  const page = getParam('page');
+  init.page = /^[1-9]\d*$/.test(page) ? page - 1 : 0;
+
+  let length = Number(getParam('length'));
+  length = init.lengthMenu.find((e) => e === length);
+  if (length === undefined) length = init.lengthMenu[0];
+  init.pageLength = length;
+
+  init.displayStart = init.page * init.pageLength;
+
   init.realInitComplete = init.initComplete ?? init.fnInitComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);
