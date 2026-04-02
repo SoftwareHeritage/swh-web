@@ -194,6 +194,13 @@ export function getHumanReadableDate(data) {
 }
 
 export function dtUpdateSettings(init) {
+  const params = new URLSearchParams(window.location.search);
+
+  if (init.urlParamPrefix) init.urlParamPrefix += '_';
+  else init.urlParamPrefix = '';
+
+  const getParam = (param) => params.get(`${init.urlParamPrefix}${param}`) ?? undefined;
+
   init.realInitComplete = init.initComplete ?? init.fnInitComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);

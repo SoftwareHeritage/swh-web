@@ -34,6 +34,7 @@ export function initOriginSaveAdmin() {
 
     authorizedOriginTable = $('#swh-authorized-origin-urls').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
+      urlParamPrefix: 'authorized',
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       info: false
@@ -43,6 +44,7 @@ export function initOriginSaveAdmin() {
 
     unauthorizedOriginTable = $('#swh-unauthorized-origin-urls').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
+      urlParamPrefix: 'unauthorized',
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       info: false
@@ -96,6 +98,7 @@ export function initOriginSaveAdmin() {
 
     pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
+      urlParamPrefix: 'pending',
       ajax: Urls.origin_save_requests_list('pending'),
       columns: columnsData,
       order: [[0, 'desc']],
@@ -129,6 +132,7 @@ export function initOriginSaveAdmin() {
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
+      urlParamPrefix: 'rejected',
       ajax: Urls.origin_save_requests_list('rejected'),
       columns: columnsData,
       order: [[0, 'desc']],
@@ -148,6 +152,7 @@ export function initOriginSaveAdmin() {
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
+      urlParamPrefix: 'accepted',
       ajax: Urls.origin_save_requests_list('accepted'),
       columns: columnsData,
       order: [[0, 'desc']],
