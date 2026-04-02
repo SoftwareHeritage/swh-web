@@ -38,16 +38,19 @@ export async function populateModerationList() {
         {
           data: 'submission_date',
           name: 'submission_date',
+          urlParam: 'submission',
           render: getHumanReadableDate
         },
         {
           data: 'forge_type',
           name: 'forge_type',
+          urlParam: 'type',
           render: $.fn.dataTable.render.text()
         },
         {
           data: 'forge_url',
           name: 'forge_url',
+          urlParam: 'url',
           render: (data, type, row) => {
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
             return genLink(sanitizedURL, type, true);
@@ -56,11 +59,13 @@ export async function populateModerationList() {
         {
           data: 'last_moderator',
           name: 'last_moderator',
+          urlParam: 'moderator',
           render: $.fn.dataTable.render.text()
         },
         {
           data: 'last_modified_date',
           name: 'last_modified_date',
+          urlParam: 'modified',
           render: getHumanReadableDate
         },
         {

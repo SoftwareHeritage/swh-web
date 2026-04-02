@@ -213,6 +213,39 @@ export function dtUpdateSettings(init) {
 
   init.displayStart = init.page * init.pageLength;
 
+  const getOrderParams = (order, sortParam, dirParam) => {
+    const sort = getParam(sortParam);
+    if (sort !== undefined) {
+      const column = init.columns.findIndex((c) => {
+        return (c.urlParam ?? c.name) === sort && (c.orderable ?? true);
+      });
+      if (column >= 0) {
+        let dir = getParam(dirParam);
+        dir = ['asc', 'desc'].includes(dir) ? dir : 'asc';
+        order.push([column, dir]);
+        return true;
+      }
+    }
+  };
+
+  const order = [];
+  const sort = getParam('sort');
+  if (sort !== undefined) {
+    getOrderParams(order, 'sort', 'dir');
+  } else {
+    let i = 1;
+    while (true) {
+      if (!getOrderParams(order, `sort_${i}`, `dir_${i}`)) {
+        break;
+      }
+      i++;
+    };
+  }
+  if (init.defaultOrder === undefined) {
+    init.defaultOrder = init.order;
+  }
+  init.order = order.length ? order : init.defaultOrder;
+
   init.realInitComplete = init.initComplete ?? init.fnInitComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);

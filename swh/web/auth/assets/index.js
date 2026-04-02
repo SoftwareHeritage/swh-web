@@ -149,6 +149,7 @@ export function initProfilePage() {
           {
             data: 'creation_date',
             name: 'creation_date',
+            urlParam: 'date',
             render: (data, type, row) => {
               if (type === 'display') {
                 const date = new Date(data);

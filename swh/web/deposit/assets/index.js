@@ -82,6 +82,7 @@ export function initDepositAdmin(username, isStaff) {
           {
             data: 'reception_date',
             name: 'reception_date',
+            urlParam: 'date',
             render: getHumanReadableDate
           },
           {
@@ -91,6 +92,7 @@ export function initDepositAdmin(username, isStaff) {
           {
             data: 'raw_metadata',
             name: 'raw_metadata',
+            urlParam: 'metadata',
             render: (data, type, row) => {
               if (type === 'display') {
                 if (row.raw_metadata) {

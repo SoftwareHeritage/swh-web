@@ -169,15 +169,18 @@ export function initOriginSave() {
           {
             data: 'save_request_date',
             name: 'request_date',
+            urlParam: 'date',
             render: getHumanReadableDate
           },
           {
             data: 'visit_type',
-            name: 'visit_type'
+            name: 'visit_type',
+            urlParam: 'type'
           },
           {
             data: 'origin_url',
             name: 'origin_url',
+            urlParam: 'url',
             render: (data, type, row) => {
               if (type === 'display') {
                 let html = '';
@@ -208,11 +211,13 @@ export function initOriginSave() {
           },
           {
             data: 'save_request_status',
-            name: 'status'
+            name: 'status',
+            urlParam: 'request'
           },
           {
             data: 'save_task_status',
-            name: 'loading_task_status'
+            name: 'loading_task_status',
+            urlParam: 'status'
           },
           {
             name: 'info',

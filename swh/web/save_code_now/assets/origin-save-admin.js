@@ -62,15 +62,18 @@ export function initOriginSaveAdmin() {
       {
         data: 'save_request_date',
         name: 'request_date',
+        urlParam: 'date',
         render: getHumanReadableDate
       },
       {
         data: 'visit_type',
-        name: 'visit_type'
+        name: 'visit_type',
+        urlParam: 'type'
       },
       {
         data: 'origin_url',
         name: 'origin_url',
+        urlParam: 'url',
         render: (data, type, row) => {
           if (type === 'display') {
             let html = '';
@@ -147,7 +150,8 @@ export function initOriginSaveAdmin() {
 
     columnsData.splice(columnsData.length - 1, 0, {
       data: 'save_task_status',
-      name: 'save_task_status'
+      name: 'save_task_status',
+      urlParam: 'status'
     });
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable(dtUpdateSettings({

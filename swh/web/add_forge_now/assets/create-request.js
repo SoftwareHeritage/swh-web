@@ -189,16 +189,19 @@ export function populateRequestBrowseList() {
         {
           data: 'submission_date',
           name: 'submission_date',
+          urlParam: 'date',
           render: getHumanReadableDate
         },
         {
           data: 'forge_type',
           name: 'forge_type',
+          urlParam: 'type',
           render: $.fn.dataTable.render.text()
         },
         {
           data: 'forge_url',
           name: 'forge_url',
+          urlParam: 'url',
           render: (data, type, row) => {
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
             return genLink(sanitizedURL, type, true);

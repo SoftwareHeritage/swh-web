@@ -89,11 +89,13 @@ export function initMailmapUI() {
            {
              data: 'from_email',
              name: 'from_email',
+             urlParam: 'email',
              render: $.fn.dataTable.render.text()
            },
            {
              data: 'from_email_verified',
              name: 'from_email_verified',
+             urlParam: 'verified',
              render: (data, type, row) => {
                return data ? mdiCheckBold : mdiCloseThick;
              },
@@ -102,11 +104,13 @@ export function initMailmapUI() {
            {
              data: 'display_name',
              name: 'display_name',
+             urlParam: 'name',
              render: $.fn.dataTable.render.text()
            },
            {
              data: 'display_name_activated',
              name: 'display_name_activated',
+             urlParam: 'activated',
              render: (data, type, row) => {
                return data ? mdiCheckBold : mdiCloseThick;
              },
@@ -115,6 +119,7 @@ export function initMailmapUI() {
            {
              data: 'last_update_date',
              name: 'last_update_date',
+             urlParam: 'updated',
              render: (data, type, row) => {
                if (type === 'display') {
                  const date = new Date(data);
