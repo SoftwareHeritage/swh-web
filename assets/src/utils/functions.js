@@ -352,6 +352,8 @@ function dtLoadParams(e) {
     dtRemoveEvents(this);
     const init = dtUpdateSettings({...this.init()});
     this.search(init.search.search);
+    this.page(init.page);
+    this.page.len(init.pageLength);
     this.draw('full-hold');
     dtAddEvents(this);
   });
