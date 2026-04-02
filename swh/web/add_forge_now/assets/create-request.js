@@ -453,8 +453,8 @@ const giteaPathnameExtraRe = RegExpX(`
 
 const gitilesSearchExtraRe = RegExpX(`
   ^
-  (
-    \\?format=(TEXT|JSON)
+  (?i:
+    \\?format=(HTML|TEXT|JSON)
   )$`);
 
 const gitilesPathnameExtraRe = RegExpX(`
