@@ -197,9 +197,13 @@ export function dtUpdateSettings(init) {
   init.realInitComplete = init.initComplete ?? init.fnInitComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);
+    dtAddEvents(this);
   };
 
   return init;
+}
+
+function dtAddEvents(dt) {
 }
 
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
