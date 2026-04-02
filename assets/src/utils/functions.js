@@ -354,6 +354,7 @@ function dtLoadParams(e) {
     this.search(init.search.search);
     this.page(init.page);
     this.page.len(init.pageLength);
+    this.order(init.order);
     this.draw('full-hold');
     dtAddEvents(this);
   });
