@@ -256,9 +256,18 @@ export function dtUpdateSettings(init) {
 }
 
 function dtAddEvents(dt) {
+  dt.on('search.dt', dtSaveSearchParam);
 }
 
 function dtRemoveEvents(dt) {
+  dt.off('search.dt', dtSaveSearchParam);
+}
+
+function dtSaveSearchParam(e, settings) {
+  const url = new URL(window.location.href);
+  dtUpdateParam(url, e, 'search', e.dt.search());
+  dtUpdateParam(url, e, 'page', undefined);
+  dtSaveParams(url);
 }
 
 function dtUpdateParam(url, e, param, value) {
