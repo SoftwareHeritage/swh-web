@@ -201,6 +201,8 @@ export function dtUpdateSettings(init) {
 
   const getParam = (param) => params.get(`${init.urlParamPrefix}${param}`) ?? undefined;
 
+  init.search = {search: getParam('search') ?? ''};
+
   init.realInitComplete = init.initComplete ?? init.fnInitComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);
