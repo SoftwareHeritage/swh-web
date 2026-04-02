@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {genLink, getHumanReadableDate} from 'utils/functions';
+import {genLink, getHumanReadableDate, dtUpdateSettings} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 
 export function onModerationPageLoad() {
@@ -17,7 +17,7 @@ export async function populateModerationList() {
     .on('error.dt', (e, settings, techNote, message) => {
       $('#swh-add-forge-now-moderation-list-error').text(message);
     })
-    .DataTable({
+    .DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       searching: true,
       dom: '<"row mb-2"<"col-sm-3"l><"col-sm-6"><"col-sm-3"f>>' +
@@ -91,5 +91,5 @@ export async function populateModerationList() {
         }
       ],
       order: [[0, 'desc']]
-    });
+    }));
 }

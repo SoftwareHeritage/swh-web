@@ -7,7 +7,7 @@
 
 import {
   csrfPost, errorMessageFromResponse, genLink, getHumanReadableDate,
-  handleFetchError, validateUrl, textToHTML
+  handleFetchError, validateUrl, textToHTML, dtUpdateSettings
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {dataTableCommonConfig} from 'utils/constants';
@@ -156,7 +156,7 @@ export function populateRequestBrowseList() {
     .on('error.dt', (e, settings, techNote, message) => {
       $('#add-forge-browse-request-error').text(message);
     })
-    .DataTable({
+    .DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       retrieve: true,
       searching: true,
@@ -227,7 +227,7 @@ export function populateRequestBrowseList() {
         }
       ],
       order: [[0, 'desc']]
-    });
+    }));
 }
 
 function isGitHubUrl(url) {

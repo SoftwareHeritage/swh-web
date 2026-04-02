@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {handleFetchError, csrfPost, removeUrlFragment} from 'utils/functions';
+import {handleFetchError, csrfPost, removeUrlFragment, dtUpdateSettings} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 import './auth.css';
 
@@ -142,7 +142,7 @@ export function initProfilePage() {
           'An error occurred while retrieving the tokens list');
         console.log(message);
       })
-      .DataTable({
+      .DataTable(dtUpdateSettings({
         ...dataTableCommonConfig,
         ajax: Urls.oidc_list_bearer_tokens(),
         columns: [
@@ -175,7 +175,7 @@ export function initProfilePage() {
         ],
         ordering: false,
         searching: false
-      });
+      }));
     $('#swh-oidc-profile-tokens-tab').on('shown.bs.tab', () => {
       apiTokensTable.draw();
       window.location.hash = '#tokens';

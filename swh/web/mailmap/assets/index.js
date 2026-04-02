@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, handleFetchError} from 'utils/functions';
+import {csrfPost, handleFetchError, dtUpdateSettings} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 import mailmapFormTemplate from './mailmap-form.ejs';
 
@@ -82,7 +82,7 @@ export function initMailmapUI() {
            'An error occurred while retrieving the mailmaps list');
          console.log(message);
        })
-       .DataTable({
+       .DataTable(dtUpdateSettings({
          ...dataTableCommonConfig,
          ajax: Urls.profile_mailmap_list_datatables(),
          columns: [
@@ -151,6 +151,6 @@ export function initMailmapUI() {
          ],
          ordering: true,
          searching: true
-       });
+       }));
   });
 }

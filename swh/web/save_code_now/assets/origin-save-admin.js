@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-import {csrfPost, getHumanReadableDate, handleFetchError, htmlAlert} from 'utils/functions';
+import {csrfPost, getHumanReadableDate, handleFetchError, htmlAlert, dtUpdateSettings} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 
 let authorizedOriginTable;
@@ -32,21 +32,21 @@ export function initOriginSaveAdmin() {
 
     $.fn.dataTable.ext.errMode = 'throw';
 
-    authorizedOriginTable = $('#swh-authorized-origin-urls').DataTable({
+    authorizedOriginTable = $('#swh-authorized-origin-urls').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       info: false
-    });
+    }));
     enableRowSelection('#swh-authorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
 
-    unauthorizedOriginTable = $('#swh-unauthorized-origin-urls').DataTable({
+    unauthorizedOriginTable = $('#swh-unauthorized-origin-urls').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       columns: [{data: 'url', name: 'url'}],
       info: false
-    });
+    }));
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
 
@@ -94,7 +94,7 @@ export function initOriginSaveAdmin() {
       }
     ];
 
-    pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable({
+    pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('pending'),
       columns: columnsData,
@@ -104,7 +104,7 @@ export function initOriginSaveAdmin() {
           type: 'none'
         }
       }
-    });
+    }));
     enableRowSelection('#swh-origin-save-pending-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(pendingSaveRequestsTable);
 
@@ -127,7 +127,7 @@ export function initOriginSaveAdmin() {
       orderable: false
     });
 
-    rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
+    rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('rejected'),
       columns: columnsData,
@@ -137,7 +137,7 @@ export function initOriginSaveAdmin() {
           type: 'none'
         }
       }
-    });
+    }));
     enableRowSelection('#swh-origin-save-rejected-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(rejectedSaveRequestsTable);
 
@@ -146,7 +146,7 @@ export function initOriginSaveAdmin() {
       name: 'save_task_status'
     });
 
-    acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable({
+    acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable(dtUpdateSettings({
       ...dataTableCommonConfig,
       ajax: Urls.origin_save_requests_list('accepted'),
       columns: columnsData,
@@ -156,7 +156,7 @@ export function initOriginSaveAdmin() {
           type: 'none'
         }
       }
-    });
+    }));
     enableRowSelection('#swh-origin-save-accepted-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(acceptedSaveRequestsTable);
 

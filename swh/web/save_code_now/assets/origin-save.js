@@ -8,7 +8,7 @@
 import {swhSpinnerSrc, dataTableCommonConfig} from 'utils/constants';
 import {
   csrfPost, getCanonicalOriginURL, getHumanReadableDate, handleFetchError,
-  htmlAlert, isGitRepoUrl, validateUrl
+  htmlAlert, isGitRepoUrl, validateUrl, dtUpdateSettings
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
@@ -137,7 +137,7 @@ export function initOriginSave() {
         $('#swh-origin-save-request-list-error').text('An error occurred while retrieving the save requests list');
         console.log(message);
       })
-      .DataTable({
+      .DataTable(dtUpdateSettings({
         ...dataTableCommonConfig,
         ajax: {
           url: Urls.origin_save_requests_list('all'),
@@ -257,7 +257,7 @@ export function initOriginSave() {
             type: 'none'
           }
         }
-      });
+      }));
 
     swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
 

@@ -7,7 +7,7 @@
 
 import xmlFormat from 'xml-formatter';
 
-import {getHumanReadableDate, genLink} from 'utils/functions';
+import {getHumanReadableDate, genLink, dtUpdateSettings} from 'utils/functions';
 import {dataTableCommonConfig} from 'utils/constants';
 
 function genSwhLink(data, type, linkText = '') {
@@ -30,7 +30,7 @@ export function initDepositAdmin(username, isStaff) {
       .on('error.dt', (e, settings, techNote, message) => {
         $('#swh-admin-deposit-list-error').text(message);
       })
-      .DataTable({
+      .DataTable(dtUpdateSettings({
         ...dataTableCommonConfig,
         // let's define the order of table options display
         // f: (f)ilter
@@ -137,7 +137,7 @@ export function initDepositAdmin(username, isStaff) {
         ],
         scrollX: true,
         order: [[0, 'desc']]
-      });
+      }));
 
     // Some more customization is needed on the table
     $('div#list-exclude').html(`

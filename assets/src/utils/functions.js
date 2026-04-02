@@ -193,6 +193,10 @@ export function getHumanReadableDate(data) {
   return date.toLocaleString();
 }
 
+export function dtUpdateSettings(init) {
+  return init;
+}
+
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
   // Display link. It's up to the caller to sanitize sanitizedUrl first.
   if (type === 'display' && sanitizedUrl) {
