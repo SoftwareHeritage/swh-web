@@ -222,7 +222,8 @@ export function populateRequestBrowseList() {
                      '<i class="mdi mdi-magnify" aria-hidden="true"></i></a>';
             }
             return '';
-          }
+          },
+          orderable: false
         }
       ],
       order: [[0, 'desc']]

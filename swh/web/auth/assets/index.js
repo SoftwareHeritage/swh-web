@@ -169,7 +169,8 @@ export function initProfilePage() {
                   Revoke token
                 </button>`;
               return html;
-            }
+            },
+            orderable: false
           }
         ],
         ordering: false,

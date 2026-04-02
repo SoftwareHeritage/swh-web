@@ -230,7 +230,8 @@ export function initOriginSave() {
               }
               return info;
 
-            }
+            },
+            orderable: false
           },
           {
             render: (data, type, row) => {
@@ -245,7 +246,8 @@ export function initOriginSave() {
               } else {
                 return '';
               }
-            }
+            },
+            orderable: false
           }
         ],
 

@@ -123,7 +123,8 @@ export function initOriginSaveAdmin() {
                     title="save request created from webhook"></i>`;
         }
         return info;
-      }
+      },
+      orderable: false
     });
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable({
