@@ -261,6 +261,22 @@ function dtAddEvents(dt) {
 function dtRemoveEvents(dt) {
 }
 
+function dtUpdateParam(url, e, param, value) {
+  const prefix = e.dt.init().urlParamPrefix;
+  const par = `${prefix}${param}`;
+  if (value === undefined) {
+    url.searchParams.delete(par);
+  } else {
+    url.searchParams.set(par, value);
+  }
+}
+
+function dtSaveParams(url) {
+  if (window.location.href !== url.href) {
+    history.pushState(undefined, '', url.href);
+  }
+}
+
 export function genLink(sanitizedUrl, type, openInNewTab = false, linkText = '') {
   // Display link. It's up to the caller to sanitize sanitizedUrl first.
   if (type === 'display' && sanitizedUrl) {
