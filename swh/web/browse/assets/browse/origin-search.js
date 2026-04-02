@@ -47,7 +47,9 @@ async function populateOriginSearchResultsTable(origins) {
         if (oVisitType !== '???') {
           browseUrl += `&visit_type=${oVisitType}`;
         }
-        let tableRow = '<tr class="swh-search-result-entry swh-tr-hover-highlight">';
+        let tableRow = '<tr';
+        tableRow += ` id="${origin.url}"`;
+        tableRow += ' class="swh-search-result-entry swh-tr-hover-highlight">';
         tableRow += `<td class="swh-origin-visit-type" style="width: 120px;">${oVisitType}</td>`;
         tableRow += `<td style="white-space: nowrap;"><a href="${browseUrl}">${origin.url}</a></td>`;
         let archivingStatus = '???';

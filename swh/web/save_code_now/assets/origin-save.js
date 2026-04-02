@@ -165,6 +165,7 @@ export function initOriginSave() {
             });
           }
         },
+        rowId: 'origin_url',
         columns: [
           {
             data: 'save_request_date',

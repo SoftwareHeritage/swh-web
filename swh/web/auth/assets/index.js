@@ -145,6 +145,7 @@ export function initProfilePage() {
       .DataTable(dtUpdateSettings({
         ...dataTableCommonConfig,
         ajax: Urls.oidc_list_bearer_tokens(),
+        rowId: 'creation_date',
         columns: [
           {
             data: 'creation_date',

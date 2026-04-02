@@ -185,6 +185,7 @@ export function populateRequestBrowseList() {
           requestBrowseTable.draw();
         }
       },
+      rowId: 'forge_url',
       columns: [
         {
           data: 'submission_date',

@@ -51,6 +51,7 @@ export function initDepositAdmin(username, isStaff) {
             d.excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
           }
         },
+        rowId: 'id',
         columns: [
           {
             data: 'id',

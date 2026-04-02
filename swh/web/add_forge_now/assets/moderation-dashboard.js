@@ -26,6 +26,7 @@ export async function populateModerationList() {
       ajax: {
         'url': Urls.add_forge_request_list_datatables()
       },
+      rowId: 'id',
       columns: [
         {
           data: 'id',

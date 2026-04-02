@@ -36,6 +36,7 @@ export function initOriginSaveAdmin() {
       ...dataTableCommonConfig,
       urlParamPrefix: 'authorized',
       ajax: Urls.admin_origin_save_authorized_urls_list(),
+      rowId: (r) => `authorized_${r.url}`,
       columns: [{data: 'url', name: 'url'}],
       info: false
     }));
@@ -46,6 +47,7 @@ export function initOriginSaveAdmin() {
       ...dataTableCommonConfig,
       urlParamPrefix: 'unauthorized',
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
+      rowId: (r) => `unauthorized_${r.url}`,
       columns: [{data: 'url', name: 'url'}],
       info: false
     }));
@@ -103,6 +105,7 @@ export function initOriginSaveAdmin() {
       ...dataTableCommonConfig,
       urlParamPrefix: 'pending',
       ajax: Urls.origin_save_requests_list('pending'),
+      rowId: (r) => `pending_${r.id}`,
       columns: columnsData,
       order: [[0, 'desc']],
       responsive: {
@@ -137,6 +140,7 @@ export function initOriginSaveAdmin() {
       ...dataTableCommonConfig,
       urlParamPrefix: 'rejected',
       ajax: Urls.origin_save_requests_list('rejected'),
+      rowId: (r) => `rejected_${r.id}`,
       columns: columnsData,
       order: [[0, 'desc']],
       responsive: {
@@ -158,6 +162,7 @@ export function initOriginSaveAdmin() {
       ...dataTableCommonConfig,
       urlParamPrefix: 'accepted',
       ajax: Urls.origin_save_requests_list('accepted'),
+      rowId: (r) => `accepted_${r.id}`,
       columns: columnsData,
       order: [[0, 'desc']],
       responsive: {

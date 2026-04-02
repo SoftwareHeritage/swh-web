@@ -85,6 +85,7 @@ export function initMailmapUI() {
        .DataTable(dtUpdateSettings({
          ...dataTableCommonConfig,
          ajax: Urls.profile_mailmap_list_datatables(),
+         rowId: 'from_email',
          columns: [
            {
              data: 'from_email',
