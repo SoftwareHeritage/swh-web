@@ -351,6 +351,7 @@ function dtLoadParams(e) {
   $.fn.dataTable.tables({api: true}).iterator('table', function(table, i) {
     dtRemoveEvents(this);
     const init = dtUpdateSettings({...this.init()});
+    this.search(init.search.search);
     this.draw('full-hold');
     dtAddEvents(this);
   });
