@@ -239,15 +239,21 @@ export function addJumpToPagePopoverToDataTable(dataTableElt) {
       $(ellipsisButtonSelector).on('click', event => {
         $('.popover').remove();
         const pageInfo = dataTableElt.page.info();
-        let content = '<select class="jump-to-page">';
-        for (let i = 1; i <= pageInfo.pages; ++i) {
-          let selected = '';
-          if (i === pageInfo.page + 1) {
-            selected = 'selected';
+        let content = '';
+        if (pageInfo.pages > 20) {
+          content += `<input class="jump-to-page" type="number" value="${pageInfo.page + 1}" min="1" max="${pageInfo.pages}">`;
+        } else {
+          content += '<select class="jump-to-page">';
+          for (let i = 1; i <= pageInfo.pages; ++i) {
+            let selected = '';
+            if (i === pageInfo.page + 1) {
+              selected = 'selected';
+            }
+            content += `<option value="${i}" ${selected}>${i}</option>`;
           }
-          content += `<option value="${i}" ${selected}>${i}</option>`;
+          content += '</select>';
         }
-        content += `</select><span> / ${pageInfo.pages}</span>`;
+        content += `<span> / ${pageInfo.pages}</span>`;
         $(event.target).popover({
           'title': 'Jump to page',
           'content': content,
