@@ -136,9 +136,8 @@ def get_origin_visit(
     If a snapshot identifier is provided, the first visit with that snapshot
     is returned.
 
-    If no search hints are provided, return the most recent full visit with
-    a valid snapshot or the most recent partial visit with a valid snapshot
-    otherwise.
+    If no search hints are provided, return the most recent full or partial visit
+    with a valid snapshot.
 
     Args:
         origin_url: URL of origin
@@ -154,18 +153,10 @@ def get_origin_visit(
     # returns the latest full visit with a valid snapshot
     visit = archive.lookup_origin_visit_latest(
         origin_url,
-        allowed_statuses=["full"],
+        allowed_statuses=["full", "partial"],
         require_snapshot=True,
         type=visit_type,
     )
-    if not visit:
-        # or the latest partial visit with a valid snapshot otherwise
-        visit = archive.lookup_origin_visit_latest(
-            origin_url,
-            allowed_statuses=["partial"],
-            require_snapshot=True,
-            type=visit_type,
-        )
 
     if not visit_ts and not visit_id and not snapshot_id:
         if visit:
