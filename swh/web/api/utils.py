@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest
 
+from swh.model.hashutil import hash_to_bytes
 from swh.model.model import Origin
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.utils import resolve_branch_alias, reverse
 from swh.web.utils.query import parse_hash
 from swh.web.utils.typing import OriginInfo
@@ -183,6 +185,13 @@ def enrich_content(
         )
         content["license_url"] = reverse(
             "api-1-content-license", url_args={"q": q}, request=request
+        )
+    if "sha1_git" in checksums:
+        content["swhid"] = str(
+            CoreSWHID(
+                object_type=ObjectType.CONTENT,
+                object_id=hash_to_bytes(checksums["sha1_git"]),
+            )
         )
 
     return content

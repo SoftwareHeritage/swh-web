@@ -1,10 +1,12 @@
-# Copyright (C) 2015-2022  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import pytest
 
+from swh.model.hashutil import hash_to_bytes
+from swh.model.swhids import CoreSWHID, ObjectType
 from swh.web.tests.data import random_content
 from swh.web.tests.helpers import (
     check_api_get_responses,
@@ -101,6 +103,11 @@ def test_api_content_metadata(api_client, archive_data, content):
     url = reverse("api-1-content", {"q": "sha1:%s" % content["sha1"]})
     rv = check_api_get_responses(api_client, url, status_code=200)
     expected_data = archive_data.content_get(content["sha1"])
+    expected_data["swhid"] = str(
+        CoreSWHID(
+            object_type=ObjectType.CONTENT, object_id=hash_to_bytes(content["sha1_git"])
+        )
+    )
     for key, view_name in (
         ("data_url", "api-1-content-raw"),
         ("license_url", "api-1-content-license"),

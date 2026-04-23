@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -333,6 +333,8 @@ def api_content_metadata(request: Request, q: str):
         :>json string license_url: link to
             :http:get:`/api/1/content/[(hash_type):](hash)/license/`
             for getting information about the license of the content
+        :>json string swhid: the `SoftWare Hash IDentifier <https://www.swhid.org/>`_
+            of the content
 
         :statuscode 200: no error
         :statuscode 400: an invalid **hash_type** or **hash** has been provided
