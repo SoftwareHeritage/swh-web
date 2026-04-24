@@ -19,7 +19,7 @@ describe('Origin Save List Tests', function() {
     cy.fixture('origin-save').as('fullJSON').then(() => {
       const searchedJSON = {...this.fullJSON};
       searchedJSON.data = searchedJSON.data.filter(o => o.origin_url.includes(search));
-      cy.wrap(searchedJSON).as('searchedJSON')
+      cy.wrap(searchedJSON).as('searchedJSON');
     });
   });
 
