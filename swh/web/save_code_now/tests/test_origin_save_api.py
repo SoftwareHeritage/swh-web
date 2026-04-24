@@ -39,6 +39,7 @@ from swh.web.tests.helpers import (
     check_api_get_responses,
     check_api_post_response,
     check_api_post_responses,
+    check_http_post_response,
 )
 from swh.web.utils import reverse
 from swh.web.utils.typing import OriginExistenceCheckInfo
@@ -955,3 +956,29 @@ def test_create_save_request_origin_url_with_query_parameter_ok(
     resp = check_api_post_responses(api_client, url, status_code=200)
     # origin URL in response data should be unquoted
     assert resp.data["origin_url"] == origin_url
+
+
+@pytest.mark.parametrize(
+    "use_query_params", [False, True], ids=["URL arguments", "Query parameters"]
+)
+def test_create_save_request_from_browser_extension_authenticated_user(
+    browser_client, regular_user, swh_scheduler, use_query_params
+):
+    """Check that authenticated users can send a save request through a browser
+    extension like https://github.com/rdicosmo/updateswh/"""
+    browser_client.force_login(regular_user)
+
+    origin_url = "https://some.git.hosters/user/repo2"
+
+    url = _save_origin_api_url(
+        visit_type="git",
+        origin_url=origin_url,
+        use_query_params=use_query_params,
+    )
+
+    check_http_post_response(
+        browser_client,
+        url,
+        status_code=200,
+        http_origin="moz-extension://6133b20b-7550-4ee5-b2f9-b84c02207e2d",
+    )

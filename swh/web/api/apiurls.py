@@ -1,15 +1,17 @@
-# Copyright (C) 2017-2025  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import functools
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Type
 
 from django.http.response import HttpResponseBase
 from rest_framework import serializers
-from rest_framework.decorators import api_view
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view, authentication_classes
 
+from swh.auth.django.backends import OIDCBearerTokenAuthentication
 from swh.web.api import throttling
 from swh.web.api.apiresponse import make_api_response
 from swh.web.utils.urlsindex import UrlsIndex
@@ -65,6 +67,19 @@ class APIUrls(UrlsIndex):
 api_urls = APIUrls()
 
 
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return
+
+
+def session_authentication(csrf_exempt: bool) -> Type[SessionAuthentication]:
+    if csrf_exempt:
+        return CsrfExemptSessionAuthentication
+    else:
+        return SessionAuthentication
+
+
 def api_route(
     url_pattern: str,
     view_name: str,
@@ -75,6 +90,7 @@ def api_route(
     never_cache: bool = False,
     api_urls: APIUrls = api_urls,
     query_params_serializer: Optional[type[serializers.Serializer]] = None,
+    csrf_exempt: bool = False,
 ):
     """
     Decorator to ease the registration of an API endpoint
@@ -91,6 +107,8 @@ def api_route(
         never_cache: define if api response must be cached
         query_params_serializer: an optional DRF serializer to validate the API call
             query parameters
+        csrf_exempt: if :const:`True`, ensure no CSRF check is performed on POST
+            request, regardless if user is authenticated or not
 
     """
 
@@ -99,6 +117,12 @@ def api_route(
     def decorator(f):
         # create a DRF view from the wrapped function
         @api_view(methods)
+        @authentication_classes(
+            [
+                session_authentication(csrf_exempt),
+                OIDCBearerTokenAuthentication,
+            ]
+        )
         @throttling.throttle_scope(throttle_scope)
         @functools.wraps(f)
         def api_view_f(request, **kwargs) -> HttpResponseBase:
