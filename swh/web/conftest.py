@@ -25,7 +25,6 @@ from django.contrib.staticfiles import finders
 from django.core.cache import cache
 from django.template import engines
 from django.template.utils import get_app_template_dirs
-from django.test import Client
 from django.test.utils import setup_databases
 from django.urls import clear_url_caches
 from rest_framework.test import APIClient, APIRequestFactory
@@ -232,11 +231,6 @@ def request_factory(rf):
 @pytest.fixture
 def api_client():
     return APIClient()
-
-
-@pytest.fixture
-def browser_client():
-    return Client(enforce_csrf_checks=True)
 
 
 # Fixture to get API request factory from Django REST Framework

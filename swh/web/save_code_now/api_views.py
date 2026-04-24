@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2026  The Software Heritage developers
+# Copyright (C) 2018-2025  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -92,7 +92,6 @@ class OriginSaveQuerySerializer(serializers.Serializer):
     throttle_scope="swh_save_origin",
     never_cache=True,
     api_urls=save_code_now_api_urls,
-    csrf_exempt=True,
 )
 @api_route(
     r"/origin/save/(?P<request_id>[0-9]+)/",
@@ -110,7 +109,6 @@ class OriginSaveQuerySerializer(serializers.Serializer):
     never_cache=True,
     api_urls=save_code_now_api_urls,
     query_params_serializer=OriginSaveQuerySerializer,
-    csrf_exempt=True,
 )
 @api_doc("/origin/save/", category="Request archival")
 @format_docstring(webhook_info_doc=_webhook_info_doc())
