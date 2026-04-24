@@ -118,6 +118,9 @@ def origin_save_requests_list(request, status):
 
     field_order = datatables_order_params(request, "id", "desc")
 
+    if field_order[:-1] != "-id":
+        field_order.append("-id")
+
     save_requests = save_requests.order_by(*field_order)
 
     length, page = datatables_pagination_params(request)
