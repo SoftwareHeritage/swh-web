@@ -333,7 +333,7 @@ def api_content_metadata(request: Request, q: str):
         :>json string license_url: link to
             :http:get:`/api/1/content/[(hash_type):](hash)/license/`
             for getting information about the license of the content
-        :>json string swhid: the `SoftWare Hash IDentifier <https://www.swhid.org/>`_
+        :>json string swhid: the `SoftWare Hash IDentifier <https://www.swhid.org/>`__
             of the content
 
         :statuscode 200: no error

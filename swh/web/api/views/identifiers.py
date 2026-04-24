@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -23,7 +23,7 @@ def api_resolve_swhid(request: Request, swhid: str):
         Resolve a SoftWare Hash IDentifier (SWHID)
 
         Try to resolve a provided `SoftWare Hash IDentifier
-        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`_
+        <https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html>`__
         into an url for browsing the pointed archive object.
 
         If the provided identifier is valid, the existence of the object in
