@@ -158,7 +158,12 @@ def _gen_revision_changes_list(
             )
             link_text = change["from_path"] + " &rarr; " + change["to_path"]
             changes_msg.append(
-                "renamed:   %s" % _gen_diff_link(i, diff_link, link_text)
+                "renamed:   %s"
+                % _gen_diff_link(i, diff_link, link_text).replace(
+                    # unescape arrow symbol
+                    "&amp;rarr;",
+                    "&rarr;",
+                )
             )
     if not changes:
         changes_msg.append("No changes")
