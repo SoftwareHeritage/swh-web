@@ -48,6 +48,8 @@ from swh.storage.algos.snapshot import (
 from swh.web import config as swhweb_config
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
+    ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION,
+    ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION,
     ALTER_ADMIN_PERMISSION,
     API_PROVENANCE_PERMISSION,
     API_SAVE_BULK_PERMISSION,
@@ -1370,6 +1372,12 @@ def add_forge_moderator():
     moderator = User.objects.create_user(username="add-forge moderator", password="")
     moderator.user_permissions.add(
         get_or_create_django_permission(ADD_FORGE_MODERATOR_PERMISSION)
+    )
+    moderator.user_permissions.add(
+        get_or_create_django_permission(ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION)
+    )
+    moderator.user_permissions.add(
+        get_or_create_django_permission(ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION)
     )
     return moderator
 

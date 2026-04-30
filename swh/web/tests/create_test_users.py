@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2025  The Software Heritage developers
+# Copyright (C) 2021-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -10,6 +10,8 @@ from django.contrib.auth.models import Group
 
 from swh.web.auth.utils import (
     ADD_FORGE_MODERATOR_PERMISSION,
+    ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION,
+    ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION,
     ADMIN_LIST_DEPOSIT_PERMISSION,
     ALTER_ADMIN_PERMISSION,
     MAILMAP_ADMIN_PERMISSION,
@@ -45,7 +47,11 @@ users: Dict[str, Tuple[str, str, List[str], List[str]]] = {
     "add-forge-moderator": (
         "add-forge-moderator",
         "moderator@example.org",
-        [ADD_FORGE_MODERATOR_PERMISSION],
+        [
+            ADD_FORGE_MODERATOR_PERMISSION,
+            ADD_FORGE_NOW_CHANGE_REQUEST_PERMISSION,
+            ADD_FORGE_NOW_VIEW_REQUEST_PERMISSION,
+        ],
         [],
     ),
     "mailmap-admin": (
@@ -72,9 +78,11 @@ users: Dict[str, Tuple[str, str, List[str], List[str]]] = {
 for username, (password, email, permissions, groups) in users.items():
     if not User.objects.filter(username=username).exists():
         user = User.objects.create_user(username, email, password)
-        for perm_name in permissions:
-            user.user_permissions.add(get_or_create_django_permission(perm_name))
-        for group_name in groups:
-            user.groups.add(Group.objects.get_or_create(name=group_name)[0])
-        if permissions or groups:
-            user.save()
+    else:
+        user = User.objects.get_by_natural_key(username)
+    for perm_name in permissions:
+        user.user_permissions.add(get_or_create_django_permission(perm_name))
+    for group_name in groups:
+        user.groups.add(Group.objects.get_or_create(name=group_name)[0])
+    if permissions or groups:
+        user.save()
