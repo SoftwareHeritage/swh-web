@@ -78,7 +78,7 @@ listed_origins: Dict[str, Any] = {
         },
         {
             "type": "cgit",
-            "info_url": "https://git.zx2c4.com/cgit/about",
+            "info_url": "https://git.zx2c4.com/cgit/about/",
             "info": "public repositories from cgit instances",
             "search_pattern": {
                 "default": "cgit",
