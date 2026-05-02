@@ -169,7 +169,7 @@ listed_origins: Dict[str, Any] = {
         },
         {
             "type": "gitiles",
-            "info_url": "https://github.com/google/gitiles",
+            "info_url": "https://gerrit.googlesource.com/gitiles/",
             "info": "public repositories from Gitiles instances",
             "search_pattern": {
                 "default": "gitiles",
