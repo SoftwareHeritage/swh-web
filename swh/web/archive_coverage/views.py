@@ -226,7 +226,9 @@ listed_origins: Dict[str, Any] = {
         },
         {
             "type": "grokmirror",
-            "info_url": "https://git.kernel.org/pub/scm/utils/grokmirror/grokmirror.git/about/",
+            "info_url": (
+                "https://git.kernel.org/pub/scm/utils/grokmirror/grokmirror.git/tree/README.rst"
+            ),
             "info": "public repositories from Grokmirror instances",
             "search_pattern": {
                 "default": "grokmirror",
