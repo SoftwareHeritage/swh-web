@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -74,7 +74,7 @@ def from_swh(
     hashess={},
     bytess={},
     dates={},
-    blacklist={},
+    blocked={},
     removables_if_empty={},
     empty_dict={},
     empty_list={},
@@ -91,7 +91,7 @@ def from_swh(
             hexadecimal string
         bytess: list/set of keys representing bytes values which needs to be
             decoded
-        blacklist: set of keys to filter out from the conversion
+        blocked: set of keys to filter out from the conversion
         convert: set of keys whose associated values need to be converted using
             convert_fn
         convert_fn: the conversion function to apply on the value of key in
@@ -151,7 +151,7 @@ def from_swh(
 
     new_dict = {}
     for key, value in dict_swh.items():
-        if key in blacklist or (key in removables_if_empty and not value):
+        if key in blocked or (key in removables_if_empty and not value):
             continue
 
         if key in dates:
@@ -164,7 +164,7 @@ def from_swh(
                 hashess=hashess,
                 bytess=bytess,
                 dates=dates,
-                blacklist=blacklist,
+                blocked=blocked,
                 removables_if_empty=removables_if_empty,
                 empty_dict=empty_dict,
                 empty_list=empty_list,
@@ -196,7 +196,7 @@ def from_swh(
 
 def from_origin(origin: Mapping[str, Any]) -> OriginInfo:
     """Convert from a swh origin to an origin dictionary."""
-    return from_swh(origin, blacklist={"id"})
+    return from_swh(origin, blocked={"id"})
 
 
 def from_release(release: Release) -> Dict[str, Any]:
@@ -303,7 +303,7 @@ def from_raw_extrinsic_metadata(
     return from_swh(
         metadata.to_dict() if isinstance(metadata, RawExtrinsicMetadata) else metadata,
         hashess={"id"},
-        blacklist={"metadata"},
+        blocked={"metadata"},
         dates={"discovery_date"},
     )
 
@@ -313,7 +313,7 @@ def from_content(content):
     return from_swh(
         content,
         hashess={"sha1", "sha1_git", "sha256", "blake2s256"},
-        blacklist={"ctime"},
+        blocked={"ctime"},
         convert={"status"},
         convert_fn=lambda v: "absent" if v == "hidden" else v,
     )

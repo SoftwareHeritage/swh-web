@@ -136,7 +136,7 @@ def api_save_origin(
 
         * immediately **accepted**, for well known code hosting providers
           like for instance GitHub or GitLab
-        * **rejected**, in case the url is blacklisted by Software Heritage
+        * **rejected**, in case the url is blocked by Software Heritage
         * **put in pending state** until a manual check is done in order to
           determine if it can be loaded or not
 
@@ -207,7 +207,7 @@ def api_save_origin(
 
         :statuscode 200: no error
         :statuscode 400: an invalid visit type or origin url has been provided
-        :statuscode 403: the provided origin url is blacklisted
+        :statuscode 403: the provided origin url is blocked
         :statuscode 404: no save requests have been found for a given origin
 
     """

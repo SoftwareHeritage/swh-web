@@ -16,7 +16,7 @@ const $ = Cypress.$;
 const saveCodeMsg = {
   'success': 'The "save code now" request has been accepted and will be processed as soon as possible.',
   'warning': 'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
-  'rejected': 'The "save code now" request has been rejected because the provided origin url is blacklisted.',
+  'rejected': 'The "save code now" request has been rejected because the provided origin url is not allowed to be archived.',
   'rateLimit': 'The rate limit for "save code now" requests has been reached. Please try again later.',
   'not-found': 'The provided url does not exist',
   'unknownError': 'An unexpected error happened when submitting the "save code now" request',

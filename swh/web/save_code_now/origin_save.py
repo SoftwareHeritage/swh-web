@@ -62,7 +62,7 @@ WEBHOOK_REQUEST_COOLDOWN_INTERVAL = get_config().get(
 def get_origin_save_authorized_urls() -> List[str]:
     """
     Get the list of origin url prefixes authorized to be
-    immediately loaded into the archive (whitelist).
+    immediately loaded into the archive (allowed).
 
     Returns:
         list: The list of authorized origin url prefix
@@ -73,7 +73,7 @@ def get_origin_save_authorized_urls() -> List[str]:
 def get_origin_save_unauthorized_urls() -> List[str]:
     """
     Get the list of origin url prefixes forbidden to be
-    loaded into the archive (blacklist).
+    loaded into the archive (blocked).
 
     Returns:
         list: the list of unauthorized origin url prefix
@@ -87,8 +87,8 @@ def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str
 
     Based on the origin url, the save request will be either:
 
-      * immediately accepted if the url is whitelisted
-      * rejected if the url is blacklisted
+      * immediately accepted if the url is allowed to be archived
+      * rejected if the url is not allowed to be archived
       * put in pending state for manual review otherwise
 
     Args:
@@ -98,7 +98,7 @@ def can_save_origin(origin_url: str, bypass_pending_review: bool = False) -> str
         str: the origin save request status, either **accepted**,
         **rejected** or **pending**
     """
-    # origin url may be blacklisted
+    # origin url may be blocked
     for url_prefix in get_origin_save_unauthorized_urls():
         if origin_url.startswith(url_prefix):
             return SAVE_REQUEST_REJECTED
@@ -480,7 +480,7 @@ def create_save_origin_request(
 
     Raises:
         BadInputExc: the visit type or origin url is invalid or inexistent
-        ForbiddenExc: the provided origin url is blacklisted
+        ForbiddenExc: the provided origin url is not allowed to be archived
 
     Returns:
         dict: A dict describing the save request with the following keys:
@@ -642,7 +642,7 @@ def create_save_origin_request(
                 from_webhook=from_webhook,
                 webhook_origin=webhook_origin or "",
             )
-    # origin cannot be saved as its url is blacklisted,
+    # origin cannot be saved as its url is blocked,
     # log the request to the database anyway
     else:
         sor = SaveOriginRequest.objects.create(
@@ -658,7 +658,7 @@ def create_save_origin_request(
         raise ForbiddenExc(
             (
                 'The "save code now" request has been rejected '
-                "because the provided origin url is blacklisted."
+                "because the provided origin url is not allowed to be archived."
             )
         )
 

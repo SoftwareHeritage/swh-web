@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2024  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -98,7 +98,7 @@ def test_from_swh():
         hashess={"d", "o", "x"},
         bytess={"c", "e", "g", "l"},
         dates={"s", "s1", "s2"},
-        blacklist={"h", "m", "n", "o"},
+        blocked={"h", "m", "n", "o"},
         removables_if_empty={"t"},
         empty_dict={"u"},
         empty_list={"v"},
