@@ -48,8 +48,8 @@ function apiErrorGitLabInstance(api, apiIssue, error) {
   throw error;
 }
 
-function emptyGitLabInstance(apiIssue) {
-  const error = 'GitLab instance has no public projects';
+function emptyGitLabInstance(forgeTypeName, apiIssue) {
+  const error = `${forgeTypeName} instance has no public projects`;
   $('#userMessage').text(apiIssue);
   $('#userMessageDetail').text(error);
   $('#userMessage').removeClass('text-bg-info');
@@ -58,15 +58,26 @@ function emptyGitLabInstance(apiIssue) {
   throw new EmptyGitLabError(error);
 }
 
-function nonEmptyGitLabInstance() {
-  $('#userMessage').text('GitLab instance has public projects');
+function nonEmptyGitLabInstance(forgeTypeName) {
+  $('#userMessage').text(`${forgeTypeName} instance has public projects`);
   $('#userMessageDetail').empty();
   $('#userMessage').removeClass('text-bg-info');
   $('#userMessage').addClass('text-bg-success');
 }
 
-async function validateGitLabContents() {
-  $('#userMessage').text('GitLab instance projects API loading');
+async function validateGitLabContents(forgeType) {
+  class ForgeType {
+    static forgeTypes = {
+      gitlab: 'GitLab',
+      heptapod: 'Heptapod',
+    };
+    toString() {
+      return ForgeType.forgeTypes[forgeType] ?? 'GitLab-based';
+    }
+  }
+  const forgeTypeName = new ForgeType();
+
+  $('#userMessage').text(`${forgeTypeName} instance projects API loading`);
   $('#userMessageDetail').text('Checking available public projects');
   $('#userMessage').removeClass('text-bg-danger');
   $('#userMessage').removeClass('text-bg-success');
@@ -74,7 +85,7 @@ async function validateGitLabContents() {
 
   const url = $('#swh-input-forge-url').val().trim();
   const api = `${url}api/v4/projects?per_page=1`;
-  const apiIssue = 'GitLab instance projects API issue';
+  const apiIssue = `${forgeTypeName} instance projects API issue`;
   try {
     const response = await fetch(api);
     if (!response.ok) {
@@ -83,9 +94,9 @@ async function validateGitLabContents() {
     const json = await response.json();
     if (Array.isArray(json)) {
       if (json.length === 0) {
-        emptyGitLabInstance(apiIssue);
+        emptyGitLabInstance(forgeTypeName, apiIssue);
       } else {
-        nonEmptyGitLabInstance();
+        nonEmptyGitLabInstance(forgeTypeName);
       }
     } else {
       apiErrorGitLabInstance(api, apiIssue, 'JSON data is not an array');
@@ -103,7 +114,7 @@ async function validateGitLabContents() {
 async function validateForgeContents() {
   const forgeType = $('#swh-input-forge-type').val();
   if (['gitlab', 'heptapod'].includes(forgeType)) {
-    await validateGitLabContents();
+    await validateGitLabContents(forgeType);
   }
 }
 
