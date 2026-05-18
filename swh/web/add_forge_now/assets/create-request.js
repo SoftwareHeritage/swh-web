@@ -96,7 +96,15 @@ async function validateGitLabContents(forgeType) {
       if (json.length === 0) {
         emptyGitLabInstance(forgeTypeName, apiIssue);
       } else {
+        const isHeptapod = (forgeType === 'gitlab' && 'vcs_type' in json[0]);
+        if (isHeptapod) {
+          forgeType = 'heptapod';
+          $('#swh-input-forge-type').val(forgeType);
+        }
         nonEmptyGitLabInstance(forgeTypeName);
+        if (isHeptapod) {
+          $('#userMessageDetail').text('Corrected forge type to Heptapod');
+        }
       }
     } else {
       apiErrorGitLabInstance(api, apiIssue, 'JSON data is not an array');
