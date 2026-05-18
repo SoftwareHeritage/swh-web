@@ -69,7 +69,7 @@ async function validateGitLabContents(forgeType) {
   class ForgeType {
     static forgeTypes = {
       gitlab: 'GitLab',
-      heptapod: 'Heptapod',
+      heptapod: 'Heptapod'
     };
     toString() {
       return ForgeType.forgeTypes[forgeType] ?? 'GitLab-based';
