@@ -7,7 +7,7 @@
 
 import {
   csrfPost, errorMessageFromResponse, genLink, getHumanReadableDate,
-  handleFetchError, validateUrl, textToHTML, dtUpdateSettings
+  handleFetchError, validateUrl, textToHTML, dtUpdateSettings,
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import {dataTableCommonConfig} from 'utils/constants';
@@ -17,7 +17,7 @@ let requestBrowseTable;
 const addForgeCheckboxId = 'swh-add-forge-user-filter';
 const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
   'inputId': addForgeCheckboxId,
-  'checked': false
+  'checked': false,
 });
 
 class EmptyGitLabError extends Error { }
@@ -69,7 +69,7 @@ async function validateGitLabContents(forgeType) {
   class ForgeType {
     static forgeTypes = {
       gitlab: 'GitLab',
-      heptapod: 'Heptapod'
+      heptapod: 'Heptapod',
     };
     toString() {
       return ForgeType.forgeTypes[forgeType] ?? 'GitLab-based';
@@ -193,7 +193,7 @@ export function populateRequestBrowseList() {
           if (swh.webapp.isUserLoggedIn() && (checked === undefined || checked)) {
             d.user_requests_only = '1';
           }
-        }
+        },
       },
       fnInitComplete: function() {
         if (swh.webapp.isUserLoggedIn()) {
@@ -210,13 +210,13 @@ export function populateRequestBrowseList() {
           data: 'submission_date',
           name: 'submission_date',
           urlParam: 'date',
-          render: getHumanReadableDate
+          render: getHumanReadableDate,
         },
         {
           data: 'forge_type',
           name: 'forge_type',
           urlParam: 'type',
-          render: $.fn.dataTable.render.text()
+          render: $.fn.dataTable.render.text(),
         },
         {
           data: 'forge_url',
@@ -225,14 +225,14 @@ export function populateRequestBrowseList() {
           render: (data, type, row) => {
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
             return genLink(sanitizedURL, type, true);
-          }
+          },
         },
         {
           data: 'status',
           name: 'status',
           render: function(data, type, row, meta) {
             return swh.add_forge_now.formatRequestStatusName(data);
-          }
+          },
         },
         {
           render: (data, type, row) => {
@@ -246,10 +246,10 @@ export function populateRequestBrowseList() {
             }
             return '';
           },
-          orderable: false
-        }
+          orderable: false,
+        },
       ],
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
     }));
 }
 

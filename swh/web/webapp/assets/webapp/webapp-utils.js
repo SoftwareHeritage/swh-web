@@ -259,7 +259,7 @@ export function addJumpToPagePopoverToDataTable(dataTableElt) {
           'content': content,
           'html': true,
           'placement': 'top',
-          'sanitizeFn': swh.webapp.filterXSS
+          'sanitizeFn': swh.webapp.filterXSS,
         });
         $(event.target).popover('show');
         $('.jump-to-page').on('change', function() {

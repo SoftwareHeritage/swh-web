@@ -46,7 +46,7 @@ $(() => {
       return $(title).children('.popover-heading').html();
     },
     offset: '50vh',
-    sanitize: false
+    sanitize: false,
   });
 
   $('.swh-vault-menu a.dropdown-item').on('click', e => {

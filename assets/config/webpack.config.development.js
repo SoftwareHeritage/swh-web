@@ -48,7 +48,7 @@ try {
     'swh_web_package_path = pth_file[0].read_text()[:-1];' +
     'assert swh_web_package_path.startswith(\'/\');' +
     'print(swh_web_package_path, end=\'\')"',
-    {cwd: __dirname, stdio: ['pipe', 'pipe', null]}
+    {cwd: __dirname, stdio: ['pipe', 'pipe', null]},
   );
   outputPath = path.resolve(swhWebPythonModulePath.toString(), './swh/web/static');
 } catch (_) {
@@ -94,8 +94,8 @@ for (const mathjaxExtData of [
           'id': `mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
           'path': `./node_modules/mathjax/input/${mathjaxExtData['extsType']}/extensions/${extension}`,
           'spdxLicenseExpression': 'Apache-2.0',
-          'licenseFilePath': './node_modules/mathjax/LICENSE'
-        }
+          'licenseFilePath': './node_modules/mathjax/LICENSE',
+        },
       ];
     }
   });
@@ -107,8 +107,8 @@ const cssLoaders = [
   {
     loader: 'css-loader',
     options: {
-      sourceMap: true
-    }
+      sourceMap: true,
+    },
   },
   {
     loader: 'postcss-loader',
@@ -120,19 +120,19 @@ const cssLoaders = [
           'autoprefixer',
           'postcss-normalize',
           ['postcss-reporter', {
-            clearReportedMessages: true
-          }]
-        ]
-      }
-    }
-  }
+            clearReportedMessages: true,
+          }],
+        ],
+      },
+    },
+  },
 ];
 
 // webpack development configuration
 module.exports = {
   // use caching to speedup incremental builds
   cache: {
-    type: 'filesystem'
+    type: 'filesystem',
   },
   // set mode to development
   mode: 'development',
@@ -147,13 +147,13 @@ module.exports = {
       logging: 'warn',
       overlay: {
         warnings: true,
-        errors: true
+        errors: true,
       },
-      progress: true
+      progress: true,
     },
     devMiddleware: {
       publicPath: devServerPublicPath,
-      stats: 'errors-only'
+      stats: 'errors-only',
     },
     setupMiddlewares: (middlewares) => {
       return middlewares.filter(middleware => middleware.name !== 'cross-origin-header-check');
@@ -163,21 +163,21 @@ module.exports = {
     // enable to serve static assets not managed by webpack
     static: {
       directory: path.resolve('./'),
-      watch: false
+      watch: false,
     },
     // we do not use hot reloading here (as a framework like React needs to be used in order to fully benefit from that feature)
     // and prefer to fully reload the frontend application in the browser instead
     hot: false,
     historyApiFallback: true,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
     },
     watchFiles: {
       paths: ['assets/**/*', 'swh/web/**/*'],
       options: {
-        ignored: /.*.sqlite3.*/
-      }
-    }
+        ignored: /.*.sqlite3.*/,
+      },
+    },
   },
   // set entries to the bundles we want to produce
   entry: bundles,
@@ -190,7 +190,7 @@ module.exports = {
     // each bundle will be compiled as a umd module with its own namespace
     // in order to easily use them in django templates
     library: ['swh', '[name]'],
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
   },
   // module resolving configuration
   resolve: {
@@ -198,13 +198,13 @@ module.exports = {
     modules: [
       'node_modules',
       path.resolve(repoRootPath, 'assets/src'),
-      path.resolve(repoRootPath, 'swh/web')
-    ]
+      path.resolve(repoRootPath, 'swh/web'),
+    ],
   },
   stats: 'errors-warnings',
   snapshot: {
     // fix webpack warning related to missing package.json file
-    managedPaths: [/^highlightjs-/]
+    managedPaths: [/^highlightjs-/],
   },
   // module import configuration
   module: {
@@ -227,8 +227,8 @@ module.exports = {
                   // in order to benefit from dead code elimination (aka tree shaking)
                   // when running webpack in production mode
                   'loose': true,
-                  'modules': false
-                }]
+                  'modules': false,
+                }],
               ],
               plugins: [
                 // use babel transform-runtime plugin in order to use aync/await syntax
@@ -236,15 +236,15 @@ module.exports = {
                 // use other babel plugins to benefit from advanced js features (es2017)
                 '@babel/plugin-syntax-dynamic-import',
                 // polyfill globalThis in old browsers
-                'babel-plugin-transform-globalthis'
+                'babel-plugin-transform-globalthis',
               ],
               env: {
                 test: {
-                  plugins: ['istanbul']
-                }
-              }
-            }
-          }]
+                  plugins: ['istanbul'],
+                },
+              },
+            },
+          }],
       },
       {
         test: /\.ejs$/,
@@ -253,17 +253,17 @@ module.exports = {
           options: {
             htmlmin: true,
             htmlminOptions: {
-              removeComments: true
-            }
-          }
-        }]
+              removeComments: true,
+            },
+          },
+        }],
       },
       // css import configuration:
       //  - first process it with postcss
       //  - then extract it to a dedicated file associated to each bundle
       {
         test: /\.css$/,
-        use: cssLoaders
+        use: cssLoaders,
       },
       // sass import configuration:
       //  - generate css with sass-loader
@@ -275,8 +275,8 @@ module.exports = {
           {
             loader: 'resolve-url-loader',
             options: {
-              sourceMap: true
-            }
+              sourceMap: true,
+            },
           },
           {
             loader: 'sass-loader',
@@ -285,49 +285,49 @@ module.exports = {
               implementation: require('sass'),
               sassOptions: {
                 quietDeps: true,
-                silenceDeprecations: ['import', 'global-builtin']
-              }
-            }
-          }
-        ])
+                silenceDeprecations: ['import', 'global-builtin'],
+              },
+            },
+          },
+        ]),
       },
       // web fonts import configuration
       {
         test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name][ext][query]'
-        }
+          filename: 'fonts/[name][ext][query]',
+        },
       }, {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name][ext][query]'
-        }
+          filename: 'fonts/[name][ext][query]',
+        },
       }, {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name][ext][query]'
-        }
+          filename: 'fonts/[name][ext][query]',
+        },
       }, {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name][ext][query]'
-        }
+          filename: 'fonts/[name][ext][query]',
+        },
       }, {
         test: /\.otf(\?v=\d+\.\d+\.\d+)?$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name][ext][query]'
-        }
+          filename: 'fonts/[name][ext][query]',
+        },
       }, {
         test: /\.png$/,
         type: 'asset/resource',
         generator: {
-          filename: 'img/thirdParty/[name][ext][query]'
-        }
+          filename: 'img/thirdParty/[name][ext][query]',
+        },
       },
       {
         test: /\.ya?ml$/,
@@ -335,13 +335,13 @@ module.exports = {
         use: {
           loader: 'yaml-loader',
           options: {
-            asJSON: true
-          }
-        }
-      }
+            asJSON: true,
+          },
+        },
+      },
     ],
     // tell webpack to not parse already minified files to speedup build process
-    noParse: [path.resolve(nodeModules, 'mathjax/tex-mml-chtml.js')]
+    noParse: [path.resolve(nodeModules, 'mathjax/tex-mml-chtml.js')],
   },
   // webpack plugins
   plugins: [
@@ -351,31 +351,31 @@ module.exports = {
         '**/*', '!xml', '!xml/*', '!img', '!img/*',
         '!img/logos', '!img/logos/*', '!img/icons',
         '!img/icons/*', '!json', '!json/*',
-        '!security.txt'
-      ]
+        '!security.txt',
+      ],
     }),
     // needed in order to use django_webpack_loader
     new BundleTracker({
       path: outputPath,
-      filename: 'webpack-stats.json'
+      filename: 'webpack-stats.json',
     }),
     // for generating the robots.txt file
     new RobotstxtPlugin({
       policy: [{
         userAgent: '*',
-        disallow: ['/api/', '/browse/snapshot/*/log/', '/browse/revision/*/log/']
-      }]
+        disallow: ['/api/', '/browse/snapshot/*/log/', '/browse/revision/*/log/'],
+      }],
     }),
     // for extracting all stylesheets in separate css files
     new MiniCssExtractPlugin({
       filename: 'css/[name].[contenthash].css',
-      chunkFilename: 'css/[name].[contenthash].css'
+      chunkFilename: 'css/[name].[contenthash].css',
     }),
     // fix generated asset sourcemaps to workaround a Firefox issue
     new FixSwhSourceMapsPlugin(),
     // define some global variables accessible from js code
     new webpack.DefinePlugin({
-      __STATIC__: JSON.stringify(publicPath)
+      __STATIC__: JSON.stringify(publicPath),
     }),
     // needed in order to use pdf.js
     new webpack.IgnorePlugin({resourceRegExp: /^\.\/pdf.worker.js$/}),
@@ -383,58 +383,58 @@ module.exports = {
       patterns: [
         {
           from: path.resolve(nodeModules, 'pdfjs-dist/legacy/build/pdf.worker.min.mjs'),
-          to: path.resolve(outputPath, 'js/pdf.worker.min.js')
+          to: path.resolve(outputPath, 'js/pdf.worker.min.js'),
         },
         {
           from: path.resolve(nodeModules, '@mathjax/mathjax-newcm-font/chtml/woff2/**'),
-          to: path.resolve(outputPath, 'fonts/[name][ext]')
+          to: path.resolve(outputPath, 'fonts/[name][ext]'),
         },
         {
           from: path.resolve(nodeModules, 'mathjax/input/tex/extensions/'),
-          to: path.resolve(outputPath, 'js/mathjax/input/tex/extensions/')
+          to: path.resolve(outputPath, 'js/mathjax/input/tex/extensions/'),
         },
         {
           from: path.resolve(nodeModules, 'mathjax/input/mml/extensions/'),
-          to: path.resolve(outputPath, 'js/mathjax/input/mml/extensions/')
+          to: path.resolve(outputPath, 'js/mathjax/input/mml/extensions/'),
         },
         {
           from: path.resolve(nodeModules, 'mathjax/sre/'),
-          to: path.resolve(outputPath, 'js/mathjax/sre/')
-        }
-      ]
+          to: path.resolve(outputPath, 'js/mathjax/sre/'),
+        },
+      ],
     }),
     new GenerateWebLabelsPlugin({
       outputType: 'json',
       exclude: ['mini-css-extract-plugin'],
       srcReplace: {
         './node_modules/admin-lte/dist/js/adminlte.min.js':
-        './node_modules/admin-lte/dist/js/adminlte.js'
+        './node_modules/admin-lte/dist/js/adminlte.js',
       },
       licenseOverride: {
         './assets/src/thirdparty/jquery.tabSlideOut/jquery.tabSlideOut.js': {
           'spdxLicenseExpression': 'GPL-3.0',
-          'licenseFilePath': './assets/src/thirdparty/jquery.tabSlideOut/LICENSE'
+          'licenseFilePath': './assets/src/thirdparty/jquery.tabSlideOut/LICENSE',
         },
         './node_modules/highlightjs-chapel/dist/chapel.min.js': {
           'spdxLicenseExpression': 'BSD-3-Clause',
-          'licenseFilePath': './node_modules/highlightjs-chapel/LICENSE'
+          'licenseFilePath': './node_modules/highlightjs-chapel/LICENSE',
         },
         './node_modules/highlightjs-lang/dist/lang.min.js': {
           'spdxLicenseExpression': 'MIT',
-          'licenseFilePath': './node_modules/highlightjs-lang/LICENSE'
+          'licenseFilePath': './node_modules/highlightjs-lang/LICENSE',
         },
         './node_modules/highlightjs-mirc/mirc.js': {
           'spdxLicenseExpression': 'MIT',
-          'licenseFilePath': './node_modules/highlightjs-mirc/LICENSE'
+          'licenseFilePath': './node_modules/highlightjs-mirc/LICENSE',
         },
         './node_modules/highlightjs-never/dist/never.min.js': {
           'spdxLicenseExpression': 'MIT',
-          'licenseFilePath': './node_modules/highlightjs-never/LICENSE'
+          'licenseFilePath': './node_modules/highlightjs-never/LICENSE',
         },
         './node_modules/highlightjs-bicep/src/highlightjs/dist/bicep.es.min.js': {
           'spdxLicenseExpression': 'MIT',
-          'licenseFilePath': './node_modules/highlightjs-bicep/LICENSE'
-        }
+          'licenseFilePath': './node_modules/highlightjs-bicep/LICENSE',
+        },
       },
       additionalScripts: Object.assign(
         {
@@ -443,33 +443,33 @@ module.exports = {
               'id': 'pdfjs-dist/legacy/build/pdf.worker.mjs',
               'path': './node_modules/pdfjs-dist/build/pdf.worker.mjs',
               'spdxLicenseExpression': 'Apache-2.0',
-              'licenseFilePath': './node_modules/pdfjs-dist/LICENSE'
+              'licenseFilePath': './node_modules/pdfjs-dist/LICENSE',
 
-            }
+            },
           ],
           '/jsreverse/': [
             {
               'id': 'jsreverse',
               'path': '/jsreverse/',
               'spdxLicenseExpression': 'AGPL-3.0-or-later',
-              'licenseFilePath': './LICENSE'
-            }
+              'licenseFilePath': './LICENSE',
+            },
           ],
           'https://piwik.inria.fr/matomo.js': [
             {
               'id': 'matomo.js',
               'path': 'https://github.com/matomo-org/matomo/blob/master/js/piwik.js',
               'spdxLicenseExpression': 'BSD-3-Clause',
-              'licenseFilePath': 'https://github.com/matomo-org/matomo/blob/master/js/LICENSE.txt'
-            }
+              'licenseFilePath': 'https://github.com/matomo-org/matomo/blob/master/js/LICENSE.txt',
+            },
           ],
-          ...mathjaxExtensionsLicenses
-        }
-      )
+          ...mathjaxExtensionsLicenses,
+        },
+      ),
     }),
     new ProgressBarPlugin({
       format: chalk.cyan.bold('webpack build of swh-web assets') + ' [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
-      width: 50
+      width: 50,
     }),
     new DumpHighlightjsLanguagesDataPlugin(),
     // Process all js files with eslint for consistent code style
@@ -478,7 +478,7 @@ module.exports = {
       configType: 'flat',
       overrideConfigFile: path.join(repoRootPath, 'eslint.config.js'),
       cache: true,
-      failOnError: !isDevServer
+      failOnError: !isDevServer,
     }),
     // lint swh-web stylesheets
     new StylelintPlugin({
@@ -488,7 +488,7 @@ module.exports = {
           'font-family-no-missing-generic-family-keyword': null,
           'no-descending-specificity': null,
           'selector-class-pattern': null,
-          'media-feature-range-notation': 'prefix'
+          'media-feature-range-notation': 'prefix',
         },
         ignoreFiles: ['node_modules/**/*.css',
                       'node_modules/**/*.scss',
@@ -503,9 +503,9 @@ module.exports = {
                       'assets/src/thirdparty/**/*.css',
                       'docs/**/*.css',
                       '.cypress_cache/**/*.css',
-                      'swh/web/static/css/*.css']
-      }
-    })
+                      'swh/web/static/css/*.css'],
+      },
+    }),
   ],
   // webpack optimizations
   optimization: {
@@ -516,13 +516,13 @@ module.exports = {
           test: 'vendors',
           chunks: 'all',
           name: 'vendors',
-          enforce: true
-        }
-      }
-    }
+          enforce: true,
+        },
+      },
+    },
   },
   // disable webpack warnings about bundle sizes
   performance: {
-    hints: false
-  }
+    hints: false,
+  },
 };

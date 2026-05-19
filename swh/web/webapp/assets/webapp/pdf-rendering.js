@@ -35,7 +35,7 @@ export async function renderPdf(pdfUrl) {
     // Render PDF page into canvas context
     const renderContext = {
       canvasContext: ctx,
-      viewport: viewport
+      viewport: viewport,
     };
 
     // Wait for rendering to finish

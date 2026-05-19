@@ -24,7 +24,7 @@ export async function populateModerationList() {
            '<"row"<"col-sm-12"tr>>' +
            '<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
       ajax: {
-        'url': Urls.add_forge_request_list_datatables()
+        'url': Urls.add_forge_request_list_datatables(),
       },
       rowId: 'id',
       columns: [
@@ -34,19 +34,19 @@ export async function populateModerationList() {
           render: function(data, type, row, meta) {
             const dashboardUrl = Urls.add_forge_now_request_dashboard(data);
             return `<a href=${dashboardUrl}>${data}</a>`;
-          }
+          },
         },
         {
           data: 'submission_date',
           name: 'submission_date',
           urlParam: 'submission',
-          render: getHumanReadableDate
+          render: getHumanReadableDate,
         },
         {
           data: 'forge_type',
           name: 'forge_type',
           urlParam: 'type',
-          render: $.fn.dataTable.render.text()
+          render: $.fn.dataTable.render.text(),
         },
         {
           data: 'forge_url',
@@ -55,26 +55,26 @@ export async function populateModerationList() {
           render: (data, type, row) => {
             const sanitizedURL = $.fn.dataTable.render.text().display(data);
             return genLink(sanitizedURL, type, true);
-          }
+          },
         },
         {
           data: 'last_moderator',
           name: 'last_moderator',
           urlParam: 'moderator',
-          render: $.fn.dataTable.render.text()
+          render: $.fn.dataTable.render.text(),
         },
         {
           data: 'last_modified_date',
           name: 'last_modified_date',
           urlParam: 'modified',
-          render: getHumanReadableDate
+          render: getHumanReadableDate,
         },
         {
           data: 'status',
           name: 'status',
           render: function(data, type, row, meta) {
             return swh.add_forge_now.formatRequestStatusName(data);
-          }
+          },
         },
         {
           render: (data, type, row) => {
@@ -93,9 +93,9 @@ export async function populateModerationList() {
             html += '</div>';
             return html;
           },
-          orderable: false
-        }
+          orderable: false,
+        },
       ],
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
     }));
 }

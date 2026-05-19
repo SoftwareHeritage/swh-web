@@ -12,7 +12,7 @@ import 'cypress-axe';
 import 'cypress-iframe';
 
 Cypress.Screenshot.defaults({
-  screenshotOnRunFailure: false
+  screenshotOnRunFailure: false,
 });
 
 Cypress.Commands.add('xhrShouldBeCalled', (alias, timesCalled) => {
@@ -25,7 +25,7 @@ function loginUser(username, password) {
   const url = '/login/';
   return cy.request({
     url: url,
-    method: 'GET'
+    method: 'GET',
   }).then(() => {
     cy.getCookie('sessionid').should('not.exist');
     cy.getCookie('csrftoken').its('value').then((token) => {
@@ -37,8 +37,8 @@ function loginUser(username, password) {
         body: {
           username: username,
           password: password,
-          csrfmiddlewaretoken: token
-        }
+          csrfmiddlewaretoken: token,
+        },
       }).then(() => {
         cy.getCookie('sessionid').should('exist');
         return cy.getCookie('csrftoken').its('value');
@@ -85,14 +85,14 @@ function mockCostlyRequests() {
             'name': 'Save Code Now',
             'updated': '2020-11-30T13:51:21.151Z',
             'status': 'Operational',
-            'status_code': 100
-          }
-        ]
-      }
+            'status_code': 100,
+          },
+        ],
+      },
     }}).as('swhPlatformStatus');
 
   cy.intercept('/coverage', {
-    body: ''
+    body: '',
   }).as('swhCoverageWidget');
 }
 Cypress.Commands.add('mailmapAdminLogin', () => {

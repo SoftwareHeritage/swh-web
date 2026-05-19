@@ -54,7 +54,7 @@ export function csrfPost(url, headers = {}, body = null) {
     credentials: 'include',
     headers: headers,
     method: 'POST',
-    body: body
+    body: body,
   });
 }
 

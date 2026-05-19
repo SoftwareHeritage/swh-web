@@ -40,7 +40,7 @@ async function getMetadataForOrigin(originUrl, baseUrl) {
   return {
     'directory': lastOriginHeadRevision.directory,
     'revision': lastOriginHeadRevision.id,
-    'snapshot': lastOriginSnapshot.id
+    'snapshot': lastOriginSnapshot.id,
   };
 };
 
@@ -77,7 +77,7 @@ module.exports = (on, config) => {
     });
   });
   on('file:preprocessor', webpackPreprocessor({
-    webpackOptions: getWebpackOptions()
+    webpackOptions: getWebpackOptions(),
   }));
   on('task', {
     getSwhTestsData: async() => {
@@ -90,8 +90,8 @@ module.exports = (on, config) => {
           snapshot: 'd9829223095de4bb529790de8ba4e4813e38672d',
           rootDirectory: '7d887d96c0047a77e2e8c4ee9bb1528463677663',
           content: [{
-            sha1git: 'b203ec39300e5b7e97b6e20986183cbd0b797859'
-          }]
+            sha1git: 'b203ec39300e5b7e97b6e20986183cbd0b797859',
+          }],
         };
 
         swhTestsData.origin = [{
@@ -99,31 +99,31 @@ module.exports = (on, config) => {
           type: 'git',
           content: [{
             path: 'Source/tess.h',
-            sha1Git: '30fda27bc2833697ebb7df1fa4be4ce6a6f4c27d'
+            sha1Git: '30fda27bc2833697ebb7df1fa4be4ce6a6f4c27d',
           }, {
             path: 'premake4.lua',
-            sha1Git: '69533c9ced466499003812edfb4e3d82558a5594'
+            sha1Git: '69533c9ced466499003812edfb4e3d82558a5594',
           }],
           directory: [{
             path: 'Source',
-            id: 'cd19126d815470b28919d64b2a8e6a3e37f900dd'
+            id: 'cd19126d815470b28919d64b2a8e6a3e37f900dd',
           }],
           revisions: [],
-          invalidSubDir: 'Source1'
+          invalidSubDir: 'Source1',
         }, {
           url: 'https://github.com/wcoder/highlightjs-line-numbers.js',
           type: 'git',
           content: [{
             path: 'src/highlightjs-line-numbers.js',
-            sha1Git: 'b2613ff021265c651e06a8ce3845bf03d033172d'
+            sha1Git: 'b2613ff021265c651e06a8ce3845bf03d033172d',
           }],
           directory: [],
           revisions: ['1c480a4573d2a003fc2630c21c2b25829de49972'],
           release: {
             name: 'v2.6.0',
             id: '6877028d6e5412780517d0bfa81f07f6c51abb41',
-            directory: '5b61d50ef35ca9a4618a3572bde947b8cccf71ad'
-          }
+            directory: '5b61d50ef35ca9a4618a3572bde947b8cccf71ad',
+          },
         }];
 
         for (const origin of swhTestsData.origin) {
@@ -231,7 +231,7 @@ module.exports = (on, config) => {
       });
       return true;
     },
-    accessibilityChecker: require('cypress-accessibility-checker/plugin')
+    accessibilityChecker: require('cypress-accessibility-checker/plugin'),
   });
   return config;
 };

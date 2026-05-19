@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2021  The Software Heritage developers
+ * Copyright (C) 2021-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -47,15 +47,15 @@ $(() => {
       introJsOptions: {
         disableInteraction: true,
         scrollToElement: false,
-        steps: guidedTourSteps.homepage
-      }
+        steps: guidedTourSteps.homepage,
+      },
     },
     {
       url: `${Urls.browse_origin_directory()}?origin_url=${originUrl}`,
       introJsOptions: {
         disableInteraction: true,
         scrollToElement: false,
-        steps: guidedTourSteps.browseOrigin
+        steps: guidedTourSteps.browseOrigin,
       },
       onBeforeChange: function(targetElement) {
         // open SWHIDs tab before its tour step
@@ -66,12 +66,12 @@ $(() => {
           $(targetElement).trigger('click');
         }
         return true;
-      }
+      },
     },
     {
       url: `${Urls.browse_content(contentSha1)}?origin_url=${originUrl}&path=Example/example.c`,
       introJsOptions: {
-        steps: guidedTourSteps.browseContent
+        steps: guidedTourSteps.browseContent,
       },
       onBeforeChange: function(targetElement) {
         const lineNumberStart = 11;
@@ -112,8 +112,8 @@ $(() => {
         }
         previousElement = targetElement;
         return true;
-      }
-    }
+      },
+    },
   ];
   // init guided tour on page if guided_tour query parameter is present
   const searchParams = new URLSearchParams(window.location.search);
@@ -155,7 +155,7 @@ export function initGuidedTour(page = 0) {
     tour = introJs().setOptions(guidedTour[page].introJsOptions);
     tour.setOptions({
       'exitOnOverlayClick': false,
-      'showBullets': false
+      'showBullets': false,
     });
     if (page < guidedTour.length - 1) {
       // if not on the last page of the tour, rename next button label

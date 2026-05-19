@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2023  The Software Heritage developers
+ * Copyright (C) 2023-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -10,7 +10,7 @@ const pagesToCheck = [
   {name: 'coverage', path: '/coverage/'},
   {name: 'browse origin directory', path: '/browse/origin/directory/?origin_url=https://github.com/memononen/libtess2'},
   {name: 'browse origin content', path: '/browse/content/sha1_git:32a56bf4060402c477271380880ef01ba36ea5b1/?origin_url=https://github.com/memononen/libtess2&path=Source/sweep.c'},
-  {name: 'content-policy', path: '/content-policy/'}
+  {name: 'content-policy', path: '/content-policy/'},
 ];
 
 describe('Accessibility compliance tests', function() {

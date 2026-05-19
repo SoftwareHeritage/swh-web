@@ -44,7 +44,7 @@ export function resetHighlightedLines() {
 export function scrollToLine(lineDomElt, offset = 70) {
   if ($(lineDomElt).closest('.swh-content').length > 0) {
     $('html, body').animate({
-      scrollTop: $(lineDomElt).offset().top - offset
+      scrollTop: $(lineDomElt).offset().top - offset,
     }, 500);
   }
 }

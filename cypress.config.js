@@ -12,14 +12,14 @@ module.exports = defineConfig({
   reporterOptions: {
     reporterEnabled: 'mocha-junit-reporter',
     mochaJunitReporterReporterOptions: {
-      mochaFile: 'cypress/junit/results/results-[hash].xml'
-    }
+      mochaFile: 'cypress/junit/results/results-[hash].xml',
+    },
   },
   expose: {
-    skipSlowTests: true
+    skipSlowTests: true,
   },
   retries: {
-    runMode: 4
+    runMode: 4,
   },
   hmrUrl: 'ws://127.0.0.1:3000/ws',
   hmrRestartDelay: 5000,
@@ -30,6 +30,6 @@ module.exports = defineConfig({
       return require('./cypress/plugins/index.js')(on, config);
     },
     baseUrl: 'http://127.0.0.1:5004',
-    supportFile: 'cypress/support/e2e.js'
-  }
+    supportFile: 'cypress/support/e2e.js',
+  },
 });

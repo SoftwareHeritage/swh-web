@@ -8,7 +8,7 @@
 import {swhSpinnerSrc, dataTableCommonConfig} from 'utils/constants';
 import {
   csrfPost, getCanonicalOriginURL, getHumanReadableDate, handleFetchError,
-  htmlAlert, isGitRepoUrl, validateUrl, dtUpdateSettings
+  htmlAlert, isGitRepoUrl, validateUrl, dtUpdateSettings,
 } from 'utils/functions';
 import userRequestsFilterCheckboxFn from 'utils/requests-filter-checkbox.ejs';
 import artifactFormRowTemplate from './artifact-form-row.ejs';
@@ -17,7 +17,7 @@ let saveRequestsTable;
 
 async function originSaveRequest(
   originType, originUrl, extraData,
-  acceptedCallback, pendingCallback, errorCallback
+  acceptedCallback, pendingCallback, errorCallback,
 ) {
   // Actually trigger the origin save request
   let addSaveOriginRequestUrl = Urls.api_1_save_origin();
@@ -29,7 +29,7 @@ async function originSaveRequest(
   if (extraData !== {}) {
     body = JSON.stringify(extraData);
     headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   };
 
@@ -98,8 +98,8 @@ export function addArtifactFormRow() {
   $('.swh-save-origin-artifact-form').last().after(
     artifactFormRowTemplate({
       deletableRow: true,
-      formId: formId
-    })
+      formId: formId,
+    }),
   );
   addArtifactVersionAutofillHandler(formId);
 }
@@ -111,7 +111,7 @@ export function deleteArtifactFormRow(event) {
 const saveRequestCheckboxId = 'swh-save-requests-user-filter';
 const userRequestsFilterCheckbox = userRequestsFilterCheckboxFn({
   'inputId': saveRequestCheckboxId,
-  'checked': false // no filtering by default on that view
+  'checked': false, // no filtering by default on that view
 });
 
 const csvExportButton = `
@@ -145,7 +145,7 @@ export function initOriginSave() {
             if (swh.webapp.isUserLoggedIn() && $(`#${saveRequestCheckboxId}`).prop('checked')) {
               d.user_requests_only = '1';
             }
-          }
+          },
         },
         // see https://datatables.net/examples/advanced_init/dom_toolbar.html and the comments section
         // this option customizes datatables UI components by adding an extra checkbox above the table
@@ -171,12 +171,12 @@ export function initOriginSave() {
             data: 'save_request_date',
             name: 'request_date',
             urlParam: 'date',
-            render: getHumanReadableDate
+            render: getHumanReadableDate,
           },
           {
             data: 'visit_type',
             name: 'visit_type',
-            urlParam: 'type'
+            urlParam: 'type',
           },
           {
             data: 'origin_url',
@@ -208,17 +208,17 @@ export function initOriginSave() {
                 return html;
               }
               return data;
-            }
+            },
           },
           {
             data: 'save_request_status',
             name: 'status',
-            urlParam: 'request'
+            urlParam: 'request',
           },
           {
             data: 'save_task_status',
             name: 'loading_task_status',
-            urlParam: 'status'
+            urlParam: 'status',
           },
           {
             name: 'info',
@@ -237,7 +237,7 @@ export function initOriginSave() {
               return info;
 
             },
-            orderable: false
+            orderable: false,
           },
           {
             render: (data, type, row) => {
@@ -253,16 +253,16 @@ export function initOriginSave() {
                 return '';
               }
             },
-            orderable: false
-          }
+            orderable: false,
+          },
         ],
 
         order: [[0, 'desc']],
         responsive: {
           details: {
-            type: 'none'
-          }
-        }
+            type: 'none',
+          },
+        },
       }));
 
     swh.webapp.addJumpToPagePopoverToDataTable(saveRequestsTable);
@@ -275,25 +275,25 @@ export function initOriginSave() {
     const saveRequestAcceptedAlert = htmlAlert(
       'success',
       'The "save code now" request has been accepted and will be processed as soon as possible.',
-      true
+      true,
     );
 
     const saveRequestPendingAlert = htmlAlert(
       'warning',
       'The "save code now" request has been put in pending state and may be accepted for processing after manual review.',
-      true
+      true,
     );
 
     const saveRequestRateLimitedAlert = htmlAlert(
       'danger',
       'The rate limit for "save code now" requests has been reached. Please try again later.',
-      true
+      true,
     );
 
     const saveRequestUnknownErrorAlert = htmlAlert(
       'danger',
       'An unexpected error happened when submitting the "save code now" request.',
-      true
+      true,
     );
 
     updateVisitType();
@@ -316,7 +316,7 @@ export function initOriginSave() {
           for (let i = 0; i < $('.swh-save-origin-artifact-form').length; ++i) {
             extraData['archives_data'].push({
               'artifact_url': $(`#swh-input-artifact-url-${i}`).val(),
-              'artifact_version': $(`#swh-input-artifact-version-${i}`).val()
+              'artifact_version': $(`#swh-input-artifact-version-${i}`).val(),
             });
           }
         }
@@ -370,7 +370,7 @@ export function initOriginSave() {
 
 const tarballExtensions = [
   '.jar', '.tar', '.tar.bz2', '.tbz', '.tbz2', '.tar.gz', '.tgz', '.tar.lz',
-  '.tar.xz', '.tar.zst', '.zip'
+  '.tar.xz', '.tar.zst', '.zip',
 ];
 
 function updateVisitType() {
@@ -424,25 +424,25 @@ export function initTakeNewSnapshot() {
   const newSnapshotRequestAcceptedAlert = htmlAlert(
     'success',
     'The "take new snapshot" request has been accepted and will be processed as soon as possible.',
-    true
+    true,
   );
 
   const newSnapshotRequestPendingAlert = htmlAlert(
     'warning',
     'The "take new snapshot" request has been put in pending state and may be accepted for processing after manual review.',
-    true
+    true,
   );
 
   const newSnapshotRequestRateLimitAlert = htmlAlert(
     'danger',
     'The rate limit for "take new snapshot" requests has been reached. Please try again later.',
-    true
+    true,
   );
 
   const newSnapshotRequestUnknownErrorAlert = htmlAlert(
     'danger',
     'An unexpected error happened when submitting the "save code now request".',
-    true
+    true,
   );
 
   $(() => {
@@ -478,7 +478,7 @@ export function formatValuePerType(type, value) {
     'json': (v) => JSON.stringify(v, null, 2),
     'date': (v) => new Date(v).toLocaleString(),
     'raw': (v) => v,
-    'duration': (v) => v + ' seconds'
+    'duration': (v) => v + ' seconds',
   };
 
   return value === null ? null : mapFormatPerTypeFn[type](value);
@@ -508,7 +508,7 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
                 </div>`,
     html: true,
     placement: 'left',
-    sanitizeFn: swh.webapp.filterXSS
+    sanitizeFn: swh.webapp.filterXSS,
   });
 
   $(event.target).popover('show');
@@ -535,13 +535,13 @@ export async function displaySaveRequestInfo(event, saveRequestId) {
       'Completion date': ['date', 'ended'],
       'Duration': ['duration', 'duration'],
       'Runner': ['raw', 'worker'],
-      'Log': ['raw', 'message']
+      'Log': ['raw', 'message'],
     };
     for (const [title, [type, property]] of Object.entries(taskData)) {
       if (saveRequestTaskInfo.hasOwnProperty(property)) {
         saveRequestInfo.push({
           key: title,
-          value: formatValuePerType(type, saveRequestTaskInfo[property])
+          value: formatValuePerType(type, saveRequestTaskInfo[property]),
         });
       }
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2022  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -8,7 +8,7 @@
 const progressbarColors = {
   'new': 'rgba(128, 128, 128, 0.5)',
   'pending': 'rgba(0, 0, 255, 0.5)',
-  'done': 'rgb(92, 184, 92)'
+  'done': 'rgb(92, 184, 92)',
 };
 
 function checkVaultCookingTask(objectType) {
@@ -38,7 +38,7 @@ function genVaultCookingResponse(bundleType, swhid, status, message, fetchUrl) {
     'progress_message': message,
     'status': status,
     'swhid': swhid,
-    'fetch_url': fetchUrl
+    'fetch_url': fetchUrl,
   };
 };
 
@@ -92,8 +92,8 @@ describe('Vault Cooking User Interface Tests', function() {
         'email': '',
         'status': 'done',
         'fetch_url': `/api/1/vault/git-bare/${this.revision}/raw/`,
-        'progress_message': null
-      }
+        'progress_message': null,
+      },
     ];
     this.legacyVaultItems = [
       {
@@ -102,8 +102,8 @@ describe('Vault Cooking User Interface Tests', function() {
         'email': '',
         'status': 'done',
         'fetch_url': `/api/1/vault/revision/${this.revisionId}/gitfast/raw/`,
-        'progress_message': null
-      }
+        'progress_message': null,
+      },
     ];
 
     this.genVaultDirCookingResponse = (status, message = null) => {
@@ -125,11 +125,11 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // an internal server error
     cy.intercept(this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('pending', 'Processing...')
+      body: this.genVaultDirCookingResponse('pending', 'Processing...'),
     }).as('checkVaultCookingTask');
 
     cy.intercept('POST', this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('pending', 'Processing...')
+      body: this.genVaultDirCookingResponse('pending', 'Processing...'),
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
@@ -164,7 +164,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // an internal server error
     cy.intercept(this.vaultDirectoryUrl, {
       body: {'exception': 'APIError'},
-      statusCode: 500
+      statusCode: 500,
     }).as('checkVaultCookingTask');
 
     cy.contains('button', 'Download')
@@ -184,12 +184,12 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // a task cannot be created
     cy.intercept('GET', this.vaultDirectoryUrl, {
-      body: {'exception': 'NotFoundExc'}
+      body: {'exception': 'NotFoundExc'},
     }).as('checkVaultCookingTask');
 
     cy.intercept('POST', this.vaultDirectoryUrl, {
       body: {'exception': 'ValueError'},
-      statusCode: 500
+      statusCode: 500,
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
@@ -216,8 +216,8 @@ describe('Vault Cooking User Interface Tests', function() {
     cy.intercept({url: this.vaultDownloadRevisionUrl}, {
       body: {},
       headers: {
-        'Content-Type': 'json'
-      }
+        'Content-Type': 'json',
+      },
     }).as('fetchCookedArchive');
 
     cy.visit(this.Urls.vault());
@@ -249,8 +249,8 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
-        'Content-Type': 'application/gzip'
-      }
+        'Content-Type': 'application/gzip',
+      },
     }).as('fetchCookedArchive');
 
     // Stub responses when checking vault task status
@@ -258,7 +258,7 @@ describe('Vault Cooking User Interface Tests', function() {
       {'exception': 'NotFoundExc'},
       this.genVaultDirCookingResponse('new'),
       this.genVaultDirCookingResponse('pending', 'Processing...'),
-      this.genVaultDirCookingResponse('done')
+      this.genVaultDirCookingResponse('done'),
     ];
 
     // trick to override the response of an intercepted request
@@ -269,7 +269,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // a task has been created
     cy.intercept('POST', this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('new')
+      body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
@@ -338,8 +338,8 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
-        'Content-Type': 'application/x-tar'
-      }
+        'Content-Type': 'application/x-tar',
+      },
     }).as('fetchCookedArchive');
 
     // Stub responses when checking vault task status
@@ -347,7 +347,7 @@ describe('Vault Cooking User Interface Tests', function() {
       {'exception': 'NotFoundExc'},
       this.genVaultRevCookingResponse('new'),
       this.genVaultRevCookingResponse('pending', 'Processing...'),
-      this.genVaultRevCookingResponse('done')
+      this.genVaultRevCookingResponse('done'),
     ];
 
     // trick to override the response of an intercepted request
@@ -358,7 +358,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // a task has been created
     cy.intercept('POST', this.vaultRevisionUrl, {
-      body: this.genVaultRevCookingResponse('new')
+      body: this.genVaultRevCookingResponse('new'),
     }).as('createVaultCookingTask');
 
     // Create a vault cooking task through the GUI
@@ -422,7 +422,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when checking vault task status
     const checkVaultResponses = [
       {'exception': 'NotFoundExc'},
-      this.genVaultDirCookingResponse('new')
+      this.genVaultDirCookingResponse('new'),
     ];
 
     // trick to override the response of an intercepted request
@@ -433,7 +433,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // a task has been created
     cy.intercept('POST', this.vaultReleaseDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('new')
+      body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
     cy.contains('button', 'Download')
@@ -463,7 +463,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // a task has been created
     cy.intercept('POST', this.vaultDirectoryUrl + '?email=foo%2Bbar%40example.org', {
-      body: this.genVaultDirCookingResponse('new')
+      body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
     // Open vault cook directory modal
@@ -493,11 +493,11 @@ describe('Vault Cooking User Interface Tests', function() {
       statusCode: 404,
       body: {
         'exception': 'NotFoundExc',
-        'reason': `Revision with ID '${this.revision}' not found.`
+        'reason': `Revision with ID '${this.revision}' not found.`,
       },
       headers: {
-        'Content-Type': 'json'
-      }
+        'Content-Type': 'json',
+      },
     }).as('fetchCookedArchive');
 
     cy.visit(this.Urls.vault())
@@ -506,11 +506,11 @@ describe('Vault Cooking User Interface Tests', function() {
 
     cy.wait('@fetchCookedArchive').then(() => {
       cy.intercept('POST', this.vaultRevisionUrl, {
-        body: this.genVaultRevCookingResponse('new')
+        body: this.genVaultRevCookingResponse('new'),
       }).as('createVaultCookingTask');
 
       cy.intercept(this.vaultRevisionUrl, {
-        body: this.genVaultRevCookingResponse('new')
+        body: this.genVaultRevCookingResponse('new'),
       }).as('checkVaultCookingTask');
 
       cy.get('#vault-recook-object-modal > .modal-dialog')
@@ -529,7 +529,7 @@ describe('Vault Cooking User Interface Tests', function() {
 
     // set bundle as already cooked
     cy.intercept(this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('done')
+      body: this.genVaultDirCookingResponse('done'),
     }).as('checkVaultCookingTask');
 
     // but no longer available in cache
@@ -537,15 +537,15 @@ describe('Vault Cooking User Interface Tests', function() {
       statusCode: 404,
       body: {
         'exception': 'NotFoundExc',
-        'reason': `Directory with ID '${this.directory}' not found.`
+        'reason': `Directory with ID '${this.directory}' not found.`,
       },
       headers: {
-        'Content-Type': 'json'
-      }
+        'Content-Type': 'json',
+      },
     }).as('fetchCookedArchive');
 
     cy.intercept('POST', this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('new')
+      body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
     // request tarball download
@@ -597,14 +597,14 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.directory.replace(/:/g, '_')}.tar.gz`,
       headers: {
         'Content-disposition': `attachment; filename=${this.directory.replace(/:/g, '_')}.tar.gz`,
-        'Content-Type': 'application/gzip'
-      }
+        'Content-Type': 'application/gzip',
+      },
     }).as('fetchCookedArchive');
 
     // Stub responses when requesting the vault API to simulate
     // the directory tarball has already been cooked
     cy.intercept(this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('done')
+      body: this.genVaultDirCookingResponse('done'),
     }).as('checkVaultCookingTask');
 
     // Create a vault cooking task through the GUI
@@ -630,14 +630,14 @@ describe('Vault Cooking User Interface Tests', function() {
       fixture: `${this.revision.replace(/:/g, '_')}.git.tar`,
       headers: {
         'Content-disposition': `attachment; filename=${this.revision.replace(/:/g, '_')}.git.tar`,
-        'Content-Type': 'application/x-tar'
-      }
+        'Content-Type': 'application/x-tar',
+      },
     }).as('fetchCookedArchive');
 
     // Stub responses when requesting the vault API to simulate
     // the directory tarball has already been cooked
     cy.intercept(this.vaultRevisionUrl, {
-      body: this.genVaultRevCookingResponse('done')
+      body: this.genVaultRevCookingResponse('done'),
     }).as('checkVaultCookingTask');
 
     checkVaultCookingTask('as git');
@@ -658,7 +658,7 @@ describe('Vault Cooking User Interface Tests', function() {
     // Stub responses when requesting the vault API to simulate
     // the last cooking of the directory tarball has failed
     cy.intercept(this.vaultDirectoryUrl, {
-      body: this.genVaultDirCookingResponse('failed')
+      body: this.genVaultDirCookingResponse('failed'),
     }).as('checkVaultCookingTask');
 
     cy.contains('button', 'Download')

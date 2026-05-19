@@ -155,9 +155,9 @@ describe('Browse requests list tests', function() {
           'forge_url': forgeUrl,
           'forge_contact_email': 'admin@example.org',
           'forge_contact_name': 'Admin',
-          'last_modified_date': '2022-09-22T05:31:47.576000Z'
-        }
-      ]
+          'last_modified_date': '2022-09-22T05:31:47.576000Z',
+        },
+      ],
     }}).as('addForgeRequestsList');
 
     cy.visit(this.addForgeNowUrl);
@@ -334,12 +334,12 @@ describe('Test add-forge-request creation', function() {
     cy.visit(this.addForgeNowUrl);
 
     populateForm(
-      'bitbucket', '', 'test', 'test@example.com', 'off', 'comment'
+      'bitbucket', '', 'test', 'test@example.com', 'off', 'comment',
     );
     submitForm(this);
 
     cy.get('#requestCreateForm').then(
-      $form => expect($form[0].checkValidity()).to.be.false
+      $form => expect($form[0].checkValidity()).to.be.false,
     );
 
   });
@@ -349,7 +349,7 @@ describe('Test add-forge-request creation', function() {
     ['gitlab', 'https://gitlab.example.com'], // missing trailing slash
     ['gitea', 'https://gitea.example.com/explore/repos'], // not a base URL
     ['gitlab', 'https://gitlab.com/user/project'], // gitlab repo URL, not a new forge
-    ['gitlab', 'https://github.com/user/project'] // github repo URL, not a forge
+    ['gitlab', 'https://github.com/user/project'], // github repo URL, not a forge
   ];
 
   invalidForgeInputData.forEach(forgeInputData => {

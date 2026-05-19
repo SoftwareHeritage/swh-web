@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2021  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -115,17 +115,17 @@ describe('Test top-bar', function() {
             'name': 'Save Code Now',
             'updated': '2020-11-30T13:51:21.151Z',
             'status': 'Operational',
-            'status_code': 100
+            'status_code': 100,
           },
           {
             'id': '5f7c4c6f8338bc04b7f476fe',
             'name': 'Source Code Crawlers',
             'updated': '2020-11-30T13:51:21.151Z',
             'status': status,
-            'status_code': statusCode
-          }
-        ]
-      }
+            'status_code': statusCode,
+          },
+        ],
+      },
     };
   }
 
@@ -134,38 +134,38 @@ describe('Test top-bar', function() {
       {
         status: 'Operational',
         statusCode: 100,
-        color: 'green'
+        color: 'green',
       },
       {
         status: 'Scheduled Maintenance',
         statusCode: 200,
-        color: 'blue'
+        color: 'blue',
       },
       {
         status: 'Degraded Performance',
         statusCode: 300,
-        color: 'yellow'
+        color: 'yellow',
       },
       {
         status: 'Partial Service Disruption',
         statusCode: 400,
-        color: 'yellow'
+        color: 'yellow',
       },
       {
         status: 'Service Disruption',
         statusCode: 500,
-        color: 'red'
+        color: 'red',
       },
       {
         status: 'Security Event',
         statusCode: 600,
-        color: 'red'
-      }
+        color: 'red',
+      },
     ];
 
     for (let i = 0; i < statusTestData.length; ++i) {
       cy.intercept(`${statusUrl}/**`, {
-        body: genStatusResponse(statusTestData[i].status, statusTestData[i].statusCode)
+        body: genStatusResponse(statusTestData[i].status, statusTestData[i].statusCode),
       }).as(`getSwhStatusData`);
       cy.visit(url);
       cy.wait(`@getSwhStatusData`);
@@ -177,7 +177,7 @@ describe('Test top-bar', function() {
 
   it('should not display swh status widget when data are not available', function() {
     cy.intercept(`${statusUrl}/**`, {
-      body: {}
+      body: {},
     }).as('getSwhStatusData');
     cy.visit(url);
     cy.wait('@getSwhStatusData');

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,28 +13,28 @@ const diffsHighlightingData = {
   'unified': {
     diffId: '3d4c0797cf0e89430410e088339aac384dfa4d82',
     startLines: [913, 915],
-    endLines: [0, 979]
+    endLines: [0, 979],
   },
   'split-from': {
     diffId: '602cec77c3d3f41d396d9e1083a0bbce0796b505',
     startLines: [192, 0],
-    endLines: [198, 0]
+    endLines: [198, 0],
   },
   'split-to': {
     diffId: '602cec77c3d3f41d396d9e1083a0bbce0796b505',
     startLines: [0, 120],
-    endLines: [0, 130]
+    endLines: [0, 130],
   },
   'split-from-top-to-bottom': {
     diffId: 'a00c33990655a93aa2c821c4008bbddda812a896',
     startLines: [63, 0],
-    endLines: [0, 68]
+    endLines: [0, 68],
   },
   'split-to-top-from-bottom': {
     diffId: 'a00c33990655a93aa2c821c4008bbddda812a896',
     startLines: [0, 63],
-    endLines: [67, 0]
-  }
+    endLines: [67, 0],
+  },
 };
 
 let diffData;

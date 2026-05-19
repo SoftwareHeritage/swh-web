@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2023-205  The Software Heritage developers
+ * Copyright (C) 2023-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -7,7 +7,7 @@
 
 const filesToCheck = [
   {name: 'robots.txt', path: '/robots.txt', should_contain: 'Disallow'},
-  {name: 'security.txt', path: '/security.txt', should_contain: 'Expires'}
+  {name: 'security.txt', path: '/security.txt', should_contain: 'Expires'},
 ];
 
 describe('Static content', function() {

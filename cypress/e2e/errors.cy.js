@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2020  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ const invalidPageUrl = '/invalidPath';
 
 function urlShouldShowError(url, error) {
   cy.visit(url, {
-    failOnStatusCode: false
+    failOnStatusCode: false,
   });
   cy.get('.swh-http-error')
     .should('be.visible');
@@ -30,7 +30,7 @@ describe('Test Errors', function() {
 
   it('should show navigation buttons on error page', function() {
     cy.visit(invalidPageUrl, {
-      failOnStatusCode: false
+      failOnStatusCode: false,
     });
     cy.get('a[onclick="window.history.back();"]')
       .should('be.visible');
@@ -44,7 +44,7 @@ describe('Test Errors', function() {
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Origin with url ' + this.unarchivedRepo.url + ' not found!'
+        msg: 'NotFoundExc: Origin with url ' + this.unarchivedRepo.url + ' not found!',
       });
     });
 
@@ -53,7 +53,7 @@ describe('Test Errors', function() {
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Content with sha1_git checksum equals to ' + this.unarchivedRepo.content[0].sha1git + ' not found!'
+        msg: 'NotFoundExc: Content with sha1_git checksum equals to ' + this.unarchivedRepo.content[0].sha1git + ' not found!',
       });
     });
 
@@ -62,7 +62,7 @@ describe('Test Errors', function() {
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Directory with sha1_git ' + this.unarchivedRepo.rootDirectory + ' not found'
+        msg: 'NotFoundExc: Directory with sha1_git ' + this.unarchivedRepo.rootDirectory + ' not found',
       });
     });
 
@@ -71,7 +71,7 @@ describe('Test Errors', function() {
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'NotFoundExc: Revision with sha1_git ' + this.unarchivedRepo.revision + ' not found.'
+        msg: 'NotFoundExc: Revision with sha1_git ' + this.unarchivedRepo.revision + ' not found.',
       });
     });
 
@@ -80,7 +80,7 @@ describe('Test Errors', function() {
 
       urlShouldShowError(url, {
         code: '404',
-        msg: 'Snapshot with id ' + this.unarchivedRepo.snapshot + ' not found!'
+        msg: 'Snapshot with id ' + this.unarchivedRepo.snapshot + ' not found!',
       });
     });
 
@@ -99,7 +99,7 @@ describe('Test Errors', function() {
         code: '404',
         msg: 'NotFoundExc: Directory entry with path ' +
               origin.invalidSubDir + ' from root directory ' +
-              origin.rootDirectory + ' not found'
+              origin.rootDirectory + ' not found',
       });
     });
 
@@ -118,7 +118,7 @@ describe('Test Errors', function() {
               'Nevertheless, you can still browse the content ' +
               'without origin information: ' +
               `${win.location.protocol}//${win.location.host}/browse/content/sha1_git:` +
-              origin.content[0].sha1git + '/'
+              origin.content[0].sha1git + '/',
         });
       });
     });
@@ -133,7 +133,7 @@ describe('Test Errors', function() {
         urlShouldShowError(url, {
           code: '400',
           msg: 'BadInputExc: Invalid checksum query string ' +
-                invalidChecksum
+                invalidChecksum,
         });
       }
     });
@@ -142,7 +142,7 @@ describe('Test Errors', function() {
       urlShouldShowError(invalidPageUrl, {
         code: '404',
         msg: 'The resource ' + invalidPageUrl +
-            ' could not be found on the server.'
+            ' could not be found on the server.',
       });
     });
   });

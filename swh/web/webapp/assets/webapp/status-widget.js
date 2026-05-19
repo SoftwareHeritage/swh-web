@@ -13,7 +13,7 @@ const statusCodeColor = {
   '300': 'yellow', // Degraded Performance
   '400': 'yellow', // Partial Service Disruption
   '500': 'red', // Service Disruption
-  '600': 'red' // Security Event
+  '600': 'red', // Security Event
 };
 
 export function initStatusWidget(statusDataURL) {

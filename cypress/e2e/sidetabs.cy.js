@@ -53,36 +53,36 @@ describe('SWHIDs Tests', function() {
           'objectSWHIDs': [cntSWHIDWithContext, cntSWHID],
           'badgeUrl': this.Urls.swh_badge('content', swhids.content.object_id),
           'badgeSWHIDUrl': this.Urls.swh_badge_swhid(cntSWHID),
-          'browseUrl': this.Urls.browse_swhid(cntSWHIDWithContext)
+          'browseUrl': this.Urls.browse_swhid(cntSWHIDWithContext),
         },
         {
           'objectType': 'directory',
           'objectSWHIDs': [dirSWHIDWithContext, dirSWHID],
           'badgeUrl': this.Urls.swh_badge('directory', swhids.directory.object_id),
           'badgeSWHIDUrl': this.Urls.swh_badge_swhid(dirSWHID),
-          'browseUrl': this.Urls.browse_swhid(dirSWHIDWithContext)
+          'browseUrl': this.Urls.browse_swhid(dirSWHIDWithContext),
         },
         {
           'objectType': 'release',
           'objectSWHIDs': [relSWHIDWithContext, relSWHID],
           'badgeUrl': this.Urls.swh_badge('release', swhids.release.object_id),
           'badgeSWHIDUrl': this.Urls.swh_badge_swhid(relSWHID),
-          'browseUrl': this.Urls.browse_swhid(relSWHIDWithContext)
+          'browseUrl': this.Urls.browse_swhid(relSWHIDWithContext),
         },
         {
           'objectType': 'revision',
           'objectSWHIDs': [revSWHIDWithContext, revSWHID],
           'badgeUrl': this.Urls.swh_badge('revision', swhids.revision.object_id),
           'badgeSWHIDUrl': this.Urls.swh_badge_swhid(revSWHID),
-          'browseUrl': this.Urls.browse_swhid(revSWHIDWithContext)
+          'browseUrl': this.Urls.browse_swhid(revSWHIDWithContext),
         },
         {
           'objectType': 'snapshot',
           'objectSWHIDs': [snpSWHIDWithContext, snpSWHID],
           'badgeUrl': this.Urls.swh_badge('snapshot', swhids.snapshot.object_id),
           'badgeSWHIDUrl': this.Urls.swh_badge_swhid(snpSWHID),
-          'browseUrl': this.Urls.browse_swhid(snpSWHIDWithContext)
-        }
+          'browseUrl': this.Urls.browse_swhid(snpSWHIDWithContext),
+        },
       ];
 
     });

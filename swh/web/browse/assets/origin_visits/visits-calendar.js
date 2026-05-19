@@ -121,7 +121,7 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
             container: 'body',
             html: true,
             content: content,
-            animation: false
+            animation: false,
           }).on('mouseleave', () => {
             if (!$('.popover:hover').length) {
               // close popover when leaving day in calendar
@@ -140,7 +140,7 @@ export function updateCalendar(year, filteredVisits, yearClickedCallback) {
           $(e.element).popover('show');
           currentPopover = e.element;
         }
-      }
+      },
     });
   } else {
     calendar.setMinDate(minDate);

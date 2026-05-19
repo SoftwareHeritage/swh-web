@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2025  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -89,8 +89,8 @@ describe('Test Admin Login/logout', function() {
         data: [],
         recordsTotal: 0,
         recordsFiltered: 0,
-        draw: 1
-      }
+        draw: 1,
+      },
     });
 
     cy.visit(this.Urls.admin_deposit())
@@ -113,13 +113,13 @@ const originUrlListTestData = [
   {
     listType: 'authorized',
     originToAdd: 'git://git.archlinux.org/',
-    originToRemove: 'https://github.com/'
+    originToRemove: 'https://github.com/',
   },
   {
     listType: 'unauthorized',
     originToAdd: 'https://random.org',
-    originToRemove: 'https://gitlab.com'
-  }
+    originToRemove: 'https://gitlab.com',
+  },
 ];
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);

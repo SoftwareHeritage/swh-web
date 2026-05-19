@@ -18,7 +18,7 @@ export function mailmapForm(buttonText, email = '', displayName = '',
     email: email,
     displayName: displayName,
     displayNameActivated: displayNameActivated,
-    updateForm: update
+    updateForm: update,
   });
 }
 
@@ -26,7 +26,7 @@ function getMailmapDataFromForm() {
   return {
     'from_email': $('#swh-mailmap-from-email').val(),
     'display_name': $('#swh-mailmap-display-name').val(),
-    'display_name_activated': $('#swh-mailmap-display-name-activated').prop('checked')
+    'display_name_activated': $('#swh-mailmap-display-name-activated').prop('checked'),
   };
 }
 
@@ -38,7 +38,7 @@ function processMailmapForm(formTitle, formHtml, formApiUrl) {
     const postData = getMailmapDataFromForm();
     try {
       const response = await csrfPost(
-        formApiUrl, {'Content-Type': 'application/json'}, JSON.stringify(postData)
+        formApiUrl, {'Content-Type': 'application/json'}, JSON.stringify(postData),
       );
       $('#swh-web-modal-html').modal('hide');
       handleFetchError(response);
@@ -91,7 +91,7 @@ export function initMailmapUI() {
              data: 'from_email',
              name: 'from_email',
              urlParam: 'email',
-             render: $.fn.dataTable.render.text()
+             render: $.fn.dataTable.render.text(),
            },
            {
              data: 'from_email_verified',
@@ -100,13 +100,13 @@ export function initMailmapUI() {
              render: (data, type, row) => {
                return data ? mdiCheckBold : mdiCloseThick;
              },
-             className: 'dt-center'
+             className: 'dt-center',
            },
            {
              data: 'display_name',
              name: 'display_name',
              urlParam: 'name',
-             render: $.fn.dataTable.render.text()
+             render: $.fn.dataTable.render.text(),
            },
            {
              data: 'display_name_activated',
@@ -115,7 +115,7 @@ export function initMailmapUI() {
              render: (data, type, row) => {
                return data ? mdiCheckBold : mdiCloseThick;
              },
-             className: 'dt-center'
+             className: 'dt-center',
            },
            {
              data: 'last_update_date',
@@ -127,7 +127,7 @@ export function initMailmapUI() {
                  return date.toLocaleString();
                }
                return data;
-             }
+             },
            },
            {
              render: (data, type, row) => {
@@ -140,7 +140,7 @@ export function initMailmapUI() {
                }
              },
              className: 'dt-center',
-             orderable: false
+             orderable: false,
            },
            {
              render: (data, type, row) => {
@@ -151,12 +151,12 @@ export function initMailmapUI() {
                 </button>`;
                return html;
              },
-             orderable: false
-           }
+             orderable: false,
+           },
 
          ],
          ordering: true,
-         searching: true
+         searching: true,
        }));
   });
 }

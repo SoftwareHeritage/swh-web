@@ -9,7 +9,7 @@ let url;
 let saveOriginUrl;
 const origin = {
   type: 'git',
-  url: 'https://git.example.org/user/repo'
+  url: 'https://git.example.org/user/repo',
 };
 const $ = Cypress.$;
 
@@ -20,7 +20,7 @@ const saveCodeMsg = {
   'rateLimit': 'The rate limit for "save code now" requests has been reached. Please try again later.',
   'not-found': 'The provided url does not exist',
   'unknownError': 'An unexpected error happened when submitting the "save code now" request',
-  'csrfError': 'CSRF Failed: Referrer checking failed - no Referrer.'
+  'csrfError': 'CSRF Failed: Referrer checking failed - no Referrer.',
 };
 
 const anonymousVisitTypes = ['bzr', 'cvs', 'git', 'hg', 'svn', 'tarball'];
@@ -56,12 +56,12 @@ function stubSaveRequest({
   saveRequestDate = new Date(),
   visitDate = new Date(),
   visitStatus = null,
-  fromWebhook = false
+  fromWebhook = false,
 } = {}) {
   let response;
   if (responseStatus !== 200 && errorMessage) {
     response = {
-      'reason': errorMessage
+      'reason': errorMessage,
     };
   } else {
     response = genOriginSaveResponse({visitType: visitType,
@@ -71,7 +71,7 @@ function stubSaveRequest({
                                       saveTaskStatus: saveTaskStatus,
                                       visitDate: visitDate,
                                       visitStatus: visitStatus,
-                                      fromWebhook: fromWebhook
+                                      fromWebhook: fromWebhook,
     });
   }
   cy.intercept('POST', requestUrl, {body: response, statusCode: responseStatus})
@@ -88,7 +88,7 @@ function genOriginSaveResponse({
   saveTaskStatus,
   visitDate = new Date(),
   visitStatus,
-  fromWebhook = false
+  fromWebhook = false,
 } = {}) {
   return {
     'visit_type': visitType,
@@ -99,7 +99,7 @@ function genOriginSaveResponse({
     'save_task_status': saveTaskStatus,
     'visit_date': visitDate ? visitDate.toISOString() : null,
     'visit_status': visitStatus,
-    'from_webhook': fromWebhook
+    'from_webhook': fromWebhook,
   };
 };
 
@@ -142,7 +142,7 @@ describe('Origin Save Tests', function() {
       {type: 'date', value: '04/04/2021 01:00:00', expectedValue: '4/4/2021, 1:00:00 AM'},
       {type: 'raw', value: 'value-for-identity', expectedValue: 'value-for-identity'},
       {type: 'duration', value: '10', expectedValue: '10 seconds'},
-      {type: 'duration', value: 100, expectedValue: '100 seconds'}
+      {type: 'duration', value: 100, expectedValue: '100 seconds'},
     ];
     cy.window().then(win => {
       inputValues.forEach(function(input, index, array) {
@@ -337,13 +337,13 @@ describe('Origin Save Tests', function() {
       saveTaskStatus: 'succeeded',
       visitDate: null,
       visitStatus: 'full',
-      fromWebhook: true
+      fromWebhook: true,
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
       'draw': 1,
       'recordsFiltered': 1,
-      'data': [saveRequestData]
+      'data': [saveRequestData],
     };
 
     cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
@@ -364,13 +364,13 @@ describe('Origin Save Tests', function() {
       originUrl: originUrl,
       saveTaskStatus: 'succeeded',
       visitDate: null,
-      visitStatus: 'full'
+      visitStatus: 'full',
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
       'draw': 1,
       'recordsFiltered': 1,
-      'data': [saveRequestData]
+      'data': [saveRequestData],
     };
 
     cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
@@ -393,13 +393,13 @@ describe('Origin Save Tests', function() {
       originUrl: originUrl,
       saveTaskStatus: 'succeeded',
       visitDate: null,
-      visitStatus: null
+      visitStatus: null,
     });
     const saveRequestsListData = {
       'recordsTotal': 1,
       'draw': 1,
       'recordsFiltered': 1,
-      'data': [saveRequestData]
+      'data': [saveRequestData],
     };
     cy.intercept('/save/requests/list/**', {body: saveRequestsListData})
       .as('saveRequestsList');
@@ -642,7 +642,7 @@ describe('Origin Save Tests', function() {
       requestUrl: saveOriginUrl('archives', originUrl),
       saveRequestStatus: 'accepted',
       originUrl: originUrl,
-      saveTaskStatus: 'pending'
+      saveTaskStatus: 'pending',
     });
 
     cy.ambassadorLogin();
@@ -721,8 +721,8 @@ describe('Origin Save Tests', function() {
       expect(req.body).to.deep.equal({
         archives_data: [
           {artifact_url: artifactUrl, artifact_version: artifactVersion},
-          {artifact_url: artifact2Url, artifact_version: artifact2Version}
-        ]
+          {artifact_url: artifact2Url, artifact_version: artifact2Version},
+        ],
       });
       req.reply(genOriginSaveResponse({
         visitType: 'archives',
@@ -731,7 +731,7 @@ describe('Origin Save Tests', function() {
         saveRequestDate: new Date(),
         saveTaskStatus: 'pending',
         visitDate: null,
-        visitStatus: null
+        visitStatus: null,
       }));
     }).as('saveRequest');
 
@@ -800,14 +800,14 @@ describe('Origin Save Tests', function() {
         saveRequestDate: new Date(),
         saveTaskStatus: 'pending',
         visitDate: null,
-        visitStatus: null
+        visitStatus: null,
       }));
     }).as('saveRequest');
 
     for (const originUrl of ['https://github.com/BiC-MnI/MnI_AuToReG',
                              'https://github.com/BiC-MnI/MnI_AuToReG.git',
                              'https://github.com/BiC-MnI/MnI_AuToReG/',
-                             'https://BiC-MnI.github.io/MnI_AuToReG/'
+                             'https://BiC-MnI.github.io/MnI_AuToReG/',
     ]) {
 
       // enter non canonical URL of github repo
@@ -845,7 +845,7 @@ describe('Origin Save Tests', function() {
         saveRequestDate: new Date(),
         saveTaskStatus: 'pending',
         visitDate: null,
-        visitStatus: null
+        visitStatus: null,
       }));
     }).as('saveRequest');
 

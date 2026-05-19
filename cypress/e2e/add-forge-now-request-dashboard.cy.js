@@ -15,7 +15,7 @@ const requestData = {
   forge_contact_email: 'test@example.com',
   forge_contact_name: 'test user',
   submitter_forward_username: true,
-  forge_contact_comment: 'test comment'
+  forge_contact_comment: 'test comment',
 };
 
 function createDummyRequest(urls) {
@@ -28,8 +28,8 @@ function createDummyRequest(urls) {
       url: urls.api_1_add_forge_request_create(),
       body: requestData,
       headers: {
-        'X-CSRFToken': token
-      }
+        'X-CSRFToken': token,
+      },
     }).then((response) => {
       // setting requestId and forgeDomain from response
       requestId = response.body.id;

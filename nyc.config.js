@@ -11,8 +11,8 @@ if (parallelBuildId !== undefined) {
 module.exports = {
   exclude: [
     'assets/src/bundles/vendors/index.js',
-    'assets/src/thirdparty/**/*.js'
+    'assets/src/thirdparty/**/*.js',
   ],
   'report-dir': reportDir,
-  'temp-dir': tempDir
+  'temp-dir': tempDir,
 };

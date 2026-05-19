@@ -179,7 +179,7 @@ describe('Test origin-search', function() {
 
   it('should search in origin intrinsic metadata', function() {
     cy.intercept('GET', '**/origin/metadata-search/**').as(
-      'originMetadataSearch'
+      'originMetadataSearch',
     );
     cy.get('#swh-search-origins-with-visit')
       .check({force: true})
@@ -195,9 +195,9 @@ describe('Test origin-search', function() {
             [
               {
                 'url': 'https://github.com/wcoder/highlightjs-line-numbers.js',
-                'visit_types': ['git']
-              }
-            ]
+                'visit_types': ['git'],
+              },
+            ],
             // origins are defined in _TEST_ORIGINS variable in swh/web/tests/data.py
           );
         });
@@ -242,9 +242,9 @@ describe('Test origin-search', function() {
                  {
                    body: {
                      'exception': 'BadInputExc',
-                     'reason': 'Syntax error in search query: Invalid query'
+                     'reason': 'Syntax error in search query: Invalid query',
                    },
-                   statusCode: 400
+                   statusCode: 400,
                  })
       .as('searchOrigin');
 

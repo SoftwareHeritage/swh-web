@@ -21,7 +21,7 @@ const categoriesId = ['categoryCopyright', 'categoryPii', 'categoryLegal'];
 const defaultOrigins = [
   'https://many.origins/35',
   'https://git.example.org/repo_with_submodules',
-  'https://many.origins/45'
+  'https://many.origins/45',
 ];
 // content policies
 const step0Url = '/content-policy/';

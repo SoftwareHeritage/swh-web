@@ -212,7 +212,7 @@ async function checkVaultCookingTasks() {
           cookingTask: cookingTask,
           progressBar: progressBar,
           Urls: Urls,
-          swh: swh
+          swh: swh,
         }));
       } else {
         const progressBar = rowTask.find('.progress-bar');

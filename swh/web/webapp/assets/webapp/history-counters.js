@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019-2024  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -81,7 +81,7 @@ export async function drawHistoryCounterGraph(container, historyData) {
    .call(
      d3.axisBottom(xScale)
        .ticks(10)
-       .tickFormat(dateFormatter)
+       .tickFormat(dateFormatter),
    )
    .selectAll('text')
    .style('text-anchor', 'end')
@@ -96,7 +96,7 @@ export async function drawHistoryCounterGraph(container, historyData) {
    .call(
      d3.axisRight(yScale)
        .ticks(10)
-       .tickFormat(valueFormatter)
+       .tickFormat(valueFormatter),
    );
 
   // add data plot

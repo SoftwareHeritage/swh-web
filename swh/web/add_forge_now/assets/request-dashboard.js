@@ -89,7 +89,7 @@ function populateRequestHistory(history) {
     const historyEvent = requestHistoryItem({
       'event': event,
       'index': index,
-      'getHumanReadableDate': getHumanReadableDate
+      'getHumanReadableDate': getHumanReadableDate,
     });
     $('#requestHistory').append(historyEvent);
   });
@@ -104,14 +104,14 @@ export function populateDecisionSelectOption(currentStatus, nextStatusesFor) {
     // Push the next possible status options
     const label = swh.add_forge_now.formatRequestStatusName(status);
     $('#decisionOptions').append(
-      `<option value="${status}">${label}</option>`
+      `<option value="${status}">${label}</option>`,
     );
   }
   // Remove all the options and add new ones
   $('#decisionOptions').children().remove();
   nextStatuses.forEach(addStatusOption);
   $('#decisionOptions').append(
-    '<option hidden disabled selected value> -- Add a comment -- </option>'
+    '<option hidden disabled selected value> -- Add a comment -- </option>',
   );
 }
 

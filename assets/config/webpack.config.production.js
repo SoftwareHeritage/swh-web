@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2015  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -21,20 +21,20 @@ webpackProdConfig.mode = 'production';
 webpackProdConfig.optimization.minimizer = [
   // use terser for minimizing js and generate source map files
   new TerserPlugin({
-    parallel: true
+    parallel: true,
   }),
   // use cssnano for minimizing css and generate source map files
   new CssMinimizerPlugin({
     minimizerOptions: {
       map: {
         inline: false,
-        annotation: true
+        annotation: true,
       },
       minifyFontValues: false,
       discardUnused: false,
-      zindex: false
-    }
-  })
+      zindex: false,
+    },
+  }),
 ];
 
 // prevent modules concatenation for generating weblabels

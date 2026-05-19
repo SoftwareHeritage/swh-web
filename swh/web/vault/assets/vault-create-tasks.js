@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2022  The Software Heritage developers
+ * Copyright (C) 2018-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -13,7 +13,7 @@ const alertStyle = {
   'position': 'fixed',
   'left': '1rem',
   'bottom': '1rem',
-  'z-index': '100000'
+  'z-index': '100000',
 };
 
 export function displayCookingTaskCreatedAlert() {
@@ -125,7 +125,7 @@ export function cookDirectoryArchive(event, swhid) {
       'bundle_type': 'flat',
       'swhid': swhid,
       'email': email,
-      'status': 'new'
+      'status': 'new',
     };
     addVaultCookingTask('directory', cookingTask);
 
@@ -154,7 +154,7 @@ export function cookRevisionArchive(event, revisionId) {
       'bundle_type': 'git_bare',
       'swhid': revisionId,
       'email': email,
-      'status': 'new'
+      'status': 'new',
     };
     addVaultCookingTask('revision', cookingTask);
   } else {

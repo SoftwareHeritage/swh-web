@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2024  The Software Heritage developers
+ * Copyright (C) 2020-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -69,7 +69,7 @@ describe('Test admin deposit page', function() {
         'swhid': 'swh:1:dir:ef04a768',
         'swhid_context': 'swh:1:dir:ef04a768;origin=https://w.s.o/c-d-1;visit=swh:1:snp:b234be1e;anchor=swh:1:rev:d24a75c9;path=/',
         'raw_metadata': '<foo>bar</foo>',
-        'uri': 'https://w.s.o/c-d-1'
+        'uri': 'https://w.s.o/c-d-1',
       },
       {
         'id': 613,
@@ -81,7 +81,7 @@ describe('Test admin deposit page', function() {
         'swhid': 'swh:1:dir:181417fb',
         'swhid_context': 'swh:1:dir:181417fb;origin=https://w.s.o/c-d-2;visit=swh:1:snp:8c32a2ef;anchor=swh:1:rev:3d1eba04;path=/',
         'raw_metadata': null,
-        'uri': 'https://w.s.o/c-d-2'
+        'uri': 'https://w.s.o/c-d-2',
       },
       {
         'id': 612,
@@ -93,14 +93,14 @@ describe('Test admin deposit page', function() {
         'swhid': null,
         'swhid_context': null,
         'raw_metadata': null,
-        'uri': null
-      }
+        'uri': null,
+      },
     ];
     // those are computed from the
     expectedOrigins = {
       614: 'https://w.s.o/c-d-1',
       613: 'https://w.s.o/c-d-2',
-      612: ''
+      612: '',
     };
 
   });
@@ -114,8 +114,8 @@ describe('Test admin deposit page', function() {
         'draw': 10,
         'recordsTotal': testDeposits.length,
         'recordsFiltered': testDeposits.length,
-        'data': testDeposits
-      }
+        'data': testDeposits,
+      },
     }).as('listDeposits');
 
     cy.visit(depositModerationUrl);

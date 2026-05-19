@@ -92,7 +92,7 @@ describe('Code highlighting tests', function() {
   it('should highlight source code with pygments when javascript is disabled', function() {
     const filename = origin.content[0].path.split('/').slice(-1);
     cy.intercept(this.Urls.browse_content_highlight(
-      'sha1_git:' + origin.content[0].sha1Git) + `?filename=${filename}`
+      'sha1_git:' + origin.content[0].sha1Git) + `?filename=${filename}`,
     ).as('contentHighlight');
     cy.visit(url, {script: false});
     cy.wait('@contentHighlight');

@@ -288,7 +288,7 @@ export async function createVisitsHistogram(container, visitsData, currentYear, 
             // filter out 2014 tick label
             return '';
           }
-        })
+        }),
     );
 
   // shift tick labels in order to display them at the middle

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2025  The Software Heritage developers
+ * Copyright (C) 2020-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -10,7 +10,7 @@ import {staticAsset} from 'utils/functions';
 export async function typesetMath(origin) {
   window.MathJax = {
     chtml: {
-      fontURL: staticAsset('fonts', origin)
+      fontURL: staticAsset('fonts', origin),
     },
     tex: {
       tags: 'ams',
@@ -18,13 +18,13 @@ export async function typesetMath(origin) {
       inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
       displayMath: [ ['$$', '$$'], ['\\[', '\\]'] ],
       processEscapes: true,
-      processEnvironments: true
+      processEnvironments: true,
     },
     loader: {
       paths: {
-        mathjax: staticAsset('js/mathjax', origin)
-      }
-    }
+        mathjax: staticAsset('js/mathjax', origin),
+      },
+    },
   };
 
   await import(/* webpackChunkName: "mathjax-library" */ 'utils/mathjax');

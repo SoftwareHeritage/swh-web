@@ -6,7 +6,7 @@ const cypress = require('eslint-plugin-cypress');
 const chaiFriendly = require('eslint-plugin-chai-friendly');
 
 const {
-  fixupPluginRules
+  fixupPluginRules,
 } = require('@eslint/compat');
 
 const globals = require('globals');
@@ -14,7 +14,7 @@ const babelParser = require('@babel/eslint-parser');
 
 module.exports = [
   {
-    ignores: ['assets/src/thirdparty/**/*.js']
+    ignores: ['assets/src/thirdparty/**/*.js'],
   },
   {
     plugins: {
@@ -23,7 +23,7 @@ module.exports = [
       promise,
       standard,
       cypress,
-      'chai-friendly': chaiFriendly
+      'chai-friendly': chaiFriendly,
     },
 
     languageOptions: {
@@ -47,7 +47,7 @@ module.exports = [
         Image: false,
         nb: false,
         MathJax: false,
-        globalThis: false
+        globalThis: false,
       },
 
       parser: babelParser,
@@ -57,12 +57,12 @@ module.exports = [
       parserOptions: {
         ecmaFeatures: {
           experimentalObjectRestSpread: true,
-          jsx: true
+          jsx: true,
         },
 
         allowImportExportEverywhere: true,
-        requireConfigFile: false
-      }
+        requireConfigFile: false,
+      },
     },
 
     rules: {
@@ -70,30 +70,24 @@ module.exports = [
 
       'arrow-spacing': ['error', {
         before: true,
-        after: true
+        after: true,
       }],
 
       'block-spacing': ['error', 'always'],
 
       'brace-style': ['error', '1tbs', {
-        allowSingleLine: true
+        allowSingleLine: true,
       }],
 
       camelcase: ['error', {
-        properties: 'never'
+        properties: 'never',
       }],
 
-      'comma-dangle': ['error', {
-        arrays: 'never',
-        objects: 'never',
-        imports: 'never',
-        exports: 'never',
-        functions: 'never'
-      }],
+      'comma-dangle': ['error', 'always-multiline'],
 
       'comma-spacing': ['error', {
         before: false,
-        after: true
+        after: true,
       }],
 
       'comma-style': ['error', 'last'],
@@ -103,14 +97,14 @@ module.exports = [
       'eol-last': 'error',
 
       eqeqeq: ['error', 'always', {
-        null: 'ignore'
+        null: 'ignore',
       }],
 
       'func-call-spacing': ['error', 'never'],
 
       'generator-star-spacing': ['error', {
         before: true,
-        after: true
+        after: true,
       }],
 
       'handle-callback-err': ['error', '^(err|error)$'],
@@ -123,16 +117,16 @@ module.exports = [
 
         FunctionDeclaration: {
           parameters: 'first',
-          body: 1
+          body: 1,
         },
 
         FunctionExpression: {
           parameters: 'first',
-          body: 1
+          body: 1,
         },
 
         CallExpression: {
-          arguments: 'first'
+          arguments: 'first',
         },
 
         ArrayExpression: 'first',
@@ -140,22 +134,22 @@ module.exports = [
         ImportDeclaration: 'first',
         flatTernaryExpressions: false,
         ignoreComments: false,
-        ignoredNodes: ['TemplateLiteral > *']
+        ignoredNodes: ['TemplateLiteral > *'],
       }],
 
       'key-spacing': ['error', {
         beforeColon: false,
-        afterColon: true
+        afterColon: true,
       }],
 
       'keyword-spacing': ['error', {
         before: true,
-        after: true
+        after: true,
       }],
 
       'new-cap': ['error', {
         newIsCap: true,
-        capIsNew: false
+        capIsNew: false,
       }],
 
       'new-parens': 'error',
@@ -167,7 +161,7 @@ module.exports = [
       'no-const-assign': 'error',
 
       'no-constant-condition': ['error', {
-        checkLoops: false
+        checkLoops: false,
       }],
 
       'no-control-regex': 'error',
@@ -198,7 +192,7 @@ module.exports = [
 
       'no-labels': ['error', {
         allowLoop: false,
-        allowSwitch: false
+        allowSwitch: false,
       }],
 
       'no-lone-blocks': 'error',
@@ -207,10 +201,10 @@ module.exports = [
         groups: [
           ['==', '!=', '===', '!==', '>', '>=', '<', '<='],
           ['&&', '||'],
-          ['in', 'instanceof']
+          ['in', 'instanceof'],
         ],
 
-        allowSamePrecedence: true
+        allowSamePrecedence: true,
       }],
 
       'no-mixed-spaces-and-tabs': 'error',
@@ -219,7 +213,7 @@ module.exports = [
 
       'no-multiple-empty-lines': ['error', {
         max: 1,
-        maxEOF: 0
+        maxEOF: 0,
       }],
 
       'no-negated-in-lhs': 'error',
@@ -254,7 +248,7 @@ module.exports = [
       'no-unmodified-loop-condition': 'error',
 
       'no-unneeded-ternary': ['error', {
-        defaultAssignment: false
+        defaultAssignment: false,
       }],
 
       'no-unreachable': 'error',
@@ -266,13 +260,13 @@ module.exports = [
         vars: 'all',
         args: 'none',
         ignoreRestSiblings: true,
-        caughtErrors: 'none'
+        caughtErrors: 'none',
       }],
 
       'no-use-before-define': ['error', {
         functions: false,
         classes: false,
-        variables: false
+        variables: false,
       }],
 
       'no-useless-call': 'error',
@@ -285,36 +279,36 @@ module.exports = [
       'no-with': 'error',
 
       'object-property-newline': ['error', {
-        allowMultiplePropertiesPerLine: true
+        allowMultiplePropertiesPerLine: true,
       }],
 
       'one-var': ['error', {
-        initialized: 'never'
+        initialized: 'never',
       }],
 
       'operator-linebreak': ['error', 'after', {
         overrides: {
           '?': 'before',
-          ':': 'before'
-        }
+          ':': 'before',
+        },
       }],
 
       'padded-blocks': ['off', {
         blocks: 'never',
         switches: 'never',
-        classes: 'never'
+        classes: 'never',
       }],
 
       'prefer-promise-reject-errors': 'error',
 
       'prefer-const': ['error', {
         destructuring: 'any',
-        ignoreReadBeforeAssign: false
+        ignoreReadBeforeAssign: false,
       }],
 
       quotes: ['error', 'single', {
         avoidEscape: true,
-        allowTemplateLiterals: true
+        allowTemplateLiterals: true,
       }],
 
       'rest-spread-spacing': ['error', 'never'],
@@ -322,7 +316,7 @@ module.exports = [
 
       'semi-spacing': ['error', {
         before: false,
-        after: true
+        after: true,
       }],
 
       'space-before-blocks': ['error', 'always'],
@@ -332,19 +326,19 @@ module.exports = [
 
       'space-unary-ops': ['error', {
         words: true,
-        nonwords: false
+        nonwords: false,
       }],
 
       'spaced-comment': ['error', 'always', {
         line: {
-          markers: ['*package', '!', '/', ',', '=']
+          markers: ['*package', '!', '/', ',', '='],
         },
 
         block: {
           balanced: true,
           markers: ['*package', '!', ',', ':', '::', 'flow-include'],
-          exceptions: ['*']
-        }
+          exceptions: ['*'],
+        },
       }],
 
       'symbol-description': 'error',
@@ -354,11 +348,11 @@ module.exports = [
       'use-isnan': 'error',
 
       'valid-typeof': ['error', {
-        requireStringLiterals: true
+        requireStringLiterals: true,
       }],
 
       'wrap-iife': ['error', 'any', {
-        functionPrototypeMethods: true
+        functionPrototypeMethods: true,
       }],
 
       'yield-star-spacing': ['error', 'both'],
@@ -371,7 +365,7 @@ module.exports = [
       'promise/param-names': 'error',
       'standard/no-callback-literal': 'error',
       'chai-friendly/no-unused-expressions': 2,
-      'object-curly-spacing': ['error', 'never']
-    }
-  }
+      'object-curly-spacing': ['error', 'never'],
+    },
+  },
 ];

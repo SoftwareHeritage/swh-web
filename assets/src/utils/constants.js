@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019  The Software Heritage developers
+ * Copyright (C) 2019-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -18,10 +18,10 @@ export const dataTableCommonConfig = {
   serverSide: true,
   processing: true,
   language: {
-    processing: `<img src="${swhSpinnerSrc}"></img>`
+    processing: `<img src="${swhSpinnerSrc}"></img>`,
   },
   fixedHeader: true,
   lengthMenu: [10, 25, 50, 100, 1000],
   scrollCollapse: true,
-  searchDelay: 1000
+  searchDelay: 1000,
 };

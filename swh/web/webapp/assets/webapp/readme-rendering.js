@@ -27,7 +27,7 @@ export async function renderMarkdown(domElt, markdownDocUrl, allowCSS = false) {
         const params = {
           left: '<pre><code\\b[^>]*>',
           right: '</code></pre>',
-          flags: 'g'
+          flags: 'g',
         };
 
         const replacement = (wholeMatch, match, left, right) => {
@@ -65,15 +65,15 @@ export async function renderMarkdown(domElt, markdownDocUrl, allowCSS = false) {
           replacement,
           params.left,
           params.right,
-          params.flags
+          params.flags,
         );
-      }
+      },
     }];
   }
 
   const converter = new showdown.Converter({
     tables: true,
-    extensions: [showdownHighlight]
+    extensions: [showdownHighlight],
   });
   const url = new URL(window.location.href);
   if (url.searchParams.has('origin_url')) {

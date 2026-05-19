@@ -38,7 +38,7 @@ export function initOriginSaveAdmin() {
       ajax: Urls.admin_origin_save_authorized_urls_list(),
       rowId: (r) => `authorized_${r.url}`,
       columns: [{data: 'url', name: 'url'}],
-      info: false
+      info: false,
     }));
     enableRowSelection('#swh-authorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(authorizedOriginTable);
@@ -49,7 +49,7 @@ export function initOriginSaveAdmin() {
       ajax: Urls.admin_origin_save_unauthorized_urls_list(),
       rowId: (r) => `unauthorized_${r.url}`,
       columns: [{data: 'url', name: 'url'}],
-      info: false
+      info: false,
     }));
     enableRowSelection('#swh-unauthorized-origin-urls');
     swh.webapp.addJumpToPagePopoverToDataTable(unauthorizedOriginTable);
@@ -59,18 +59,18 @@ export function initOriginSaveAdmin() {
         data: 'id',
         name: 'id',
         visible: false,
-        searchable: false
+        searchable: false,
       },
       {
         data: 'save_request_date',
         name: 'request_date',
         urlParam: 'date',
-        render: getHumanReadableDate
+        render: getHumanReadableDate,
       },
       {
         data: 'visit_type',
         name: 'visit_type',
-        urlParam: 'type'
+        urlParam: 'type',
       },
       {
         data: 'origin_url',
@@ -97,8 +97,8 @@ export function initOriginSaveAdmin() {
             return html;
           }
           return data;
-        }
-      }
+        },
+      },
     ];
 
     pendingSaveRequestsTable = $('#swh-origin-save-pending-requests').DataTable(dtUpdateSettings({
@@ -110,9 +110,9 @@ export function initOriginSaveAdmin() {
       order: [[0, 'desc']],
       responsive: {
         details: {
-          type: 'none'
-        }
-      }
+          type: 'none',
+        },
+      },
     }));
     enableRowSelection('#swh-origin-save-pending-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(pendingSaveRequestsTable);
@@ -133,7 +133,7 @@ export function initOriginSaveAdmin() {
         }
         return info;
       },
-      orderable: false
+      orderable: false,
     });
 
     rejectedSaveRequestsTable = $('#swh-origin-save-rejected-requests').DataTable(dtUpdateSettings({
@@ -145,9 +145,9 @@ export function initOriginSaveAdmin() {
       order: [[0, 'desc']],
       responsive: {
         details: {
-          type: 'none'
-        }
-      }
+          type: 'none',
+        },
+      },
     }));
     enableRowSelection('#swh-origin-save-rejected-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(rejectedSaveRequestsTable);
@@ -155,7 +155,7 @@ export function initOriginSaveAdmin() {
     columnsData.splice(columnsData.length - 1, 0, {
       data: 'save_task_status',
       name: 'save_task_status',
-      urlParam: 'status'
+      urlParam: 'status',
     });
 
     acceptedSaveRequestsTable = $('#swh-origin-save-accepted-requests').DataTable(dtUpdateSettings({
@@ -167,9 +167,9 @@ export function initOriginSaveAdmin() {
       order: [[0, 'desc']],
       responsive: {
         details: {
-          type: 'none'
-        }
-      }
+          type: 'none',
+        },
+      },
     }));
     enableRowSelection('#swh-origin-save-accepted-requests');
     swh.webapp.addJumpToPagePopoverToDataTable(acceptedSaveRequestsTable);
@@ -225,11 +225,11 @@ export async function addAuthorizedOriginUrl() {
     handleFetchError(response);
     authorizedOriginTable.row.add({'url': originUrl}).draw();
     $('.swh-add-authorized-origin-status').html(
-      htmlAlert('success', 'The origin url prefix has been successfully added in the authorized list.', true)
+      htmlAlert('success', 'The origin url prefix has been successfully added in the authorized list.', true),
     );
   } catch (_) {
     $('.swh-add-authorized-origin-status').html(
-      htmlAlert('warning', 'The provided origin url prefix is already registered in the authorized list.', true)
+      htmlAlert('warning', 'The provided origin url prefix is already registered in the authorized list.', true),
     );
   }
 }
@@ -254,11 +254,11 @@ export async function addUnauthorizedOriginUrl() {
     handleFetchError(response);
     unauthorizedOriginTable.row.add({'url': originUrl}).draw();
     $('.swh-add-unauthorized-origin-status').html(
-      htmlAlert('success', 'The origin url prefix has been successfully added in the unauthorized list.', true)
+      htmlAlert('success', 'The origin url prefix has been successfully added in the unauthorized list.', true),
     );
   } catch (_) {
     $('.swh-add-unauthorized-origin-status').html(
-      htmlAlert('warning', 'The provided origin url prefix is already registered in the unauthorized list.', true)
+      htmlAlert('warning', 'The provided origin url prefix is already registered in the unauthorized list.', true),
     );
   }
 }

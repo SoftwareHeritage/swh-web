@@ -39,7 +39,7 @@ function generateToken() {
 
 async function displayToken(tokenId) {
   const postData = {
-    token_id: tokenId
+    token_id: tokenId,
   };
   try {
     const response = await csrfPost(Urls.oidc_get_bearer_token(), {}, JSON.stringify(postData));
@@ -61,7 +61,7 @@ async function displayToken(tokenId) {
 
 async function revokeTokens(tokenIds) {
   const postData = {
-    token_ids: tokenIds
+    token_ids: tokenIds,
   };
   try {
     const response = await csrfPost(Urls.oidc_revoke_bearer_tokens(), {}, JSON.stringify(postData));
@@ -91,7 +91,7 @@ function revokeAllTokens() {
 export function applyTokenAction(action, tokenId) {
   const actionData = {
     display: {
-      submitCallback: displayToken
+      submitCallback: displayToken,
     },
     generate: {
       modalTitle: 'Bearer token generation',
@@ -99,20 +99,20 @@ export function applyTokenAction(action, tokenId) {
                 'Software Heritage Authentication Service and might be asked to enter ' +
                 'your password again.',
       buttonText: 'Generate token',
-      submitCallback: generateToken
+      submitCallback: generateToken,
     },
     revoke: {
       modalTitle: 'Revoke bearer token',
       infoText: 'Click on the button to revoke the token.',
       buttonText: 'Revoke token',
-      submitCallback: revokeToken
+      submitCallback: revokeToken,
     },
     revokeAll: {
       modalTitle: 'Revoke all bearer tokens',
       infoText: 'Click on the button to revoke all tokens.',
       buttonText: 'Revoke tokens',
-      submitCallback: revokeAllTokens
-    }
+      submitCallback: revokeAllTokens,
+    },
   };
 
   if (!actionData[action]) {
@@ -157,7 +157,7 @@ export function initProfilePage() {
                 return date.toLocaleString();
               }
               return data;
-            }
+            },
           },
           {
             render: (data, type, row) => {
@@ -172,11 +172,11 @@ export function initProfilePage() {
                 </button>`;
               return html;
             },
-            orderable: false
-          }
+            orderable: false,
+          },
         ],
         ordering: false,
-        searching: false
+        searching: false,
       }));
     $('#swh-oidc-profile-tokens-tab').on('shown.bs.tab', () => {
       apiTokensTable.draw();

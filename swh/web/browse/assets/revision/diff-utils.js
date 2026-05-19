@@ -160,7 +160,7 @@ export function fragmentToSelectedDiffLines(fragment) {
     return {
       startLines: [parseInt(matchObj[1]), parseInt(matchObj[2])],
       endLines: [parseInt(matchObj[3]), parseInt(matchObj[4])],
-      unified: matchObj[5] === 'unified'
+      unified: matchObj[5] === 'unified',
     };
   } else {
     return null;
@@ -540,11 +540,11 @@ export async function computeDiff(diffUrl, diffId) {
 
       $('html, body').animate(
         {
-          scrollTop: firstHighlightedLine.offset().top - 50
+          scrollTop: firstHighlightedLine.offset().top - 50,
         },
         {
-          duration: 500
-        }
+          duration: 500,
+        },
       );
     }
   }
@@ -584,7 +584,7 @@ function genDiffPanel(diffData) {
   return diffPanelTemplate({
     diffData: diffData,
     diffPanelTitle: diffPanelTitle,
-    swhSpinnerSrc: swhSpinnerSrc
+    swhSpinnerSrc: swhSpinnerSrc,
   });
 }
 
@@ -603,7 +603,7 @@ function setupWaypoints() {
           this.destroy();
         }
       },
-      offset: '100%'
+      offset: '100%',
     });
 
     // create a waypoint that will trigger diff computation when
@@ -618,7 +618,7 @@ function setupWaypoints() {
       },
       offset: function() {
         return -$(this.element).height();
-      }
+      },
     });
   }
   Waypoint.refreshAll();
@@ -632,7 +632,7 @@ function scrollToDiffPanel(diffPanelId, setHash = true) {
 
   $('html, body').animate(
     {
-      scrollTop: $(diffPanelId).offset().top
+      scrollTop: $(diffPanelId).offset().top,
     },
     {
       duration: 500,
@@ -644,7 +644,7 @@ function scrollToDiffPanel(diffPanelId, setHash = true) {
         Waypoint.enableAll();
         // compute diffs visible in the viewport
         computeVisibleDiffs();
-      }
+      },
     });
 }
 

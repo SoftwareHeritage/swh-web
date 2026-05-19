@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2021  The Software Heritage developers
+ * Copyright (C) 2020-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -11,7 +11,7 @@ describe('Test API tokens UI', function() {
     // mock keycloak
     cy.intercept(`${this.Urls.oidc_login()}/**`, {
       headers: {'content-type': 'text/html'},
-      body: {}
+      body: {},
     });
     cy.visit(`${this.Urls.oidc_profile()}#tokens`);
     cy.location().should(loc => {
@@ -25,8 +25,8 @@ describe('Test API tokens UI', function() {
         'recordsTotal': tokens.length,
         'draw': 2,
         'recordsFiltered': tokens.length,
-        'data': tokens
-      }
+        'data': tokens,
+      },
     });
     // the tested UI should not be accessible for standard Django users
     // but we need a user logged in for testing it
@@ -67,7 +67,7 @@ describe('Test API tokens UI', function() {
   function displayToken(Urls, status, body = '') {
     cy.intercept('POST', `${Urls.oidc_get_bearer_token()}/**`, {
       body: body,
-      statusCode: status
+      statusCode: status,
     }).as('getTokenRequest');
 
     cy.contains('Display token')
@@ -107,7 +107,7 @@ describe('Test API tokens UI', function() {
   function revokeToken(Urls, status) {
     cy.intercept('POST', `${Urls.oidc_revoke_bearer_tokens()}/**`, {
       body: '',
-      statusCode: status
+      statusCode: status,
     }).as('revokeTokenRequest');
 
     cy.contains('Revoke token')

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2021  The Software Heritage developers
+ * Copyright (C) 2021-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -25,7 +25,7 @@ function preventDefaultForScrollKeys(e) {
 let supportsPassive = false;
 try {
   window.addEventListener('test', null, Object.defineProperty({}, 'passive', {
-    get: function() { supportsPassive = true; }
+    get: function() { supportsPassive = true; },
   }));
 } catch (e) {}
 

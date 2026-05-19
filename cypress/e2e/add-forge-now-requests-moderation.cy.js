@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2022-2024  The Software Heritage developers
+ * Copyright (C) 2022-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -138,9 +138,9 @@ describe('Test "Add Forge Now" moderation listing', function() {
           'forge_contact_email': 'admin@example.org',
           'forge_contact_name': 'Admin',
           'last_modified_date': '2022-09-22T05:31:47.576000Z',
-          'last_moderator': 'foo@softwareheritage.org'
-        }
-      ]
+          'last_moderator': 'foo@softwareheritage.org',
+        },
+      ],
     }}).as('addForgeRequestsList');
 
     cy.addForgeModeratorLogin();

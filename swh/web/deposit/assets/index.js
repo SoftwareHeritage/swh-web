@@ -49,17 +49,17 @@ export function initDepositAdmin(username, isStaff) {
           url: Urls.admin_deposit_list(),
           data: d => {
             d.excludePattern = $('#swh-admin-deposit-list-exclude-filter').val();
-          }
+          },
         },
         rowId: 'id',
         columns: [
           {
             data: 'id',
-            name: 'id'
+            name: 'id',
           },
           {
             data: 'type',
-            name: 'type'
+            name: 'type',
           },
           {
             data: 'uri',
@@ -78,17 +78,17 @@ export function initDepositAdmin(username, isStaff) {
                                      '<i class="mdi mdi-open-in-new" aria-hidden="true"></i>');
               }
               return swhLink + '&nbsp;' + originLink;
-            }
+            },
           },
           {
             data: 'reception_date',
             name: 'reception_date',
             urlParam: 'date',
-            render: getHumanReadableDate
+            render: getHumanReadableDate,
           },
           {
             data: 'status',
-            name: 'status'
+            name: 'status',
           },
           {
             data: 'raw_metadata',
@@ -101,7 +101,7 @@ export function initDepositAdmin(username, isStaff) {
                 }
               }
               return data;
-            }
+            },
           },
           {
             data: 'status_detail',
@@ -117,7 +117,7 @@ export function initDepositAdmin(username, isStaff) {
               return data;
             },
             orderable: false,
-            visible: false
+            visible: false,
           },
           {
             data: 'swhid',
@@ -126,7 +126,7 @@ export function initDepositAdmin(username, isStaff) {
               return genSwhLink(data, type);
             },
             orderable: false,
-            visible: false
+            visible: false,
           },
           {
             data: 'swhid_context',
@@ -135,11 +135,11 @@ export function initDepositAdmin(username, isStaff) {
               return genSwhLink(data, type);
             },
             orderable: false,
-            visible: false
-          }
+            visible: false,
+          },
         ],
         scrollX: true,
-        order: [[0, 'desc']]
+        order: [[0, 'desc']],
       }));
 
     // Some more customization is needed on the table

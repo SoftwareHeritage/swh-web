@@ -168,7 +168,7 @@ export async function generateCitationFromSWHID(objectType) {
     const citation = await response.json();
     const CITATION_FORMAT_TO_PRISM = {
       'bibtex': {language: Prism.languages.bibtex, name: 'bibtex'},
-      'csl': {language: Prism.languages.json, name: 'json'}
+      'csl': {language: Prism.languages.json, name: 'json'},
     };
     const prism = CITATION_FORMAT_TO_PRISM[citationFormat] ?? {language: Prism.languages.plain, name: 'plain'};
     const html = Prism.highlight(citation.content, prism.language, prism.name);
@@ -185,13 +185,13 @@ export async function generateCitationFromSWHID(objectType) {
           $(`#swh-citation-warning-${objectType}`).removeClass('d-none');
           $(`#swh-citation-${objectType}`).addClass('d-none');
           $(`#swh-citation-warning-switch-${objectType}`).html(
-            '<i class="mdi mdi-book-open-variant-outline mdi-fw" aria-hidden="true"></i>Display citation'
+            '<i class="mdi mdi-book-open-variant-outline mdi-fw" aria-hidden="true"></i>Display citation',
           );
         } else {
           $(`#swh-citation-warning-${objectType}`).addClass('d-none');
           $(`#swh-citation-${objectType}`).removeClass('d-none');
           $(`#swh-citation-warning-switch-${objectType}`).html(
-            '<i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>Display warning'
+            '<i class="mdi mdi-alert mdi-fw" aria-hidden="true"></i>Display warning',
           );
         }
       });
@@ -226,7 +226,7 @@ export async function initSideTabs() {
       text: trigger => {
         const swhId = $(trigger).closest('.swhid-ui').find('.swhid').text();
         return swhId.replace(/;\n/g, ';');
-      }
+      },
     }).on('success', function(e) {
       swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       e.clearSelection();
@@ -236,7 +236,7 @@ export async function initSideTabs() {
       text: trigger => {
         const swhIdUrl = $(trigger).closest('.swhid-ui').find('.swhid').attr('href');
         return window.location.origin + swhIdUrl;
-      }
+      },
     }).on('success', function(e) {
       swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       e.clearSelection();
@@ -298,7 +298,7 @@ export async function initSideTabs() {
           // ensure elements in closed SWHIDs tab are not keyboard focusable
           $('#swh-identifiers-content').css('display', 'none');
         }, 500);
-      }
+      },
     };
 
     // initiate the sliding SWHIDs tab
@@ -334,7 +334,7 @@ export async function initSideTabs() {
         text: trigger => {
           const citation = $(trigger).closest('.citation-ui').find('.swh-citation').text();
           return citation;
-        }
+        },
       }).on('success', function(e) {
         swh.webapp.toggleButtonText(e.trigger, 'Copied!');
       });
@@ -384,7 +384,7 @@ export async function initSideTabs() {
             // ensure elements in closed citations tab are not keyboard focusable
             $('#swh-citations-content').css('display', 'none');
           }, 500);
-        }
+        },
       };
 
       // initiate the sliding citations tab
