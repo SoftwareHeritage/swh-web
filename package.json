@@ -7,7 +7,7 @@
     "build-test": "NODE_ENV=test webpack --config assets/config/webpack.config.development.js --color",
     "start-dev": "NODE_ENV=development webpack serve --config assets/config/webpack.config.development.js --color",
     "build": "NODE_ENV=production webpack --config assets/config/webpack.config.production.js --color",
-    "eslint": "eslint --no-warn-ignored --fix *.js assets/** swh/web/**/assets/** cypress/e2e/** cypress/plugins/** cypress/support/**",
+    "eslint": "eslint --no-warn-ignored --fix *.js assets/** swh/web/**/assets/** cypress/**/*.js",
     "nyc-report": "nyc report --reporter=lcov"
   },
   "repository": {

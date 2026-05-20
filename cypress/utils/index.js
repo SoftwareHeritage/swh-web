@@ -23,7 +23,7 @@ export function getTime(text) {
     year: date.getUTCFullYear(),
     hours: pad(date.getUTCHours()),
     minutes: pad(date.getUTCMinutes()),
-    seconds: pad(date.getUTCSeconds())
+    seconds: pad(date.getUTCSeconds()),
   };
 
   return time;
