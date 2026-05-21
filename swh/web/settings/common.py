@@ -55,11 +55,17 @@ SWH_BASE_DJANGO_APPS = [
     "swh.web.utils",
     "swh.web.webapp",
 ]
+
 SWH_EXTRA_DJANGO_APPS = [
     app
     for app in swh_web_config["swh_extra_django_apps"]
-    if app not in SWH_BASE_DJANGO_APPS and app != "swh.web.banners"
+    if app not in SWH_BASE_DJANGO_APPS
 ]
+
+if not swh_web_config.get("display_banner", False):
+    SWH_EXTRA_DJANGO_APPS = [
+        app for app in SWH_EXTRA_DJANGO_APPS if app != "swh.web.banners"
+    ]
 
 SWH_DJANGO_APPS = SWH_BASE_DJANGO_APPS + SWH_EXTRA_DJANGO_APPS
 

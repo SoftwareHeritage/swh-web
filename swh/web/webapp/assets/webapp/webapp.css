@@ -390,6 +390,12 @@ a.dropdown-left::before {
     margin-top: 60px;
 }
 
+@media (max-width: 991px) {
+    .app-sidebar-banner {
+        margin-top: 30px;
+    }
+}
+
 .content-wrapper {
     background: none;
 }
@@ -869,7 +875,7 @@ div.d3-tooltip {
 }
 
 .swh-corner-ribbon-banner {
-    top: 85px;
+    top: 30px;
 }
 
 @media screen and (max-width: 600px) {

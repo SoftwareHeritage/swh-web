@@ -1,29 +1,59 @@
 {% comment %}
-Copyright (C) 2023  The Software Heritage developers
+Copyright (C) 2023-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
-{% with status_url="https://status.softwareheritage.org/pages/maintenance/578e5eddcdc0cc7951000520/63c52cd323b01e05870da503" %}
+{% with status_url="https://status.softwareheritage.org/pages/maintenance/578e5eddcdc0cc7951000520/6a0d821d817e4705f08c6fc4" %}
   <div class="content">
     <div class="container-fluid">
       <div class="row align-items-center justify-content-end">
         <div class="col-12 text-center align-middle pe-3">
           {% if lang == "en" %}
-            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Downtime expected for SWH services</a>
             <div class="d-none d-md-inline-block">
-              from Tuesday 2023-01-25 09:00 to Wednesday 2023-01-26 18:00 UTC+0100
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archive in read-only mode from Friday 2026-05-22 16:00 to Tuesday 2026-05-26 12:00 UTC+0200
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
+            </div>
+            <div class="d-sm-inline-block d-md-none">
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archive in read-only mode
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
             </div>
           {% elif lang == "fr" %}
-            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Interruption des services SWH</a>
             <div class="d-none d-md-inline-block">
-              du mardi 25/01/2023 09:00 au mercredi 26/01/2023 18:00 UTC+0100
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archive en mode lecture seule du vendredi 22/05/2026 16:00 au mardi 26/05/2026 12:00 UTC+0200
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
+            </div>
+            <div class="d-sm-inline-block d-md-none">
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archive en mode lecture seule
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
             </div>
           {% elif lang == "es" %}
-            <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">Interrupción de servicios SWH</a>
             <div class="d-none d-md-inline-block">
-              martes 25/01/2023 09:00 a miércoles 26/01/2023 18:00 UTC+0100
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archivo en modo de solo lectura desde viernes 22/05/2026 16:00 a martes 26/05/2026 12:00 UTC+0200
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
+            </div>
+            <div class="d-sm-inline-block d-md-none">
+              <a target="_blank" rel="noopener noreferrer" href="{{ status_url }}">
+                <i class="mdi mdi-fw mdi-alert"></i>
+                Archivo en modo de solo lectura
+                <i class="mdi mdi-fw mdi-alert"></i>
+              </a>
             </div>
           {% endif %}
         </div>
