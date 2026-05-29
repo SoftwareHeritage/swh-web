@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025  The Software Heritage developers
+# Copyright (C) 2018-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -1275,7 +1275,6 @@ def browse_snapshot_branches(
 
     origin_info = snapshot_context["origin_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
 
     if origin_info:
         browse_view_name = "browse-origin-directory"
@@ -1330,6 +1329,10 @@ def browse_snapshot_branches(
 
     prev_branches_url = None
     next_branches_url = None
+
+    query_params = snapshot_context["query_params"]
+    if branch_name_include:
+        query_params["name_include"] = branch_name_include
 
     if branches_bc:
         query_params_prev = dict(query_params)
@@ -1403,7 +1406,6 @@ def browse_snapshot_releases(
 
     origin_info = snapshot_context["origin_info"]
     url_args = snapshot_context["url_args"]
-    query_params = snapshot_context["query_params"]
 
     snapshot = archive.lookup_snapshot(
         snapshot_context["snapshot_id"],
@@ -1474,6 +1476,10 @@ def browse_snapshot_releases(
 
     prev_releases_url = None
     next_releases_url = None
+
+    query_params = snapshot_context["query_params"]
+    if release_name_include:
+        query_params["name_include"] = release_name_include
 
     if rel_bc:
         query_params_prev = dict(query_params)
