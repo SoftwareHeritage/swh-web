@@ -35,7 +35,7 @@ class FixSwhSourceMapsPlugin {
             const pos = bundleName.indexOf('.');
             bundleName = bundleName.slice(0, pos);
             const asset = compilation.assets[key];
-            const source = asset.source().replace(/swh.\[name\]/g, 'swh.' + bundleName);
+            const source = asset.source().toString().replace(/swh.\[name\]/g, 'swh.' + bundleName);
             compilation.updateAsset(key, new sources.RawSource(source));
           });
         },

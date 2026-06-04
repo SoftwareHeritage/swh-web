@@ -88,7 +88,7 @@ export async function renderPdf(pdfUrl) {
     $('#pdf-prev').on('click', onPrevPage);
     $('#pdf-next').on('click', onNextPage);
     try {
-      const pdf = await pdfjs.getDocument(pdfUrl).promise;
+      const pdf = await pdfjs.getDocument({url: pdfUrl}).promise;
       pdfDoc = pdf;
       $('#pdf-page-count').text(pdfDoc.numPages);
       // Initial/first page rendering
