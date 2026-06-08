@@ -123,11 +123,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                               </tr>
                             </thead>
                             <tbody>
-                              {% for instance, visit_types in origins.instances.items %}
-                                {% for visit_type, data in visit_types.items %}
+                              {% for instance, instance_data in origins.instances.items %}
+                                {% for visit_type, data in instance_data.visit_types.items %}
                                   {% if data.count %}
                                     <tr id="{{ origins.type }}-{{ visit_type }}">
-                                      <td>{{ instance }}</td>
+                                      <td>
+                                        {% if instance_data.url %}
+                                          <a href="{{ instance_data.url }}"
+                                             target="_blank"
+                                             rel="noopener noreferrer">{{ instance }}</a>
+                                        {% else %}
+                                          {{ instance }}
+                                        {% endif %}
+                                      </td>
                                       <td>{{ visit_type }}</td>
                                       <td>{{ data.count }}</td>
                                       <td>
@@ -155,7 +163,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                             <tbody>
                               {% for visit_type, search_url in origins.search_urls.items %}
                                 <tr id="{{ origins.type }}-{{ visit_type }}">
-                                  <td>{{ origins.type }}</td>
+                                  <td>
+                                    {% if origins.instance_url %}
+                                      <a href="{{ origins.instance_url }}"
+                                         target="_blank"
+                                         rel="noopener noreferrer">{{ origins.type }}</a>
+                                    {% else %}
+                                      {{ origins.type }}
+                                    {% endif %}
+                                  </td>
                                   <td>{{ visit_type }}</td>
                                   <td>
                                     {% if search_url %}

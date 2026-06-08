@@ -56,6 +56,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://bioconductor.org/",
             },
+            "instances_url": {
+                "bioconductor": "https://bioconductor.org/packages/",
+            },
         },
         {
             "type": "bitbucket",
@@ -63,6 +66,10 @@ listed_origins: Dict[str, Any] = {
             "info": "public repositories from Bitbucket",
             "search_pattern": {
                 "default": "bitbucket",
+            },
+            "instances_url": {
+                "bitbucket": None,
+                "bitbucket.org": None,
             },
         },
         {
@@ -75,6 +82,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "",
             },
+            "instances_url": {
+                "bower": "https://bower.io/search/",
+            },
         },
         {
             "type": "cgit",
@@ -82,6 +92,9 @@ listed_origins: Dict[str, Any] = {
             "info": "public repositories from cgit instances",
             "search_pattern": {
                 "default": "cgit",
+            },
+            "instances_url_override": {
+                "gnu-savannah": "https://cgit.git.savannah.gnu.org/cgit/",
             },
         },
         {
@@ -102,6 +115,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://metacpan.org/",
             },
+            "instances_url": {
+                "cpan": "https://www.cpan.org/modules/",
+            },
         },
         {
             "type": "cran",
@@ -109,6 +125,9 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from The Comprehensive R Archive Network",
             "search_pattern": {
                 "default": "https://cran.r-project.org/",
+            },
+            "instances_url": {
+                "cran": "https://cran.r-project.org/web/packages/",
             },
         },
         {
@@ -118,6 +137,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://crates.io/crates/",
             },
+            "instances_url": {
+                "crates": "https://crates.io/crates/",
+            },
         },
         {
             "type": "dlang",
@@ -126,6 +148,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "",
             },
+            "instances_url": {
+                "dlang": "https://code.dlang.org/",
+            },
         },
         {
             "type": "debian",
@@ -133,6 +158,13 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from Debian and Debian-based distributions",
             "search_pattern": {
                 "default": "deb://",
+            },
+            "instances_url": {
+                "Debian": "https://packages.debian.org/",
+                "Debian-Security": "https://security.debian.org/",
+                "Ubuntu": "https://packages.ubuntu.com/",
+                "Ubuntu-Security": "https://security.ubuntu.com/",
+                "Ubuntu-Legacy": "https://old-releases.ubuntu.com/ubuntu/",
             },
         },
         {
@@ -166,6 +198,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://github.com/",
             },
+            "instances_url": {
+                "github": "https://github.com/explore",
+            },
         },
         {
             "type": "gitiles",
@@ -181,6 +216,9 @@ listed_origins: Dict[str, Any] = {
             "info": "public repositories from multiple GitLab instances",
             "search_pattern": {
                 "default": "gitlab",
+            },
+            "instances_url_override": {
+                "gitlab.com": "https://gitlab.com/explore",
             },
         },
         {
@@ -206,6 +244,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://pkg.go.dev/",
             },
+            "instances_url": {
+                "golang": "https://pkg.go.dev/",
+            },
         },
         {
             "type": "guix",
@@ -215,6 +256,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "",
             },
+            "instances_url": {
+                "guix.gnu.org": "https://packages.guix.gnu.org/",
+            },
         },
         {
             "type": "GNU",
@@ -222,6 +266,9 @@ listed_origins: Dict[str, Any] = {
             "info": "releases from the GNU project (as of August 2015)",
             "search_pattern": {
                 "default": "gnu",
+            },
+            "instances_url": {
+                "GNU": "https://www.gnu.org/manual/blurbs.html",
             },
         },
         {
@@ -240,6 +287,9 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from The Haskell Package Repository",
             "search_pattern": {
                 "default": "https://hackage.haskell.org/package/",
+            },
+            "instances_url": {
+                "hackage": "https://hackage.haskell.org/packages/browse",
             },
         },
         {
@@ -266,6 +316,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "launchpad.net/",
             },
+            "instances_url": {
+                "launchpad": "https://code.launchpad.net/",
+            },
         },
         {
             "type": "maven",
@@ -278,6 +331,9 @@ listed_origins: Dict[str, Any] = {
                 "hg": "",
                 "svn": "",
             },
+            "instances_url_override": {
+                "maven-central": "https://mvnrepository.com/open-source?repo=central",
+            },
         },
         {
             "type": "nixos",
@@ -289,6 +345,9 @@ listed_origins: Dict[str, Any] = {
                 "content": "https://cache.nixos.org",
                 "tarball-directory": "https://cache.nixos.org",
             },
+            "instances_url": {
+                "nixpkgs-swh.nixos.org": "https://github.com/NixOS/nixpkgs",
+            },
         },
         {
             "type": "npm",
@@ -296,6 +355,9 @@ listed_origins: Dict[str, Any] = {
             "info": "public packages from the package registry for javascript",
             "search_pattern": {
                 "default": "https://www.npmjs.com",
+            },
+            "instances_url": {
+                "npm": None,
             },
         },
         {
@@ -305,6 +367,10 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "opam+https://",
             },
+            "instances_url": {
+                "coq.inria.fr": "https://rocq-prover.org/packages",
+                "opam.ocaml.org": "https://opam.ocaml.org/packages/",
+            },
         },
         {
             "type": "Packagist",
@@ -312,6 +378,9 @@ listed_origins: Dict[str, Any] = {
             "info": "source code repositories referenced by The PHP Package Repository",
             "search_pattern": {
                 "default": "",
+            },
+            "instances_url": {
+                "packagist": "https://packagist.org/explore/",
             },
         },
         {
@@ -337,6 +406,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://pub.dev",
             },
+            "instances_url": {
+                "pubdev": None,
+            },
         },
         {
             "type": "puppet",
@@ -345,6 +417,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://forge.puppet.com/modules/",
             },
+            "instances_url": {
+                "puppet": "https://forge.puppet.com/modules",
+            },
         },
         {
             "type": "pypi",
@@ -352,6 +427,9 @@ listed_origins: Dict[str, Any] = {
             "info": "source packages from the Python Package Index",
             "search_pattern": {
                 "default": "https://pypi.org",
+            },
+            "instances_url": {
+                "pypi": None,
             },
         },
         {
@@ -369,6 +447,9 @@ listed_origins: Dict[str, Any] = {
             "search_pattern": {
                 "default": "https://rubygems.org/gems/",
             },
+            "instances_url": {
+                "rubygems": "https://rubygems.org/gems",
+            },
         },
         {
             "type": "sourceforge",
@@ -378,6 +459,9 @@ listed_origins: Dict[str, Any] = {
                 "default": "code.sf.net",
                 "bzr": "bzr.sourceforge.net",
                 "cvs": "cvs.sourceforge.net",
+            },
+            "instances_url": {
+                "main": None,
             },
         },
         {
@@ -406,6 +490,12 @@ legacy_origins: Dict[str, Any] = {
             "info": "public mercurial repositories from Bitbucket",
             "search_pattern": "https://bitbucket.org/",
             "visit_types": ["hg"],
+            "instances_url": {
+                "bitbucket-hg": (
+                    "https://web.archive.org/web/20200914183619/"
+                    "https://bitbucket.org/repo/all/"
+                ),
+            },
         },
         {
             "type": "gitorious",
@@ -415,6 +505,12 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["git"],
             "search_pattern": "https://gitorious.org",
+            "instances_url": {
+                "gitorious": (
+                    "https://web.archive.org/web/20260103034346/"
+                    "https://gitorious.org/"
+                ),
+            },
         },
         {
             "type": "googlecode",
@@ -425,6 +521,12 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["git", "hg", "svn"],
             "search_pattern": "googlecode.com",
+            "instances_url": {
+                "googlecode": (
+                    "https://www.google.com/search?q="
+                    "site:codesite-archive.appspot.com+OR+site:code.google.com"
+                ),
+            },
         },
         {
             "type": "osdn",
@@ -435,6 +537,12 @@ legacy_origins: Dict[str, Any] = {
             ),
             "visit_types": ["cvs", "git", "hg", "svn"],
             "search_pattern": "osdn.net",
+            "instances_url": {
+                "osdn": (
+                    "https://web.archive.org/web/20250406093419/"
+                    "https://osdn.net/softwaremap/trove_list.php"
+                ),
+            },
         },
     ],
 }
@@ -456,6 +564,7 @@ deposited_origins: Dict[str, Any] = {
             ),
             "search_pattern": "elife.stencila.io",
             "visit_types": ["deposit"],
+            "instance_url": "https://elifesciences.org/browse",
         },
         {
             "type": "hal",
@@ -463,6 +572,7 @@ deposited_origins: Dict[str, Any] = {
             "info": "scientific software source code deposited in the open archive HAL",
             "visit_types": ["deposit"],
             "search_pattern": "hal.archives-ouvertes.fr",
+            "instance_url": "https://hal.science/#searchHeaderNG",
         },
         {
             "type": "ipol",
@@ -470,6 +580,7 @@ deposited_origins: Dict[str, Any] = {
             "info": "software artifacts associated to the articles IPOL publishes",
             "visit_types": ["deposit"],
             "search_pattern": "doi.org/10.5201/ipol",
+            "instance_url": "https://www.ipol.im/pub/art/",
         },
         {
             "type": "zenodo",
@@ -477,6 +588,7 @@ deposited_origins: Dict[str, Any] = {
             "info": "software source code deposited in the Open Science platform Zenodo",
             "visit_types": ["deposit"],
             "search_pattern": "doi.org/10.5281/zenodo",
+            "instance_url": "https://zenodo.org/",
         },
     ],
 }
@@ -497,6 +609,50 @@ def get_listers_metrics() -> Dict[str, List[Tuple[str, SchedulerMetrics]]]:
     return listers_metrics
 
 
+def get_instance_urls() -> Dict[str, str]:
+    urls = {}
+    for task_type in scheduler().get_task_types():
+        if not task_type.type.startswith("list-") or task_type.type == "list-save-bulk":
+            continue
+        for task in scheduler().search_tasks(task_type=task_type.type):
+            kwargs = task.arguments.kwargs
+            if {"instance", "url"} <= kwargs.keys():
+                urls[kwargs["instance"]] = kwargs["url"]
+    return urls
+
+
+# FIXME: remove this once the scheduler database is updated
+def adjust_url(origins_type, url):
+    if origins_type in {"gitlab", "heptapod"} and url.endswith("/api/v4"):
+        return url.removesuffix("api/v4")
+    elif origins_type in {"gogs", "gitea", "forgejo"} and url.endswith("/api/v1"):
+        return url.removesuffix("api/v1")
+    elif origins_type in {"phabricator", "phorge"} and url.endswith(
+        "/api/diffusion.repository.search"
+    ):
+        return url.removesuffix("api/diffusion.repository.search")
+    else:
+        return url
+
+
+def update_origins_with_url(origins, urls, origins_type, instance):
+    origins["instances"][instance].update(
+        {
+            "url": origins.get("instances_url_override", {}).get(instance)
+            or adjust_url(
+                origins_type,
+                urls.get(
+                    instance,
+                    origins.get("instances_url", {}).get(
+                        instance, f"https://{instance}"
+                    )
+                    or origins["info_url"],
+                ),
+            ),
+        }
+    )
+
+
 def _search_url(query: str, visit_type: str) -> str:
     return reverse(
         "browse-search",
@@ -513,6 +669,7 @@ def _search_url(query: str, visit_type: str) -> str:
 @cache_page(24 * 60 * 60)  # one day
 def swh_coverage(request: HttpRequest) -> HttpResponse:
     listers_metrics = get_listers_metrics()
+    urls = get_instance_urls()
 
     for origins in listed_origins["origins"]:
         origins["count"] = "0"
@@ -523,7 +680,7 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         if origins_type in ("nixos", "guix"):
             main_instance = origins["main_instance"]
             visit_data = listers_metrics.get("nixguix", [])
-            visit_type_counts: Dict[str, Dict[str, Dict[str, str]]] = defaultdict(dict)
+            visit_type_counts: Dict[str, Dict[str, str]] = defaultdict(dict)
             # visit types from new nixguix lister
             count = 0
             for instance, metrics in visit_data:
@@ -533,14 +690,19 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
                     metrics.origins_enabled - metrics.origins_never_visited
                 )
                 if instance_type_count > 0:
-                    visit_type_counts[instance][metrics.visit_type] = {
+                    visit_type_counts[metrics.visit_type] = {
                         "count": f"{instance_type_count:,}"
                     }
 
                 count += instance_type_count
 
             origins["count"] = f"{count:,}"
-            origins["instances"] = dict(visit_type_counts)
+            origins["instances"] = {
+                main_instance: {
+                    "url": f"https://{main_instance}",
+                    "visit_types": dict(visit_type_counts),
+                }
+            }
 
         if origins_type not in listers_metrics:
             continue
@@ -557,14 +719,15 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
         count_visited = count_total - count_never_visited
 
         origins["count"] = f"{count_visited:,}"
-        origins["instances"] = defaultdict(dict)
+        origins["instances"] = defaultdict(lambda: defaultdict(dict))
         for instance, metrics in listers_metrics[origins_type]:
             instance_count = metrics.origins_enabled - metrics.origins_never_visited
             # no archived origins for that visit type, skip it
             if instance_count == 0:
                 continue
 
-            origins["instances"][instance].update(
+            update_origins_with_url(origins, urls, origins_type, instance)
+            origins["instances"][instance]["visit_types"].update(
                 {metrics.visit_type: {"count": f"{instance_count:,}"}}
             )
             origins["visit_types"] = list(
@@ -578,7 +741,8 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
     for origins in listed_origins["origins"]:
         instances = origins["instances"]
         nb_instances = len(instances)
-        for instance_name, visit_types in instances.items():
+        for instance_name, instance_data in instances.items():
+            visit_types = instance_data["visit_types"]
             for visit_type in visit_types:
                 search_url = ""
                 if visit_type in origins["search_pattern"]:
@@ -600,13 +764,15 @@ def swh_coverage(request: HttpRequest) -> HttpResponse:
 
     for origins in legacy_origins["origins"]:
         origins["instances"] = {origins["type"]: {}}
+        update_origins_with_url(origins, urls, origins["type"], origins["type"])
         total_count = 0
         for visit_type in origins["visit_types"]:
             count = count_origins(
                 origins["search_pattern"], with_visit=True, visit_types=[visit_type]
             )
             total_count += count
-            origins["instances"][origins["type"]][visit_type] = {
+            origins["instances"][origins["type"]]["visit_types"] = {}
+            origins["instances"][origins["type"]]["visit_types"][visit_type] = {
                 "count": f"{count:,}",
                 "search_url": _search_url(origins["search_pattern"], visit_type),
             }

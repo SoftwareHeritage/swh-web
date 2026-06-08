@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2025  The Software Heritage developers
+# Copyright (C) 2021-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -15,7 +15,15 @@ import pytest
 from django.conf import settings
 from django.utils.html import escape
 
-from swh.scheduler.model import LastVisitStatus, ListedOrigin, OriginVisitStats
+from swh.scheduler.model import (
+    LastVisitStatus,
+    ListedOrigin,
+    OriginVisitStats,
+    Task,
+    TaskArguments,
+    TaskType,
+)
+from swh.scheduler.utils import utcnow
 from swh.web.archive_coverage.views import (
     deposited_origins,
     legacy_origins,
@@ -126,7 +134,8 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
         origin_visit_types = set()
 
         if "instances" in origins:
-            for visit_types_ in origins["instances"].values():
+            for instance_data in origins["instances"].values():
+                visit_types_ = instance_data["visit_types"]
                 origin_visit_types.update(visit_types_.keys())
                 for data in visit_types_.values():
                     if data["count"] and data["search_url"]:
@@ -299,3 +308,113 @@ def test_coverage_view_no_logo_for_origin_type(client, mocker, swh_scheduler):
                     f'text-anchor="middle">{origin_type}</text>'
                 ),
             )
+
+
+def test_coverage_view_urls(client, mocker, swh_scheduler):
+    instances = {"gitlab": {"gitlab.com", "gitlab.example.org"}}
+
+    for origins in listed_origins["origins"]:
+        lister_name = origins["type"]
+        for instance in {lister_name} | instances.get(lister_name, set()):
+            lister = swh_scheduler.get_or_create_lister(lister_name, instance)
+            _origins = []
+            origin_visit_stats = []
+            for visit_type in visit_types:
+                url = str(uuid.uuid4())
+                _origins.append(
+                    ListedOrigin(
+                        lister_id=lister.id,
+                        url=url,
+                        visit_type=visit_type,
+                        extra_loader_arguments={},
+                    )
+                )
+                now = datetime.now(tz=timezone.utc)
+                origin_visit_stats.append(
+                    OriginVisitStats(
+                        url=url,
+                        visit_type=visit_type,
+                        last_successful=now,
+                        last_visit=now,
+                        last_visit_status=LastVisitStatus.successful,
+                        last_snapshot=os.urandom(20),
+                    )
+                )
+            swh_scheduler.record_listed_origins(_origins)
+            swh_scheduler.origin_visit_stats_upsert(origin_visit_stats)
+
+    swh_scheduler.update_metrics()
+
+    swh_scheduler.create_task_type(
+        TaskType(
+            type="list-gitlab-full",
+            description="Full update of a GitLab instance",
+            backend_name="swh.lister.gitlab.tasks.UpdateGitRepository",
+        )
+    )
+
+    swh_scheduler.create_tasks(
+        [
+            Task(
+                type="list-gitlab-full",
+                next_run=utcnow(),
+                arguments=TaskArguments(
+                    kwargs={
+                        "url": "https://gitlab.example.com/",
+                        "instance": "gitlab",
+                    }
+                ),
+            )
+        ]
+    )
+
+    swh_scheduler.create_tasks(
+        [
+            Task(
+                type="list-gitlab-full",
+                next_run=utcnow(),
+                arguments=TaskArguments(
+                    kwargs={
+                        "url": "https://gitlab.example.org/api/v4",
+                        "instance": "gitlab.example.org",
+                    }
+                ),
+            )
+        ]
+    )
+
+    swh_scheduler.create_tasks(
+        [
+            Task(
+                type="list-gitlab-full",
+                next_run=utcnow(),
+                arguments=TaskArguments(
+                    kwargs={
+                        "url": "https://gitlab.com/",
+                        "instance": "gitlab.com",
+                    }
+                ),
+            )
+        ]
+    )
+
+    # check view gets rendered without errors
+    url = reverse("swh-coverage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="archive-coverage.html"
+    )
+
+    # check an override URL is present
+    assert_contains(resp, '<a href="https://gitlab.com/explore"')
+
+    # check a default URL is present
+    assert_contains(resp, '<a href="https://github.com/explore"')
+
+    # check a standard URL is present
+    assert_contains(resp, '<a href="https://cgit"')
+
+    # check custom URL is present
+    assert_contains(resp, '<a href="https://gitlab.example.com/"')
+
+    # check gitlab API URL is adjusted
+    assert_contains(resp, '<a href="https://gitlab.example.org/"')
