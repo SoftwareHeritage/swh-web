@@ -399,7 +399,10 @@ legacy_origins: Dict[str, Any] = {
     "origins": [
         {
             "type": "bitbucket-hg",
-            "info_url": "https://bitbucket.org",
+            "info_url": (
+                "https://www.atlassian.com/"
+                "blog/bitbucket/sunsetting-mercurial-support-in-bitbucket"
+            ),
             "info": "public mercurial repositories from Bitbucket",
             "search_pattern": "https://bitbucket.org/",
             "visit_types": ["hg"],
