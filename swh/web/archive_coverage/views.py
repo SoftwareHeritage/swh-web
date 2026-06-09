@@ -456,7 +456,7 @@ deposited_origins: Dict[str, Any] = {
         },
         {
             "type": "hal",
-            "info_url": "https://hal.archives-ouvertes.fr",
+            "info_url": "https://hal.science/",
             "info": "scientific software source code deposited in the open archive HAL",
             "visit_types": ["deposit"],
             "search_pattern": "hal.archives-ouvertes.fr",
