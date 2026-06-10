@@ -137,7 +137,9 @@ See top-level LICENSE file for more information
         <select data-placeholder="Select Language"
                 class="language-select chosen-select js-only">
           <option value=""></option>
-          {% for lang in available_languages %}<option value="{{ lang }}">{{ lang }}</option>{% endfor %}
+          {% for lang in available_languages %}
+            <option value="{{ lang }}">{{ lang }}</option>
+          {% endfor %}
         </select>
       {% endif %}
       {% if "swh.web.save_code_now" in SWH_DJANGO_APPS or SWH_MIRROR_CONFIG %}

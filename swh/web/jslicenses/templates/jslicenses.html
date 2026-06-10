@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% comment %}
-Copyright (C) 2019-2023  The Software Heritage developers
+Copyright (C) 2019-2026  The Software Heritage developers
 See the AUTHORS file at the top-level directory of this distribution
 License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
@@ -61,7 +61,9 @@ See top-level LICENSE file for more information
             {% for js_src in bundled_js_srcs %}
               <a href="{{ js_src.src_url }}">{{ js_src.id }}</a>
               {% for js_license in js_src.licenses %}
-                {% if not forloop.last %}<br />{% endif %}
+                {% if not forloop.last %}
+                  <br />
+                {% endif %}
               {% endfor %}
               {% if not forloop.last %}
                 <br />
