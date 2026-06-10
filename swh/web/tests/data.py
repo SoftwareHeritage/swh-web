@@ -6,13 +6,14 @@
 from copy import deepcopy
 from datetime import timedelta
 import json
+import logging
 import os
 from pathlib import Path
 import random
 from shutil import unpack_archive
 import tempfile
 import time
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from swh.core.config import merge_configs
 from swh.counters import get_counters
@@ -166,7 +167,7 @@ _TEST_ORIGINS = [
     },
 ]
 
-_contents = {}
+_contents: Dict[str, Dict[str, Any]] = {}
 
 
 def _add_extra_contents(storage, contents):
@@ -204,8 +205,8 @@ INDEXER_TOOL = {
 ORIGIN_METADATA_KEY = "keywords"
 ORIGIN_METADATA_VALUE = "git"
 
-ORIGIN_MASTER_REVISION = {}
-ORIGIN_MASTER_DIRECTORY = {}
+ORIGIN_MASTER_REVISION: Dict[str, str] = {}
+ORIGIN_MASTER_DIRECTORY: Dict[str, str] = {}
 
 
 class GitLoaderFromArchive(GitLoader):
@@ -678,7 +679,7 @@ def get_content(content_sha1):
 
 _tests_data = None
 _current_tests_data = None
-_indexer_loggers = {}
+_indexer_loggers: Dict[str, logging.Logger] = {}
 
 
 def get_tests_data(reset=False):
