@@ -35,9 +35,7 @@ DOC_RETURN_ORIGIN = """
 
 DOC_RETURN_ORIGIN_ARRAY = DOC_RETURN_ORIGIN.replace(":>json", ":>jsonarr")
 
-DOC_RETURN_ORIGIN_ARRAY_SEARCH = (
-    DOC_RETURN_ORIGIN_ARRAY
-    + """
+DOC_RETURN_ORIGIN_ARRAY_SEARCH = DOC_RETURN_ORIGIN_ARRAY + """
         :>jsonarr boolean has_visits: indicates if Software Heritage made at
             least one full visit of the origin
         :>jsonarr int nb_visits: the total number of visits for the origin
@@ -47,7 +45,6 @@ DOC_RETURN_ORIGIN_ARRAY_SEARCH = (
             the last eventful_visit date (in UTC)
         :>jsonarr string snapshot_id: identifier of the last snapshot for the origin
 """
-)
 
 DOC_RETURN_ORIGIN += (
     "        :>json array visit_types: set of visit types for that origin"
@@ -276,7 +273,7 @@ def api_origin_search(
     limit = validated_query_params["limit"]
 
     try:
-        (results, page_token, total_results) = api_lookup(
+        results, page_token, total_results = api_lookup(
             archive.search_origin,
             url_pattern,
             use_ql,

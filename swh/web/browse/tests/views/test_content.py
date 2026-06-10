@@ -1448,22 +1448,18 @@ def test_browse_content_without_root_dir_info_in_path(
 
 
 def test_browse_contents_diff(client, archive_data):
-    content_from = Content.from_data(
-        b"""\
+    content_from = Content.from_data(b"""\
 import os
 
 print("number of CPUs: ", os.cpu_count())
-"""
-    )
+""")
 
-    content_to = Content.from_data(
-        b"""\
+    content_to = Content.from_data(b"""\
 import os
 
 print("number of CPUs: ", os.cpu_count())
 print("load average: ", os.getloadavg())
-"""
-    )
+""")
 
     archive_data.content_add([content_from, content_to])
 
@@ -1477,35 +1473,28 @@ print("load average: ", os.getloadavg())
 
     resp = check_http_get_response(client, url, status_code=200)
 
-    assert (
-        resp.json()["diff_str"]
-        == """\
+    assert resp.json()["diff_str"] == """\
 @@ -1,3 +1,4 @@
  import os
  
  print("number of CPUs: ", os.cpu_count())
 +print("load average: ", os.getloadavg())
 """  # noqa
-    )
 
 
 def test_browse_contents_diff_remove_form_feeds(client, archive_data):
-    content_from = Content.from_data(
-        b"""\
+    content_from = Content.from_data(b"""\
 import os
 \f
 print("number of CPUs: ", os.cpu_count())
-"""
-    )
+""")
 
-    content_to = Content.from_data(
-        b"""\
+    content_to = Content.from_data(b"""\
 import os
 \f
 print("number of CPUs: ", os.cpu_count())
 print("load average: ", os.getloadavg())
-"""
-    )
+""")
 
     archive_data.content_add([content_from, content_to])
 
@@ -1519,35 +1508,28 @@ print("load average: ", os.getloadavg())
 
     resp = check_http_get_response(client, url, status_code=200)
 
-    assert (
-        resp.json()["diff_str"]
-        == """\
+    assert resp.json()["diff_str"] == """\
 @@ -1,3 +1,4 @@
  import os
  
  print("number of CPUs: ", os.cpu_count())
 +print("load average: ", os.getloadavg())
 """  # noqa
-    )
 
 
 def test_browse_json_contents_diff(client, archive_data):
-    content_from = Content.from_data(
-        b"""\
+    content_from = Content.from_data(b"""\
 {
     "key": "foo"
 }
-"""
-    )
+""")
 
-    content_to = Content.from_data(
-        b"""\
+    content_to = Content.from_data(b"""\
 {
     "key": "foo",
     "value": "bar"
 }
-"""
-    )
+""")
 
     archive_data.content_add([content_from, content_to])
 
@@ -1561,9 +1543,7 @@ def test_browse_json_contents_diff(client, archive_data):
 
     resp = check_http_get_response(client, url, status_code=200)
 
-    assert (
-        resp.json()["diff_str"]
-        == """\
+    assert resp.json()["diff_str"] == """\
 @@ -1,3 +1,4 @@
  {
 -    "key": "foo"
@@ -1571,7 +1551,6 @@ def test_browse_json_contents_diff(client, archive_data):
 +    "value": "bar"
  }
 """
-    )
 
 
 def test_browse_contents_diff_for_added_content(client, archive_data):
@@ -1589,10 +1568,7 @@ def test_browse_contents_diff_for_added_content(client, archive_data):
 
     resp = check_http_get_response(client, url, status_code=200)
 
-    assert (
-        resp.json()["diff_str"]
-        == """\
+    assert resp.json()["diff_str"] == """\
 @@ -0,0 +1 @@
 +foo
 """
-    )

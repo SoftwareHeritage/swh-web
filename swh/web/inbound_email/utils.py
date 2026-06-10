@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -251,7 +251,7 @@ def _get_message_text(message: Union[Message, EmailMessage]) -> Tuple[bool, List
 
         # Parse each part independently:
         for part in message.get_payload():
-            (is_plain_text, current_part_list) = _get_message_text(
+            is_plain_text, current_part_list = _get_message_text(
                 cast(Union[Message, EmailMessage], part)
             )
             if is_plain_text:
@@ -284,5 +284,5 @@ def get_message_plaintext(message: EmailMessage) -> Optional[str]:
     function will return the largest of them.
 
     """
-    (is_plain_text, parts) = _get_message_text(message)
+    is_plain_text, parts = _get_message_text(message)
     return "".join(parts) or None

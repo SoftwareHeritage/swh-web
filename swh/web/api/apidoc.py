@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2025  The Software Heritage developers
+# Copyright (C) 2015-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -237,10 +237,10 @@ class _HTTPDomainDocVisitor(docutils.nodes.NodeVisitor):
         text = self._default_visit(node)
         subs_made = 1
         while subs_made:
-            (text, subs_made) = re.subn(r"(:http:.*)(\(\w+\))", r"\1", text)
+            text, subs_made = re.subn(r"(:http:.*)(\(\w+\))", r"\1", text)
         subs_made = 1
         while subs_made:
-            (text, subs_made) = re.subn(r"(:http:.*)(\[.*\])", r"\1", text)
+            text, subs_made = re.subn(r"(:http:.*)(\[.*\])", r"\1", text)
         text = re.sub(r"([^:])//", r"\1/", text)
         # transform references to api endpoints doc into valid rst links
         text = re.sub(":http:get:`([^,`]*)`", r"`\1 <\1doc/>`_", text)

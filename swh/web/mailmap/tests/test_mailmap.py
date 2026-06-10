@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -385,16 +385,14 @@ MAILMAP_KNOWN_PEOPLE = tuple(
 
 def init_stub_storage_db(postgresql):
     with postgresql.cursor() as cur:
-        cur.execute(
-            """
+        cur.execute("""
             CREATE TABLE person (
               fullname bytea PRIMARY KEY,
               name bytea,
               email bytea,
               displayname bytea
             )
-            """
-        )
+            """)
         cur.executemany(
             "INSERT INTO person (fullname, name, email) VALUES (%s, %s, %s)",
             [

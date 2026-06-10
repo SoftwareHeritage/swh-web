@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022  The Software Heritage developers
+# Copyright (C) 2021-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -93,8 +93,7 @@ def test_graph_text_plain_response(api_client, keycloak_oidc, requests_mock):
 
     graph_query = "leaves/swh:1:dir:432d1b21c1256f7408a07c577b6974bbdbcc1323"
 
-    response_text = textwrap.dedent(
-        """\
+    response_text = textwrap.dedent("""\
         swh:1:cnt:1d3dace0a825b0535c37c53ed669ef817e9c1b47
         swh:1:cnt:6d5b280f4e33589ae967a7912a587dd5cb8dedaa
         swh:1:cnt:91bef238bf01356a550d416d14bb464c576ac6f4
@@ -110,8 +109,7 @@ def test_graph_text_plain_response(api_client, keycloak_oidc, requests_mock):
         swh:1:cnt:e1cf1ea335106a0197a2f92f7804046425a7d3eb
         swh:1:cnt:07069b38087f88ec192d2c9aff75a502476fd17d
         swh:1:cnt:f045ee845c7f14d903a2c035b2691a7c400c01f0
-        """
-    )
+        """)
 
     requests_mock.get(
         get_config()["graph"]["server_url"] + graph_query,
@@ -164,16 +162,14 @@ def test_graph_ndjson_response(api_client, keycloak_oidc, requests_mock):
 
     graph_query = "visit/paths/swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb"
 
-    response_ndjson = textwrap.dedent(
-        """\
+    response_ndjson = textwrap.dedent("""\
         ["swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb",\
          "swh:1:cnt:acfb7cabd63b368a03a9df87670ece1488c8bce0"]
         ["swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb",\
          "swh:1:cnt:2a0837708151d76edf28fdbb90dc3eabc676cff3"]
         ["swh:1:dir:644dd466d8ad527ea3a609bfd588a3244e6dafcb",\
          "swh:1:cnt:eaf025ad54b94b2fdda26af75594cfae3491ec75"]
-        """
-    )
+        """)
 
     requests_mock.get(
         get_config()["graph"]["server_url"] + graph_query,
