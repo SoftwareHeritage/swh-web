@@ -281,6 +281,7 @@ def _origin_visits_browse(
     last_visit = None
 
     total_nb_visits = len(origin_visits)
+    partial_visits = origin_visits[0]["visit"] != 1
     origin_visits = _filter_visits(origin_visits, visits)
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")
@@ -321,7 +322,7 @@ def _origin_visits_browse(
             "snapshot_context": snapshot_context,
             "vault_cooking": None,
             "show_actions": False,
-            "partial_visits": origin_visits[0]["visit"] != 1,
+            "partial_visits": partial_visits,
             "max_visits": max_visits,
             "total_nb_visits": total_nb_visits,
             "first_full_visit": first_full_visit,
