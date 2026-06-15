@@ -72,7 +72,7 @@ addopts = """
     --ignore-glob=*create_test_*.py
     --strict-markers
 """
-norecursedirs = "build docs node_modules resources .tox"
+norecursedirs = "build docs node_modules resources .tox .hypothesis"
 DJANGO_SETTINGS_MODULE = "swh.web.settings.tests"
 filterwarnings = """
     ignore:.*Plural value must be an integer, got float
@@ -80,6 +80,7 @@ filterwarnings = """
     ignore:.*uses the.*fixture, which is reset between function calls
     ignore:.*'U' mode is deprecated
     ignore:.*FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated.
+    ignore:.*method is good for exploring strategies
 """
 consider_namespace_packages = true
 markers = """

@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+from datetime import timedelta
 import random
 import re
 
@@ -13,6 +14,7 @@ from django.utils.html import escape
 
 from swh.model.hashutil import hash_to_bytes
 from swh.model.model import (
+    Origin,
     OriginVisit,
     OriginVisitStatus,
     Snapshot,
@@ -73,6 +75,108 @@ def test_origin_visits_browse_too_many_visits(
     )
 
     assert_contains(resp, "The origin has too many visits")
+
+
+def new_snapshot_without_alias(previous_snapshots):
+    snapshot = new_snapshot(only_objects=True).example()
+    while snapshot in previous_snapshots:
+        snapshot = new_snapshot(only_objects=True).example()
+    previous_snapshots.add(snapshot)
+    return snapshot
+
+
+def test_origin_visits_filtering(client, archive_data):
+    origin = Origin(url="https://example.org/git/foobarbaz")
+    visits = []
+    archive_data.origin_add([origin])
+    # create 6 visits, the first three have full status while the
+    # last three have partial status and set a null snapshot for
+    # the last four visits
+    previous_snapshots = set()
+    common_snapshot = new_snapshot_without_alias(previous_snapshots)
+    for i in range(6):
+        snapshot = new_snapshot_without_alias(previous_snapshots)
+        if i < 2:
+            # first two visits have same snapshot
+            snapshot = common_snapshot
+        archive_data.snapshot_add([snapshot])
+
+        if i < 3:
+            # three first visits are full
+            status = "full"
+        if i >= 3 and i <= 4:
+            # visit 4 and 5 are partial
+            status = "partial"
+        elif i > 4:
+            # last visit is just created
+            status = "created"
+        visit_date = now() + timedelta(hours=i)
+        visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        visit_status = OriginVisitStatus(
+            origin=origin.url,
+            visit=visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status=status,
+            snapshot=snapshot.id,
+        )
+
+        archive_data.origin_visit_status_add([visit_status])
+        visits.append(visit.visit)
+
+    url = reverse(
+        "browse-origin-visits",
+        query_params={"origin_url": origin.url, "visits": "all", "no_js": "true"},
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse-origin-visits.html"
+    )
+
+    assert_contains(resp, "swh-visit-item swh-visit-full", count=3)
+    assert_contains(resp, "swh-visit-item swh-visit-partial", count=2)
+    assert_contains(resp, "swh-visit-item swh-visit-created", count=1)
+
+    url = reverse(
+        "browse-origin-visits",
+        query_params={
+            "origin_url": origin.url,
+            "visits": "full_with_different_snapshots",
+            "no_js": "true",
+        },
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse-origin-visits.html"
+    )
+
+    assert_contains(resp, "swh-visit-item swh-visit-full", count=2)
+    assert_contains(resp, "swh-visit-item swh-visit-partial", count=0)
+    assert_contains(resp, "swh-visit-item swh-visit-created", count=0)
+
+    url = reverse(
+        "browse-origin-visits",
+        query_params={
+            "origin_url": origin.url,
+            "visits": "full",
+            "no_js": "true",
+        },
+    )
+
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="browse-origin-visits.html"
+    )
+
+    assert_contains(resp, "swh-visit-item swh-visit-full", count=3)
+    assert_contains(resp, "swh-visit-item swh-visit-partial", count=0)
+    assert_contains(resp, "swh-visit-item swh-visit-created", count=0)
 
 
 @pytest.mark.django_db

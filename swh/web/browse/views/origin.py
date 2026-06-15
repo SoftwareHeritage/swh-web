@@ -244,13 +244,14 @@ def _filter_visits(origin_visits, visits):
         for origin_visit in origin_visits:
             if origin_visit["status"] == "full":
                 if (
-                    visits == "full_with_different_snaphots"
+                    visits == "full_with_different_snapshots"
                     and origin_visit["snapshot"] not in snasphots
                 ):
                     full_visits.append(origin_visit)
-                else:
+                elif visits != "full_with_different_snapshots":
                     full_visits.append(origin_visit)
             snasphots.add(origin_visit["snapshot"])
+
         return full_visits
 
 
@@ -280,9 +281,9 @@ def _origin_visits_browse(
     last_full_visit = None
     last_visit = None
 
-    total_nb_visits = len(origin_visits)
     partial_visits = origin_visits[0]["visit"] != 1
     origin_visits = _filter_visits(origin_visits, visits)
+    total_nb_visits = len(origin_visits)
     for i, visit in enumerate(origin_visits):
         url_date = format_utc_iso_date(visit["date"], "%Y-%m-%dT%H:%M:%SZ")
         visit["formatted_date"] = format_utc_iso_date(visit["date"])

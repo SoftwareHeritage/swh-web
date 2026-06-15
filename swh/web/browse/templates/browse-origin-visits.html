@@ -84,8 +84,8 @@ See top-level LICENSE file for more information
                type="radio"
                id="swh-full-visits-different-snapshots"
                name="visits"
-               value="full_with_different_snaphots"
-               {% if 'visits' in request.GET and request.GET.visits == 'full_with_different_snaphots' %}checked{% endif %}
+               value="full_with_different_snapshots"
+               {% if 'visits' in request.GET and request.GET.visits == 'full_with_different_snapshots' %}checked{% endif %}
                {% if first_full_visit is None %}disabled{% endif %} />
         <label class="form-check-label font-weight-normal"
                for="swh-full-visits-different-snapshots">
@@ -126,7 +126,7 @@ See top-level LICENSE file for more information
               <div class="swh-visits-list-row">
               {% endif %}
               <div class="swh-visits-list-column" style="width: 25%;">
-                <a class="swh-visit-icon swh-visit-{{ visit.status }}"
+                <a class="swh-visit-icon swh-visit-item swh-visit-{{ visit.status }}"
                    title="{{ visit.status }}"
                    href="{{ visit.url }}">{{ visit.formatted_date }}</a>
               </div>
