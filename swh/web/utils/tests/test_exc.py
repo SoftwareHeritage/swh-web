@@ -65,12 +65,18 @@ def test_django_views_exception_handler(
 
     assert_contains(resp, escape(str(exception)), status_code=expected_status)
 
+    django_logs = [
+        log_record
+        for log_record in caplog.records
+        if log_record.name == "django" and log_record.exc_info
+    ]
+
     if expected_status == 500:
         # error 500 should log exception
-        assert caplog.records
-        assert caplog.records[0].exc_info[1] == exception
+        assert django_logs
+        assert django_logs[0].exc_info[1] == exception
     else:
-        assert not caplog.records
+        assert not django_logs
 
 
 @pytest.mark.parametrize(
@@ -106,8 +112,14 @@ def test_drf_views_exception_handler(
 
     assert resp.data["reason"] == str(exception)
 
+    django_logs = [
+        log_record
+        for log_record in caplog.records
+        if log_record.name == "django" and log_record.exc_info
+    ]
+
     if expected_status == 500:
-        assert caplog.records
-        assert caplog.records[0].exc_info[1] == exception
+        assert django_logs
+        assert django_logs[0].exc_info[1] == exception
     else:
-        assert not caplog.records
+        assert not django_logs
