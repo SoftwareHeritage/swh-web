@@ -221,22 +221,31 @@ module.exports = {
             loader: 'babel-loader',
             options: {
               presets: [
-                // use env babel presets to benefit from es6 syntax
-                ['@babel/preset-env', {
-                  // Do not transform es6 module syntax to another module type
-                  // in order to benefit from dead code elimination (aka tree shaking)
-                  // when running webpack in production mode
-                  'loose': true,
-                  'modules': false,
-                }],
+                '@babel/preset-env',
               ],
+              // to optimize bundle sizes
+              assumptions: {
+                'arrayLikeIsIterable': true,
+                'constantReexports': true,
+                'ignoreFunctionLength': true,
+                'ignoreToPrimitiveHint': true,
+                'mutableTemplateObject': true,
+                'noClassCalls': true,
+                'noDocumentAll': true,
+                'objectRestNoSymbols': true,
+                'privateFieldsAsProperties': true,
+                'pureGetters': true,
+                'setClassMethods': true,
+                'setComputedProperties': true,
+                'setPublicClassFields': true,
+                'setSpreadProperties': true,
+                'skipForOfIteratorClosing': true,
+                'superIsCallableConstructor': true,
+              },
               plugins: [
-                // use babel transform-runtime plugin in order to use aync/await syntax
-                '@babel/plugin-transform-runtime',
-                // use other babel plugins to benefit from advanced js features (es2017)
-                '@babel/plugin-syntax-dynamic-import',
-                // polyfill globalThis in old browsers
-                'babel-plugin-transform-globalthis',
+                ['polyfill-corejs3', {
+                  'method': 'entry-global',
+                }],
               ],
               env: {
                 test: {
