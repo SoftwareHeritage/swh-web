@@ -121,7 +121,7 @@ def re_encode_content(
             # probably a malformed UTF-8 content, re-encode it
             # by replacing invalid chars with a substitution one
             content_data = content_data.decode("utf-8", "replace").encode("utf-8")
-        elif encoding not in ["utf-8", "binary"]:
+        elif encoding not in {"utf-8", "binary", "ebcdic"}:
             content_data = content_data.decode(encoding, "replace").encode("utf-8")
     elif mimetype.startswith("application/octet-stream"):
         # file may detect a text content as binary
