@@ -46,6 +46,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <!-- djlint:on -->
     </script>
     <script src="{% url 'js-reverse' %}" type="text/javascript"></script>
+    <script>
+      function make_alt_searchable(el) {
+        // Hide the element from users
+        // but allow it to be searched.
+        let span = document.createElement("span");
+        span.classList.add('visually-hidden');
+        span.ariaHidden = "true";
+        span.textContent = el.alt;
+        el.parentElement.before(span);
+      }
+    </script>
     <base target="_parent" />
   </head>
   <body style="padding-bottom: 0;" data-bs-theme="light">
@@ -78,6 +89,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                         {% if png_logo|static_path_exists %}
                           <img class="card-img-top swh-coverage-logo"
                                src="{% static png_logo %}"
+                               onload="make_alt_searchable(this)"
                                alt="{{ origins.type }}" />
                         {% else %}
                           <svg class="swh-coverage-logo"
