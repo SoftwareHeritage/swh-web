@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -7,7 +7,7 @@ import email
 from email.headerregistry import Address
 from email.message import EmailMessage
 import email.policy
-from importlib.resources import open_binary
+from importlib.resources import files
 from typing import List
 
 import pytest
@@ -153,7 +153,7 @@ def test_recipient_matches_casemapping():
     ),
 )
 def test_recipient_matches_real_world(filename: str, recipient: str, extension: str):
-    with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
+    with (files("swh.web.inbound_email.tests.resources") / filename).open("rb") as f:
         message = email.message_from_binary_file(f, policy=email.policy.default)
 
     assert isinstance(message, EmailMessage)
@@ -399,7 +399,7 @@ def test_get_pks_from_message_logging(caplog, algorithm):
 def test_get_message_plaintext(
     filename: str, expected_parts: List[str], expected_absent: List[str]
 ):
-    with open_binary("swh.web.inbound_email.tests.resources", filename) as f:
+    with (files("swh.web.inbound_email.tests.resources") / filename).open("rb") as f:
         message = email.message_from_binary_file(f, policy=email.policy.default)
 
     assert isinstance(message, EmailMessage)
