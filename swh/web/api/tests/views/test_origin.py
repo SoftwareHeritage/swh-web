@@ -856,7 +856,9 @@ def test_api_origin_metadata_search_not_in_idx_storage(
 
 @pytest.mark.parametrize(
     "backend,fields",
-    itertools.product(["swh-search", "swh-indexer-storage"], ["url", "url,foobar"]),
+    list(
+        itertools.product(["swh-search", "swh-indexer-storage"], ["url", "url,foobar"])
+    ),
 )
 def test_api_origin_metadata_search_url_only(
     api_client, patch_backend, config_updater, backend, fields
