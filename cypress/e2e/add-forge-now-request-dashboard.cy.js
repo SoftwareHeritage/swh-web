@@ -155,7 +155,7 @@ describe('Test add forge now request dashboard load', function() {
 
     cy.intercept(
       `${this.Urls.api_1_add_forge_request_get(invalidRequestId)}**`,
-       {statusCode: 400}).as('forgeAddInvalidRequest');
+      {statusCode: 400}).as('forgeAddInvalidRequest');
 
     cy.visit(url);
     cy.wait('@forgeAddInvalidRequest');
