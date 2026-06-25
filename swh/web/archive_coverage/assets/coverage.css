@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2021-2022  The Software Heritage developers
+ * Copyright (C) 2021-2026  The Software Heritage developers
  * See the AUTHORS file at the top-level directory of this distribution
  * License: GNU Affero General Public License version 3, or any later version
  * See top-level LICENSE file for more information
@@ -79,4 +79,18 @@
 
 .swh-coverage-info-body::-webkit-scrollbar-thumb {
     background: #909396;
+}
+
+/*
+  FIXME: remove hidden when merged into bootstrap:
+  https://github.com/twbs/bootstrap/issues/41479
+  https://codepen.io/wdzajicek/pen/VYZawjX
+*/
+
+[hidden='until-found'].collapse:not(.show) {
+  display: block !important;
+}
+
+[hidden='until-found'] {
+  display: none !important;
 }
