@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2024  The Software Heritage developers
+# Copyright (C) 2017-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -22,5 +22,6 @@ import swh.web.api.views.release  # noqa
 import swh.web.api.views.revision  # noqa
 import swh.web.api.views.snapshot  # noqa
 import swh.web.api.views.stat  # noqa
+import swh.web.api.views.vulnerabilities  # noqa
 
 urlpatterns = api_urls.get_url_patterns()

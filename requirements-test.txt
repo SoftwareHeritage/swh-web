@@ -15,9 +15,11 @@ swh.graph >= 5.1.1
 swh.loader.git >= 0.8.0
 swh.scheduler[pytest] >= 3.1.0
 swh.storage >= 4.1.2
+swh.vulns[testing]
 types-beautifulsoup4
 types-cryptography
 types-docutils
+types-grpcio
 types-Pygments
 types-pyyaml
 types-requests
