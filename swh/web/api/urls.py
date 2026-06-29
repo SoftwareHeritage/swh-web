@@ -22,6 +22,5 @@ import swh.web.api.views.release  # noqa
 import swh.web.api.views.revision  # noqa
 import swh.web.api.views.snapshot  # noqa
 import swh.web.api.views.stat  # noqa
-import swh.web.api.views.vulnerabilities  # noqa
 
 urlpatterns = api_urls.get_url_patterns()

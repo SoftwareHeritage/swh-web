@@ -10,10 +10,15 @@ from rest_framework.request import Request
 from swh.vulns.grpc.swhvulns_pb2 import AffectingVulnerabilitiesRequest
 from swh.vulns.grpc.swhvulns_pb2_grpc import VulnerabilityServiceStub
 from swh.web.api.apidoc import api_doc
-from swh.web.api.apiurls import api_route
+from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.config import get_config
+from swh.web.utils.url_path_converters import register_url_path_converters
 
 _GRPC_CHANNEL = None
+
+vulns_api_urls = APIUrls()
+
+register_url_path_converters()
 
 
 def _grpc_channel():
@@ -31,6 +36,7 @@ def _grpc_channel():
     r"/revision/(?P<sha1_git>[0-9a-f]+)/vulnerabilities/",
     "api-1-revision-vulnerabilities",
     checksum_args=["sha1_git"],
+    api_urls=vulns_api_urls,
 )
 @api_doc("/revision/vulnerabilities/", category="Metadata")
 def api_revision_vulnerabilities(request: Request, sha1_git: str):
