@@ -74,7 +74,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
     results = [
         {
             "vulnerability": {
-                "ids": item.vulnerability.id,
+                "ids": list(item.vulnerability.id),
             },
             "tool": item.tool
             and {

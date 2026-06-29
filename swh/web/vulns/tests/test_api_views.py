@@ -42,7 +42,7 @@ def naive_vulns_server_data() -> List[DetectedVulnerability]:
     return [
         DetectedVulnerability(
             swhid=swhid,
-            vulnerability=Vulnerability(id="TEST-GHSA-0001"),
+            vulnerability=Vulnerability(id=["TEST-GHSA-0001"]),
             tool=VulnerabilityDetectionTool(name="swh-osv"),
             source=VulnerabilityDatabase(name="osv.dev"),
         )
@@ -63,7 +63,7 @@ def test_api_revision_vulnerability(api_client, archive_data) -> None:
 
     assert rv.data == [
         {
-            "vulnerability": {"ids": "TEST-GHSA-0001"},
+            "vulnerability": {"ids": ["TEST-GHSA-0001"]},
             "tool": {"name": "swh-osv", "variant": ""},
             "source": {"name": "osv.dev", "version": ""},
         }
