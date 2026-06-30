@@ -44,6 +44,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
     .. http:get:: /api/1/revision/(sha1_git)/directory/[(path)/]
 
         Get known vulnerabilities affecting the revision identified by ``sha1_git``.
+
         :statuscode 200: no error
         :statuscode 400: an invalid **sha1_git** value has been provided
 
