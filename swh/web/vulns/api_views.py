@@ -41,7 +41,7 @@ def _grpc_channel():
 @api_doc("/revision/vulnerabilities/", category="Metadata")
 def api_revision_vulnerabilities(request: Request, sha1_git: str):
     """
-    .. http:get:: /api/1/revision/(sha1_git)/directory/[(path)/]
+    .. http:get:: /api/1/revision/(sha1_git)/vulnerabilities/
 
         Get known vulnerabilities affecting the revision identified by ``sha1_git``.
 
