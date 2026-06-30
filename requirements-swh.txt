@@ -9,4 +9,5 @@ swh.scheduler >= 3.0.0
 swh.search >= 0.23.0
 swh.storage >= 4.1.2
 swh-vault >= 2.0.0
+swh-vulns >= 0.0.1
 swh.webhooks >= 0.1.1

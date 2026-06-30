@@ -125,6 +125,7 @@ DEFAULT_CONFIG = {
             "swh.web.save_code_now",
             "swh.web.save_origin_webhooks",
             "swh.web.vault",
+            "swh.web.vulns",
         ],
     ),
     "mirror_config": ("dict", {}),
