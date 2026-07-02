@@ -58,6 +58,11 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
             comes from
         :>jsonarr string source.version: optional date of the database capture
 
+        **Example:**
+
+        .. parsed-literal::
+
+            :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/`
     """
     # we never return 404 because:
     # 1. we may, theoretically, have vulnerability reports that reference revisions
