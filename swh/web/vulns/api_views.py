@@ -50,13 +50,13 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
 
         :>jsonarr array vulnerability.ids: array of strings, each of which is
             an identifier of the vulnerability
-        :>jsonarr tool.name string: name of the tool used to identify the revision is
+        :>jsonarr string tool.name: name of the tool used to identify the revision is
             vulnerable to this vulnerability
-        :>jsonarr tool.variant string: optional human-readable description of
+        :>jsonarr string tool.variant: optional human-readable description of
             the tool's configuration
-        :>jsonarr source.name string: name of the database the vulnerability report
+        :>jsonarr string source.name: name of the database the vulnerability report
             comes from
-        :>jsonarr source.version string: optional date of the database capture
+        :>jsonarr string source.version: optional date of the database capture
 
     """
     # we never return 404 because:
