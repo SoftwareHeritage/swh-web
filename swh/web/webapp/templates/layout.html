@@ -99,7 +99,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       }
     </style>
   </head>
-  <body class="layout-fixed sidebar-expand-lg sidebar-mini sidebar-without-hover {% if sidebar_state == 'expanded' %} sidebar-open {% else %} sidebar-collapse {% endif %}">
+  <body class="layout-fixed sidebar-expand-lg sidebar-mini sidebar-without-hover {% if sidebar_state == 'expanded' %} sidebar-open {% else %} sidebar-collapse {% endif %}"
+        data-bs-theme="light">
     <a id="top"></a>
     <div class="app-wrapper link-opacity-75">
       <header class="app-header navbar navbar-expand-lg navbar-light navbar-static-top swh-navbar {% if 'swh.web.banners' in SWH_DJANGO_APPS %}swh-navbar-banner{% endif %}"
@@ -200,15 +201,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       </main>
       {% include "./includes/footer.html" %}
     </div>
+    <script>swh.webapp.setContainerFullWidth();</script>
     {% if "server_url" in status and "json_path" in status %}
       {{ status.server_url|swh_json_script:"status_server_url" }}
       {{ status.json_path|swh_json_script:"status_json_path" }}
       <script>
-        swh.webapp.setContainerFullWidth();
-        swh.webapp.initStatusWidget(
-          swh.webapp.parseJsonScript('status_server_url') +
-          swh.webapp.parseJsonScript('status_json_path')
-        );
+        $(function() {
+          swh.webapp.initStatusWidget(
+            swh.webapp.parseJsonScript('status_server_url') +
+            swh.webapp.parseJsonScript('status_json_path')
+          );
+        });
       </script>
     {% endif %}
   </body>

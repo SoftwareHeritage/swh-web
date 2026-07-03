@@ -5,7 +5,7 @@
  * See top-level LICENSE file for more information
  */
 
-// override some global bootstrap sass variables before generating stylesheets
+// override some global bootstrap and adminlte sass variables before generating stylesheets
 
 // global text colors and fonts
 $primary: #e20026;
@@ -50,3 +50,11 @@ $dropdown-link-color: #000000;
 $pagination-disabled-bg: #ffffff;
 $pagination-focus-box-shadow: none;
 
+// sidebar text color
+$lte-sidebar-header-color: #31373d !important;
+$lte-sidebar-color: #212529 !important;
+$lte-sidebar-hover-color: #212529 !important;
+$lte-sidebar-hover-bg: rgba(0,0,0,.1) !important;
+
+// fix full width switch uncheck color
+$form-switch-color-dark: rgba(0, 0, 0, 0.25) !important;

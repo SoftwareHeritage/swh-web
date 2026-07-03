@@ -333,6 +333,7 @@ function setFullWidth(fullWidth) {
     $('#swh-web-content').addClass('container');
   }
   localStorage.setItem('swh-web-full-width', JSON.stringify(fullWidth));
+  console.log(localStorage.getItem('swh-web-full-width'));
   $('#swh-full-width-switch').prop('checked', fullWidth);
 }
 
@@ -341,6 +342,7 @@ export function fullWidthToggled(event) {
 }
 
 export function setContainerFullWidth() {
+  console.log(localStorage.getItem('swh-web-full-width'));
   const previousFullWidthState = JSON.parse(localStorage.getItem('swh-web-full-width'));
   if (previousFullWidthState !== null) {
     setFullWidth(previousFullWidthState);
