@@ -6,6 +6,7 @@
 from collections import defaultdict
 import copy
 from typing import Any, Dict, List, Tuple
+from urllib.parse import urlparse
 
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -616,8 +617,9 @@ def get_instance_urls() -> Dict[str, str]:
             continue
         for task in scheduler().search_tasks(task_type=task_type.type):
             kwargs = task.arguments.kwargs
-            if {"instance", "url"} <= kwargs.keys():
-                urls[kwargs["instance"]] = kwargs["url"]
+            if url := kwargs.get("url"):
+                instance = kwargs.get("instance") or urlparse(url).netloc
+                urls[instance] = url
     return urls
 
 
