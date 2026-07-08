@@ -6,7 +6,7 @@ authors = [
 
 description = "Software Heritage web UI"
 readme = { file = "README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Intended Audience :: Developers",
@@ -41,7 +41,7 @@ build-backend = "setuptools.build_meta"
 fallback_version = "0.0.1"
 
 [tool.black]
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py311', 'py312', 'py313']
 exclude = 'swh/web/tests/resources/contents'
 
 [tool.isort]
@@ -97,10 +97,7 @@ explicit_package_bases = true
 # ^ Needed for mypy to detect py.typed from swh packages installed
 # in editable mode
 
-plugins = [
-    "mypy_django_plugin.main",
-    "mypy_drf_plugin.main"
-]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -120,7 +117,7 @@ ignore = [
     "E231", # missing whitespace after ','
     "E501", # line too long, use B950 warning from flake8-bugbear instead
     "E704", # multiple statements on one line
-    "W503" # line break before binary operator <https://github.com/psf/black/issues/52>
+    "W503", # line break before binary operator <https://github.com/psf/black/issues/52>
 ]
 max-line-length = 88
 extend-exclude = ["build/"]
