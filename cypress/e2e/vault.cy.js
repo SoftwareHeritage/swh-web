@@ -132,8 +132,7 @@ describe('Vault Cooking User Interface Tests', function() {
       body: this.genVaultDirCookingResponse('pending', 'Processing...'),
     }).as('createVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Create a vault cooking task through the GUI
     cy.get('.modal-dialog')
@@ -167,8 +166,7 @@ describe('Vault Cooking User Interface Tests', function() {
       statusCode: 500,
     }).as('checkVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Check error alert is displayed
     cy.get('.alert-danger')
@@ -192,8 +190,7 @@ describe('Vault Cooking User Interface Tests', function() {
       statusCode: 500,
     }).as('createVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Create a vault cooking task through the GUI
     cy.get('.modal-dialog')
@@ -272,8 +269,7 @@ describe('Vault Cooking User Interface Tests', function() {
       body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     cy.window().then(win => {
       const swhIdsContext = win.swh.webapp.getSwhIdsContext();
@@ -436,8 +432,7 @@ describe('Vault Cooking User Interface Tests', function() {
       body: this.genVaultDirCookingResponse('new'),
     }).as('createVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Create a vault cooking task through the GUI
     cy.get('.modal-dialog')
@@ -467,10 +462,7 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('createVaultCookingTask');
 
     // Open vault cook directory modal
-    cy.contains('button', 'Download')
-      .click();
-
-    cy.wait('@checkVaultCookingTask');
+    checkVaultCookingTask('as tarball');
 
     // Create a vault cooking task through the GUI and fill email input
     cy.get('#vault-cook-directory-modal input[type="email"]')
@@ -549,10 +541,7 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('createVaultCookingTask');
 
     // request tarball download
-    cy.contains('button', 'Download')
-      .click();
-
-    cy.wait('@checkVaultCookingTask');
+    checkVaultCookingTask('as tarball');
 
     // vault backend indicated tarball was already cooked, download dialog is displayed
     cy.get('#vault-download-directory-modal')
@@ -608,8 +597,7 @@ describe('Vault Cooking User Interface Tests', function() {
     }).as('checkVaultCookingTask');
 
     // Create a vault cooking task through the GUI
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Start archive download through the GUI
     cy.get('.modal-dialog')
@@ -661,8 +649,7 @@ describe('Vault Cooking User Interface Tests', function() {
       body: this.genVaultDirCookingResponse('failed'),
     }).as('checkVaultCookingTask');
 
-    cy.contains('button', 'Download')
-      .click();
+    checkVaultCookingTask('as tarball');
 
     // Check that recooking the directory is offered to user
     cy.get('.modal-dialog')
