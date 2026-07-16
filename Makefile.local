@@ -25,9 +25,6 @@ yarn-install: package.json
 build-webpack-dev: yarn-install ## Build frontend assets with webpack
 	$(YARN) build-dev
 
-build-webpack-test: yarn-install ## | same with coverage activated
-	$(YARN) build-test
-
 build-webpack-dev-no-verbose: yarn-install ## | same as above without any output
 	$(YARN) build-dev >/dev/null
 
@@ -93,7 +90,7 @@ run-mirror-demo: build-webpack-dev add-users-dev ## Start django from tests conf
 test-full: ## Run all python tests
 	$(TEST) $(TESTFULL_FLAGS) $(TEST_DIRS)
 
-test-frontend-cmd: build-webpack-test add-users-cypress
+test-frontend-cmd: build-webpack-dev add-users-cypress
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
 	$(call run_django_server,$(SETTINGS_CYPRESS)) & \

@@ -248,7 +248,7 @@ module.exports = {
                 }],
               ],
               env: {
-                test: {
+                development: {
                   plugins: ['istanbul'],
                 },
               },
