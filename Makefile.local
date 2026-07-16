@@ -122,6 +122,13 @@ test-frontend-ui: test-frontend-ui-cmd ## Run cypress non-slow tests in a browse
 test-frontend-full-ui: export CYPRESS_SKIP_SLOW_TESTS=false
 test-frontend-full-ui: test-frontend-ui-cmd ## | same, including slow tests
 
+clean:
+	rm -rf swh/web/static/webpack-stats.json \
+	swh/web/static/robots.txt \
+	swh/web/static/js \
+	swh/web/static/css \
+	swh/web/static/fonts \
+	swh/web/static/jssources
 
 .PHONY: help
 help:
