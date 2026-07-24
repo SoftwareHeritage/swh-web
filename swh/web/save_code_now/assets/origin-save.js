@@ -154,7 +154,7 @@ export function initOriginSave() {
              '<"col-sm-3 requests-csv-export"><"col-sm-3"f>>' +
              '<"row"<"col-sm-12"tr>>' +
              '<"row mt-2"<"col-sm-5"i><"col-sm-7"p>>',
-        fnInitComplete: function() {
+        initComplete: function() {
           if (swh.webapp.isUserLoggedIn()) {
             $('div.user-requests-filter').html(userRequestsFilterCheckbox);
             if (swh.webapp.isStaffUser()) {

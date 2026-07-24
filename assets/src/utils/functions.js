@@ -246,7 +246,7 @@ export function dtUpdateSettings(init) {
   }
   init.order = order.length ? order : init.defaultOrder;
 
-  init.realInitComplete = init.initComplete ?? init.fnInitComplete;
+  init.realInitComplete = init.initComplete;
   init.initComplete = function(settings, json) {
     init.realInitComplete?.(settings, json);
     dtAddEvents(this);

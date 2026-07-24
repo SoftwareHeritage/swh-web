@@ -195,7 +195,7 @@ export function populateRequestBrowseList() {
           }
         },
       },
-      fnInitComplete: function() {
+      initComplete: function() {
         if (swh.webapp.isUserLoggedIn()) {
           $('div.user-requests-filter').html(userRequestsFilterCheckbox);
           $(`#${addForgeCheckboxId}`).on('change', () => {
