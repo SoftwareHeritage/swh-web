@@ -238,6 +238,7 @@ def api_save_origin(
         visit_type = validated_query_params["visit_type"]
 
     data = request.data or {}
+    assert isinstance(data, dict)
     if request.method == "POST":
         assert visit_type is not None
         assert origin_url is not None

@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -28,6 +28,7 @@ class GitlabOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         return "Push Hook" in request.headers["X-Gitlab-Event"]
 
     def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        assert isinstance(request.data, dict)
         repo_url = request.data.get("repository", {}).get("git_http_url", "")
         # visibility_level values: 0 = private, 10 = internal, 20 = public
         visibility_level = request.data.get("repository", {}).get(

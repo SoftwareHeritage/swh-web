@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -38,6 +38,7 @@ class SourceforgeOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         repo_url = ""
         visit_type = ""
         private = False
+        assert isinstance(request.data, dict)
         project_full_name = request.data.get("repository", {}).get("full_name")
         if project_full_name:
             project_name = project_full_name.split("/")[2]

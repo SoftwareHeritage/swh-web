@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2024  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -60,6 +60,7 @@ def profile_add_mailmap(request: Request) -> HttpResponse:
         request=json.dumps(request.data),
     )
 
+    assert isinstance(request.data, dict)
     from_email = request.data.pop("from_email", None)
     if not from_email:
         return HttpResponseBadRequest(
@@ -68,6 +69,7 @@ def profile_add_mailmap(request: Request) -> HttpResponse:
 
     user_id = None if mailmap_admin else str(request.user.id)
 
+    assert isinstance(request.data, dict)
     from_email_verified = request.data.pop("from_email_verified", False)
     if mailmap_admin:
         # consider email verified when mailmap is added by admin
@@ -109,6 +111,7 @@ def profile_update_mailmap(request: Request) -> HttpResponse:
         request=json.dumps(request.data),
     )
 
+    assert isinstance(request.data, dict)
     from_email = request.data.pop("from_email", None)
     if not from_email:
         return HttpResponseBadRequest(

@@ -1,4 +1,4 @@
-# Copyright (C) 2022  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -33,6 +33,7 @@ class GitHubOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         return request.headers[f"X-{self.FORGE_TYPE}-Event"] == "push"
 
     def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        assert isinstance(request.data, dict)
         repo_url = request.data.get("repository", {}).get("html_url", "")
         private = request.data.get("repository", {}).get("private", False)
         return repo_url, "git", private

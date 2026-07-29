@@ -271,6 +271,7 @@ def api_check_content_known(request: Request, q: Optional[str] = None):
     # POST: Many hash requests in post form submission
     elif request.method == "POST":
         data = request.data
+        assert isinstance(data, dict)
         # Remove potential inputs with no associated value
         for k, v in data.items():
             if v is not None:

@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2024  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -150,6 +150,7 @@ def api_add_forge_request_create(request: Union[HttpRequest, Request]) -> HttpRe
 
     if isinstance(request, Request):
         # request submitted with request body in JSON (goes through DRF)
+        assert isinstance(request.data, dict)
         form = AddForgeNowRequestForm(request.data, instance=add_forge_request)
     else:
         # request submitted with request body in form encoded format
@@ -243,6 +244,7 @@ def api_add_forge_request_update(
 
     if isinstance(request, Request):
         # request submitted with request body in JSON (goes through DRF)
+        assert isinstance(request.data, dict)
         form = AddForgeNowRequestHistoryForm(request.data, instance=request_history)
     else:
         # request submitted with request body in form encoded format

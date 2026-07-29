@@ -22,6 +22,7 @@ class GogsOriginSaveWebhookReceiver(OriginSaveWebhookReceiver):
         return request.headers[f"X-{self.FORGE_TYPE}-Event"] == "push"
 
     def extract_repo_info(self, request: Request) -> Tuple[str, str, bool]:
+        assert isinstance(request.data, dict)
         repo_url = request.data.get("repository", {}).get("clone_url", "")
         private = request.data.get("repository", {}).get("private", False)
         return repo_url, "git", private
