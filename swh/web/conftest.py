@@ -17,7 +17,7 @@ from _pytest.python import Function
 from hypothesis import HealthCheck
 from hypothesis import settings as hypothesis_settings
 import pytest
-from pytest_django.fixtures import SettingsWrapper
+from pytest_django.fixtures import Settings
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -1445,13 +1445,16 @@ def reload_urlconf():
             pass
 
 
-class SwhSettingsWrapper(SettingsWrapper):
+class SwhSettingsWrapper(Settings):
+    def __init__(self):
+        super().__init__(_is_pytest_django=True)
+
     def __setattr__(self, attr: str, value) -> None:
         super().__setattr__(attr, value)
         reload_urlconf()
 
     def finalize(self) -> None:
-        super().finalize()
+        super()._finalize()
         reload_urlconf()
 
 
