@@ -237,7 +237,8 @@ def error_response(
 
     if get_config()["debug"]:
         error_data["traceback"] = traceback.format_exc()
-        logger.error(error_data["traceback"])
+        if error_code != 404:
+            logger.error(error_data["traceback"])
     elif error_code == 500:
         logger.exception(exception)
 

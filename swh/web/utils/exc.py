@@ -307,7 +307,8 @@ def handle_view_exception(request: HttpRequest, exc: Exception) -> HttpResponse:
     error_description = format_html("{}: {}", type(exc).__name__, str(exc))
     if get_config()["debug"]:
         traceback_str = traceback.format_exc()
-        logger.error(traceback_str)
+        if not isinstance(exc, NotFoundExc):
+            logger.error(traceback_str)
         error_description = escape(traceback_str)
     elif http_response.status_code == 500:
         logger.exception(exc)
