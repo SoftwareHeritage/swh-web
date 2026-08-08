@@ -625,16 +625,18 @@ def get_instance_urls() -> Dict[str, str]:
 
 # FIXME: remove this once the scheduler database is updated
 def adjust_url(origins_type, url):
-    if origins_type in {"gitlab", "heptapod"} and url.endswith("/api/v4"):
-        return url.removesuffix("api/v4")
-    elif origins_type in {"gogs", "gitea", "forgejo"} and url.endswith("/api/v1"):
-        return url.removesuffix("api/v1")
-    elif origins_type in {"phabricator", "phorge"} and url.endswith(
-        "/api/diffusion.repository.search"
-    ):
-        return url.removesuffix("api/diffusion.repository.search")
-    else:
-        return url
+    API_BASES = {
+        "api/v4": {"gitlab", "heptapod"},
+        "api/v1": {"gogs", "gitea", "forgejo"},
+        "api/diffusion.repository.search": {"phabricator", "phorge"},
+    }
+    for API_BASE, lister_types in API_BASES.items():
+        if origins_type in lister_types:
+            if url.endswith(f"/{API_BASE}"):
+                return url.removesuffix(API_BASE)
+            elif url.endswith(f"/{API_BASE}/"):
+                return url.removesuffix(f"{API_BASE}/")
+    return url
 
 
 def update_origins_with_url(origins, urls, origins_type, instance):
