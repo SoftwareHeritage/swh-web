@@ -30,6 +30,12 @@
   resolved "https://registry.yarnpkg.com/@actions/io/-/io-2.0.0.tgz#3ad1271ba3cd515324f2215e8d4c1c0c3864d65b"
   integrity sha512-Jv33IN09XLO+0HS79aaODsvIRyduiF7NY/F6LYeK5oeUmrsz7aFdRphQjFoESF4jS7lMauDOttKALcpapVDIAg==
 
+"@apple/highlightjs-pkl@github:apple/highlightjs-pkl":
+  version "1.0.1"
+  resolved "https://codeload.github.com/apple/highlightjs-pkl/tar.gz/9f2fb3090682cef7c0412b59d5648b9a219ce6f7"
+  dependencies:
+    highlight.js "^11.11.1"
+
 "@asamuzakjp/css-color@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@asamuzakjp/css-color/-/css-color-3.2.0.tgz#cc42f5b85c593f79f1fa4f25d2b9b321e61d1794"
@@ -1324,7 +1330,7 @@
     gonzales-pe "^4.3.0"
     node-source-walk "^7.0.1"
 
-"@discoveryjs/json-ext@0.5.7":
+"@discoveryjs/json-ext@0.5.7", "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
@@ -1667,6 +1673,11 @@
     "@types/node" "*"
     "@types/yargs" "^17.0.8"
     chalk "^4.0.0"
+
+"@joshraphael/highlightjs-rascript@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@joshraphael/highlightjs-rascript/-/highlightjs-rascript-0.2.0.tgz#153fdd3ed2c268a5f8b806b336995e29346d17fe"
+  integrity sha512-q4+NysxUxNV3ik5kaamyfLKmI1TD7KcnXNJMOZCyWEFErsSNZrc5PQB6JOKz1506IXvkeuUxCZMxyi3rKJ8YIA==
 
 "@jridgewell/gen-mapping@^0.3.12", "@jridgewell/gen-mapping@^0.3.5":
   version "0.3.13"
@@ -2697,6 +2708,21 @@
     "@webassemblyjs/ast" "1.14.1"
     "@xtuc/long" "4.2.2"
 
+"@webpack-cli/configtest@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/configtest/-/configtest-2.1.1.tgz#3b2f852e91dac6e3b85fb2a314fb8bef46d94646"
+  integrity sha512-wy0mglZpDSiSS0XHrVR+BAdId2+yxPSoJW8fsna3ZpYSlufjvxnP4YbKTCBZnNIcGN4r6ZPXV55X4mYExOfLmw==
+
+"@webpack-cli/info@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/info/-/info-2.0.2.tgz#cc3fbf22efeb88ff62310cf885c5b09f44ae0fdd"
+  integrity sha512-zLHQdI/Qs1UyT5UBdWNqsARasIA+AaF8t+4u2aS2nEpBQh2mWIVb8qAklq0eUENnC5mOItrIB4LiS9xMtph18A==
+
+"@webpack-cli/serve@^2.0.5":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@webpack-cli/serve/-/serve-2.0.5.tgz#325db42395cd49fe6c14057f9a900e427df8810e"
+  integrity sha512-lqaoKnRYBdo1UgDX8uF24AfGMifWK19TxPmM5FHc2vAGxrJ/qtyUyFBWoY1tISZdelsQ5fBcOusifo5o5wSJxQ==
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"
@@ -3149,7 +3175,7 @@ base64-js@^1.3.1:
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
 
-baseline-browser-mapping@^2.10.44, baseline-browser-mapping@^2.11.12:
+baseline-browser-mapping@^2.11.12:
   version "2.11.18"
   resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.11.18.tgz#49701f6ab6c58ccafb6d8e1ab2767574d9f0ba73"
   integrity sha512-1iEmLEYSiE1SeBoAfPo/Mnx3PzfzHUkDK61ASkCpuk3YXugYLH5DYK1SzqV55F8FMI6s0F+/tCP7Polz1QRjxw==
@@ -3660,7 +3686,7 @@ colord@^2.9.3:
   resolved "https://registry.yarnpkg.com/colord/-/colord-2.9.3.tgz#4f8ce919de456f1d5c1c368c307fe20f3e59fb43"
   integrity sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==
 
-colorette@^2.0.20:
+colorette@^2.0.14, colorette@^2.0.20:
   version "2.0.20"
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.20.tgz#9eb793e6833067f7235902fcd3b09917a000a95a"
   integrity sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==
@@ -4418,11 +4444,6 @@ datatables.net-fixedheader@5.0.0:
   dependencies:
     datatables.net "^3"
 
-datatables.net@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-3.0.1.tgz#f520f45a382ffa5e2b54f08a93f5dcbc929d9572"
-  integrity sha512-cV/2DJr42PFMnK9sAoK/QbcuE7g9HYF0x0vOND7WRsG2RWMkiyOY8TOJFbi+uDkBH4I7ggmkBvO+j4gNoh+u3g==
-
 datatables.net@3.0.2, datatables.net@^3, datatables.net@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-3.0.2.tgz#3ff9a20e0934d65a684fcab806c964f3b8a782e4"
@@ -4844,7 +4865,7 @@ ejs@^6.0.1:
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-6.0.1.tgz#88ea8ce00335c3575d7c3602dd76e84b0bd60f43"
   integrity sha512-UaaM14yby8U3k02ihS1Bmj5Kz2d7CCQM1scxpgs4Mhkq8F1wR2gl3+Ts4h5Ne4Mnt7M9m4Dw7jsuMr3+xO4vZA==
 
-electron-to-chromium@^1.5.393, electron-to-chromium@^1.5.402:
+electron-to-chromium@^1.5.402:
   version "1.5.413"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.413.tgz#0653cd80ad7634cd0a96eaecbc0a7df5436d9ddc"
   integrity sha512-F1XPKvt7HVfly5WND90ec16nFsdr4g5x/cVUP3EqjeyXynupabGDqpMa84wwvuYGDnldXLBz6DLXyZXWO9TPvw==
@@ -4914,7 +4935,7 @@ env-paths@^2.2.0, env-paths@^2.2.1:
   resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.1.tgz#420399d416ce1fbe9bc0a07c62fa68d67fd0f8f2"
   integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
-envinfo@^7.21.0:
+envinfo@^7.21.0, envinfo@^7.7.3:
   version "7.21.0"
   resolved "https://registry.yarnpkg.com/envinfo/-/envinfo-7.21.0.tgz#04a251be79f92548541f37d13c8b6f22940c3bae"
   integrity sha512-Lw7I8Zp5YKHFCXL7+Dz95g4CcbMEpgvqZNNq3AmlT5XAV6CgAAk6gyAMqn2zjw08K9BHfcNuKrMiCPLByGafow==
@@ -5507,7 +5528,7 @@ fast-uri@^3.0.1:
   resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.1.0.tgz#66eecff6c764c0df9b762e62ca7edcfb53b4edfa"
   integrity sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==
 
-fastest-levenshtein@^1.0.16:
+fastest-levenshtein@^1.0.12, fastest-levenshtein@^1.0.16:
   version "1.0.16"
   resolved "https://registry.yarnpkg.com/fastest-levenshtein/-/fastest-levenshtein-1.0.16.tgz#210e61b6ff181de91ea9b3d1b84fdedd47e034e5"
   integrity sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==
@@ -6149,7 +6170,7 @@ hex-rgb@^5.0.0:
   dependencies:
     highlight.js "^11.x"
 
-highlight.js@^11.11.0, highlight.js@^11.12.0, highlight.js@^11.3.1, highlight.js@^11.7.0, highlight.js@^11.9.0, highlight.js@^11.x:
+highlight.js@^11.11.0, highlight.js@^11.11.1, highlight.js@^11.12.0, highlight.js@^11.3.1, highlight.js@^11.7.0, highlight.js@^11.9.0, highlight.js@^11.x:
   version "11.12.0"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.12.0.tgz#470d918fd556a76debc40fe5e4b540b6b9cb9890"
   integrity sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg==
@@ -6184,6 +6205,11 @@ highlightjs-apex@^1.66.0:
   integrity sha512-h8xH1fsL6XiOzlNksnh91wQg/9XszUNHGERjTDRKe4RJiDGlb/iF6xnR1CGGClooujdziGj1DocieGutYlMfRA==
   dependencies:
     "@highlightjs/cdn-assets" "^11.11.1"
+
+highlightjs-astro-js@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-astro-js/-/highlightjs-astro-js-1.0.0.tgz#8ad7c2fb883e1dc66756ca6aef75302846bf1767"
+  integrity sha512-RzYrC2bkBWZHavectLGMkmyXMaxS0kdFxEDAP2PcTZtZ42oKA42xK3dprF7SYwQpMMeVSxbXNnKe697ea4LOwQ==
 
 "highlightjs-bicep@github:Azure/bicep":
   version "0.0.0"
@@ -6249,6 +6275,15 @@ highlightjs-cypher@^1.2.0:
   version "1.0.0"
   resolved "https://codeload.github.com/ConsenSys/highlightjs-dafny/tar.gz/139cea8870376da44880874987d7898373c0a74f"
 
+highlightjs-dax@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-dax/-/highlightjs-dax-1.1.0.tgz#0033ae72fd9b8824885a7b002bb8ba5efe3e98ae"
+  integrity sha512-1/5kRyFWCiHTbPBapzspf9O01IWM47hn9M46yIohetcFnZt/ftp4klp7ugcusxjgMqINITn1Fh6uxvJiQE0oNg==
+
+"highlightjs-djot@github:php-collective/highlightjs-djot":
+  version "1.0.0"
+  resolved "https://codeload.github.com/php-collective/highlightjs-djot/tar.gz/3f5b416712840b6277620d4d3e94d315b1604488"
+
 "highlightjs-dylan@github:highlightjs/highlightjs-dylan":
   version "2.0.0"
   resolved "https://codeload.github.com/highlightjs/highlightjs-dylan/tar.gz/229571415a73b737d5c5fd6a934908eecc75ea18"
@@ -6290,6 +6325,16 @@ highlightjs-gf@^1.0.1:
   version "0.1.0"
   resolved "https://codeload.github.com/highlightjs/highlightjs-hlsl/tar.gz/dabd22b9a538cc2f76c9d4b21689366d1ccf4009"
 
+highlightjs-igor-pro@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-igor-pro/-/highlightjs-igor-pro-1.0.3.tgz#069931cf763599b8022c658e67aa144992fdf71e"
+  integrity sha512-IAfGGUzILLSeXDKUF2iWzQDOtTBaQJTii0bAUWxfmdn1qgC4eNo25WIXhpHcnDGj4aNQO9UMLaRyA3vr6X5p5g==
+
+highlightjs-jaiva@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-jaiva/-/highlightjs-jaiva-1.0.0.tgz#2f7448f2bcecf5f82c9c96bd6a72b92965ad4ba4"
+  integrity sha512-wo5nS8INuW8VAUVaTZseTF7XG01nalqdbtuiNgXrYomRxtLiClyuMcrVAr6F5vW7n2XsRy218vpvgRgbC5BrJA==
+
 highlightjs-jolie@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/highlightjs-jolie/-/highlightjs-jolie-0.1.8.tgz#ce393463dd11641c741b600d4a9c8fe683367db5"
@@ -6322,6 +6367,11 @@ highlightjs-line-numbers.js@^2.9.1:
 "highlightjs-liquid@github:highlightjs/highlightjs-liquid":
   version "0.0.1"
   resolved "https://codeload.github.com/highlightjs/highlightjs-liquid/tar.gz/5ec2e56a184f25dc6e47468c9efaad0e34202fd5"
+
+highlightjs-liquidsoap@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/highlightjs-liquidsoap/-/highlightjs-liquidsoap-1.0.2.tgz#876e60e2f853a0252006e5338e263277ff46778e"
+  integrity sha512-TmB1D6T0QgkjWZ530RNifrlxjCWYU5qAW90l67nS+Yjn1TMwHT8YfQgy5HKqlV5yzea6VxXgqUmVAD4IMDDXjg==
 
 "highlightjs-lookml@github:spectacles-ci/highlightjs-lookml":
   version "1.0.2"
@@ -6363,6 +6413,14 @@ highlightjs-modelica@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/highlightjs-modelica/-/highlightjs-modelica-1.1.0.tgz#28099fb9093304cc2cedb53063473d90460252fb"
   integrity sha512-iLvSTwSaTPvzooYUokzIMcyOL3XJzOQjGyQbN1qOXDfWlRi7dgZpvQrg8PPSgRU7CVv/S3bUE+wzeh/xt45AJg==
+
+highlightjs-moonbit@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-moonbit/-/highlightjs-moonbit-1.1.0.tgz#34c915aec3022f656e0923ae272173501d1e822e"
+  integrity sha512-sG1yVnRk1+h76GcLimhTv9o2O/WKExtl3ea+SPqBJW23KpW54yUQVbsIy7VgpS2nEuNleKH3OEf4YQdBDhXJCA==
+  dependencies:
+    webpack "^5.89.0"
+    webpack-cli "^5.1.4"
 
 "highlightjs-motoko@github:rvanasa/highlightjs-motoko#8ae1b96":
   version "1.0.0"
@@ -6491,6 +6549,11 @@ highlightjs-vba@^0.2.1:
   resolved "https://registry.yarnpkg.com/highlightjs-vba/-/highlightjs-vba-0.2.1.tgz#7503d5e7be805c5884f5ad06455488c520c9725f"
   integrity sha512-GBYOjoF8Lk+LFmC4aSvjfwQEFwf/ckdNbAqnO2YYiH6ariHQh1LZ4IUD039DCx7Y3R0ZfhmYnQxrczUJJoTBfQ==
 
+highlightjs-veryl@^0.20.3:
+  version "0.20.3"
+  resolved "https://registry.yarnpkg.com/highlightjs-veryl/-/highlightjs-veryl-0.20.3.tgz#b681b09e020d76162ef0f6f8baf850f89bcfb482"
+  integrity sha512-CBudMogpgvN7KvUFmE1jPeYh4gi0LtHhZl4MExVhUJmlAOFkDGtk+cNVVcw4pGWofuGF/dBFtcqj6rCuJK9hoA==
+
 "highlightjs-voltscript@github:HCL-TECH-SOFTWARE/highlightjs-voltscript":
   version "1.0.0"
   resolved "https://codeload.github.com/HCL-TECH-SOFTWARE/highlightjs-voltscript/tar.gz/4139376a52118e4878b421336e03f8792a0b328b"
@@ -6498,6 +6561,11 @@ highlightjs-vba@^0.2.1:
 "highlightjs-wgsl@github:highlightjs/highlightjs-wgsl":
   version "0.1.0"
   resolved "https://codeload.github.com/highlightjs/highlightjs-wgsl/tar.gz/418185581f59e67c257a1d2fa43ec3f9103382df"
+
+highlightjs-why3@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/highlightjs-why3/-/highlightjs-why3-1.0.0.tgz#636429d9f1e69f5e9a89576a8d141f40db9e61f2"
+  integrity sha512-0f5zRhSN/8Oa/RrxQUslDpwBm75manOKqZifVo2N1vVFYG2p6TDBbLlXqVZmAlklakG4QajINoVSReX6ukNDdg==
 
 highlightjs-xsharp@^1.0.0:
   version "1.0.0"
@@ -6517,6 +6585,11 @@ highlightjs-zig@^1.0.2:
 "hightlightjs-papyrus@github:Pickysaurus/highlightjs-papyrus":
   version "0.0.4"
   resolved "https://codeload.github.com/Pickysaurus/highlightjs-papyrus/tar.gz/c6d71811fc5aef47769d9a5bd2e21822d8e58f4f"
+
+hljs-kql@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/hljs-kql/-/hljs-kql-0.1.0.tgz#77846bd3bb7ad56ef0f4f1bf6d5e646e952cb763"
+  integrity sha512-AOOVuDnWUD4FcicgoGzU7t8tlz6ct+dJUa1jIMh6bCDpIaVzcUzhdT05hE7kMUeIXuP7bQVr/X6pZBgAeXnX2Q==
 
 hookified@^1.15.0, hookified@^1.15.1:
   version "1.15.1"
@@ -6720,7 +6793,7 @@ import-fresh@^3.1.0, import-fresh@^3.3.0:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
 
-import-local@^3.2.0:
+import-local@^3.0.2, import-local@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/import-local/-/import-local-3.2.0.tgz#c3d5c745798c02a6f8b897726aba5100186ee260"
   integrity sha512-2SPlun1JUPWoM6t3F0dw0FkCF/jWY8kttcY4f599GLTSjh2OCuuhdTkJQsEcZzBqbXZGKMK2OqW1oZsjtf/gQA==
@@ -8198,7 +8271,7 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-releases@^2.0.51, node-releases@^2.0.53:
+node-releases@^2.0.53:
   version "2.0.53"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.53.tgz#0fe5ad8a7935e075172f574e56f0c20f07fa41af"
   integrity sha512-D9UOmYG3UH1V+ENW56t5QXBwJw1YEY18ruVeus89Rw+SyIgjPkCO84bRzO3uNIYosJbNwiabWVn48o3uJLjxFQ==
@@ -10904,7 +10977,7 @@ untildify@^4.0.0:
   resolved "https://registry.yarnpkg.com/untildify/-/untildify-4.0.0.tgz#2bc947b953652487e4600949fb091e3ae8cd919b"
   integrity sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==
 
-update-browserslist-db@^1.2.3, update-browserslist-db@^1.3.0:
+update-browserslist-db@^1.3.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.3.1.tgz#a71c28dd22f505481dbc4689087b18d933e90afd"
   integrity sha512-ZZ61DsRsOnakl74HAmp3oSN4aXUmEWXf+i/yv0h7tIBfICc3VdrFErQKUUKPgu3AMsTUMbcongALEN4l6GSUrQ==
@@ -11038,6 +11111,25 @@ webpack-bundle-tracker@^3.2.4:
   resolved "https://registry.yarnpkg.com/webpack-bundle-tracker/-/webpack-bundle-tracker-3.2.4.tgz#03818920d3e0f2196fba1da88bf5a9148c9bd664"
   integrity sha512-ki8+AJ+qH6JFGVTZquy8+fkilPqbExSHqmZOSfFcEGlhodUcc63KfmmVJuUrVqBYn4R+/h3JATUrRO0pXvZ+UA==
 
+webpack-cli@^5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-5.1.4.tgz#c8e046ba7eaae4911d7e71e2b25b776fcc35759b"
+  integrity sha512-pIDJHIEI9LR0yxHXQ+Qh95k2EvXpWzZ5l+d+jIo+RdSm9MiHfzazIxwwni/p7+x4eJZuvG1AJwgC4TNQ7NRgsg==
+  dependencies:
+    "@discoveryjs/json-ext" "^0.5.0"
+    "@webpack-cli/configtest" "^2.1.1"
+    "@webpack-cli/info" "^2.0.2"
+    "@webpack-cli/serve" "^2.0.5"
+    colorette "^2.0.14"
+    commander "^10.0.1"
+    cross-spawn "^7.0.3"
+    envinfo "^7.7.3"
+    fastest-levenshtein "^1.0.12"
+    import-local "^3.0.2"
+    interpret "^3.1.1"
+    rechoir "^0.8.0"
+    webpack-merge "^5.7.3"
+
 webpack-cli@^7.2.2:
   version "7.2.2"
   resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-7.2.2.tgz#94ff4f8a28aa087c8127c821e26a6fd0a50323e5"
@@ -11103,6 +11195,15 @@ webpack-log@^3.0.2:
     loglevelnext "^3.0.1"
     nanoid "^2.0.3"
 
+webpack-merge@^5.7.3:
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-5.10.0.tgz#a3ad5d773241e9c682803abf628d4cd62b8a4177"
+  integrity sha512-+4zXKdx7UnO+1jaN4l2lHVD+mFvnlZQP/6ljaJVb4SZiwIKeUnrT5l0gkT8z+n4hKpC+jpOv6O9R+gLtag7pSA==
+  dependencies:
+    clone-deep "^4.0.1"
+    flat "^5.0.2"
+    wildcard "^2.0.0"
+
 webpack-merge@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/webpack-merge/-/webpack-merge-6.0.1.tgz#50c776868e080574725abc5869bd6e4ef0a16c6a"
@@ -11117,7 +11218,7 @@ webpack-sources@^3.5.1:
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-3.5.1.tgz#76c2418486dcc02b2aa0694c104176c2858fe84a"
   integrity sha512-jyuiGJdtvY434z5bUZrjz67v76/ePNvFZTp9Mdz29IlH4+GPsgyGjiv0fKI+M7BdkU6ADjulUcKAd3tUK3WlEw==
 
-webpack@^5.109.2, webpack@^5.88.2:
+webpack@^5.109.2, webpack@^5.88.2, webpack@^5.89.0:
   version "5.109.2"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.109.2.tgz#b58dc289561c3282db35c210a99379a836a4c28d"
   integrity sha512-U9/cvLzxObKNEZ9+TtdqrHM5/9z3lgl2c+c4BzbqGxFQvQvBAq87yql5A8pQ+rrMbS496MZJeF5enVBndIy2hw==
@@ -11247,7 +11348,7 @@ which@^6.0.0:
   dependencies:
     isexe "^4.0.0"
 
-wildcard@^2.0.1:
+wildcard@^2.0.0, wildcard@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/wildcard/-/wildcard-2.0.1.tgz#5ab10d02487198954836b6349f74fff961e10f67"
   integrity sha512-CC1bOL87PIWSBhDcTrdeLo6eGT7mCFtrg0uIJtqJUFyK+eJnzl8A1niH56uu7KMa5XFrtiV+AQuHO3n7DsHnLQ==
