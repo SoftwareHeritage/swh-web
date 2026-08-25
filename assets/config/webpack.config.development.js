@@ -501,6 +501,8 @@ module.exports = {
         },
         ignoreFiles: ['node_modules/**/*.css',
                       'node_modules/**/*.scss',
+                      '.tox*/.*/**/*.css',
+                      '.tox*/.*/**/*.scss',
                       '.tox*/**/*.css',
                       '.tox*/**/*.scss',
                       'swh/web/tests/resources/**/*.css',
