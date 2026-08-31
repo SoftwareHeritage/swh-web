@@ -302,6 +302,14 @@ listed_origins: Dict[str, Any] = {
             },
         },
         {
+            "type": "hex",
+            "info_url": "https://hex.pm",
+            "info": "source packages from the Hex package registry for the Erlang ecosystem",
+            "search_pattern": {
+                "default": "https://hex.pm/packages/",
+            },
+        },
+        {
             "type": "hgweb",
             "info_url": "https://www.mercurial-scm.org/help/topics/hgweb",
             "info": "public repositories from multiple hgweb instances",
