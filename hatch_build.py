@@ -84,13 +84,24 @@ class CustomBuildHook(BuildHookInterface):
                 subprocess.run(
                     [yarn, "--mutex", "file", "install", "--frozen-lockfile"],
                     check=True,
+                    stderr=subprocess.STDOUT,
                 )
             except subprocess.CalledProcessError:
-                subprocess.run([yarn, "--mutex", "file", "install"], check=True)
+                subprocess.run(
+                    [yarn, "--mutex", "file", "install"],
+                    check=True,
+                    stderr=subprocess.STDOUT,
+                )
 
             if version == "editable":
                 subprocess.run(
-                    [yarn, "--mutex", "file", "run", "build-dev"], check=True
+                    [yarn, "--mutex", "file", "run", "build-dev"],
+                    check=True,
+                    stderr=subprocess.STDOUT,
                 )
             else:
-                subprocess.run([yarn, "--mutex", "file", "run", "build"], check=True)
+                subprocess.run(
+                    [yarn, "--mutex", "file", "run", "build"],
+                    check=True,
+                    stderr=subprocess.STDOUT,
+                )
