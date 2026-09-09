@@ -3,6 +3,7 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
 from typing import List
 
 import pytest
@@ -15,6 +16,28 @@ from swh.vulns.grpc.swhvulns_pb2 import (
 )
 from swh.web.tests.helpers import check_api_get_responses
 from swh.web.utils import reverse
+
+GHSA_0001 = {
+    "schema_version": "1.0.0",
+    "id": "TEST-GHSA-0001",
+    "published": "2024-01-01T00:00:00Z",
+    "modified": "2024-01-01T00:00:00Z",
+    "aliases": ["CVE-TEST-0001"],
+    "affected": [
+        {
+            "package": {"name": "lodash", "ecosystem": "npm"},
+            "ranges": [
+                {
+                    "type": "GIT",
+                    "events": [
+                        {"introduced": "0000000000000000000000000000000000000003"},
+                        {"fixed": "0000000000000000000000000000000000000018"},
+                    ],
+                }
+            ],
+        }
+    ],
+}
 
 
 @pytest.fixture(autouse=True)
@@ -42,7 +65,9 @@ def naive_vulns_server_data() -> List[DetectedVulnerability]:
     return [
         DetectedVulnerability(
             swhid=swhid,
-            vulnerability=Vulnerability(id=["TEST-GHSA-0001"]),
+            vulnerability=Vulnerability(
+                id=["TEST-GHSA-0001"], raw_report=json.dumps(GHSA_0001)
+            ),
             tool=VulnerabilityDetectionTool(name="swh-osv"),
             source=VulnerabilityDatabase(name="osv.dev"),
         )
@@ -63,7 +88,7 @@ def test_api_revision_vulnerability(api_client, archive_data) -> None:
 
     assert rv.data == [
         {
-            "vulnerability": {"ids": ["TEST-GHSA-0001"]},
+            "vulnerability": {"ids": ["TEST-GHSA-0001"], "raw_report": GHSA_0001},
             "tool": {"name": "swh-osv", "variant": ""},
             "source": {"name": "osv.dev", "version": ""},
         }

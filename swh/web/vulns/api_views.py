@@ -3,6 +3,8 @@
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
+import json
+
 import grpc
 
 from rest_framework.request import Request
@@ -81,6 +83,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
         {
             "vulnerability": {
                 "ids": list(item.vulnerability.id),
+                "raw_report": json.loads(item.vulnerability.raw_report),
             },
             "tool": item.tool
             and {
