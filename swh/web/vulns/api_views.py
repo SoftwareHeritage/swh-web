@@ -52,6 +52,8 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
 
         :>jsonarr array vulnerability.ids: array of strings, each of which is
             an identifier of the vulnerability
+        :>jsonarr array vulnerability.raw_report: the raw report in OSV format.
+            See https://ossf.github.io/osv-schema/ for details
         :>jsonarr string tool.name: name of the tool used to identify the revision is
             vulnerable to this vulnerability
         :>jsonarr string tool.variant: optional human-readable description of
