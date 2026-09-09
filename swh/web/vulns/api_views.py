@@ -5,6 +5,7 @@
 
 import json
 
+from google.protobuf.field_mask_pb2 import FieldMask
 import grpc
 
 from rest_framework.request import Request
@@ -14,6 +15,7 @@ from swh.vulns.grpc.swhvulns_pb2_grpc import VulnerabilityServiceStub
 from swh.web.api.apidoc import api_doc
 from swh.web.api.apiurls import APIUrls, api_route
 from swh.web.config import get_config
+from swh.web.utils import strtobool
 from swh.web.utils.url_path_converters import register_url_path_converters
 
 _GRPC_CHANNEL = None
@@ -67,6 +69,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
         .. parsed-literal::
 
             :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/`
+            :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/?with_raw_report=no`
     """
     # we never return 404 because:
     # 1. we may, theoretically, have vulnerability reports that reference revisions
@@ -75,8 +78,13 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
     #    vulnerability reports that mention it (like we don't hide git submodules
     #    that reference it either)
 
+    paths = ["vulnerability.id", "tool", "source"]
+    with_raw_report = strtobool(request.GET.get("with_raw_report", "yes"))
+    if with_raw_report:
+        paths.append("vulnerability.raw_report")
     grpc_request = AffectingVulnerabilitiesRequest(
         swhid=[f"swh:1:rev:{sha1_git}"],
+        mask=FieldMask(paths=paths),
     )
     stub = VulnerabilityServiceStub(_grpc_channel())
     response = stub.AffectingVulnerabilities(grpc_request)
@@ -85,7 +93,11 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
         {
             "vulnerability": {
                 "ids": list(item.vulnerability.id),
-                "raw_report": json.loads(item.vulnerability.raw_report),
+                **(
+                    {"raw_report": json.loads(item.vulnerability.raw_report)}
+                    if with_raw_report
+                    else {}
+                ),
             },
             "tool": item.tool
             and {

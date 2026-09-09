@@ -93,3 +93,21 @@ def test_api_revision_vulnerability(api_client, archive_data) -> None:
             "source": {"name": "osv.dev", "version": ""},
         }
     ]
+
+
+def test_api_revision_vulnerability_no_raw_report(api_client, archive_data) -> None:
+    url = reverse(
+        "api-1-revision-vulnerabilities",
+        url_args={"sha1_git": "0000000000000000000000000000000000000002"},
+    )
+    rv = check_api_get_responses(
+        api_client, f"{url}?with_raw_report=no", status_code=200
+    )
+
+    assert rv.data == [
+        {
+            "vulnerability": {"ids": ["TEST-GHSA-0001"]},
+            "tool": {"name": "swh-osv", "variant": ""},
+            "source": {"name": "osv.dev", "version": ""},
+        }
+    ]
