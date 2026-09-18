@@ -66,17 +66,17 @@ describe('Sidebar Tests on small screens', function() {
 
   it('should be collapsed by default', function() {
     cy.get('.swh-sidebar')
-      .should('not.be.visible');
+      .should('have.class', 'swh-sidebar-collapsed');
   });
 
   it('should toggle sidebar when swh-push-menu is clicked', function() {
     cy.get('.swh-push-menu')
       .click()
       .get('.swh-sidebar')
-      .should('be.visible')
+      .should('not.have.class', 'swh-sidebar-expanded')
       .get('.sidebar-overlay')
       .click({force: true})
       .get('.swh-sidebar')
-      .should('not.be.visible');
+      .should('have.class', 'swh-sidebar-collapsed');
   });
 });
