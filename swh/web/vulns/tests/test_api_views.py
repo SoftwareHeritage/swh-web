@@ -84,6 +84,7 @@ def test_api_revision_vulnerability(api_client, archive_data) -> None:
         "api-1-revision-vulnerabilities",
         url_args={"sha1_git": "0000000000000000000000000000000000000002"},
     )
+    url = f"{url}?with_raw_report=yes"
     rv = check_api_get_responses(api_client, url, status_code=200)
 
     assert rv.data == [
@@ -100,9 +101,9 @@ def test_api_revision_vulnerability_no_raw_report(api_client, archive_data) -> N
         "api-1-revision-vulnerabilities",
         url_args={"sha1_git": "0000000000000000000000000000000000000002"},
     )
-    rv = check_api_get_responses(
-        api_client, f"{url}?with_raw_report=no", status_code=200
-    )
+
+    for url in {url, f"{url}?with_raw_report=no"}:
+        rv = check_api_get_responses(api_client, url, status_code=200)
 
     assert rv.data == [
         {

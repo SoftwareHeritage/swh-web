@@ -54,7 +54,8 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
 
         :>jsonarr array vulnerability.ids: array of strings, each of which is
             an identifier of the vulnerability
-        :>jsonarr array vulnerability.raw_report: the raw report in OSV format.
+        :>jsonarr array vulnerability.raw_report: the raw report in OSV format
+            (excluded without ``?with_raw_report=yes``)
             See https://ossf.github.io/osv-schema/ for details
         :>jsonarr string tool.name: name of the tool used to identify the revision is
             vulnerable to this vulnerability
@@ -69,7 +70,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
         .. parsed-literal::
 
             :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/`
-            :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/?with_raw_report=no`
+            :swh_web_api:`revision/45a9f284641a23baa142743d8a6136d4e300c465/vulnerabilities/?with_raw_report=yes`
     """
     # we never return 404 because:
     # 1. we may, theoretically, have vulnerability reports that reference revisions
@@ -79,7 +80,7 @@ def api_revision_vulnerabilities(request: Request, sha1_git: str):
     #    that reference it either)
 
     paths = ["vulnerability.id", "tool", "source"]
-    with_raw_report = strtobool(request.GET.get("with_raw_report", "yes"))
+    with_raw_report = strtobool(request.GET.get("with_raw_report", "no"))
     if with_raw_report:
         paths.append("vulnerability.raw_report")
     grpc_request = AffectingVulnerabilitiesRequest(
