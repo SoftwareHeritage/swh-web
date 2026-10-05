@@ -99,7 +99,7 @@ import {default as hljsDefineTTCN3} from 'highlightjs-ttcn3';
 import '@myriaddreamin/highlighter-typst/dist/esm/contrib/hljs/typst-lite.bundle.js';
 import 'highlightjs-unison/dist/unison.min';
 import 'highlightjs-vba/dist/vba.min';
-import * as hljsVeryl from 'highlightjs-veryl';
+import {default as hljsVeryl} from 'highlightjs-veryl';
 import 'highlightjs-voltscript/dist/voltscript.min';
 import 'highlightjs-wgsl/dist/wgsl.min';
 import 'highlightjs-why3/dist/why3.min';
