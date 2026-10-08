@@ -15,7 +15,7 @@ function tokenForm(infoText, buttonText) {
   const form =
     `<form id="swh-token-form" class="text-center">
       <p id="swh-token-form-text">${infoText}</p>
-      <input id="swh-token-form-submit" type="submit" value="${buttonText}">
+      <input id="swh-token-form-submit" class="btn btn-secondary" type="submit" value="${buttonText}">
       <div id="swh-token-form-message"></div>
     </form>`;
   return form;
