@@ -94,7 +94,7 @@ test-frontend-cmd: build-webpack-dev add-users-cypress
 	bash -c "trap 'trap - SIGINT SIGTERM ERR EXIT && \
 	jobs -p | xargs -r kill' SIGINT SIGTERM ERR EXIT; \
 	$(call run_django_server,$(SETTINGS_CYPRESS)) & \
-	sleep 10 && $(YARN) run cypress run --expose skipSlowTests=$$CYPRESS_SKIP_SLOW_TESTS --config numTestsKeptInMemory=0 && \
+	sleep 10 && $(YARN) run cypress run --browser chromium --expose skipSlowTests=$$CYPRESS_SKIP_SLOW_TESTS --config numTestsKeptInMemory=0 && \
 	$(YARN) nyc-report"
 
 test-frontend: export CYPRESS_SKIP_SLOW_TESTS=true
@@ -111,7 +111,7 @@ test-frontend-ui-cmd: add-users-cypress yarn-install
 	ps -o pgid= $$$$ | grep -o [0-9]* | xargs pkill -g' SIGINT SIGTERM ERR EXIT; \
 	$(YARN) start-dev & \
 	$(call run_django_server,$(SETTINGS_CYPRESS)) & \
-	sleep 10 && $(YARN) run cypress open --expose skipSlowTests=$$CYPRESS_SKIP_SLOW_TESTS"
+	sleep 10 && $(YARN) run cypress open --browser chromium --expose skipSlowTests=$$CYPRESS_SKIP_SLOW_TESTS"
 
 test-frontend-ui: export CYPRESS_SKIP_SLOW_TESTS=true
 test-frontend-ui: test-frontend-ui-cmd ## Run cypress non-slow tests in a browser (GUI)
