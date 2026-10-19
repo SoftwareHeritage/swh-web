@@ -9,6 +9,7 @@ import functools
 from importlib import import_module, reload
 import os
 import random
+import re
 import sys
 import time
 from typing import Any, Dict, List, Optional
@@ -243,7 +244,10 @@ def api_request_factory():
 
 # Initialize tests data
 @pytest.fixture(scope="function", autouse=True)
-def tests_data():
+def tests_data(requests_mock):
+    # ensure to mock HTTP requests to GitHub API performed by metadata fetcher
+    # when loading sample git repos into test archive
+    requests_mock.get(re.compile("https://api.github.com/*"), json={})
     data = get_tests_data(reset=True)
     # Update swh-web configuration to use the in-memory storages
     # instantiated in the tests.data module
@@ -1531,10 +1535,3 @@ def patch_backend(mocker):
         return mocker.patch.object(obj, attr, *args, **kw)
 
     return mock_backend
-
-
-@pytest.fixture(autouse=True)
-def github_api_mocker(requests_mock):
-    """Prevent metadata loader to perform real HTTP requests to GitHub API
-    when loading sample git repositories used in tests"""
-    requests_mock.get("https://api.github.com/*", json={})
