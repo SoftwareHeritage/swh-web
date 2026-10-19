@@ -1,10 +1,10 @@
-# Copyright (C) 2022-2025  The Software Heritage developers
+# Copyright (C) 2022-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
 
 import attr
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis.strategies import sets
 import pytest
 
@@ -93,6 +93,12 @@ def test_api_raw_extrinsic_metadata_origin_filename(api_client, subtest, metadat
 
 
 @pytest.mark.parametrize("limit", [1, 2, 10, 100])
+@settings(
+    suppress_health_check=[
+        HealthCheck.large_base_example,
+        HealthCheck.function_scoped_fixture,
+    ]
+)
 @given(sets(raw_extrinsic_metadata(), min_size=1))
 def test_api_raw_extrinsic_metadata_scroll(api_client, subtest, limit, meta):
     # ensure archive_data fixture will be reset between each hypothesis

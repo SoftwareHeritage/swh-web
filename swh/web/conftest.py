@@ -1531,3 +1531,10 @@ def patch_backend(mocker):
         return mocker.patch.object(obj, attr, *args, **kw)
 
     return mock_backend
+
+
+@pytest.fixture(autouse=True)
+def github_api_mocker(requests_mock):
+    """Prevent metadata loader to perform real HTTP requests to GitHub API
+    when loading sample git repositories used in tests"""
+    requests_mock.get("https://api.github.com/*", json={})
