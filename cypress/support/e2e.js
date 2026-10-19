@@ -76,7 +76,7 @@ Cypress.Commands.add('alterSupportLogin', () => {
 });
 
 function mockCostlyRequests() {
-  cy.intercept('https://status.softwareheritage.org/**', {
+  cy.intercept('https://status.example.org/**', {
     body: {
       'result': {
         'status': [
