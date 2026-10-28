@@ -14,9 +14,9 @@ import sys
 import time
 from typing import Any, Dict, List, Optional
 
-from _pytest.python import Function
 from hypothesis import HealthCheck
 from hypothesis import settings as hypothesis_settings
+from hypothesis.strategies import sets
 import pytest
 from pytest_django.fixtures import Settings
 
@@ -30,6 +30,7 @@ from django.test.utils import setup_databases
 from django.urls import clear_url_caches
 from rest_framework.test import APIClient, APIRequestFactory
 
+from swh.model import hypothesis_strategies
 from swh.model.hashutil import (
     ALGORITHMS,
     DEFAULT_ALGORITHMS,
@@ -62,6 +63,7 @@ from swh.web.config import get_config
 from swh.web.save_code_now.origin_save import get_scheduler_load_task_types
 from swh.web.settings import common as common_settings
 from swh.web.settings import tests as tests_settings
+from swh.web.tests import strategies as swh_web_strategies
 from swh.web.tests.data import (
     ORIGIN_WITH_CFF_FILE,
     ORIGIN_WITH_METADATA_FILES,
@@ -966,6 +968,38 @@ def indexer_data(tests_data):
     return _IndexerData(tests_data)
 
 
+@pytest.fixture
+def raw_extrinsic_metadata():
+    return hypothesis_strategies.raw_extrinsic_metadata().example()
+
+
+@pytest.fixture
+def raw_extrinsic_metadata_set():
+    return sets(hypothesis_strategies.raw_extrinsic_metadata(), min_size=1).example()
+
+
+@pytest.fixture
+def new_origin():
+    return swh_web_strategies.new_origin_strategy().example()
+
+
+@pytest.fixture
+def gen_visit_dates():
+
+    def gen_dates(nb_dates=None):
+        return swh_web_strategies.visit_dates(nb_dates).example()
+
+    return gen_dates
+
+
+@pytest.fixture
+def gen_snapshots():
+    def gen_snps(nb_snapshots=None):
+        return swh_web_strategies.new_snapshots(nb_snapshots).example()
+
+    return gen_snps
+
+
 class _ArchiveData:
     """
     Helper class to manage data from a sample test archive.
@@ -1184,43 +1218,6 @@ def keycloak_oidc(keycloak_oidc, mocker):
     keycloak_oidc_client.return_value = keycloak_oidc
 
     return keycloak_oidc
-
-
-@pytest.fixture
-def subtest(request):
-    """A hack to explicitly set up and tear down fixtures.
-
-    This fixture allows you to set up and tear down fixtures within the test
-    function itself. This is useful (necessary!) for using Hypothesis inside
-    pytest, as hypothesis will call the test function multiple times, without
-    setting up or tearing down fixture state as it is normally the case.
-
-    Copied from the pytest-subtesthack project, public domain license
-    (https://github.com/untitaker/pytest-subtesthack).
-    """
-    parent_test = request.node
-
-    def inner(func):
-        if hasattr(Function, "from_parent"):
-            item = Function.from_parent(
-                parent_test,
-                name=request.function.__name__ + "[]",
-                originalname=request.function.__name__,
-                callobj=func,
-            )
-        else:
-            item = Function(
-                name=request.function.__name__ + "[]", parent=parent_test, callobj=func
-            )
-        nextitem = parent_test  # prevents pytest from tearing down module fixtures
-
-        item.ihook.pytest_runtest_setup(item=item)
-        try:
-            item.ihook.pytest_runtest_call(item=item)
-        finally:
-            item.ihook.pytest_runtest_teardown(item=item, nextitem=nextitem)
-
-    return inner
 
 
 @pytest.fixture

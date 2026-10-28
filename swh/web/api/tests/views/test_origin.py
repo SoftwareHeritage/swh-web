@@ -7,7 +7,6 @@ from datetime import timedelta
 import itertools
 import json
 
-from hypothesis import given
 import pytest
 
 from swh.model.model import Origin, OriginVisit, OriginVisitStatus
@@ -25,7 +24,6 @@ from swh.web.tests.data import (
     ORIGIN_METADATA_VALUE,
 )
 from swh.web.tests.helpers import check_api_get_responses
-from swh.web.tests.strategies import new_origin, new_snapshots, visit_dates
 from swh.web.utils import reverse
 from swh.web.utils.exc import BadInputExc
 from swh.web.utils.origin_visits import get_origin_visits
@@ -75,89 +73,32 @@ def test_api_lookup_origin_visits_raise_swh_storage_error_api(
 
 
 @pytest.mark.parametrize("visits_have_statuses", [True, False])
-@given(new_origin(), visit_dates(3), new_snapshots(3))
 def test_api_lookup_origin_visits(
-    api_client, subtest, visits_have_statuses, new_origin, visit_dates, new_snapshots
+    api_client,
+    archive_data,
+    visits_have_statuses,
+    new_origin,
+    gen_visit_dates,
+    gen_snapshots,
 ):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data, django_cache):
-        django_cache.clear()
-        archive_data.origin_add([new_origin])
-        for i, visit_date in enumerate(visit_dates):
-            origin_visit = archive_data.origin_visit_add(
-                [
-                    OriginVisit(
-                        origin=new_origin.url,
-                        date=visit_date,
-                        type="git",
-                        # cassandra/memory storage automatically adds a "created" visit
-                        # status if visit id is None
-                        visit=None if visits_have_statuses else (i + 1),
-                    )
-                ]
-            )[0]
-            if visits_have_statuses:
-                archive_data.snapshot_add([new_snapshots[i]])
-                visit_status = OriginVisitStatus(
+
+    visit_dates = gen_visit_dates(3)
+    new_snapshots = gen_snapshots(3)
+    archive_data.origin_add([new_origin])
+    for i, visit_date in enumerate(visit_dates):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
                     origin=new_origin.url,
-                    visit=origin_visit.visit,
-                    date=now(),
-                    status="full",
-                    snapshot=new_snapshots[i].id,
+                    date=visit_date,
+                    type="git",
+                    # cassandra/memory storage automatically adds a "created" visit
+                    # status if visit id is None
+                    visit=None if visits_have_statuses else (i + 1),
                 )
-                archive_data.origin_visit_status_add([visit_status])
-
-        all_visits = list(reversed(get_origin_visits(new_origin.url)))
-
-        for last_visit, expected_visits in (
-            (None, all_visits[:2]),
-            (all_visits[1]["visit"], all_visits[2:]),
-        ):
-            url = reverse(
-                "api-1-origin-visits",
-                url_args={"origin_url": new_origin.url},
-                query_params={"per_page": 2, "last_visit": last_visit},
-            )
-
-            rv = check_api_get_responses(api_client, url, status_code=200)
-
-            for i in range(len(expected_visits)):
-                expected_visits[i] = enrich_origin_visit(
-                    expected_visits[i],
-                    with_origin_link=False,
-                    with_origin_visit_link=True,
-                    request=rv.wsgi_request,
-                )
-                if visits_have_statuses:
-                    assert expected_visits[i]["snapshot"] is not None
-                else:
-                    assert expected_visits[i]["snapshot"] is None
-
-            assert rv.data == expected_visits
-
-
-@given(new_origin(), visit_dates(3), new_snapshots(3))
-def test_api_lookup_origin_visits_by_id(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
-):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data, django_cache):
-        django_cache.clear()
-        archive_data.origin_add([new_origin])
-        for i, visit_date in enumerate(visit_dates):
-            origin_visit = archive_data.origin_visit_add(
-                [
-                    OriginVisit(
-                        origin=new_origin.url,
-                        date=visit_date,
-                        type="git",
-                    )
-                ]
-            )[0]
+            ]
+        )[0]
+        if visits_have_statuses:
             archive_data.snapshot_add([new_snapshots[i]])
             visit_status = OriginVisitStatus(
                 origin=new_origin.url,
@@ -168,80 +109,131 @@ def test_api_lookup_origin_visits_by_id(
             )
             archive_data.origin_visit_status_add([visit_status])
 
-        all_visits = list(reversed(get_origin_visits(new_origin.url)))
+    all_visits = list(reversed(get_origin_visits(new_origin.url)))
 
-        for last_visit, expected_visits in (
-            (None, all_visits[:2]),
-            (all_visits[1]["visit"], all_visits[2:4]),
-        ):
-            url = reverse(
-                "api-1-origin-visits",
-                url_args={"origin_url": new_origin.url},
-                query_params={"per_page": 2, "last_visit": last_visit},
+    for last_visit, expected_visits in (
+        (None, all_visits[:2]),
+        (all_visits[1]["visit"], all_visits[2:]),
+    ):
+        url = reverse(
+            "api-1-origin-visits",
+            url_args={"origin_url": new_origin.url},
+            query_params={"per_page": 2, "last_visit": last_visit},
+        )
+
+        rv = check_api_get_responses(api_client, url, status_code=200)
+
+        for i in range(len(expected_visits)):
+            expected_visits[i] = enrich_origin_visit(
+                expected_visits[i],
+                with_origin_link=False,
+                with_origin_visit_link=True,
+                request=rv.wsgi_request,
             )
+            if visits_have_statuses:
+                assert expected_visits[i]["snapshot"] is not None
+            else:
+                assert expected_visits[i]["snapshot"] is None
 
-            rv = check_api_get_responses(api_client, url, status_code=200)
-
-            for i in range(len(expected_visits)):
-                expected_visits[i] = enrich_origin_visit(
-                    expected_visits[i],
-                    with_origin_link=False,
-                    with_origin_visit_link=True,
-                    request=rv.wsgi_request,
-                )
-
-            assert rv.data == expected_visits
+        assert rv.data == expected_visits
 
 
-@given(new_origin(), visit_dates(3), new_snapshots(3))
-def test_api_lookup_origin_visit(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
+def test_api_lookup_origin_visits_by_id(
+    api_client, archive_data, new_origin, gen_visit_dates, gen_snapshots
 ):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data):
-        archive_data.origin_add([new_origin])
-        for i, visit_date in enumerate(visit_dates):
-            origin_visit = archive_data.origin_visit_add(
-                [
-                    OriginVisit(
-                        origin=new_origin.url,
-                        date=visit_date,
-                        type="git",
-                    )
-                ]
-            )[0]
-            visit_id = origin_visit.visit
-            archive_data.snapshot_add([new_snapshots[i]])
-            visit_status = OriginVisitStatus(
-                origin=new_origin.url,
-                visit=origin_visit.visit,
-                date=visit_date + timedelta(minutes=5),
-                status="full",
-                snapshot=new_snapshots[i].id,
-            )
-            archive_data.origin_visit_status_add([visit_status])
-            url = reverse(
-                "api-1-origin-visit",
-                url_args={"origin_url": new_origin.url, "visit_id": visit_id},
-            )
+    visit_dates = gen_visit_dates(3)
+    new_snapshots = gen_snapshots(3)
+    archive_data.origin_add([new_origin])
+    for i, visit_date in enumerate(visit_dates):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        archive_data.snapshot_add([new_snapshots[i]])
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=origin_visit.visit,
+            date=now(),
+            status="full",
+            snapshot=new_snapshots[i].id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
 
-            rv = check_api_get_responses(api_client, url, status_code=200)
+    all_visits = list(reversed(get_origin_visits(new_origin.url)))
 
-            expected_visit = archive_data.origin_visit_get_by(new_origin.url, visit_id)
+    for last_visit, expected_visits in (
+        (None, all_visits[:2]),
+        (all_visits[1]["visit"], all_visits[2:4]),
+    ):
+        url = reverse(
+            "api-1-origin-visits",
+            url_args={"origin_url": new_origin.url},
+            query_params={"per_page": 2, "last_visit": last_visit},
+        )
 
-            expected_visit = enrich_origin_visit(
-                expected_visit,
-                with_origin_link=True,
-                with_origin_visit_link=False,
+        rv = check_api_get_responses(api_client, url, status_code=200)
+
+        for i in range(len(expected_visits)):
+            expected_visits[i] = enrich_origin_visit(
+                expected_visits[i],
+                with_origin_link=False,
+                with_origin_visit_link=True,
                 request=rv.wsgi_request,
             )
 
-            assert rv.data == expected_visit
+        assert rv.data == expected_visits
 
 
-@given(new_origin())
+def test_api_lookup_origin_visit(
+    api_client, archive_data, new_origin, gen_visit_dates, gen_snapshots
+):
+    visit_dates = gen_visit_dates(3)
+    new_snapshots = gen_snapshots(3)
+    archive_data.origin_add([new_origin])
+    for i, visit_date in enumerate(visit_dates):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        visit_id = origin_visit.visit
+        archive_data.snapshot_add([new_snapshots[i]])
+        visit_status = OriginVisitStatus(
+            origin=new_origin.url,
+            visit=origin_visit.visit,
+            date=visit_date + timedelta(minutes=5),
+            status="full",
+            snapshot=new_snapshots[i].id,
+        )
+        archive_data.origin_visit_status_add([visit_status])
+        url = reverse(
+            "api-1-origin-visit",
+            url_args={"origin_url": new_origin.url, "visit_id": visit_id},
+        )
+
+        rv = check_api_get_responses(api_client, url, status_code=200)
+
+        expected_visit = archive_data.origin_visit_get_by(new_origin.url, visit_id)
+
+        expected_visit = enrich_origin_visit(
+            expected_visit,
+            with_origin_link=True,
+            with_origin_visit_link=False,
+            request=rv.wsgi_request,
+        )
+
+        assert rv.data == expected_visit
+
+
 def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_origin):
     archive_data.origin_add([new_origin])
 
@@ -254,87 +246,136 @@ def test_api_lookup_origin_visit_latest_no_visit(api_client, archive_data, new_o
     }
 
 
-@given(new_origin(), visit_dates(2), new_snapshots(1))
 def test_api_lookup_origin_visit_latest(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
+    api_client, archive_data, new_origin, gen_visit_dates, gen_snapshots
 ):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data):
-        archive_data.origin_add([new_origin])
-        visit_dates.sort()
-        visit_ids = []
-        for i, visit_date in enumerate(visit_dates):
-            origin_visit = archive_data.origin_visit_add(
-                [
-                    OriginVisit(
-                        origin=new_origin.url,
-                        date=visit_date,
-                        type="git",
-                    )
-                ]
-            )[0]
-            visit_ids.append(origin_visit.visit)
+    visit_dates = gen_visit_dates(2)
+    new_snapshots = gen_snapshots(1)
+    archive_data.origin_add([new_origin])
+    visit_dates.sort()
+    visit_ids = []
+    for i, visit_date in enumerate(visit_dates):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        visit_ids.append(origin_visit.visit)
 
-        archive_data.snapshot_add([new_snapshots[0]])
+    archive_data.snapshot_add([new_snapshots[0]])
 
-        visit_status = OriginVisitStatus(
-            origin=new_origin.url,
-            visit=visit_ids[0],
-            date=now(),
-            status="full",
-            snapshot=new_snapshots[0].id,
-        )
-        archive_data.origin_visit_status_add([visit_status])
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit_ids[0],
+        date=now(),
+        status="full",
+        snapshot=new_snapshots[0].id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
 
-        url = reverse(
-            "api-1-origin-visit-latest", url_args={"origin_url": new_origin.url}
-        )
+    url = reverse("api-1-origin-visit-latest", url_args={"origin_url": new_origin.url})
 
-        rv = check_api_get_responses(api_client, url, status_code=200)
+    rv = check_api_get_responses(api_client, url, status_code=200)
 
-        expected_visit = archive_data.origin_visit_status_get_latest(
-            new_origin.url, type="git"
-        )
+    expected_visit = archive_data.origin_visit_status_get_latest(
+        new_origin.url, type="git"
+    )
 
-        expected_visit = enrich_origin_visit(
-            expected_visit,
-            with_origin_link=True,
-            with_origin_visit_link=False,
-            request=rv.wsgi_request,
-        )
+    expected_visit = enrich_origin_visit(
+        expected_visit,
+        with_origin_link=True,
+        with_origin_visit_link=False,
+        request=rv.wsgi_request,
+    )
 
-        assert rv.data == expected_visit
+    assert rv.data == expected_visit
 
 
-@given(new_origin(), visit_dates(2), new_snapshots(1))
 def test_api_lookup_origin_visit_latest_with_snapshot(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
+    api_client, new_origin, gen_visit_dates, gen_snapshots, archive_data
 ):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data):
-        archive_data.origin_add([new_origin])
-        visit_dates.sort()
-        visit_ids = []
-        for i, visit_date in enumerate(visit_dates):
+    visit_dates = gen_visit_dates(2)
+    new_snapshots = gen_snapshots(1)
+
+    archive_data.origin_add([new_origin])
+    visit_dates.sort()
+    visit_ids = []
+    for i, visit_date in enumerate(visit_dates):
+        origin_visit = archive_data.origin_visit_add(
+            [
+                OriginVisit(
+                    origin=new_origin.url,
+                    date=visit_date,
+                    type="git",
+                )
+            ]
+        )[0]
+        visit_ids.append(origin_visit.visit)
+
+    archive_data.snapshot_add([new_snapshots[0]])
+
+    # Add snapshot to the latest visit
+    visit_id = visit_ids[-1]
+    visit_status = OriginVisitStatus(
+        origin=new_origin.url,
+        visit=visit_id,
+        date=now(),
+        status="full",
+        snapshot=new_snapshots[0].id,
+    )
+    archive_data.origin_visit_status_add([visit_status])
+
+    url = reverse(
+        "api-1-origin-visit-latest",
+        url_args={"origin_url": new_origin.url},
+        query_params={"require_snapshot": True},
+    )
+
+    rv = check_api_get_responses(api_client, url, status_code=200)
+
+    expected_visit = archive_data.origin_visit_status_get_latest(
+        new_origin.url, type="git", require_snapshot=True
+    )
+
+    expected_visit = enrich_origin_visit(
+        expected_visit,
+        with_origin_link=True,
+        with_origin_visit_link=False,
+        request=rv.wsgi_request,
+    )
+
+    assert rv.data == expected_visit
+
+
+def test_api_lookup_origin_visit_latest_visit_type_filter(
+    api_client, archive_data, new_origin, gen_visit_dates, gen_snapshots
+):
+    visit_dates = gen_visit_dates(2)
+    new_snapshots = gen_snapshots(1)
+
+    archive_data.origin_add([new_origin])
+    visit_dates.sort()
+    visit_ids = []
+    for i, visit_date in enumerate(visit_dates):
+        for visit_type in ("git", "git-checkout"):
             origin_visit = archive_data.origin_visit_add(
                 [
                     OriginVisit(
                         origin=new_origin.url,
                         date=visit_date,
-                        type="git",
+                        type=visit_type,
                     )
                 ]
             )[0]
             visit_ids.append(origin_visit.visit)
 
-        archive_data.snapshot_add([new_snapshots[0]])
+    archive_data.snapshot_add([new_snapshots[0]])
 
-        # Add snapshot to the latest visit
-        visit_id = visit_ids[-1]
+    for visit_id in visit_ids:
         visit_status = OriginVisitStatus(
             origin=new_origin.url,
             visit=visit_id,
@@ -344,16 +385,17 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         )
         archive_data.origin_visit_status_add([visit_status])
 
+    for visit_type in ("git", "git-checkout"):
         url = reverse(
             "api-1-origin-visit-latest",
             url_args={"origin_url": new_origin.url},
-            query_params={"require_snapshot": True},
+            query_params={"visit_type": visit_type},
         )
 
         rv = check_api_get_responses(api_client, url, status_code=200)
 
         expected_visit = archive_data.origin_visit_status_get_latest(
-            new_origin.url, type="git", require_snapshot=True
+            new_origin.url, type=visit_type
         )
 
         expected_visit = enrich_origin_visit(
@@ -364,65 +406,6 @@ def test_api_lookup_origin_visit_latest_with_snapshot(
         )
 
         assert rv.data == expected_visit
-
-
-@given(new_origin(), visit_dates(2), new_snapshots(1))
-def test_api_lookup_origin_visit_latest_visit_type_filter(
-    api_client, subtest, new_origin, visit_dates, new_snapshots
-):
-    # ensure archive_data fixture will be reset between each hypothesis
-    # example test run
-    @subtest
-    def test_inner(archive_data):
-        archive_data.origin_add([new_origin])
-        visit_dates.sort()
-        visit_ids = []
-        for i, visit_date in enumerate(visit_dates):
-            for visit_type in ("git", "git-checkout"):
-                origin_visit = archive_data.origin_visit_add(
-                    [
-                        OriginVisit(
-                            origin=new_origin.url,
-                            date=visit_date,
-                            type=visit_type,
-                        )
-                    ]
-                )[0]
-                visit_ids.append(origin_visit.visit)
-
-        archive_data.snapshot_add([new_snapshots[0]])
-
-        for visit_id in visit_ids:
-            visit_status = OriginVisitStatus(
-                origin=new_origin.url,
-                visit=visit_id,
-                date=now(),
-                status="full",
-                snapshot=new_snapshots[0].id,
-            )
-            archive_data.origin_visit_status_add([visit_status])
-
-        for visit_type in ("git", "git-checkout"):
-            url = reverse(
-                "api-1-origin-visit-latest",
-                url_args={"origin_url": new_origin.url},
-                query_params={"visit_type": visit_type},
-            )
-
-            rv = check_api_get_responses(api_client, url, status_code=200)
-
-            expected_visit = archive_data.origin_visit_status_get_latest(
-                new_origin.url, type=visit_type
-            )
-
-            expected_visit = enrich_origin_visit(
-                expected_visit,
-                with_origin_link=True,
-                with_origin_visit_link=False,
-                request=rv.wsgi_request,
-            )
-
-            assert rv.data == expected_visit
 
 
 def test_api_lookup_origin_visit_latest_origin_url_with_quoted_space(
@@ -518,7 +501,6 @@ def test_api_origin_by_url(api_client, archive_data, tests_data, origin):
     assert rv.data == expected_origin
 
 
-@given(new_origin())
 def test_api_origin_not_found(api_client, new_origin):
     url = reverse("api-1-origin", url_args={"origin_url": new_origin.url})
     rv = check_api_get_responses(api_client, url, status_code=404)
