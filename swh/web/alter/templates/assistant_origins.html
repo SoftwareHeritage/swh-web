@@ -1,7 +1,7 @@
 {% extends "./alter_common.html" %}
 
 {% comment %}
-# Copyright (C) 2025  The Software Heritage developers
+# Copyright (C) 2025-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -42,11 +42,11 @@
           {% for origin in results %}
             <tr>
               <td class="text-center">
-                <input type="checkbox" name="urls" value="{{ origin.url }}" class="mx-auto">
+                <input type="checkbox" name="urls" value="{{ origin }}" class="mx-auto">
               </td>
               <td>
-                <label for="{{ origin.url }}" class="form-check-label pt-0">
-                  <a href="{{ origin.url }}" target="_blank">{{ origin.url }}</a>
+                <label for="{{ origin }}" class="form-check-label pt-0">
+                  <a href="{{ origin }}" target="_blank">{{ origin }}</a>
                 </label>
               </td>
             </tr>

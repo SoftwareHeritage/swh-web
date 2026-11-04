@@ -1,4 +1,4 @@
-# Copyright (C) 2025  The Software Heritage developers
+# Copyright (C) 2025-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -48,6 +48,7 @@ from swh.web.alter.utils import (
 )
 from swh.web.tests.helpers import check_html_get_response, check_html_post_response
 from swh.web.utils import reverse
+from swh.web.utils.typing import OriginInfo
 
 
 @pytest.fixture
@@ -233,7 +234,7 @@ def test_origins_search(client, mocker, _session_step1):
     url = reverse("alteration-origins", query_params={"query": "username"})
     mocker.patch(
         "swh.web.alter.views.search_origin",
-        return_value=(["http://example.org/username/repo"], None, None),
+        return_value=([OriginInfo(url="http://example.org/username/repo")], None, None),
     )
     response = check_html_get_response(
         client,
@@ -242,6 +243,10 @@ def test_origins_search(client, mocker, _session_step1):
         template_used="assistant_origins.html",
     )
     assert response.context["results"] == ["http://example.org/username/repo"]
+    assert (
+        '<input type="checkbox" name="urls" '
+        'value="http://example.org/username/repo" class="mx-auto">'
+    ) in response.text
 
 
 def test_origins_post(client, origin, _session_step1):

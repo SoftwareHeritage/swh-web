@@ -1,4 +1,4 @@
-# Copyright (C) 2025  The Software Heritage developers
+# Copyright (C) 2025-2026  The Software Heritage developers
 # See the AUTHORS file at the top-level directory of this distribution
 # License: GNU Affero General Public License version 3, or any later version
 # See top-level LICENSE file for more information
@@ -55,8 +55,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from django.http import HttpRequest, HttpResponse
-
-    from swh.web.utils.typing import OriginInfo
 
 
 @require_http_methods(["GET"])
@@ -219,15 +217,16 @@ def assistant_origins(request: HttpRequest) -> HttpResponse:
         )
 
     # handle origin search query
-    results: list[OriginInfo] = []
+    results: list[str] = []
     if query := request.GET.get("query"):
         search_form = OriginSearchForm(request.GET)
         if search_form.is_valid():
             # TODO handle pagination w/ page_token or set the limit parameter to
             # something higher than 50 ?
-            results, __, _a = search_origin(
+            search_results, __, _a = search_origin(
                 search_form.cleaned_data["query"], with_visit=True
             )
+            results = [result["url"] for result in search_results]
         else:
             messages.error(request, _("Please fix the errors indicated in the form."))
     else:
