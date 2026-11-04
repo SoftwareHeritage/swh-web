@@ -16,7 +16,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
 
 from swh.web.auth.utils import ALTER_ADMIN_PERMISSION
-from swh.web.utils.archive import search_origin
+from swh.web.utils.archive import lookup_origin_visit_latest, search_origin
 
 from .emails import (
     send_alteration_confirmation,
@@ -221,12 +221,22 @@ def assistant_origins(request: HttpRequest) -> HttpResponse:
     if query := request.GET.get("query"):
         search_form = OriginSearchForm(request.GET)
         if search_form.is_valid():
+            # first look for an exact match via the origin_visits
+            try:
+                if origin_info := lookup_origin_visit_latest(
+                    query,
+                    require_snapshot=True,
+                ):
+                    results = [origin_info["origin"]]
+            except Exception:
+                pass
+            # and add results from the search engine.
             # TODO handle pagination w/ page_token or set the limit parameter to
             # something higher than 50 ?
             search_results, __, _a = search_origin(
                 search_form.cleaned_data["query"], with_visit=True
             )
-            results = [result["url"] for result in search_results]
+            results.extend([result["url"] for result in search_results])
         else:
             messages.error(request, _("Please fix the errors indicated in the form."))
     else:

@@ -48,7 +48,7 @@ from swh.web.alter.utils import (
 )
 from swh.web.tests.helpers import check_html_get_response, check_html_post_response
 from swh.web.utils import reverse
-from swh.web.utils.typing import OriginInfo
+from swh.web.utils.typing import OriginInfo, OriginVisitInfo
 
 
 @pytest.fixture
@@ -231,10 +231,25 @@ def test_origins_context(client, _session_step1):
 
 
 def test_origins_search(client, mocker, _session_step1):
-    url = reverse("alteration-origins", query_params={"query": "username"})
+    origins = [
+        "https://doi.org/10.5281/zenodo.23159753",
+        "https://doi.org/10.5281/zenodo.22862179",
+        "https://doi.org/10.5281/zenodo.22903112",
+        "https://doi.org/10.5281/zenodo.23203242",
+        "https://doi.org/10.5281/zenodo.23042985",
+        "https://doi.org/10.5281/zenodo.22904677",
+        "https://doi.org/10.5281/zenodo.23161453",
+        "https://doi.org/10.5281/zenodo.5111569",
+    ]
+    origin = "https://doi.org/10.5281/zenodo.23042985"
+    url = reverse("alteration-origins", query_params={"query": origin})
     mocker.patch(
         "swh.web.alter.views.search_origin",
-        return_value=([OriginInfo(url="http://example.org/username/repo")], None, None),
+        return_value=([OriginInfo(url=url) for url in sorted(origins)], None, None),
+    )
+    mocker.patch(
+        "swh.web.alter.views.lookup_origin_visit_latest",
+        return_value=OriginVisitInfo(origin=origin),
     )
     response = check_html_get_response(
         client,
@@ -242,11 +257,12 @@ def test_origins_search(client, mocker, _session_step1):
         status_code=200,
         template_used="assistant_origins.html",
     )
-    assert response.context["results"] == ["http://example.org/username/repo"]
+    assert response.context["results"] == [origin] + sorted(origins)
+
     assert (
-        '<input type="checkbox" name="urls" '
-        'value="http://example.org/username/repo" class="mx-auto">'
-    ) in response.text
+        f'<input type="checkbox" name="urls" value="{origin}" class="mx-auto">'
+        in response.text
+    )
 
 
 def test_origins_post(client, origin, _session_step1):
