@@ -9,8 +9,19 @@
 
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 global.hljs = require('highlight.js');
-global.window = {};
+
+// Loads an ES-module grammar file (`export default function`) as a CommonJS factory.
+function loadFactory(modulePath) {
+  const src = fs
+    .readFileSync(require.resolve(modulePath), 'utf8')
+    .replace(/export\s+default\s+function/, 'module.exports = function');
+  const sandbox = {module: {exports: {}}};
+  vm.runInNewContext(src, sandbox);
+  return sandbox.module.exports;
+}
+
 require('highlightjs-4d/dist/4d.min');
 require('highlightjs-sap-abap/dist/abap.min');
 require('highlightjs-abc/dist/abc.min');
@@ -19,13 +30,17 @@ require('highlightjs-alan/dist/alan.min');
 require('highlightjs-apex/dist/apex.min');
 hljs.registerLanguage('astro', require('highlightjs-astro-js'));
 require('@ballerina/highlightjs-ballerina/dist/ballerina.min');
-require('highlightjs-bicep/src/highlightjs/dist/bicep.min');
+hljs.registerLanguage(
+  'bicep',
+  // bicep.min.js calls require('highlight.js') at load time, which fails under
+  // Node's ESM loader, we load the ES module instead and patch it to a CommonJS factory
+  loadFactory('highlightjs-bicep/src/highlightjs/dist/bicep.es.min.js'),
+);
 require('highlightjs-blade/dist/blade.min');
 require('highlightjs-bqn/dist/bqn.min');
 require('c3/dist/c3.min');
 require('highlightjs-cairo')(hljs);
-require('highlightjs-cedar/dist/hljs-cedar.min.js');
-hljs.registerLanguage('cedar', window.hljsCedar);
+hljs.registerLanguage('cedar', require('highlightjs-cedar').default);
 require('highlightjs-chaos/dist/chaos.min');
 require('highlightjs-chapel/dist/chapel.min');
 require('highlightjs-cshtml-razor/dist/cshtml-razor.min');
