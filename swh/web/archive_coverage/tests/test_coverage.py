@@ -13,6 +13,7 @@ import uuid
 import pytest
 
 from django.conf import settings
+from django.core.management import call_command
 from django.utils.html import escape
 
 from swh.scheduler.model import (
@@ -24,11 +25,7 @@ from swh.scheduler.model import (
     TaskType,
 )
 from swh.scheduler.utils import utcnow
-from swh.web.archive_coverage.views import (
-    deposited_origins,
-    legacy_origins,
-    listed_origins,
-)
+from swh.web.archive_coverage import deposited_origins, legacy_origins, listed_origins
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
 from swh.web.tests.helpers import check_html_get_response, check_http_get_response
 from swh.web.utils import reverse
@@ -111,15 +108,7 @@ def generate_archive_coverage_data(mocker, swh_scheduler):
             )
 
 
-def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
-    generate_archive_coverage_data(mocker, swh_scheduler)
-
-    # check view gets rendered without errors
-    url = reverse("swh-coverage")
-    resp = check_html_get_response(
-        client, url, status_code=200, template_used="archive-coverage.html"
-    )
-
+def _check_coverage_data_display(resp):
     # check logos and origins search links are present in the rendered page
     for origins in chain(
         listed_origins["origins"],
@@ -147,6 +136,16 @@ def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
     for visit_type in origin_visit_types:
         assert_contains(resp, f"<td>{visit_type}</td>")
 
+
+def test_coverage_view_with_metrics(client, mocker, swh_scheduler):
+    generate_archive_coverage_data(mocker, swh_scheduler)
+
+    # check view gets rendered without errors
+    url = reverse("swh-coverage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="archive-coverage.html"
+    )
+    _check_coverage_data_display(resp)
     # check request as in production with cache enabled
     check_http_get_response(client, url, status_code=200, server_name="localhost")
 
@@ -235,9 +234,7 @@ def test_coverage_view_filter_out_non_visited_origins(
 ):
     # remove display of legacy origins containing a bitbucket origin
     # type that can make this test flaky
-    from swh.web.archive_coverage import views
-
-    mocker.patch.object(views, "legacy_origins", {"origins": []})
+    mocker.patch.dict("swh.web.archive_coverage.legacy_origins", {"origins": []})
 
     origins = copy.copy(listed_origins)
 
@@ -418,3 +415,38 @@ def test_coverage_view_urls(client, mocker, swh_scheduler):
 
     # check gitlab API URL is adjusted
     assert_contains(resp, '<a href="https://gitlab.example.org/"')
+
+
+def test_production_coverage_view_missing_data_in_cache(client, monkeypatch):
+    """With production settings, coverage data are produced by a cron job calling
+    a django custom command that put them in cache.
+
+    Check a message is displayed when those data are not in cache.
+    """
+    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "swh.web.settings.production")
+    url = reverse("swh-coverage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="archive-coverage.html"
+    )
+    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "swh.web.settings.tests")
+    assert_contains(resp, "Archive coverage data are currently not available.")
+
+
+def test_production_coverage_view_data_in_cache(
+    client, monkeypatch, mocker, swh_scheduler
+):
+    """With production settings, coverage data are produced by a cron job calling
+    a django custom command that put them in cache.
+
+    Check those are displayed when they are in cache.
+    """
+    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "swh.web.settings.production")
+    generate_archive_coverage_data(mocker, swh_scheduler)
+    call_command("generate_coverage_data")
+    url = reverse("swh-coverage")
+    resp = check_html_get_response(
+        client, url, status_code=200, template_used="archive-coverage.html"
+    )
+    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "swh.web.settings.tests")
+    assert_not_contains(resp, "Archive coverage data are currently not available.")
+    _check_coverage_data_display(resp)

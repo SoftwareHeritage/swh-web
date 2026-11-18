@@ -421,7 +421,7 @@ def _compute_final_cache_key(cache_key: str) -> str:
 def cache_set(
     cache_key: str,
     obj: Any,
-    timeout: int = DEFAULT_TIMEOUT,
+    timeout: Optional[int] = DEFAULT_TIMEOUT,
     extra_encoders: Optional[List[Tuple[type, str, Callable]]] = None,
 ) -> None:
     """Set a value in django cache.
