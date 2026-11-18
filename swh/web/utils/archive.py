@@ -500,6 +500,7 @@ def count_origins(
             url_pattern=url_pattern,
             with_visit=with_visit,
             visit_types=visit_types,
+            fork_weight=None,
             limit=1,
         )
         origins_count = search_result.total_results or 0
