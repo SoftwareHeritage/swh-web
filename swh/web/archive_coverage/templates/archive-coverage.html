@@ -5,6 +5,7 @@ License: GNU Affero General Public License version 3, or any later version
 See top-level LICENSE file for more information
 {% endcomment %}
 
+{% load humanize %}
 {% load js_reverse %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
@@ -113,7 +114,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                           <i class="swh-coverage-chevron mdi mdi-24px mdi-chevron-down"></i>
                           <div class="text-center" style="font-size: 120%">
                             {% if "count" in origins and origins.count %}
-                              {{ origins.count }} origins
+                              {{ origins.count|intcomma }} origins
                             {% else %}
                               <br />
                             {% endif %}
@@ -150,7 +151,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                                           {% endif %}
                                         </td>
                                         <td>{{ visit_type }}</td>
-                                        <td>{{ data.count }}</td>
+                                        <td>{{ data.count|intcomma }}</td>
                                         <td>
                                           {% if data.search_url %}
                                             <a href="{{ data.search_url }}"

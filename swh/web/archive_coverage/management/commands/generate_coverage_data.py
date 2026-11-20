@@ -113,7 +113,7 @@ class Command(BaseCommand):
         urls = get_instance_urls()
 
         for origins in listed_origins["origins"]:
-            origins["count"] = "0"
+            origins["count"] = 0
             origins["instances"] = {}
             origins_type = origins["type"]
 
@@ -121,7 +121,7 @@ class Command(BaseCommand):
             if origins_type in ("nixos", "guix"):
                 main_instance = origins["main_instance"]
                 visit_data = listers_metrics.get("nixguix", [])
-                visit_type_counts: Dict[str, Dict[str, str]] = defaultdict(dict)
+                visit_type_counts: Dict[str, Dict[str, int]] = defaultdict(dict)
                 # visit types from new nixguix lister
                 count = 0
                 for instance, metrics in visit_data:
@@ -132,12 +132,12 @@ class Command(BaseCommand):
                     )
                     if instance_type_count > 0:
                         visit_type_counts[metrics.visit_type] = {
-                            "count": f"{instance_type_count:,}"
+                            "count": instance_type_count
                         }
 
                     count += instance_type_count
 
-                origins["count"] = f"{count:,}"
+                origins["count"] = count
                 origins["instances"] = {
                     main_instance: {
                         "url": f"https://{main_instance}",
@@ -162,7 +162,7 @@ class Command(BaseCommand):
             )
             count_visited = count_total - count_never_visited
 
-            origins["count"] = f"{count_visited:,}"
+            origins["count"] = count_visited
             origins["instances"] = defaultdict(lambda: defaultdict(dict))
             for instance, metrics in listers_metrics[origins_type]:
                 instance_count = metrics.origins_enabled - metrics.origins_never_visited
@@ -172,7 +172,7 @@ class Command(BaseCommand):
 
                 update_origins_with_url(origins, urls, origins_type, instance)
                 origins["instances"][instance]["visit_types"].update(
-                    {metrics.visit_type: {"count": f"{instance_count:,}"}}
+                    {metrics.visit_type: {"count": instance_count}}
                 )
                 origins["visit_types"] = list(
                     set(origins["instances"][instance].keys())
@@ -203,7 +203,7 @@ class Command(BaseCommand):
         listed_origins_filtered = copy.copy(listed_origins)
         # filter out origin types without archived origins
         listed_origins_filtered["origins"] = list(
-            filter(lambda o: o["count"] != "0", listed_origins_filtered["origins"])
+            filter(lambda o: o["count"] != 0, listed_origins_filtered["origins"])
         )
 
         for origins in legacy_origins["origins"]:
@@ -217,16 +217,16 @@ class Command(BaseCommand):
                 total_count += count
                 origins["instances"][origins["type"]]["visit_types"] = {}
                 origins["instances"][origins["type"]]["visit_types"][visit_type] = {
-                    "count": f"{count:,}",
+                    "count": count,
                     "search_url": _search_url(origins["search_pattern"], visit_type),
                 }
-            origins["count"] = f"{total_count:,}"
+            origins["count"] = total_count
 
         for origins in deposited_origins["origins"]:
             origins_count = count_origins(
                 origins["search_pattern"], with_visit=True, visit_types=["deposit"]
             )
-            origins["count"] = f"{origins_count:,}"
+            origins["count"] = origins_count
             origins["search_urls"] = {
                 "deposit": _search_url(origins["search_pattern"], "deposit")
             }
