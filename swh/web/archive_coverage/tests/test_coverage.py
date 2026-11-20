@@ -27,7 +27,11 @@ from swh.scheduler.model import (
 from swh.scheduler.utils import utcnow
 from swh.web.archive_coverage import deposited_origins, legacy_origins, listed_origins
 from swh.web.tests.django_asserts import assert_contains, assert_not_contains
-from swh.web.tests.helpers import check_html_get_response, check_http_get_response
+from swh.web.tests.helpers import (
+    check_api_get_responses,
+    check_html_get_response,
+    check_http_get_response,
+)
 from swh.web.utils import reverse
 from swh.web.utils.swh_templatetags import static_path_exists
 
@@ -450,3 +454,29 @@ def test_production_coverage_view_data_in_cache(
     monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "swh.web.settings.tests")
     assert_not_contains(resp, "Archive coverage data are currently not available.")
     _check_coverage_data_display(resp)
+
+
+def test_api_view_coverage_data_missing_in_cache(api_client):
+    url = reverse("api-1-stat-coverage")
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    assert resp.data == {}
+
+
+def test_api_view_coverage_data_in_cache(api_client, mocker, swh_scheduler):
+    generate_archive_coverage_data(mocker, swh_scheduler)
+    call_command("generate_coverage_data")
+    url = reverse("api-1-stat-coverage")
+    resp = check_api_get_responses(api_client, url, status_code=200)
+    assert resp.data
+    for origins_type in ("listed", "legacy", "deposited"):
+        assert origins_type in resp.data
+        assert "origins" in resp.data[origins_type]
+        assert resp.data[origins_type]["origins"]
+
+    for origins in resp.data["listed"]["origins"]:
+        for instance_data in origins["instances"].values():
+            for visit_type_data in instance_data["visit_types"].values():
+                if visit_type_data["search_url"]:
+                    assert visit_type_data["search_url"].startswith(
+                        "http://testserver/"
+                    )
